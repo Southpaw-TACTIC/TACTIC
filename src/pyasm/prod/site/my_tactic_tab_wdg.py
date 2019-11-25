@@ -412,9 +412,9 @@ class WorkHourSummaryWdg(BaseRefreshWdg):
         #search.add_project_filter()
 
         table.alter_search(search)
-        print "SEA ", search.get_statement()
+        print("SEA ", search.get_statement())
         sobjects = search.get_sobjects()
-        print "SOB ", sobjects
+        print("SOB ", sobjects)
         table.set_sobjects(sobjects, search)
         widget.add(table)
         #widget.add(SpecialDayWdg())

@@ -1,4 +1,4 @@
-###########################################################
+############################################################
 #
 # Copyright (c) 2005, Southpaw Technology
 #                     All Rights Reserved
@@ -13,17 +13,23 @@
 
 __all__ = ["BaseChartWdg", "SObjectChartWdg", "CalendarChartWdg"]
 
-from pyasm.common import Environment, Common, jsonloads
+from pyasm.common import Environment, Common, jsonloads, jsondumps, SPTDate
 from pyasm.biz import Project
 from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Table
-from pyasm.widget import SelectWdg, TextWdg
+from pyasm.widget import SelectWdg, TextWdg, TextAreaWdg
 from pyasm.search import Search, SearchType
 from tactic.ui.common import BaseRefreshWdg
 
 import types
 
-from chart_wdg import ChartWdg as ChartWdg
-from chart_wdg import ChartData as ChartData
+
+#from .chart_wdg import ChartWdg as ChartWdg
+from .chart_js_wdg import ChartJsWdg as ChartWdg
+
+from .chart_wdg import ChartData as ChartData
+
+import six
+basestring = six.string_types
 
 
 class BaseChartWdg(BaseRefreshWdg):
@@ -131,20 +137,48 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
+
         expression = web.get_form_value("expression")
         if not expression:
             expression = self.kwargs.get("expression")
 
 
 
-        self.search_type = web.get_form_value("search_type")
-        if not self.search_type:
-            self.search_type = self.kwargs.get("search_type")
+        #self.search_type = web.get_form_value("search_type")
+        #if not self.search_type:
+        self.search_type = self.kwargs.get("search_type")
 
         self.search_keys = self.kwargs.get("search_keys")
 
 
-        if expression:
+     
+        # handle documents
+        document = None
+        document_key = self.kwargs.get("document_key")
+        if document_key:
+            document_sobj = Search.get_by_search_key(document_key)
+            document_col = self.kwargs.get("document_col")
+            if not document_col:
+                document_col = "data"
+
+            document = document_sobj.get_json_value(document_col)
+        elif self.kwargs.get("document"):
+            document = self.kwargs.get("document")
+
+        if document:
+            if isinstance(document, six.string_types):
+                document = jsonloads(document)
+            from tactic.ui.panel import Document
+            doc = Document()
+
+            document_type = document.get("type")
+            if document_type != "chart":
+                raise Exception("Document is not a chart")
+
+            self.sobjects = doc.get_sobjects_from_document(document)
+
+
+        elif expression:
             self.sobjects = Search.eval(expression)
         elif self.search_type and self.search_type.startswith("@SOBJECT("):
             self.sobjects = Search.eval(self.search_type)
@@ -192,7 +226,10 @@ class SObjectChartWdg(BaseChartWdg):
                 expr = element.strip("{}")
                 value = Search.eval(expr, sobject, single=True)
                 labels.append(element)
-
+            elif element.startswith("@"):
+                expr = element
+                value = Search.eval(expr, sobject, single=True)
+                labels.append(element)
             else:
 
                 options = self.config.get_display_options(element)
@@ -295,13 +332,14 @@ class SObjectChartWdg(BaseChartWdg):
                 data.append(value)
 
 
-
         width = self.kwargs.get("width")
         if not width:
             width = '800px'
+            width = ''
         height = self.kwargs.get("height")
         if not height:
             height = '500px'
+            height = ''
 
 
         chart_div = DivWdg()
@@ -326,27 +364,44 @@ class SObjectChartWdg(BaseChartWdg):
             msg_div.add_style("z-index: 100")
             msg_div.add_style("text-align: center")
 
+        chart_type = self.kwargs.get("chart_type") or "bar"
 
-        chart = ChartWdg(
-            width=width,
-            height=height,
-            chart_type='bar',
-            #legend=self.elements,
-            labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)]
-        )
+
+        # Draw Chart
+        chart = self.draw_chart(chart_div, chart_type, chart_labels, element_data)
+        top.add(chart)
+
+        return top
+
+
+    def draw_chart(self, chart_div, chart_type, chart_labels, element_data):
+
+        div = DivWdg()
+
+        kwargs = {
+            "chart_type": chart_type,
+            #"width": width,
+            #"height": height,
+            #"legend": self.elements,
+            "labels": chart_labels,
+            "label_values": [i+0.5 for i,x in enumerate(chart_labels)],
+            "rotate_x_axis": self.kwargs.get("rotate_x_axis")
+        }
+
+       
+        chart = ChartWdg(**kwargs)
         chart_div.add(chart)
 
-        top.add(chart_div)
-        top.add_color("background", "background")
-        top.add_color("color", "color")
+        div.add(chart_div)
+        div.add_color("background", "background")
+        div.add_color("color", "color")
 
 
 
         # draw a legend
-        from chart_wdg import ChartLegend
+        from .chart_wdg import ChartLegend
         legend = ChartLegend(labels=self.elements)
-        top.add(legend)
+        #div.add(legend)
         #legend.add_style("width: 200px")
         legend.add_style("position: absolute")
         legend.add_style("top: 0px")
@@ -357,7 +412,7 @@ class SObjectChartWdg(BaseChartWdg):
         for i, key in enumerate(element_data.keys()):
 
             if self.colors:
-                color = self.colors[i]
+                color = self.colors[i%len(self.colors)]
             else:
                 color = 'rgba(128, 0, 0, 1.0)'
 
@@ -372,7 +427,7 @@ class SObjectChartWdg(BaseChartWdg):
             chart.add(chart_data)
 
 
-        return top
+        return div
 
 
 
@@ -567,6 +622,12 @@ class CalendarChartWdg(BaseChartWdg):
             max_date = end_date
 
 
+        if min_date and min_date.tzinfo is not None and min_date.tzinfo.utcoffset(min_date) is not None:
+                min_date = SPTDate.convert(min_date)
+
+        if max_date and max_date.tzinfo is not None and max_date.tzinfo.utcoffset(max_date) is not None:
+            max_date = SPTDate.convert(max_date)
+
         for sobject in sobjects:
             timestamp = sobject.get_value(self.column)
             timestamp = parser.parse(timestamp)
@@ -676,7 +737,7 @@ class CalendarChartWdg(BaseChartWdg):
 
         # draw a legend
         legend = None
-        from chart_wdg import ChartLegend
+        from .chart_wdg import ChartLegend
         labels = self.kwargs.get("labels")
         if labels:
             legend = ChartLegend()
@@ -701,7 +762,7 @@ class CalendarChartWdg(BaseChartWdg):
         top.add(table)
         table.add_row()
         table.center()
-        table.add_style("width: 1%")
+        #table.add_style("width: 1%")
 
 
         if y_title:
@@ -723,16 +784,19 @@ class CalendarChartWdg(BaseChartWdg):
         rotate_x_axis = self.kwargs.get("rotate_x_axis")
         y_axis_mode = self.kwargs.get("y_axis_mode")
 
-        chart = ChartWdg(
-            width=width,
-            height=height,
-            chart_type='bar',
-            #legend=self.elements,
-            labels=chart_labels,
-            label_values=[i+0.5 for i,x in enumerate(chart_labels)],
-            rotate_x_axis=rotate_x_axis,
-            y_axis_mode=y_axis_mode
-        )
+
+        kwargs = {
+            "width": width,
+            "height": height,
+            "chart_type": 'bar',
+            #"legend": self.elements,
+            "labels": chart_labels,
+            "label_values": [i+0.5 for i,x in enumerate(chart_labels)],
+            "rotate_x_axis": rotate_x_axis,
+            "y_axis_mode": y_axis_mode
+        }
+
+        chart = ChartWdg(**kwargs)
         table.add_cell(chart)
 
 
@@ -765,11 +829,24 @@ class CalendarChartWdg(BaseChartWdg):
 
         element_count = 0
 
+        # create a bunch of sobjects out of the data
+        data_sobjects = []
+        for i, chart_label in enumerate(chart_labels):
+            data_sobject = SearchType.create("sthpw/virtual")
+            data_sobject.set_value("id", i)
+            data_sobject.set_value("code", chart_label)
+            data_sobjects.append(data_sobject)
+
+
         x_data=[i+0.5 for i,x in enumerate(chart_labels)]
         for i, element in enumerate(elements):
 
 
             data_values = self.get_data_values(self.dates_dict, dates, element, self.sobjects)
+
+            for j, data_sobject in enumerate(data_sobjects):
+                data_sobject.set_value("value", data_values[j])
+
 
             chart_data = ChartData(
                 chart_type=chart_type,
@@ -779,6 +856,17 @@ class CalendarChartWdg(BaseChartWdg):
             )
             chart.add(chart_data)
             element_count += 1
+
+
+
+        
+        from tactic.ui.panel import Document
+        document = Document(type="chart")
+        data = document.generate_document(data_sobjects)
+        text_area = TextAreaWdg(name="document")
+        top.add(text_area)
+        text_area.set_value(jsondumps(data))
+        text_area.add_style("display: none")
 
 
 
@@ -792,6 +880,14 @@ class CalendarChartWdg(BaseChartWdg):
         else:
             # draw back to front
             chart_data.reverse()
+
+
+
+        #from tactic.ui.panel import Document
+        #doc = Document()
+        #data = document.generate_document(sobjects)
+        #print("data: ", data)
+
 
         for options in chart_data:
 

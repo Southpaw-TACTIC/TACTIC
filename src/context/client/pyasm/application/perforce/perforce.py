@@ -32,12 +32,12 @@ class Perforce(object):
         no_exception = True
 
         p4_cmd = "%s %s" % (self.get_exec_path(), cmd)
-        print p4_cmd
+        print(p4_cmd)
         #pipe = popen3(p4_cmd)
         # FIXME: this has not been fixed for the supprocess command
         pipe = Popen(pr_cmd)
         if input:
-            #print input
+            #print(input)
             stdin = pipe[1]
             stdin.write(input)
             stdin.close()
@@ -45,7 +45,7 @@ class Perforce(object):
         error = pipe[2].readlines()
         if error:
             for e in error:
-                print "ERROR: ", e
+                print("ERROR: ", e)
             if no_exception:
                 pass
             else:
@@ -64,7 +64,7 @@ class Perforce(object):
         ret_val = self.execute(cmd)
         if ret_val[0].count("can't add existing file"):
             raise PerforceException(ret_val[0])
-        print ret_val
+        print(ret_val)
 
 
     def get_checkout(self, path):
@@ -111,7 +111,7 @@ class Perforce(object):
     def delete(self, path):
         cmd = 'delete "%s"' % path
         ret_val = self.execute(cmd)
-        print ret_val
+        print(ret_val)
         return "|".join(ret_val)
 
 
@@ -171,10 +171,10 @@ class Perforce(object):
             if line.startswith("Files:" ):
                 files_flag = True
             #elif files_flag and not self.match_path(paths, line):
-            #    print "file: ", line
+            #    print("file: ", line)
             #    continue
             if files_flag and line != "\n":
-                print 'file: ', line
+                print('file: ', line)
                 files.append(line)
 
             input.append(line)
@@ -262,8 +262,8 @@ if __name__ == '__main__':
 
     p = Perforce()
     root = p.get_root()
-    print "root: ", root
-    #print "repo: ", p.get_repo("%s/whatever/"% root)
+    print("root: ", root)
+    #print("repo: ", p.get_repo("%s/whatever/"% root))
 
     files = []
     files.append("%s/whatever/connector.tar.gz" % root)

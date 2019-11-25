@@ -27,7 +27,9 @@ __all__ = [
 ]
 import re
 import datetime
+import sys
 from dateutil.relativedelta import relativedelta
+from dateutil import parser
 
 from pyasm.common import Common, TacticException, SetupException, Date
 from pyasm.biz import Project
@@ -38,7 +40,11 @@ from pyasm.search import Search, SearchException, SearchType
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
 
-from filter_data import FilterData
+from .filter_data import FilterData
+
+import six
+basestring = six.string_types
+
 
 
 class BaseFilterElementWdg(BaseRefreshWdg):
@@ -92,6 +98,7 @@ class BaseFilterElementWdg(BaseRefreshWdg):
     def get_set_js_action(self):
         return r'''
         var top = bvr.src_el.getParent(".spt_filter_top");
+        if (!top) return;
         var set_icons = top.getElements(".spt_filter_set");
 
         for (var i = 0; i < set_icons.length; i++) {
@@ -171,10 +178,11 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
 
         value = self.values.get("value")
-        if isinstance(value, unicode):
-            value = value.encode('utf-8','ignore')
-        elif isinstance(value, basestring):
-            value = unicode(value, errors='ignore').encode('utf-8')
+        if not Common.is_python3:
+            if isinstance(value, unicode):
+                value = value.encode('utf-8','ignore')
+            elif isinstance(value, basestring):
+                value = unicode(value, errors='ignore').encode('utf-8')
 
         #print "value: ", value, type(value)
         if not value:
@@ -318,7 +326,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         #div.add_style("width: 350px")
 
         select = SelectWdg("value")
-        select.add_style("width: 190")
+        select.add_style("width: 190px")
 
         default_value = self.kwargs.get("default")
 
@@ -412,7 +420,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
 
         select = SelectWdg("value")
         parent_div.add(select)
-        select.add_style("width: 150")
+        select.add_style("width: 150px")
         select.add_color("background", "background")
 
         value = self.values.get("value")
@@ -1067,6 +1075,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         self.filter_search_type = self.get_option("filter_search_type")
         if not self.filter_search_type:
             self.filter_search_type = self.overall_search_type
+
         div = DivWdg()
         div.add_style("position: relative")
 
@@ -1129,7 +1138,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
 
 
-
         if self.mode in ['keyword','keyword_tree']:
             search_type = self.filter_search_type
 
@@ -1160,7 +1168,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         # search_type is a list matching the column for potential join
         width = self.kwargs.get("width")
         if not width:
-            width = "230"
+            width = "230px"
 
 
         show_toggle = self.get_option("show_toggle")
@@ -1339,6 +1347,12 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         if not start_date and not end_date:
             return
 
+        if isinstance(start_date, six.string_types) and start_date.startswith("$"):
+            start_date = parser.parse( Search.eval(start_date) )
+
+        if isinstance(end_date, six.string_types) and end_date.startswith("$"):
+            end_date = parser.parse( Search.eval(end_date) )
+
         from pyasm.common import SPTDate
         start_date = SPTDate.add_local_timezone(start_date)
         start_date = SPTDate.convert(start_date)
@@ -1346,8 +1360,6 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         end_date = SPTDate.convert(end_date)
 
         
-        from pyasm.search import Search
-
         # use the expression only if 1 or more search_types defined in column
         if search_types:
             expr = "@SEARCH(%s)"%search_type
@@ -1474,7 +1486,6 @@ class DateRangeFilterElementWdg(BaseFilterElementWdg):
         if operator != 'not in':
             operator = 'in'
 
-        from pyasm.search import Search
     
         # use the expression only if 1 or more search_types defined in column
         if search_types:
@@ -1867,7 +1878,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
 
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             return
 
@@ -1888,7 +1899,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
                         # assume casting to other value besides string ...
                         stmt = 'value = %s(value)' % to
                     try:
-                        exec stmt
+                        exec(stmt)
                     except:
                         # TODO ... proper error message here?
                         continue
@@ -1915,7 +1926,7 @@ class MultiFieldFilterElementWdg(BaseFilterElementWdg):
         top.add("&nbsp; matches &nbsp;")
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             self.set_configuration_error( top, "badly formed 'field_list' option" )
             return top
@@ -1984,17 +1995,17 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
 
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             return
 
         column = self.get_option("column")
         if not column:
-            print
-            print
-            print "*** ERROR: no column specified for CompoundValueFilterElementWdg"
-            print
-            print
+            print("\n")
+            print("\n")
+            print("*** ERROR: no column specified for CompoundValueFilterElementWdg")
+            print("\n")
+            print("\n")
             return
 
         field_map = {}
@@ -2012,7 +2023,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
                         # assume casting to other value besides string ...
                         stmt = 'value = %s(value)' % to
                     try:
-                        exec stmt
+                        exec(stmt)
                     except:
                         # TODO ... proper error message here?
                         continue
@@ -2051,7 +2062,7 @@ class CompoundValueFilterElementWdg(BaseFilterElementWdg):
         top.add("&nbsp; matches")
         stmt = 'field_info_list = %s' % field_list_option.replace("\n"," ")
         try:
-            exec stmt
+            exec(stmt)
         except:
             self.set_configuration_error( top, "badly formed 'field_list' option" )
             return top
@@ -2179,7 +2190,7 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
                     div.add_style("height: 30px")
                     #div.add("&nbsp;")
                     div.add_style("border-style: solid")
-                    div.add_style("border-width: 0 1 0 0")
+                    div.add_style("border-width: 0px 1px 0px 0px")
                     div.add_style("margin-right: 15px")
                     div.add_style("border-color: %s" % div.get_color("border"))
 

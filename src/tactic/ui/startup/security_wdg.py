@@ -712,7 +712,7 @@ class SecurityWdg(BaseRefreshWdg):
 
 
 
-        from misc_wdg import MainShelfWdg
+        from .misc_wdg import MainShelfWdg
         shelf_wdg = MainShelfWdg(top_class='spt_dashboard_top', list_class='spt_dashboard_list', height=207)
         top.add(shelf_wdg)
 
@@ -1840,7 +1840,11 @@ class GearMenuSecurityWdg(ProjectSecurityWdg):
                                'Check-ins': {'label': ['Show Check-in History'], 'order': 9},
                                'Pipelines': {'label': ['Show Pipeline Code','Edit Pipelines'], 'order': 10}
                                }
-        all_gear_menu_names = sorted(all_gear_menu_names.items(), key=lambda (x,y):y['order'])
+        all_gear_menu_names = sorted(
+                all_gear_menu_names.items(),
+                #key=lambda (x,y):y['order']
+                key=lambda pair: pair[1]['order']
+        )
         return all_gear_menu_names
     get_all_menu_names = classmethod(get_all_menu_names)
 

@@ -15,9 +15,12 @@ __all__ = ['WebContainer']
 
 from pyasm.common import *
 from pyasm.security import *
-from palette import Palette
+from .palette import Palette
 
-from thread import get_ident
+try:
+    from thread import get_ident
+except:
+    from _thread import get_ident
 buffers = {}
 
 
@@ -72,7 +75,7 @@ class WebContainer(Base):
 
     def push_buffer():
         # create a new buffer
-        from widget import Html
+        from .widget import Html
         buffer = Html()
         buffer_list = buffers[get_ident()]
         buffer_list.insert(0, buffer)

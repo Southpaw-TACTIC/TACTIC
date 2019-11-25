@@ -18,9 +18,9 @@ import unicodedata
 
 from pyasm.search import SObjectFactory, SearchType, Search, SqlException
 from pyasm.biz import CsvParser
-from pyasm.common import UserException
+from pyasm.common import UserException, Common
 
-from command import *
+from .command import *
 
 class CsvImportCmd(Command):
 
@@ -103,8 +103,9 @@ class CsvImportCmd(Command):
  
             # New column name if column==''
             new_column = web.get_form_value("new_column_%s" % i)
-            if isinstance(new_column, unicode):
-                new_column = self.strip_punctuation(new_column)
+            
+            new_column = self.strip_punctuation(new_column)
+            
             self.new_columns.append(new_column)
             
             # New column type if column==''
@@ -281,7 +282,7 @@ class CsvImportCmd(Command):
                     note_obj.set_parent(sobject)
                     note_obj.commit()
 
-            except SqlException, e:
+            except SqlException as e:
                 msg = "%s [%s]: %s, %s" % (self.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
                 if self.test_run:
                     error = True
@@ -488,7 +489,7 @@ class SimpleCsvImportCmd(Command):
                     note_obj.set_parent(sobject)
                     note_obj.commit()
 
-            except SqlException, e:
+            except SqlException as e:
                 msg = "Error creating new entry for row [%s]: %s, %s" % (row_count, str(row), e.__str__() )
                 if self.test_run:
                     error = True

@@ -133,6 +133,7 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
 
 
+
     <connect from="sthpw/task" to="sthpw/milestone" relationship='code'/>
 
     <!-- <connect from="sthpw/task" to="config/process" relationship='code' from_col='process' to_col='process'/> -->
@@ -211,8 +212,10 @@ SCHEMA_XML['admin'] = '''<?xml version='1.0' encoding='UTF-8'?>
 
     <connect from="sthpw/ticket" to="sthpw/login" relationship='code' from_col='login' to_col='login'/>
     <connect from="sthpw/status_log" to="sthpw/task" type='hierarchy' relationship='search_type'/>
+    <connect from="sthpw/status_log" to="sthpw/login" relationship='code' from_col='login' to_col='login'/>
 
- 
+   <connect from="sthpw/status_log" to="config/process_state" relationship='search_type'/>
+
 
     
     <!-- FIXME -->
@@ -1343,7 +1346,7 @@ class Schema(SObject):
     def get(cls, reset_cache=False, project_code=None):
         
         if not project_code:
-            from project import Project
+            from .project import Project
             project_code = Project.get_project_code()
 
         if not reset_cache:

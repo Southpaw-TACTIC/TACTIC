@@ -50,7 +50,7 @@ class HoudiniTest(unittest.TestCase):
         # try to set a string
         try:
             self.app.set_attr(self.instance, "rx", "cow")
-        except HoudiniException, e:
+        except HoudiniException as e:
             pass
         else:
             self.fail()

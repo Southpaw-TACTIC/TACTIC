@@ -11,7 +11,7 @@
 #
 __all__ = ["EmbedWdg"]
 
-from pyasm.common import Environment
+from pyasm.common import Environment, Common
 from pyasm.biz import File, Snapshot
 from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg
@@ -159,9 +159,12 @@ class EmbedWdg(BaseRefreshWdg):
 
             else:
 
-                if isinstance(src, unicode):
-                    src = src.encode("utf-8")
-                src = urllib.pathname2url(src)
+                if not Common.IS_Pv3:
+                    if isinstance(src, unicode):
+                        src = src.encode("utf-8")
+                    src = urllib.pathname2url(src)
+                else:
+                    src = urllib.request.pathname2url(src)
 
 
                 img = HtmlElement.img(src)

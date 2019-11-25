@@ -81,7 +81,7 @@ class ShotPipelineWdg(BaseInputWdg):
         if pipeline_code:
             pipeline = Pipeline.get_by_code(pipeline_code)
             if not pipeline:
-                print "WARNING: pipeline '%s' does not exist" %  pipeline_code
+                print("WARNING: pipeline '%s' does not exist" %  pipeline_code)
                 return
             process_names = pipeline.get_process_names(recurse=True)
 

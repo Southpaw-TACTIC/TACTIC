@@ -17,12 +17,12 @@ from pyasm.search import Search, SObject, SearchKey, SearchType
 from pyasm.biz import Pipeline, StatusAttr, StatusEnum, Task
 from pyasm.web import Table, HtmlElement, DivWdg, SpanWdg, Widget, WebContainer, AjaxLoader
 
-from table_element_wdg import BaseTableElementWdg
-from input_wdg import *
-from shadowbox_wdg import IframeWdg
-from statistic_wdg import CompletionBarWdg
-from web_wdg import HintWdg, SwapDisplayWdg
-from input_wdg import BaseInputWdg, CheckboxWdg
+from .table_element_wdg import BaseTableElementWdg
+from .input_wdg import *
+from .shadowbox_wdg import IframeWdg
+from .statistic_wdg import CompletionBarWdg
+from .web_wdg import HintWdg, SwapDisplayWdg
+from .input_wdg import BaseInputWdg, CheckboxWdg
 
 import re
 

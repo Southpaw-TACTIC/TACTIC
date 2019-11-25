@@ -133,7 +133,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
 
 
         checkin_keys=Config.get_section_values('checkin')
-        checkin_keys=checkin_keys.keys()
+        checkin_keys=list(checkin_keys.keys())
         save_button = self.get_save_button(checkin_keys)
         top.add(save_button)
         vendor = Config.get_value("database", "vendor")
@@ -260,7 +260,7 @@ class DbConfigContentWdg(BaseRefreshWdg):
         category = "checkin"
 
 
-        options=checkin_keys[:]
+        options=list(checkin_keys)[:]
 
         self._remove_item_from_list(options,'win32_server_handoff_dir')
         self._remove_item_from_list(options,'linux_server_handoff_dir')

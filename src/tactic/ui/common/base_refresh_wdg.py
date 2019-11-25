@@ -17,6 +17,10 @@ from pyasm.common import Common, Xml, jsondumps
 from pyasm.search import Search, SObject
 from pyasm.web import Widget, WebContainer, WidgetException, HtmlElement, DivWdg, WidgetSettings
 
+import six
+basestring = six.string_types
+
+
 class BaseRefreshWdg(Widget):
     def __init__(self, **kwargs):
         # get the them from cgi
@@ -61,13 +65,13 @@ class BaseRefreshWdg(Widget):
             web = WebContainer.get_web()
             args_keys = self.get_args_keys()
             for key in args_keys.keys():
-                if web and not kwargs.has_key(key):
+                if web and key not in kwargs:
                     value = web.get_form_value(key)
                     kwargs[key] = value
         else:
             args_keys = self.get_args_keys()
             for key in args_keys.keys():
-                if not kwargs.has_key(key):
+                if key not in kwargs:
                     kwargs[key] = ''
         self.kwargs = kwargs
 
@@ -281,7 +285,7 @@ class BaseRefreshWdg(Widget):
 
 
     def get_style(self):
-        print "classes: ", self, self.top.classes
+        print("classes: ", self, self.top.classes)
         
         from pyasm.web import HtmlElement
         style = HtmlElement.style()

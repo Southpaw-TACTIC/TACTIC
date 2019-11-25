@@ -73,7 +73,7 @@ class Package(Command):
 
                     count += 1
                 except Exception as e:
-                    print "WARNING: ", str(e)
+                    print("WARNING: ", str(e))
                 #server.add_xx(search_key, context)
 
 

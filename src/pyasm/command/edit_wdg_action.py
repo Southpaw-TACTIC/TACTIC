@@ -14,17 +14,19 @@
 __all__ = ["DatabaseAction", "DefaultValueDatabaseAction", "MultiDatabaseAction", 'NonEmptyAction', 'RegexAction', "NullAction", "PasswordAction", "IsCurrentAction", "NamespaceAction", 'UniqueValueAction', 'LoginAction', 'GroupNameAction', "UploadAction", "AddToBinAction", "PerforceUploadAction", "FileUploadException", "MultiUploadAction", "MultiZipUploadAction",  "CommandNameAction", "RepoPathAction", "RepoPathPerAssetAction", 'ProjectCreateAction', 'DateAction', 'TimeAction', 'TaskDateAction','XmlAction' ]
 
 
-import os, shutil, string, types, hashlib, re, zipfile
+import os, shutil, string, types, hashlib, re, zipfile, six
 
 
 from pyasm.common import *
 from pyasm.biz import *
 from pyasm.search import Search, DatabaseImpl, Sql, SearchKey, SearchType
-from command import *
-from trigger import *
-from file_upload import *
-from pyasm.prod.biz import *
 from pyasm.security import Login
+from pyasm.prod.biz import *
+
+from .command import *
+from .trigger import *
+from .file_upload import *
+
 
 
 def get_web_container():
@@ -117,14 +119,14 @@ class DatabaseAction(Command):
 
 
     def has_option(self, key):
-        return self.options.has_key(key)
+        return key in self.options
 
     def set_option(self, key, value):
         self.options[key] = value
 
     def get_option(self, key):
         '''gets the value of the specified option'''
-        if self.options.has_key(key):
+        if key in self.options:
             return self.options[key]
         else:
             return ""
@@ -190,10 +192,13 @@ class DatabaseAction(Command):
         if self.value:
             return self.value
         values = self.get_values(name)
-        if type(values) == types.InstanceType:
-            return values
+        if isinstance(values, list):
+            if values:
+                return values[0]
+            else:
+                return ''
         elif values:
-            return values[0]
+            return values
         else:
             return ""
 
@@ -283,7 +288,7 @@ class DatabaseAction(Command):
                 else:
                     value = SPTDate.add_local_timezone(value)
         elif col_type in ["float", "integer"]:
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = value.replace(",", "")
                 if value.startswith("$"):
                     value = value.lstrip("$")
@@ -1338,7 +1343,7 @@ class XmlAction(DatabaseAction):
         try:
             from pyasm.common import Xml, XmlException
             Xml(string=value)
-        except XmlException, e:
+        except XmlException as e:
             error =  e.__str__()
             raise TacticException("Invalid XML: %s" %error)
 

@@ -18,9 +18,11 @@ import sys
 import types
 import datetime
 import codecs
-from pyasm.common import TacticException, jsondumps, jsonloads
+import six
 
-from sql import SqlException
+from pyasm.common import TacticException, jsondumps, jsonloads, Common
+
+from .sql import SqlException
 
 
 class TableSchemaDumper(object):
@@ -63,7 +65,7 @@ class TableSchemaDumper(object):
         impl = sql.get_database_impl()
 
 
-        columns = info.keys()
+        columns = list(info.keys())
         columns.sort()
 
         # if the table does not exist, there are no columns
@@ -100,7 +102,7 @@ class TableSchemaDumper(object):
                 continue
 
             col_info = info[column]
-            #print col_info
+            #print(col_info)
             space = " "*(25-len(column)) 
             data_type = col_info['data_type']
             is_nullable = col_info['nullable']
@@ -139,7 +141,7 @@ class TableSchemaDumper(object):
             mode = constraint.get("mode")
             if not name:
                 name = "%s_%s_idx" % (name, "_".join(columns))
-            f.write('''table.add_constraint(%s, mode="%s")\n''' % (columns, mode))
+            f.write('''table.add_constraint(%s, mode="%s")\n''' % (jsondumps(columns), mode))
             #def add_constraint(self, columns, mode="UNIQUE"):
 
 
@@ -276,7 +278,7 @@ class TableDataDumper(object):
         column_info = SearchType.get_column_info(self.search_type)
 
         for sobject in self.sobjects:
-            print self.delimiter
+            print(self.delimiter)
 
             insert = Insert()
             insert.set_database(self.database)
@@ -297,9 +299,9 @@ class TableDataDumper(object):
                     # replace all of the \ with double \\
                     insert.set_value(name, value)
 
-            print "%s" % insert.get_statement()
-            print self.end_delimiter
-            print
+            print("%s" % insert.get_statement())
+            print(self.end_delimiter)
+            print("\n")
 
 
 
@@ -355,7 +357,7 @@ class TableDataDumper(object):
 
                 if path:
                     #dirname = os.path.dirname(path)
-                    subpath = "%s/%s.spt" % (path, sobject.get_value(relative_dir_column).replace(".","/"))
+                    subpath = "%s/%s.spt" % (path, str(sobject.get_value(relative_dir_column)).replace(".","/"))
 
                     if not os.path.exists(os.path.dirname(subpath)):
                         os.makedirs(os.path.dirname(subpath))
@@ -379,7 +381,12 @@ class TableDataDumper(object):
                 f.write("insert.set_table('%s')\n" % self.table)
 
             data = sobject.get_data()
-            for name, value in data.items():
+            data_keys = list(data.keys())
+            data_keys.sort()
+
+            #for name, value in data.items():
+            for name in data_keys:
+                value = data.get(name)
                 
                 if self.replace_dict:
                     
@@ -413,11 +420,10 @@ class TableDataDumper(object):
                     # This is not strong enough
                     #if value.startswith("{") and value.endswith("}"):
                     #    f.write("insert.set_expr_value('%s', \"\"\"%s\"\"\")\n" % (name, value))
-                    if type(value) == types.IntType or \
-                            type(value) == types.FloatType or \
-                            type(value) == types.BooleanType or \
-                            type(value) == types.LongType:
+                    if isinstance(value, (int, float, bool)):
+                        f.write("insert.set_value('%s', %s)\n" % (name, value))
 
+                    elif not Common.IS_Pv3 and type(value) == types.LongType:
                         f.write("insert.set_value('%s', %s)\n" % (name, value))
                     else:
 
@@ -429,12 +435,11 @@ class TableDataDumper(object):
                         # triple quotes
                         if isinstance(value, datetime.datetime):
                             value = str(value)
-                        elif isinstance(value, unicode):
-                            #value = str(value)
+                        elif not Common.IS_Pv3 and isinstance(value, unicode):
                             value = value.encode("UTF-8")
 
                         # this fixes a problem with non-ascii characters
-                        if isinstance(value, basestring):
+                        if isinstance(value, six.string_types):
                             quoted = value.startswith('"') and value.endswith('"')
                             value = repr(value)
                             quoted2 = value.startswith('"') and value.endswith('"')

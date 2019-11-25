@@ -25,6 +25,10 @@ from tactic.ui.container import PopupWdg, Menu, MenuItem, SmartMenu
 from tactic.ui.widget import TextBtnSetWdg, CalendarInputWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
+import six
+basestring = six.string_types
+
+
 class EditException(Exception):
     pass
 
@@ -1480,7 +1484,8 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         content = bvr.src_el.getParent(".spt_popup_content");
     }
 
-    var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
+    //var values = spt.api.Utility.get_input_values(content, null, true, false, {cb_boolean: true});
+    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
     var server = TacticServerStub.get();
 
     var class_name = "tactic.ui.panel.EditCmd";
@@ -1497,7 +1502,6 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     // this is needed as bvr turns null on error
     var src_el = bvr.src_el;
     try {
-
         var ret_val = server.execute_cmd(class_name, args, values);
         var info = ret_val.info;
 

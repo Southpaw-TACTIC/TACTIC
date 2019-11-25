@@ -34,25 +34,25 @@ class WatchFolder(LoggingEventHandler):
         super(LoggingEventHandler, self).on_moved(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Moved %s: from %s to %s" % (what, event.src_path, event.dest_path)
+        print("Moved %s: from %s to %s" % (what, event.src_path, event.dest_path))
 
     def on_created(self, event):
         super(LoggingEventHandler, self).on_created(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Created %s: %s" % (what, event.src_path)
+        print("Created %s: %s" % (what, event.src_path))
 
     def on_deleted(self, event):
         super(LoggingEventHandler, self).on_deleted(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Deleted %s: %s" % (what, event.src_path)
+        print("Deleted %s: %s" % (what, event.src_path))
 
     def on_modified(self, event):
         super(LoggingEventHandler, self).on_modified(event)
 
         what = 'directory' if event.is_directory else 'file'
-        print "Modified %s: %s" % (what, event.src_path)
+        print("Modified %s: %s" % (what, event.src_path))
 
 
     def watch(self, path):

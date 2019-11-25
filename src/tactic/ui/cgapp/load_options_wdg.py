@@ -150,7 +150,7 @@ class LoadOptionsWdg(Widget):
 
 
 
-        from connection_select_wdg import ConnectionSelectWdg
+        from .connection_select_wdg import ConnectionSelectWdg
         table.add_row()
         table.add_blank_cell()
         div = DivWdg(HtmlElement.b("Connection Type: "))

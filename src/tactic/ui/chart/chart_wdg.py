@@ -20,6 +20,8 @@ from pyasm.web import Widget, DivWdg, HtmlElement, WebContainer, Canvas
 
 from tactic.ui.common import BaseRefreshWdg
 
+import six
+
 
 class SampleBarChartWdg(BaseRefreshWdg):
 
@@ -322,6 +324,7 @@ class ChartGrid(BaseRefreshWdg):
         else:
             rotate_x_axis = False
 
+
         top.add_behavior( {
             'type': 'load',
             'mode': mode,
@@ -511,6 +514,15 @@ class ChartData(BaseRefreshWdg):
         self.chart_type = chart_type
 
 
+    def get_color(self):
+        return self.kwargs.get("color")
+
+    def get_label(self):
+        return self.kwargs.get("label")
+
+
+
+
     def get_data(self):
         return self.data
 
@@ -642,7 +654,7 @@ class ChartData(BaseRefreshWdg):
             last = item
 
         slope = slope / i
-        print "slope: ", slope
+        print("slope: ", slope)
         """
 
         # find b: this isn't so necessary here because we have point 0
@@ -708,7 +720,7 @@ class ChartLegend(BaseRefreshWdg):
         if not labels:
             return top
 
-        if isinstance(labels, basestring):
+        if isinstance(labels, six.string_types):
             labels = labels.split("|")
 
 

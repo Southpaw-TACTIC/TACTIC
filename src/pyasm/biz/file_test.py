@@ -19,7 +19,7 @@ import unittest
 
 from pyasm.security import *
 
-from file import FileRange
+from .file import FileRange
 
 
 class FileTest(unittest.TestCase):
@@ -45,7 +45,7 @@ class FileTest(unittest.TestCase):
         test001/IM-0001-0013.png
         '''
         data = [x.strip() for x in data.strip().split("\n") if x]
-        print data
+        print(data)
         FileRange.check(data)
 
         data = '''
@@ -72,7 +72,7 @@ class FileTest(unittest.TestCase):
         test001/IM-0001-0016.png
         '''
         data = [x.strip() for x in data.strip().split("\n") if x]
-        print data
+        print(data)
         FileRange.check(data)
 
         print

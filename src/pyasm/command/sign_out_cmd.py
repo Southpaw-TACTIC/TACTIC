@@ -14,9 +14,10 @@ __all__ = ["SignOutCmd", "PasswordEditCmd"]
 
 
 from pyasm.common import Environment, UserException
-from command import *
 from pyasm.search import SearchKey
 from pyasm.security import Login
+
+from .command import *
 
 import hashlib
 class SignOutCmd(Command):
@@ -25,6 +26,8 @@ class SignOutCmd(Command):
     def __init__(self, **kwargs):
         self.login_name = ''
         super(SignOutCmd, self).__init__(**kwargs)
+
+        self.update = True
 
     def is_undoable(cls):
         return False

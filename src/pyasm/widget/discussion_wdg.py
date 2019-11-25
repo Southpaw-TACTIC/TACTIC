@@ -26,10 +26,10 @@ from pyasm.web import WebContainer, HtmlElement, SpanWdg, DivWdg, Html, Widget,\
         WikiUtil, FloatDivWdg, AjaxCmd, AjaxWdg, WidgetSettings
 from pyasm.prod.biz import ProdSetting, Submission
 
-from table_element_wdg import *
-from input_wdg import TextAreaWdg, SelectWdg, PopupMenuWdg, HiddenWdg, FilterTextWdg, FilterSelectWdg, FilterCheckboxWdg
-from icon_wdg import *
-from web_wdg import *
+from .table_element_wdg import *
+from .input_wdg import TextAreaWdg, SelectWdg, PopupMenuWdg, HiddenWdg, FilterTextWdg, FilterSelectWdg, FilterCheckboxWdg
+from .icon_wdg import *
+from .web_wdg import *
 
 
 from tactic.ui.common import BaseRefreshWdg

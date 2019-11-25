@@ -14,13 +14,33 @@
 __all__ = ["Common", "Marshaller", "jsondumps", "jsonloads","KillProcessThread"]
 
 
-import os, sys, time, string, re, types, new, pprint, traceback
-import thread, threading, zipfile
-import hashlib, StringIO, urllib
+import os, sys, time, string, re, types, pprint, traceback
+
+
+try:
+    import thread
+except:
+    import _thread as thread
+
+try:
+    import StringIO
+except:
+    from io import StringIO
+
+import threading, zipfile
+import hashlib, urllib
+
 import datetime
 import colorsys
+import codecs
 
-from base import *
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
+DICT_KEYS_TYPE = type({}.keys())
+
+from .base import Base
 
 from random import SystemRandom
 
@@ -54,6 +74,9 @@ except ImportError:
         def default(self, obj):
             if isinstance(obj, (datetime.date, datetime.datetime)):
                 return obj.isoformat()
+            elif IS_Pv3 and isinstance(obj, DICT_KEYS_TYPE):
+                obj = list(obj)
+                return json.JSONEncoder.default(self, obj)
             elif ObjectId and isinstance(obj, ObjectId):
                 return str(obj)
             else:
@@ -65,6 +88,31 @@ except ImportError:
 
 
 class Common(Base):
+
+    IS_Pv3 = sys.version_info[0] > 2
+
+    def is_python3(cls):
+        return IS_Pv3
+    is_python3 = classmethod(is_python3)
+
+    def get_python(cls):
+        from .config import Config
+        python = Config.get_value("services", "python")
+
+        if not python:
+            python = os.environ.get('PYTHON')
+
+        if not python:
+            if cls.IS_Pv3:
+                python = 'python3'
+            else:
+                python = "python"
+
+        return python
+
+    get_python = classmethod(get_python)
+
+
 
     def get_next_sobject_code(sobject, column):
         '''Get the next code. When given an sobject, and a column, it gets the value of that
@@ -222,8 +270,9 @@ class Common(Base):
 
     def breakup_class_path(class_path):
         '''breaks up a class path into a module and class_name'''
-        parts = string.split(class_path,".")
-        module_name = string.join(parts[0:len(parts)-1],".")
+        parts = class_path.split(".")
+        #module_name = string.join(parts[0:len(parts)-1],".")
+        module_name = ".".join(parts[0:len(parts)-1])
         class_name = parts[len(parts)-1]
         return (module_name, class_name)
     breakup_class_path = staticmethod(breakup_class_path)
@@ -269,8 +318,10 @@ class Common(Base):
         # if the func is wrapped in a method, extract it
         if isinstance(func, types.MethodType):
             func = func.im_func
-            
-        method = new.instancemethod(func, instance, cls)
+       
+        #import new
+        #method = new.instancemethod(func, instance, cls)
+        method = types.MethodType(func, instance)
         if not method_name: 
             method_name=func.__name__
             
@@ -359,7 +410,13 @@ class Common(Base):
         if not digits:
             digits = 19
         num_digits = digits
-        key = os.urandom(num_digits / 2).encode('hex')
+        key = os.urandom(num_digits)
+        key = codecs.encode(key, "hex")
+        key = key[:num_digits]
+        try:
+            key = str(key, 'utf-8')
+        except:
+            pass
         return key
     generate_random_key = staticmethod(generate_random_key)
 
@@ -371,10 +428,10 @@ class Common(Base):
         return integer
     randint = staticmethod(randint)
 
-    def randchoice(key):
-        num = len(key)
+    def randchoice(obj):
+        num = len(obj)
         index = Common.randint(0, num)
-        return key[index]
+        return obj[index]
     randchoice = staticmethod(randchoice)
 
 
@@ -515,6 +572,22 @@ class Common(Base):
     is_ascii = staticmethod(is_ascii)
 
 
+
+    def pathname2url(cls, path):
+        if not IS_Pv3:
+            if isinstance(path, unicode):
+                path = path.encode("utf-8")
+                path = urllib.pathname2url(path)
+        else:
+            path = urllib.request.pathname2url(path)
+
+        return path
+    pathname2url = classmethod(pathname2url)
+
+
+
+
+
     def download(url, to_dir=".", filename='', md5_checksum=""):
         '''Download a file from a given url
 
@@ -610,15 +683,15 @@ class Common(Base):
     def sort_dict(dct, reverse=False):
         ''' sort a dictionary based on its keys, 
             a list of sorted values is returned '''
-        keys = dct.keys()
+        keys = list(dct.keys())
         keys.sort(reverse=reverse)
-        return map(dct.get, keys)
+        return list(map(dct.get, keys))
     sort_dict = staticmethod(sort_dict)
 
     def get_dict_list(dct):
         '''get a tuple sorted list given a dictionary'''
         keys = dct.keys()
-        keys.sort()
+        keys = sorted(keys)
         # value is str() to remove the u' in front of unicode str
         return [(x, dct[x]) for x in keys]
     get_dict_list = staticmethod(get_dict_list)
@@ -703,7 +776,11 @@ class Common(Base):
         elif os.path.isdir(dir):
             # this part is too slow
             if not skip_dir_details:
-                for (path, dirs, files) in os.walk(unicode(dir)):
+                if not Common.is_python3():
+                    walk = os.walk(unicode(dir))
+                else:
+                    walk = os.walk(dir)
+                for (path, dirs, files) in walk:
                     for file in files:
                         filename = os.path.join(path, file)
                         if os.path.islink(filename):
@@ -736,7 +813,7 @@ class Common(Base):
             from environment import Environment
             Environment.add_warning('invalid zip file', file_path)
         if dir:
-            os.mkdir(dir, 0777)
+            os.mkdir(dir, 0o777)
         else:
             dir, filename = os.path.split(file_path)
         zf_obj = zipfile.ZipFile(file_path)
@@ -880,6 +957,14 @@ class Common(Base):
 
 
     def process_unicode_string( in_string ):
+
+        if IS_Pv3:
+            return in_string
+
+        # for Python 2.7
+        if not isinstance(in_string, unicode):
+            return in_string
+
         if isinstance(in_string, unicode):
             return in_string.encode('utf-8')
         elif isinstance(in_string, basestring):
@@ -954,7 +1039,8 @@ class Common(Base):
         second = float(int(second, 16) ) / 256
         third =  float(int(third, 16) ) / 256
 
-        if type(modifier) == types.ListType:
+        #if type(modifier) == types.ListType:
+        if isinstance(modifier, list):
             rgb = []
             rgb.append( 0.01*modifier[0] + first )
             rgb.append( 0.01*modifier[1] + second )
@@ -1288,27 +1374,34 @@ class Common(Base):
     kill = staticmethod(kill)
 
 
+    # Make into a tuple which is immutable
+    EXECUTABLE = (sys.executable, sys.argv[:])
 
-    def restart():
+    def restart(cls):
         '''Restarts the current program.'''
         import sys
-        python = sys.executable
-        # for windows
+        #python = sys.executable
         print("Restarting the process. . .")
         print("\n")
+
+        python = cls.EXECUTABLE[0]
+        args = cls.EXECUTABLE[1]
+
         python = python.replace('\\','/')
+
+        # for windows
         if os.name =='nt':
             import subprocess
             cmd_list = [python]
-            cmd_list.extend(sys.argv)
+            cmd_list.extend(args)
             subprocess.Popen(cmd_list)
  
             pid = os.getpid()
             kill = KillProcessThread(pid)
             kill.start()
         else:
-            os.execl(python, python, * sys.argv)
-    restart = staticmethod(restart)
+            os.execl(python, python, *args )
+    restart = classmethod(restart)
 
 
 
@@ -1325,14 +1418,15 @@ class Common(Base):
         text = text.replace("]]>", "")
         #text = text.decode('utf-8')
 
-        encoding = "UTF8"
-        template = Template(text, output_encoding=encoding, input_encoding=encoding)
 
-
+        if IS_Pv3:
+            template = Template(text)
+        else:
+            encoding = "UTF-8"
+            template = Template(text, output_encoding=encoding, input_encoding=encoding)
 
         try:
             text = template.render(**kwargs)
-
 
             # we have to replace all & signs to &amp; for it be proper text
             text = text.replace("&", "&amp;")
@@ -1353,10 +1447,25 @@ class Common(Base):
     # Quick and dirty encryption/description routines that is more secure that not having
     # any at all
     #
-    PASSWORD_KEY_1024 = (95954739753557611717677953802022772164074845338566937775470833735856469435381956125590339095236470675423085325686058278198918822369603350495319710499101888408708913117761396293217495020971217519968381713929946123203701342525363284439548065832975303252596220333775984191691412558233438061248397074525660377441L, 65537L, 86459851563652350384550994520912595050627092587897749508172538776108095169113253171923656930465295425867586777734914833516983601607791279024819865791735409407082275562168885331872720365063141292194732294024919434643862338969598324336994436079024289458730635475133273691824108450263457154881428072573317615473L)
+    PASSWORD_KEY_1024 = (95954739753557611717677953802022772164074845338566937775470833735856469435381956125590339095236470675423085325686058278198918822369603350495319710499101888408708913117761396293217495020971217519968381713929946123203701342525363284439548065832975303252596220333775984191691412558233438061248397074525660377441, 65537, 86459851563652350384550994520912595050627092587897749508172538776108095169113253171923656930465295425867586777734914833516983601607791279024819865791735409407082275562168885331872720365063141292194732294024919434643862338969598324336994436079024289458730635475133273691824108450263457154881428072573317615473)
 
 
-    PASSWORD_KEY_2048 = (22555148181193166479684665788435351050432580524956242871724740826768950548100559538474127181061032628131938855564148480614312959950198629240903467008173357336565928117099973962155469246408728648883626230015654019371407381680370058674400795336698382668112937764671619774730033431986012687241794106659254827594054097985005255138567656264227791529864510087844860586170813860237209364233211884969890811315431630238846423890819429240638604855107481603323400271934073126841797289762684371396172247173689483808857969068617035022877156224232342544881404968594045097977724475115160782569753124079078756544880399331325063713461L, 65537L, 10909840202386794900682117055913463055964002054428992767958165375415043904585009038705308934489444654344606279222172312365132990988621641926494040071396240712408867072219802166719995958178688346576910012534846459466768603983516652577605096543530200201095261106551876754488946088376895527496908207288987564806475187573481971879848755776679310274230657530255686478697648439926178057452102210906563288457098284136623132307967868658028530550229930920035953766562576677723993252348384237440274231687901916405962917282335057226401594617233513287538481403564252007006458121486974685632299024819800551439558149555185303663473L)
+    PASSWORD_KEY_2048 = (22555148181193166479684665788435351050432580524956242871724740826768950548100559538474127181061032628131938855564148480614312959950198629240903467008173357336565928117099973962155469246408728648883626230015654019371407381680370058674400795336698382668112937764671619774730033431986012687241794106659254827594054097985005255138567656264227791529864510087844860586170813860237209364233211884969890811315431630238846423890819429240638604855107481603323400271934073126841797289762684371396172247173689483808857969068617035022877156224232342544881404968594045097977724475115160782569753124079078756544880399331325063713461, 65537, 10909840202386794900682117055913463055964002054428992767958165375415043904585009038705308934489444654344606279222172312365132990988621641926494040071396240712408867072219802166719995958178688346576910012534846459466768603983516652577605096543530200201095261106551876754488946088376895527496908207288987564806475187573481971879848755776679310274230657530255686478697648439926178057452102210906563288457098284136623132307967868658028530550229930920035953766562576677723993252348384237440274231687901916405962917282335057226401594617233513287538481403564252007006458121486974685632299024819800551439558149555185303663473)
+
+    try:
+        # Python 2.7 convert to longs
+        PASSWORD_KEY_1024 = (
+            long(PASSWORD_KEY[0]),
+            long(PASSWORD_KEY[1]),
+            long(PASSWORD_KEY[2])
+        )
+        PASSWORD_KEY_2048 = (
+            long(PASSWORD_KEY[0]),
+            long(PASSWORD_KEY[1]),
+            long(PASSWORD_KEY[2])
+        )
+    except:
+        pass
 
 
     def unencrypt_password(cls, coded, key_path=None):
@@ -1467,7 +1576,7 @@ class Marshaller:
     def set_class(self, class_path):
         if not class_path:
             self.class_path = None
-        elif type(class_path) in types.StringTypes:
+        elif isinstance(class_path, basestring):
             self.class_path = class_path
         elif type(class_path) == types.TypeType:
             # do some wonky stuff
@@ -1631,7 +1740,7 @@ class RollbackImporter:
         print("uninstall ....")
         __builtin__.__import__ = self.realImport
         for modname, modinfo in self.newModules.items():
-            if not self.previousModules.has_key(modname):
+            if modname not in self.previousModules:
                 # Force reload when modname next imported
                 print("modname: ", modname)
                 if not sys.modules.get(modname):

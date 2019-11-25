@@ -22,6 +22,8 @@ from pyasm.biz import File
 convert_exe = "convert"
 ffprobe_exe = "ffprobe"
 
+IS_Pv3 = sys.version_info[0] > 2
+
 if os.name == "nt":
     convert_exe+= ".exe"
     ffprobe_exe+= ".exe"
@@ -30,7 +32,7 @@ try:
     from PIL import Image
     HAS_PIL = True
     # Test to see if imaging actually works
-    import _imaging
+    from PIL import _imaging
 except:
     HAS_PIL = False
 
@@ -271,6 +273,9 @@ class BaseMetadataParser(object):
     
     def sanitize_data(self, data):
         # sanitize output
+        if IS_Pv3:
+            return data
+
         RE_ILLEGAL_XML = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
                  u'|' + u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
                   (unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
@@ -280,17 +285,50 @@ class BaseMetadataParser(object):
         return data
     
    
-    def get_parser_by_path(cls, path):
+    def get_parser_by_path(cls, path, prefs={}):
         ext = File.get_extension(path)
+
+        # video parsers and availability
+        video_parser_mapping = {
+            "FFMPEG": HAS_FFMPEG,
+            "PIL": HAS_PIL
+        }
+
+        # image parsers and availability
+        image_parser_mapping = {
+            "ImageMagick": HAS_IMAGEMAGICK,
+            "PIL": HAS_PIL,
+            "EXIF": HAS_EXIF,
+            "FFMPEG" : HAS_FFMPEG
+        }
+
+        # parsers for other file types and availability
+        other_parser_mapping = {
+            "ImageMagick": HAS_IMAGEMAGICK,
+            "PIL": HAS_PIL,
+            "EXIF": HAS_EXIF,
+            "FFMPEG" : HAS_FFMPEG
+        }
 
         parser_str = None
 
+        # for each file type, check if preferred (in order) parsers are available,
+        # otherwise check in a default order
         if ext in File.VIDEO_EXT:
+            for pref in prefs.get("video", []):
+                if video_parser_mapping.get(pref, False):
+                    return cls.get_parser(pref, path)
+
             if HAS_FFMPEG:
                 parser_str = "FFMPEG"
             else:
                 parser_str = "PIL"
-        else:
+
+        elif ext in File.IMAGE_EXT:
+            for pref in prefs.get("image", []):
+                if image_parser_mapping.get(pref, False):
+                    return cls.get_parser(pref, path)
+
             if HAS_IMAGEMAGICK:
                 parser_str = "ImageMagick"
             elif HAS_PIL:
@@ -299,6 +337,21 @@ class BaseMetadataParser(object):
                 parser_str = "EXIF"
             elif HAS_FFMPEG:
                 parser_str = "FFMPEG"
+
+        else:
+            for pref in prefs.get("other", []):
+                if other_parser_mapping.get(pref, False):
+                    return cls.get_parser(pref, path)
+
+            if HAS_IMAGEMAGICK:
+                parser_str = "ImageMagick"
+            elif HAS_PIL:
+                parser_str = "PIL"
+            elif HAS_EXIF:
+                parser_str = "EXIF"
+            elif HAS_FFMPEG:
+                parser_str = "FFMPEG"
+
         return cls.get_parser(parser_str, path)
     get_parser_by_path = classmethod(get_parser_by_path)
 
@@ -350,8 +403,8 @@ class PILMetadataParser(BaseMetadataParser):
             from PIL import Image
             im = Image.open(path)
             return self._get_data(im)
-        except Exception, e:
-            print "WARNING: ", e
+        except Exception as e:
+            print("WARNING: ", e)
             return {}
 
  
@@ -457,7 +510,7 @@ class IPTCMetadataParser(BaseMetadataParser):
 
 
             return metadata
-        except Exception, e:
+        except Exception as e:
             info = {
                     "Message": str(e)
             }
@@ -504,7 +557,7 @@ class XMPMetadataParser(BaseMetadataParser):
 
 
             return metadata
-        except Exception, e:
+        except Exception as e:
             info = {
                     "Message": str(e)
             }
@@ -551,7 +604,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         level = 0
         names = set()
         curr_ret = ret
-        for line in ret_val.split("\n"):
+        for line in ret_val.decode().split("\n"):
             line = line.strip()
             if not line:
                 continue
@@ -577,7 +630,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
             parts = re.split(p, line)
             if len(parts) < 2:
-                print "WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line
+                print("WARNING: Skipping an ImageMagick line [%s] due to inconsistent formatting." % line)
                 continue
             name = parts[0]
             value = parts[1]
@@ -589,8 +642,8 @@ class ImageMagickMetadataParser(BaseMetadataParser):
 
                 ret[name] = value
                 names.add(name)
-            except Exception, e:
-                print "WARNING: Cannot handle line [%s] with error: " % line, e
+            except Exception as e:
+                print("WARNING: Cannot handle line [%s] with error: " % line, e)
 
 
         if names:
@@ -675,6 +728,7 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
         metadata = {}
 
+        out = out.decode()
 
         for line in out.split("\n"):
             if line.find("STREAM") != -1:
@@ -684,6 +738,9 @@ class FFProbeMetadataParser(BaseMetadataParser):
 
             line = line.strip()
             parts = line.split("=")
+            if len(parts) < 2:
+                continue
+
             name = parts[0]
             value = parts[1]
 
@@ -840,7 +897,7 @@ class IPTCMetadataParserX(BaseMetadataParser):
             exiftool_exists = find_executable("exiftool")
         
         if not exiftool_exists:
-            print "WARNING: exiftool does not exist at path %s" %(parser_path)
+            print("WARNING: exiftool does not exist at path %s" %(parser_path))
             return "WARNING: exiftool does not exist at path %s" %(parser_path)
 
         # get IPTC data from exiftool

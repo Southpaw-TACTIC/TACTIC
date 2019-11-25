@@ -26,7 +26,7 @@ class RemapCodesCmd(Command):
             search.add_column("code")
             sobjects = search.get_sobjects()
             num = len(sobjects)
-            print "Found [%s] of %s" % (num, search_type)
+            print("Found [%s] of %s" % (num, search_type))
 
 
             for i, sobject in enumerate(sobjects):
@@ -41,7 +41,7 @@ class RemapCodesCmd(Command):
                 if not code.startswith(prefixes[j]):
                     continue
 
-                print "(%s of %s) %s" % (i, num, code)
+                print("(%s of %s) %s" % (i, num, code))
 
                 new_code = "%s%s" % (server,code)
 

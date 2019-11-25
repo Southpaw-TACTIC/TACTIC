@@ -39,7 +39,7 @@ class SmartMenuWdg(BaseRefreshWdg):
         self.opt_spec_list = kwargs['opt_spec_list']
 
         self.allow_icons = True
-        if kwargs.has_key('allow_icons'):
+        if 'allow_icons' in kwargs:
             self.allow_icons = kwargs['allow_icons']
             if self.allow_icons in [ '', None ]:
                 self.allow_icons = True
@@ -149,10 +149,10 @@ class SmartMenuWdg(BaseRefreshWdg):
             tr.add_class( "SPT_SMENU_ENTRY" )
             tr.add_class( "SPT_SMENU_ENTRY_%s" % opt['type'].upper() )
 
-            if opt.has_key('enabled_check_setup_key'):
+            if 'enabled_check_setup_key' in opt:
                 tr.set_attr( "SPT_ENABLED_CHECK_SETUP_KEY", opt.get('enabled_check_setup_key') )
 
-            if opt.has_key('hide_when_disabled') and opt.get('hide_when_disabled'):
+            if 'hide_when_disabled' in opt and opt.get('hide_when_disabled'):
                 tr.set_attr( "SPT_HIDE_WHEN_DISABLED", "true" )
 
             if opt['type'] in [ 'action', 'toggle' ]:
@@ -160,13 +160,13 @@ class SmartMenuWdg(BaseRefreshWdg):
                 hover_bvr = {'type':'hover', 'add_looks': 'smenu_hilite',
                              'cbjs_action_over': 'spt.smenu.entry_over( evt, bvr );',
                              'cbjs_action_out': 'spt.smenu.entry_out( evt, bvr );' }
-                if opt.has_key('hover_bvr_cb'):
+                if 'hover_bvr_cb' in opt:
                     hover_bvr.update( opt.get('hover_bvr_cb') )
                 tr.add_behavior( hover_bvr )
                 tr.add_class("hand")
 
             if opt['type'] == 'action':
-                if opt.has_key('bvr_cb') and type(opt['bvr_cb']) == dict:
+                if 'bvr_cb' in opt and type(opt['bvr_cb']) == dict:
                     bvr = {}
                     bvr.update( opt['bvr_cb'] )
                     bvr['cbjs_action_for_menu_item'] = bvr['cbjs_action']
@@ -180,7 +180,7 @@ class SmartMenuWdg(BaseRefreshWdg):
                               'cbjs_action_out': 'spt.smenu.submenu_entry_out( evt, bvr );',
                               'submenu_tag': "SPT_SMENU_%s" % opt['submenu_tag_suffix'],
                             }
-                if opt.has_key('hover_bvr_cb'):
+                if 'hover_bvr_cb' in opt:
                     hover_bvr.update( opt.get('hover_bvr_cb') )
                 tr.add_behavior( hover_bvr )
                 # now trap click on submenu, so that it doesn't make the current menu disappear ...
@@ -196,7 +196,7 @@ class SmartMenuWdg(BaseRefreshWdg):
                 td.add_color("color", "color3")
                 td.add_color("background", "background3")
 
-                if opt.has_key( 'icon' ):
+                if 'icon' in opt:
                     icon_wdg = IconWdg("", opt['icon'])
                     icon_wdg.add_class("SPT_ENABLED_ICON_LOOK")
                     td.add( icon_wdg )
@@ -213,7 +213,7 @@ class SmartMenuWdg(BaseRefreshWdg):
             #td.add_style( "padding-top: 2px" )
             td.add_style("padding: 6px 4px")
 
-            if opt.has_key( 'label' ):
+            if 'label' in opt:
                 label_str = opt.get('label').replace('"','&quot;')
                 td.add_class("SPT_LABEL")
                 td.add( label_str )
@@ -332,7 +332,7 @@ class SmartMenuSetWdg(BaseRefreshWdg):
 
         if self.match_subset:
         #{
-            for subset_tag, menu_spec_list in self.menu_specs_map.iteritems():
+            for subset_tag, menu_spec_list in self.menu_specs_map.items():
                 if subset_tag != 'SPT_SMENU_SUBSET__DEFAULT':
                     subset_div = DivWdg()
                     subset_div.add_class("SPT_SMENU_SUBSET %s" % subset_tag)
@@ -370,7 +370,7 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
         self.style = kwargs.get('style')
 
         self.match_width = False
-        if kwargs.has_key('match_width'):
+        if 'match_width' in kwargs:
             self.match_width = kwargs.get('match_width')
 
         self.nudge_menu_horiz = 0;
@@ -462,7 +462,7 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
 class SmartMenu(object):
 
     def add_smart_menu_set( html_wdg, menus_in ):
-        from menu_wdg import Menu
+        from .menu_wdg import Menu
         if type(menus_in) == list:
             # default_menu_specs
             smenu_set = SmartMenuSetWdg( default_menu_specs = menus_in )
@@ -477,7 +477,7 @@ class SmartMenu(object):
 
         elif type(menus_in) == dict:
             smenu_set = SmartMenuSetWdg()
-            for ss_tag_suffix, menus_list in menus_in.iteritems():
+            for ss_tag_suffix, menus_list in menus_in.items():
                 if isinstance(menus_list, Menu):
                     menus_list = [menus_list.get_data()]
                     smenu_set.add_subset_menu_specs( ss_tag_suffix, menus_list )
@@ -521,7 +521,7 @@ class SmartMenu(object):
             SmartMenu.assign_as_local_activator( html_wdg, subset_tag_suffix )
         html_wdg.add_event( "oncontextmenu",
                                  "return spt.smenu.show_on_context_click_cbk(event);" )
-        html_wdg.add_class( "SPT_SMENU_CONTAINER" )
+        html_wdg.add_class( "SPT_SMENU_CONTAINER")
     attach_smart_context_menu = staticmethod(attach_smart_context_menu)
 
 

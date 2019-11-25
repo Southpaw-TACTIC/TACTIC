@@ -27,6 +27,9 @@ from tactic.ui.container import TabWdg, Menu, MenuItem
 from tactic.ui.tools import PipelineCanvasWdg
 from tactic.ui.widget import SingleButtonWdg, IconButtonWdg, ActionButtonWdg
 
+import six
+basestring = six.string_types
+
 
 class SObjectDetailWdg(BaseRefreshWdg):
     '''Single SObject Widget'''
@@ -138,7 +141,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if name:
             title.add("%s" % name)
             if code:
-                title.add(" <i style='font-size: 0.8; opacity: 0.7'>(%s)</i>" % code)
+                title.add(" <i style='font-size: 0.8em; opacity: 0.7'>(code: %s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
@@ -180,8 +183,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
         self.sobject = self.get_sobject()
 
         if not self.sobject:
+            
             widget = DivWdg()
             widget.add("SObject does not exist or no longer exists")
+            
             widget.add_style("margin: 100px auto")
             widget.add_style("width: 300px")
             widget.add_style("height: 60px")
@@ -402,26 +407,23 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if isinstance(tab_kwargs, basestring):
             tab_kwargs = jsonloads(tab_kwargs)      
 
-        show_remove = False
+        show_remove = tab_kwargs.get("show_remove") or False
         show_add = tab_kwargs.get("show_add") or False
         add_bvr = tab_kwargs.get("add_bvr") or ""
         use_default_style = tab_kwargs.get("use_default_style")
+        height = tab_kwargs.get("height")
         #show_add = True
         #show_remove = True
+
+        tab_kwargs['state'] = state
+        tab_kwargs['config'] = config
+        tab_kwargs['selected'] = selected
+        tab_kwargs['tab_offset'] = 10
+        tab_kwargs['save_state'] = save_state
+        tab_kwargs['use_header_back'] = True
         
  
-        tab = TabWdg(
-            config=config, 
-            state=state, 
-            show_add=show_add, 
-            add_bvr=add_bvr,
-            show_remove=show_remove, 
-            tab_offset=10, 
-            selected=selected, 
-            save_state=save_state, 
-            use_header_back=True,
-            use_default_style=use_default_style,
-        )
+        tab = TabWdg(**tab_kwargs)
         tab.add_style("margin: 0px -1px -1px -1px")
 
 
@@ -808,10 +810,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
             elif tab == "notes":
                 config_xml.append('''
-                <element name="notes" title="Notes" count="@COUNT(sthpw/note)">
+                <element name="notes" title="Notes" count="@COUNT(sthpw/note)" >
                   <display class='tactic.ui.panel.CustomLayoutWdg'>
                   <html>
-                    <div style="padding: 20px">
+                    <div style="padding: 20px;">
                     <div style="font-size: 25px">Notes</div>
                     <div>List of all of the notes for this item</div>
                     <hr/>
@@ -950,7 +952,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         </tab>
         </config>
         ''')
-
         config_xml = "".join(config_xml)
         config_xml = config_xml.replace("&", "&amp;")
 
@@ -1338,7 +1339,7 @@ class RelatedSObjectWdg(BaseRefreshWdg):
         left = table.add_cell()
         left.add_style("vertical-align: top")
         left.add_style("padding: 10px")
-        left.add_style("width: 200px")
+        # left.add_style("width: 200px")
         left.add_style("min-width: 200px")
 
         left.add_relay_behavior( {
@@ -2098,16 +2099,6 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
         top.add_class("spt_pipeline_wrapper")
 
         pipeline = Pipeline.get_by_code(pipeline_code)
-        if pipeline:
-
-            update_wdg = DivWdg()
-            top.add(update_wdg)
-            update_wdg.add_update( {
-                'search_key': pipeline.get_search_key(),
-                'interval': 3,
-                'value': True,
-                'cbjs_action': '''spt.panel.refresh_element(bvr.src_el)'''
-            } )
 
 
 
@@ -2128,6 +2119,8 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
 
         height = self.kwargs.get("height") or 500
         show_title = self.kwargs.get("show_title")
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        search_key = self.kwargs.get("search_key")
 
         show_title = self.kwargs.get("show_title")
         if show_title not in [False, 'false']:
@@ -2141,13 +2134,15 @@ class TaskDetailPipelineWrapperWdg(BaseRefreshWdg):
             div.add(title)
 
         kwargs = {
-            'width': "auto",
+            'search_key': search_key,
+            'width': 600,
             'height': height,
             'show_title': show_title,
             'pipeline': pipeline_code,
             'is_editable': False,
             'use_mouse_wheel': True,
             'show_border': False,
+            'window_resize_offset':window_resize_offset
         }
         pipeline = TaskDetailPipelineWdg(**kwargs)
         div.add(pipeline)

@@ -252,7 +252,7 @@ class Palette(object):
                 value = value.replace(" ", "_")
                 self.colors = eval("self.%s" % value)
             except:
-                print "WARNING: palette [%s] does not exist.  Using default" % value
+                print("WARNING: palette [%s] does not exist.  Using default" % value)
 
                
 
@@ -379,7 +379,7 @@ class Palette(object):
         if range == None:
             range = -20
 
-        from web_container import WebContainer
+        from .web_container import WebContainer
         web = WebContainer.get_web()
         palette = Palette.get()
         if web.is_IE():

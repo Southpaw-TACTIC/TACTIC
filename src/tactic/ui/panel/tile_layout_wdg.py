@@ -14,6 +14,9 @@ __all__ = ["TileLayoutWdg"]
 import re, os
 import urllib
 
+import six
+basestring = six.string_types
+
 from pyasm.common import Common, Environment, jsonloads, jsondumps
 from pyasm.biz import CustomScript, Project, Snapshot, File, ProjectSetting, FileGroup
 from pyasm.command import Command
@@ -23,10 +26,11 @@ from pyasm.widget import ThumbWdg, IconWdg, TextWdg, HiddenWdg
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
 
-from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg, ActionButtonWdg
 from tactic.ui.input import UploadButtonWdg
-from tool_layout_wdg import ToolLayoutWdg
+
+from .table_layout_wdg import FastTableLayoutWdg
+from .tool_layout_wdg import ToolLayoutWdg
 
 class TileLayoutWdg(ToolLayoutWdg):
 
@@ -409,11 +413,11 @@ class TileLayoutWdg(ToolLayoutWdg):
                 start = time.time()
                 self.sobject_data = self.get_sobject_data(self.sobjects)
                 end = time.time()
-                print
+                print("\n")
                 print("TILE LAYOUT PREPROCESSING TOOK [%s] SECONDS" % (end-start))
-                print
-		style = self.get_styles()
-		inner.add(style)
+                print("\n")
+                style = self.get_styles()
+                inner.add(style)
             
             inner.add( self.get_scale_wdg())
             if self.upload_mode in ['button','both']:
@@ -596,10 +600,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 		 })
 
+
+                 template_tile.destroy()
+
 		'''
 	    })
 
-	return content_wdg
+        return content_wdg
 
 
 
@@ -644,8 +651,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         data_list = filter_data.get_values_by_prefix("tile_layout")
         if data_list:
             data = data_list[0]
-	else:
-	    data = {}
+        else:
+            data = {}
 	    
 
         self.scale = data.get("scale")
@@ -1656,8 +1663,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 # need new snapshot, file sobjects to get new paths
                                 new_paths_by_key = self.preprocess_paths([sobject], create_icon=False)
                                 paths = new_paths_by_key.get(sobject.get_search_key())
-                            except Exception, e:
-                                print "ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e)
+                            except Exception as e:
+                                print("ThumbCmd failed on [%s]: %s" % (snapshot.get_code(), e))
 
                
             paths_by_key[search_key] = paths
@@ -1730,7 +1737,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     tile_data['color'] = color
                  
                 
-                if isinstance(path, unicode):
+                if not Common.is_python3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
 
             
@@ -1994,14 +2001,14 @@ class TileLayoutWdg(ToolLayoutWdg):
         size_div.add_class("spt_tile_size")
 
         # Download button
-	href = HtmlElement.href()
-	href.add_attr("href", "")
-	tool_div.add(href)
+        href = HtmlElement.href()
+        href.add_attr("href", "")
+        tool_div.add(href)
         href.add_attr("download", "")
 
-	icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
-	icon.add_class("hand")
-	href.add(icon)
+        icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+        icon.add_class("hand")
+        href.add(icon)
 
         """
         # TODO: Dynamically preprocess bottom wdg
@@ -2250,6 +2257,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_tile_wdg(self, sobject):
 
+        is_collection = sobject.get_value('_is_collection', no_exception=True)
+
         div = DivWdg()
 
         
@@ -2289,7 +2298,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
-        div.add_attr("spt_is_collection", sobject.get_value('_is_collection', no_exception=True))
+        div.add_attr("spt_is_collection", is_collection)
         display_value = sobject.get_display_value(long=True)
         div.add_attr("spt_display_value", display_value)
 
@@ -2357,65 +2366,66 @@ class TileLayoutWdg(ToolLayoutWdg):
         # add a div on the bottom
         div.add_style("position: relative")
 
-        tool_div = DivWdg()
-        div.add(tool_div)
-        tool_div.add_style("display: none")
-        tool_div.add_class("spt_tile_tool_top")
+        if not is_collection:
+            tool_div = DivWdg()
+            div.add(tool_div)
+            tool_div.add_style("display: none")
+            tool_div.add_class("spt_tile_tool_top")
 
-        lib_path = thumb.get_lib_path()
-        if lib_path:
-            size = Common.get_dir_info(lib_path).get("size")
-            from pyasm.common import FormatValue
-            size = FormatValue().get_format_value(size, "KB")
-        else:
-            size = 0
+            lib_path = thumb.get_lib_path()
+            if lib_path:
+                size = Common.get_dir_info(lib_path).get("size")
+                from pyasm.common import FormatValue
+                size = FormatValue().get_format_value(size, "KB")
+            else:
+                size = 0
 
-        size_div = DivWdg()
-        tool_div.add(size_div)
-        size_div.add(size)
-        size_div.add_style("float: right")
-        size_div.add_style("margin-top: 3px")
-
-
-
-        #tool_div.add_style("position: absolute")
-        tool_div.add_style("position: relative")
-        #tool_div.add_style("top: 30px")
-        tool_div.add_style("background: #FFF")
-        tool_div.add_style("color: #000")
-        tool_div.add_style("height: 21px")
-        tool_div.add_style("padding: 2px 5px")
-        tool_div.add_style("margin-top: -26px")
-        tool_div.add_border(size="0px 1px 1px 1px")
-
-        path = thumb.get_path()
-
-        try:
-            path = thumb.snapshot.get_web_path_by_type("main")
-        except:
-            path = path
-        if path:
-            href = HtmlElement.href()
-            href.add_attr("href", path)
-            tool_div.add(href)
+            size_div = DivWdg()
+            tool_div.add(size_div)
+            size_div.add(size)
+            size_div.add_style("float: right")
+            size_div.add_style("margin-top: 3px")
 
 
-            basename = os.path.basename(path)
-            href.add_attr("download", basename)
+
+            #tool_div.add_style("position: absolute")
+            tool_div.add_style("position: relative")
+            #tool_div.add_style("top: 30px")
+            tool_div.add_style("background: #FFF")
+            tool_div.add_style("color: #000")
+            tool_div.add_style("height: 21px")
+            tool_div.add_style("padding: 2px 5px")
+            tool_div.add_style("margin-top: -26px")
+            tool_div.add_border(size="0px 1px 1px 1px")
+
+            path = thumb.get_path()
+
+            try:
+                path = thumb.snapshot.get_web_path_by_type("main")
+            except:
+                path = path
+            if path:
+                href = HtmlElement.href()
+                href.add_attr("href", path)
+                tool_div.add(href)
 
 
-            icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
-            icon.add_class("hand")
-            href.add(icon)
-            """
-            icon.add_behavior( {
-                'type': 'clickX',
-                'path': path,
-                'cbjs_action': '''
-                alert(bvr.path); 
-                '''
-            } )
-            """
+                basename = os.path.basename(path)
+                href.add_attr("download", basename)
+
+
+                icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+                icon.add_class("hand")
+                href.add(icon)
+                """
+                icon.add_behavior( {
+                    'type': 'clickX',
+                    'path': path,
+                    'cbjs_action': '''
+                    alert(bvr.path); 
+                    '''
+                } )
+                """
 
 
 
@@ -3287,7 +3297,7 @@ class ThumbWdg2(BaseRefreshWdg):
                 inner.add_style("background: %s" % color)
 
             else:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
 
                 if path.endswith("indicator_snake.gif"):
@@ -3319,7 +3329,7 @@ class ThumbWdg2(BaseRefreshWdg):
                         path = thumb_cmd.get_path()
 
 
-                path = urllib.pathname2url(path)
+                path = Common.pathname2url(path)
                 img = HtmlElement.img(src=path)
 
                 div.add_attr("spt_main_path", self.get_main_path())
@@ -3331,9 +3341,9 @@ class ThumbWdg2(BaseRefreshWdg):
             search_type = sobject.get_search_type_obj()
             path = self.get_path_from_sobject(search_type)
             if path:
-                if isinstance(path, unicode):
+                if not Common.IS_Pv3 and isinstance(path, unicode):
                     path = path.encode("utf-8")
-                path = urllib.pathname2url(path)
+                path = Common.pathname2url(path)
 
                 img = DivWdg()
                 img.add_style("opacity: 0.3")

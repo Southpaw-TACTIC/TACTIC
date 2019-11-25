@@ -14,11 +14,11 @@ __all__ = ['BaseFilterWdg', 'GeneralFilterWdg', 'HierarchicalFilterWdg',
 
 from pyasm.common import Environment, Container
 from pyasm.search import SearchType, Search
-from pyasm.biz import Schema, Pipeline, Project
+from pyasm.biz import Schema, Pipeline, Project, ProdSetting
 from pyasm.web import Widget, DivWdg, HtmlElement, Table, SpanWdg, WebContainer, AjaxWdg, FloatDivWdg
-from input_wdg import HiddenWdg, TextWdg, PasswordWdg, SelectWdg, FilterSelectWdg, CheckboxWdg
-from pyasm.prod.biz import ProdSetting
-from web_wdg import HintWdg
+
+from .input_wdg import HiddenWdg, TextWdg, PasswordWdg, SelectWdg, FilterSelectWdg, CheckboxWdg
+from .web_wdg import HintWdg
 
 class BaseFilterWdg(Widget):
     '''represents the base filter'''
@@ -48,7 +48,7 @@ class GeneralFilterWdg(BaseFilterWdg):
     def get_display(self):
 
         if not self.columns:
-            print self.options
+            print(self.options)
             search_type = self.options.get("search_type")
             if search_type:
                 self.set_columns_from_search_type(search_type)

@@ -72,7 +72,7 @@ class CGApp(object):
             # find out if there is a node there is a file associated with
             # this tactic node
             files = self.get_dependent_references(node)
-            print files
+            print(files)
 
 
         # update the tactic node with the latest snapshot data.  Also, update
@@ -86,7 +86,7 @@ class CGApp(object):
         paths = handler.execute()
         #paths = self.extract_to_files(top_node)
         for path in paths:
-            print "path: ", path
+            print("path: ", path)
             server.add_file(snapshot.get("code"), path, mode='upload')
 
         return snapshot

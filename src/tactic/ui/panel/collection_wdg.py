@@ -25,7 +25,7 @@ from tactic.ui.widget import ButtonNewWdg, IconButtonWdg, ActionButtonWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.input import LookAheadTextInputWdg
 
-from tool_layout_wdg import ToolLayoutWdg
+from .tool_layout_wdg import ToolLayoutWdg
 
 import re
 
@@ -152,63 +152,69 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         content_div.add_style("padding: 5px")
         content_div.add_style("padding-bottom: 0px")
 
-        custom_cbk = {}
-        custom_cbk['enter'] = '''
+        if collections:
 
-            var top = bvr.src_el.getParent(".spt_dialog");
-            var input = top.getElement(".spt_main_search");
-            var search_value = input.value.toLowerCase();
-            var collections = top.getElements(".spt_collection_div");
 
-            var num_result = 0;
-            var no_results_el = top.getElement(".spt_no_results");
+            custom_cbk = {}
+            custom_cbk['enter'] = '''
 
-            for (i = 0; i < collections.length; i++) {
-                // Access the Collection title (without number count) 
-                var collection_title = collections[i].getElement(".spt_collection_checkbox").getAttribute("collection_name").toLowerCase();
-                if (collection_title.indexOf(search_value) != '-1') {
-                    collections[i].style.display = "block";
-                    num_result += 1;
+                var top = bvr.src_el.getParent(".spt_dialog");
+                var input = top.getElement(".spt_main_search");
+                var search_value = input.value.toLowerCase();
+                var collections = top.getElements(".spt_collection_div");
+
+                var num_result = 0;
+                var no_results_el = top.getElement(".spt_no_results");
+
+                for (i = 0; i < collections.length; i++) {
+                    // Access the Collection title (without number count) 
+                    var collection_title = collections[i].getElement(".spt_collection_checkbox").getAttribute("collection_name").toLowerCase();
+                    if (collection_title.indexOf(search_value) != '-1') {
+                        collections[i].style.display = "block";
+                        num_result += 1;
+                    }
+                    else {
+                        collections[i].style.display = "none";
+                    }
+                }
+                // if no search results, show "no_results_el"
+                if (num_result == 0) {
+                    for (i = 0; i < collections.length; i++) {
+                        collections[i].style.display = "none";
+                    }
+                    no_results_el.style.display = "block";
                 }
                 else {
-                    collections[i].style.display = "none";
+                    no_results_el.style.display = "none";
                 }
-            }
-            // if no search results, show "no_results_el"
-            if (num_result == 0) {
-                for (i = 0; i < collections.length; i++) {
-                    collections[i].style.display = "none";
-                }
-                no_results_el.style.display = "block";
-            }
-            else {
-                no_results_el.style.display = "none";
-            }
 
-        '''
-        filters = []
-        filters.append(("_is_collection",True))
-        filters.append(("status","Verified"))
-        text = LookAheadTextInputWdg(
-            search_type = search_type,
-            column="name",
-            icon_pos="right",
-            width="100%",
-            height="30px",
-            hint_text="Filter collections...",
-            value_column="name",
-            filters=filters,
-            custom_cbk=custom_cbk,
-            is_collection=True,
-            validate='false'
-        )
-        text.add_class("spt_main_search")
+            '''
+            filters = []
+            filters.append(("_is_collection",True))
+            filters.append(("status","Verified"))
+            text = LookAheadTextInputWdg(
+                search_type = search_type,
+                column="name",
+                icon_pos="right",
+                width="100%",
+                height="30px",
+                hint_text="Filter collections...",
+                value_column="name",
+                filters=filters,
+                custom_cbk=custom_cbk,
+                is_collection=True,
+                validate='false'
+            )
+            text.add_class("spt_main_search")
+            content_div.add(text)
 
-        content_div.add(text)
+        else:
+            pass
+
         # set minimum if there is at least one collection
         if len(collections) > 0:
-            content_div.add_style("min-height: 300")
-        content_div.add_style("max-height: 300")
+            content_div.add_style("min-height: 300px")
+        content_div.add_style("max-height: 300px")
         content_div.add_style("overflow-y: auto")
 
         content_div.add("<br clear='all'/>")
@@ -219,8 +225,10 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         no_results_div.add_color("color", "color", 50)
         no_results_div.add_style("font: normal bold 1.1em arial,serif")
         no_results_div.add("No collections found.")
-        no_results_div.add_style("display: none")
-        no_results_div.add_style("margin: 10px 0px 0px 10px")
+        if collections:
+            no_results_div.add_style("display: none")
+        no_results_div.add_style("margin: 10px auto 20px auto")
+        no_results_div.add_style("text-align: center")
         no_results_div.add_class("spt_no_results")
 
         for collection in collections:
@@ -285,10 +293,13 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
 
 
         add_button = DivWdg()
-        add_button.add("Add")
+        if not collections:
+            add_button.add_style("display: none")
+        add_button.add("Add Items to Selected")
         add_button.add_style("margin: 0px 10px 10px 10px")
-        add_button.add_style("width: 50px")
-        add_button.add_class("btn btn-primary")
+        add_button.add_style("width: 100px")
+        add_button.add_style("height: 20px")
+        add_button.add_class("btn btn-default")
         dialog.add(add_button)
 
         add_button.add_behavior( {
@@ -593,7 +604,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
 
     def get_content_wdg(self):
-
         self.search_type = self.kwargs.get("search_type")
         self.collection_key = self.kwargs.get("collection_key")
 
@@ -628,13 +638,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         left.add_style("vertical-align: top")
         left.add_style("width: 250px")
         left.add_style("max-width: 250px")
-        left.add_style("height: auto")
 
         right = table.add_cell()
         right.add_style("vertical-align: top")
         right.add_style("width: auto")
-        right.add_style("height: auto")
-
+        right.add_style("overflow-y: auto")
         left.add(self.get_collection_wdg())
         right.add(self.get_right_content_wdg())
 
@@ -648,7 +656,14 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         parent_key = self.parent_key
 
         div = DivWdg()
-        div.add_style("margin: 15px 0px")
+        div.add_style("overflow: auto")
+        div.add_class("spt_collection_wrap")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            div.add_class("spt_window_resize")
+            div.add_attr("spt_window_resize_offset", window_resize_offset)
+        # div.add_style("margin: 15px 0px")
 
         """
         title_div = DivWdg("Collections") 
@@ -825,6 +840,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         #div.add(shelf_wdg)
 
         group_elements = self.kwargs.get("group_elements") or []
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
 
         tile = CollectionContentWdg(
                 search_type=self.search_type,
@@ -836,7 +852,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 upload_mode=self.kwargs.get("upload_mode"),
                 group_elements=group_elements,
                 parent_key=parent_key,
-                collection_key=collection_key
+                collection_key=collection_key,
+                window_resize_offset=window_resize_offset
         )
         div.add(tile)
 
@@ -910,7 +927,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
         no_results_div.add_style("font: normal bold 1.1em arial,serif")
         no_results_div.add("No collections found.")
         no_results_div.add_style("display: none")
-        no_results_div.add_style("margin: 10px 0px 0px 10px")
+        no_results_div.add_style("margin: 30px auto")
         no_results_div.add_class("spt_no_results")
 
         from tactic.ui.panel import ThumbWdg2
@@ -966,7 +983,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
                 show_search_limit: true,
                 //expression: expr,
                 parent_dict: parent_dict,
-                parent_key: bvr.parent_key,
+                parent_key: bvr.parent_key
             }
             spt.panel.load(content, cls, kwargs);
 
@@ -1043,12 +1060,26 @@ class CollectionContentWdg(BaseRefreshWdg):
         collection = Search.get_by_search_key(self.collection_key)
 
         top = self.top
-        top.add_style("min-height: 400px")
+        top.add_class("spt_collection_tile_wrap")
+        top.add_style("position", "relative")
 
         self.kwargs["scale"] = 75
         self.kwargs["show_scale"] = False
         self.kwargs["expand_mode"] = "plain"
         self.kwargs["show_search_limit"] = False
+
+        top.add_style("overflow-y", "auto")
+        top.add_style("overflow-x", "auto")
+        top.add_style("height", "auto")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            top.add_class("spt_window_resize")
+            top.add_attr("spt_window_resize_offset", window_resize_offset)
+
+        window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
+        if window_resize_xoffset:
+            top.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
 
         if not collection:
@@ -1074,18 +1105,18 @@ class CollectionContentWdg(BaseRefreshWdg):
         # remove the sobjects from the kwargs so on refresh, the stringified sobjects
         # don't cause a stack trace
         sobjects = self.kwargs.get("sobjects")
-        if self.kwargs.has_key("sobjects"):
+        if "sobjects" in self.kwargs:
             del(self.kwargs["sobjects"])
         if sobjects is None:
             self.kwargs["do_search"] = 'true'
 
         if mode == "table":
-            from table_layout_wdg import TableLayoutWdg
+            from .table_layout_wdg import TableLayoutWdg
             tile = TableLayoutWdg(
                 **self.kwargs
             )
         else:
-            from tile_layout_wdg import TileLayoutWdg
+            from .tile_layout_wdg import TileLayoutWdg
             tile = TileLayoutWdg(
                 **self.kwargs
             )
@@ -1107,13 +1138,13 @@ class CollectionContentWdg(BaseRefreshWdg):
             title_div.add(asset_lib_span_div)
 
 	    # Asset Library folder access
-	    library_title = "Asset Library"
+            library_title = "Asset Library"
             icon = IconWdg(name=library_title, icon="BS_FOLDER_OPEN")
-            
+
             asset_lib_span_div.add(icon)
 
             asset_lib_span_div.add(" <a><b>Asset Library</b></a> ")
-            
+
             path = path.strip("/")
             parts = path.split("/")
 
@@ -1167,10 +1198,12 @@ class CollectionContentWdg(BaseRefreshWdg):
                 } )
 
                 title_div.add_class("hand")
+                window_resize_offset = self.kwargs.get("window_resize_offset") or None
                 title_div.add_relay_behavior( {
                     'type': 'mouseup',
                     'search_type': self.kwargs.get("search_type"),
                     'parent_key': self.parent_key,
+                    'window_resize_offset': window_resize_offset,
                     'collection_type': collection_type,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
@@ -1195,7 +1228,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                             show_shelf: false,
                             show_search_limit: true,
                             expression: expr,
-                            parent_key: bvr.parent_key
+                            parent_key: bvr.parent_key,
+                            window_resize_offset=bvr.window_resize_offset
                         }
                         spt.panel.load(content, cls, kwargs);
 
@@ -1504,6 +1538,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_top.add_class("hand")
 
         collection_div.add_class("spt_collection_item")
+        collection_div.add_style("position", "relative")
         collection_div.add_attr("spt_collection_key", collection.get_search_key())
         collection_div.add_attr("spt_collection_code", collection.get_code())
         collection_div.add_attr("spt_collection_path", path)

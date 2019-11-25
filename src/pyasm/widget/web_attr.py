@@ -14,7 +14,7 @@ __all__ = ['IconAttr', 'BrandAttr']
 
 
 from pyasm.search import SObjectAttr, Search
-from file_wdg import *
+from .file_wdg import *
 
 
 class IconAttr(SObjectAttr):
@@ -30,7 +30,7 @@ class IconAttr(SObjectAttr):
         widget.set_name("files")
         widget.set_sobjects([self.sobject])
 
-        print widget.get_display()
+        print(widget.get_display())
         return widget
 
 

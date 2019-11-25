@@ -63,7 +63,7 @@ def main(args):
 
         # checkin the uploaded file
         result = server.simple_checkin(search_key, context, file_path)
-    except Exception, e:
+    except Exception as e:
         server.abort()
         print "ERROR: ", e.__str__()
     else:

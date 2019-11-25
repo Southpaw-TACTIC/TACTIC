@@ -53,7 +53,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             'description': 'Parent sObject to scope snapshots with when single_asset mode is used.',
             'type': 'TextWdg',
             'order': 2   
-        } 
+        }
     }
 
 
@@ -82,13 +82,11 @@ class RepoBrowserWdg(BaseRefreshWdg):
         #self.mode = 'folder'
 
         keywords = self.kwargs.get("keywords")
-            
         search_type = self.kwargs.get("search_type")
         search_type = SearchType.build_search_type(search_type)
-
         expression = self.kwargs.get("expression")
-
         parent_key = self.kwargs.get("search_key")
+
         
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
@@ -109,6 +107,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             base_dir = container_path 
 
             search_type = parent.get_search_type()
+           
             search = Search(search_type)
             
             parent_code = parent.get_value("code", no_exception=True)
@@ -176,6 +175,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
+        
         left.add_style("width: 1px")
         left.add_border(size="0px 1px 0px 0px", color="table_border")
 
@@ -236,20 +236,26 @@ class RepoBrowserWdg(BaseRefreshWdg):
         left_inner.add_style("padding: 5px")
         #left_inner.add_style("max-height: 600px")
         left_inner.add_style("min-height: 500px")
-        left_inner.add_style("max-height: 1000px")
-        left_inner.add_style("min-width: 300px")
+        # left_inner.add_style("max-height: 1000px")
+        left_inner.add_style("min-width: 200px")
         left_inner.add_class("spt_resizable")
         left_inner.add_class("spt_repo_browser_list")
-        left_inner.add_style("overflow-x: scroll")
+        left_inner.add_style("overflow-x: auto")
         left_inner.add_style("overflow-y: auto")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            left_inner.add_class("spt_window_resize")
+            left_inner.add_style("height", "500px")
+            left_inner.add_attr("spt_window_resize_offset", window_resize_offset)
 
         left_wdg = DivWdg()
         left_inner.add(left_wdg)
-        left_wdg.add_style("width: 1000px")
+        # left_wdg.add_style("width: 1000px")
 
 
         content_div = DivWdg()
-        content_div.add_style("min-width: 400px")
+        content_div.add_style("min-width: 200px")
         left_wdg.add(content_div)
 
         open_depth = self.kwargs.get("open_depth")
@@ -261,9 +267,12 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # Display the basename of of the base_dir 
         # default is True.
         show_base_dir = self.kwargs.get("show_base_dir")
+
         
         # The left contains a directory listing
         # starting at base_dir.
+
+        
         dir_list = RepoBrowserDirListWdg(
             base_dir=base_dir,
             location="server",
@@ -275,7 +284,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
             keywords=keywords,
             search_keys=search_keys,
             search=search,
-            parent_key=parent_key,
+            parent_key=parent_key
         )
         content_div.add(dir_list)
 
@@ -284,6 +293,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         # Nesting content -> outer_div -> content_div
         content = table.add_cell()
         content.add_style("vertical-align: top")
+        content.add_style("padding-right", "15px")
 
         outer_div = DivWdg()
         content.add(outer_div)
@@ -308,6 +318,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
         count = 0
         if search:
             count = search.get_count()
+        
         if count:
             widget = RepoBrowserDirContentWdg(
                 parent_mode=parent_mode,
@@ -317,7 +328,6 @@ class RepoBrowserWdg(BaseRefreshWdg):
                 dirname=view_dir,
                 basename="",
                 expression=expression,
-
             )
             outer_div.add(widget)
         else:
@@ -611,6 +621,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         keywords = self.kwargs.get("keywords")
 
         search_types = self.kwargs.get("search_types")
+        
         sobjects = self.sobjects
         if not sobjects:
 
@@ -645,6 +656,7 @@ class RepoBrowserDirListWdg(DirListWdg):
             search_types = [sobjects[0].get_search_type()]
             parent_ids = [x.get_id() for x in sobjects]
             self.sobjects = sobjects
+        
 
 
         search_types = [SearchType.build_search_type(x) for x in search_types]
@@ -667,8 +679,12 @@ class RepoBrowserDirListWdg(DirListWdg):
             if len(search_types) == 1 and search_types[0] == "sthpw/snapshot":
                 relative_dir = ""
 
+            
             search = self.get_file_search(relative_dir, search_types, parent_ids, mode="folder", parent_mode=self.parent_mode)
-            file_objects = search.get_sobjects()
+            if search: 
+                file_objects = search.get_sobjects()
+            else:
+                file_objects = []
 
             for file_object in file_objects:
                 relative_dir = file_object.get_value("relative_dir")
@@ -758,7 +774,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         #if not show_no_sobject_folders:
         new_sub_paths = []
         if os.path.exists(base_dir) and os.path.isdir(base_dir):
-            if not isinstance(base_dir, unicode):
+            if not Common.IS_Pv3 and not isinstance(base_dir, unicode):
                 base_dir = unicode(base_dir)
             dirnames = os.listdir(base_dir)
             for dirname in dirnames:
@@ -1420,7 +1436,6 @@ class RepoBrowserDirListWdg(DirListWdg):
             else {
                 spt.repo_browser.select(file_item);
             }
-
         }
         spt.repo_browser.clear_selected = function() {
             var selected = spt.repo_browser.get_selected();
@@ -1788,6 +1803,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         SmartMenu.attach_smart_context_menu( top, menus_in, False )
         
         search_types = self.kwargs.get("search_types")
+        
         if search_types:
             search_type = search_types[0]
             search_type = SearchType.build_search_type(search_type)
@@ -1815,6 +1831,7 @@ class RepoBrowserDirListWdg(DirListWdg):
         dir_cbjs_action = '''
             var top = bvr.src_el.getParent(".spt_repo_browser_top");
             var content = top.getElement(".spt_repo_browser_content");
+
                 
             // Get parent search keys
             var search_keys = top.getAttribute("spt_search_keys");
@@ -3315,6 +3332,7 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
         top = self.top
         self.set_as_panel(top)
         top.add_class("spt_browser_detail_top")
+
  
         inner = DivWdg()
         top.add(inner)
@@ -3372,7 +3390,6 @@ class RepoBrowserContentWdg(BaseRefreshWdg):
             dirname = self.kwargs.get("dirname")
             basename = self.kwargs.get("basename")
             path = "%s/%s" % (dirname, basename)
-        
             reldir = Common.relative_dir(asset_dir, dirname)
             search = Search("sthpw/file")
             if search_type and search_type != 'sthpw/snapshot':
@@ -3506,7 +3523,7 @@ class RepoBrowserSearchWrapper(object):
 
 
     def get_file_search(base_dir, search_types, parent_ids, mode="count", parent_mode="single_search_type"):
-
+        
         search = Search("sthpw/file")
 
         # Add a search type filter ... ignore this is the search_type are snapshots
@@ -3527,6 +3544,7 @@ class RepoBrowserSearchWrapper(object):
         else:
             relative_dir = base_dir
 
+        
         if relative_dir:
             # TODO: not very clean.  There are different ways that the
             # relative dir needs to be searched on depending on usage
@@ -3562,21 +3580,24 @@ class RepoBrowserSearchWrapper(object):
 
         if show_main_only:
             search.add_filter("type", "main")
+        
 
+
+        
         key = "repo_browser:%s" % search_type
         parent_search_str = WidgetSettings.get_value_by_key(key)
         if parent_search_str:
+            
             parent_search = Search(search_type)
             parent_search.select.loads(parent_search_str)
             parents = parent_search.get_sobjects()
             parent_codes = [x.get_value("code") for x in parents]
-          
+            
             if search_type == "sthpw/snapshot":
                 search.add_filters("snapshot_code", parent_codes)
             else:
                 search.add_filter("search_type", search_type)
                 search.add_filters("search_code", parent_codes)
-        
         return search
     get_file_search = staticmethod(get_file_search)
 
@@ -3611,6 +3632,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
         parent_key = self.kwargs.get("parent_key")
         if parent_mode == "single_file":
             parent_type = self.kwargs.get("search_type")
+
             search_type = parent_type
         else:
             parent_type = self.kwargs.get("search_type")
@@ -3630,7 +3652,7 @@ class RepoBrowserDirContentWdg(BaseRefreshWdg):
                 reldir = ""
         else:
             reldir = dirname
-
+        
         # If user has selected list of snapshots in directory
         # display these. 
         # TODO: Use of snapshot codes involves the unfinished  select API 

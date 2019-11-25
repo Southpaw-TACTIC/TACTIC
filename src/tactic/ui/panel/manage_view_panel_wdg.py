@@ -466,7 +466,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
     def get_section_wdg(self, view, editable=True, default=False):
 
-        from panel_wdg import SideBarBookmarkMenuWdg
+        from .panel_wdg import SideBarBookmarkMenuWdg
 
         title = ""
         target_id = "sobject_relation"
@@ -503,7 +503,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         return section_div
 
 
-from panel_wdg import SideBarBookmarkMenuWdg
+from .panel_wdg import SideBarBookmarkMenuWdg
 class ManageSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
    
 
@@ -908,7 +908,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
 
     def get_display_definition_wdg(self):
-	'''Attempt to display this Xml is UI form. but since these classes like
+        '''Attempt to display this Xml is UI form. but since these classes like
         LinkWdg and SideBarSectionWdg are not real classes, disable drawing of this for now'''
         def_wdg = DivWdg()
         def_wdg.add_class( "SPT_SIMPLE_DEFINITION_WDG" )

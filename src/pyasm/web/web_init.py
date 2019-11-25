@@ -15,6 +15,7 @@ __all__ = ['WebInit', 'SidebarTrigger', 'StatusLogTrigger', 'DisplayNameTrigger'
 from pyasm.common import Common, Config, Environment
 from pyasm.command import Trigger
 from pyasm.search import SearchType, Search
+from pyasm.security import Sudo
 from pyasm.biz import StatusLog
 
 import os
@@ -45,16 +46,21 @@ class SidebarTrigger(Trigger):
         login = Environment.get_user_name()
         tmp_dir = "%s/cache/side_bar" % Environment.get_tmp_dir()
         project_check = True
-        if search_type =='sthpw/login_group':   
-            login_objs = sobject.get_logins()
-            logins = [x.get_value('login') for x in login_objs]
-            project_check = False
-        else:
-            if all_logins:
-                expr = '@GET(sthpw/login.login)'
-                logins = Search.eval(expr) 
+
+        sudo = Sudo()
+        try:
+            if search_type =='sthpw/login_group':   
+                login_objs = sobject.get_logins()
+                logins = [x.get_value('login') for x in login_objs]
+                project_check = False
             else:
-                logins = [login]
+                if all_logins:
+                    expr = '@GET(sthpw/login.login)'
+                    logins = Search.eval(expr) 
+                else:
+                    logins = [login]
+        finally:
+            sudo.exit()
         
         filenames = []
         if not os.path.exists(tmp_dir):
@@ -77,11 +83,11 @@ class SidebarTrigger(Trigger):
             #filenames = os.listdir(tmp_dir)
         for filename in filenames:
             #if not filename.startswith("%s__" % project_code):
-            #    print "skip filename ", filename
+            #    print("skip filename ", filename)
             
             path = "%s/%s" % (tmp_dir, filename)
             if os.path.exists(path):
-                print "Deleting: ", path
+                print("Deleting: ", path)
                 os.unlink(path)
 
 class StatusLogTrigger(Trigger):
@@ -194,6 +200,14 @@ class WebInit(Common):
         # FIXME: should this really be a web_init trigger?  This needs
         # to be run even from batch commands
         event = "change|sthpw/task|status"
+        trigger = SearchType.create("sthpw/trigger")
+        trigger.set_value("event", event)
+        trigger.set_value("class_name", "pyasm.web.web_init.StatusLogTrigger")
+        trigger.set_value("mode", "same process,same transaction")
+        Trigger.append_static_trigger(trigger, startup=True)
+
+
+        event = "change|config/process_state|status"
         trigger = SearchType.create("sthpw/trigger")
         trigger.set_value("event", event)
         trigger.set_value("class_name", "pyasm.web.web_init.StatusLogTrigger")

@@ -12,7 +12,7 @@
 
 __all__ = [ 'GanttElementWdg', 'GanttCbk', 'GanttLegendWdg', 'GanttLegendCbk' ]
 
-import re, time, types
+import re, time, types, six
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 
@@ -22,9 +22,10 @@ from pyasm.search import Search, SearchKey, SearchType
 from pyasm.web import Widget, DivWdg, SpanWdg, HtmlElement, WebContainer, Table
 from pyasm.widget import HiddenWdg, TextWdg, IconWdg
 from pyasm.biz import ExpressionParser
-
 from tactic.ui.widget import IconButtonWdg
-from subcontext_wdg import ProcessElementWdg
+
+from .subcontext_wdg import ProcessElementWdg
+
 import datetime
 from dateutil import rrule
 from dateutil import parser
@@ -629,7 +630,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # find the pixels per day
-        pixel_per_day = self.percent_per_day * self.total_width / 100;
+        pixel_per_day = self.percent_per_day * self.total_width / 100
 
 
         year_display = self.kwargs.get("year_display")
@@ -1204,9 +1205,9 @@ class GanttElementWdg(BaseTableElementWdg):
 
 
         # why can these be strings??
-        if isinstance(start_sobj_date, basestring):
+        if isinstance(start_sobj_date, six.string_types):
             start_sobj_date = parser.parse(start_sobj_date)
-        if isinstance(end_sobj_date, basestring):
+        if isinstance(end_sobj_date, six.string_types):
             end_sobj_date = parser.parse(end_sobj_date)
 
 
@@ -1751,7 +1752,7 @@ class GanttElementWdg(BaseTableElementWdg):
         # this is required to fix the 1 day off issue
         one_day = datetime.timedelta(days=1)
         
-        if isinstance(date, basestring):
+        if isinstance(date, six.string_types):
             date = parser.parse(date)
 
         date = date - one_day
@@ -1872,7 +1873,7 @@ class GanttCbk(DatabaseAction):
                 index = 0
             try:
                 options = options_list[index]
-            except IndexError, e:
+            except IndexError as e:
                 raise TacticException('Missing option in the action class GanttCbk. Please check the Column Definition. The number of action options should match the number of editable bars.')
             
             expression = options.get("sobjects")

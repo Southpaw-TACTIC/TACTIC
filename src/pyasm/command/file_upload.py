@@ -89,10 +89,11 @@ class FileUpload(Base):
             # it has been JSON dumped as unicode code points, so this decode
             # step would be necessary
             try:
-                filename = filename.decode('unicode-escape')
-            except UnicodeEncodeError, e:
+                if not Common.IS_Pv3:
+                    filename = filename.decode('unicode-escape')
+            except UnicodeEncodeError as e:
                 pass
-            except UnicodeError,e:
+            except UnicodeError as e:
                 pass
             if filename == "":
                 return None
@@ -216,13 +217,13 @@ class FileUpload(Base):
 
         # Write file to tmp directory
         f = open("%s" % tmp_file_path, self.write_mode)
-       
+
         # Use base 64 decode if necessary.
         import base64
         if base_decode and self.write_mode == "wb":
             header = data.read(10)
             while 1:
-                char = data.read(1)
+                char = data.read(1).decode()
                 header = "%s%s" % (header, char)
                 if header.endswith(";base64,"):
                     break
@@ -262,7 +263,7 @@ class FileUpload(Base):
 
         try:
             data.close()
-        except Exception, e:
+        except Exception as e:
             print(str(e))
 
         # when upload is running in append mode f_progress could be None

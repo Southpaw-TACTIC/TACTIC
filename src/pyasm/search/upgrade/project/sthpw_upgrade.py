@@ -12,11 +12,26 @@
 
 __all__ = ['SthpwUpgrade']
 
+from pyasm.common import Common
 
 from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+
+    #
+    # 4.7.0.a08
+    #
+
+    def upgrade_v4_7_0_a08_001(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "pipeline" ADD COLUMN data jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "pipeline" ADD COLUMN data json;
+            ''')
 
 
     #
@@ -263,7 +278,13 @@ class SthpwUpgrade(BaseUpgrade):
             import dateutil.zoneinfo
 
             zi_path = os.path.abspath(os.path.dirname(dateutil.zoneinfo.__file__))
-            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, 'zoneinfo-2008e.tar.gz'))
+
+            if not Common.IS_Pv3:
+                basename = "zoneinfo-2008e.tar.gz"
+            else:
+                basename = "dateutil-zoneinfo.tar.gz"
+
+            zonesfile = tarfile.TarFile.open(os.path.join(zi_path, basename))
             zonenames = zonesfile.getnames()
             return zonenames
 
@@ -802,7 +823,7 @@ class SthpwUpgrade(BaseUpgrade):
     def upgrade_v4_0_0_b03_002(self):
 
         if self.is_confirmed not in [True, 'true']:
-            print '''
+            print('''
 
 IMPORTANT NOTICE:
 
@@ -815,9 +836,9 @@ IMPORTANT NOTICE:
 
         python <TACTIC_INSTALL_DIR>/src/bin/fixes/fix_search_code.py
 
-            '''
+            ''')
 
-            confirm = raw_input("Run now? (y/n):")
+            confirm = input("Run now? (y/n):")
             if not confirm in ['y', 'Y', 'yes', 'Yes']:
                 return
 
@@ -830,13 +851,13 @@ IMPORTANT NOTICE:
         install_dir = Environment.get_install_dir()
         path = '"%s/src/bin/fixes/fix_search_code.py"' % install_dir
 
-        print "Running ..."
-        print
+        print("Running ...")
+        print("\n")
         cmd = "%s %s" % (python, path)
-        print "cmd: ", cmd
-        print
+        print("cmd: ", cmd)
+        print("\n")
         os.system(cmd)
-        print
+        print("\n")
 
 
 
@@ -2106,7 +2127,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             new_code = code_expr % (prefix, id)
             old_code = sobject.get_code()
             change_dict[old_code] = new_code
-            print "Updating task id [%s] with new code [%s]"%(id ,new_code)
+            print("Updating task id [%s] with new code [%s]"%(id ,new_code))
             sobject.set_value("code", new_code )
             sobject.commit(triggers=False)
 
@@ -2116,7 +2137,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
             work_hours = search.get_sobjects()
             for work_hour in work_hours:
                 id = work_hour.get_id()
-                print "Updating work_hour id [%s] with new task_code [%s]"%(id , value)
+                print("Updating work_hour id [%s] with new task_code [%s]"%(id , value))
                 work_hour.set_value('task_code', value)
                 work_hour.commit(triggers=False)
 

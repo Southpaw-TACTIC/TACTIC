@@ -72,7 +72,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 color: grey;
             }
 
-            .spt_look_ahead_top .spt_template {
+            .spt_look_ahead_top .spt_template_item {
                 display: none !important;
             }
 
@@ -289,7 +289,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         recent_search = DivWdg()
         custom_dropdown.add(recent_search)
         recent_search.add_class("spt_recent_search")
-        recent_search.add_class("spt_template")
+        recent_search.add_class("spt_template_item")
 
         recent_search_label = DivWdg()
         recent_search.add(recent_search_label)
@@ -319,7 +319,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 bvr.src_el.setStyle("display", "none");
             }
 
-            let template = bvr.src_el.getElement(".spt_template");
+            let template = bvr.src_el.getElement(".spt_template_item");
 
             let recent_searches = spt.advanced_search.keywords.recent_searches;
 
@@ -332,7 +332,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
                 clone.setAttribute("spt_value", value)
                 labelDiv.innerText = value;
                 labelDiv.setAttribute("spt_value", value)
-                clone.removeClass("spt_template");
+                clone.removeClass("spt_template_item");
 
                 bvr.src_el.appendChild(clone);
             }
@@ -359,7 +359,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
             let items = tagsContainer.getElements(".spt_search_tag_item");
 
             items.forEach(function(item){
-                if (item.hasClass("spt_template")) return;
+                if (item.hasClass("spt_template_item")) return;
                 item.remove();
             })
 
@@ -374,7 +374,7 @@ class AdvancedSearchKeywordWdg(BaseFilterWdg):
         search_tag_item = DivWdg()
         tag_cluster.add(search_tag_item)
         search_tag_item.add_class("spt_search_tag_item")
-        search_tag_item.add_class("spt_template search-tag")
+        search_tag_item.add_class("spt_template_item search-tag")
 
         search_tag_label = DivWdg("#charHeroSimba")
         search_tag_item.add(search_tag_label)
@@ -1023,6 +1023,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
             /* Saved searches */
             .spt_saved_searches_top {
+                background: #F9F9F9
 
             }
 
@@ -1228,10 +1229,12 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_top.add(saved_searches_container)
         saved_searches_container.add_class("spt_saved_searches_container")
 
+        saved_searches_container.add_class("SPT_TEMPLATE")
+
         saved_searches_category_container = DivWdg()
         saved_searches_container.add(saved_searches_category_container)
         saved_searches_category_container.add_class("spt_saved_searches_item")
-        saved_searches_category_container.add_class("spt_template")
+        saved_searches_category_container.add_class("spt_template_item")
 
         saved_searches_category = DivWdg()
         saved_searches_category_container.add(saved_searches_category)
@@ -1245,7 +1248,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
         saved_search_item_container.add(saved_search_item)
         saved_search_item.add_class("spt_saved_search_item")
         saved_search_item.add_class("spt_saved_search_item_template")
-        saved_search_item.add_class("spt_template hand")
+        saved_search_item.add_class("spt_template_item hand")
 
         saved_search_label = DivWdg("")
         saved_search_item.add(saved_search_label)
@@ -1347,6 +1350,7 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 let categoryDiv = clone.getElement(".spt_saved_search_category");
                 categoryDiv.innerText = category;
                 clone.setAttribute("spt_category", key);
+                clone.removeClass("spt_template_item");
 
                 let container = clone.getElement(".spt_saved_search_item_container");
 
@@ -1361,10 +1365,11 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                     itemClone.setAttribute("spt_category", key);
 
                     itemClone.removeClass("spt_saved_search_item_template");
+                    itemClone.removeClass("spt_template_item")
                     container.appendChild(itemClone);
                 }
 
-                clone.removeClass("spt_template");
+                clone.removeClass("spt_template_item");
                 bvr.src_el.appendChild(clone);
             }
 
@@ -1437,7 +1442,7 @@ spt.advanced_search.saved.labels = bvr.labels;
 
             let header = bvr.src_el.getParent(".spt_saved_searches_header");
             let dropdown = header.getElement(".spt_search_categories_dropdown");
-            let template = header.getElement(".spt_template");
+            let template = header.getElement(".spt_template_item");
 
             let categories = spt.advanced_search.saved.categories;
 
@@ -1449,6 +1454,7 @@ spt.advanced_search.saved.labels = bvr.labels;
                 clone.innerText = label;
                 clone.setAttribute("spt_value", value);
                 clone.removeClass("spt_search_category_template");
+                clone.removeClass("spt_template_item");
 
                 dropdown.appendChild(clone);
             }
@@ -1460,7 +1466,7 @@ spt.advanced_search.saved.labels = bvr.labels;
         searches_dropdown.add(searches_dropdown_item)
         searches_dropdown_item.add_class("spt_search_category")
         searches_dropdown_item.add_class("spt_search_category_template")
-        searches_dropdown_item.add_class("spt_template hand")
+        searches_dropdown_item.add_class("spt_template_item hand")
         searches_dropdown_item.add_behavior({
             'type': 'click',
             'cbjs_action': '''
@@ -1515,6 +1521,7 @@ spt.advanced_search.saved.labels = bvr.labels;
         saved_header.add(saved_searches_input)
         saved_searches_input.add_class("spt_saved_searches_input")
         saved_searches_input.add_style("display", "none")
+        saved_searches_input.add_attr("placeholder", "Find saved search")
 
         saved_searches_input.add_behavior({
             'type': 'load',
@@ -1563,8 +1570,9 @@ spt.advanced_search.saved.labels = bvr.labels;
             searchesItems.forEach(function(searchesItem) {
                 let searchItems = searchesItem.getElements(".spt_saved_search_item");
                 let display = "none";
+
                 searchItems.forEach(function(searchItem){
-                    if (searchItem.hasClass("spt_template")) return;
+                    if (searchItem.hasClass("spt_template_item")) return;
 
                     let label = searchItem.getElement(".spt_saved_search_label");
                     if (label.innerText.includes(value)) {
@@ -1698,6 +1706,7 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        hide_save_buttons = self.kwargs.get("hide_save_buttons")
         prefix = self.kwargs.get("prefix")
         mode = self.kwargs.get("mode")
 
@@ -1705,26 +1714,27 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         buttons_container.add_class("spt_advanced_search_buttons")
         self.add_relay_behaviors(buttons_container)
 
-        # Save buttons
-        save_buttons = DivWdg()
-        buttons_container.add(save_buttons)
-        save_buttons.add_class("save-buttons")
+        if hide_save_buttons not in ["true", True]:
+            # Save buttons
+            save_buttons = DivWdg()
+            buttons_container.add(save_buttons)
+            save_buttons.add_class("save-buttons")
 
-        save_button = DivWdg("Save")
-        save_buttons.add(save_button)
-        save_button.add_class("spt_save_button spt_save save-button enabled hand")
-        save_button.add_style("margin-right: 5px;")
+            save_button = DivWdg("Save")
+            save_buttons.add(save_button)
+            save_button.add_class("spt_save_button spt_save save-button enabled hand")
+            save_button.add_style("margin-right: 5px;")
 
-        save_as_button = DivWdg("Save As")
-        save_buttons.add(save_as_button)
-        save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
-        save_as_button.add_attr("spt_action", "save_as")
+            save_as_button = DivWdg("Save As")
+            save_buttons.add(save_as_button)
+            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
+            save_as_button.add_attr("spt_action", "save_as")
 
-        if mode == "save":
-            save_button.add_attr("spt_action", "save_as")
-            save_as_button.add_style("display: none")
-        else:
-            save_button.add_attr("spt_action", "save")
+            if mode == "save":
+                save_button.add_attr("spt_action", "save_as")
+                save_as_button.add_style("display: none")
+            else:
+                save_button.add_attr("spt_action", "save")
 
         # Search button
         search_button = DivWdg("Search")
@@ -1732,12 +1742,28 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         search_button.add_class("spt_search_button")
         search_button.add_class("hand")
 
-        search_action = self.kwargs.get("search_action") or 'spt.dg_table.search_cbk(evt, bvr)'
+        search_action = self.kwargs.get("search_action")
+        if not search_action:
+            top_class = self.kwargs.get("top_class")
+            if top_class:
+                search_action = '''
+                var top = bvr.src_el.getParent(".%s");
+                var panel = top.getElement(".spt_view_panel");
+                bvr.panel = panel;
+                spt.dg_table.search_cbk(evt, bvr);
+                ''' % top_class
+            else:
+                search_action = '''
+                spt.dg_table.search_cbk(evt, bvr);
+                '''
+
+
+
         search_button.add_behavior({
                 'type':         'click_up',
                 'new_search':   True,
                 'cbjs_action':  search_action,
-                'panel_id':     prefix,
+                #'panel_id':     prefix,
                 
             })
 

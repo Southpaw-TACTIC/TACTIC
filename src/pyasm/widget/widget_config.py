@@ -19,6 +19,9 @@ from pyasm.search import WidgetDbConfig, SObjectDefaultConfig, SearchType, Searc
 from pyasm.web import *
 from pyasm.command import Command
 
+import six
+basestring = six.string_types
+
 class WidgetConfigException(TacticException):
     pass
 
@@ -46,13 +49,16 @@ class WidgetConfig(Base):
             self.xml.read_file(file_path, cache=use_cache)
 
         elif xml:
-            if type(xml) in types.StringTypes:
+            if isinstance(xml, (basestring, bytes)):
                 self.xml = Xml()
                 self.xml.read_string(xml)
             else:
                 self.xml = xml
         else:
             raise WidgetConfigException("Must supply either file_path or xml")
+
+        if not isinstance(self.xml, Xml):
+            raise Exception("Not an xml object")
 
         self.view = view
         if view and view.find('@') != -1:
@@ -308,6 +314,7 @@ class WidgetConfig(Base):
         assert element_name != None
 
         xpath = "config/%s/element[@name='%s']/display/@class" % (self.view_xpath, element_name)
+
         value = self.xml.get_value(xpath)
         if not value:
             xpath = "config/%s/element[@name='%s']/display/@widget" % (self.view_xpath, element_name)
@@ -463,7 +470,7 @@ class WidgetConfig(Base):
             display_options[name] = value
 
         widget = Common.create_from_class_path(display_handler, [], display_options)
-        from input_wdg import BaseInputWdg
+        from .input_wdg import BaseInputWdg
         if isinstance(widget, BaseInputWdg):
             widget.set_options(display_options)
 
@@ -640,7 +647,7 @@ class WidgetConfigView(Base):
                 node_attrs = Xml.get_attributes(node)
                 for name, value in node_attrs.items():
                     # only add if the name is not already set
-                    if not attrs.has_key(name):
+                    if name not in attrs:
                         attrs[name] = value
 
         return attrs
@@ -1062,7 +1069,7 @@ class WidgetConfigView(Base):
                 node_attrs = Xml.get_attributes(node)
                 for name, value in node_attrs.items():
                     # only add if the name is not already set
-                    if not attrs.has_key(name):
+                    if name not in attrs:
                         attrs[name] = value
 
         return attrs
@@ -1193,8 +1200,8 @@ class WidgetConfigView(Base):
             try:
                 widget = Common.create_from_class_path(display_handler, [], display_options)
                 # backward compatible
-                from input_wdg import BaseInputWdg
-                from file_wdg import ThumbWdg
+                from .input_wdg import BaseInputWdg
+                from .file_wdg import ThumbWdg
                 if isinstance(widget, BaseInputWdg) or isinstance(widget, ThumbWdg):
                     widget.set_options(display_options)
             except Exception as e:
@@ -1204,7 +1211,7 @@ class WidgetConfigView(Base):
                 if display_handler in ['tactic.ui.panel.TableLayoutWdg','tactic.ui.panel.FastTableLayoutWdg', 'tactic.ui.panel.OldTableLayoutWdg']:
                     raise
                 widget = Common.create_from_class_path(display_handler)
-                from input_wdg import BaseInputWdg
+                from .input_wdg import BaseInputWdg
                 if isinstance(widget, BaseInputWdg):
                     widget.set_options(display_options)
 
@@ -1242,7 +1249,7 @@ class WidgetConfigView(Base):
             try:
                 widget = Common.create_from_class_path(handler, [], options)
                 # backward compatible
-                from input_wdg import BaseInputWdg
+                from .input_wdg import BaseInputWdg
                 if isinstance(widget, BaseInputWdg):
                     widget.set_options(options)
             except:
@@ -1840,7 +1847,7 @@ class WidgetConfigView(Base):
         UPDATE: since this is primarily used for EditCmd, it inserts an edit definition to it
         '''
         config = WidgetConfigView.get_by_search_type(search_type=search_type, view=base_view)
-        if type(element_names) == types.StringType:
+        if isinstance(element_names, basestring):
             element_names = element_names.split(",")
 
         config_xml = "<config><custom layout='TableLayoutWdg'>"

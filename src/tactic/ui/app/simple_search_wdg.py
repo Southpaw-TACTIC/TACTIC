@@ -496,11 +496,11 @@ class SimpleSearchWdg(BaseRefreshWdg):
                         var spacer = top.getElements(".spt_spacer");
                         var cell = top.getElement(".spt_toggle");
                         if (expand) {
-                            spacer.setStyle("height", (rows.length+bvr.visible_rows)*20);
+                            spacer.setStyle("height", (rows.length+bvr.visible_rows)*20 + "px");
                             cell.innerHTML = "- less ...";
                         }
                         else {
-                            spacer.setStyle("height", bvr.visible_rows*20);
+                            spacer.setStyle("height", bvr.visible_rows*20 + "px");
                             cell.innerHTML = "+ more ...";
                         }
 
@@ -548,7 +548,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 spacer = DivWdg()
                 spacer.add_class("spt_spacer")
                 spacer.add_style("border-style: solid")
-                spacer.add_style("border-width: 0 0 0 0")
+                spacer.add_style("border-width: 0px 0px 0px 0px")
                 #spacer.add_style("height: %spx" % (num_rows*20))
                 spacer.add_style("height: %spx" % (num_rows*10))
                 spacer.add_style("width: 10px")
@@ -679,6 +679,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 'type': 'click_up',
                 'mode': mode,
                 'cbjs_action':  '''
+
+                document.activeElement.blur();
 
                 if (bvr.mode == "inline") {
                 }

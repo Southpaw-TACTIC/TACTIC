@@ -19,8 +19,10 @@ from pyasm.biz import Project
 from pyasm.command import Command
 from pyasm.search import Search, DbContainer, SObject, Sql
 from pyasm.search.upgrade import Upgrade
-from pyasm.common import Container, Environment
+from pyasm.common import Container, Environment, Common
 
+if Common.IS_Pv3:
+    raw_input = input
 
 
 if __name__ == '__main__':
@@ -34,15 +36,15 @@ if __name__ == '__main__':
 
 
     if os.name != 'nt' and os.getuid() == 0:
-        print 
-        print "You should not run this as root. Run it as the Web server process's user. e.g. apache"
-        print 
+        print(" ") 
+        print("You should not run this as root. Run it as the Web server process's user. e.g. apache")
+        print(" ") 
         sys.exit(0)
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:fyhp:q", ["site","force","yes","help","project=","quiet"])
-    except getopt.error, msg:
-        print msg
+    except getopt.error as msg:
+        print(msg)
         sys.exit(2)
     # process options
     for o, a in opts:
@@ -51,7 +53,8 @@ if __name__ == '__main__':
         if o in ("-f", "--force"):
             is_forced = True
         if o in ("-h", "--help"):
-            print "python upgrade_db.py [-fy] [%s]" % tacticversion
+            python = Common.get_python()
+            print("%s upgrade_db.py [-fy] [%s]" % (python, tacticversion))
             sys.exit(0)
         if o in ("-p", "--project"):
             project_code = a
@@ -59,7 +62,7 @@ if __name__ == '__main__':
             quiet = True
         if o in ("-s", "--site"):
             site = a
-            print "site: ", site
+           
    
 
     if len(args) == 0:
@@ -81,19 +84,19 @@ if __name__ == '__main__':
         if is_forced:
             msg = "Upgrading to version [%s] with force option" % current_version
         if not is_confirmed:
-	    answer = raw_input(" %s. Continue (y/n): " %msg)
+            answer = raw_input(" %s. Continue (y/n): " %msg)
             if answer == "y":
                 pass
             elif answer == 'n':
                 sys.exit(0)
             else:
-                print "Only y or n is accepted. Exiting..."
+                print("Only y or n is accepted. Exiting...")
                 sys.exit(0)
         version = current_version
     elif len(args) == 1:
         version = args[0]
     else:
-        print "Either 1 or no argument can be accepted."
+        print("Either 1 or no argument can be accepted.")
 
 
     if not version:
@@ -105,13 +108,13 @@ if __name__ == '__main__':
                 %(version, Environment.get_release_version()))
         if answer == "y":
             if not is_forced:
-                print "-f option must be used in this situation. "
+                print("-f option must be used in this situation. ")
                 sys.exit(0)
             pass
         elif answer == 'n':
             sys.exit(0)
         else:
-            print "Only y or n is accepted. Exiting..."
+            print("Only y or n is accepted. Exiting...")
             sys.exit(0)
 
 
@@ -147,28 +150,24 @@ if __name__ == '__main__':
         elif answer == 'n':
             sys.exit(0)
         else:
-            print "Only y or n is accepted. Exiting..."
+            print("Only y or n is accepted. Exiting...")
             sys.exit(0)
 
     p = re.compile(r'\d+.\d+.\d+(.\w+)?$')
     if not p.match(version):
-        print 
-        print "Version pattern is invalid. Examples for version are 2.0.0 or 2.0.0.rc02. If you are just upgrading to the current version, just run: "
-        print
-        print "python upgrade_db.py"
+        print(" ") 
+        print("Version pattern is invalid. Examples for version are 2.0.0 or 2.0.0.rc02. If you are just upgrading to the current version, just run: ")
+        print(" ")
+        print("%s upgrade_db.py" % Common.get_python())
         sys.exit(0)
 
     version.replace('.', '_')
-    
-    upgrade = Upgrade(version, is_forced, project_code=project_code, quiet=quiet, is_confirmed=is_confirmed)
+    upgrade = Upgrade(version, is_forced, project_code=project_code, site=site, quiet=quiet, is_confirmed=is_confirmed)
     upgrade.execute()
 
     if not quiet:
-        print "Upgrade to version [%s] finished." % version
-    tmp_dir = Environment.get_tmp_dir()
-    output_file = '%s/upgrade_output.txt' %tmp_dir
-    if not quiet:
-        print "Upgrade output file saved in [%s]" %output_file
+        print("Upgrade to version [%s] finished." % version)
+    
     
 
 

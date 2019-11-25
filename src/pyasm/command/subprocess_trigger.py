@@ -22,8 +22,8 @@ from pyasm.security import Site
 from tactic_client_lib import TacticServerStub
 from tactic_client_lib.interpreter import Handler
 
-from trigger import Trigger
-from command import Command
+from .trigger import Trigger
+from .command import Command
 
 
 
@@ -79,11 +79,8 @@ class SubprocessTrigger(Handler):
             data_str = jsondumps(data)
 
             file = __file__
-            py_exec = Config.get_value("services", "python")
-            if not py_exec:
-                py_exec = "python"
 
-
+            py_exec = Common.get_python()
             retcode = subprocess.call([py_exec, file, data_str, input_data_str])
 
 
@@ -93,10 +90,8 @@ class SubprocessTrigger(Handler):
             data_str = jsondumps(data)
 
             file = __file__
-            py_exec = Config.get_value("services", "python")
-            if not py_exec:
-                py_exec = "python"
 
+            py_exec = Common.get_python()
             retcode = subprocess.Popen([py_exec, file, data_str, input_data_str])
 
             result = "wait"
@@ -129,7 +124,7 @@ class SubprocessTrigger(Handler):
 
 
         # if it was not overridden by the trigger, the return default for the mode
-        if not self.info.has_key("result"):
+        if "result" not in self.info:
             self.info['result'] = result
 
 

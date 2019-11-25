@@ -18,12 +18,12 @@ import tacticenv
 
 import sys, os
 
-from common import *
-from container import *
-from base import *
-from config import *
-from system import *
-from common_exception import TacticWarning, TacticException
+from .common import *
+from .container import *
+from .base import *
+from .config import *
+from .system import *
+from .common_exception import TacticWarning, TacticException
 
 class EnvironmentException(Exception):
     pass
@@ -114,9 +114,9 @@ class Environment(Base):
         for dir in dirs:
             System().makedirs(dir)
             try:
-                os.chmod(dir, 0775)
-            except OSError, e:
-                print "WARNING: cannot chmod: ", e
+                os.chmod(dir, 0o775)
+            except OSError as e:
+                print("WARNING: cannot chmod: ", e)
 
 
         # remove the sidebar cache
@@ -125,8 +125,8 @@ class Environment(Base):
             import shutil
             try:
                 shutil.rmtree(sidebar_cache_dir)
-            except Exception, e:
-                print "Error deleting cache files:", e
+            except Exception as e:
+                print("Error deleting cache files:", e)
 
         os.environ['TACTIC_CLEANUP'] = "false"
         """
@@ -269,6 +269,8 @@ class Environment(Base):
         if include_ticket:
             security = Environment.get_security()
             ticket = security.get_ticket_key()
+            if not ticket:
+                raise Exception("No ticket found")
             tmp_dir = "%s/temp/%s" % (tmp_dir, ticket)
 
             # only if a ticket is needed, the make the directory
@@ -699,7 +701,7 @@ class Environment(Base):
 
     def add_warning(label, warning, type=''):
         # for now print it out
-        print "WARNING: %s - %s, type[%s]" % (label, warning, type)
+        print("WARNING: %s - %s, type[%s]" % (label, warning, type))
         warning = TacticWarning(label, warning, type)
         return Container.append_seq('widget_warning', warning)
     add_warning = staticmethod(add_warning)

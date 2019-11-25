@@ -11,19 +11,18 @@
 #
 
 
-# import tactic.zip
-import os, sys
-#import inspect
-#path = inspect.getfile( inspect.currentframe() )
-path = __file__
-path, file = os.path.split(path)
-#path = path.replace("__init__.py", "")
-path = '%s/tactic.zip' % path
-if path not in sys.path:
-    sys.path.insert(0, path)
+# Python3 - This is not support ... not even sure if we need this anymore
 
-from tactic_server_stub import *
-from cgapp import *
+import os, sys
+if sys.version_info[0] < 3:
+    path = __file__
+    path, file = os.path.split(path)
+    path = '%s/tactic.zip' % path
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+from .tactic_server_stub import *
+from .cgapp import *
 
 
 

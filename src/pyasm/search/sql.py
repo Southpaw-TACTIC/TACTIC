@@ -13,13 +13,25 @@
 __all__ = ["SqlException", "DatabaseException", "Sql", "DbContainer", "DbResource", "DbPasswordUtil", "Select", "Insert", "Update", "Delete", "CreateTable", "DropTable", "AlterTable", 'CreateView']
 
 
-import os, types, thread, sys
+import os, types, sys
 import re, datetime
+
+try:
+    import thread
+except:
+    import _thread as thread
 
 from threading import Lock
 
-from pyasm.common import Config, TacticException, Environment
+from pyasm.common import Container, Config, TacticException, Environment
 from dateutil.tz import *
+from dateutil import parser
+
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
+
 
 # import database libraries
 DATABASE_DICT = {}
@@ -28,13 +40,13 @@ try:
     import pyodbc
     DATABASE_DICT["SQLServer"] = pyodbc
     #Config.set_value("database", "vendor", "SQLServer")
-except ImportError, e:
+except ImportError as e:
     pass
 
 try:
     try:
         import psycopg2
-    except ImportError, e:
+    except ImportError as e:
         # if psycopg2 is not installed we try to use psycopg2cffi (useful for pypy compatibility)
         from psycopg2cffi import compat
         compat.register()
@@ -43,7 +55,7 @@ try:
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
     #psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
     DATABASE_DICT["PostgreSQL"] = psycopg2
-except ImportError, e:
+except ImportError as e:
     pass
 
 try:
@@ -60,14 +72,14 @@ try:
 
     DATABASE_DICT["Oracle"] = cx_Oracle
 
-except ImportError, e:
+except ImportError as e:
     pass
 
 # MySQL
 try:
     import MySQLdb
     DATABASE_DICT["MySQL"] = MySQLdb
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -75,7 +87,7 @@ except ImportError, e:
 try:
     import sqlite3 as sqlite
     DATABASE_DICT["Sqlite"] = sqlite
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -84,7 +96,7 @@ try:
     import pymongo
     pymongo.ProgrammingError = Exception
     DATABASE_DICT["MongoDb"] = pymongo
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -93,7 +105,7 @@ except ImportError, e:
 try:
     import simple_salesforce
     DATABASE_DICT["Salesforce"] = simple_salesforce
-except ImportError, e:
+except ImportError as e:
     pass
 """
 
@@ -103,7 +115,7 @@ except ImportError, e:
 try:
     from database_impl import TacticImpl
     DATABASE_DICT["TACTIC"] = TacticImpl
-except ImportError, e:
+except ImportError as e:
     pass
 
 
@@ -141,8 +153,8 @@ except TacticException as e:
 
 from pyasm.common import *
 
-from database_impl import *
-from transaction import *
+from .database_impl import *
+from .transaction import *
 
 
 class SqlException(TacticException):
@@ -167,7 +179,6 @@ class Sql(Base):
             user = db_resource.get_user()
             password = db_resource.get_password()
         else:
-            #assert type(database_name) in types.StringTypes
             # allow unicode
             assert isinstance(database_name, basestring)
         self.database_name = database_name
@@ -346,7 +357,7 @@ class Sql(Base):
         if use_cache:
             columns = Container.get_dict("Sql:table_columns", key)
             if columns:
-                return columns[:]
+                return list(columns)
 
             # use global cache
             if database == 'sthpw':
@@ -358,8 +369,7 @@ class Sql(Base):
                 if cache:
                     columns = cache.get_value_by_key("columns", table)
                     if columns != None:
-                        return columns[:]
-                        #return columns
+                        return list(columns)
 
         impl = self.get_database_impl()
         columns = impl.get_columns(db_resource, table)
@@ -367,7 +377,7 @@ class Sql(Base):
         if use_cache:
             Container.put_dict("Sql:table_columns", key, columns)
 
-        return columns[:]
+        return list(columns)
 
 
     def get_table_info(self):
@@ -468,7 +478,7 @@ class Sql(Base):
                 database_name = self.get_database_name()
                 sql_dict[database_name] = self
 
-            except self.pgdb.OperationalError, e:
+            except self.pgdb.OperationalError as e:
                 raise SqlException(e.__str__())
 
 
@@ -663,7 +673,7 @@ class Sql(Base):
             self.description = self.cursor.description
             return
 
-        except pgdb.OperationalError, e:
+        except pgdb.OperationalError as e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
@@ -691,7 +701,7 @@ class Sql(Base):
             self.connect()
             return self.do_query(query, num_attempts=num_attempts+1)
 
-        except pgdb.Error, e:
+        except pgdb.Error as e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error
@@ -753,7 +763,7 @@ class Sql(Base):
             return self.results
 
 
-        except self.pgdb.OperationalError, e:
+        except self.pgdb.OperationalError as e:
             # A reconnect will only be attempted on the first query.
             # This is because subsequent could be in a transaction and
             # closing and reconnecting will completely mess up the transaction
@@ -782,7 +792,7 @@ class Sql(Base):
             self.connect()
             return self.do_query(query, num_attempts=num_attempts+1)
 
-        except self.pgdb.Error, e:
+        except self.pgdb.Error as e:
             error_msg = str(e)
             print("ERROR: %s: "%self.DO_QUERY_ERR, error_msg, str(query))
             # don't include the error_msg in Exception to avoid decoding error
@@ -848,20 +858,27 @@ class Sql(Base):
                 self.transaction_count = 1
                 self.commit()
 
-        except self.pgdb.ProgrammingError, e:
+        except self.pgdb.ProgrammingError as e:
             if str(e).find("already exists") != -1:
                 return
-            if isinstance(query, unicode):
-                wrong_query = query.encode('utf-8')
+
+            if sys.version_info[0] < 3:
+                if isinstance(query, unicode):
+                    wrong_query = query.encode('utf-8')
+                else:
+                    wrong_query = unicode(query, errors='ignore').encode('utf-8')
             else:
-                wrong_query = unicode(query, errors='ignore').encode('utf-8')
+                # python 3 does not need to do any encodeing
+                wrong_query = query
 
             print("Error with query (ProgrammingError): ", self.database_name, wrong_query)
             print(str(e))
             raise SqlException(str(e))
-        except self.pgdb.Error, e:
+        except self.pgdb.Error as e:
             if not quiet:
-                if isinstance(query, unicode):
+                if IS_Pv3:
+                    wrong_query = query
+                elif isinstance(query, unicode):
                     wrong_query = query.encode('utf-8')
                 else:
                     wrong_query = unicode(query, errors='ignore').encode('utf-8')
@@ -942,7 +959,8 @@ class Sql(Base):
 
         # replace all single quotes with two single quotes
         value_type = type(value)
-        if value_type in [types.ListType, types.TupleType]:
+        #if value_type in [types.ListType, types.TupleType]:
+        if isinstance(value, (list, tuple)):
             if len(value) == 0:
                 # Previously no check if list is empty, which is an issue
                 # for trying to get 'value[0]' as it's not defined. Assuming
@@ -951,22 +969,28 @@ class Sql(Base):
             value = value[0]
             value_type = type(value)
 
-        if value_type == types.IntType or value_type == types.LongType:
+
+
+
+        # quote types
+        if isinstance(value, basestring):
+            value = value.replace("'", "''")
+        elif isinstance(value, int):
             value = str(value)
-        elif value_type == types.BooleanType:
+        #elif value_type == types.BooleanType:
+        elif isinstance(value_type, bool):
             if value == True:
                 value = "1"
             else:
                 value = "0"
-        elif value_type == types.ListType:
+        elif isinstance(value, list):
             value = value[0]
             value = value.replace("'", "''")
-        elif value_type == types.MethodType:
+        elif isinstance(value_type, types.MethodType):
             raise SqlException("Value passed in was an <instancemethod>")
-        elif value_type in [types.FloatType, types.IntType]:
+        #elif value_type in [types.FloatType, types.IntType]:
+        elif isinstance(value_type, (float, int)):
             pass
-        elif isinstance(value, basestring) or value_type in [types.StringTypes]:
-            value = value.replace("'", "''")
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
             value = str(value)
         elif isinstance(value, object):
@@ -1315,7 +1339,7 @@ class DbContainer(Base):
         '''
 
         # STRICT ENFORCEMENT to ensure that only DbResources come through
-        from sql import DbResource
+        from .sql import DbResource
         assert db_resource != None
         if db_resource != "sthpw":
             #print("DBCONTAINER what is", db_resource, type(db_resource))
@@ -1561,7 +1585,7 @@ class DbContainer(Base):
     def remove(database_name):
         '''remove a connection to the database'''
         sql_dict = DbContainer._get_sql_dict()
-        if sql_dict.has_key(database_name):
+        if database_name in sql_dict:
             sql_dict[database_name].close()
             del sql_dict[database_name]
     remove = staticmethod(remove)
@@ -1610,7 +1634,6 @@ class DbContainer(Base):
 
 
 class DbPasswordUtil(object):
-
 
     def get_password(cls):
         coded = Config.get_value("database", "password")
@@ -2105,6 +2128,34 @@ class Select(object):
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
 
+        # on simple building of select statements, db_resource could be null
+        if not self.db_resource:
+            column_type = "varchar"
+        else:
+            column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
+            column_type = column_types.get(column)
+
+        if column_type in ['timestamp', 'datetime', 'datetime2']:
+            if isinstance(value, basestring):
+                if value.lower() == 'now':
+                    info = self.impl.process_value(column, value, column_type)
+                    if info:
+                        value = info.get('value')
+                        quoted = info.get('quoted')
+                else:
+                    try:
+                        value = parser.parse(value)
+                    except ValueError:
+                        pass
+
+            if isinstance(value, datetime.datetime):
+                value = SPTDate.convert_to_local(value)
+                info = self.impl.process_value(column, value, column_type)
+                if info:
+                    value = info.get('value')
+                    quoted = info.get('quoted')
+
+
         # store all the raw filter data
         self.raw_filters.append( {
                 'column': column,
@@ -2116,12 +2167,10 @@ class Select(object):
         } )
 
 
-
         if self.quoted_mode == "none":
             where = "%s %s '%s'" % (column, op, value)
             self.add_where(where)
             return
-
 
 
         subcolumn = None
@@ -2157,29 +2206,16 @@ class Select(object):
         # This check added to handle cases where a list is empty,
         # as 'value[0]' is not defined in that case. We assume in this
         # case that the intended value is NULL
-        if type(value) == types.ListType and len(value) == 0:
+        #if type(value) == types.ListType and len(value) == 0:
+        if isinstance(value, list) and len(value) == 0:
             where = "\"%s\" is NULL" % column
             self.add_where(where)
             return
 
 
-        # on simple building of select statements, db_resource could be null
-        if not self.db_resource:
-            column_type = "varchar"
-        elif not column_type:
-            column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-            column_type = column_types.get(column)
-
-
         # if quoted is not explicitly set
         if quoted == None:
             quoted = True
-
-            if not column_type and self.sql:
-                # get column type from database
-                column_types = self.impl.get_column_types(self.db_resource, self.tables[0])
-                column_type = column_types.get(column)
-
 
             info = self.impl.process_value(column, value, column_type)
             if info:
@@ -2416,7 +2452,7 @@ class Select(object):
 
         count = 1
         for value in values:
-            if type(value) in types.StringTypes:
+            if isinstance(value, basestring):
                 value = "'%s'" % value
             expr.append( "WHEN %s THEN %d " % (value, count) )
             count += 1
@@ -2748,6 +2784,7 @@ class Select(object):
                 return " AND ".join(cur_stack)
 
             item = wheres[self.stack_index]
+
             self.stack_index += 1
 
             if item == "begin":
@@ -2953,7 +2990,6 @@ class Insert(object):
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
 
-
             info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
@@ -2977,8 +3013,11 @@ class Insert(object):
         self.impl.preprocess_sql(self.data, self.unquoted_cols)
 
         # quote the values
-        values = self.data.values()
-        cols = self.data.keys()
+        cols = list(self.data.keys())
+        cols.sort()
+        values = []
+        for col in cols:
+            values.append(self.data.get(col))
 
         #if not cols:
         #    # add an empty row
@@ -3039,13 +3078,14 @@ class Insert(object):
 
         for x in statement:
             if isinstance(x, str):
-                x = x.decode('string_escape')
-
                 #if os.name != 'nt':
                 try:
+                    x = x.decode('string_escape')
                     x = x.decode('utf-8')
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     x = x.decode('iso-8859-1')
+                except:
+                    pass # python 3 does need not decode
 
                 # this only works in Linux can causes error with windows xml parser down the road
                 #x = unicode(x, encoding='utf-8')
@@ -3159,11 +3199,14 @@ class Update(object):
             value = 'NULL'
             quoted = False
 
+        if IS_Pv3 and isinstance(value, bytes):
+            value = value.decode()
+
+
         if not column_type and self.sql:
             # get column type from database
             column_types = self.impl.get_column_types(self.db_resource, self.table)
             column_type = column_types.get(column)
-
             info = self.impl.process_value(column, value, column_type)
             if info:
                 value = info.get("value")
@@ -3276,8 +3319,8 @@ class Update(object):
 
 
         # quote the values
-        values = self.data.values()
-        cols = self.data.keys()
+        values = list(self.data.values())
+        cols = list(self.data.keys())
 
         quoted_values = []
 
@@ -3408,7 +3451,7 @@ class CreateTable(Base):
 
         from pyasm.biz import Project
         if search_type:
-            from search import SearchType
+            from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)
@@ -3503,6 +3546,9 @@ class CreateTable(Base):
 
 
     def add_constraint(self, columns, mode="UNIQUE"):
+        if isinstance(columns, six.string_types):
+            columns = [columns]
+
         constraint = {
             'columns': columns,
             'mode': mode
@@ -3639,7 +3685,7 @@ class DropTable(Base):
 
         self.search_type = search_type
         # derive db from search_type_obj
-        from search import SearchType
+        from .search import SearchType
         from pyasm.biz import Project
         self.db_resource = Project.get_db_resource_by_search_type(self.search_type)
 
@@ -3678,7 +3724,7 @@ class DropTable(Base):
 
 
         # dump the table to a file and store it in cache
-        from sql_dumper import TableSchemaDumper
+        from .sql_dumper import TableSchemaDumper
         dumper = TableSchemaDumper(self.search_type)
         try:
             # should i use mode='sobject'? it defaults to 'sql'
@@ -3704,7 +3750,7 @@ class AlterTable(CreateTable):
         """
         self.search_type = search_type
         # derive db from search_type_obj
-        from search import SearchType
+        from .search import SearchType
         search_type_obj = SearchType.get(search_type)
         self.database = search_type_obj.get_database()
         """
@@ -3717,7 +3763,7 @@ class AlterTable(CreateTable):
         self.drop_columns.append(name)
 
     def verify_table(self):
-        from search import SearchType
+        from .search import SearchType
         if not self.table and self.search_type:
             search_type_obj = SearchType.get(self.search_type)
             self.table = search_type_obj.get_table()
@@ -3826,12 +3872,11 @@ class CreateView(Base):
 
         from pyasm.biz import Project
         if search_type:
-            from search import SearchType
+            from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             self.view = search_type_sobj.get_table()
 
-            from search import SearchType
             search_type_sobj = SearchType.get(search_type)
 
             project = Project.get_by_search_type(search_type)

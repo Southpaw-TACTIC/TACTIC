@@ -18,10 +18,10 @@ import re, os, types
 
 from pyasm.common import Common, Config, Container, Environment, TacticException
 from pyasm.search import SearchType, Search
-from project import Repo, RemoteRepo, Project
-from snapshot import Snapshot
-from naming import NamingUtil, Naming
-from preference import PrefSetting
+from .project import Repo, RemoteRepo, Project
+from .snapshot import Snapshot
+from .naming import NamingUtil, Naming
+from .preference import PrefSetting
 
 
 class DirNaming(object):
@@ -163,7 +163,7 @@ class DirNaming(object):
         # Now either create is True or relative_dir has been cleared in the db
         # first check the db, so we build up the naming
 
-        if type(self.naming_expr) == types.DictType:
+        if isinstance(self.naming_expr, dict):
             override_naming_expr = self.naming_expr.get("override")
             default_naming_expr = self.naming_expr.get("default")
         else:
@@ -206,7 +206,7 @@ class DirNaming(object):
         try:
             dirs = eval( "self.%s(dirs)" % func_name)
             return "/".join(dirs)
-        except Exception, e:
+        except Exception as e:
             msg = e.__str__()
             if msg.find("object has no attribute '%s'" % func_name) != -1:
                 pass
@@ -517,7 +517,7 @@ class DirNaming(object):
         if naming and self.checkin_type:
             checkin_type = naming.get_value('checkin_type')
             if checkin_type and self.checkin_type != checkin_type:
-                print "mismatch checkin_type!"
+                print("mismatch checkin_type!")
                 return False
         return True
 

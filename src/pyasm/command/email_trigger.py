@@ -18,13 +18,24 @@ import threading
 import smtplib
 import types
 import datetime
+import six
+import os
 from dateutil.relativedelta import relativedelta
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.mime.application import MIMEApplication
-from email.MIMEImage import MIMEImage
-from email.Utils import formatdate
-from command import CommandException
+
+try:
+    from email.MIMEMultipart import MIMEMultipart
+    from email.MIMEText import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.MIMEImage import MIMEImage
+    from email.Utils import formatdate
+except:
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+    from email.mime.image import MIMEImage
+    from email.utils import formatdate
+
+
 
 from pyasm.common import *
 from pyasm.biz import Project, GroupNotification, Notification, CommandSObj, ProdSetting
@@ -32,7 +43,10 @@ from pyasm.biz import ExpressionParser
 from pyasm.security import *
 from pyasm.search import SObject, Search, SearchType, SObjectValueException, ExceptionLog
 from pyasm.command import Command
-from trigger import *
+
+
+from .command import CommandException
+from .trigger import *
 
 class EmailTrigger(Trigger):
 
@@ -185,7 +199,7 @@ class EmailTrigger(Trigger):
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
-            except SObjectValueException, e:
+            except SObjectValueException as e:
                 raise Exception("Error in running Email handler [%s]. %s" \
                         %(handler.__class__.__name__, e.__str__()))
 
@@ -245,7 +259,6 @@ class EmailTrigger(Trigger):
 
 
     def get_email_handler(self, notification, sobject, parent, command, input={}):
-
         email_handler_cls = notification.get_value("email_handler_cls")
         if not email_handler_cls:
             email_handler_cls = "EmailHandler"
@@ -360,9 +373,12 @@ class EmailTrigger(Trigger):
         charset = 'us-ascii'
         is_uni = False
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
+            charset = 'utf-8'
+            is_uni = True
+        elif Common.IS_Pv3:
             charset = 'utf-8'
             is_uni = True
 
@@ -447,7 +463,7 @@ class SendEmail(Command):
         cc = self.kwargs.get('cc') or []
         bcc = self.kwargs.get('bcc') or []
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
@@ -615,6 +631,7 @@ class EmailTrigger2(EmailTrigger):
                     value = caller.get_info(rule_key)
                 except:
                     value = ''
+
             if not value:
                 break
 
@@ -637,19 +654,17 @@ class EmailTrigger2(EmailTrigger):
                 # match the rule to the value
                 p = re.compile(rule_value)
                 if not p.match(value):
-                    print("... skipping: '%s' != %s" % (value, rule_value))
                     break
 
         else:
             is_skipped = False
 
-
         # allow the handler to check for whether an email should be sent
+
         handler = self.get_email_handler(notification, main_sobject, parent, caller, input)
         if is_skipped or not handler.check_rule():
             self.add_description('Notification not sent due to failure to pass the set rules. Comment out the rules for now if you are just running email test.')
             return
-
 
         # if all rules are met then get the groups for this notification
         try:
@@ -660,10 +675,9 @@ class EmailTrigger2(EmailTrigger):
             cc_users = handler.get_cc()
             bcc_users = handler.get_bcc()
 
-        except SObjectValueException, e:
+        except SObjectValueException as e:
             raise Exception("Error in running Email handler [%s]. %s" \
                     %(handler.__class__.__name__, e.__str__()))
-
 
         def get_email():
 
@@ -673,7 +687,7 @@ class EmailTrigger2(EmailTrigger):
                 if len(subject) > 60:
                     subject = subject[0:60] + " ..."
                 message = handler.get_message()
-            except SObjectValueException, e:
+            except SObjectValueException as e:
                 raise Exception("Error in running Email handler [%s]. %s" \
                         %(handler.__class__.__name__, e.__str__()))
 
@@ -726,7 +740,7 @@ class EmailTrigger2(EmailTrigger):
         email_users = set()
         if send_email:
             for user in all_users:
-                if type(user) in types.StringTypes:
+                if isinstance(user, six.string_types):
                     email = user
                 else:
                     email =  user.get_value('email')
@@ -827,8 +841,7 @@ class EmailTriggerThread(threading.Thread):
 
     def run(self):
         try:
-            s = smtplib.SMTP()
-            s.connect(self.mailserver, self.port)
+            s = smtplib.SMTP(self.mailserver, self.port)
 
             if self.mail_tls_enabled:
                 s.ehlo()
@@ -845,9 +858,8 @@ class EmailTriggerThread(threading.Thread):
             s.sendmail(self.sender_email, self.recipient_emails, self.msg)
             s.quit()
 
-        except Exception, e:
-
-
+        except Exception as e:
+            
             message = "-"*20
             message += "\n"
             message += "WARNING: Error sending email:"
@@ -866,6 +878,7 @@ class EmailTriggerThread(threading.Thread):
 
 
 class EmailTriggerTestCmd(Command):
+    
     '''This is run in the same thread for the email testing button'''
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -876,19 +889,25 @@ class EmailTriggerTestCmd(Command):
         self.recipient_emails = self.kwargs.get('recipient_emails')
         message = self.kwargs.get('msg')
 
-        is_unicode = False
-        st = 'plain'
-        charset = 'us-ascii'
+        
+
         subject = "Email Test"
         new_subject = self.kwargs.get('subject')
         if new_subject:
             subject = new_subject
+        
+        charset = 'us-ascii'
+        st = 'plain'
+        is_uni = False
 
-        if type(message) == types.UnicodeType:
+        if not Common.IS_Pv3 and type(message) == types.UnicodeType:
             message = message.encode('utf-8')
             subject = subject.encode('utf-8')
             charset = 'utf-8'
-            is_unicode = True
+            is_uni = True
+        elif Common.IS_Pv3:
+            charset = 'utf-8'
+            is_uni = True
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
@@ -898,7 +917,7 @@ class EmailTriggerTestCmd(Command):
         msg.add_header('Date', formatdate(localtime=True))
 
 
-        if is_unicode:
+        if is_uni:
             msg.add_header('html_encoding', 'base64')
         self.msg = msg
 
@@ -928,8 +947,7 @@ class EmailTriggerTestCmd(Command):
 
     def execute(self):
         try:
-            s = smtplib.SMTP()
-            s.connect(self.mailserver, self.port)
+            s = smtplib.SMTP(self.mailserver, self.port)
 
             if self.mail_tls_enabled:
                 s.ehlo()
@@ -946,7 +964,7 @@ class EmailTriggerTestCmd(Command):
             s.sendmail(self.sender_email, self.recipient_emails, self.msg.as_string())
             s.quit()
 
-        except Exception, e:
+        except Exception as e:
             msg = []
             msg.append( "-"*60)
             msg.append( "WARNING: Error sending email:")
@@ -1035,33 +1053,7 @@ class EmailTriggerTest(EmailTrigger2):
                 cls.add_email(total_bcc_emails, email)
         total_cc_emails = total_cc_emails - to_emails
         total_bcc_emails = total_bcc_emails - to_emails - total_cc_emails
-        """
-        charset = 'us-ascii'
-        if type(message) == types.UnicodeType:
-            message = Common.process_unicode_string(message)
-            charset = 'utf-8'
-
-        if "</html>" in message:
-            st = 'html'
-        else:
-            st = 'plain'
-        msg = MIMEText(message, _subtype=st, _charset=charset)
-
-        msg['Subject'] = subject
-        msg['From'] = user_email
-        msg['Reply-To'] = user_email
-        msg['To'] = ", ".join(to_emails)
-        msg['Cc'] = ','.join(total_cc_emails)
-        msg['Bcc'] = ','.join(total_bcc_emails)
-
-        '''
-        msg.add_header('Subject', subject)
-        msg.add_header('From', user_email)
-        msg.add_header('Reply-To', user_email)
-        msg.add_header('To', ", ".join(to_emails))
-        msg.add_header('Cc', ", ".join(cc_emails))
-        '''
-        """
+        
         recipient_emails =  total_bcc_emails|total_cc_emails|to_emails|sender
         email = EmailTriggerTestCmd(sender_email=user_email, \
                 recipient_emails=recipient_emails, msg=message)

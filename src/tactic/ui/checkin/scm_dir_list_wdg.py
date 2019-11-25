@@ -22,11 +22,11 @@ from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, HiddenWdg, Ch
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import DirListWdg, ActionButtonWdg
 from tactic.ui.container import DialogWdg, Menu, MenuItem, SmartMenu
+from tactic.ui.widget import FileSelectorWdg
 
 import os
 
-from checkin_dir_list_wdg import CheckinDirListWdg
-from tactic.ui.widget import FileSelectorWdg
+from .checkin_dir_list_wdg import CheckinDirListWdg
 
 
 class ScmPublishWdg(BaseRefreshWdg):
@@ -1534,7 +1534,7 @@ class ScmCheckinHistoryWdg(BaseRefreshWdg):
         top = self.top
 
         file_logs = self.kwargs.get("file_logs")
-        print "file_logs: ", file_logs
+        print("file_logs: ", file_logs)
 
         attrs = ['depot', 'action','change','client','desc','digest','fileSize','rev','time','type','user']
 

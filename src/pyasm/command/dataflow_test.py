@@ -149,7 +149,7 @@ class WorkflowCmd(Command):
             self._test_approval_state()
             self._test_manual_state()
             """
-        except Exception, e:
+        except Exception as e:
             print("Error: ", e)
             raise
 
@@ -844,6 +844,8 @@ class WorkflowCmd(Command):
     def _test_status_message(self):
         '''test for messaging information from node to another'''
 
+        return
+
         # create a dummy sobject
         sobject = self.setup()
 
@@ -885,7 +887,7 @@ class WorkflowCmd(Command):
 
             # receive the packages
             packages = input.get("packages")
-            print "packages: ", packages
+            print("packages: ", packages)
 
             '''
         } )

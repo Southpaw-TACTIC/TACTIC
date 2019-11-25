@@ -17,6 +17,8 @@ import types
 from pyasm.common import *
 from pyasm.search import *
 
+import six
+
 
 # DEPRECATED
 
@@ -78,7 +80,7 @@ class AccessRuleBuilder(object):
             self.xml = Xml()
             self.xml.create_doc("rules")
         else:
-            if type(xml) in [types.StringType]:
+            if isinstance(xml, six.string_types):
                 self.xml = Xml()
                 self.xml.read_string(xml)
             else:

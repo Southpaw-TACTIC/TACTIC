@@ -31,7 +31,12 @@ from tactic.ui.table import ExpressionElementWdg, PythonElementWdg
 from tactic.ui.common import BaseConfigWdg
 from tactic.ui.widget import ActionButtonWdg
 
-from base_table_layout_wdg import BaseTableLayoutWdg
+from pyasm.biz import ProjectSetting
+
+from .base_table_layout_wdg import BaseTableLayoutWdg
+
+import six
+basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
@@ -47,20 +52,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'description': "Determines whether to draw with widgets or just use the raw data",
             'type': 'SelectWdg',
             'values': 'widget|raw',
-            'order': 00,
+            'order': '00',
             'category': 'Misc'
         },
 
         "search_type": {
             'description': "search type that this panels works with",
             'type': 'TextWdg',
-            'order': 01,
+            'order': '01',
             'category': 'Required'
         },
         "view": {
             'description': "view to be displayed",
             'type': 'TextWdg',
-            'order': 02,
+            'order': '02',
             'category': 'Required',
             'default': 'table',
         },
@@ -78,28 +83,28 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         "element_names": {
             'description': "Comma delimited list of elemnent to view",
             'type': 'TextWdg',
-            'order': 00,
+            'order': '00',
             'category': 'Optional'
         },
         "show_shelf": {
             'description': "Determines whether or not to show the action shelf",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 01,
+            'order': '01',
             'category': 'Optional'
         },
         "show_header": {
             'description': "Determines whether or not to show the table header",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 02,
+            'order': '02',
             'category': 'Optional'
         },
         "show_select": {
             'description': "Determine whether to show the selection checkbox for each row",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'order': 03,
+            'order': '03',
             'category': 'Optional'
         },
 
@@ -141,8 +146,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'values': 'true|false',
             'order': '07'
         },
-        'advanced_search': {
+        'show_search': {
             'description': 'Flag to determine whether or not to show the advanced Search button',
+            'category': 'Optional',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': '18'
+        },
+        'advanced_search': {
+            'description': '(DEPRECATED) Use show_search instead',
             'category': 'Optional',
             'type': 'SelectWdg',
             'values': 'true|false',
@@ -156,7 +168,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'order': '08'
         },
 
-        
+
         'checkin_context': {
             'description': 'override the checkin context for Check-in New File',
             'category': 'Optional',
@@ -202,7 +214,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #'default': 'true',
         },
 
- 
+
 
         "temp" : {
             'description': "Determines whether this is a temp table just to retrieve data",
@@ -231,7 +243,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'category': 'Optional',
             'order': '16'
         },
-        
+
         "show_help": {
             'description': 'Determine whether or not to display the help button in shelf',
             'category': 'Optional',
@@ -241,7 +253,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         }
 
 
-    } 
+    }
 
     GROUP_COLUMN_PREFIX = "__group_column__"
 
@@ -329,7 +341,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     # FIXME: what if this sobject does not exist anymore???
                     deleted[row] = sobject
-                    
+
 
 
         rows = deleted.keys()
@@ -348,7 +360,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             # in this page being drawn
         else:
             total_count = len(self.sobjects)
-            
+
         total_count -= len(rows)
         self.items_found = total_count
 
@@ -399,7 +411,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             filter = self.kwargs.get("filter")
             values = {}
             if filter and filter != 'None':
-                
+
                 filter_data = FilterData(filter)
                 values_list = filter_data.get_values_by_prefix("group")
                 if values_list:
@@ -415,7 +427,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #self.table.add_attr("spt_group_elements", ",".join(self.group_columns))
         self.group_info.add_attr("spt_group_elements", ",".join(self.group_columns))
 
-        # grouping preprocess , check the type of grouping  
+        # grouping preprocess , check the type of grouping
         if self.is_grouped and self.sobjects:
             search_type = self.sobjects[0].get_search_type()
             for group_column in self.group_columns:
@@ -436,8 +448,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         '''check access for each element'''
         self.edit_permission_columns = {}
         filtered_widgets = []
-        
-        project_code = Project.get_project_code() 
+
+        project_code = Project.get_project_code()
         security = Environment.get_security()
         for i, widget in enumerate(self.widgets):
             element_name = widget.get_name()
@@ -447,7 +459,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 widget.set_attributes(attrs)
             else:
                 attrs = {}
-            
+
             self.attributes.append(attrs)
 
 
@@ -464,13 +476,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             }
             access_key1 = {
                 'search_type': self.search_type,
-                'key': element_name, 
+                'key': element_name,
                 'project': project_code
 
             }
             access_keys = [access_key1, access_key2]
             is_viewable = security.check_access('element', access_keys, "view", default=def_default_access)
             is_editable = security.check_access('element', access_keys, "edit", default=def_default_access)
+
+            # hide columns with hidden="true", except when this is a temporary table for dynamic operations
+            is_hidden = (self.kwargs.get("temp") != True) and (attrs.get("hidden") in ['true', True])
+
+            is_viewable = is_viewable and (not is_hidden)
 
             if not is_viewable:
                 # don't remove while looping, it disrupts the loop
@@ -493,9 +510,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # this is different name from the old table selected_search_keys
         search_keys = self.kwargs.get("search_keys")
-      
+
         # if a search key has been explicitly set without expression, use that
-        expression = self.kwargs.get('expression') 
+        expression = self.kwargs.get('expression')
         matched_search_key = False
         if self.search_key:
             base_search_type = SearchKey.extract_base_search_type(self.search_key)
@@ -522,7 +539,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
         elif self.search_key and matched_search_key and not expression:
             sobject = Search.get_by_search_key(self.search_key)
-            if sobject: 
+            if sobject:
                 self.sobjects = [sobject]
                 self.items_found = len(self.sobjects)
 
@@ -545,7 +562,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         self.timer = 0
 
         self.edit_permission = True
-        
+
         view_editable = self.view_attributes.get("edit")
         if not view_editable:
             view_editable = self.kwargs.get("edit")
@@ -564,7 +581,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 self.view_editable = True
 
 
-
         self.color_maps = self.get_color_maps()
 
         from pyasm.web import WebContainer
@@ -572,10 +588,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         self.browser = web.get_browser()
 
         self.error_columns = set()
-        
-        
+
+
         self.expand_on_load = self.kwargs.get("expand_on_load")
-       
+
         if self.expand_on_load in [False, 'false']:
             self.expand_on_load = False
         else:
@@ -599,6 +615,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         for sobject in self.sobjects:
             self.sobject_levels.append(0)
 
+        self.edit_config_xml = self.kwargs.get("edit_config_xml")
 
         # Force the mode to widget because raw does work with FastTable
         # anymore (due to fast table constantly asking widgets for info)
@@ -628,7 +645,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
-        inner.add_style("postion: relative")
+        inner.add_style("position: relative")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
         inner.add_style("border-color", inner.get_color("border"))
@@ -641,14 +658,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         style_div = HtmlElement("style")
         top.add(style_div)
         style_div.add('''
-.spt_layout .spt_cell_edit {
+            .spt_layout .spt_cell_edit {
 
-    padding: 3px 8px;
-    vertical-align: top;
+                padding: 3px 8px;
+                vertical-align: top;
 
-    background-repeat: no-repeat;
-    background-position: bottom right;
-}
+                background-repeat: no-repeat;
+                background-position: bottom right;
+            }
         ''')
 
 
@@ -681,7 +698,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         if self.kwargs.get('temp') != True:
-            
+
             if not Container.get_dict("JSLibraries", "spt_html5upload"):
                 # add an upload_wdg
                 from tactic.ui.input import Html5UploadWdg
@@ -689,12 +706,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 inner.add(upload_wdg)
                 self.upload_id = upload_wdg.get_upload_id()
                 inner.add_attr('upload_id',self.upload_id)
-            
+
             # get all client triggers
             exp = "@SOBJECT(config/client_trigger['event','EQ','%s$'])" %self.search_type
             client_triggers = Search.eval(exp)
 
-            
+
             # set unique to True to prevent duplicated event registration when opening
             # multiple tables listens to event like accept|sthpw/task
             for client_trigger in client_triggers:
@@ -712,7 +729,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 var input = bvr.firing_data;
                 //var new_value = input.new_value;
-                
+
                 // 2nd arg is the args for this script
                 spt.CustomProject.run_script_by_path(bvr.script_path, bvr.firing_data);
                 '''
@@ -730,7 +747,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 if (input.search_key) {
                     var row = table.getElement('.spt_table_row[spt_search_key=' + input.search_key+ ']');
                     var sks = [input.search_key];
-                    spt.table.refresh_rows([row], sks, {}) 
+                    spt.table.refresh_rows([row], sks, {})
                 }
                 '''
                 })
@@ -775,7 +792,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 widget.set_parent_wdg(self)
                 # preprocess the elements
                 widget.preprocess()
-                
+
                 self.widget_summary_option[widget] = widget.get_option("total_summary")
 
 
@@ -814,7 +831,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if info.get("count") == None:
             info["count"] = len(self.sobjects)
 
-        search_limit_mode = self.kwargs.get('search_limit_mode') 
+        search_limit_mode = self.kwargs.get('search_limit_mode')
         if not search_limit_mode:
             search_limit_mode = 'bottom'
 
@@ -827,11 +844,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             )
             inner.add(limit_wdg)
 
-    
+
         # handle column widths
         column_widths = self.kwargs.get("column_widths")
         if not column_widths:
             column_widths = []
+        else:
+            if isinstance(column_widths, basestring):
+                column_widths = column_widths.split(",")
 
 
 
@@ -840,10 +860,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        self.element_names = self.config.get_element_names()  
-       
+        self.element_names = self.config.get_element_names()
+
         for i, widget in enumerate(self.widgets):
-            
+
             default_width = self.kwargs.get("default_width")
             if not default_width:
                 default_width = widget.get_width()
@@ -852,9 +872,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             if not default_width:
                 default_width = -1
-            
+
             width = self.attributes[i].get("width")
-           
+
             if i >= len(column_widths):
                 # default width
                 if width:
@@ -863,7 +883,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     column_widths.append(default_width)
 
             elif not column_widths[i]:
-                column_widths[i] = default_width 
+                column_widths[i] = default_width
 
 
         # resize the widths so that the last one is free
@@ -871,7 +891,22 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         default_width = 120
         min_width = 45
         #expand_full_width = False
+
         for i, item_width in enumerate(reversed(column_widths)):
+
+            if item_width == "auto":
+                continue
+
+            if isinstance(item_width, basestring):
+                if item_width.endswith("px"):
+                    item_width = item_width.replace("px", "")
+                    item_width = int(float(item_width))
+                elif item_width.endswith("%"):
+                    continue
+                else:
+                    item_width = int(float(item_width))
+
+
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -897,7 +932,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll = DivWdg()
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
-            h_scroll.add_style("overflow-y: none")
+            h_scroll.add_style("overflow-y: auto")
 
             scroll = DivWdg()
             h_scroll.add(scroll)
@@ -929,6 +964,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = self.kwargs.get("height")
             if height:
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
                 scroll.add_style("height: %s" % height)
 
 
@@ -937,10 +977,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 scroll.add_class("spt_window_resize")
                 scroll.add_attr("spt_window_resize_offset", window_resize_offset)
 
+            window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
+            if window_resize_xoffset:
+                scroll.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+
             # sync header to this scroll
             # FIXME: this does not work with locked columns as the locked columns have their own
             # scrollbar
-            scroll.add_class("spt_table_scroll")
             scroll.add_attr( "onScroll", '''document.id(this).getParent('.spt_layout').getElement('.spt_table_with_headers').setStyle('margin-left', -this.scrollLeft);''')
             # Scroll event not implemented in behaviors yet
             """
@@ -953,7 +996,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             """
 
             scroll.add_style("overflow-y: auto")
-            scroll.add_style("overflow-x: auto")  
+            scroll.add_style("overflow-x: auto")
             scroll.add_style("position: relative")
 
             # Moo scrollbar
@@ -1019,7 +1062,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_style("overflow-x: auto")
 
         table.set_id(self.table_id)
-        
+
         # generate dictionary of subscribed search_keys to affect context menu
         self.subscribed_search_keys = {}
         login = Environment.get_login().get("login")
@@ -1045,9 +1088,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             if is_admin:
                 show_context_menu = True
 
-        
+
         temp = self.kwargs.get("temp")
-        
+
         if temp != True:
             menus_in = {}
             if show_context_menu:
@@ -1063,7 +1106,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #if self.kwargs.get('temp') != True:
             widget.handle_layout_behaviors(table)
             self.drawn_widgets[widget.__class__.__name__] = True
-        
+
 
 
         # FIXME: this is needed because table gets the
@@ -1077,16 +1120,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         self.handle_table_behaviors(table)
 
 
-     
+
         # draw 4 (even) rows initially by default
         has_loading = False
         init_load_num = self.kwargs.get('init_load_num')
 
         if not init_load_num:
             init_load_num = 4
+        elif init_load_num == 'null':
+            init_load_num = 4
         else:
             init_load_num = int(init_load_num)
-       
+
         # override init_load_num if group column has group_bottom
         if self.has_group_bottom() or self.has_bottom_wdg():
             init_load_num = -1
@@ -1216,7 +1261,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 start_point = row - init_load_num
                 mod = start_point % chunk_size
 
-                if not temp and init_load_num >= 0  and row > init_load_num: 
+                if not temp and init_load_num >= 0  and row > init_load_num:
                     tr, td = table.add_row_cell()
                     td.add_style("height: 30px")
                     td.add_style("padding: 20px")
@@ -1224,7 +1269,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     if mod == 1:
                         td.add('<img src="/context/icons/common/indicator_snake.gif" border="0"/>')
                         td.add("Loading ...")
-                    
+
                     tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
                     tr.add_class("spt_loading")
                     has_loading = True
@@ -1237,6 +1282,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             level = len(self.group_columns) + self.sobject_levels[row]
             self.handle_row(table, sobject, row, level)
 
+
+        undo_queue_save = ProjectSetting.get_value_by_key("table_layout/undo_queue/save") or "false"
+        undo_queue_refresh = ProjectSetting.get_value_by_key("table_layout/undo_queue/refresh") or "false"
+
+        table.add_behavior({
+            'type': 'load',
+            'undo_queue_save': undo_queue_save,
+            'undo_queue_refresh': undo_queue_refresh,
+            'cbjs_action': '''
+                spt.table.undo_queue_save = bvr.undo_queue_save;
+                spt.table.undo_queue_refresh = bvr.undo_queue_refresh;
+            '''
+        })
 
 
         # dynamically load rows
@@ -1272,7 +1330,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 var search_top = view_panel.getElement('.spt_search');
                 var search_dict = spt.table.get_search_values(search_top);
             }
-            
+
             var func = function() {
                 count += 1;
                 var rows = jobs[count];
@@ -1311,9 +1369,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 setTimeout( function() {
                     spt.table.apply_undo_queue();
                 }, 0 );
+
             '''
             } )
- 
+
 
 
 
@@ -1321,19 +1380,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.handle_no_results(table)
 
         # refresh columns have init_load_num = -1 and temp = True
-        if init_load_num < 0 or temp != True: 
+        if init_load_num < 0 or temp != True:
             self.add_table_bottom(table)
             self.postprocess_groups(self.group_rows)
 
 
             # extra stuff to make it work with ViewPanelWdg
             if self.kwargs.get("is_inner") not in ['true', True]:
-                top.add_class("spt_table_top");
+                top.add_class("spt_table_top")
 
             class_name = Common.get_full_class_name(self)
             top.add_attr("spt_class_name", class_name)
 
-            self.table.add_class("spt_table_content");
+            self.table.add_class("spt_table_content")
             inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
             inner.add_attr("spt_view", self.kwargs.get('view'))
 
@@ -1345,12 +1404,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             # add a hidden insert table
             inner.add( self.get_insert_wdg() )
-        
+
             # add a hidden group insert table
             group_insert_wdg = self.get_group_insert_wdg()
             inner.add( group_insert_wdg )
 
-            
+
             # this simple limit provides pagination and should always be drawn. Visible where applicable
             if self.kwargs.get("show_search_limit") not in ['false', False] and search_limit_mode in ['bottom','both']:
                 from tactic.ui.app import SearchLimitSimpleWdg
@@ -1385,7 +1444,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         return styles
 
-    
+
     def _get_simplified_time(self, group_value):
         if group_value in ['', None, '__NONE__']:
             return group_value
@@ -1398,13 +1457,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             timestamp = timestamp[0]
             timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
             timestamp.strftime("%Y %b %d")
-            
+
             group_value = timestamp.strftime("%Y-%m-%d")
 
         elif self.group_interval == BaseTableLayoutWdg.GROUP_MONTHLY:
             timestamp = parser.parse(group_value)
             timestamp = datetime(timestamp.year,timestamp.month,1)
-            
+
             group_value = timestamp.strftime("%Y %m")
         else: # the default group by a regular timestamp
             group_value = timestamp = parser.parse(group_value)
@@ -1413,7 +1472,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         return group_value
 
     def _time_test(self, group_value):
-        ''' used to test if a column is in general storing time. Usually it's used such that when 
+        ''' used to test if a column is in general storing time. Usually it's used such that when
            a value looks like time, it will stop looking'''
         time_test = False
         if isinstance(group_value, datetime):
@@ -1433,7 +1492,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         return time_test
 
     def _set_eval_value(self, sobject, group_column, group_value, idx):
-        '''set the evaluated value for an sobject with an index-named column''' 
+        '''set the evaluated value for an sobject with an index-named column'''
         sobject.set_value("%s%s"%(self.GROUP_COLUMN_PREFIX, idx), group_value, temp=True)
         self._grouping_data[group_column] =  "%s%s"%(self.GROUP_COLUMN_PREFIX, idx)
 
@@ -1457,7 +1516,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         self.group_dict = {}
 
         # identify group_column
-        group_col_type_dict = {} 
+        group_col_type_dict = {}
         for i, group_column in enumerate(group_columns):
             is_expr = re.search("^(@|\$|{@|{\$)", group_column)
             if is_expr:
@@ -1469,50 +1528,50 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 widget.set_option('calc_mode', 'fast')
                 widget.set_sobjects(sobjects)
                 group_col_type_dict[group_column] = widget
-                
+
                 #break
                 #group_value = expr_parser.eval(group_column, sobjects=[sobject],single=True)
                 #group_value = sobject.get_value(group_column, no_exception=True)
-           
+
             else:
                 #group_col_type_dict[group_column] = 'normal'
                 widget = self.get_widget(group_column)
                 if widget:
                     widget.preprocess()
                     group_col_type_dict[group_column] = widget
-       
+
         time_test = False
         expr_parser = ExpressionParser()
-        
+
         for idx, sobject in enumerate(sobjects):
             for i, group_column in enumerate(group_columns):
                 #group_column = '@GET(sthpw/task.bid_start_date)'
                 if group_col_type_dict.get(group_column) == 'inline_expression':
                     group_value = expr_parser.eval(group_column, sobjects=[sobject],single=True)
-                    if not time_test: 
+                    if not time_test:
                         time_test = self._time_test(group_value)
-                  
-                    if time_test == True: 
-                        self.group_by_time[group_column] = True 
+
+                    if time_test == True:
+                        self.group_by_time[group_column] = True
                         if group_value:
                             group_value = self._get_simplified_time(group_value)
 
                     if not group_value:
                         group_value = "__NONE__"
-                    
+
                     self._set_eval_value(sobject, group_column, group_value, i)
-                    
+
                 elif isinstance(group_col_type_dict.get(group_column), ExpressionElementWdg):
                     widget = group_col_type_dict[group_column]
-                   
-                 
+
+
                     expr = widget.kwargs.get('expression')
                     group_value = widget._get_result(sobject, expr)
 
-                    if not time_test: 
+                    if not time_test:
                         time_test = self._time_test(group_value)
                     else:
-                        self.group_by_time[group_column] = True 
+                        self.group_by_time[group_column] = True
 
                     if self.group_interval and group_value:
                         group_value = self._get_simplified_time(group_value)
@@ -1520,19 +1579,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         group_value = group_value.encode('utf-8')
                     else:
                         group_value = str(group_value)
-                
+
                     if not group_value:
                         group_value = "__NONE__"
-                    
+
                     self._set_eval_value(sobject, group_column, group_value, i)
                 elif isinstance(group_col_type_dict.get(group_column), PythonElementWdg):
                     widget = group_col_type_dict[group_column]
-                   
+
                     group_value = widget.get_result(sobject)
-                    if not time_test: 
+                    if not time_test:
                         time_test = self._time_test(group_value)
                     else:
-                        self.group_by_time[group_column] = True 
+                        self.group_by_time[group_column] = True
 
                     if self.group_interval and group_value:
                         group_value = self._get_simplified_time(group_value)
@@ -1541,13 +1600,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     else:
                         group_value = str(group_value)
 
-                
+
                     if not group_value:
                         group_value = "__NONE__"
-                   
+
                     self._set_eval_value(sobject, group_column, group_value, i)
-                
-                elif self.group_by_time.get(group_column):  # self.group_interval 
+
+                elif self.group_by_time.get(group_column):  # self.group_interval
                     group_value = sobject.get_value(group_column, no_exception=True)
                     group_value = self._get_simplified_time(group_value)
                 else:
@@ -1559,7 +1618,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     # this preps for ordering according to the first grouped column
                     # this is called recursively
                     sobject_list = self.group_dict.get(group_value)
-                     
+
                     if sobject_list == None:
                         sobject_list = [sobject]
                         self.group_dict[group_value] = sobject_list
@@ -1578,26 +1637,26 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             reverse = True
         elif self.order_element and self.order_element.endswith(' desc'):
             reverse = True
-       
+
         sobjects = Common.sort_dict(self.group_dict, reverse=reverse)
         for sobject in sobjects:
             sub_group_columns = group_columns[1:]
             ordered_sobject = self.order_sobjects(sobject, sub_group_columns)
             if ordered_sobject:
                 sobject = ordered_sobject
-            
+
             if isinstance(sobject, list):
                 sobject = sobject
             else:
                 sobject = [sobject]
             sobject_sorted_list.extend(sobject)
 
-       
+
         if sobject_sorted_list:
             return sobject_sorted_list
         else:
             return sobjects
-            
+
 
 
 
@@ -1609,7 +1668,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         project_code = Project.get_project_code()
         self.handle_load_behaviors(table)
 
-        # add the search_table_<table_id> listener used by widgets 
+        # add the search_table_<table_id> listener used by widgets
         # like Add Task to Selected
         if self.kwargs.get('temp') != True:
             table.add_behavior( {
@@ -1618,13 +1677,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 'cbjs_action': '''
                     var top = bvr.src_el.getParent(".spt_layout");
                     var version = top.getAttribute("spt_version");
-                    if (version == "2") {
-                        spt.table.set_layout(top);
-                        spt.table.run_search();
-                    }
-                    else {
-                        spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
-                    }
+                    spt.table.set_layout(top);
+                    spt.table.run_search();
                 '''
             } )
 
@@ -1637,7 +1691,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-       
+
         # set all of the column widths in javascript
         if self.kwargs.get('temp') != True:
             table.add_behavior( {
@@ -1657,11 +1711,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     if (width == -1) {
                         continue;
                     }
-                    //console.log(name, width);
                     spt.table.set_column_width(name, width);
                 }
 
-               
+
                 '''
             } )
 
@@ -1802,6 +1855,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             spt.table.set_table(bvr.src_el);
             var row = bvr.src_el.getParent(".spt_table_row");
+
             if (row.hasClass("spt_table_selected")) {
                 spt.table.unselect_row(row);
             }
@@ -1917,7 +1971,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         border_color = table.get_color("table_border", default="border")
 
 
-                
+
         select_styles = {
             "width": "30px",
             "min-width": "30px"
@@ -1943,7 +1997,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         table.add_smart_styles("spt_table_select", select_styles)
         table.add_smart_styles("spt_cell_edit", cell_styles)
 
-        
+
         is_editable = self.kwargs.get("is_editable")
 
         # Edit behavior
@@ -1956,10 +2010,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         access_keys = self._get_access_keys("edit",  project_code)
         if security.check_access("builtin", access_keys, "edit"):
             is_editable = True
-        else: 
+        else:
             is_editable = False
             self.view_editable = False
-            
 
         if is_editable:
             table.add_relay_behavior( {
@@ -2106,7 +2159,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
- 
+
 
     def handle_headers(self, table, hidden=False):
 
@@ -2122,7 +2175,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if hidden:
             tr.add_style("display: none")
 
-        
+
         autofit = self.view_attributes.get("autofit") != 'false'
 
         show_header = self.kwargs.get("show_header")
@@ -2143,7 +2196,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             tr.add_color("background", "background", -2)
             border_color = table.get_color("table_border", 0, default="border")
-       
+
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
 
@@ -2316,7 +2369,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             # embed if this is a time related column
             element_type = SearchType.get_tactic_type(self.search_type, name)
-            if element_type in ['time', 'date', 'datetime'] or widget.is_time_groupable(): 
+            if element_type in ['time', 'date', 'datetime'] or widget.is_time_groupable():
                 th.set_attr("spt_widget_is_time_groupable","true")
 
             if self.mode == 'widget':
@@ -2356,13 +2409,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         '''return True if group_column has group_bottom'''
         if not self.group_columns:
             return False
-        
+
         for widget in self.widgets:
             if widget.get_name() == self.group_columns[0]:
                 expression = widget.get_option("group_bottom")
                 if expression:
                     return True
-            
+
         return False
 
 
@@ -2384,13 +2437,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         group_rows_summary_dict = {}
         widget_summary_dict = {}
         last_group_level = -1
-        # reversed for ease of tallying 
+        # reversed for ease of tallying
         group_rows.reverse()
 
         group_level = 0
         for idx, group_row in enumerate(group_rows):
             sobjects = group_row.get_sobjects()
-            
+
             if hasattr(group_row, 'group_level'):
                 group_level = group_row.group_level
 
@@ -2398,10 +2451,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     # retrieve the last level
                     widget_summary_dict = group_rows_summary_dict.get(last_group_level)
 
-                        
+
                 if last_group_level < 0:
                     last_group_level = group_level
-        
+
             group_row.add_attr("spt_table_state", "open")
 
             for td in group_row.get_widgets():
@@ -2473,7 +2526,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             # as an sobject and display just like the other sobjects
             group_widgets = []
             has_widgets = False
-       
+
             if not widget_summary_dict:
                 # assignmenet
                 widget_summary_dict = {}
@@ -2482,39 +2535,39 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             group_rows_summary_dict[group_level] = widget_summary_dict
 
             for widget in self.widgets:
-                
+
                 # ideally, it's more efficient for the widget to return a tuple. Some old ones may not
                 tmp = widget.get_group_bottom_wdg(sobjects)
                 option = self.widget_summary_option.get(widget)
-                
+
                 if tmp and isinstance(tmp, tuple):
                     group_widget = tmp[0]
                     result = tmp[1]
                 else:
                     group_widget = tmp
                     result = 0
-                
+
                 if option != 'average':
-                    summary = widget_summary_dict.get(widget) 
-                    if not summary: 
+                    summary = widget_summary_dict.get(widget)
+                    if not summary:
                         summary = (0,0)
 
                     group_summary, total = summary
-                    
+
                     if isinstance(result, basestring) and result.startswith('$'):
                         result = result[1:]
                         result = float(result)
-               
+
                     group_summary += result
                     total += result
                     widget_summary_dict[widget] = (group_summary, total)
-                
+
                 group_widgets.append(group_widget)
 
                 if group_widget:
                     has_widgets = True
 
-           
+
             # original group widgets derived from sobjects
             if has_widgets:
                 for wdg_idx, group_widget in enumerate(group_widgets):
@@ -2529,20 +2582,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         td.add_border(color="#BBB", size="1px 0px")
 
                     #group_row.add(td)
-                    
+
                     td.add_style("padding: 3px")
                     group_row.add(td, name='td_%s'%wdg_idx)
                     td.add(group_widget)
 
-            
+
             # update the group rows above the leaf group_row
             if group_level < len(self.group_columns) - 1:
                 for wdg_idx, wdg in enumerate(self.widgets):
-                   
+
                     summary = widget_summary_dict.get(wdg)
                     if summary:
                         group_summary, total = summary
-                    
+
                     if group_level == 0:
                         div = DivWdg(total)
                     else:
@@ -2567,13 +2620,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 for k, v in widget_summary_dict.items():
                     group_sum, total = v
                     widget_summary_dict[k] = (0, total)
-            
+
             last_group_level = group_level
 
-          
+
 
     def add_table_bottom(self, table):
-        '''override the same method in BaseTableLayoutWdg to add a bottom row. this does not 
+        '''override the same method in BaseTableLayoutWdg to add a bottom row. this does not
            call handle_row() as it is simpler'''
         # add in a bottom row
         all_null = True
@@ -2587,7 +2640,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         if not all_null:
-         
+
             tr = table.add_row()
             # don't use spt_table_row which is meant for regular row
             tr.add_class('spt_table_bottom_row')
@@ -2621,12 +2674,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 div.add_style("margin-right: 7px")
 
-               
 
- 
+
+
 
     def handle_groups(self, table, row, sobject):
-        '''called per sobject, decide to draw a grouping folder if conditions are met''' 
+        '''called per sobject, decide to draw a grouping folder if conditions are met'''
 
         if self.kwargs.get('temp') == True:
             return
@@ -2655,23 +2708,23 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 td.add_attr("spt_element_name", widget.get_name())
 
 
-        
+
         last_group_column = None
-        
+
         for i, group_column in enumerate(self.group_columns):
             group_values = self.group_values[i]
-            
+
             eval_group_column =  self._grouping_data.get(group_column)
             if eval_group_column:
                 group_column = eval_group_column
-            
+
             group_value = sobject.get_value(group_column, no_exception=True)
             if self.group_by_time.get(group_column): #self.group_interval:
                 #group_value = sobject.get_value(group_column, no_exception=True)
                 group_value = self._get_simplified_time(group_value)
             if not group_value:
                 group_value = "..."
-            
+
             last_value = group_values.get(group_column)
 
 
@@ -2706,10 +2759,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 if self.group_mode in ["top", "both"]:
                     self.handle_group(table, i, sobject, group_column, group_value, last_value)
-          
+
 
                 group_values[group_column] = group_value
-            
+
                 last_group_column = group_column
                 # clear the next dict to facilate proper grouping in the next major group
                 next_dict = self.group_values.get(i+1)
@@ -2742,7 +2795,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        
+
 
     def handle_group(self, table, i, sobject, group_column, group_value, last_value, is_template=False):
         '''Draw a toggle and folder for this group'''
@@ -2842,7 +2895,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                     var kwargs = {
                         view: 'edit',
-                        search_type: bvr.search_type, 
+                        search_type: bvr.search_type,
                         default: bvr.extra_data,
                         extra_data: bvr.extra_data,
                         save_event: bvr.save_event,
@@ -2907,7 +2960,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         open_icon = "FA_FOLDER_OPEN_O"
         closed_icon = "FA_FOLDER_O"
         group_icon_styles = ""
-        if extra_data:
+        if extra_data and isinstance(extra_data, basestring):
             try:
                 extra_data = jsonloads(extra_data)
             except:
@@ -2943,16 +2996,30 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         swap.add_class("spt_group_row_collapse")
-        open_div = IconWdg("OPEN", open_icon) 
-        closed_div = IconWdg("CLOSED", closed_icon) 
+        open_div = IconWdg("OPEN", open_icon)
+        closed_div = IconWdg("CLOSED", closed_icon)
         swap.set_display_wdgs(open_div, closed_div)
         swap.add_style("margin-left: 5px")
-        swap.add_style("line-height: %spx" % height)
+        swap.add_style("line-height: %s" % height)
         swap.set_behavior_top(self.table)
 
+        collapse_default = self.kwargs.get("collapse_default")
+        if collapse_default in [True, 'true']:
+            collapse_level = self.kwargs.get("collapse_level") or -1
+            swap.add_behavior({
+                'type': 'load',
+                'collapse_level': collapse_level,
+                'cbjs_action': '''
+                if (bvr.collapse_level != -1) {
+                    var row = bvr.src_el.getParent(".spt_group_row");
+                    var group_level = row.getAttribute("spt_group_level");
+                    if (group_level != bvr.collapse_level) return;
+                }
+                bvr.src_el.getElement(".spt_group_row_collapse").click();
+                '''
+                })
+
         title_div.add_style("width: 100%")
-
-
 
         # build the inner flex layout
         td_inner = DivWdg()
@@ -2973,7 +3040,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         border_color = tr.get_color("table_border")
         tr.add_border(size="1px 0px 1px 0px", color=border_color)
         #tr.add_style("background", "#EEF")
-        
+
         tr.add_attr("spt_unique_id", unique_id)
         tr.add_class("spt_group_row")
 
@@ -3014,7 +3081,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         table.add_attr("spt_bgcolor1", bgcolor1)
         table.add_attr("spt_bgcolor2", bgcolor2)
 
-
         tr.add_class("spt_table_row_item")
         tr.add_class("spt_table_row")
         # to tag it with the current table to avoid selecting nested table contents when they are present
@@ -3034,6 +3100,35 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 "drag_el": '@',
                 "cb_set_prefix": 'spt.document.drag_row'
             } )
+
+            tr.add_behavior({
+                'type': 'click',
+                'cbjs_action': '''
+
+                 var row = bvr.src_el;
+                 row.addClass("spt_table_selected");
+
+                 var item = bvr.src_el.getElement(".spt_document_item");
+                 var pipeline_code = item.getAttribute("spt_pipeline_code");
+                 var title = item.getAttribute("spt_title");
+                 var event = "pipeline_" + pipeline_code + "|click";
+
+                 var temp = {
+                     "pipeline_code": pipeline_code,
+                     "title" : title,
+                 }
+
+                 var kwargs = {};
+                 kwargs.options = temp;
+
+                 spt.named_events.fire_event(event, kwargs);
+                 spt.command.clear();
+                 spt.pipeline.fit_to_canvas();
+
+                 '''
+                 })
+
+
 
 
 
@@ -3220,7 +3315,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                             if (!layout.isVisible()) return;
                             spt.table.set_layout(layout);
-
+                            
                             var rows = spt.table.get_all_rows();
                             for (var i = 0; i < rows.length; i++) {
 
@@ -3252,7 +3347,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                             el.setStyle("position", "absolute");
                             //var height = "35px";
                             //el.setStyle("height", height);
-                            
+
                         } );
 
 
@@ -3303,7 +3398,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         scroll.onscroll = function(e) {
                             header_table.setStyle("margin-left", -scroll.scrollLeft+offset);
                             table.setStyle("margin-left", -scroll.scrollLeft+offset);
-                        } 
+                        }
 
 
                         // add an observer to the layout
@@ -3360,11 +3455,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     from pyasm.widget import ExceptionWdg
                     error_wdg = ExceptionWdg(e)
                     td.add(error_wdg)
-                  
+
                     # reset the top_layout
                     from pyasm.web import WidgetSettings
                     WidgetSettings.set_value_by_key('top_layout','')
- 
+
 
             else:
                 value = sobject.get_value(element_name, no_exception=True)
@@ -3384,7 +3479,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 widget.handle_tr(tr)
                 widget.handle_td(td)
 
-        
             is_editable = True
             # Check if view is editable first, if not, skip checking each column
             if self.view_editable:
@@ -3421,14 +3515,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = self.value
 
-                # add timezone conversion
-                if not SObject.is_day_column(element_name):
-                    element_type = SearchType.get_tactic_type(self.search_type, element_name)
-                    
-                    if element_type in ['time', 'datetime']:
-                        value = widget.get_timezone_value(value)
-                     
-
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
@@ -3444,7 +3530,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 if value == None:
                     value = ""
-            
+
                 if td.get_attr("spt_input_value") == None:
                     td.add_attr("spt_input_value", value)
                 #td.add_attr("spt_input_column", column)
@@ -3508,7 +3594,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             text_color_node = color_xml.get_node(text_xpath)
             text_color_map = color_xml.get_node_values_of_children(text_color_node)
-            
+
             # use old weird query language
             query = bg_color_map.get("query")
             query2 = bg_color_map.get("query2")
@@ -3649,7 +3735,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #if self.is_grouped or self.group_columns:
 
         show_border = self.kwargs.get("show_border")
-        
+
         if self.group_columns or True:
             spacing = len(self.group_columns) * 20
             if spacing:
@@ -3676,14 +3762,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             icon_div = DivWdg()
             icon_div.add_class("spt_select_new")
             #icon = IconWdg("New", IconWdg.NEW)
-            icon = IconWdg("New", "BS_ASTERISK") 
+            icon = IconWdg("New", "BS_ASTERISK")
             icon_div.add(icon)
             #td.add_style("padding: 1 0 0 10")
             icon_div.add_style("float: left")
             icon_div.add_style("margin-left: 7px")
             td.add(icon_div)
 
-        return 
+        return
 
 
 
@@ -3691,7 +3777,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_edit_wdgs(self):
         # build all of the cell edits
         edit_wdgs = {}
-       
+
         if self.edit_permission and self.view_editable:
             for j, widget in enumerate(self.widgets):
                 name = widget.get_name()
@@ -3700,7 +3786,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 # first check if the widget is actually editable
                 editable = widget.is_editable()
-               
+
                 if editable == True:
                     editable = self.attributes[j].get("edit")
                     editable = editable != "false"
@@ -3713,8 +3799,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     editable = False
 
                 if editable == True:
-                    from layout_wdg import CellEditWdg
-                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
+                    from .layout_wdg import CellEditWdg
+                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version(), config_xml=self.edit_config_xml)
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,
                     # if any have been configured on it
@@ -3775,7 +3861,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if Container.get_dict("JSLibraries", "spt_table"):
             return
 
-      
+
         cbjs_action =  '''
 
 spt.table.get_total_count = function() {
@@ -3905,10 +3991,9 @@ spt.table.add_filter = function(element, filter_type) {
     // get template
     var filter_top = element.getParent(".spt_filter_top");
     var filter_template = filter_top.getElement(".spt_filter_template_with_op");
-    
+
     var filter_templates = filter_top.getElements(".spt_filter_template_with_op");
     for (var i = 0; i < filter_templates.length; i++) {
-        console.log(filter_templates[i]);
         var filter_template_type = filter_templates[i].getAttribute("spt_filter_type")
         if (filter_template_type == filter_type) {
             filter_template = filter_templates[i];
@@ -3925,8 +4010,8 @@ spt.table.add_filter = function(element, filter_type) {
         // hidden used for expression
         if (input && input.getAttribute('type') !='hidden' ) input.value ='';
     }
-     
-   
+
+
 
     // clone the filter
     var new_filter = spt.behavior.clone(filter_template);
@@ -3943,14 +4028,14 @@ spt.table.add_filter = function(element, filter_type) {
     // make this into a new search filter
     var children = new_filter.getElements(".spt_filter_template");
     for (var i=0; i<children.length; i++) {
-        var child = children[i];    
+        var child = children[i];
         child.addClass("spt_search_filter");
     }
     var children = new_filter.getElements(".spt_op_template");
     for (var i=0; i<children.length; i++) {
         var child = children[i];
         child.addClass("spt_op");
-        
+
         child.setAttribute("spt_op", op_value);
     }
 }
@@ -4124,10 +4209,10 @@ spt.table.get_column_index_by_cell = function(cell) {
     // get the parent row
     var row = cell.getParent(".spt_table_row");
 
-    // it could be inline insert 
+    // it could be inline insert
     if (!row)
         row = cell.getParent(".spt_table_insert_row");
-      
+
 
     // get all of the cells
     var cells = row.getElements(".spt_cell_edit");
@@ -4165,7 +4250,7 @@ spt.table.get_element_name_by_cell = function(cell) {
 spt.table.get_all_search_keys = function() {
     var embedded = false;
     var rows = spt.table.get_all_rows(embedded);
-    
+
     var search_keys = [];
     // Any future custom row may not have search_key
     for (var i = 0; i < rows.length; i++) {
@@ -4227,7 +4312,7 @@ spt.table.get_headers = function() {
 
 /* to get embedded rows, set embedded=true, default should be false */
 spt.table.get_all_rows = function(embedded) {
-    if (typeof(embedded) == 'undefined') 
+    if (typeof(embedded) == 'undefined')
         embedded = false;
 
     var table = spt.table.get_table();
@@ -4299,10 +4384,10 @@ spt.table.get_group_by_search_key = function(search_key, options) {
 
 
 spt.table.get_cells = function(element_name, tr) {
-    
+
     var table = spt.table.get_table();
     var index = spt.table.get_column_index(element_name);
-    
+
     // get all of the cells
     var tds = [];
     var rows = tr ? [tr] : table.getElements(".spt_table_row");
@@ -4327,10 +4412,10 @@ spt.table.get_cell = function(element_name, tr) {
 
 
 spt.table.get_group_cells = function(element_name, tr) {
-    
+
     var table = spt.table.get_table();
     var index = spt.table.get_column_index(element_name);
-    
+
     // get all of the cells
     var tds = [];
     var rows = tr ? [tr] : table.getElements(".spt_table_group_row");
@@ -4351,17 +4436,20 @@ spt.table.get_group_cells = function(element_name, tr) {
 spt.table.last_selected_row = null;
 
 spt.table.select_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
     }
-
-    var current_color = row.getAttribute("spt_hover_background");
-
-    if (!current_color) {
-        current_color = row.getStyle("background-color")
+    
+    var current_color = row.getAttribute("spt_last_background");
+    if (!current_color){
+        current_color = row.getAttribute("spt_hover_background");
+        if (!current_color){
+            current_color = row.getStyle("background-color");
+        }
     }
+    
     if (!spt.has_class(row,'spt_table_selected')) {
 
         row.setAttribute("spt_last_background", current_color);
@@ -4374,7 +4462,7 @@ spt.table.select_row = function(row) {
 
 
 spt.table.unselect_row = function(row) {
-    var cell = row.getElement(".spt_table_select")
+    var cell = row.getElement(".spt_table_select");
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");
@@ -4477,7 +4565,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     var src_el = kwargs.src_el;
     kwargs.src_el = "";
     var pos = src_el.getPosition(row);
-    var dx = pos.x - 30; 
+    var dx = pos.x - 30;
 
 
 
@@ -4503,7 +4591,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         spt.table.last_table.hidden_zindex += 1;
     else
         spt.table.last_table.hidden_zindex = 100;
-    
+
 
     // New popup test
     var kwargs = {
@@ -4565,14 +4653,14 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 
 
 spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
-    // if it is hidden_row, just use it as is without getting Next 
+    // if it is hidden_row, just use it as is without getting Next
     var sibling = is_hidden ? row: row.getNext();
     if (col_name) {
         while (sibling && sibling.getAttribute('column') != col_name) {
             sibling = sibling.getNext();
         }
     }
-    
+
     if (sibling && sibling.hasClass("spt_hidden_row")) {
         // get the first child
         var child = sibling.getElement(".spt_hidden_content");
@@ -4587,7 +4675,7 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
                 spt.table.remove_hidden_row(sibling, null, true);
                 spt.behavior.destroy_element(sibling);
             });
-            fx.start('margin-top', -size.y-100+"px");
+            fx.start('margin-top', -size.y-100);
         }
         else {
             spt.table.remove_hidden_row(sibling);
@@ -4598,9 +4686,9 @@ spt.table.remove_hidden_row = function(row, col_name, is_hidden) {
 
 
 spt.table.remove_hidden_row_from_inside = function(el) {
-    var hidden_row = el.getParent(".spt_hidden_row"); 
+    var hidden_row = el.getParent(".spt_hidden_row");
     var col_name = hidden_row.getAttribute('column');
-    
+
     spt.table.remove_hidden_row(hidden_row, col_name, true);
 }
 
@@ -4752,19 +4840,19 @@ spt.table.set_connect_key = function(connect_key) {
 }
 
 
-// regular visible data 
+// regular visible data
 
 spt.table.get_data = function(row) {
     var data = {};
     if (row) {
-        var cells = row.getElements('.spt_cell_edit'); 
+        var cells = row.getElements('.spt_cell_edit');
         var element_names = spt.table.get_element_names();
         for (var k = 0; k < cells.length; k++) {
             var cell = cells[k];
-            data[element_names[k]] = cell.getAttribute('spt_input_value');   
+            data[element_names[k]] = cell.getAttribute('spt_input_value');
         }
     }
-    return data   
+    return data
 }
 
 
@@ -4773,7 +4861,7 @@ spt.table.set_data = function(row, data) {
     for (a in data) {
         if (data.hasOwnProperty(a)) {
             var cell = row.getElement('td[spt_element_name=' + a + ']');
-          
+
             var value = data[a];
             cell.innerHTML = value;
             cell.setAttribute('spt_input_value', value);
@@ -4782,7 +4870,7 @@ spt.table.set_data = function(row, data) {
             spt.table.set_changed_color(row, cell);
         }
     }
-    if (changed) 
+    if (changed)
         spt.add_class(row, "spt_row_changed");
 }
 
@@ -4851,28 +4939,27 @@ spt.table.add_new_item = function(kwargs) {
 
     var search_type = layout.getAttribute("spt_search_type");
 
-    var row;
-    var position;
     var table = spt.table.get_table();
     if (kwargs.row) {
-        row = kwargs.row;
-        position = "after";
+        var row = kwargs.row;
+        var position = "after";
     }
     else if (kwargs.insert_location == 'bottom') {
         var rows = spt.table.get_all_rows();
         if (rows.length == 0) {
-            row = table.getElement(".spt_table_header_row");
+            var row = table.getElement(".spt_table_header_row");
         }
         else {
-            row = rows[rows.length-1];
+            var row = rows[rows.length-1];
         }
-        position = "after";
+        var position = "after";
 
     }
     else {
-        row = table.getElement(".spt_table_row");
-        position = "before";
+        var row = table.getElement(".spt_table_row");
+        var position = "before";
     }
+
 
 
 
@@ -4935,9 +5022,11 @@ spt.table.add_new_item = function(kwargs) {
 
     // fire a client event
     var tableId = spt.table.layout.getAttribute("spt_table_id");
+
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
-    
+
+
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
 
@@ -4946,7 +5035,7 @@ spt.table.add_new_item = function(kwargs) {
     if (no_items != null) {
         no_items.destroy();
     }
-    
+
     return clone;
 
 }
@@ -4997,7 +5086,7 @@ spt.table.add_new_group = function(kwargs) {
     }
 
     var clone = spt.behavior.clone(insert_row);
-   
+
     if (!row) {
         var first = table.getElement("tr");
         if (first) {
@@ -5044,10 +5133,10 @@ spt.table.add_new_group = function(kwargs) {
     spt.remove_class(clone, 'spt_clone');
 
     // fire a client event
-    var options = {insert_location: insert_location}; 
+    var options = {insert_location: insert_location};
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone, options: options});
-    
+
     // fire a client event
     var event = "insertY|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone, options: options});
@@ -5072,7 +5161,7 @@ spt.table.get_edit_wdg = function(element_name) {
     var layout = spt.table.get_layout();
 
     var edit_top = layout.getElement(".spt_edit_top");
-    if (!edit_top) 
+    if (!edit_top)
         return null;
 
     var edit_wdgs = edit_top.getElements(".spt_edit_widget");
@@ -5140,7 +5229,7 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
-    
+
 
     // Remove the first child
     // NOTE: this relies on a widget that has all components under the first
@@ -5219,7 +5308,7 @@ spt.table.show_edit = function(cell) {
 
 
 
-    
+
     // code here to adjust the size of the edit widget
     spt.table.alter_edit_wdg(cell, edit_wdg, size);
 
@@ -5327,7 +5416,8 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
         }
 
         // find the key in the cell (NOTE: this should be "spt_input_key"
-        if (! key) {
+        //TODO: why is key = None?
+        if (!key || key == 'None') {
             key = cell.getAttribute("spt_input_key");
             if (!key) {
                 key = cell.getAttribute("spt_input_value");
@@ -5403,7 +5493,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     if (input == null) {
         return;
     }
-    
+
     if (input.hasClass("SPT_NO_RESIZE") ) {
         // do nothing
     }
@@ -5412,7 +5502,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             input.value = value;
         }
     }
- 
+
     else if (input.nodeName == "TEXTAREA") {
         set_focus = true;
 
@@ -5457,7 +5547,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.value = value;
-        // for calendar input 
+        // for calendar input
         if (spt.has_class(input, 'spt_calendar_input')){
             accept_event = 'change';
             input.setStyle( "width", size.x+125 + 'px');
@@ -5493,7 +5583,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             edit_wdg.setStyle( "height", size.y+'px');
             edit_wdg.setStyle( "text-align", 'center');
         }
- 
+
     }
     else if (input.nodeName == "SELECT") {
 
@@ -5558,9 +5648,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 edit_wdg.setStyle( "height", size.y+'px');
             }
         }
-        // to avoid overlapping select in UI 
+        // to avoid overlapping select in UI
         edit_wdg.setStyle('z-index', '100' );
-    } 
+    }
 
     else {
         edit_wdg.setStyle( "width", size.x+'px');
@@ -5578,8 +5668,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
 
     }
 
-    
-       
+
+
 
     if (accept_event == 'blur') {
         input.addEvent("blur", function() {
@@ -5623,12 +5713,12 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 }
             }
             else {
-                 // TODO: check if it's multi-line first 
+                 // TODO: check if it's multi-line first
                  //... use ctrl-ENTER for new-line, regular ENTER (RETURN) accepts value
                 var tvals = parse_selected_text(input);
                 input.value = tvals[0] + "\\n" + tvals[1];
                 spt.set_cursor_position( input, tvals[0].length + 1 );
-            
+
                 //if (spt.browser.is_Webkit_based() ) {
                 //input.value = input.value + "\\n";
                 //}
@@ -5706,7 +5796,7 @@ spt.table.open_link = function(bvr) {
 
 
 spt.table.get_changed_rows = function(embedded) {
-    if (typeof(embedded) == 'undefined') 
+    if (typeof(embedded) == 'undefined')
         embedded = false;
     var table = spt.table.get_table();
     var css = embedded ? ".spt_table_row" : ".spt_table_row_" + table.getAttribute('id');
@@ -5798,18 +5888,18 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
     }
 
     var old_value = edited_cell.getAttribute("spt_input_value");
-    
+
     var ignore_multi = kwargs.ignore_multi ? true : false;
 
     var header = spt.table.get_header_by_cell(edited_cell);
 
     var is_inline_wdg = header.getAttribute("spt_input_type") == 'inline' ? true : false;
     var input_type = header.getAttribute("spt_input_type");
-    
+
     // Multi EDIT
     var selected_rows = spt.table.get_selected_rows();
     var in_selected_row = edited_cell.getParent("tr.spt_table_selected");
-    
+
     var changed = old_value != new_value;
 
 
@@ -5825,7 +5915,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
     // empty the redo queue
     layout_top.redo_queue = [];
-    
+
 
 
 
@@ -5836,7 +5926,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
         for (var i = 0; i < selected_rows.length; i++) {
             var cell = selected_rows[i].getElements(".spt_cell_edit")[index];
             var old_html = cell.innerHTML;
-           
+
             var undo = spt.table._accept_single_edit(cell, new_value);
             undo_queue.push(undo);
 
@@ -5850,7 +5940,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
                 undo.old_html = old_html;
                 undo.new_html = edited_cell.innerHTML;
             }
-            
+
         }
 
     }
@@ -5889,7 +5979,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
     if (spt.table.last_edit_wdg) {
         spt.table.last_edit_wdg.destroy();
-        
+
     }
 
 
@@ -5956,7 +6046,6 @@ spt.table.set_display = function( el, value, input_type ) {
 }
 
 spt.table.set_changed_color = function(row, cell) {
-    
     cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
     row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
 
@@ -5968,7 +6057,7 @@ spt.table.set_changed_color = function(row, cell) {
         row.setStyle("background-color", "#204411");
         cell.setStyle("background-color", "#305511");
         row.setAttribute("spt_background", "#204411");
-    } 
+    }
     else {
         //color = "rgba(188, 207, 215, 1.0)";
         //color2 = "rgba(188, 207, 215, 0.6)";
@@ -6009,13 +6098,14 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
             undo = {};
         }
 
-         
+
         undo.cell = cell;
         undo.old_value = old_value;
         undo.new_value = new_value;
         undo.search_key = search_key;
         undo.element_name = element_name;
         undo.cbjs_action = null;
+        undo.saved = false;
 
 
         var row = cell.getParent(".spt_table_row");
@@ -6081,8 +6171,6 @@ spt.table._accept_single_edit = function(cell, new_value, undo) {
                 labels[element_name] = cell.getAttribute("spt_input_value");
             }*/
         }
-
-
         return undo;
     }
 }
@@ -6199,24 +6287,25 @@ spt.table.redo_last = function() {
 
 
 spt.table.apply_undo_queue = function(undo_queue) {
+    if (spt.table.undo_queue_refresh == "false"){
+        return;
+    }
     var layout = spt.table.get_layout();
     var layout_top = layout.getParent(".spt_layout_top");
     // sometimes layout_top is null
+
     if (!layout_top) {
         return;
     }
-
     var undo_queue = layout_top.undo_queue;
-
     if (!undo_queue) {
         return;
     }
 
-    for (var i = 0; i < undo_queue.length; i ++) {
+    for (var i = 0; i < undo_queue.length; i++) {
         var undo = undo_queue[i];
         var search_key = undo.search_key;
         var element_name = undo.element_name;
-        var orig_cell = undo.cell;
 
         var row = spt.table.get_row_by_search_key(search_key);
         if (!row) {
@@ -6228,50 +6317,45 @@ spt.table.apply_undo_queue = function(undo_queue) {
             continue;
         }
 
-
-
         var undo_type = undo.type;
         if (undo_type) {
             undo.redo();
             return;
         }
 
-
         // get the original value.  If there is no original value, then
-        // set it soe it can be used for future changes in this undo queue
-        var orig_value = cell.getAttribute("spt_orig_value");
-        if (orig_value == null) {
-            var orig_value = cell.getAttribute("spt_input_value");
-            cell.setAttribute("spt_orig_value", orig_value);
+        // set it so it can be used for future changes in this undo queue
+
+        var orig_value = cell.getAttribute("spt_input_value");
+        if (!orig_value){
+            continue;
         }
-
-
-        cell.innerHTML = undo.new_html;
-        cell.setAttribute("spt_input_value", undo.new_value);
-
         var new_value = undo.new_value;
 
         // remap to the new cell
         undo.cell = cell;
 
-
-        if (new_value == orig_value) {
+        if (orig_value == new_value) {
             cell.removeClass("spt_cell_changed");
             row.removeClass("spt_row_changed");
+            var statuses_color = JSON.parse(cell.getAttribute("spt_colors"));
+            var status = cell.getAttribute("spt_input_value");
+            var cell_color = statuses_color[status];
 
-            var row_background = row.getAttribute("spt_orig_background");
-            if (!row_background || row_background == "null") row_background = 'transparent';
-
-            cell.setStyle("background-color", cell.getAttribute("spt_orig_background"));
-            row.setStyle("background-color", row_background);
-            row.setAttribute("spt_background", row.getAttribute("spt_orig_background"));
+            if (cell_color == null) {
+                continue;
+            }
+            cell.setStyle("background-color", cell_color);
+            row.setStyle("background-color", 'white');
+            row.setAttribute("spt_background", 'white');
         }
         else {
+            cell.innerHTML = undo.new_html;
+            //cell.setAttribute("spt_input_value", undo.new_value);
             cell.addClass("spt_cell_changed");
             row.addClass("spt_row_changed");
             spt.table.set_changed_color(row, cell);
         }
-
     }
 }
 
@@ -6301,12 +6385,12 @@ spt.table.save_changes = function(kwargs) {
     var insert_data = [];
     var update_data = [];
     var search_keys = [];
-    var web_data = []; 
+    var web_data = [];
     var extra_data = [];
     var extra_action = [];
 
-    var parent_key = null;    
-    var connect_key = null;    
+    var parent_key = null;
+    var connect_key = null;
 
 
 
@@ -6314,10 +6398,9 @@ spt.table.save_changes = function(kwargs) {
 
 
     // collapse updates from undo_queue for be classified by search_type
-    //var use_undo_queue = true;
-    var use_undo_queue = false;
+    var use_undo_queue = spt.table.undo_queue_save;
 
-    if (use_undo_queue) {
+    if (use_undo_queue == "true") {
 
         var layout = spt.table.get_layout();
         var layout_top = layout.getParent(".spt_layout_top")
@@ -6328,6 +6411,10 @@ spt.table.save_changes = function(kwargs) {
 
         for (var i = 0; i < undo_queue.length; i++) {
             var action = undo_queue[i];
+            var saved = action.saved;
+            if (saved == true){
+                continue;
+            }
             var search_key = action.search_key;
             var element_name = action.element_name;
 
@@ -6348,6 +6435,8 @@ spt.table.save_changes = function(kwargs) {
                 updates[search_key] = action.get_data();
                 extra_updates[search_key] = action.get_extra_data();
             }
+
+            action.saved = true;
 
 
         }
@@ -6390,7 +6479,7 @@ spt.table.save_changes = function(kwargs) {
             }
 
             // get extra action
-            var extra_action_row = rows[i].extra_action
+            var extra_action_row = rows[i].extra_action;
             if (extra_action_row) {
                 extra_action.push(extra_action_row);
             }
@@ -6432,8 +6521,8 @@ spt.table.save_changes = function(kwargs) {
                         single_web_data['inline_data'] = web_values;
                     }
                 }
-          
-                    
+
+
             }
         }
     }
@@ -6485,20 +6574,20 @@ spt.table.save_changes = function(kwargs) {
         trigger_mode: kwargs.trigger_mode,
         config_xml: config_xml,
     }
-   
+
 
     // add to the values here for gantt and inline elements
     web_data = JSON.stringify(web_data);
-    
+
     var search_top = null;
     var table = spt.table.get_table();
-    
+
     var search_dict = {};
     var view_panel = table.getParent('.spt_view_panel[table_id=' + table.id + ']' );
     if (view_panel) {
         search_top = view_panel.getElement('.spt_search');
         search_dict = spt.table.get_search_values(search_top);
-       
+
     }
 
     var layout_top = table.getParent(".spt_layout_top");
@@ -6506,7 +6595,7 @@ spt.table.save_changes = function(kwargs) {
     if (layout_top) {
         expand_on_load = layout_top.getProperty("spt_expand_on_load");
     }
-    
+
     try {
         var result = server.execute_cmd(class_name, kwargs2, {'web_data': web_data});
         var info = result.info;
@@ -6523,10 +6612,10 @@ spt.table.save_changes = function(kwargs) {
             if (do_refresh ) {
                 var kw = {refresh_bottom : true, json: search_dict, expand_on_load: expand_on_load};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
-            } 
+            }
         }
 
-       
+
     } catch(e) {
         spt.error(spt.exception.handler(e));
     }
@@ -6538,7 +6627,7 @@ spt.table.save_changes = function(kwargs) {
         var tmps = parts[0].split('?');
         var search_type = tmps[0];
         var event = "update|" + search_type;
-        
+
         var input = {
             kwargs: kwargs2,
             web_data: web_data
@@ -6563,7 +6652,7 @@ spt.table.save_changes = function(kwargs) {
         on_complete(search_keys);
     }
 
-    
+
     return search_keys;
 }
 
@@ -6636,20 +6725,20 @@ spt.table.get_refresh_kwargs = function(row) {
     search_type = layout.getAttribute("spt_search_type");
 
     var config_xml = layout.getAttribute("spt_config_xml");
-    
+
     var table_top = layout.getParent('.spt_table_top');
-    
+
     var show_select = table_top.getAttribute("spt_show_select");
     var order_by = table_top.getAttribute("spt_order_by");
 
     var group_elements = spt.table.get_group_elements();
 
-    var current_table = spt.table.get_table(); 
+    var current_table = spt.table.get_table();
     // must pass the current table id so that the row bears the class with the table id
     // there is no need to pass in variables that affects the drawing of the shelf here.
     var kwargs = {
         temp: true,
-        table_id : current_table.getAttribute('id'), 
+        table_id : current_table.getAttribute('id'),
         search_type: search_type,
         view: view,
         show_shelf: false,
@@ -6692,7 +6781,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     var expand_on_load = kw.expand_on_load;
     if (expand_on_load == null) expand_on_load = true;
- 
+
     //var layout = spt.table.get_layout();
     // this is more reliable when multi table are drawn in the same page while
     // refresh is happening
@@ -6744,13 +6833,13 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         class_name = 'tactic.ui.panel.TableLayoutWdg';
     }
 
-    var current_table = spt.table.get_table(); 
+    var current_table = spt.table.get_table();
     // must pass the current table id so that the row bears the class with the table id
     // there is no need to pass in variables that affects the drawing of the shelf here.
     var kwargs = {
         temp: true,
         icon_generate_refresh: kw.icon_generate_refresh,
-        table_id : current_table.getAttribute('id'), 
+        table_id : current_table.getAttribute('id'),
         search_type: search_type,
         view: view,
         layout: layout,
@@ -6791,7 +6880,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // behaviors are only process when in the actual dom
             //spt.behavior.replace_inner_html(dummy, widget_html);
             dummy.innerHTML = widget_html;
-        
+            
+            // HACK for tile layout 
+            dummy = spt.behavior.clone(dummy);
+
+
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
             }
@@ -6803,7 +6896,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             for (var i = 0; i < new_rows.length; i++) {
                 // remove the hidden row, if there is one
                 if (!rows[i]) continue;
-                    
+
                 spt.table.remove_hidden_row( rows[i] );
 
                 // replace the new row
@@ -6817,7 +6910,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 // destroy the old row
                 rows[i].destroy();
 
- 
+
             }
 
 
@@ -6838,11 +6931,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             }
 
 
-            
+
             // for efficiency, we do not redraw the whole table to calculate the
             // bottom so just change the bg color
             if (kw['refresh_bottom']) {
-                var bottom_row = spt.table.get_bottom_row(); 
+                var bottom_row = spt.table.get_bottom_row();
                 if (bottom_row) {
                     // This color doesn't really fit color palette
                     //bottom_row.setStyle('background', '#E6CB81');
@@ -6854,18 +6947,19 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 var on_complete = kw['on_complete'];
                 on_complete();
             }
-            
 
-            
+
+
           }
         }
     }
     kwargs.values = {};
     if (web_data && web_data != "[{}]")
-        kwargs.values = {web_data: web_data};  
+        kwargs.values = {web_data: web_data};
 
     if (kw.json)
         kwargs.values['json'] = kw.json;
+    
     server.async_get_widget(class_name, kwargs);
 }
 
@@ -6923,7 +7017,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var search_keys = spt.table.get_all_search_keys();
     var rows = spt.table.get_all_rows();
     var header_row = spt.table.get_header_row();
-    var group_rows = spt.table.get_group_rows(); 
+    var group_rows = spt.table.get_group_rows();
     var bottom_row = spt.table.get_bottom_row();
     var col_indices = [];
     for (var k=0; k<element_names.length; k++) {
@@ -6939,12 +7033,12 @@ spt.table.modify_columns = function(element_names, mode, values) {
 
     var group_elements = spt.table.get_group_elements();
 
-    var current_table = spt.table.get_table(); 
+    var current_table = spt.table.get_table();
     // must pass the current table id so that the row bears the class with the table id
     var class_name = 'tactic.ui.panel.table_layout_wdg.TableLayoutWdg';
     //if (group_elements)
     //    element_names.push(group_elements);
-        
+
     var kwargs = {
         temp: true,
         table_id: current_table.getAttribute('id'),
@@ -6958,30 +7052,30 @@ spt.table.modify_columns = function(element_names, mode, values) {
         init_load_num : -1
     }
 
-    
+
     var server = TacticServerStub.get();
 
     var kwargs = { 'args': kwargs };
-    
+
     // pass the search json for group and order_by attributes
     var search_top = null;
     var view_panel = layout.getParent('.spt_view_panel');
     if (view_panel)
         search_top = view_panel.getElement('.spt_search');
 
-    
+
     var search_dict = spt.table.get_search_values(search_top);
     if (!('json' in values)) {
         values['json'] = search_dict;
     }
-    
+
 
 
 
     kwargs.values = values
     var widget_html = server.get_widget(class_name, kwargs);
 
-   
+
     var data = document.createElement("div");
     //spt.behavior.replace_inner_html(data, widget_html);
     data.innerHTML = widget_html;
@@ -6990,7 +7084,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
     var data_rows = data.getElements(".spt_table_row");
     var data_header_row = data.getElement(".spt_table_header_row");
     var data_group_rows = data.getElements(".spt_group_row");
-  
+
     var data_bottom_row = data.getElement(".spt_table_bottom_row");
     if (!data_header_row) {
         spt.error("There may have been an error:<br/>" + widget_html, {type: 'html'});
@@ -7021,7 +7115,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
          else if (mode=='refresh') {
              var idx = col_indices[j];
              var tgt_cell = header_row.getElements(".spt_table_header")[idx];
-             cells[j].inject(tgt_cell, "after"); 
+             cells[j].inject(tgt_cell, "after");
              tgt_cell.destroy();
          }
 
@@ -7031,13 +7125,13 @@ spt.table.modify_columns = function(element_names, mode, values) {
     if (bottom_row && data_bottom_row) {
         rows.push(bottom_row);
         data_rows.push(data_bottom_row);
-        // data_rows and rows could be off by 1 cuz either could optionally have a bottom wdg 
+        // data_rows and rows could be off by 1 cuz either could optionally have a bottom wdg
         if (rows.length != data_rows.length) {
             spt.alert('mismatch of data_rows and rows in the widget. Refresh may not be correct.');
         }
     }
 
-  
+
     // add the cells
     for ( var i = 0; i < rows.length; i++ ) {
         if (i == data_rows.length) {
@@ -7053,7 +7147,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
             var header_cell = spt.table.get_header_by_cell(last_cell);
             var element_name = header_cell.getAttribute("spt_element_name");
             spt.table.set_column_width(element_name, 100);
-            
+
         }
 
         for (var j = 0; j < cells.length; j++) {
@@ -7065,7 +7159,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
             else if (mode=='refresh') {
                 var idx = col_indices[j]
                 var tgt_cell = rows[i].getElements(".spt_cell_edit")[idx];
-                cells[j].inject(tgt_cell, "after"); 
+                cells[j].inject(tgt_cell, "after");
                 tgt_cell.destroy();
             }
             spt.behavior.init_behaviors(cells[j]);
@@ -7082,8 +7176,8 @@ spt.table.modify_columns = function(element_names, mode, values) {
                 var idx = col_indices[j] ;
                 var tgt_cell = group_rows[i].getElements(".spt_group_cell")[idx];
                 if (tgt_cell) {
-                    
-                    cells[j].inject(tgt_cell, "after"); 
+
+                    cells[j].inject(tgt_cell, "after");
                     tgt_cell.destroy();
 
                     spt.behavior.init_behaviors(cells[j]);
@@ -7091,7 +7185,7 @@ spt.table.modify_columns = function(element_names, mode, values) {
             }
         }
     }
-    
+
     }
     catch(e) {
         spt.alert(spt.exception.handler(e));
@@ -7231,7 +7325,7 @@ spt.table.collapse_group = function(group_row) {
         group_row.setAttribute("spt_table_state", "closed");
         show = false;
     }
-   
+
    var sub_row = last_row.getNext();
 
    var group_level = last_row.getAttribute("spt_group_level")
@@ -7266,10 +7360,10 @@ spt.table.collapse_group = function(group_row) {
 
         var break_cond =  idx == '0' ?  row.getAttribute('idx') == idx : row.getAttribute('idx') < idx ;
         var break_cond2 = row.getAttribute('idx') == idx
-        
-        
+
+
         if (row_level <= group_level) {
-           
+
            break;
 
         }
@@ -7279,7 +7373,7 @@ spt.table.collapse_group = function(group_row) {
         if (show) {
 
            if (row.getAttribute('spt_table_state') == 'closed') {
-           
+
               spt.show(row);
               previous_state = 'closed';
 
@@ -7294,7 +7388,7 @@ spt.table.collapse_group = function(group_row) {
            }
 
            else {
-           
+
                 if (previous_state == 'closed') {
                    spt.hide(row);
 
@@ -7303,8 +7397,8 @@ spt.table.collapse_group = function(group_row) {
                 else {
                    spt.show(row);
                 }
-           
-           
+
+
            }
 
 
@@ -7312,7 +7406,7 @@ spt.table.collapse_group = function(group_row) {
         else  {
             spt.hide(row);
         }
-        
+
 
         last_row = row;
     }
@@ -7352,21 +7446,21 @@ spt.table.get_group_states = function() {
 
 
 /**
- * 
+ *
  * Get child rows in the form of nested tuples and lists
- * 
+ *
  * @return array    tuple, in the form of (group, list of children)
- *  
+ *
  * e.g.
- * 
- * (src_el, 
- *     [(group, 
+ *
+ * (src_el,
+ *     [(group,
  *         [(group,
- *             [row]), 
- *         row, 
+ *             [row]),
+ *         row,
  *         row]),
  *     row,
- *     (group, 
+ *     (group,
  *         [row])
  * ])
  *
@@ -7380,7 +7474,7 @@ spt.table.get_child_rows = function(src_el) {
         var row = src_el;
     }
 
-    if (!row.hasClass("spt_table_group_row") && !row.hasClass("spt_group_row")) { 
+    if (!row.hasClass("spt_table_group_row") && !row.hasClass("spt_group_row")) {
         return row;
     } else {
         var top_level = row.getAttribute("spt_group_level");
@@ -7416,10 +7510,10 @@ spt.table.get_child_rows = function(src_el) {
 }
 
 /**
- * 
+ *
  * Get child rows in the form of nested tuples and lists
- * 
- * 
+ *
+ *
  * @param array    tuple, in the form of (group, list of children)
  *                        see spt.table.get_child_rows for an example
  * @param boolean  attribute    determines whether the first or second part of the tuple is returned
@@ -7453,22 +7547,21 @@ spt.table.get_parent_groups = function(src_el, level) {
     var lowest_group_level = group_level;
 
     while (true) {
-
-        var group = row.getPrevious(".spt_table_row_item");
-        if (!group) {
+         // get previous group
+        var row = row.getPrevious(".spt_table_row_item");
+        if (!row)
             break;
+        // check if level is greater than lowest level reached
+        if ( row.getAttribute("spt_group_level") >= lowest_group_level ){
+            continue;
         }
-        if ( group.getAttribute("spt_group_level") >= lowest_group_level ) {
-            row = group;
-            continue
-        }
-        lowest_group_level = group.getAttribute("spt_group_level");
-        if (level && level == group.getAttribute("spt_group_level")) {
-            return group;
+        // set new lowest_group_level, check if its equal to level
+        lowest_group_level = row.getAttribute("spt_group_level");
+        if (level && level == row.getAttribute("spt_group_level")) {
+            return row;
         } else if (!level) {
-            group_parents.push(group);
+            group_parents.push(row);
         }
-        row = group;
     }
 
     return group_parents;
@@ -7500,7 +7593,7 @@ spt.table.set_column_width = function(element_name, width) {
                 els[i].setStyle("width", width);
                 continue;
             }
-            
+
         }
     }
 
@@ -7510,7 +7603,7 @@ spt.table.set_column_width = function(element_name, width) {
     if (row)
         cells = row.getElements(".spt_cell_edit");
     var total_width = 0;
-    
+
     // add up total_width
     // Commented out: not necessary for basic table structure
     for (var i = 0; i < headers.length; i++) {
@@ -7543,7 +7636,7 @@ spt.table.set_column_width = function(element_name, width) {
         subtable = table.getElement(".spt_table_table");
         if (subtable) {
             subtable.setStyle("width", total_width);
-            
+
         }
         */
     }
@@ -7555,10 +7648,10 @@ spt.table.set_column_width = function(element_name, width) {
 
 
 
-    var insert_cell = spt.table.get_insert_row_cell(element_name); 
+    var insert_cell = spt.table.get_insert_row_cell(element_name);
     if (insert_cell)
         insert_cell.setStyle("width", width);
-   
+
 }
 
 
@@ -7570,7 +7663,7 @@ spt.table.set_column_widths = function(widths) {
         var width = widths;
         widths = [];
         element_names.forEach( function(element_name) {
-            widths.push(width); 
+            widths.push(width);
         } );
     }
 
@@ -7735,7 +7828,7 @@ spt.table.expand_table = function(mode) {
             //table.setStyle("width", "0px");
             table.setStyle("width", "max-content");
 
- 
+
 
         }
     }
@@ -7800,7 +7893,7 @@ spt.table.expand_table = function(mode) {
 
     // adjust for windows scrollbar
     if (spt.browser.os_is_Windows() && table) {
-        var div = layout.getElement(".spt_header_padding"); 
+        var div = layout.getElement(".spt_header_padding");
         if (div) {
             spt.behavior.destroy_element(div);
         }
@@ -8073,7 +8166,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
     var row_is_subscribed = false;
     var display_label = "not found";
 
-    
+
     if (spt.has_class(activator_el, 'spt_table_row'))
         tr = activator_el;
     else
@@ -8088,7 +8181,7 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
         }
         row_is_subscribed = tr.getAttribute('spt_is_subscribed');
     }
-   
+
 
     var setup_info = {
         'commit_enabled' : commit_enabled,
@@ -8112,7 +8205,7 @@ spt.table.row_ctx_menu_edit_cbk = function(evt, bvr)
     var search_key = row.getAttribute("spt_search_key");
     var search_key_info = spt.dg_table.parse_search_key( search_key );
     var edit_view = bvr.edit_view ? bvr.edit_view : 'edit';
-    
+
     var tmp_bvr = {};
     tmp_bvr.args = {
         'search_key': search_key,
@@ -8172,10 +8265,10 @@ spt.table.delete_rows = function(rows, args) {
 
     // open delete popup
     var class_name;
-    if (search_type == "sthpw/search_type") { 
+    if (search_type == "sthpw/search_type") {
         class_name = 'tactic.ui.tools.DeleteSearchTypeToolWdg';
     }
-    else if (search_type == "sthpw/project") { 
+    else if (search_type == "sthpw/project") {
         class_name = 'tactic.ui.tools.DeleteProjectToolWdg';
     }
     else {
@@ -8280,7 +8373,7 @@ spt.table.operate_selected = function(action)
     var msg = "Are you sure you wish to " + action + " [" + num + "] items?";
 
     var cancel = function() { };
-      
+
     var ok =  function() {
         //spt.app_busy.show( title, msg );
         var aborted = false;
@@ -8291,7 +8384,7 @@ spt.table.operate_selected = function(action)
         try {
             for (var i=0; i < selected_rows.length; i++)
             {
-        
+
                 var search_key = selected_rows[i].getAttribute("spt_search_key");
                 if (search_key.test('sthpw/project?'))
                     is_project = true;
@@ -8397,6 +8490,448 @@ spt.table.load_search = function(search_view, kwargs) {
 }
 
 
+
+/*
+ * Saving views
+ */
+
+
+
+// Callback that gets executed when "Save My/Project View As" is selected
+spt.table.save_view_cbk = function(table_id, login) {
+   
+    var table = document.id(table_id);
+    var top = table.getParent(".spt_view_panel");
+    // it may not always be a View Panel top
+    if (!top) top = table.getParent(".spt_table_top");
+    
+    //var search_wdg = top.getElement(".spt_search");
+
+    // TODO: Will this break on embedded tables now?????  Maybe not
+    // because the first instance is probably what we want ... however,
+    // a little tenous
+    //var view_info = top.getElement(".spt_save_top");
+    var view_info = top.getElement(".spt_new_view_top");
+
+    var values;
+    if (view_info != null) {
+        values = spt.api.Utility.get_input_values(view_info , null, false);
+    }
+    else {
+        // NOTE: this is deprecated
+        var aux_content = top.getElement(".spt_table_aux_content")
+        values = spt.api.Utility.get_input_values(aux_content , null, false);
+    }
+    // rename view
+    var new_view = values["save_view_name"];
+    var new_title = values["save_view_title"];
+    var same_as_title = values["same_as_title"] == 'on';
+    //var save_a_link = values["save_a_link"] == 'on';
+  
+    var save_mode = values['save_mode'];
+    if (!save_mode) {
+        var save_project_views = values['save_project_views'] == 'on';
+        if (save_project_views) {
+            save_mode = 'save_project_views';
+        }
+        var save_my_views = values['save_my_views'] == 'on';
+        if (save_my_views) {
+            save_mode = 'save_my_views';
+        }
+        var save_view_only = values['save_view_only'] == 'on';
+        if (save_view_only) {
+            save_mode = 'save_view_only';
+        }
+    }
+
+    if (same_as_title) {
+        new_view = new_title;
+    }
+
+    if (spt.input.has_special_chars(new_view)) {
+        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        return;
+    }
+    if (new_view == "") {
+        spt.alert("Empty view name not permitted");
+        return;
+    }
+    
+    if ((/^(saved_search|link_search)/i).test(new_view)) {
+        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
+        return;
+    }
+    var table = document.getElementById(table_id);
+    if (!table) {
+        spt.alert('This command requires a Table in the main viewing area');
+        return;
+    }
+    var table_search_type = table.getAttribute("spt_search_type");
+    var table_view = table.getAttribute("spt_view");
+    var last_element = top.getAttribute("spt_element_name");
+
+
+    var kwargs = {'login' : login, 'new_title' : new_title, 
+        'element_name': new_view,
+        'last_element_name': last_element,
+        'save_mode': save_mode,
+    } 
+
+    spt.app_busy.show( 'Saving View', new_title );
+    var rtn = spt.table.save_view(table_id, table_view, kwargs);
+    spt.app_busy.hide();
+
+    if (!rtn)
+        return;
+    
+    return true;
+}
+
+//verify matching spt_view
+// NOTE: this is not really used anymore
+spt.table.is_embedded = function(table){
+    var top = table.getParent(".spt_view_panel");
+    // top is null if it's a pure Table Layout
+    if (!top) return false;
+
+    var panel_table_view = top.getAttribute('spt_view');
+    var table_view = table.getAttribute('spt_view');
+    var panel_search_type = top.getAttribute("spt_search_type");
+    var table_search_type = table.getAttribute("spt_search_type");
+     
+    var is_embedded = false;
+    if (panel_table_view != table_view || panel_search_type != table_search_type) {
+        //spt.alert('Embedded table view saving not supported yet');
+        is_embedded = true;
+       
+    }
+    return is_embedded;
+}
+
+spt.table.simple_save_view = function (table, view_name, kwargs) {
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table);
+        }
+
+        var top = table.getParent(".spt_view_panel");
+        var layout = top ? top.getAttribute('spt_layout'): null;
+        var search_wdg = kwargs.search_top? kwargs.search_top :  (top ? top.getElement(".spt_search"): null);
+
+        // save search view
+        if (search_wdg) {
+            var search_view = 'link_search:'+ view_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {});
+        }
+
+
+        // save view
+
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+
+        spt.dg_table.get_size_info(table, view_name, null, first_idx, {extra_data: kwargs.extra_data, save_definitions: true});
+
+    } catch(e) {
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+}
+
+spt.table.save_view = function(table, new_view, kwargs) {
+
+    var server;
+    try {
+        if (typeOf(table) == "string") {
+            table = document.id(table);
+        }
+
+        var top = table.getParent(".spt_view_panel");
+        var search_wdg = top ? top.getElement(".spt_search"): null;
+
+        var save_mode = kwargs['save_mode'];
+ 
+        if (spt.table.is_embedded(table)) {
+            //spt.alert('Embedded table view saving not supported yet');
+            var login = kwargs.login;
+            spt.dg_table.get_size_info(table, new_view, login);
+            return false;
+        }
+        
+        var table_search_type = table.getAttribute("spt_search_type");
+
+
+        var dis_options = {};
+
+
+        var login = kwargs.login;
+        var save_as_personal = (save_mode == 'save_my_views') ? true : false;
+
+
+        var side_bar_view = 'project_view';
+        if (save_as_personal) {
+            side_bar_view = 'my_view_' + login;
+        }
+
+        // start a transaction
+        var server = TacticServerStub.get();
+        var title = side_bar_view + " updated from: " + new_view;
+        server.start({"title": "Saving View", "description": "Saving View: " +  title});
+      
+        var element_name = new_view;
+        var unique = kwargs.unique;
+
+        // Save My View allows to save over the current view if it is already a personal view
+        // or if the user is admin, he can save over anything
+        if (kwargs.element_name ) {
+            element_name = kwargs.element_name;
+        }
+        var new_title = kwargs.new_title;
+
+
+        var last_element_name = kwargs.last_element_name;
+
+        // If it is saving as a new personal view, we try to append login name
+        if (save_as_personal) {
+            //only do this to search_view to make it easier to retrieve a search for my_view_<user>
+            if (login && !(/\./).test(element_name) ) {
+                element_name = login + '.' + element_name;
+            }
+        }
+
+        var custom_search_view = null;
+        if (search_wdg) {
+            var search_view = 'link_search:'+ element_name;
+            // auto generate a new search for this view
+            search_wdg.setAttribute("spt_search_view", search_view);
+            spt.table.save_search(search_wdg, search_view, {'unique': kwargs.unique, 'personal': save_as_personal});
+
+            custom_search_view = search_wdg.getAttribute('spt_custom_search_view');
+        }
+        // add to the project views
+        var search_type = "SideBarWdg";
+        var class_name = "LinkWdg";
+       
+        var simple_search_view = top ? top.getAttribute('spt_simple_search_view'): null;
+        var insert_view = top ? top.getAttribute('spt_insert_view'): null;
+        var edit_view = top ? top.getAttribute('spt_edit_view'): null;
+        var layout = top ? top.getAttribute('spt_layout'): null;
+      
+      
+        dis_options['search_type'] = table_search_type;
+        dis_options['view'] = element_name;
+        dis_options['search_view'] = search_view;
+        if (custom_search_view)
+            dis_options['custom_search_view'] = custom_search_view;
+        if (simple_search_view)
+            dis_options['simple_search_view'] = simple_search_view;
+        if (insert_view)
+            dis_options['insert_view'] = insert_view;
+        if (edit_view)
+            dis_options['edit_view'] = edit_view;
+        if (layout)
+            dis_options['layout'] = layout;
+        
+        // redefine kwargs
+        var kwargs = {};
+        kwargs['login'] = null;
+        if (save_as_personal) 
+            kwargs['login'] = login;
+        kwargs['class_name'] = class_name; 
+        kwargs['display_options'] = dis_options;
+        
+        kwargs['unique'] = unique;
+
+
+        // these are the server oprations
+
+
+        // Copy the value of the "icon" attribute from the previous XML widget
+        // config.
+        var icon = null;
+        var widget_config_before = server.get_config_definition(search_type, "definition", last_element_name);
+        // Skip if there is no previous matching XML widget config.
+        if (widget_config_before != "") {
+            xmlDoc = spt.parse_xml(widget_config_before);
+            var elem_nodes = xmlDoc.getElementsByTagName("element");
+
+            if (elem_nodes.length > 0) {
+                var attr_node = elem_nodes[0].getAttributeNode("icon")
+
+                // Skip if there is no icon to copy over from the old link.
+                if (attr_node != null) {
+                    icon = attr_node.nodeValue;
+                }
+
+                // keep title
+                if ( save_mode == 'save_view_only' ) {
+                    var title_node = elem_nodes[0].getAttributeNode("title")
+                    if (title_node)
+                        new_title = title_node.nodeValue;
+                }
+
+            }
+        }
+
+
+        if (new_title)
+            kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
+
+        // add the definiton to the list
+        var info = server.add_config_element(search_type, "definition", element_name, kwargs);
+        var unique_el_name = info['element_name'];
+        
+        //raw and static_table layout has no checkbox in the first row
+        var first_idx = 1;
+        if (['raw_table','static_table'].contains(layout))
+            first_idx = 0;
+
+        // create the view for this table
+        spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
+         
+        //if (side_bar_view && save_a_link) {
+        if (save_mode != 'save_view_only') {
+            var kwargs2 = save_as_personal ? {'login': login } : {};
+           
+            server.add_config_element(search_type, side_bar_view, unique_el_name, kwargs2);
+        }
+        server.finish();
+
+        spt.panel.refresh("side_bar");
+    } catch(e) {
+        if (server) server.abort();
+        
+        spt.alert(spt.exception.handler(e));
+        return false;
+    }
+    return true;
+    
+}
+
+
+spt.table.get_search_values = function(search_top) {
+
+
+    // get all of the search input values
+    var new_values = [];
+    if (search_top) {
+        var search_containers = search_top.getElements('.spt_search_filter')
+        for (var i = 0; i < search_containers.length; i++) {
+            var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+            new_values.push(values);
+        }
+
+        var ops = search_top.getElements(".spt_op");
+
+        // special code for ops
+        var results = [];
+        var levels = [];
+        var modes = [];
+        var op_values = [];
+        for (var i = 0; i < ops.length; i++) {
+            var op = ops[i];
+            var level = op.getAttribute("spt_level");
+            level = parseInt(level);
+            var op_value = op.getAttribute("spt_op");
+            results.push( [level, op_value] );
+            var op_mode = op.getAttribute("spt_mode");
+            levels.push(level);
+            op_values.push(op_value);
+            modes.push(op_mode);
+
+        }
+        var values = {
+            prefix: 'search_ops',
+            levels: levels,
+            ops: op_values,
+            modes: modes
+        };
+        new_values.push(values);
+
+        // find the table/simple search as well
+        var panel;
+        var top_class = search_top.getAttribute("spt_top_class");
+        if (top_class) {
+            var top = search_top.getParent("." + top_class);
+            if (top) {
+                panel = top.getElement(".spt_view_panel");
+            }
+        }
+        panel = panel? panel : search_top.getParent(".spt_view_panel");
+
+        if (panel) {
+            var table_searches = panel.getElements(".spt_table_search");
+            for (var i = 0; i < table_searches.length; i++) {
+                var table_search = table_searches[i];
+                var values = spt.api.Utility.get_input_values(table_search,null,false);
+                new_values.push(values);
+            }
+        }
+    }
+
+    // convert to json
+    var json_values = JSON.stringify(new_values);
+    return json_values;
+
+}
+
+
+
+spt.table.save_search = function(search_wdg, search_view, kwargs) {
+
+    var json_values = spt.table.get_search_values(search_wdg);
+
+    // build the search view
+    var search_type = search_wdg.getAttribute("spt_search_type");
+
+    /*
+    var view_text = document.id('save_search_text');
+    if (search_view == undefined) {
+        search_view = view_text.value;
+    }
+    */
+    if (search_view == "") {
+        search_view = search_wdg.getAttribute("spt_search_view");
+    }
+
+    if (search_view == "") {
+        spt.alert("No name specified for saved search");
+        return;
+    }
+
+
+    var options = {
+        'search_type': search_type,
+        'display': 'block',
+        'view': search_view,
+        'unique': kwargs.unique,
+        'personal': kwargs.personal
+    };
+
+    // replace the search widget
+    var server = TacticServerStub.get();
+
+    var class_name = "tactic.ui.app.SaveSearchCbk";
+    server.execute_cmd(class_name, options, json_values);
+
+    /*
+    if (document.id('save_search_wdg'))
+        document.id('save_search_wdg').style.display = 'none';
+    */
+
+
+}
+
+
+
+
+
+
 /*
  * Export to CSV tools
  */
@@ -8412,7 +8947,6 @@ spt.table.export = function(mode) {
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
     var search_values_dict;
-
     spt.table.set_layout(layout);
     var header = spt.table.get_header_row();
     // include header input for widget specific settings
@@ -8463,14 +8997,13 @@ spt.table.export = function(mode) {
             return;
         }
 
-        var search_values = spt.dg_table.get_search_values(search_wdg);
+        var search_values = spt.table.get_search_values(search_wdg);
         search_values_dict['json'] = search_values;
 
     }
     else if (bvr.mode=='export_displayed') {
         title = 'Export displayed items from "' + search_type + '" list ';
-        css = (version == 2) ?  '.spt_table_row':  '.spt_table_tbody';
-        var tbodies = table.getElements(css);
+        var tbodies = table.getElements(".spt_table_row");
         for (var k=0; k < tbodies.length; k++) {
             if (tbodies[k].getStyle('display') == 'none'){
                 continue;
@@ -8488,10 +9021,7 @@ spt.table.export = function(mode) {
 
     else {
         title = 'Export Selected items from "' + search_type + '" list ';
-        if (version == 2)
-            var selected_rows = spt.table.get_selected_rows();
-        else
-            var selected_rows = spt.dg_table.get_selected(table,  {'include_embedded_tables': true} );
+        var selected_rows = spt.table.get_selected_rows();
         var sel_search_keys = [];
 
         related_views = []
@@ -8505,7 +9035,6 @@ spt.table.export = function(mode) {
                 related_views.push(parent_view);
         }
 
-        //var sel_tr_list = spt.dg_table.get_selected( table.get('id') );
         if( sel_search_keys.length == 0 ) {
             spt.alert('No rows selected for exporting to CSV ... skipping "Export Selected" action.');
             return;
@@ -8561,7 +9090,6 @@ spt.table.load_data = function(sobjects) {
   for (var i = 0; i < r_sobjects.length; i++) {
 
     var sobject = sobjects[i];
-
     var row = spt.table.add_new_item();
     var insert_row = spt.table.get_insert_row();
 
@@ -8622,7 +9150,7 @@ spt.table.load_data = function(sobjects) {
             if (value)
                 cell.getFirst().innerHTML = value;
         }
-        
+
 
         if (value) {
             cell.setAttribute("spt_input_value",value);
@@ -8655,7 +9183,7 @@ spt.table.sort_sobjects = function(sobjects, column) {
            return -1;
         return 0;
     } )
-   
+
 }
 
 
@@ -8674,6 +9202,174 @@ spt.table.open_ingest_tool = function(search_type) {
     };
     spt.panel.load_popup("Ingest "+search_type, class_name, kwargs);
 }
+
+
+// Document export (imported from document api)
+spt.table.export_document = function(kwargs) {
+
+    if (!kwargs) {
+        kwargs = {};
+    }
+
+    max_group_level = kwargs.max_group_level;
+    if (typeof(max_group_level) == 'undefined') {
+        max_group_level = -1;
+    }
+
+
+    var min_group_level = kwargs.min_group_level;
+    if (typeof(min_group_level) == 'undefined') {
+        min_group_level = 0;
+    }
+
+
+    var table = spt.table.get_table()
+    var rows = table.getElements(".spt_table_row_item");
+
+    var document = {};
+    document['type'] = 'table';
+
+    // may not be necessary outside of PipeLineWdg?
+    document['new_group_count'] = 0;
+
+    var content = [];
+    document['content'] = content;
+
+    for (var i = 0; i < rows.length; i++) {
+
+        var row = rows[i];
+
+        // Check for clone row
+        if (row.hasClass("spt_clone")) {
+            break;
+        }
+
+        // Check for dynamic row
+        if (row.getAttribute("spt_dynamic") == "true") continue;
+        if (row.getAttribute("spt_deleted") == "true") continue;
+
+        var group_level = row.getAttribute("spt_group_level");
+        if (max_group_level != -1 && group_level > max_group_level) {
+            continue;
+        }
+        if (group_level < min_group_level) {
+            continue;
+        }
+
+
+
+
+
+        var item = {};
+
+        if (row.hasClass("spt_table_group_row")) {
+            var row_type = "group";
+        }
+        else if (row.hasClass("spt_table_row")) {
+            var row_type = "item";
+        }
+        else if (row.hasClass("spt_table_insert_row")) {
+            var row_type = "item";
+            item["new"] = true;
+        }
+        else if (row.hasClass("spt_table_group_insert_row")) {
+            var row_type = "group";
+            item["new"] = true;
+        }
+
+
+        var children = row.getAttribute("spt_children");
+        if (children) {
+            item["children"] = children;
+        }
+
+
+        if (!group_level) {
+            group_level = 0;
+        }
+        item["group_level"] = parseInt(group_level);
+
+        if (row_type == "group") {
+            if (row.getAttribute("spt_deleted") == "true") {
+                break;
+            }
+
+            item["type"] = "group";
+
+            var swap_top = row.getElement(".spt_swap_top");
+            var state = swap_top.getAttribute("spt_state");
+            item["state"] = state;
+
+            var title_wdg = row.getElement(".spt_table_group_title");
+            if (title_wdg) {
+                var label_wdg = title_wdg.getElement(".spt_group_label");
+                if (label_wdg) {
+                    item["title"] = label_wdg.innerHTML;
+                }
+                else {
+                    item["title"] = title_wdg.innerHTML;
+                }
+            }
+        } else {
+
+            if (kwargs.mode == "report") {
+                var element_names = spt.table.get_element_names();
+                var cells = row.getElements(".spt_cell_edit");
+                var index = 0;
+                var data = {};
+                data["id"] = i;
+                cells.forEach( function(cell) {
+                    var element_name = element_names[index];
+                    var value = cell.getAttribute("spt_report_value");
+                    if (value == null) {
+                        value = cell.getAttribute("spt_input_value");
+                    }
+                    data[element_name] = value;
+                    index += 1;
+                } );
+                item["type"] = "sobject";
+                item["sobject"] = data;
+            }
+            else {
+                var search_key = row.getAttribute("spt_search_key_v2");
+                item["type"] = "sobject";
+                item["search_key"] = search_key;
+            }
+
+
+        }
+
+        content.push(item);
+
+    }
+
+
+    // export state
+
+    var layout = spt.table.get_layout();
+    var els = layout.getElements(".spt_state_save");
+
+    if (els.length != 0) {
+        document.state = {};
+    }
+
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var state_name = el.getAttribute("spt_state_name");
+        var state_data = el.getAttribute("spt_state_data");
+        if (state_data != null) {
+            state_data = JSON.parse(state_data);
+        }
+        else {
+            state_data = {};
+        }
+
+        document.state[state_name] = state_data;
+    }
+    return document
+}
+
+
 
 
 
@@ -8705,7 +9401,7 @@ spt.table.open_ingest_tool = function(search_type) {
             spt.table.shadow_color = bvr.shadow_color;
             %s
             spt.table.set_table(bvr.src_el);
-            
+
             ''' %cbjs_action
 
 
@@ -8787,7 +9483,7 @@ spt.table.open_ingest_tool = function(search_type) {
 
                 if not level_sobjects_dict:
                     done = True
-                    break;
+                    break
 
 
                 current_sobjects = []
@@ -8827,13 +9523,13 @@ spt.table.open_ingest_tool = function(search_type) {
         related_sobjects = level_sobjects_dict.get(search_key)
         if not related_sobjects:
             return
-        
+
         # go through each related
         for related_sobject in related_sobjects:
             if related_sobject.get_base_search_type() != 'ut/asset_in_asset':
                 sobject_list.append(related_sobject)
                 self.sobject_levels.append(level)
-           
+
             self._collate_levels(related_sobject, sobject_list, levels_sobjects, level+1)
 
 
@@ -8856,7 +9552,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
     def init(self):
         self.group_columns = self.kwargs.get('group_by')
         self.group_columns = self.group_columns.split(',')
-    
+
     def get_columns_wdg(self, title, element_names, is_open=False):
 
         widget_idx = 3
@@ -8865,16 +9561,16 @@ class TableGroupManageWdg(BaseRefreshWdg):
         content_wdg.add_style("margin: 15px 0 15px 0")
         content_wdg.add_style("font-size: 0.85em")
         #content_wdg.add_style("position: relative")
-        
+
         web = WebContainer.get_web()
 
         elements_wdg = FloatDivWdg()
         elements_wdg.add_attr('title', 'Click to add to Group Columns')
         elements_wdg.add_styles('height: 400px; max-width: 250px; overflow: auto')
-        elements_wdg.add_relay_behavior( { 'type': 'mouseup', 
+        elements_wdg.add_relay_behavior( { 'type': 'mouseup',
                                 'bvr_match_class': 'spt_column',
                                "cbjs_action": '''var el = bvr.src_el;
-                                                                    
+
                                            var top = el.getParent('.spt_group_col_top')
                                            var target = top.getElement('.spt_group_col');
                                            var cur_items = target.getElements('.spt_column');
@@ -8884,7 +9580,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
                                            }
                                            if (group_names.contains(el.getAttribute('element'))) {
                                                 spt.info(el.getAttribute('element') + ' is already added.');
-                                                
+
                                            }
                                            else if (cur_items.length >= 4) {
                                                 spt.alert('A maximum of 4 column names is allowed.')
@@ -8897,9 +9593,9 @@ class TableGroupManageWdg(BaseRefreshWdg):
                                                spt.show(del);
                                                clone.inject(target);
                                            }'''
-                               } ) 
-      
-        
+                               } )
+
+
         elements_wdg.add_class("spt_columns_list")
         content_wdg.add(elements_wdg)
         if not is_open:
@@ -8920,7 +9616,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         security = Environment.get_security()
-        
+
         grouped_elements = []
 
         for element_name in element_names:
@@ -8933,7 +9629,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
             del_div.add_styles('position: absolute; right: 0px; display: none; font-weight: 800')
             del_div.add_attr('title','remove')
             menu_item.add(del_div)
-            
+
             if element_name in self.group_columns:
                 grouped_elements.insert(self.group_columns.index(element_name), menu_item )
 
@@ -8950,7 +9646,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
             }
             access_key1 = {
                 'search_type': search_type,
-                'key': element_name, 
+                'key': element_name,
                 'project': project_code
 
             }
@@ -8962,7 +9658,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
 
 
 
-          
+
             title = attrs.get("title")
             if not title:
                 title = Common.get_display_title(element_name)
@@ -8977,13 +9673,13 @@ class TableGroupManageWdg(BaseRefreshWdg):
 
             full_title = "%s <i style='opacity: 0.5'>(%s)</i>" % ( title, element_name)
             display_title = full_title
-            
+
 
 
             menu_item.add("&nbsp;&nbsp;&nbsp;")
             #menu_item.add_attr("title", full_title)
             menu_item.add(display_title)
-         
+
 
             # mouse over colors
             color = content_wdg.get_color("background", -15)
@@ -9000,19 +9696,19 @@ class TableGroupManageWdg(BaseRefreshWdg):
         group_title.add_style('margin-bottom', '10px')
         group_drop.add(group_title)
 
-        group_drop.add_relay_behavior( { 'type': 'mouseup', 
+        group_drop.add_relay_behavior( { 'type': 'mouseup',
                                 'bvr_match_class': 'spt_del',
                                "cbjs_action": '''var el = bvr.src_el.getParent('.spt_column');
                                         spt.behavior.destroy_element(el);'''
-                               } ) 
-        group_drop.add_behavior( { 'type': 'load', 
+                               } )
+        group_drop.add_behavior( { 'type': 'load',
                                "cbjs_action": '''var del_els = bvr.src_el.getElements('.spt_del');
                                                 for (var k =0; k < del_els.length; k++)
                                                     spt.show(del_els[k]);
 
                                        '''
-                               } ) 
-        
+                               } )
+
         group_drop.add_color('background', 'background2', -7)
         group_drop.add_styles('min-width: 250px; height: 180px; padding: 12px; margin-left: 30px')
         group_drop.add_class('spt_group_col')
@@ -9031,7 +9727,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
         save = ActionButtonWdg(title='OK', tip='Search with these Group columns')
 
         save.add_styles("position: absolute; left: 420; top: 425")
-        
+
         save.add_behavior({ 'type': 'click_up',
             'cbjs_action': '''var el = spt.table.get_layout().getElement(".spt_search_group");
                               var top = bvr.src_el.getParent('.spt_group_col_top')
@@ -9045,10 +9741,10 @@ class TableGroupManageWdg(BaseRefreshWdg):
                               var popup  =spt.popup.get_popup( bvr.src_el )
                               spt.popup.destroy(popup);
                               spt.table.run_search();
-                              
+
                     '''})
-        
-        
+
+
         content_wdg.add(save)
 
         content_wdg.add(group_drop)
@@ -9059,7 +9755,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
         return content_wdg
 
 
-  
+
 
     def get_display(self):
         top = self.top
@@ -9115,12 +9811,12 @@ class TableGroupManageWdg(BaseRefreshWdg):
 
 
 
-       
+
 
 
         self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
 
-   
+
 
 
 
@@ -9129,7 +9825,6 @@ class TableGroupManageWdg(BaseRefreshWdg):
             if config.get_view() != 'definition':
                 continue
             file_path = config.get_file_path()
-            #print("file_path: ", file_path)
             if file_path and file_path.endswith("DEFAULT-conf.xml") or file_path == 'generated':
                 continue
 
@@ -9146,12 +9841,12 @@ class TableGroupManageWdg(BaseRefreshWdg):
             if column not in defined_element_names:
                 defined_element_names.append(column)
 
-      
+
         defined_element_names.sort()
         title = 'Columns'
         context_menu.add( self.get_columns_wdg(title, defined_element_names, is_open=True) )
 
 
 
-       
+
         return top

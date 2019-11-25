@@ -16,21 +16,31 @@ import re, time, types
 from dateutil import rrule
 from dateutil import parser
 import datetime
+import functools
 
 from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
-from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema
+from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema, ProjectSetting
 from pyasm.command import DatabaseAction
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
+from pyasm.security import Sudo
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
-from button_wdg import ButtonElementWdg
+
+from .button_wdg import ButtonElementWdg
 
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
 from tactic.ui.filter import FilterData, BaseFilterWdg, GeneralFilterWdg
 from tactic.ui.widget import IconButtonWdg, RadialProgressWdg
 
-from table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
+from .table_element_wdg import CheckinButtonElementWdg, CheckoutButtonElementWdg
+
+import six
+basestring = six.string_types
+
+if Common.IS_Pv3:
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 
 # sort the tasks by the processes
@@ -65,7 +75,7 @@ def get_compare(processes):
         elif b_index != -1:
             return 1
 
-    return compare
+    return functools.cmp_to_key(compare)
 
 
 class TaskElementWdg(BaseTableElementWdg):
@@ -440,6 +450,8 @@ class TaskElementWdg(BaseTableElementWdg):
 
 
     def preprocess(self):
+
+
         self._get_display_options()
 
         web = WebContainer.get_web()
@@ -458,6 +470,9 @@ class TaskElementWdg(BaseTableElementWdg):
         self.assignee_dict = {}
 
         self.check_access()
+
+
+        sudo = Sudo()
 
         # deals with assignee labels if provided
         assigned = self.kwargs.get('edit_assigned')
@@ -689,7 +704,7 @@ class TaskElementWdg(BaseTableElementWdg):
                 key = "%s|%s" % (pipeline.get_code(), process.get_name())
                 exists = self.assigned_login_groups.get(key)
                 if exists is None:
-                    search = Search("sthpw/login_in_group")
+                    search = Search("sthpw/login_in_group", sudo=True)
                     search.add_filter("login_group", assigned_login_group)
                     users = search.get_sobjects()
                     if users:
@@ -783,6 +798,11 @@ class TaskElementWdg(BaseTableElementWdg):
 spt.task_element = {}
 
 bvr.src_el.addEvent('change:relay(.spt_task_status_select)',
+    function(evt, src_el) {
+        spt.task_element.status_change_cbk(evt, {src_el: src_el} );
+    } )
+    
+bvr.src_el.addEvent('change:relay(.spt_task_assigned_select)',
     function(evt, src_el) {
         spt.task_element.status_change_cbk(evt, {src_el: src_el} );
     } )
@@ -884,13 +904,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         'bvr_match_class': "spt_task_element_assigned",
         "cbjs_action": '''
         var all_top_el = bvr.src_el.getParent(".spt_all_task_top");
-        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_status_select', false);
+        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_element_assigned', false);
         var value_wdg = all_top_el.getElement(".spt_data");
         value_wdg.value = JSON.stringify(values);
         spt.dg_table.edit.widget = all_top_el;
         spt.dg_table.inline_edit_cell_cbk( value_wdg, {} );
         '''
-        } ) 
+        } )
 
         if self.show_link_task_menu:
             self.menu.set_activator_over(layout, "spt_task_element_assigned")
@@ -999,7 +1019,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.value = '';
                     var rnd = Math.floor(Math.random()*100001)
                     select.name = select.name + rnd;
-
                     spt.task_element.status_change_cbk(evt, {src_el: select});
                 }
                 else {
@@ -1167,7 +1186,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     filtered_tasks.append(task)
                 tasks = filtered_tasks
 
-            tasks = sorted(tasks,get_compare(processes))
+
+            compare = get_compare(processes)
+            tasks = sorted(tasks,key=compare)
 
         else:
             def compare(a,b):
@@ -1175,9 +1196,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 b_context = b.get_value('process')
                 return cmp(a_context, b_context)
 
-            tasks = sorted(tasks,compare)
-
-
+            tasks = sorted(tasks,key=functools.cmp_to_key(compare))
 
 
 
@@ -1252,7 +1271,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     tasks.append(task)
         
 
-            tasks = sorted(tasks,get_compare(processes))
+            tasks = sorted(tasks,key=get_compare(processes))
 
         return tasks
 
@@ -1862,7 +1881,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 process_sobj = search.get_sobject()
                 if process_sobj:
                     workflow = process_sobj.get_json_value("workflow", {})
-                    if workflow:
+                    version = workflow.get("version") or 1
+                    version_2 = version in [2, "2"]
+                    default = workflow.get("default") or {}
+
+                    if version_2 and default:
+                        related_type = default.get("search_type")
+                        related_pipeline_code = default.get("pipeline_code")
+                        related_process = default.get("process")
+                        related_scope = default.get("scope")
+                    elif not version_2 and workflow:
                         related_type = workflow.get("search_type")
                         related_pipeline_code = workflow.get("pipeline_code")
                         related_process = workflow.get("process")
@@ -2085,7 +2113,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         process_colors = self.process_colors.get(pipeline_code)
-        if process_colors and process_colors.has_key(process):
+        if process_colors and process in process_colors:
             tmp_color = process_colors[process]
             if tmp_color:
                 process_color = tmp_color
@@ -2117,7 +2145,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 context_div.add_color("color", 'color')
             proc = task.get_value("process")
             label_dict = self.label_dict.get(pipeline_code)
-            if label_dict and label_dict.has_key(proc):
+            if label_dict and proc in label_dict:
                 context_div.add(label_dict[proc])
 
         if not self.context_color_mode:
@@ -2318,6 +2346,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             var el_context = el.getAttribute("spt_context");
                             if (el_context == context) {
                                 el.value = value;
+                                el.style.background = status_colors[value];
                                 spt.task_element.status_change_cbk(evt, {src_el: el});
                             }
                         }
@@ -2457,7 +2486,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         assignee = self.assignee
                         assignee_labels = self.assignee_labels
 
-                    select.add_class('spt_task_status_select')
+                    select.add_class('spt_task_assigned_select')
+                    select.add_attr("spt_context", context)
                     select.add_empty_option('-- Assigned --')
                     select.set_option('values', assignee) 
                     select.set_option('labels', assignee_labels) 
@@ -2515,9 +2545,37 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                             '''
                     select.add_update(update)
 
+                    # TODO: while convenient, this is extremely heavy
+                    select.add_behavior( {
+                        'type': 'change',
+                        'color': status_colors,
+                        'cbjs_action': '''
+                        var status_colors = bvr.color;
+                        var value = bvr.src_el.value;
+                        bvr.src_el.style.background = status_colors[value];
+                        var context = bvr.src_el.getAttribute("spt_context");
+                        var layout = bvr.src_el.getParent(".spt_layout");
+                        spt.table.set_layout(layout);
+                        var rows = spt.table.get_selected_rows();
+                        for (var i = 0; i < rows.length; i++) {
+                            var row = rows[i];
+                            var elements = row.getElements(".spt_task_assigned_select");
+                            for (var j = 0; j < elements.length; j++) {
+                                var el = elements[j];
+                                if (el == bvr.src_el) {
+                                    continue;
+                                }
 
-
-
+                                var el_context = el.getAttribute("spt_context");
+                                if (el_context == context) {
+                                    el.value = value;
+                                    spt.task_element.status_change_cbk(evt, {src_el: el});
+                                }
+                            }
+                        }
+    
+                        '''
+                    } )
 
                 else:
                     

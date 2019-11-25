@@ -35,7 +35,7 @@ class FixDuplicateFileCodeCmd(Command):
         value_array = sql.do_query("select code, cc from (select code, count(code) as cc from file group by code order by cc desc) as X where cc > 1;")
         #value_array = sql.do_query("select code, cc from (select code, count(code) as cc from file group by code order by cc desc) as X;")
 
-        print "found [%s] pairs" % len(value_array)
+        print("found [%s] pairs" % len(value_array))
 
         for count, value_list in enumerate(value_array):
             if count >= BATCH:
@@ -53,7 +53,7 @@ class FixDuplicateFileCodeCmd(Command):
             for file in files:
                 project_code = file.get_value("project_code")
                 if not project_code:
-                    print "WARNING: file [%s] has no project_code" % file_code
+                    print("WARNING: file [%s] has no project_code" % file_code)
                     continue
 
                 project = Project.get_by_code(project_code)
@@ -64,8 +64,8 @@ class FixDuplicateFileCodeCmd(Command):
                 if file_code == new_file_code:
                     continue
 
-                print "-"*20
-                print "switching: ", file_code, "to", new_file_code
+                print("-"*20)
+                print("switching: ", file_code, "to", new_file_code)
 
 
                 snapshot_code = file.get_value("snapshot_code")
@@ -73,10 +73,10 @@ class FixDuplicateFileCodeCmd(Command):
                 assert snapshot
 
                 snapshot_xml = snapshot.get_xml_value("snapshot")
-                print snapshot_xml.to_string()
+                print(snapshot_xml.to_string())
                 node = snapshot_xml.get_node("snapshot/file[@file_code='%s']" % file_code)
                 Xml.set_attribute(node, "file_code", new_file_code)
-                print snapshot_xml.to_string()
+                print(snapshot_xml.to_string())
 
                 assert node
 

@@ -15,9 +15,10 @@ import tacticenv
 
 from pyasm.security import *
 from pyasm.search import Search, SearchType, Transaction
-from widget_config import WidgetConfigView
 from pyasm.unittest import UnittestEnvironment
 from pyasm.biz import Project
+
+from .widget_config import WidgetConfigView
 
 import unittest
 
@@ -175,20 +176,20 @@ class WidgetConfigTest(unittest.TestCase):
         view = "edit"
         config = WidgetConfigView.get_by_search_type(search_type, view)
         action_handler = config.get_action_handler("drop")
-        self.assertEquals("DropElementAction", action_handler)
+        self.assertEqual("DropElementAction", action_handler)
         action_handler = config.get_action_handler("code")
-        self.assertEquals("", action_handler)
+        self.assertEqual("", action_handler)
 
         config = WidgetConfigView.get_by_search_type(search_type, 'test')
         action_handler = config.get_action_handler("drop")
-        self.assertEquals("", action_handler)
+        self.assertEqual("", action_handler)
 
         # get_by_elemnet_names will get it
         config = WidgetConfigView.get_by_element_names(search_type, ['drop'], 'test')
         action_handler = config.get_action_handler("drop")
-        self.assertEquals("DropElementAction", action_handler)
+        self.assertEqual("DropElementAction", action_handler)
         options = config.get_action_options("drop")
-        self.assertEquals("path_test", options.get('path'))
+        self.assertEqual("path_test", options.get('path'))
         
 
 
@@ -200,39 +201,39 @@ class WidgetConfigTest(unittest.TestCase):
         view = "definition"
         config = WidgetConfigView.get_by_search_type(search_type, view)
         display_handler = config.get_display_handler("test")
-        self.assertEquals("SelectWdg", display_handler)
+        self.assertEqual("SelectWdg", display_handler)
 
         # use a non-existent view
         view = "whatever"
         config = WidgetConfigView.get_by_search_type(search_type, view)
         display_handler = config.get_display_handler("test")
-        self.assertEquals("SelectWdg", display_handler)
+        self.assertEqual("SelectWdg", display_handler)
 
         # get element_names
         #element_names = config.get_element_names()
-        #self.assertEquals(['test'], element_names)
+        #self.assertEqual(['test'], element_names)
 
 
         # use an existing view
         view = "test"
         config = WidgetConfigView.get_by_search_type(search_type, view)
         display_handler = config.get_display_handler("test")
-        self.assertEquals("SelectWdg", display_handler)
+        self.assertEqual("SelectWdg", display_handler)
         display_handler = config.get_display_handler("test2")
-        self.assertEquals("CheckboxWdg", display_handler)
+        self.assertEqual("CheckboxWdg", display_handler)
 
         display_handler = config.get_display_handler("dan")
-        self.assertEquals("tactic.ui.table.ExpressionElementWdg", display_handler)
+        self.assertEqual("tactic.ui.table.ExpressionElementWdg", display_handler)
         
         city_config = WidgetConfigView.get_by_search_type('unittest/city', view)
         display_handler = city_config.get_display_handler("dan")
-        self.assertEquals("tactic.ui.table.ExpressionElementWdg", display_handler)
+        self.assertEqual("tactic.ui.table.ExpressionElementWdg", display_handler)
         display_handler = city_config.get_display_handler("dan2")
-        self.assertEquals("SelectWdg", display_handler)
+        self.assertEqual("SelectWdg", display_handler)
             
         # get element_names
         element_names = config.get_element_names()
-        self.assertEquals(['dan','dan2','test','test2','drop'], element_names)
+        self.assertEqual(['dan','dan2','test','test2','drop'], element_names)
 
 
 
@@ -240,7 +241,7 @@ class WidgetConfigTest(unittest.TestCase):
         view = "whatever"
         config = WidgetConfigView.get_by_search_type(search_type, view, local_search=True, use_cache=False)
         display_handler = config.get_display_handler("test")
-        self.assertEquals("SelectWdg", display_handler)
+        self.assertEqual("SelectWdg", display_handler)
 
 
 
@@ -248,10 +249,10 @@ class WidgetConfigTest(unittest.TestCase):
         view = "edit"
         config = WidgetConfigView.get_by_search_type(search_type, view)
         display_handler = config.get_display_handler("code")
-        self.assertEquals("EditLevelTextWdg", display_handler)
+        self.assertEqual("EditLevelTextWdg", display_handler)
         display_handler = config.get_display_handler("asset_category")
 
-        self.assertEquals("ProcessSelectWdg", display_handler)
+        self.assertEqual("ProcessSelectWdg", display_handler)
 
 
 if __name__ == "__main__":

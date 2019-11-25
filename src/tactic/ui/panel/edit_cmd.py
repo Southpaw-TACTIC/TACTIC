@@ -21,6 +21,9 @@ from pyasm.search import Search, SearchType, SearchKey, SqlException
 from pyasm.command import Command
 from pyasm.common import TacticException
 
+import six
+basestring = six.string_types
+
 class EditCmdException(Exception):
     pass
 
@@ -59,7 +62,12 @@ class EditCmd(Command):
         # comes from the EditWdg form
         form_data = web.get_form_value("__data__")
         if form_data:
-            form_data = jsonloads(form_data)
+            if isinstance(form_data, list): # due to get_input_values(), it could be a list
+                form_data = form_data[0]
+            if isinstance(form_data, six.string_types):
+                form_data = jsonloads(form_data)
+            assert(isinstance(form_data, dict))
+
             self.config_xml = form_data.get("config_xml")
             if not self.config_xml:
                 self.config_xml = None
@@ -75,10 +83,10 @@ class EditCmd(Command):
             self.multiplier_str = web.get_form_value("multiplier")
         
         if self.multiplier_str:
-	    try:
-	        self.multiplier = int(self.multiplier_str)
-	    except:
-	        pass
+            try:
+                self.multiplier = int(self.multiplier_str)
+            except:
+                pass
 
 
 
@@ -99,6 +107,8 @@ class EditCmd(Command):
         super(EditCmd,self).__init__()
         self.search_type = None
         self.sobject = kwargs.get("sobject")
+
+        self.update = True
 
 
     def get_sobject(self):
@@ -417,6 +427,10 @@ class EditCmd(Command):
 class EditMultipleCmd(Command):
     '''Do multiple edits in a single call'''
 
+    def __init__(self, **kwargs):
+        super(EditMultipleCmd, self).__init__(**kwargs)
+        self.update = True
+
     def execute(self):
         """
         var kwargs = {
@@ -468,7 +482,7 @@ class EditMultipleCmd(Command):
 
             if extra:
                 for name, value in extra.items():
-                    if not data.has_key(name):
+                    if not name in data:
                         data[name] = value
 
             if web_data_list:

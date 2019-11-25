@@ -322,7 +322,7 @@ class ProjectTemplateInstallerCmd(Command):
         # if the database already exists, then raise an exception
         if exists and self.new_project:
             msg = "WARNING: Database [%s] already exists" % self.project_code
-            print msg
+            print(msg)
             raise TacticException(msg)
 
 
@@ -343,7 +343,7 @@ class ProjectTemplateInstallerCmd(Command):
 
         # create a new project if this was desired
         if self.new_project == True:
-            from create_project_cmd import CreateProjectCmd
+            from .create_project_cmd import CreateProjectCmd
             project_image_path = self.kwargs.get("project_image_path")
 
             # the project_type will get updated properly by the PluginInstaller
@@ -379,7 +379,7 @@ class ProjectTemplateInstallerCmd(Command):
         kwargs['filter_line_handler'] = self.filter_line_handler
         kwargs['filter_sobject_handler'] = self.filter_sobject_handler
 
-        from plugin import PluginCreator, PluginInstaller
+        from .plugin import PluginCreator, PluginInstaller
         installer = PluginInstaller( **kwargs )
         installer.execute()
 

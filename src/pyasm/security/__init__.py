@@ -10,11 +10,11 @@
 #
 #
 
-from crypto_key import *
-from authenticate import *
-from security import *
-from access_manager import *
-from batch import *
-from access_rule import *
-from drupal_password_hasher import *
+from .crypto_key import *
+from .authenticate import *
+from .security import *
+from .access_manager import *
+from .batch import *
+from .access_rule import *
+from .drupal_password_hasher import *
 

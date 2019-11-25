@@ -22,6 +22,11 @@ from pyasm.search import *
 #from pyasm.search import Search, SearchType, Transaction
 from pyasm.security import Batch
 
+import six
+basestring = six.string_types
+
+IS_Pv3 = sys.version_info[0] > 2
+
 
 
 class CommandException(TacticException):
@@ -53,13 +58,23 @@ class Command(Base):
         self.kwargs = kwargs
 
         self.transaction = None
-
+        self.update = None
 
     '''
     already defined as a cls method below
     def is_undoable(self):
         return True
     '''
+
+    def can_run(self, source="api"):
+        # Should be this
+        #if source == "api":
+        #    return False
+        return True
+
+    def requires_key(self):
+        return False
+
     
     def get_errors(self):
         return self.errors
@@ -79,6 +94,9 @@ class Command(Base):
 
     def get_sobjects(self):
         return self.sobjects
+
+    def is_update(self):
+        return self.update 
 
 
     ###########
@@ -179,6 +197,9 @@ class Command(Base):
         Usage: Command.execute_cmd(cmd)
         '''
 
+        if not isinstance(cmd, Command):
+            raise Exception("Cannot execute command.  Must be derived from Command class.")
+
         if not cmd.check_security():
             raise SecurityException()
 
@@ -192,10 +213,13 @@ class Command(Base):
                     return
             except TacticException as e:
                 if not isinstance(e, CommandExitException):
-                    if isinstance(e.message, unicode):
-                        error = e.message.encode('utf-8')
+                    if IS_Pv3:
+                        error = str(e)
                     else:
-                        error = unicode(e.message, errors='ignore').encode('utf-8')
+                        if isinstance(e.message, unicode):
+                            error = e.message.encode('utf-8')
+                        else:
+                            error = unicode(e.message, errors='ignore').encode('utf-8')
                     cmd.errors.append(error)
                 raise
 
@@ -241,6 +265,8 @@ class Command(Base):
             cmd.preprocess()
             cmd.get_data()
             ret_val = cmd.execute()
+            if ret_val is not None:
+                cmd.info = ret_val
             cmd.postprocess()
 
         except CommandExitException as e:
@@ -253,7 +279,7 @@ class Command(Base):
             Container.put(cmd.TOP_CMD_KEY, None)
             raise
 
-        except KeyboardInterrupt, e:
+        except KeyboardInterrupt as e:
             # this is specifically for batch processes.  A keyboard interrupt
             # will commit the database and allow undo
             print("Keyboard interrupt...")
@@ -268,21 +294,23 @@ class Command(Base):
                 raise
        
             # fail with controlled error
-            message = e.message
+            try:
+                message = e.message
+            except:
+                # in Python 3k, e.message is no longer valid
+                message = None
            
             # we are risking Unicode encoding error here rather than
             # NoneType exception with the encode() method below
-            # in Python 3k, e.message is no longer valid
             if not message:
-                message = e.__str__()
+                message = str(e)
             if isinstance(message, Exception):
                 message = message.message
-            if isinstance(message, basestring): 
-                if isinstance(message, unicode):
-                    error_msg = message.encode('utf-8')
-                else:
-                    error_msg = unicode(message, errors='ignore').encode('utf-8')
-           
+            if not IS_Pv3 and isinstance(message, basestring): 
+                    if isinstance(message, unicode):
+                        error_msg = message.encode('utf-8')
+                    else:
+                        error_msg = unicode(message, errors='ignore').encode('utf-8')
             else:
                 error_msg = message
             print("Error: ", error_msg)
@@ -300,7 +328,7 @@ class Command(Base):
             if top_cmd_seq:
                 top_cmd_seq.pop()
 
-            if isinstance(e, TacticException):
+            if not Common.IS_Pv3 and isinstance(e, TacticException):
                 if isinstance(message, unicode):
                     error_msg = message.encode('utf-8')
                 else:
@@ -367,9 +395,8 @@ class Command(Base):
                     raise
 
                 # call all registered triggers 
-                from trigger import Trigger
+                from .trigger import Trigger
                 Trigger.call_all_triggers()
-
 
         return ret_val
 

@@ -15,7 +15,7 @@ __all__ = ['ProdSetting', 'ProjectSetting']
 
 from pyasm.common import Container, TacticException
 from pyasm.search import *
-from project import Project
+from .project import Project
 
 class ProjectSetting(SObject):
     '''Defines all of the settings for a given production'''
@@ -62,7 +62,11 @@ class ProjectSetting(SObject):
         project = Project.get_project_code() 
         dict_key = '%s:%s' %(key, search_type)
 
-        search = Search(cls.SEARCH_TYPE, project_code=project)
+        try:
+            search = Search(cls.SEARCH_TYPE, project_code=project)
+        except:
+            return None
+
         search.add_filter("key", key)
         if search_type:
             search.add_filter("search_type", search_type)
@@ -122,7 +126,7 @@ class ProjectSetting(SObject):
             try:
                 key, value = item.split(':')
                 map.append((key, value))
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('ProjectSetting should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
         return map
     get_map_by_key = classmethod(get_map_by_key)
@@ -138,7 +142,7 @@ class ProjectSetting(SObject):
             try:
                 key, value = item.split(':')
                 dict[key] = value
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('ProjectSetting should be formated like &lt;key1&gt;:&lt;value1&gt;|&lt;key2&gt;:&lt;value2&gt;|...')
         return dict
     get_dict_by_key = classmethod(get_dict_by_key)

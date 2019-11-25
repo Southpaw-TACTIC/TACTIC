@@ -148,11 +148,11 @@ class Flash(Application):
             file.write("x=1")
             file.close()
 
-        print exec_path
+        print(exec_path)
 
         # run flash
         pid = Popen([self.FLASH_EXE, exec_path])
-        print pid
+        print(pid)
         #os.system(exec_path)
 
         # sleep for 1 second
@@ -184,13 +184,13 @@ class Flash(Application):
 
         # execute all of the jsfl commands
         jsfl_final = "\n".join(jsfl_list)
-        print jsfl_final
+        print(jsfl_final)
         self.run_jsfl(jsfl_final)
 
     def close_files(self):
         jsfl_list = self.init()
         jsfl = self.get_jsfl(self.load_jsfl, "close_docs")
-        print "JSFL ", jsfl
+        print("JSFL ", jsfl)
         self.run_jsfl(jsfl)
 
     def run_jsfl(self, jsfl):
@@ -235,7 +235,7 @@ class Flash(Application):
         local_dir = self.env.get_tmpdir()
 
         jsfl_to_path = local_dir + "/JSFL"
-        print "jsfl_to_path: ", jsfl_to_path
+        print("jsfl_to_path: ", jsfl_to_path)
 
         self.download(jsfl_url, jsfl_to_path)
 
@@ -262,7 +262,7 @@ class Flash(Application):
 
         # check if this file is already downloaded.  if so, skip
         if skip_if_exists and os.path.exists(to_path):
-            print "skipping '%s', already exists" % to_path
+            print("skipping '%s', already exists" % to_path)
             return to_path
 
         file = open(to_path, "wb")
@@ -272,7 +272,7 @@ class Flash(Application):
         #    print "write!!"
         #    file.write( resp.read() )
         #    file.close()
-        #except urllib2.URLError, e:
+        #except urllib2.URLError as e:
         #    raise Exception('%s - %s' % (e,url))
         f = urllib.urlopen(url)
         file = open(to_path, "wb")

@@ -9,5 +9,5 @@
 #
 #
 #
-from upgrade_db import *
-from sql_convert import *
+from .upgrade_db import *
+from .sql_convert import *

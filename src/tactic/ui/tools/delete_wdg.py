@@ -158,21 +158,21 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         on_complete = self.kwargs.get("on_complete")
 
+
+        #command_key = Common.get_command_key(command_class)
+        class_name = "tactic.ui.tools.DeleteCmd"
+        command_key = button.generate_command_key(class_name)
+
         button.add_behavior( {
         'type': 'click_up',
         'search_keys': self.search_keys,
+        'class_name': command_key,
         'on_complete': on_complete,
         'cbjs_action': '''
-        spt.app_busy.show("Deleting");
-        //spt.notify.show_message("Deleting ...");
-
-        //var button_el = bvr.src_el.getParent(".spt_buttons");
-        //button_el.setStyle("display", "none");
-
         var top = bvr.src_el.getParent(".spt_delete_top");
         var values = spt.api.Utility.get_input_values(top);
 
-        var class_name = "tactic.ui.tools.DeleteCmd";
+        var class_name = bvr.class_name;
         var kwargs = {
             'search_keys': bvr.search_keys,
             'values': values
@@ -214,12 +214,11 @@ class DeleteToolWdg(BaseRefreshWdg):
                    on_complete();
                 }
 
-                spt.app_busy.hide();
+                spt.notify.show_message("Delete complete");
             },
             on_error: function(e) {
                 spt.notify.show_message("Error on delete");
                 spt.alert(spt.exception.handler(e));
-                spt.app_busy.hide();
             }
         } );
 
@@ -303,6 +302,9 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
 class DeleteCmd(Command):
+
+    def requires_key(self):
+        return True
 
     def is_undoable(cls):
         return True
@@ -684,7 +686,7 @@ class DeleteSearchTypeCmd(Command):
             for sobject in sobjects:
                 cmd = DeleteCmd(sobject=sobject, values=self.values)
                 cmd.execute()
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -692,7 +694,7 @@ class DeleteSearchTypeCmd(Command):
             table_name = search_type_obj.get_table()
             # must log first
             TableDropUndo.log(search_type, database, table_name)
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -701,7 +703,7 @@ class DeleteSearchTypeCmd(Command):
             from pyasm.search import DropTable
             cmd = DropTable(search_type)
             cmd.commit()
-        except (SqlException, SearchException), e:
+        except (SqlException, SearchException) as e:
             print("WARNING: ", e)
 
 
@@ -1002,6 +1004,8 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         if not command_class:
             command_class = 'tactic.ui.tools.DeleteProjectCmd'
 
+        command_key = button.generate_command_key(command_class, {"project_code": project_code})
+
         on_complete = self.kwargs.get("on_complete")
 
         button.add_behavior( {
@@ -1010,7 +1014,7 @@ class DeleteProjectToolWdg(DeleteToolWdg):
         'project_code': project_code,
         'site': site,
         'related_types': related_types,
-        'command_class': command_class,
+        'command_class': command_key,
         'on_complete': on_complete,
         'cbjs_action': '''
             spt.app_busy.show("Deleting");
@@ -1049,7 +1053,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
                 spt.app_busy.show("Deleting Project ["+bvr.project_code+"]")
                 var error_message = "Error deleting project ["+bvr.project_code+"]";
                 try {
-                    server.start({'title': 'Deleted Project ', 'description': 'Deleted Project [' + bvr.project_code + ']'});
                     server.execute_cmd(class_name, kwargs);
                     success = true;
                 }
@@ -1084,7 +1087,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
                 var top = bvr.src_el.getParent(".spt_popup");
                 spt.popup.destroy(top);
-                server.finish();
 
 
             }, 100);
@@ -1114,6 +1116,9 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
 
 class DeleteProjectCmd(DeleteCmd):
+
+    def requires_key(self):
+        return True
 
 
     def execute(self):
@@ -1169,7 +1174,15 @@ class DeleteProjectCmd(DeleteCmd):
         impl = sthpw_db_resource.get_database_impl()
         deleted_impl = db_resource.get_database_impl()
 
-        if not impl.database_exists(db_resource):
+        try:
+            database_exists = impl.database_exists(db_resource)
+        except Exception as e:
+            print("Error: ", e)
+            project.delete()
+            raise
+
+
+        if not database_exists:
             # remove the project entry
             project.delete()
             return
@@ -1188,8 +1201,6 @@ class DeleteProjectCmd(DeleteCmd):
 
 
         Container.put("Sql:database_exists:%s"%db_resource.get_key(), None)
-
-
 
 
         sql = DbContainer.get(db_resource, connect=True)

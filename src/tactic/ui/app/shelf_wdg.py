@@ -157,7 +157,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
         top.add(change_div)
         #change_div.add("CHANGES!!!")
         change_div.add_style("display: none")
-        change_div.add_class("spt_change_element");
+        change_div.add_class("spt_change_element")
 
 
 
@@ -699,7 +699,39 @@ class ScriptDirListWdg(DirListWdg):
             span = SpanWdg()
             span.add_style("font-size: 9px")
             span.add_style("opacity: 0.2")
-            span.add(" &nbsp; <i>(%s)</i>" % language)
+            bgcolor = "black"
+            font_color = 'white'
+            if language == 'python':
+                icon = 'Py'
+                bgcolor = "blue"
+            elif language == 'javascript':
+                icon = "JS"
+                bgcolor = "darkorange"
+                font_color = 'black'
+            elif language == 'server_js':
+                icon = 'Se'
+            elif language == 'expression':
+                icon = 'Ex'
+            elif language == 'XML':
+                icon = 'Xm'
+            else:
+                icon = 'NA'
+            span.add("<i>%s</i>" % icon)
+            span.add_class("spt_script_item_icon")
+            span.add_style("background", bgcolor)
+            span.add_style("color", font_color)
+            style = HtmlElement.style()
+            style.add('''
+            .spt_script_item_icon{
+                border-radius: 10px;
+                border: 1px solid black;
+                padding: 2px;
+                color: #fff;
+                background: black;
+            }
+            ''') 
+            span.add(style)
+            
             item_div.add(span)
 
 

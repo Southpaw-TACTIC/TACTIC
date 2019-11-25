@@ -22,8 +22,10 @@ from pyasm.search import Search
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import ResizableTableWdg
 
-from pipeline_canvas_wdg import *
-from pipeline_wdg import *
+from .pipeline_canvas_wdg import *
+from .pipeline_wdg import *
+
+import six
 
 class ScheduleToolWdg(BaseRefreshWdg):
 
@@ -96,7 +98,7 @@ class ScheduleToolWdg(BaseRefreshWdg):
 
 
         filtered_groups = self.kwargs.get("groups")
-        if isinstance(filtered_groups, basestring):
+        if isinstance(filtered_groups, six.string_types):
             filtered_groups = filtered_groups.split("|")
 
         search = Search("sthpw/login_group")

@@ -299,6 +299,7 @@ class GalleryWdg(BaseRefreshWdg):
         content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s; justify-content: center;"%align_items)
 
         content.add_style("width: %s" % total_width)
+        content.add_style("height: 100%")
 
         top.add_behavior( {
             'type': 'load',

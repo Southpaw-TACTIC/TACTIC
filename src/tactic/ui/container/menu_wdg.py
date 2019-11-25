@@ -17,7 +17,7 @@ from pyasm.web import HtmlElement, SpanWdg, DivWdg, FloatDivWdg, WebContainer, W
 
 from tactic.ui.common import BaseRefreshWdg
 
-from smart_menu_wdg import SmartMenu
+from .smart_menu_wdg import SmartMenu
 
 
 class FingerMenuWdg(BaseRefreshWdg):

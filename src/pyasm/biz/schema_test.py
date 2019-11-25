@@ -22,7 +22,7 @@ from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 from pyasm.search import SearchType, Search, Transaction
 from pyasm.biz import Project
-from schema import Schema
+from .schema import Schema
 
 class SchemaTest(unittest.TestCase):
 
@@ -62,7 +62,7 @@ class SchemaTest(unittest.TestCase):
         new_schema.commit()
 
         schema = Schema.get(reset_cache=True)
-        print schema.get_value("schema")
+        print(schema.get_value("schema"))
 
 
 

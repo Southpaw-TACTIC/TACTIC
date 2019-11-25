@@ -429,7 +429,14 @@ class IconWdg(DivWdg):
             icon.add_class("glyphicon-%s" % part)
             if not self.size:
                 self.size = "16px"
-            icon.add_style("font-size: %s" % self.size)
+            
+            size = self.size
+            try:
+                size = int(size)
+                size = str(size) + "px"
+            except ValueError:
+                pass
+            icon.add_style("font-size: %s" % size)
             if not self.opacity:
                 self.opacity = 0.6
 
@@ -442,7 +449,13 @@ class IconWdg(DivWdg):
             icon.add_class("fa-%s" % part)
             if not self.size:
                 self.size = "16px"
-            icon.add_style("font-size: %s" % self.size)
+            size = self.size
+            try:
+                size = int(size)
+                size = str(size) + "px"
+            except ValueError:
+                pass
+            icon.add_style("font-size: %s" % size)
             if not self.opacity:
                 self.opacity = 0.6
 
@@ -481,10 +494,16 @@ class IconWdg(DivWdg):
             self.add(self.text)
 
         if self.width:
+            width = self.width
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
             if self.icon_path.startswith("BS_"):
-                self.icon.add_style('font-size', self.width)
+                self.icon.add_style('font-size', width)
             else:
-                self.icon.add_style('width', self.width)
+                self.icon.add_style('width', width)
         return super(IconWdg,self).get_display()
 
     def get_icon(self):
@@ -495,7 +514,7 @@ class IconWdg(DivWdg):
     get_icons_def = staticmethod(get_icons_def)
 
     def get_icons_keys():
-        keys = IconWdg.icons.keys()
+        keys = list(IconWdg.icons.keys())
         keys.sort()
         return keys
     get_icons_keys = staticmethod(get_icons_keys)
@@ -616,7 +635,7 @@ class IconSubmitWdg(IconButtonWdg):
         super(IconSubmitWdg,self).__init__(name,icon,long,icon_pos)
     
     def init(self):
-        from input_wdg import HiddenWdg
+        from .input_wdg import HiddenWdg
         if self.add_hidden:
             self.hidden = HiddenWdg(self.value,"")
             self.add( self.hidden )

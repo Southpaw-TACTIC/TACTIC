@@ -309,7 +309,7 @@ class SObjectUploadCmd(Command):
                 self.sobjects.append(self.sobject)
                 self._handle_sobject(self.sobject, filenames)
 
-            except SObjectActionException, e:
+            except SObjectActionException as e:
                 self.errors.append(e)
            
         self.set_response('\n'.join(self.repo_file_list)) 
@@ -350,13 +350,13 @@ class SObjectUploadCmd(Command):
 
             sobject = self.naming.get_sobject_by_filename(filename)
             if sobject == None:
-                print "WARNING(upload): sobject is none: ", upload_value
+                print("WARNING(upload): sobject is none: ", upload_value)
                 continue
 
             sobject_key = sobject.get_search_key()
 
             # add all of the files to the sobject code
-            if not self.sobject_dict.has_key(sobject_key):
+            if sobject_key not in self.sobject_dict:
                 self.sobject_dict[sobject_key] = []
             self.sobject_dict[sobject_key].append(filename)
 
@@ -411,8 +411,8 @@ class SObjectUploadCmd(Command):
                     # remove the web file
                     try:
                         os.unlink(creator.get_web_path())
-                    except OSError, e:    
-                        print e
+                    except OSError as e:    
+                        print(e)
 
             else:
                 file_types.append("main")
@@ -606,7 +606,7 @@ class SingleFilePerSObjectUploadCmd(Command):
         if not self.search_type:
              assert self.search_key 
         if self.search_type and self.search_key:
-            print "Either search_type or search_key is needed!"
+            print("Either search_type or search_key is needed!")
             return False
         return True
 

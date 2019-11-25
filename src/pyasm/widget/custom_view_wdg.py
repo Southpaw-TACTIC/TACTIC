@@ -217,7 +217,7 @@ class CustomViewAction(Command):
             action = parts[0]
 
             if action not in ['add', 'remove', 'clear', 'move_left', 'move_right']:
-                print "WARNING: action [%s] not known" % action
+                print("WARNING: action [%s] not known" % action)
                 return
 
             # get the view config 
@@ -290,7 +290,7 @@ class CustomViewAction(Command):
 
 
             elif action == "order_by":
-                print "order by!!!"
+                print("order by!!!")
 
 
 
@@ -732,7 +732,7 @@ class CustomCreateViewCbk(Command):
         #copy_from_template = web.get_form_value("copy_from_template")
 
         # get the current custom view
-        #print "keys: ", web.get_form_keys()
+        #print("keys: ", web.get_form_keys())
         template_view = web.get_form_value("template_view")
         if template_view:
             current_view = template_view
@@ -771,6 +771,7 @@ class CustomCreateViewCbk(Command):
 
         self.description = "Created view [%s] for search_type [%s]" % (view, search_type)
 
+# DEPRECATED: moved to tactic/ui/widget/data_export_wdg.py
 class CsvDownloadWdg(BaseRefreshWdg):
     '''Dynamically generates a csv file to download'''
 
@@ -821,7 +822,7 @@ class CsvDownloadWdg(BaseRefreshWdg):
         cmd.set_include_id(self.include_id)
         try:
             cmd.execute()
-        except Exception, e:
+        except Exception as e:
             raise
 
         asset_download_dir = "%s/temp/%s" % (asset_dir, ticket)
@@ -850,8 +851,8 @@ class CsvGenerator(Widget):
         content = self.get_content(file_path)
         try:
             os.unlink(file_path)
-        except IOError, e:
-            print "Unable to remove the temp csv file [%s]" %file_path
+        except IOError as e:
+            print("Unable to remove the temp csv file [%s]" %file_path)
 
         return content
 
@@ -869,7 +870,7 @@ class PicLensRssWdg(Widget):
 
         search_type = web.get_form_value("search_type")
         search_ids = web.get_form_value("search_ids")
-        #print "PicLens why am I begin run???"
+        #print("PicLens why am I begin run???")
 
         if not search_type or not search_ids:
             return ""

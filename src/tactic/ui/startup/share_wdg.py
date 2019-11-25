@@ -634,7 +634,7 @@ class ShareItemCbk(Command):
         assert code
 
         server = Search.get_by_code("sthpw/sync_server", code)
-        print server.get_data()
+        print(server.get_data())
 
         base_dir = server.get_value("base_dir")
 

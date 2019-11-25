@@ -54,10 +54,14 @@ from pyasm.biz import Snapshot
 from pyasm.command import Command
 from pyasm.search import SearchType, Search, SObject, SearchException, SearchKey
 from pyasm.web import *
-from input_wdg import CheckboxWdg, HiddenWdg, TextWdg, PopupMenuWdg
-from web_wdg import *
-from icon_wdg import IconWdg, IconButtonWdg
-from input_wdg import FilterTextWdg
+
+from .input_wdg import CheckboxWdg, HiddenWdg, TextWdg, PopupMenuWdg
+from .web_wdg import *
+from .icon_wdg import IconWdg, IconButtonWdg
+from .input_wdg import FilterTextWdg
+
+import six
+basestring = six.string_types
 
  
 class BaseTableElementWdg(HtmlElement):
@@ -238,7 +242,7 @@ class BaseTableElementWdg(HtmlElement):
         value = sobject.get_value(self.name) 
    
         popup = PopupMenuWdg("edit_%s_%s" % (sobject.get_id(), value ) ) 
-        from input_wdg import TextAreaWdg 
+        from .input_wdg import TextAreaWdg 
         div = TextAreaWdg() 
         popup.add( div ) 
              
@@ -518,7 +522,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
     def get_display(self):
         value = self.get_value()
-        if type(value) in types.StringTypes:
+        if isinstance(value, basestring):
             wiki = WikiUtil()
             value = wiki.convert(value) 
         if self.name == "timestamp":
@@ -632,7 +636,7 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
         if not self.view:
             self.view = self.parent_wdg.get_view()
         sobject = self.sobjects[0]
-        from widget_config import WidgetConfig, WidgetConfigView
+        from .widget_config import WidgetConfig, WidgetConfigView
         if sobject:
             self.config = WidgetConfigView.get_by_search_type(\
                 sobject.get_search_type_obj().get_base_key(), self.view)
@@ -670,10 +674,10 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
         #self.sobject = self.get_current_sobject()
         #self.attr = self.get_name()
 
-        #print self.name
-        #print "is_ajax: ", self.is_ajax()
-        #print "is_from_ajax: ", self.is_from_ajax()
-        #print "-"*20
+        #print(self.name)
+        #print("is_ajax: ", self.is_ajax())
+        #print("is_from_ajax: ", self.is_from_ajax())
+        #print("-"*20)
         if not self.is_ajax() or not self.is_from_ajax():
             self.sobject = self.get_current_sobject()
             self.attr = self.get_name()
@@ -722,7 +726,7 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
         script.append(self.get_refresh_script(show_progress=False))
         div.add_event('onclick', ';'.join(script))
 
-        from widget_config import WidgetConfig, WidgetConfigView
+        from .widget_config import WidgetConfig, WidgetConfigView
         if not self.config:
             self.config = WidgetConfigView.get_by_search_type(self.sobject.get_search_type_obj().get_base_key(), self.view)
 
@@ -755,7 +759,7 @@ class DynamicTableElementWdg(BaseTableElementWdg, AjaxWdg):
 
     def get_edit_wdg(self, display_id, value):
         ''' get the editing widget '''
-        from widget_config import WidgetConfig, WidgetConfigView
+        from .widget_config import WidgetConfig, WidgetConfigView
         config = WidgetConfigView.get_by_search_type(self.sobject.get_search_type_obj().get_base_key(), "edit")
         edit_handler = config.get_display_handler(self.element_name)
         element = Widget()
@@ -1491,7 +1495,7 @@ class HiddenRowToggleWdg(FunctionalTableElement):
             options = self.options.copy()
             # remove the unnecesary new, title_icon key
             options.pop('new')
-            if options.has_key('title_icon'):
+            if "title_icon" in options:
                 options.pop('title_icon')
             options['search_key'] = parent_key
             on_script = "spt.panel.load('%s', '%s', bvr.args, {}, false);"%(display_id, new)
@@ -1806,7 +1810,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                         Environment.add_warning(warning, warning)
                 except SearchException as e:
                     # skips unknown search_type/project
-                    print e.__str__()
+                    print(e.__str__())
                     pass
 
         else:
@@ -1816,7 +1820,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                 ref_sobjs = Search.get_by_id(search_type, search_ids)
             except SearchException as e:
                 # skips unknown search_type/project
-                print e.__str__()
+                print(e.__str__())
                 pass
 
         # TODO: None defaults to search_key, should be empty
@@ -2000,7 +2004,7 @@ class SObjectAttachTableElement(BaseTableElementWdg):
                 if not ref_sobject:
                     return None
             except SearchException as e:
-                print e.__str__()
+                print(e.__str__())
                 return None
 
         return ref_sobject
@@ -2270,7 +2274,8 @@ class SearchTypeElementWdg(BaseTableElementWdg):
         submission_id_list = sorted(set(submission_id_list))
         submissions = Search.get_by_id(search_type, submission_id_list)
         self.info = SObject.get_dict(submissions)
-        from file_wdg import ThumbWdg
+        
+        from .file_wdg import ThumbWdg
         self.thumb = ThumbWdg()
         self.thumb.set_show_filename(True)
         self.thumb.set_icon_size(30)

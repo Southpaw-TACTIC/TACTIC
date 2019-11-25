@@ -102,7 +102,7 @@ class ProcessSelectWdg(SelectWdg):
         if self.has_empty:
             self.add_first_option()
         else:
-            from asset_filter_wdg import ProcessFilterWdg
+            from .asset_filter_wdg import ProcessFilterWdg
             if ProcessFilterWdg.has_restriction():
                 is_group_restricted = True
 
@@ -243,7 +243,7 @@ class UserSelectWdg(SelectWdg):
         
 
     def get_display(self):
-        search = Search(Login)
+        search = Search(Login, sudo=True)
         self.set_search_for_options(search, 'login','login')
         self.set_option("extra_values", "admin")
         if self.kwargs.get('default_user') =='true':

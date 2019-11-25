@@ -12,12 +12,17 @@
 __all__ = ['CherryPyException', 'CherryPyAdapter']
 
 
-import types, os, re
+import types, os, re, sys
 
 from pyasm.common import TacticException
-from web_environment import *
+from .web_environment import *
 
 import cherrypy
+
+IS_Pv3 = sys.version_info[0] > 2
+
+import six
+basestring = six.string_types
 
 
 class CherryPyException(Exception):
@@ -172,7 +177,7 @@ class CherryPyAdapter(WebEnvironment):
         return self.request.params.keys()
 
     def has_form_key(self, key):
-        return self.request.params.has_key(key)
+        return key in self.request.params
 
     def set_form_value(self, name, value):
         '''Set the form value to appear like it was submitted'''
@@ -191,23 +196,26 @@ class CherryPyAdapter(WebEnvironment):
         If raw is True, then a nonexistant value returns None'''
         try:
             values = self.request.params[name]
-            if type(values) == types.UnicodeType:
+            if not IS_Pv3 and type(values) == types.UnicodeType:
                 values = self._process_unicode(values)
                 return [values]
             elif isinstance(values,basestring):
                 return [values]
-            elif type(values) in (types.IntType, types.FloatType, types.TypeType, types.BooleanType):
+            elif isinstance(values, (int, float, bool, type)):
                 return [values]
             elif values.__class__.__name__ in ["FieldStorage", "datetime"]:
                 return [values]
             elif not values:
                 return []
-            elif type(values) == types.ListType:
+            elif isinstance(values, list):
                 new_values = []
-                for value in values:
-                    if type(value) == types.UnicodeType:
-                        value = self._process_unicode(value)
-                    new_values.append(value)
+                if not IS_Pv3:
+                    for value in values:
+                        if isinstance(value, unicode):
+                            value = self._process_unicode(value)
+                        new_values.append(value)
+                else:
+                    new_values = values
                 return new_values
             else:
                 return [values]
@@ -273,7 +281,7 @@ class CherryPyAdapter(WebEnvironment):
         try:
             return cherrypy.request.simpleCookie[name].value
             
-        except KeyError, e:
+        except KeyError as e:
             return ""
 
 
@@ -282,7 +290,7 @@ class CherryPyAdapter(WebEnvironment):
         try:
             return cherrypy.request.simpleCookie
             
-        except KeyError, e:
+        except KeyError as e:
             return ""
 
 

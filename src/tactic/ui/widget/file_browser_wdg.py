@@ -18,12 +18,16 @@ from pyasm.common import Common, Config, jsonloads, jsondumps, Environment
 from pyasm.command import Command, DatabaseAction
 from pyasm.web import DivWdg, Table, SpanWdg, FloatDivWdg, WebContainer, HtmlElement, SpanWdg
 from pyasm.search import Search, SearchType, WidgetDbConfig
-#from tactic.ui.panel import TableLayoutWdg
 from pyasm.widget import ProdIconButtonWdg, TextWdg, IconWdg, SelectWdg, SwapDisplayWdg, HiddenWdg, CheckboxWdg
-from button_new_wdg import ActionButtonWdg, IconButtonWdg, SingleButtonWdg
+
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 
+from .button_new_wdg import ActionButtonWdg, IconButtonWdg, SingleButtonWdg
+
 import os
+
+import six
+basestring = six.string_types
 
 
 
@@ -1744,17 +1748,17 @@ class FileIngestCmd(DatabaseAction):
             print("WARNING: {leaf} mode is not supported in file group checkin!")
         if subcontext_mode == '{folder}':
             tmp = path.replace("/", "_")
-	    checkin_context = "%s/%s" % (context, tmp)
+            checkin_context = "%s/%s" % (context, tmp)
 
         elif subcontext:
             checkin_context = "%s/%s" % (context, subcontext)
         elif context:
-	    checkin_context = context
+            checkin_context = context
         else:
-	    checkin_context = path.replace("/", "_")
+            checkin_context = path.replace("/", "_")
         file_types = []
         for idx, path in enumerate(paths):
-	    file_types.append('ingest%s'%idx)
+            file_types.append('ingest%s'%idx)
         
         checkin = FileCheckin(self.sobject, paths, context=checkin_context, mode=transfer_mode,\
               file_types=file_types, description='Ingest Files as group  check-in [%s]'% self.sobject.get_code())

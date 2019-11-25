@@ -23,6 +23,11 @@ from pyasm.command import Command
 
 import re, string
 
+import six
+basestring = six.string_types
+
+
+
 try:
     import numbers
     has_numbers_module = True
@@ -97,8 +102,20 @@ class TextInputWdg(BaseInputWdg):
 
     def get_input_group_wdg(self):
         input_group = DivWdg()
-        input_group.add_style("width: %s" % self.width)
-        input_group.add_style("height: %s" % self.height)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        input_group.add_style("width: %s" % width)
+        input_group.add_style("height: %s" % height)
         input_group.add_style("margin-right: 5px")
 
         return input_group
@@ -253,8 +270,13 @@ class TextInputWdg(BaseInputWdg):
             self.width = str(self.width).replace("px", "")
             if not self.width.endswith("%"):
                 self.width = int(self.width)
-
-        self.text.add_style("width: %s" % self.width)
+        width = self.width
+        try:
+            width = int(width)
+            width = str(width) + "px"
+        except ValueError:
+            pass
+        self.text.add_style("width: %s" % width)
 
 
     def add_style(self, name, value=None):
@@ -263,7 +285,7 @@ class TextInputWdg(BaseInputWdg):
 
         if not value:
             name, value = re.split(":\ ?", name)
-
+        
         if name == 'width':
             self.width = value
             self.text.add_style(name, value)
@@ -347,7 +369,8 @@ class TextInputWdg(BaseInputWdg):
                     
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
-                    display = unicode(display, errors='ignore').encode('utf-8')
+                    if not Common.IS_Pv3:
+                        display = unicode(display, errors='ignore').encode('utf-8')
 
                 format_str = self.get_option("display_format")
                 if format_str:
@@ -422,7 +445,14 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %s" % self.width)
+            
+            width = self.width
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
+            edit_div.add_style("margin-left: %s" % width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -467,7 +497,14 @@ class TextInputWdg(BaseInputWdg):
         input_group = self.get_input_group_wdg()
 
         div.add(input_group)
-        self.text.add_style("height: %s" % self.height)
+       
+        height = self.height
+        try:
+            height = int(height)
+            height = str(height) + "px"
+        except ValueError:
+            pass
+        self.text.add_style("height: %s" % height)
 
         icon_styles = self.kwargs.get("icon_styles")
         icon_class = self.kwargs.get("icon_class")
@@ -706,13 +743,54 @@ class LookAheadTextInputWdg(TextInputWdg):
 
     ARGS_KEYS = TextInputWdg.ARGS_KEYS.copy()
     ARGS_KEYS.update({
-          'validate': {
-        'description': 'whether to activate the validate action, which defaults to true with value_column set',
-        'type': 'SelectWdg',
-        'order': 10,
-        'values': 'true|false',
-        'category': 'Options'
-    }
+        'validate': {
+            'description': 'whether to activate the validate action, which defaults to true with value_column set',
+            'type': 'SelectWdg',
+            'order': 10,
+            'values': 'true|false',
+            'category': 'Options'
+        },
+        'results_class_name': {
+            'description': 'widget used to draw results from look ahead.',
+            'type': 'TextWdg',
+            'order': 11,
+            'default': 'tactic.ui.input.TextInputResultsWdg',
+            'category': 'Options'
+
+        },
+        'search_type': {
+            'description': 'search type used in search to draw results',
+            'type': 'TextWdg',
+            'order': 12,
+            'category': 'Options'
+        },
+        'value_column': {
+            'description': 'column used as input value',
+            'type': 'TextWdg',
+            'order': 13,
+            'category': 'Options'
+        },
+        'column': {
+            'description': 'column used as input label and results label',
+            'type': 'TextWdg',
+            'order': 14,
+            'category': 'Options'
+        },
+        'do_search': { 
+            'description': 'when true, the resutls widget will use search to create results.',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'default': 'true',
+            'order': 15,
+            'category': 'Options'
+        },
+        'script_path': {
+            'description': 'when do_search is false, override results using custom Python script. \
+                    Script should return either list of values, or tuple of values and labels.',
+            'type': 'TextWdg',
+            'order': 16,
+            'category': 'Options'
+        }
     })
     
 
@@ -882,35 +960,29 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             'results_on_blur': results_on_blur,
             'cbjs_action': '''
          
-            console.log(bvr);
-            // put a delay in here so that a click in the results
-            // has time to register
             var validate = bvr.validate == 'True';
             var do_search = bvr.do_search == 'true';
-            setTimeout( function() {
-                var top = bvr.src_el.getParent(".spt_input_text_top");
-                var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", bvr.results_on_blur);
+            var top = bvr.src_el.getParent(".spt_input_text_top");
+            var el = top.getElement(".spt_input_text_results");
+            el.setStyle("display", bvr.results_on_blur);
 
-                spt.text_input.last_index = 0;
-                spt.text_input.index = -1;
+            spt.text_input.last_index = 0;
+            spt.text_input.index = -1;
 
-                var hidden_el = top.getElement(".spt_text_value");
-                if (bvr.src_el.value) {
-                    var display_value = bvr.src_el.value;
-                    var value = hidden_el.value;
-                    
-                    if (bvr.value_column) {
-                        var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
-                    } else {
-                        hidden_el.value = display_value; 
-                    }
+            var hidden_el = top.getElement(".spt_text_value");
+            if (bvr.src_el.value) {
+                var display_value = bvr.src_el.value;
+                var value = hidden_el.value;
+
+                if (bvr.value_column) {
+                    var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
+                    spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                 } else {
-                    hidden_el.value ='';
+                    hidden_el.value = display_value;
                 }
-                    
-            }, 250 );
+            } else {
+                hidden_el.value ='';
+            }
 
             '''
         } )
@@ -1280,6 +1352,16 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
+        # default event order is mousedown>blur>mouseup
+        # we don't want a blur preceding mouseup
+        results_div.add_relay_behavior( {
+            'type': "mousedown",
+            'bvr_match_class': 'spt_input_text_result',
+            'cbjs_action': '''
+            evt.preventDefault();
+            '''
+        } )
+
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
@@ -1433,7 +1515,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 from tactic.command import PythonCmd
                 kwargs = {'value' : value}
                 cmd = PythonCmd(script_path=script_path, **kwargs)
-                Command.execute_cmd(cmd)
+                results = cmd.execute()
         
             except Exception as e:
                 print(e)
@@ -1441,9 +1523,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             else:
 
-                info = cmd.get_info()
-                results = info.get('spt_ret_val')
-                
                 # expect it to return a tuple of 2 lists or a single list
                 if isinstance(results, tuple):
                     display_results = results[0]
@@ -1921,7 +2000,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
             div.add_style("padding: 3px")
             div.add_style("cursor: pointer")
             
-            if isinstance(keywords, str):
+            if not Common.IS_Pv3 and isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')
 
             if len(keywords) > self.DISPLAY_LENGTH:

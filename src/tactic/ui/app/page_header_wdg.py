@@ -195,7 +195,7 @@ class PageHeaderWdg(Widget):
         help_div = DivWdg()
         help_dialog.add(help_div)
 
-        from help_wdg import HelpWdg
+        from .help_wdg import HelpWdg
         help_wdg = HelpWdg()
         help_div.add(help_wdg)
 
@@ -1051,10 +1051,10 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         data2 = plugin_util.get_plugins_data("theme")
 
+       
+        data = dict(list(data.items()) + list(data2.items()))
 
-        data = dict(data.items() + data2.items())
-
-        themes = data.keys()
+        themes = list(data.keys())
         themes.sort()
 
 

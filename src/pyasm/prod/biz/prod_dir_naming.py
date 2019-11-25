@@ -107,10 +107,10 @@ class ProdDirNaming(DirNaming):
     def prod_shot(self, dirs):            
             shot = self.sobject
             snapshot = self.snapshot
-            print 'shot', shot
-            print 'dict', shot.data
-            print 'id', shot.get_value('id')
-            print 'snapshot', snapshot
+            print('shot', shot)
+            print('dict', shot.data)
+            print('id', shot.get_value('id'))
+            print('snapshot', snapshot)
             #if shot.get_value('id') == -1:
             #        return 
             #if snapshot.get_context() == "icon":
@@ -122,7 +122,7 @@ class ProdDirNaming(DirNaming):
             # get the shot code...i.e. - 1001_01_001_00
             shot_code = shot.get_code()
             shot_tokens = shot_code.split('_',3)
-            print 'shot code', shot_code
+            print('shot code', shot_code)
             # get/add the episode
             dirs.append(shot_tokens[1])
     

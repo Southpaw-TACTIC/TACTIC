@@ -15,9 +15,9 @@ __all__ = ["ConfigException", "Config"]
 
 import os
 
-from base import *
-from container import *
-from common import *
+from .base import *
+from .container import *
+from .common import *
 
 class TacticException(Exception):
     pass
@@ -26,10 +26,10 @@ class TacticException(Exception):
 # prefer lxml
 try:
     import lxml.etree as etree
-    from lxml_wrapper import *
-except Exception, e:
-    print "WARNING: ", e
-    from xml_wrapper import *
+    from .lxml_wrapper import *
+except Exception as e:
+    print("WARNING: ", e)
+    from .xml_wrapper import *
 
 
 class ConfigException(Exception):
@@ -94,7 +94,7 @@ class Config(Base):
         if value:
             try:
                 value = jsonloads(value)
-            except ValueError, e:
+            except ValueError as e:
                 value = {
                     'default': value.strip()
                 }
@@ -158,14 +158,15 @@ class Config(Base):
         elif value.startswith('{'):
             try:
                 value = eval(value)
-            except Exception, e:
-                print "Config value is invalid ", value 
+            except Exception as e:
+                print("Config value is invalid ", value )
                 raise e
 
             value = jsondumps(value)
         else:
-            value = unicode(value, errors='ignore').encode('utf-8')
-        
+            if not Common.IS_Pv3:
+                value = unicode(value, errors='ignore').encode('utf-8')
+
         xml_data.set_node_value(node, value)
 
         data = Container.get(Config.CONFIG_KEY)
@@ -197,7 +198,7 @@ class Config(Base):
     def get_xml_data(use_cache=True):
         '''read the main framwork configuration file'''
         config_path = Config.get_config_path()
-        #print "config: ", config_path
+        #print("config: ", config_path)
 
         xml_data = Xml()
 
@@ -224,7 +225,7 @@ class Config(Base):
 
     def get_default_config_path():
         # use the default
-        from environment import Environment
+        from .environment import Environment
         install_dir = Environment.get_install_dir()
         if os.name == 'nt':
             filename = "standalone_win32-conf.xml"
@@ -267,7 +268,7 @@ class Config(Base):
 
         # The only reason to set the tmp config is because there is something
         # wrong with the database connection
-        from environment import Environment
+        from .environment import Environment
         data_dir = Environment.get_data_dir()
         if data_dir and not os.path.exists(data_dir):
             os.makedirs(data_dir)
@@ -280,7 +281,7 @@ class Config(Base):
     set_tmp_config = staticmethod(set_tmp_config)
 
     def unset_tmp_config():
-        from environment import Environment
+        from .environment import Environment
         try:
             os.environ.pop("TACTIC_TMP_CONFIG_PATH")
         except:

@@ -17,6 +17,7 @@ import sys, re, getopt, os, shutil
 #from pyasm.command import Command
 from pyasm.search import Search, SObject, DbContainer, Sql
 from pyasm.common import Container, Environment
+from pyasm.security import Site
 
 # load all the default modules
 from pyasm.search.upgrade.project import *
@@ -26,13 +27,14 @@ __all__ = ['Upgrade']
 
 class Upgrade(object):
 
-    def __init__(self, version, is_forced=True, project_code=None, quiet=False, is_confirmed=False):
+    def __init__(self, version, is_forced=True, project_code=None, site=None, quiet=False, is_confirmed=False):
         self.to_version = version
         self.is_forced = is_forced
         self.is_confirmed = is_confirmed
 
         self.project_code = project_code
         self.quiet = quiet
+        self.site = site or "default"
 
         
     def execute(self):
@@ -61,18 +63,6 @@ class Upgrade(object):
             sthpw_proj.reactivate()
 
 
-
-        current_dir = os.getcwd()
-        tmp_dir = Environment.get_tmp_dir()
-        output_file = '%s/upgrade_output.txt' % tmp_dir
-        if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
-        elif os.path.exists(output_file):
-            os.unlink(output_file)
-        ofile = open(output_file, 'w')
-
-        import datetime
-        ofile.write('Upgrade Time: %s\n\n' %datetime.datetime.now())
 
 
 
@@ -109,6 +99,12 @@ class Upgrade(object):
                 exec("%s = module.%s" % (class_name, class_name) )
 
 
+        if not self.site or self.site == "default":
+            site_tmp_dir = Environment.get_tmp_dir()
+        else:
+            site_obj = Site.get()
+            site_tmp_dir = site_obj.get_site_dir(self.site)
+
         for project in projects:
             
             code = project.get_code()
@@ -119,24 +115,39 @@ class Upgrade(object):
 
             if not type:
                 type = 'default'
-
-
-            if not self.quiet:
-                print project.get_code(), type
-                print "-"*30
-
+                
             # if the project is admin, the just ignore for now
             if code == 'admin':
                 continue
+
+            
+            tmp_dir = '%s/upgrade/%s' % (site_tmp_dir, code)
+            output_file = '%s/upgrade_output.txt' % tmp_dir
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            elif os.path.exists(output_file):
+                os.unlink(output_file)
+                
+            ofile = open(output_file, 'w')
+
+            import datetime
+            ofile.write('Upgrade Time: %s\n\n' %datetime.datetime.now())
+
+            if not self.quiet:
+                print(project.get_code(), type)
+                print("-"*30)
+
+
             
             if not project.database_exists():
                 ofile.write("*" * 80 + '\n')
                 msg =  "Project [%s] does not have a database\n"% project.get_code()
                 ofile.write(msg)
-                print msg
+                print(msg)
                 ofile.write("*" * 80 + '\n\n')
+                ofile.close()
                 continue
-
+            ofile.close()
 
             upgrade = None
 
@@ -184,42 +195,52 @@ class Upgrade(object):
             
             if project.has_value('last_version_update'):
                 last_version = project.get_value('last_version_update')
+                last_version = last_version.split("_")
+                last_version = ".".join(last_version)
                 if self.to_version > last_version:
                     project.set_value("last_version_update", self.to_version)
             else: 
                 # it should be getting the upgrade now, redo the search
-                print "Please run upgrade_db.py again, the sthpw db has just been updated"
+                print("Please run upgrade_db.py again, the sthpw db has just been updated")
                 return
             project.commit(triggers=False)
+
+            if not self.quiet:
+                print("Upgrade output file saved in [%s]" %output_file)
 
 
 
         # print the errors for each upgrade
         for cls_name, project_code, errors in error_list:
+            tmp_dir = '%s/upgrade/%s' % (site_tmp_dir, project_code)
+            output_file = '%s/upgrade_output.txt' % tmp_dir
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            ofile = open(output_file, 'a')
             if not self.quiet:
-                print
-                print "Errors for %s [%s]:" %(project_code, cls_name)
+                print("\n")
+                print("Errors for %s [%s]:" %(project_code, cls_name))
             ofile.write("Errors for %s [%s]:\n" %(project_code, cls_name))
             if not self.quiet:
-                print "*" * 80
+                print("*" * 80)
             ofile.write("*" * 80 + '\n')
             for func, error in errors:
                 if not self.quiet:
-                    print '[%s]' % func
-                    print "-" * 70
-                    print error
+                    print('[%s]' % func)
+                    print("-" * 70)
+                    print(error)
                 ofile.write('[%s]\n' % func)
                 ofile.write("-" * 70 + '\n')
                 ofile.write('%s\n' %error)
-        ofile.close()
+            ofile.close()
 
         if self.quiet:
-            print "Please refer to the file [%s] for any upgrade messages." %output_file
-            print
+            print("Please refer to the file [%s] for any upgrade messages." %output_file)
+            print("\n")
         # handle sthpw database separately.  This ensures that the project entry
         # gets created if none exists.
-        #print "sthpw"
-        #print "-"*30
+        #print("sthpw")
+        #print("-"*30)
         #upgrade = SthpwUpgrade()
         #upgrade.set_project("sthpw")
         #Command.execute_cmd(upgrade)
@@ -240,11 +261,11 @@ class Upgrade(object):
                         src_file = '%s/%s' %(src_code_template_dir, zip_file)
                         dest_file = '%s/%s' %(dest_dir, zip_file)
                         shutil.copyfile(src_file, dest_file)
-                    except IOError, e:
-                        print e
+                    except IOError as e:
+                        print(e)
                         io_errors = True
                 if not io_errors:
-                    print "Default project template files have been updated."
+                    print("Default project template files have been updated.")
                 else:
-                    print "There was a problem copying the default template files to <TACTIC_DATA_DIR>/templates."
+                    print("There was a problem copying the default template files to <TACTIC_DATA_DIR>/templates.")
 

@@ -1109,7 +1109,8 @@ CREATE TABLE pipeline (
     description text,
     color varchar(256),
     autocreate_tasks boolean,
-    s_status character varying(30)
+    s_status character varying(30),
+    data jsonb
 );
 
 

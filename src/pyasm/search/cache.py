@@ -58,7 +58,7 @@ class CacheList(object):
             dtime = search.get_sobject()
 
             if dtime:
-                print "re-caching ..."
+                print("re-caching ...")
                 cache = self.caches[key]
                 cache.cache()
 
@@ -67,7 +67,7 @@ class CacheList(object):
 
 
         for key, mtime in self.mtimes.items():
-            print key, mtime, now - mtime
+            print(key, mtime, now - mtime)
 
 
     def get():
@@ -154,7 +154,7 @@ class CacheTrigger(Trigger):
     #    self.cache = cache
 
     def execute(self):
-        print "running cache trigger"
+        print("running cache trigger")
         cache = Cache.get("logins")
         cache.make_dirty()
 
@@ -167,7 +167,7 @@ class TestCommand(Command):
         # get the cache list
         login_cache = Cache.get("logins")
         logins = login_cache.get_attr("logins")
-        print logins
+        print(logins)
 
 
 
@@ -181,9 +181,9 @@ class TestCommand(Command):
 
 
         login = logins[0]
-        print "email [%s]" % login.get_value("email")
+        print("email [%s]" % login.get_value("email"))
         login.set_value("email", "remko@southpawtech.com")
-        print "email [%s]" % login.get_value("email")
+        print("email [%s]" % login.get_value("email"))
         login.commit()
 
         #dsaasf

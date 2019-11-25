@@ -20,6 +20,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 import types, sys, re, os
 
+import six
+basestring = six.string_types
+
+
+
 class TabWdg(BaseRefreshWdg):
 
     ARGS_KEYS = {
@@ -150,9 +155,9 @@ spt.tab.resize_headers = function() {
     }
 
     for (var i = 0; i < els.length; i++) {
-        els[i].setStyle("width", width);
+        els[i].setStyle("width", width + 'px');
         var title_el = els[i].getElement(".spt_tab_header_label");
-        title_el.setStyle("width", width);
+        title_el.setStyle("width", width + 'px');
     }
 }
 
@@ -221,7 +226,7 @@ spt.tab.set_attribute = function(element_name, name, value) {
     var kwargs_str = header.getAttribute("spt_kwargs");
     var kwargs;
     if (kwargs_str != '') {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"')
         kwargs = JSON.parse(kwargs_str);
     }
     else {
@@ -232,7 +237,7 @@ spt.tab.set_attribute = function(element_name, name, value) {
     header.setAttribute("spt_"+name, value);
 
     kwargs_str = JSON.stringify(kwargs);
-    kwargs_str = kwargs_str.replace(/"/g,"&quote;");
+    kwargs_str = kwargs_str.replace(/"/g,"\&amp;quot\;");
     header.setAttribute("spt_kwargs", kwargs_str);
 
 }
@@ -388,11 +393,11 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         }
 
         label.setAttribute("title", title);
-        label.innerHTML = display_title;
+        label.innerHTML = display_title + label.innerHTML;
 
         header.setAttribute("spt_class_name", class_name);
         var kwargs_str = JSON.stringify(kwargs);
-        kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+        kwargs_str = kwargs_str.replace(/\"/,"\&amp;quot\;");
         header.setAttribute("spt_kwargs", kwargs_str);
         header.setAttribute("spt_element_name", element_name);
         header.setAttribute("spt_title", title);
@@ -421,6 +426,25 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         var content_boxes = spt.tab.get_contents();
         var last_content = content_boxes[content_boxes.length -1];
         content_box.inject(last_content, "after");
+
+        if (kwargs.count) {
+            var count_div = header.getElement(".spt_tab_header_count");
+
+            var expression = kwargs.count;
+            var search_key = kwargs.search_key;
+
+            var server = TacticServerStub.get();
+            var count = server.eval(expression, {search_keys: search_key});
+
+            count_div.innerText = count;
+
+            var update_data = {
+                expression: expression,
+                expr_key: search_key
+            };
+
+            spt.update.add(count_div, update_data);
+        }
 
     }
 
@@ -465,7 +489,7 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
 
             subheader.setAttribute("spt_class_name", class_name);
             var kwargs_str = JSON.stringify(kwargs);
-            kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+            kwargs_str = kwargs_str.replace(/\"/,"\&amp;quot\;");
             subheader.setAttribute("spt_kwargs", kwargs_str);
             subheader.setAttribute("spt_element_name", full_element_name);
             subheader.setAttribute("spt_title", full_title);
@@ -491,7 +515,6 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         }
 
     }
-
 
 
     if (! class_name) {
@@ -684,7 +707,7 @@ spt.tab.select = function(element_name) {
         kwargs = {};
     }
     else {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
         kwargs = JSON.parse(kwargs_str);
     }
 
@@ -737,7 +760,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
             kwargs = {};
         }
         else {
-            kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+            kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
         }
     }
@@ -813,7 +836,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
                     // update info on header
                     header.setAttribute("spt_class_name", class_name);
                     var kwargs_str = JSON.stringify(kwargs);
-                    kwargs_str = kwargs_str.replace(/\"/,"&quote;");
+                    kwargs_str = kwargs_str.replace(/\"/,"\&amp;quot\;");
                     header.setAttribute("spt_kwargs", kwargs_str);
                     header.setAttribute("spt_element_name", tab_element_name);
                     header.setAttribute("spt_title", title);
@@ -859,7 +882,7 @@ spt.tab.reload_selected = function() {
     var kwargs_str = header.getAttribute("spt_kwargs");
     var kwargs;
     if (kwargs_str != '') {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
         kwargs = JSON.parse(kwargs_str);
     }
     else {
@@ -923,7 +946,7 @@ spt.tab.save_state = function() {
             name: element_name,
             title: title
         };
-        attrs_list.push(attrs)
+        
 
         var class_name = header.getAttribute("spt_class_name");
         class_names.push(class_name);
@@ -931,13 +954,17 @@ spt.tab.save_state = function() {
 
         var kwargs;
         if (kwargs_str != '') {
-            kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+            kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
         }
         else {
             kwargs = {};
         }
         kwargs_list.push(kwargs);
+
+        if (kwargs.count)
+            attrs.count = kwargs.count;
+        attrs_list.push(attrs)
     }
 
     var server = TacticServerStub.get();
@@ -948,7 +975,10 @@ spt.tab.save_state = function() {
         kwargs_list: kwargs_list,
         save_state: save_state
     };
-    server.execute_cmd(command, kwargs, {}, { on_complete: function() {} });
+    server.execute_cmd(command, kwargs, {}, { 
+        on_complete: function(ret_val) {console.log(ret_val)}, 
+        on_error: function(err) {console.log(err)} 
+    });
 
 }
 
@@ -1146,6 +1176,50 @@ spt.tab.close = function(src_el) {
     } 
 }
 
+spt.tab.view_definition = function(bvr) {
+    var activator = spt.smenu.get_activator(bvr);
+    var header = activator;
+    var class_name = header.getAttribute("spt_class_name");
+    var kwargs_str = header.getAttribute("spt_kwargs");
+    var kwargs;
+    if (kwargs_str != '') {
+        kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
+        kwargs = JSON.parse(kwargs_str);
+    }
+    else {
+        kwargs = {};
+    }
+
+
+    /* TEST: show widget editor
+    var class_name2 = 'tactic.ui.tools.WidgetEditorWdg';
+    var kwargs2 = {
+        'editor_id': bvr.editor_id,
+        'display_handler': class_name,
+        'display_options': kwargs,
+    }
+    spt.panel.load_popup("Widget Editor", class_name2, kwargs2);
+    */
+
+
+    var br = '\n';
+    var xml = '';
+    var placeholder = "element";
+    xml += '<' + placeholder + '>' + br;
+    xml += '  <display class="'+class_name+'">'  + br;
+    for (var name in kwargs) {
+      if (name == 'class_name') {
+        continue;
+      }
+      xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>' + br;
+    }
+    xml += '  </display>' + br;
+    xml += '</' + placeholder + '>';
+
+    var html = spt.convert_to_html_display(xml);
+    spt.alert(html, {type:'html'});
+}
+
         '''
 
 
@@ -1232,7 +1306,7 @@ spt.tab.close = function(src_el) {
                 height: auto;
                 float: left;
                 position: relative;
-                z-index: 2;
+                z-index: 1;
                 margin-bottom: -1px;
             }
 
@@ -1267,7 +1341,7 @@ spt.tab.close = function(src_el) {
             }
 
             .spt_add_tab_inner {
-                padding: 0 2px 0 2px;
+                padding: 0px 2px 0px 2px;
                 border-top-right-radius: 12px;
                 opacity: 0.5;
                 background: linear-gradient(180deg, #f2f2f2, #FFFFFF);
@@ -1460,8 +1534,8 @@ spt.tab.close = function(src_el) {
 
         gradient = top.get_gradient("background", -5, 5)
 
-        inner = DivWdg();
-        top.add(inner);
+        inner = DivWdg()
+        top.add(inner)
         inner.add_style("position: relative")
         inner.add_style("width: auto")
 
@@ -1536,6 +1610,11 @@ spt.tab.close = function(src_el) {
 
         min_width = self.kwargs.get("min_width")
         if min_width:
+            try:
+                min_width = int(min_width)
+                min_width = str(min_width) + "px"
+            except ValueError:
+                pass
             header_div.add_style("min-width", min_width)
 
 
@@ -1544,9 +1623,9 @@ spt.tab.close = function(src_el) {
 
         resize_headers = True
         if resize_headers:
-            header_div.add_style("white-space", "nowrap");
+            header_div.add_style("white-space", "nowrap")
 
-            offset = 120;
+            offset = 120
             header_div.add_behavior( { 
                 'type': 'load',
                 'offset': offset,
@@ -1583,7 +1662,7 @@ spt.tab.close = function(src_el) {
                     }
 
                     for (var i = 0; i < els.length; i++) {
-                        els[i].setStyle("width", width);
+                        els[i].setStyle("width", width + "px");
                     }
 
 
@@ -1768,12 +1847,17 @@ spt.tab.close = function(src_el) {
             content_top.add_attr("spt_window_resize_offset", resize_offset)
             content_top.add_attr("spt_window_resize_attr", resize_attr)
             #content_top.add_style("overflow: auto")
-            content_top.add_style("overflow: none")
+            content_top.add_style("overflow: auto")
 
         else:
 
             height = self.kwargs.get("height")
             if height:
+                try:
+                    height = int(height)
+                    height = str(height) + "px"
+                except ValueError:
+                    pass
                 content_top.add_style("height: %s" % height)
                 content_top.add_style("overflow-y: auto")
 
@@ -1785,21 +1869,21 @@ spt.tab.close = function(src_el) {
                 content_top.add_style("min-height: 500px")
 
 
-
         width = self.kwargs.get("width")
         if not width:
-            content_top.add_style("min-width: 500px")
-        else:
+            width = self.kwargs.get("min_width")
+        
+        if width:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
             content_top.add_style("min-width: %s" % width)
+        else:
+            content_top.add_style("width: 100%")
 
-        min_width = self.kwargs.get("min_width")
-        if min_width:
-            content_top.add_style("min-width", min_width)
-
-
-
-
-
+ 
         content_top.add_class("tab_content_top")
 
         color_mode = self.kwargs.get("color_mode")
@@ -1842,6 +1926,7 @@ spt.tab.close = function(src_el) {
 
             
             content_div.add_style("width: 100%")
+            # content_div.add_style("height: 100%")
             #content_div.add_style("box-sizing: border_box")
             content_div.add_style("text-align: left")
             
@@ -1912,7 +1997,7 @@ spt.tab.close = function(src_el) {
                 content_div.add_style("display: none")
             content_div.add(widget)
             content_div.add_style("width: 100%")
-            #content_div.add_style("height: 100%")
+            # content_div.add_style("height: 100%")
             content_div.add_style("text-align: left")
             content_top.add(content_div)
 
@@ -1981,7 +2066,7 @@ spt.tab.close = function(src_el) {
         content_div.add_attr("spt_tab_id", self.unique_id)
         content_div.add("")
         content_div.add_style("width: 100%")
-        #content_div.add_style("height: 100%")
+        # content_div.add_style("height: 100%")
         content_div.add_style("text-align: left")
         template_div.add(content_div)
 
@@ -2045,7 +2130,7 @@ spt.tab.close = function(src_el) {
             icon_div.add_border()
             icon_div.add_style("text-align: center")
             icon_div.add_style("opacity: 0.5")
-            div.add(icon_div);
+            div.add(icon_div)
 
 
         return div
@@ -2058,7 +2143,7 @@ spt.tab.close = function(src_el) {
         div.add_style("margin-left: -2px")
 
         icon_div = DivWdg()
-        icon_div.add_style("padding: 0 2px 0 2px")
+        icon_div.add_style("padding: 0px 2px 0px 2px")
         icon_div.set_round_corners(3, corners=['TR','TL'])
         from tactic.ui.widget import IconButtonWdg
         icon = IconButtonWdg(title="New Tab", icon=IconWdg.EDIT)
@@ -2085,7 +2170,7 @@ spt.tab.close = function(src_el) {
         icon_div.add_gradient("background", "background", -5, 5)
         icon_div.add_border()
         icon_div.add_style("text-align: center")
-        div.add(icon_div);
+        div.add(icon_div)
 
         return div
 
@@ -2094,7 +2179,7 @@ spt.tab.close = function(src_el) {
 
     def add_context_menu(self, header_div):
 
-        from menu_wdg import Menu, MenuItem
+        from .menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         #menu.set_allow_icons(False)
         #menu.set_setup_cbfn( 'spt.tab.smenu_ctx.setup_cbk' )
@@ -2118,7 +2203,7 @@ spt.tab.close = function(src_el) {
             var kwargs_str = header.getAttribute("spt_kwargs");
             var kwargs;
             if (kwargs_str != '') {
-                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs_str);
             }
             else {
@@ -2227,7 +2312,7 @@ spt.tab.close = function(src_el) {
             var kwargs_str = header.getAttribute("spt_kwargs");
             var kwargs = {};
             if (kwargs_str) {
-                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs_str);
             }
             var contents = spt.tab.get_contents();
@@ -2309,48 +2394,7 @@ spt.tab.close = function(src_el) {
 
             menu_item = MenuItem(type='action', label='View Definition')
             menu_item.add_behavior( {
-                'cbjs_action': r'''
-                var activator = spt.smenu.get_activator(bvr);
-                var header = activator;
-                var class_name = header.getAttribute("spt_class_name");
-                var kwargs_str = header.getAttribute("spt_kwargs");
-                var kwargs;
-                if (kwargs_str != '') {
-                    kwargs_str = kwargs_str.replace(/&quote;/g, '"');
-                    kwargs = JSON.parse(kwargs_str);
-                }
-                else {
-                    kwargs = {};
-                }
-
-
-                /* TEST: show widget editor
-                var class_name2 = 'tactic.ui.tools.WidgetEditorWdg';
-                var kwargs2 = {
-                    'editor_id': bvr.editor_id,
-                    'display_handler': class_name,
-                    'display_options': kwargs,
-                }
-                spt.panel.load_popup("Widget Editor", class_name2, kwargs2);
-                */
-         
-
-                var br = '\n';
-                var xml = '';
-                xml += '<element>' + br;
-                xml += '  <display class="'+class_name+'">'  + br;
-                for (var name in kwargs) {
-                  if (name == 'class_name') {
-                    continue;
-                  }
-                  xml += '    <'+name+'>'+kwargs[name]+'</'+name+'>' + br;
-                }
-                xml += '  </display>' + br;
-                xml += '</element>';
-
-                var html = spt.convert_to_html_display(xml);
-                spt.alert(html, {type:'html'});
-                '''
+                'cbjs_action': '''spt.tab.view_definition(bvr);'''
             } )
             menu.add(menu_item)
 
@@ -2369,7 +2413,7 @@ spt.tab.close = function(src_el) {
                 var title = header.getAttribute("spt_title");
 
                 var kwargs = header.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/&quote;/g, '"');
+                kwargs = kwargs.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs);
 
                 var view = element_name;
@@ -2415,7 +2459,7 @@ spt.tab.close = function(src_el) {
                 var title = header.getAttribute("spt_title");
 
                 var kwargs = header.getAttribute("spt_kwargs");
-                kwargs = kwargs.replace(/&quote;/g, '"');
+                kwargs = kwargs.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs);
 
 
@@ -2472,7 +2516,7 @@ spt.tab.close = function(src_el) {
             menus_in = {
                 'DG_HEADER_CTX': menus,
             }
-            from smart_menu_wdg import SmartMenu
+            from .smart_menu_wdg import SmartMenu
             SmartMenu.attach_smart_context_menu( header_div, menus_in, False )
 
 
@@ -2541,7 +2585,7 @@ spt.tab.close = function(src_el) {
         } )
 
 
-
+        count = attrs.get("count")
 
         header.add_attr("spt_element_name", element_name)
         header.add_attr("spt_title", title)
@@ -2549,6 +2593,7 @@ spt.tab.close = function(src_el) {
         if not is_template:
             header.add_attr("spt_class_name", class_name)
             if kwargs:
+                kwargs['count'] = count
                 # FIXME: this kwargs processing is a big HACK ...
                 # need to extract what add_behavior does.
                 kwargs_str = Common.convert_to_json(kwargs)
@@ -2569,15 +2614,21 @@ spt.tab.close = function(src_el) {
         '''
         } )
 
-        from smart_menu_wdg import SmartMenu
+        from .smart_menu_wdg import SmartMenu
         SmartMenu.assign_as_local_activator( header, 'DG_HEADER_CTX' )
 
 
  
         title_div = DivWdg()
 
+        count_wdg = SpanWdg()
+        count_wdg.add_class("badge spt_tab_header_count")
+        title_div.add(count_wdg)
+        count_wdg.add_style("float: right")
+        count_wdg.add_style("font-size: 0.7em")
+        count_wdg.add_style("margin-left: 10px")
+
         icon = None
-        count = attrs.get("count")
         if icon:
             icon = IconWdg(name="whatever", icon=icon)
             title_div.add(icon)
@@ -2586,7 +2637,6 @@ spt.tab.close = function(src_el) {
 
             state = self.kwargs.get("state") or {}
             search_key = state.get("search_key")
-
             if not search_key:
                 search_key = self.kwargs.get("search_key")
 
@@ -2596,19 +2646,16 @@ spt.tab.close = function(src_el) {
                 sobject = None
 
             if sobject:
+
                 value = Search.eval(count, sobject)
-                count_wdg = SpanWdg(value)
-                count_wdg.add_class("badge")
-                title_div.add(count_wdg)
-                count_wdg.add_style("float: right")
-                count_wdg.add_style("font-size: 0.7em")
-                count_wdg.add_style("margin-left: 10px")
+
+                count_wdg.add(value)
                 if count_color:
                     count_wdg.add_style("background", count_color)
 
                 count_wdg.add_update( {
                     'expression': count,
-                    'search_key': search_key,
+                    'expr_key': search_key,
                 } )
 
 
@@ -2625,7 +2672,7 @@ spt.tab.close = function(src_el) {
         #     #title_div.add_style("width: auto")
 
 
-        title_div.add_class("spt_tab_header_label");
+        title_div.add_class("spt_tab_header_label")
         display_title = title
         title_div.add(display_title)
         header.add(title_div)
@@ -2683,7 +2730,7 @@ spt.tab.close = function(src_el) {
         # add a drag behavior
         allow_drag = self.kwargs.get("allow_drag")
         if allow_drag not in [False, 'false']:
-            header.add_class("drag-header");
+            header.add_class("drag-header")
             header.add_behavior( {
             'type': 'drag',
             #"mouse_btn": 'LMB',
@@ -2785,7 +2832,7 @@ spt.tab.close = function(src_el) {
                 kwargs = {}
             }
             else {
-                kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+                kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
                 kwargs = JSON.parse(kwargs_str);
             }
 
@@ -2895,6 +2942,13 @@ class TabRenameWdg(BaseRefreshWdg):
 
 from pyasm.command import Command
 class TabSaveStateCmd(Command):
+    
+
+    def __init__(self, **kwargs):
+        super(TabSaveStateCmd, self).__init__(**kwargs)
+        self.update = True
+
+
     def execute(self):
 
         class_names = self.kwargs.get("class_names")
@@ -2922,8 +2976,11 @@ class TabSaveStateCmd(Command):
             xml.set_attribute(display, "class", class_name)
 
             for key, value in kwargs.items():
-                attr = xml.create_text_element(key, value)
-                xml.append_child(display, attr)
+                if (key == 'count'):
+                    xml.set_attribute(element, key, value)
+                else:
+                    attr = xml.create_text_element(key, value)
+                    xml.append_child(display, attr)
 
         xml_string = xml.to_string()
 

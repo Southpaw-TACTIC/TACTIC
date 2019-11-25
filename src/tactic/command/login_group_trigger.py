@@ -14,6 +14,7 @@ __all__ = ['LoginGroupTrigger']
 import tacticenv
 import re
 
+from pyasm.common import TacticException
 from pyasm.search import Search, SearchKey
 from pyasm.command import Trigger
 from pyasm.biz import Project
@@ -110,5 +111,5 @@ class LoginGroupTrigger(Trigger):
 
             try:
                 server.update_multiple(login_in_group_dict)
-            except Exception, e:
+            except Exception as e:
                 raise TacticException('Error updating login_in_group %s' % e.str())

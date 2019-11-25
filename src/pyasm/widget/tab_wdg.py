@@ -17,7 +17,8 @@ import types, sys, re
 from pyasm.common import Common, Marshaller, Container, Environment, Xml
 from pyasm.web import Widget, WebContainer, WidgetSettings, HtmlElement, \
         SpanWdg, DivWdg, AjaxLoader, MethodWdg, ClassWdg
-from input_wdg import HiddenWdg, PopupMenuWdg
+
+from .input_wdg import HiddenWdg, PopupMenuWdg
 
 from pyasm.prod.biz import ProdSetting
 from pyasm.biz import Project
@@ -457,7 +458,7 @@ class TabWdg(Widget):
 
 
 
-from table_element_wdg import BaseTableElementWdg
+from .table_element_wdg import BaseTableElementWdg
 class CustomXmlWdg(BaseTableElementWdg):
     '''Creates an widget from xml
     <widget name="Filter">
@@ -486,7 +487,7 @@ class CustomXmlWdg(BaseTableElementWdg):
             name = node.nodeName
             value = Xml.get_node_value(node)
 
-            if options.has_key(name):
+            if name in options:
                 # turn this into an array
                 array = []
                 array.append(options.get(name))

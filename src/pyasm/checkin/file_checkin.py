@@ -14,14 +14,17 @@
 __all__ = ['FileCheckin', 'FileAppendCheckin', 'FileGroupCheckin', 'FileGroupAppendCheckin','SingleSnapshotException']
 
 import sys, string, os, shutil, time, types
-from cStringIO import StringIO
 
 from pyasm.common import *
 from pyasm.biz import *
 from pyasm.search import *
 
-from checkin import *
-from snapshot_builder import *
+from .checkin import *
+from .snapshot_builder import *
+
+import six
+basestring = six.string_types
+
 
 class SingleSnapshotException(Exception):
     pass
@@ -85,7 +88,7 @@ class FileCheckin(BaseCheckin):
         self.is_revision = is_revision
         self.version = version
 
-        if type(file_paths) in types.StringTypes:
+        if isinstance(file_paths, basestring):
             self.file_paths = [file_paths]
         else:
             self.file_paths = file_paths
@@ -96,7 +99,7 @@ class FileCheckin(BaseCheckin):
             
 
         if source_paths: 
-            if type(source_paths) != types.StringType:
+            if not isinstance(source_paths, basestring):
                 self.source_paths = source_paths
             else:
                 self.source_paths = [source_paths]
@@ -139,7 +142,7 @@ class FileCheckin(BaseCheckin):
         self.base_dir = base_dir
        
 
-        if type(file_types) != types.StringType:
+        if not isinstance(file_types, basestring):
             self.file_types = file_types
         else:
             self.file_types = [file_types]
@@ -228,14 +231,14 @@ class FileCheckin(BaseCheckin):
             assert len(md5s) == len(file_paths)
         else:
             # Checkin may not provide md5s, make a None list
-            md5s = [ None for x in xrange(len(file_paths))]
+            md5s = [ None for x in range(len(file_paths))]
         self.md5s = md5s
         
         if file_sizes:
             assert len(file_sizes) == len(file_sizes)
         else:
             # Checkin may not provide md5s, make a None list
-            file_sizes = [ None for x in xrange(len(file_paths))]
+            file_sizes = [ None for x in range(len(file_paths))]
         self.file_sizes = file_sizes
         
         self.single_snapshot = single_snapshot
@@ -444,7 +447,7 @@ class FileCheckin(BaseCheckin):
         if naming and self.checkin_type:
             checkin_type = naming.get_value('checkin_type')
             if checkin_type and self.checkin_type != checkin_type:
-                print "Mismatch checkin_type!"
+                print("Mismatch checkin_type!")
                 naming = None
             
         # find the path for each file
@@ -533,9 +536,9 @@ class FileCheckin(BaseCheckin):
                     for file in files:
                         #os.chown(file, uid, gid)
                         os.system('sudo chown %s.%s \"%s\"'%(uid, gid, file))
-                except OSError, e:
+                except OSError as e:
                     # apache should be made a sudoer for this to work
-                    print "Error changing owner. %s" %e.__str__()
+                    print("Error changing owner. %s" %e.__str__())
 
     def handle_system_commands(self, files, file_objects):
         '''delegate the system commands to the appropriate repo.'''
@@ -702,16 +705,16 @@ class PipelineEventCaller(threading.Thread):
             if pipeline:
                 self.command.set_pipeline_code(pipeline.get_code() )
                 self.command.notify_listeners()
-        except Exception, e:
+        except Exception as e:
             # print the stacktrace
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
-            print "-"*50
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
+            print("-"*50)
             #raise TacticException(e)
 
 

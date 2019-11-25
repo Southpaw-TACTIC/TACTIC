@@ -23,10 +23,13 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-from layout_wdg import SwitchLayoutMenu
+
+from .layout_wdg import SwitchLayoutMenu
 
 import types, re
 
+import six
+basestring = six.string_types
 
 
 
@@ -168,7 +171,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.element_names = self.kwargs.get("element_names")
             if self.element_names:
                 config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
-                if type(self.element_names) in types.StringTypes:
+                if isinstance(self.element_names, basestring):
                     self.element_names = self.element_names.split(",")
                     self.element_names = [x.strip() for x in self.element_names]
                 
@@ -232,7 +235,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
-
                 self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
@@ -395,7 +397,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #args_keys = self.get_args_keys()
         args_keys = self.ARGS_KEYS
         for key in kwargs.keys():
-            if not args_keys.has_key(key):
+            if key not in args_keys:
                 #raise TacticException("Key [%s] not in accepted arguments" % key)
                 pass
 
@@ -502,7 +504,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     try:
                         limit = int(limit)
                         self.search_limit.set_limit(limit)
-                    except ValueError, e:
+                    except ValueError as e:
                         pass
                 stated_limit = self.search_limit.get_stated_limit()
                 if stated_limit:
@@ -572,6 +574,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
 
+        # Not sure if filter_view should ever be simple_search_view (this is how it was before)
+        filter_view = self.kwargs.get('filter_view') or self.simple_search_view
 
 
         # don't set the view here, it affects the logic in SearchWdg
@@ -596,7 +600,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from tactic.ui.app import SearchWdg
             # if this is not passed in, then create one
             # custom_filter_view and custom_search_view are less used, so excluded here
-            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=self.simple_search_view)
+            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=filter_view)
 
         
         search = self.search_wdg.get_search()
@@ -730,7 +734,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         except SqlException as e:
             self.search_wdg.clear_search_data(search.get_base_search_type())
 
-    	self.element_process_sobjects(search)
+        self.element_process_sobjects(search)
 
 
 
@@ -850,7 +854,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 new_settings[item] = True
             settings = new_settings
 
-        if settings.has_key("gear") and settings.get("gear") == True:
+        if 'gear' in settings and settings.get("gear") == True:
             gear_settings = self.kwargs.get("gear_settings")
             if isinstance(gear_settings, basestring):
                 if gear_settings.startswith("{") and gear_settings.endswith("}"):
@@ -885,7 +889,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if settings.get(name) in [None, False, "false"]:
                 # if not in settings, then the default is false
                 default = False
-            if not settings.has_key(name):
+            if name not in settings:
                 value = settings_default.get(name)
             else:
                 value = settings.get(name)
@@ -941,7 +945,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div = DivWdg() 
         div.add_class("SPT_DTS")
         #div.add_style("overflow: hidden")
-        div.add_style("padding-top: 3px")
+        div.add_style("padding-top: 2px")
         div.add_style("padding-right: 8px")
         div.add_color("color", "color")
 
@@ -969,7 +973,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             config_xml = config_sobj.get_xml_value("config")
             stmt = 'custom_gear_menus = %s' % config_xml.get_value("config/gear_menu_custom").strip()
             try:
-                exec stmt
+                exec(stmt)
             except:
                 custom_gear_menus = "CONFIG-ERROR"
 
@@ -1333,19 +1337,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         
 
         badge_view = self.kwargs.get("badge_view")
-        if badge_view:
+        if badge_view and badge_view.strip():
             from tactic.ui.panel import CustomLayoutWdg
             widget = CustomLayoutWdg(view=badge_view, panel_kwargs=self.kwargs)
             if widget:
                 wdg_list.append( { 'wdg': widget } )
             else:
-                print("WARNING: badge view '%s' not defined" % custom_shelf_view)
+                print("WARNING: badge view '%s' not defined" % badge_view)
  
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
             keyword_div.add_style("margin-left: 0px")
-
 
         if self.kwargs.get("show_refresh") != 'false':
             button_div = DivWdg()
@@ -1381,7 +1384,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         show_collection_tool = self.kwargs.get("show_collection_tool")
 
         if show_collection_tool not in ["false", False] and SearchType.column_exists(self.search_type, "_is_collection"):
-            from collection_wdg import CollectionAddWdg
+            from .collection_wdg import CollectionAddWdg
             collection_div = CollectionAddWdg(search_type=self.search_type, parent_key=self.parent_key)
             wdg_list.append( {'wdg': collection_div} )
         
@@ -1449,7 +1452,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add a custom layout widget
         custom_shelf_view = self.kwargs.get("shelf_view")
-        if custom_shelf_view:
+        if custom_shelf_view and custom_shelf_view.strip():
             from tactic.ui.panel import CustomLayoutWdg
             widget = CustomLayoutWdg(view=custom_shelf_view, panel_kwargs=self.kwargs)
             if widget:
@@ -1507,7 +1510,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         browser = web.get_browser()
         import os
         if browser == 'Qt' and os.name != 'nt':
-            height = "41px"
+            height = "38px"
         elif scale != 1:
             xx.add_style("position: absolute")
             xx.add_color("backgroud","background")
@@ -1518,7 +1521,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #div.add_style("opacity: 0.6")
             height = "32px"
         else:
-            height = "41px"
+            height = "38px"
             #div.add_style("opacity: 0.6")
 
 
@@ -1644,7 +1647,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
-                var search_type = top.getAttribute("spt_search_type")
+                var search_type = top.getAttribute("spt_search_type");
+
                 var kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
@@ -1882,12 +1886,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.filter_num_div = None
         # Search button
         search_dialog_id = self.kwargs.get("search_dialog_id")
-        show_search = self.get_setting("advanced_search")
+        
+        show_search = self.get_setting("show_search")
+        if show_search is None:
+            # advanced_search is deprecated as of 4.7
+            show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
+            button.add_class("spt_table_search_button")
             div.add(button)
 
 
@@ -1920,7 +1929,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
                 offset.x = offset.x - scroll_left;
-
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
                 
                 spt.toggle_show_hide(dialog);

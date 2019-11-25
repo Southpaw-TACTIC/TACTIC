@@ -25,7 +25,7 @@ from pyasm.prod.biz import SessionContents
 from pyasm.prod.load import ProdLoaderContext
 
 from tactic.ui.filter import FilterData
-from version_wdg import VersionWdg
+from .version_wdg import VersionWdg
 
 class LoaderElementWdg(BaseTableElementWdg):
     '''Snapshot loader for any search type'''
@@ -127,7 +127,8 @@ class LoaderElementWdg(BaseTableElementWdg):
         dict = self.get_current_aux_data()
         output_snapshots = input_snapshots = None
         # the check for key is needed since snapshot can be None
-        if dict and dict.has_key('%s_snapshots' %mode):
+        test_mode = "%s_snapshots" % mode
+        if dict and test_mode in dict:
             if mode == 'output':
                 output_snapshots = dict.get('%s_snapshots' %mode)
             else:

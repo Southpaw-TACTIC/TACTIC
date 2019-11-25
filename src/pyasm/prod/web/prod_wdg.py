@@ -81,9 +81,9 @@ class SnapshotInfoWdg(BaseTableElementWdg):
             try:
                 ref_sobjects = Search.get_by_id(key, value)
                 sobj_dict = SObject.get_dict(ref_sobjects)
-            except SearchException, e:
-                print "WARNING: search_type [%s] with id [%s] does not exist" % (key, value)
-                print str(e)
+            except SearchException as e:
+                print("WARNING: search_type [%s] with id [%s] does not exist" % (key, value))
+                print(str(e))
                 sobj_dict = {}
 
             # store a dict of dict with the search_type as key
@@ -121,8 +121,7 @@ class SnapshotLabelWdg(BaseTableElementWdg):
         ''' get the snapshot depending on the mode i.e. input, output'''
         dict = self.get_current_aux_data()
         output_snapshots = input_snapshots = None
-        # the check for key is needed since snapshot can be None
-        if dict and dict.has_key('%s_snapshots' %mode):
+        if dict and '%s_snapshots'%mode in dict:
             if mode == 'output':
                 output_snapshots = dict.get('%s_snapshots' %mode)
             else:

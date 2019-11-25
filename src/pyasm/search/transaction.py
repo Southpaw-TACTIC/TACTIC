@@ -19,6 +19,9 @@ import os, time, codecs
 
 from pyasm.common import *
 
+import six
+basestring = six.string_types
+
 
 class TransactionException(Exception):
     pass
@@ -162,7 +165,7 @@ class Transaction(Base):
         assert self.counter == 0
 
         # commit all of the transaction items
-        from sql import SqlException
+        from .sql import SqlException
         for transaction_obj in self.transaction_objs:
             try:
                 transaction_obj.commit()
@@ -249,7 +252,7 @@ class Transaction(Base):
         db_name = database.get_database_name()
 
         # if the database is listed, then ignore it
-        if self.databases.has_key(db_name):
+        if db_name in self.databases:
             return
 
         # start a transaction in the database
@@ -371,7 +374,7 @@ class Transaction(Base):
             self.transaction_log.set_value("description", self.description)
             self.transaction_log.commit()
         else:
-            from transaction_log import TransactionLog
+            from .transaction_log import TransactionLog
             self.transaction_log = TransactionLog.create( \
                 self.command_class, xml_string, self.description, self.title )
 
@@ -388,71 +391,76 @@ class Transaction(Base):
 
     def update_change_timestamps(self, transaction_log):
 
-        # commit all of the changes logs
-	    # NOTE: this does not get executed on undo/redo
-        timestamp = transaction_log.get_value("timestamp")
+        from pyasm.security import Sudo
+        sudo = Sudo()
+        try:
 
-        from pyasm.biz import PrefSetting
-        # get the local time since timestamp column is tz-naive
-        timezone = PrefSetting.get_value_by_key('timezone')
-        
-        if timezone in ["local", '']:
-            timestamp = SPTDate.convert_to_local(timestamp)
-        else:
-            timestamp = SPTDate.convert_to_timezone(timestamp, timezone)
+            # commit all of the changes logs
+                # NOTE: this does not get executed on undo/redo
+            timestamp = transaction_log.get_value("timestamp")
 
-        if timestamp and not isinstance(timestamp, basestring):
-            timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-
-        code = transaction_log.get_value("code")
-
-        from pyasm.biz import Project
-        from pyasm.security import Site
-        from pyasm.search import Search
-        project_code = Project.get_project_code()
-
-        for key, change_timestamp in self.change_timestamps.items():
-            new_changed_on = change_timestamp.get_json_value("changed_on", {})
-
-            search_type = change_timestamp.get_value("search_type")
-            search_code = change_timestamp.get_value("search_code")
-            search = Search("sthpw/change_timestamp")
-            search.add_filter("search_type", search_type)
-            search.add_filter("search_code", search_code)
-            ct = search.get_sobject()
-            if ct:
-                changed_on = ct.get_json_value("changed_on", {})
-                change_timestamp = ct
+            from pyasm.biz import PrefSetting
+            # get the local time since timestamp column is tz-naive
+            timezone = PrefSetting.get_value_by_key('timezone')
+            
+            if timezone in ["local", '']:
+                timestamp = SPTDate.convert_to_local(timestamp)
             else:
-                changed_on = change_timestamp.get_json_value("changed_on", {})
+                timestamp = SPTDate.convert_to_timezone(timestamp, timezone)
 
-            for column, value in new_changed_on.items():
-                if value == "CHANGED":
-                    changed_on[column] = timestamp
+            if timestamp and not isinstance(timestamp, basestring):
+                timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
-            change_timestamp.set_json_value("changed_on", changed_on)
-            change_timestamp.set_value("transaction_code", code)
-            change_timestamp.set_value("project_code", project_code)
-            change_timestamp.set_now("timestamp")
+            code = transaction_log.get_value("code")
 
-            # it is possible that this commit will fail under heavy load
-            # because per chance, the same search_type/search_type combo
-            # was created in another transaction
-            from pyasm.search import SqlException, DbContainer
-            try:
-                # triggers are "ingest" which basically runs nothing execpt the
-                # update
-                change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
-            except SqlException as e:
-                print("WARNING: ", str(e))
-                if change_timestamp.is_insert:
-                    action = "insert"
+            from pyasm.biz import Project
+            from pyasm.security import Site
+            from pyasm.search import Search
+            project_code = Project.get_project_code()
+
+            for key, change_timestamp in self.change_timestamps.items():
+                new_changed_on = change_timestamp.get_json_value("changed_on", {})
+
+                search_type = change_timestamp.get_value("search_type")
+                search_code = change_timestamp.get_value("search_code")
+                search = Search("sthpw/change_timestamp")
+                search.add_filter("search_type", search_type)
+                search.add_filter("search_code", search_code)
+                ct = search.get_sobject()
+                if ct:
+                    changed_on = ct.get_json_value("changed_on", {})
+                    change_timestamp = ct
                 else:
-                    action = "update"
-                print("Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code))
-                DbContainer.commit_thread_sql()
+                    changed_on = change_timestamp.get_json_value("changed_on", {})
 
+                for column, value in new_changed_on.items():
+                    if value == "CHANGED":
+                        changed_on[column] = timestamp
 
+                change_timestamp.set_json_value("changed_on", changed_on)
+                change_timestamp.set_value("transaction_code", code)
+                change_timestamp.set_value("project_code", project_code)
+                change_timestamp.set_now("timestamp")
+
+                # it is possible that this commit will fail under heavy load
+                # because per chance, the same search_type/search_type combo
+                # was created in another transaction
+                from pyasm.search import SqlException, DbContainer
+                try:
+                    # triggers are "ingest" which basically runs nothing execpt the
+                    # update
+                    change_timestamp.commit(triggers="ingest", log_transaction=False, cache=False)
+                except SqlException as e:
+                    print("WARNING: ", str(e))
+                    if change_timestamp.is_insert:
+                        action = "insert"
+                    else:
+                        action = "update"
+                    print("Could not change_timestamp for %s: %s - %s" % (action, search_type, search_code))
+                    DbContainer.commit_thread_sql()
+
+        finally:
+            sudo.exit()
 
 
 
@@ -692,10 +700,12 @@ class FileUndo:
             dst_dir = os.path.dirname(dst)
             os.chdir(dst_dir)
             # while it seems like you can join any 2 paths, it is based on working directory
-            if isinstance(prev, unicode):
-                prev = prev.encode('utf-8')
-            if isinstance(dst_dir, unicode):
-                dst_dir = dst_dir.encode('utf-8')
+            if not Common.IS_Pv3:
+                if isinstance(prev, unicode):
+                    prev = prev.encode('utf-8')
+                if isinstance(dst_dir, unicode):
+                    dst_dir = dst_dir.encode('utf-8')
+
             prev = os.path.join(dst_dir, os.path.abspath(prev))
             extra['prev'] = prev
             os.unlink(dst)
@@ -794,7 +804,7 @@ class FileUndo:
         Xml.set_attribute(file_node,"src",src)
         Xml.set_attribute(file_node,"dst",dst)
         for name,value in extra.items():
-            if isinstance(value, str):
+            if not Common.IS_Pv3 and isinstance(value, str):
                 value = unicode(value, errors='ignore').encode('utf-8')
             Xml.set_attribute(file_node,name,value)
 
@@ -844,7 +854,7 @@ class FileUndo:
                 # remove directory
                 try:
                     os.rmdir(src)
-                except OSError, e:
+                except OSError as e:
                     if 'Directory not empty' in e.__str__():
                         # can consider removing the contents first and then rmdir
                         raise TransactionException(e)
@@ -939,10 +949,10 @@ class FileUndo:
                             raise IOError(str(e))
 
 
-        except IOError, e:
+        except IOError as e:
             print( e.__str__())
             print("Failed to undo %s %s" % (type, src))
-        except OSError, e:
+        except OSError as e:
             raise TransactionException("Failed to undo due to OS Error during %s. %s" % (type, e.__str__()))
         except Exception as e:
             print("Error: %s" %e)
@@ -1082,7 +1092,7 @@ class TableUndo(Base):
         Xml.set_attribute(sobject_node,"database",database)
         Xml.set_attribute(sobject_node,"action", "create")
 
-        from search import SearchType, Sql, DbContainer
+        from .search import SearchType, Sql, DbContainer
         search_type = SearchType.build_search_type(search_type, project_code=database)
 
         column_info = SearchType.get_column_info(search_type)
@@ -1261,7 +1271,7 @@ class TableUndo(Base):
                      SearchType.sequence_setval(search_type, seq_max)
 
 
-            except IOError, e:
+            except IOError as e:
                  print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             """
@@ -1290,7 +1300,7 @@ class TableDropUndo(Base):
         Xml.set_attribute(sobject_node,"search_type", search_type)
         Xml.set_attribute(sobject_node,"action", "drop")
 
-        from search import SearchType
+        from .search import SearchType
         #st_obj = SearchType.get(search_type)
         #seq_max = st_obj.sequence_nextval()
 
@@ -1339,7 +1349,7 @@ class TableDropUndo(Base):
                  st_obj = SearchType.get(search_type)
                  if seq_max:
                      SearchType.sequence_setval(search_type, seq_max)
-            except IOError, e:
+            except IOError as e:
                  print("ERROR: ", str(e))
                  raise TacticException('Cannot locate the file [%s] for restoring the table.' %schema_path) 
             except SqlException as e:
@@ -1472,7 +1482,7 @@ class AlterTableUndo(Base):
         Xml.set_attribute(sobject_node,"column",column)
 
        
-        from sql import DbContainer
+        from .sql import DbContainer
         from pyasm.biz import Project
         project = Project.get_by_code(database)
         # FIXME: for now, make database == project

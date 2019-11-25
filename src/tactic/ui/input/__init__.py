@@ -11,16 +11,16 @@
 #
 
 
-from task_input_wdg import *
-from process_context_wdg import *
-from process_group_select_wdg import *
-from icon_select_wdg import *
-from navigator_wdg import *
-from color_input_wdg import *
-from pipeline_input_wdg import *
-from search_type_input_wdg import *
-from text_input_wdg import *
-from textarea_input_wdg import *
+from .task_input_wdg import *
+from .process_context_wdg import *
+from .process_group_select_wdg import *
+from .icon_select_wdg import *
+from .navigator_wdg import *
+from .color_input_wdg import *
+from .pipeline_input_wdg import *
+from .search_type_input_wdg import *
+from .text_input_wdg import *
+from .textarea_input_wdg import *
 
-from html5_upload_wdg import *
+from .html5_upload_wdg import *
 

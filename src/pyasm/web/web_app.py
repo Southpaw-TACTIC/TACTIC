@@ -17,9 +17,9 @@ import types, time
 
 from pyasm.common import *
 from pyasm.search import SearchType, Sql
-from widget import *
-from html_wdg import *
-from web_container import *
+from .widget import *
+from .html_wdg import *
+from .web_container import *
 
 
 
@@ -41,7 +41,7 @@ class WebApp(Base):
             raise WebAppException("No top level widget defined")
 
         # add to the access log
-        # FIXME: this does not get committed if there is an exception.  The
+        # NOTE: this does not get committed if there is an exception.  The
         # transaction will back out.
         access_log_flag = False
         access_log = None

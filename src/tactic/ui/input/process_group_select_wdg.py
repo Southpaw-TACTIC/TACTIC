@@ -15,6 +15,7 @@ __all__ = ['ProcessGroupSelectWdg', 'LoginTableElementWdg']
 
 from pyasm.search import Search, SearchKey, SearchException
 from pyasm.biz import Pipeline
+from pyasm.security import Security, Sudo
 from pyasm.web import DivWdg, SpanWdg, HtmlElement
 from pyasm.widget import BaseInputWdg, SelectWdg
 from tactic.ui.common import SimpleTableElementWdg
@@ -29,8 +30,8 @@ class ProcessGroupSelectWdg(BaseInputWdg):
             'order': 0,
             'category': 'Display'
         }
-     
-        
+
+
     }
 
     def init(self):
@@ -53,14 +54,14 @@ class ProcessGroupSelectWdg(BaseInputWdg):
             if parent:
                 pipeline_code = parent.get_value('pipeline_code')
             pipeline = Pipeline.get_by_code(pipeline_code)
-            
+
             labels_expr = None
 
             if pipeline:
                 attrs = pipeline.get_process_attrs(sobject.get_value('process'))
                 group = attrs.get('%s_login_group'%self.get_name())
             if group:
-            
+
                 values_expr = "@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.login)"%group
                 if self.labels_attr:
                     labels_expr = ["@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.%s)"%(group, x.strip()) for x in self.labels_attr]
@@ -91,7 +92,7 @@ class ProcessGroupSelectWdg(BaseInputWdg):
         #all_users = Search.eval("@GET(sthpw/login.login)")
         all_users = Search.eval("@SOBJECT(sthpw/login)")
         all_users_label =  []
-        
+
         # don't use expression here since it's not as db-efficient as retrieving the sobjects
         """
         if self.labels_attr:
@@ -127,13 +128,13 @@ Search.eval("@GET(sthpw/login_group['login_group',
 
 
         top = DivWdg()
-        
+
         top.add_class("spt_input_top")
 
         # HACK! This isn't very well constructed
         ### Tore: Not self code! Copied from ProcessContextInputWdg. Seems to work though.
         top.add_attr("spt_cbjs_get_input_key", "return cell_to_edit.getAttribute('spt_pipeline_code');")
-        
+
         # Adding an "all users" select option in case it can't find a useful select widget.
         div = DivWdg()
         div.add_class("spt_input_option")
@@ -156,7 +157,7 @@ Search.eval("@GET(sthpw/login_group['login_group',
                 label = ' '.join(user_labels)
 
             labels_dict[user_name] = label
-            
+
             labels.append('%s'%label)
             #print("select ", user_name)
 
@@ -184,16 +185,16 @@ Search.eval("@GET(sthpw/login_group['login_group',
 
         select.set_option("values", values)
         select.set_option("labels", labels)
-           
+
         div.add(select)
         top.add(div)
-        
+
         #Building each of the select widgets per group here.
         for group in group_dict.keys():
             div = DivWdg()
             div.add_class("spt_input_option")
             div.add_attr("spt_input_key", group)
-            
+
             select = SelectWdg(self.get_name())
             select.add_empty_option("-- Select a User --")
             values = ['']
@@ -211,10 +212,10 @@ Search.eval("@GET(sthpw/login_group['login_group',
             #select.add_behavior( behavior )
             select.set_option("values", values)
             select.set_option("labels", labels)
-            
+
             div.add(select)
             top.add(div)
-        
+
         return top
 
 
@@ -226,22 +227,25 @@ class LoginTableElementWdg(SimpleTableElementWdg):
         super(LoginTableElementWdg, self).handle_td(td)
         task = self.get_current_sobject()
         if task:
+            # the group info for the login dropdown.
+            td.add_attr('spt_input_key', task.get_value("assigned_group"))
+
             search_type = task.get_value('search_type')
             search_id = task.get_value('search_id')
-            
+
             if not search_type or not search_id:
                 return
-            
+
             search_key = SearchKey.build_search_key(search_type, search_id, column='id')
-            
+
             from pyasm.common import SObjectSecurityException
             try:
                 parent = Search.get_by_search_key(search_key)
                 pipeline = Pipeline.get_by_sobject(parent)
-               
+
                 if pipeline:
                     attrs = pipeline.get_process_attrs(task.get_value('process'))
-                
+
                     td.add_attr('spt_pipeline_code', attrs.get('%s_login_group'%self.get_name()))
             except SObjectSecurityException as e:
                 pass
@@ -249,7 +253,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 if e.__str__().find('not registered') != -1:
                     pass
                 elif e.__str__().find('does not exist for database') != -1:
-                    pass    
+                    pass
                 elif e.__str__().find('Cannot find project') != -1:
                     pass
                 else:
@@ -257,7 +261,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
 
     def get_onload_js(self):
-        # TODO: make the order the same as add_value_update 
+        # TODO: make the order the same as add_value_update
         #bvr.src_el.loadXYZ = function(element_name, cell, sobject) { %s }
         return '''
             var value = sobject[element_name];
@@ -283,7 +287,11 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         value = super(LoginTableElementWdg, self).get_value(name)
         if value:
-            user = Search.get_by_code("sthpw/login", value)
+            sudo = Sudo()
+            try:
+                user = Search.get_by_code("sthpw/login", value)
+            except:
+                sudo.exit()
             if user:
                 value = user.get_value("display_name") or value
 

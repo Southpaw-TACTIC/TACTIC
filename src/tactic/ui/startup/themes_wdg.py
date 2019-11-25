@@ -21,7 +21,7 @@ import os
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 
-from reports_wdg import ReportsWdg
+from .reports_wdg import ReportsWdg
 class ThemesWdg(ReportsWdg):
 
     def get_args_keys(self):

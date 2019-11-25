@@ -17,9 +17,11 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import ThumbWdg, IconWdg
 from tactic.ui.container import SmartMenu
 
-from table_layout_wdg import FastTableLayoutWdg
 from tactic.ui.widget import IconButtonWdg, SingleButtonWdg
 
+from .table_layout_wdg import FastTableLayoutWdg
+
+import six 
 class ToolLayoutWdg(FastTableLayoutWdg):
 
     ARGS_KEYS = {
@@ -127,7 +129,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #self.kwargs['show_gear'] = 'false'
 
-        from tile_layout_wdg import TileLayoutWdg
+        from .tile_layout_wdg import TileLayoutWdg
         self.tile_layout = TileLayoutWdg(search_type=self.search_type, expand_mode=self.expand_mode, process=self.process)
 
 
@@ -215,6 +217,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
                 current_offset=info.get("current_offset")
             )
             inner.add(limit_wdg)
+            limit_wdg.add_style("padding", "10px")
 
         content = DivWdg()
         inner.add( content )
@@ -223,7 +226,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         # NOTE: a lot of scaffolding to convince that search_cbk that this
         # is a proper layout
-        top.add_class("spt_table_top");
+        top.add_class("spt_table_top")
         class_name = Common.get_full_class_name(self)
         top.add_attr("spt_class_name", class_name)
 
@@ -239,7 +242,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         self.handle_load_behaviors(content)
 
 
-        inner.add_class("spt_table_content");
+        inner.add_class("spt_table_content")
         inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
         inner.add_attr("spt_view", self.kwargs.get('view'))
 
@@ -249,7 +252,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         limit_span.add_style("margin-top: 4px")
         limit_span.add_class("spt_table_search")
         limit_span.add_style("width: 250px")
-        limit_span.add_style("margin: 5 auto")
+        limit_span.add_style("margin: 5px auto")
 
       
         inner.add_attr("total_count", info.get("count"))
@@ -339,7 +342,6 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #table = Table()
         from tactic.ui.container import ResizableTableWdg
-        from table_layout_wdg import FastTableLayoutWdg
 
         #table = ResizableTableWdg()
         table = Table()
@@ -400,7 +402,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
                           <msg>
         '''
         tool_icons = self.kwargs.get('tool_icon')
-        if isinstance(tool_icons, basestring):
+        if isinstance(tool_icons, six.string_types):
             tool_icon_lst = tool_icons.split("|")
         else:
             tool_icon_lst = None
@@ -439,7 +441,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
 
-from custom_layout_wdg import CustomLayoutWdg
+from .custom_layout_wdg import CustomLayoutWdg
 class CustomLayoutWithSearchWdg(ToolLayoutWdg):
 
     ARGS_KEYS = CustomLayoutWdg.ARGS_KEYS.copy()
@@ -501,6 +503,7 @@ class RepoBrowserLayoutWdg(ToolLayoutWdg):
 
         from tactic.ui.tools import RepoBrowserWdg
         kwargs = self.kwargs.copy()
+
 
         kwargs['search'] = self.search
 

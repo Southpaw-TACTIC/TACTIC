@@ -198,7 +198,7 @@ class ADSearchWdg(BaseRefreshWdg):
                 domains = [None]
             else:
                 domains = domains_str.split("|")
-            print "domains: ", domains
+            print("domains: ", domains)
 
            
             from subprocess import Popen, PIPE
@@ -222,7 +222,7 @@ class ADSearchWdg(BaseRefreshWdg):
                 }
 
                 import simplejson
-                print "outpu: ", output
+                print("outpu: ", output0)
                 ad_users = simplejson.loads(output)
                 for ad_user in ad_users:
 
@@ -309,7 +309,7 @@ class ADInputWdg(BaseInputWdg):
         # get the login
         sobject = self.get_current_sobject()
         client = sobject.get_value("contact_name")
-        print "client: ", client
+        print("client: ", client)
         if client:
             login_sobj = Login.get_by_code(client)
         else:
@@ -324,7 +324,7 @@ class ADInputWdg(BaseInputWdg):
 
 
         
-        print "login: ", login
+        print("login: ", login)
         hidden = HiddenWdg(self.get_input_name())
         hidden.set_options( self.options.copy() )
         hidden.add_class("spt_ad_input")
@@ -422,14 +422,14 @@ from pyasm.command import Command
 class ADCacheUserCbk(Command):
     def execute(self):
         # disabling for now
-        print "caching user ..."
+        print("caching user ...")
 
         web = WebContainer.get_web()
         login = self.kwargs.get("login")
 
         login_sobj = Search.eval("@SOBJECT(sthpw/login['login','%s'])" % login, show_retired=True)
         if login_sobj:
-            print "login %s already exists" % login
+            print("login %s already exists" % login)
             return
 
         # cache the user
@@ -442,8 +442,8 @@ class ADCacheUserCbk(Command):
             login_sobj.set_value("login", login)
             authenticate.add_user_info(login_sobj, password=None)
             login_sobj.commit()
-        except Exception, e:
-            print "Error: ", str(e)
+        except Exception as e:
+            print("Error: ", str(e))
 
         return
 

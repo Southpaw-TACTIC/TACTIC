@@ -38,8 +38,8 @@ class FirstRunInit(object):
         data_dir = Environment.get_data_dir(manual=True)
 
         # check to see if the data folder already exists
-        print
-        print "Data Directory [%s]" % data_dir
+        print("\n")
+        print("Data Directory [%s]" % data_dir)
         install_dir = Environment.get_install_dir()
 
         # find criteria for initializing
@@ -53,16 +53,16 @@ class FirstRunInit(object):
 
         if initialize:
             # copy the template over.  This should exist even if it is not used
-            print "... not found: initializing\n"
+            print("... not found: initializing\n")
             install_data_path = "%s/src/install/start" % (install_dir)
             if os.path.exists(install_data_path):
                 dirnames = os.listdir(install_data_path)
                 for dirname in dirnames:
                     to_dir = "%s/%s" % (data_dir, dirname)
                     if os.path.exists(to_dir):
-                        print "WARNING: path [%s] exists ... skipping copying" % to_dir
+                        print("WARNING: path [%s] exists ... skipping copying" % to_dir)
                         continue
-                    print "Copying to [%s]" % to_dir
+                    print("Copying to [%s]" % to_dir)
                     from_dir = "%s/%s" % (install_data_path, dirname)
                     shutil.copytree(from_dir, to_dir)
             else:
@@ -107,16 +107,16 @@ class FirstRunInit(object):
         sys.path.insert(0, plugin_dir)
 
         asset_dir = Environment.get_asset_dir()
-        print "Asset Directory [%s]" % asset_dir
+        print("Asset Directory [%s]" % asset_dir)
 
         tmp_dir = Environment.get_tmp_dir()
-        print "Temp Directory [%s]" % tmp_dir
+        print("Temp Directory [%s]" % tmp_dir)
 
         # check if there is a config path already exists. If it does,
         # then don't do anything further.  This is likely a previous
         # installation
         if config_exists:
-            print "Config path [%s]" % config_path
+            print("Config path [%s]" % config_path)
             return
         else:
             # if there is no config, retrieve data_dir in non-manual mode

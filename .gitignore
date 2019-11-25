@@ -39,3 +39,9 @@ nosetests.xml
 
 # VI swp files
 *.swp
+
+# Metadata
+._*
+
+# Mac files
+.DS_Store

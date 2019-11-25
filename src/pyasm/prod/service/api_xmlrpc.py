@@ -9,13 +9,26 @@
 #
 #
 #
+from __future__ import print_function
 
-__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException']
+__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', "API_MODE"]
 
 import decimal
-import shutil, os, types, sys, thread
+import shutil, os, types, sys
+try:
+    import _thread as thread
+    types.DictType = type({})
+except:
+    # Python 2.7
+    import thread
 import re
-import datetime, time
+import random
+import datetime
+import time
+import six
+import requests
+
+basestring = six.string_types
 
 from pyasm.common import jsonloads, jsondumps
 
@@ -24,15 +37,14 @@ from pyasm.command import Command, UndoCmd, RedoCmd, Trigger, CommandExitExcepti
 from pyasm.checkin import FileCheckin, FileGroupCheckin, SnapshotBuilder, FileAppendCheckin, FileGroupAppendCheckin
 from pyasm.biz import IconCreator, Project, FileRange, Pipeline, Snapshot, DebugLog, File, FileGroup, Schema, ExpressionParser
 from pyasm.search import *
-from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security
+from pyasm.security import XmlRpcInit, XmlRpcLogin, Ticket, LicenseException, Security, Sudo
 
-from pyasm.web import WebContainer, Palette
-#from pyasm.web import EventContainer, CommandDelegator
-#from pyasm.widget import IframeWdg, IframePlainWdg, WidgetConfigView
+from pyasm.web import WebContainer, Palette, Widget
 from pyasm.widget import WidgetConfigView
 from pyasm.web.app_server import XmlrpcServer
 
-MAXINT =  2L**31-1
+MAXINT = 2**31-1
+
 
 class ApiClientCmd(Command):
     def get_title(self):
@@ -43,6 +55,13 @@ class ApiClientCmd(Command):
 class ApiException(Exception):
     pass
 
+
+class RemoteApiException(Exception):
+
+    def __init__(self, error):
+        self.class_name = error.get('type')
+        self.message = error.get('message')
+        self.args = error.get('args')
 
 
 
@@ -56,12 +75,30 @@ LAST_RSS = System().memory_usage().get('rss')
 def get_simple_cmd(self, meth, ticket, args):
     class ApiClientCmd(Command):
 
+
+        def __init__(self2, **kwargs):
+            super(ApiClientCmd, self2).__init__(**kwargs)
+            
+            self2.print_info = False
+           
+            if meth.__name__ == 'get_widget':
+                first_arg = args[0]
+                if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
+                    self2.print_info = True
+            elif meth.__name__ == 'execute_cmd':
+                first_arg = args[0]
+                if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.DynamicUpdateCmd") == -1:
+                    self2.print_info = True
+            else:
+                self2.print_info = True
+            
+            
         def get_title(self):
             return "Client API"
 
         def check(self):
             duration = time.time() - self.start_time
-            print "Checking ... (%0.3f)" % duration
+            print("Checking ... (%0.3f)" % duration)
 
         def execute(self2):
             self2.start_time = time.time()
@@ -69,40 +106,35 @@ def get_simple_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
            
             if self.get_protocol() != "local":
-                print "request_id: ", request_id
-                now = datetime.datetime.now()
                 
-                def print_info(self2, args):
+                def print_primary_info(self2, args):
+                    print("request_id: %s" % request_id)
+                    
                     from pyasm.security import Site
                     if Site.get_site():
-                        print "site: ", Site.get_site()
-                    print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                    print "user: ", Environment.get_user_name()
-                    print "simple method: ", meth
-                    print "ticket: ", ticket
+                        print("site: %s" % Site.get_site())
+                    
+                    now = datetime.datetime.now()
+                    print("timestamp: %s" % now.strftime("%Y-%m-%d %H:%M:%S"))
+                    print("user: %s" % Environment.get_user_name())
+                    print("simple method: %s" % meth)
+                    print("ticket: %s" % ticket)
+                    
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
 
 
-                self.print_info = True
-                
-                if meth.__name__ == 'get_widget':
-                    first_arg = args[0]
-                    if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
-                        print_info(self2, args)
-                elif meth.__name__ == 'execute_cmd':
-                    if self.print_info == True:
-                        print_info(self2, args)
-                else:
-                    print_info(self2, args)
-                
+                if self2.print_info:
+                    print_primary_info(self2, args)
                 
             try:
+
                 # Do a security check
                 if Config.get_value("security", "api_method_restricted") == "true":
                     security = Environment.get_security()
                     #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_methods
+
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if not access:
                        raise ApiException("Access denied")
@@ -111,15 +143,21 @@ def get_simple_cmd(self, meth, ticket, args):
                 self2.results = exec_meth(self, ticket, meth, args)
             finally:
                 if self.get_protocol() != "local":
+                    
+                    def print_secondary_info(duration, request_id, rss, increment):
+                        print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
+                        print("Memory: %s KB" % rss)
+                        print("Increment: %s KB" % increment)
+                        
                     duration = time.time() - self2.start_time
-                    print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
+                    
                     REQUEST_COUNT += 1
                     rss = System().memory_usage().get("rss")
                     increment = rss - LAST_RSS
-                    print "Memory: %s KB" % rss
-                    print "Increment: %s KB" % increment
-                    #print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
                     LAST_RSS = rss
+                    
+                    if self2.print_info:
+                        print_secondary_info(duration, request_id, rss, increment)
 
 
 
@@ -151,6 +189,8 @@ def get_full_cmd(self, meth, ticket, args):
                 transaction = super(ApiClientCmd,self2).get_transaction()
                 return transaction
 
+            sudo = Sudo()
+
             state = TransactionState.get_by_ticket(ticket)
             transaction_id = state.get_state("transaction")
             if not transaction_id:
@@ -173,7 +213,7 @@ def get_full_cmd(self, meth, ticket, args):
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
 
             debug = True
-            if meth.func_name == "execute_cmd":
+            if meth.__name__ == "execute_cmd":
                 #if len(args) > 1:
                 if isinstance(args, tuple) and len(args) > 1:
                     first_arg = args[1]
@@ -185,12 +225,12 @@ def get_full_cmd(self, meth, ticket, args):
                         debug = False
 
             if self.get_protocol() != "local" and debug:
-                print "---"
-                print "user: ", Environment.get_user_name()
+                print("---")
+                print("user: ", Environment.get_user_name())
                 now = datetime.datetime.now()
-                print "timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S")
-                print "method: ", meth.func_name
-                print "ticket: ", ticket
+                print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
+                print("method: ", meth.__name__)
+                print("ticket: ", ticket)
                 Common.pretty_print(args)
             
             #self2.results = meth(self, ticket, *args)
@@ -209,13 +249,13 @@ def get_full_cmd(self, meth, ticket, args):
 
             self2.sobjects = self.get_sobjects()
             self2.info = self.get_info()
-            self2.info['function_name'] = meth.func_name
+            self2.info['function_name'] = meth.__name__
             self2.info['args'] = args
 
 
             if self.get_protocol() != "local" and debug:
                 duration = time.time() - start
-                print "Duration: %0.3f seconds (request_id: %s)" % (duration, request_id)
+                print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
 
 
 
@@ -225,7 +265,7 @@ def get_full_cmd(self, meth, ticket, args):
 
 def exec_meth(self, ticket, meth, args):
 
-    #print "Server Port: ", WebContainer.get_web().get_env("SERVER_PORT")
+    #print("Server Port: ", WebContainer.get_web().get_env("SERVER_PORT"))
 
     if self.get_language() == "javascript":
         # the last argument is always kwargs
@@ -276,11 +316,38 @@ QUERY_METHODS = {
     'get_upload_file_size': 0,
     'get_doc_link': 0,
     'get_interaction_count': 0,
+    'get_plugin_dir': 0,
+    'get_by_code': 0,
 }
 
 TRANS_OPTIONAL_METHODS = {
     'execute_cmd': 3
 }
+
+
+
+API_MODE = {
+    "closed": {
+        "execute_cmd",
+        "execute_python_script", # should this be allowed?
+        "get_widget",
+        "get_ticket",
+        "ping",
+    },
+    "query": {
+        "get_by_search_key",
+        "get_by_code",
+        "query",
+        "eval",
+
+        # TODO: Probably harmless
+        "get_task_status_colors",
+        "get_widget_setting",
+        "set_widget_setting"
+    }
+} 
+
+
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -307,34 +374,72 @@ def xmlrpc_decorator(meth):
                 Container.put(data_key, state) 
 
 
-
     def new(self, original_ticket, *args, **kwargs):
         results = None
         try:
             ticket = self.init(original_ticket)
 
+            # These modes disable a good chunk of the API for a more secure
+            # environment.
 
-            # These lines disable a good chunk of the API.  This will need to
-            # have rules specified ... like a specific API ticket or an access
-            # rule that allows this.
-            #if self.get_protocol() != 'local':
-            #    if meth.__name__ not in ["execute_cmd", "get_widget", "ping"]:
-            #        raise Exception("Permission Denied")
+            if self.get_protocol() != 'local':
+                api_mode = Config.get_value("security", "api_mode") or "open"
+
+                allowed = False
+
+                security = Environment.get_security()
+                user_name = security.get_user_name()
+                if user_name == "admin":
+                    allowed = True
+
+                meth_name = meth.__name__
+                if api_mode == "open":
+                    allowed = True
+
+                if api_mode in ["closed", "query"]:
+                    if meth_name in API_MODE.get("closed"):
+                        allowed = True
+
+                if api_mode == "query":
+                    if meth_name in API_MODE.get("query"):
+                        allowed = True
+
+                if not allowed:
+                    raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
 
 
             try:
-                #if meth.__name__ in QUERY_METHODS:
-                if QUERY_METHODS.has_key(meth.__name__):
+                multi_site = Config.get_value("master", "enabled")
+
+                if meth.__name__ in QUERY_METHODS:
                     cmd = get_simple_cmd(self, meth, ticket, args)
-                elif TRANS_OPTIONAL_METHODS.has_key(meth.__name__):
-                    idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
-                    if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                elif meth.__name__ in TRANS_OPTIONAL_METHODS:
+                    cmd = None
+                    
+                    # If multi-site is enabled, redirect commands flagged as update.
+                    if multi_site and meth.__name__ == "execute_cmd" and args[0]:
+                        if args[0] != "tactic.ui.app.DynamicUpdateCmd": 
+                            cmd_class = Common.create_from_class_path(args[0], {}, {})
+                            if cmd_class.is_update() == True:
+                                #FIXME: Extra dict is appended to args list 
+                                result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                                return self.browser_res(meth, result)
+                         
                         cmd = get_simple_cmd(self, meth, ticket, args)
-                    else:
-                        cmd = get_full_cmd(self, meth, ticket, args)
+                        
+                    else:            
+                        idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
+                        if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
+                            cmd = get_simple_cmd(self, meth, ticket, args)
+                        else:
+                            cmd = get_full_cmd(self, meth, ticket, args)
 
                 else:
-                    cmd = get_full_cmd(self, meth, ticket, args)
+                    if multi_site:
+                        result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
+                        return self.browser_res(meth, result)
+                    else: 
+                        cmd = get_full_cmd(self, meth, ticket, args)
 
                 profile_flag = False
 
@@ -354,7 +459,7 @@ def xmlrpc_decorator(meth):
                     profile.run( "from pyasm.prod.service import profile_execute; profile_execute()", path)
                     p = pstats.Stats(path)
                     p.sort_stats('cumulative').print_stats(30)
-                    print "*"*30
+                    print("*"*30)
                     p.sort_stats('time').print_stats(30)
 
                 else:
@@ -373,33 +478,39 @@ def xmlrpc_decorator(meth):
                 #postprocess(original_ticket)
                 results = cmd.results
 
-            except Exception, e:
+            except Exception as e:
 
                 # make sure all sqls are aborted
                 if not self.get_protocol() == "local":
                     DbContainer.abort_thread_sql(force=True)
 
 
-                #print "Error: ", e.message
+                #print("Error: ", e.message)
                 import traceback
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                message = e.message
+                print("-"*50)
+                print(stacktrace_str)
+                try:
+                    message = e.message
+                except:
+                    message = str(e)
            
                 if not message:
                     message = e.__str__()
 
-                if isinstance(message, unicode):
-                    error_msg = message.encode('utf-8')
-                elif isinstance(message, str):
-                    error_msg = unicode(message, errors='ignore').encode('utf-8')
+                if not Common.IS_Pv3:
+                    if isinstance(message, unicode):
+                        error_msg = message.encode('utf-8')
+                    elif isinstance(message, str):
+                        error_msg = unicode(message, errors='ignore').encode('utf-8')
+                    else:
+                        error_msg = message
                 else:
                     error_msg = message
-                print "Error: ", error_msg  
-                print "-"*50
+                print("Error: ", error_msg)
+                print("-"*50)
                 raise
 
         finally:
@@ -411,19 +522,15 @@ def xmlrpc_decorator(meth):
         try:
             # NOTE: add in a special requirement for get_widget() because
             # of the bizarre 4096 byte limitation on responseXML in the browser
-            web = WebContainer.get_web()
-            if (web and web.get_app_name() == "Browser" \
-                    and meth.__name__ not in ['get_widget'] \
-                    and self.get_language() == 'javascript'):
-                results = jsondumps(results)
+            results = self.browser_res(meth, results)
 
             # handle special cases for c#
             #elif self.get_language() == 'c#':
             #    results = jsondumps(results)
 
 
-        except Exception, e:
-            print e.__str__()
+        except Exception as e:
+            print(e.__str__())
 
         return results
 
@@ -440,7 +547,7 @@ def profile_execute():
 def trace_decorator(meth):
     def new(self, *args):
         
-        print "method: ", meth.__name__, args
+        print("method: ", meth.__name__, args)
 
         try:
             #self.language = 'python'
@@ -462,21 +569,21 @@ def trace_decorator(meth):
                     DbContainer.release_thread_sql()
 
             return results
-        except Exception, e:
+        except Exception as e:
 
             # make sure all sqls are aborted. 
             DbContainer.abort_thread_sql(force=True) 
 
-            print "Exception: ", e.__str__()
+            print("Exception: ", e.__str__())
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
             
-            print "-"*50
+            print("-"*50)
             raise
     new.exposed = True
     
@@ -590,12 +697,7 @@ class BaseApiXMLRPC(XmlrpcServer):
 
     # gets called if there is a method missing
     def missing_method(self, func, args):
-        # FIXME: makes no sense at all!!!  If an exception occurs
-        # in this function, then the Container is cleared?????
-        print "No such function [%s]" % func
-        # abort on missing method
-        #ticket = args[0]
-        #self.abort(ticket)
+        print("No such function [%s]" % func)
         return False
     missing_method.exposed = True
 
@@ -605,17 +707,17 @@ class BaseApiXMLRPC(XmlrpcServer):
             return True
             custom = CustomApi()
             expr = "custom.%s(*args)" % func
-            print expr
-            print "custom: ", custom.__dict__
-            print dir(custom)
+            print(expr)
+            print("custom: ", custom.__dict__)
+            print(dir(custom))
             if func in dir(custom):
                 retval = eval(expr)
             else:
                 raise ApiException("Cannot execute [%s]" % expr)
                 retval = None
             return retval
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
             msg = e.__str__()
             expr = "custom.%s(%s)" % (func, args)
             # remap useless error
@@ -699,7 +801,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         if not search_keys:
             raise ApiException("Search key [%s] is None" % search_keys)
 
-        if type(search_keys) != types.ListType:
+        if not isinstance(search_keys, list):
             search_keys = [search_keys]
 
         sobjects = []
@@ -781,16 +883,17 @@ class BaseApiXMLRPC(XmlrpcServer):
                 elif isinstance(value, datetime.datetime):
                     try:
                         value = str(value)
-                    except Exception, e:
-                        print "WARNING: Value [%s] can't be processed" % value
+                    except Exception as e:
+                        print("WARNING: Value [%s] can't be processed" % value)
                         continue
                 elif isinstance(value, long) and value > MAXINT:
+                elif isinstance(value, six.integer_types) and value > MAXINT:
                     value = str(value)
                 elif isinstance(value, basestring):
                     try:
                         value = value.encode("UTF8")
-                    except Exception, e:
-                        print "WARNING: Value [%s] can't be processed" % value
+                    except Exception as e:
+                        print("WARNING: Value [%s] can't be processed" % value)
                         continue
 
             result[column] = value
@@ -866,32 +969,35 @@ class BaseApiXMLRPC(XmlrpcServer):
                         continue
 
                     elif isinstance(value, str):
-                        # this could be slow, but remove bad characters
+                        if not Common.IS_Pv3:
+                            # this could be slow, but remove bad characters
+                            value2 = unicode(value, errors='ignore')
+                        else:
+                            value2 = value
 
-                        value2 = unicode(value, errors='ignore')
-
-                    elif isinstance(value, unicode):
+                    elif not Common.IS_Pv3 and isinstance(value, unicode):
                         try:
                             # don't reassign to value, keep it as unicode object
                             value2 = value.encode("utf-8")
 
-                        except Exception, e:
-                            print "WARNING: Value [%s] can't be encoded in utf-8" % value
+                        except Exception as e:
+                            print("WARNING: Value [%s] can't be encoded in utf-8" % value)
                             raise 
                     elif isinstance(value, datetime.datetime):
                         try:
                             value2 = str(value)
-                        except Exception, e:
-                            print "WARNING: Value [%s] can't be processed" % value
+                        except Exception as e:
+                            print("WARNING: Value [%s] can't be processed" % value)
                             continue
 
                     elif isinstance(value, int):
                         continue
                     elif isinstance(value, float):
                         continue
-                    elif isinstance(value, long) and value > MAXINT:
+                    elif isinstance(value, six.integer_types) and value > MAXINT:
+
                         value2 = str(value)
-                    elif isinstance(value, long):
+                    elif isinstance(value, six.integer_types):
                         continue
                     elif isinstance(value, decimal.Decimal):
                         # use str to avoid loss of precision
@@ -1008,6 +1114,46 @@ class ApiXMLRPC(BaseApiXMLRPC):
         log = DebugLog.log(level,message,category)
         return True
 
+
+
+    def browser_res(self, meth, result):
+
+        web = WebContainer.get_web()
+        if (web and web.get_app_name() == "Browser" \
+                and meth.__name__ not in ['get_widget'] \
+                and self.get_language() == 'javascript'):
+            result = jsondumps(result)
+
+        return result
+
+
+
+    def redirect_to_server(self, ticket, meth, args):
+        '''Uses REST call to redirect API call to remote server.'''
+
+        project_code = Config.get_value("master", "project_code")
+        url = Config.get_value("master", "url") 
+        rest_url = url + "/" + project_code + "/REST/"
+       
+ 
+        args = jsondumps(args)
+        data = {
+            'login_ticket': ticket,
+            'method': meth,
+            'args' : args
+        }
+       
+        r = requests.post(rest_url, data=data)
+        ret_val = r.json()
+       
+        error = None 
+        if isinstance(ret_val, dict):
+            error = ret_val.get("error")
+        
+        if error:
+            raise RemoteApiException(error)
+        else: 
+            return ret_val
 
 
 
@@ -1488,7 +1634,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         for thread_id, cont in containers.items():
             thread_pool = cont.info.get("DbContainer::thread_pool")
             if thread_pool:
-                #print "thread: ", thread_id, thread_pool, thread_id == thread.get_ident()
+                #print("thread: ", thread_id, thread_pool, thread_id == thread.get_ident())
                 thread_databases = thread_pool.keys()
                 data['thread_pool'] = global_databases
                 num_db_connections += len(thread_databases)
@@ -1504,7 +1650,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         data['num_database_connections'] = num_db_connections
         data['databases'] = databases
 
-        print data
+        print(data)
 
         return data
 
@@ -1603,7 +1749,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         '''
         results = []
-
         project = Project.get_project_code()
         search = Search(search_type)
 
@@ -1670,20 +1815,19 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 # return a single empty sobject (empty dict)
                 ret_results = {}
-        
 
         if self.get_language() == 'python':
             if self.get_protocol() == 'local':
                 return ret_results
             else:
-                if isinstance(ret_results, unicode):
-                    return ret_results.encode('utf-8')
-                elif isinstance(ret_results, basestring):
-                    return unicode(ret_results, errors='ignore').encode('utf-8')
-                else: 
-                    # could be a list or dictionary, for quick operation, str struction is the best 
-                    # for xmlrpc transfer
-                    return str(ret_results)
+                if not Common.IS_Pv3:
+                    if isinstance(ret_results, unicode):
+                        return ret_results.encode('utf-8')
+                    elif isinstance(ret_results, basestring):
+                        return unicode(ret_results, errors='ignore').encode('utf-8')
+                # could be a list or dictionary, for quick operation, str conversion is the best
+                # for xmlrpc transfer
+                return str(ret_results)
         else:
             return ret_results
 
@@ -1741,12 +1885,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobjects = self._get_sobjects(search_key)
         results = []
         for i, sobject in enumerate(sobjects):
-            if type(data) == types.ListType:
+            if isinstance(data, list):
                 cur_data = data[i]
             else:
                 cur_data = data
 
-            if type(metadata) == types.ListType:
+            if isinstance(metadata, list):
                 cur_metadata = metadata[i]
             else:
                 cur_metadata = metadata
@@ -1788,7 +1932,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         self.set_sobjects(sobjects)
         self.update_info(info)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             return results
         else:
             return results[0]
@@ -1848,7 +1992,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             search_key = sobject.get_search_key(use_id=use_id_list[idx])
             sobject_data = data.get(search_key)
             if not sobject_data:
-                print "search key [%s] does not exist in the system." %search_key
+                print("search key [%s] does not exist in the system." %search_key)
                 continue
             for key, value in sobject_data.items():
                 sobject.set_value(key, value)
@@ -2197,6 +2341,24 @@ class ApiXMLRPC(BaseApiXMLRPC):
         
         '''
 
+
+        if "@UPDATE" in expression:
+            api_mode = Config.get_value("security", "api_mode")
+            if api_mode in ["query", "closed"]:
+                security = Environment.get_security()
+                user_name = security.get_user_name()
+                if user_name != "admin":
+                    raise ApiException("Access denied")
+        
+        if "@PYTHON" in expression:
+            if Config.get_value("security", "api_cmd_restricted") == "true":
+                security = Environment.get_security()
+                #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
+                class_name = "tactic.command.PythonCmd"
+                access = security.check_access("api_cmd", class_name, "allow", default="allow")
+                if not access:
+                   raise ApiException("Access denied") 
+        
         if search_keys:
             sobjects = self._get_sobjects(search_keys)
         else:
@@ -2205,7 +2367,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         parser = ExpressionParser()
         results = parser.eval(expression, sobjects, mode=mode, single=single, vars=vars, show_retired=show_retired)
         import pyasm
-        if type(results) == types.ListType:
+        if isinstance(results, list):
             if not results:
                 pass
             elif isinstance(results[0], pyasm.search.SObject):
@@ -2220,15 +2382,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if self.get_protocol() == 'local':
                 return results
             else:
-                if isinstance(results, unicode):
-                    return results.encode('utf-8')
-                elif isinstance(results, basestring):
-                    return unicode(results, errors='ignore').encode('utf-8')
-                else: 
-                    # could be a list or dictionary, for quick operation, str struction is the best 
-                    # for xmlrpc transfer
-                    return str(results)
-            
+                if not Common.IS_Pv3:
+                    if isinstance(results, unicode):
+                        return results.encode('utf-8')
+                    elif isinstance(results, basestring):
+                        return unicode(results, errors='ignore').encode('utf-8')
+                # could be a list or dictionary, for quick operation, str conversion is the best
+                # for xmlrpc transfer
+                return str(results)
         else:
             return results
 
@@ -2279,7 +2440,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         creator = SearchTypeCreatorCmd(**kwargs)
         creator.execute()
 
-        sobject = creator.get_sobject()
+        sobject = creator.get_search_type_obj()
         sobject_dict = self._get_sobject_dict(sobject)
         return sobject_dict
 
@@ -2341,7 +2502,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if not sobjects:
             raise ApiException("SObject [%s] does not exist" % search_key)
 
-        if type(search_key) == types.ListType:
+        if isinstance(search_key, list):
             sobject_dicts = []
             for sobject in sobjects:
                 sobject_dict = self._get_sobject_dict(sobject)
@@ -3450,15 +3611,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
         handoff_dir = env.get_server_handoff_dir()
         if handoff_dir:
             handoff_path = "%s/%s" % (handoff_dir, filename)
-            print "FIXME: check handoff_path: ", handoff_path
+            print("FIXME: check handoff_path: ", handoff_path)
 
 
         upload_dir = Environment.get_upload_dir()
         upload_path = "%s/%s" % (upload_dir, filename)
-        print "Upload path: [%s]" % upload_path
+        print("Upload path: [%s]" % upload_path)
         if not os.path.exists(upload_path):
 
-            print "WARNING: does not exist."
+            print("WARNING: does not exist.")
             return 0
         return os.path.getsize(upload_path)
 
@@ -3680,7 +3841,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             local_paths = snapshot.get_all_local_repo_paths()
             snapshot_dict['__paths__'] = local_paths
 
-        #print "SQL Commit Count: ", Container.get('Search:sql_commit')
+        #print("SQL Commit Count: ", Container.get('Search:sql_commit'))
         return snapshot_dict
 
 
@@ -3906,13 +4067,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         # file_path can be an array of files:
-        if type(file_path) != types.ListType:
+        if not isinstance(file_path, list):
             is_array = False
             file_paths = [file_path]
         else:
             is_array = True
             file_paths = file_path
-        if type(file_type) != types.ListType:
+        
+        if not isinstance(file_path, list):
             file_types = [file_type]
         else:
             file_types = file_type
@@ -4344,7 +4506,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         file_dict = self._get_sobject_dict(file)
                         file_dict_list.append(file_dict)
                 else:
-                    print "Files not found for snapshot [%s]" %snapshot_code
+                    print("Files not found for snapshot [%s]" %snapshot_code)
                 snapshot_dict['__files__'] = file_dict_list
 
 
@@ -5225,7 +5387,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
-                if libraries.has_key("spt_help"):
+                if not isinstance(widget, Widget):
+                    raise Exception("Must be derived from Widget")
+
+
+                if 'spt_help' in libraries:
                     from tactic.ui.app import HelpWdg
                     HelpWdg()
 
@@ -5234,10 +5400,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 html = widget.get_buffer_display()
                 if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
-                    print "SQL Query Count: ", Container.get('Search:sql_query')
-                    print "BVR Count: ", Container.get('Widget:bvr_count')
-                    print "Sending: %s KB" % (len(html)/1024)
-                    print "Num SObjects: %s" % Container.get("NUM_SOBJECTS")
+                    print("SQL Query Count: ", Container.get('Search:sql_query'))
+                    print("BVR Count: ", Container.get('Widget:bvr_count'))
+                    print("Sending: %s KB" % (len(html)/1024))
+                    print("Num SObjects: %s" % Container.get("NUM_SOBJECTS"))
 
 
                 # add interaction, if any
@@ -5247,7 +5413,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                 return html
 
-            except LicenseException, e:
+            except LicenseException as e:
                 # make sure all sqls are aborted
                 DbContainer.abort_thread_sql(force=True)
 
@@ -5259,7 +5425,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 license_manager = LicenseManagerWdg()
                 widget.add(license_manager)
                 return widget.get_buffer_display()
-            except SecurityException, e:
+            except SecurityException as e:
                 # make sure all sqls are aborted
                 DbContainer.abort_thread_sql(force=True)
 
@@ -5277,7 +5443,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
                
-            except Exception, e:
+            except Exception as e:
                 # make sure all sqls are aborted
                 DbContainer.abort_thread_sql(force=True)
 
@@ -5291,22 +5457,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             WebContainer.clear_buffer()
             Container.delete()
-
-            '''
-            h = hp.heap()
-
-            byrcs = h.byrcs
-            byclodo = byrcs[0].byclodo
-            print byclodo
-            bysize = byrcs[0].bysize
-            print bysize
-            byid = byrcs[0].byid
-            print byid
-            byvia = byrcs[0].byvia
-            print byvia
-            #theone = byvia[0].theone
-            #print len(theone)
-            '''
 
 
         
@@ -5329,7 +5479,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             exec("import %s" % module_path)
-        except Exception, e:
+        except Exception as e:
             return False
 
         module = eval(module_path)
@@ -5338,7 +5488,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         try:
             check = eval(class_path)
-        except Exception, e:
+        except Exception as e:
             return False
 
 
@@ -5358,13 +5508,21 @@ class ApiXMLRPC(BaseApiXMLRPC):
         dictionary - returned data structure
 
         '''
+        
+        class_name = "tactic.command.PythonCmd"
+        if Config.get_value("security", "api_cmd_restricted") == "true":
+            security = Environment.get_security()
+            access = security.check_access("api_cmd", class_name, "allow", default="allow")
+            if not access:
+               raise ApiException("Access denied") 
+        
         ret_val = {}
         try:
             from tactic.command import PythonCmd
             cmd = PythonCmd(script_path=script_path, **kwargs)
             Command.execute_cmd(cmd)
         
-        except Exception, e:
+        except Exception as e:
             raise
         else:
             ret_val['status'] = 'OK'
@@ -5395,7 +5553,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             cmd = JsCmd(script_path=script_path, **kwargs)
             Command.execute_cmd(cmd)
         
-        except Exception, e:
+        except Exception as e:
             raise
         else:
             ret_val['status'] = 'OK'
@@ -5426,7 +5584,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # Do a security check
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
-            #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
                raise ApiException("Access denied") 
@@ -5456,23 +5613,63 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 args = jsonloads(args)
 
 
+            # TEST: look up class name use in a key
+            key = None
+            if class_name.startswith("$"):
+                key = class_name.lstrip("$")
+                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                path = "%s/key_%s" % (tmp_dir,key)
+                if not os.path.exists(path):
+                    print("ERROR: Command path [%s] not found" % path)
+                    raise Exception("Command key not valid")
+
+                f = open(path, 'r')
+                data = f.read()
+                f.close()
+                data = jsonloads(data)
+                class_name = data.get("class_name")
+                static_kwargs = data.get("kwargs") or {}
+                if static_kwargs:
+                    print("Adding kwargs: %s" % static_kwargs)
+                    for n, v in static_kwargs.items():
+                        args[n] = v
+
+                login = data.get("login")
+                current_login = Environment.get_user_name()
+                if login != current_login:
+                    raise Exception("Permission Denied: wrong user")
+
+
             args_array = []
             cmd = Common.create_from_class_path(class_name, args_array, args)
+
+            if cmd.requires_key() and not key:
+                raise Exception("Permission Denied: command requires key")
+
+
+
+            if not isinstance(cmd, Command):
+                raise Exception("Cannot run command [%s].  Must be derived from Command." % class_name)
+
+            if not cmd.can_run(source="api"):
+                raise Exception("Cannot run command [%s] from API." % class_name)
+
+
             if use_transaction:
                 Command.execute_cmd(cmd)
             else:
                 cmd.execute()
 
-        except Exception, e:
+        except Exception as e:
             '''
             import traceback
             tb = sys.exc_info()[2]
             stacktrace = traceback.format_tb(tb)
             stacktrace_str = "".join(stacktrace)
-            print "-"*50
-            print stacktrace_str
-            print str(e)
-            print "-"*50
+            print("-"*50)
+            print(stacktrace_str)
+            print(str(e))
+            print("-"*50)
             
             ret_val['status'] = 'ERROR'
             ret_val['stack'] = stacktrace_str
@@ -5576,7 +5773,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             info = {
                 'status': 'OK'
             }
-        except Exception, e:
+        except Exception as e:
             raise
 
         return info
@@ -5622,7 +5819,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 cmd = RunTransactionCmd(transaction_xml=transaction_xml, file_mode=None)
                 Command.execute_cmd()
 
-        except Exception, e:
+        except Exception as e:
             failed.append(index)
             errors.append(str(e))
 
@@ -5745,7 +5942,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 widgets.append(row_widgets)
             return widgets
 
-        except Exception, e:
+        except Exception as e:
             # make sure all sqls are aborted
             DbContainer.abort_thread_sql(force=True)
             raise
@@ -5820,7 +6017,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             config.commit_config()
 
 
-        except Exception, e:
+        except Exception as e:
             # make sure all sqls are aborted
             DbContainer.abort_thread_sql(force=True)
 
@@ -5866,7 +6063,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             return config_string
 
 
-        except Exception, e:
+        except Exception as e:
             # make sure all sqls are aborted
             DbContainer.abort_thread_sql(force=True)
 
@@ -6243,8 +6440,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     info['repo_file_range'] = file_objects[0].get_file_range()
                     #info['file_sobj'] = file_objects[0]
                     if len(file_objects) > 1:
-                        print "WARNING: duplicated file groups \
-                            for [%s]" %( parent_code)
+                        print("WARNING: duplicated file groups for [%s]" %( parent_code))
                 else:
                     info['is_match'] = False
 
@@ -6434,7 +6630,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
             # delete the transaction if it is empty
             transaction_id = state.get_state("transaction")
             if transaction_id:
-                transaction = TransactionLog.get_by_id(transaction_id)
+                sudo = Sudo()
+                try:
+                    transaction = TransactionLog.get_by_id(transaction_id)
+                finally:
+                    sudo.exit()
                 xml = transaction.get_xml_value("transaction")
                 nodes = xml.get_nodes("transaction/*")
                 if not nodes:
@@ -6502,16 +6702,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 state.set_state("project", project_code)
 
                 state.commit()
-            except Exception, e:
-                print "Exception: ", e.__str__()
+            except Exception as e:
+                print("Exception: ", e.__str__())
                 import traceback
                 tb = sys.exc_info()[2]
                 stacktrace = traceback.format_tb(tb)
                 stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                print str(e)
-                print "-"*50
+                print("-"*50)
+                print(stacktrace_str)
+                print(str(e))
+                print("-"*50)
                 raise
 
 

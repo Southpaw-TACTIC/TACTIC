@@ -25,6 +25,9 @@ from tactic.ui.container.smart_menu_wdg import SmartMenu
 from tactic.ui.widget import ActionButtonWdg
 from tactic.ui.input import TextInputWdg
 
+import six
+basestring = six.string_types
+
 
 class SideBarPanelWdg(BaseRefreshWdg):
 
@@ -1502,7 +1505,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-        if type(view) in types.StringTypes:
+        if isinstance(view, basestring):
             view = [view]
 
         # draw each view
@@ -2166,6 +2169,10 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         class_name = options.get("class_name")
         widget_key = options.get("widget_key")
         if widget_key:
+
+            #if not widget_key.isalnum():
+            #    widget_key = "code"
+            
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
 
@@ -2877,10 +2884,22 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'top|bottom',
             'order' : 20,
             'category': 'Display'
-        }
+        },
+        "show_save": {
+            'description': "determines whether or not to show the save button",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            "order": '21',
+            'category': 'Display'
+        },
 
     }
 
+
+    def __init__(self, **kwargs):
+        if not kwargs.get("search_type"):
+            raise Exception("No search type provided")
+        return super(ViewPanelWdg, self).__init__(**kwargs)
 
 
     def get_display(self):
@@ -2923,7 +2942,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             # take the search filter structure from search_view
             # if filter is a non-xml string, then it is in JSON format
             
-            if type(filter) in types.StringTypes and filter != '':
+            if isinstance(filter, basestring) and filter != '':
                 try:
                     filter = jsonloads(filter)
                 except Exception:
@@ -2949,8 +2968,12 @@ class ViewPanelWdg(BaseRefreshWdg):
                 impl = SearchType.get_database_impl_by_search_type(search_type)
                 if impl.get_database_type() == "MongoDb":
                     self.element_names = impl.get_default_columns()
-            except SearchException:
-                raise
+            except SearchException as e:
+                print("ERROR: %s" % e)
+                div = DivWdg("ERROR: %s" % e)
+                return div
+                #raise
+
 
 
            
@@ -2964,7 +2987,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         self.state = self.kwargs.get('state')
         if not self.state:
             self.state = {}
-        if type(self.state) in types.StringTypes:
+        if isinstance(self.state, basestring):
             try:
                 self.state = eval(self.state)
             except Exception as e:
@@ -2980,7 +3003,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # define the top widget
         top = self.top
-        top.add_class("spt_view_panel_top");
+        top.add_class("spt_view_panel_top")
 
         inner = DivWdg()
         top.add(inner)
@@ -2991,7 +3014,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             inner.add_behavior({
                 'type': 'load',
                 'cbjs_action': self.get_onload_js()
-            });
+            })
 
 
 
@@ -3060,6 +3083,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         else:
             use_last_search = True
         
+        # Advanced search is shown by default
         show_search = self.kwargs.get('show_search')
         if show_search in [False,'false']:
             show_search = 'false'
@@ -3103,7 +3127,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
             from tactic.ui.container import DialogWdg
-            search_dialog = DialogWdg(width=770, offset={'x':-250,'y':0})
+            search_dialog = DialogWdg(offset={'x':-250,'y':0})
             search_dialog_id = search_dialog.get_id()
             # Comment out the above. 
             # Needs to draw the search_dialog for pre-saved parameters to go thru
@@ -3208,6 +3232,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_select = self.kwargs.get("show_select")
         show_refresh = self.kwargs.get("show_refresh")
         show_gear = self.kwargs.get("show_gear")
+        show_save = self.kwargs.get("show_save")
         show_expand = self.kwargs.get("show_expand")
         show_shelf = self.kwargs.get("show_shelf")
         show_header = self.kwargs.get("show_header")
@@ -3230,6 +3255,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_label_view = self.kwargs.get("group_label_view")
         group_label_class = self.kwargs.get("group_label_class")
         expand_mode = self.kwargs.get("expand_mode")
+        data_mode = self.kwargs.get("data_mode")
         show_name_hover = self.kwargs.get("show_name_hover")
         op_filters = self.kwargs.get("op_filters")
         show_collection_tool = self.kwargs.get("show_collection_tool")
@@ -3237,6 +3263,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         gear_settings = self.kwargs.get("gear_settings")
         shelf_view = self.kwargs.get("shelf_view")
         badge_view = self.kwargs.get("badge_view")
+        filter_view = self.kwargs.get("filter_view")
         extra_data = self.kwargs.get("extra_data")
         if extra_data:
             if isinstance(extra_data, dict):
@@ -3245,6 +3272,8 @@ class ViewPanelWdg(BaseRefreshWdg):
         if default_data:
             if isinstance(default_data, dict):
                 default_data = jsondumps(default_data)
+        collapse_default = self.kwargs.get("collapse_default")
+        collapse_level = self.kwargs.get("collapse_level")
 
 
         is_inner = self.kwargs.get("is_inner")
@@ -3272,6 +3301,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
+        
 
         search = self.kwargs.get("search")
 
@@ -3300,6 +3330,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
+            "show_save": show_save,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
             "show_header": show_header,
@@ -3337,7 +3368,9 @@ class ViewPanelWdg(BaseRefreshWdg):
             "keywords": keywords,
             "keywords_columns": keywords_columns,
             "filter": filter,
+            "filter_view": filter_view,
             "expand_mode": expand_mode,
+            "data_mode": data_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
             "show_collection_tool": show_collection_tool,
@@ -3351,7 +3384,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             #"search_wdg": search_wdg
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,
+            "collapse_default": collapse_default,
+            "collapse_level": collapse_level
         }
+
+
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
@@ -3380,7 +3417,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if layout == 'tile':
-            from tile_layout_wdg import TileLayoutWdg
+            from .tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = self.kwargs.get("top_view")
             kwargs['bottom_view'] = self.kwargs.get("bottom_view")
             kwargs['sticky_scale'] = self.kwargs.get("sticky_scale")
@@ -3416,7 +3453,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout in ['fast_table', 'table']:
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
+            from .table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
 
@@ -3427,7 +3464,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
-            from tool_layout_wdg import RepoBrowserLayoutWdg
+            from .tool_layout_wdg import RepoBrowserLayoutWdg
             kwargs['parent_mode'] = self.kwargs.get('parent_mode')
             kwargs['file_system_edit'] = self.kwargs.get('file_system_edit')
             kwargs['base_dir'] = self.kwargs.get('base_dir')
@@ -3436,7 +3473,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'card':
             kwargs['preview_width'] = self.kwargs.get("preview_width")
             kwargs['process'] = self.kwargs.get("process")
-            from tool_layout_wdg import CardLayoutWdg
+            from .tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
@@ -3456,23 +3493,24 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['upload_mode'] = self.kwargs.get("upload_mode")
             kwargs['process'] = self.kwargs.get("process")
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
-            from collection_wdg import CollectionLayoutWdg
+            kwargs['window_resize_offset'] = self.kwargs.get("window_resize_offset")
+            from .collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
-            from tool_layout_wdg import CustomLayoutWithSearchWdg
+            from .tool_layout_wdg import CustomLayoutWithSearchWdg
             layout_table = CustomLayoutWithSearchWdg(**kwargs)
 
         elif layout == 'aggregate':
-            from tool_layout_wdg import CustomAggregateWdg
+            from .tool_layout_wdg import CustomAggregateWdg
             layout_table = CustomAggregateWdg(**kwargs)
 
         elif layout == 'custom_item':
-            from tool_layout_wdg import CustomItemLayoutWithSearchWdg
+            from .tool_layout_wdg import CustomItemLayoutWithSearchWdg
             layout_table = CustomItemLayoutWithSearchWdg(**kwargs)
 
         elif layout == 'old_table':
-            from layout_wdg import OldTableLayoutWdg
+            from .layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
 
         elif layout and layout != "default":
@@ -3490,7 +3528,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
         else:
-            from table_layout_wdg import TableLayoutWdg
+            from .table_layout_wdg import TableLayoutWdg
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['show_border'] = self.kwargs.get("show_border")
             kwargs['edit'] = self.kwargs.get("edit")
@@ -3568,7 +3606,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if title_view:
-            from custom_layout_wdg import CustomLayoutWdg
+            from .custom_layout_wdg import CustomLayoutWdg
             title_wdg = CustomLayoutWdg(view=title_view)
             title_box_wdg.add(title_wdg)
 
@@ -3686,96 +3724,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
     def get_display(self):
        
-        js_action = "spt.dg_table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
-
-        js_actionX = '''
-
-    var table_id = bvr.table_id;
-    var table = document.id(table_id);
-    var top = table.getParent(".spt_view_panel");
-    // it may not always be a View Panel top
-    if (!top) top = table.getParent(".spt_table_top");
-    
-    var view_info = top.getElement(".spt_save_top");
-
-    var values = spt.api.Utility.get_input_values(view_info , null, false);
-
-    // rename view
-    var new_view = values["save_view_name"];
-    var new_title = values["save_view_title"];
-    var same_as_title = values["same_as_title"] == 'on';
-    //var save_a_link = values["save_a_link"] == 'on';
-  
-    var save_mode = values['save_mode'];
-    if (!save_mode) {
-        var save_project_views = values['save_project_views'] == 'on';
-        if (save_project_views) {
-            save_mode = 'save_project_views';
-        }
-        var save_my_views = values['save_my_views'] == 'on';
-        if (save_my_views) {
-            save_mode = 'save_my_views';
-        }
-        var save_view_only = values['save_view_only'] == 'on';
-        if (save_view_only) {
-            save_mode = 'save_view_only';
-        }
-    }
-
-    if (same_as_title) {
-        new_view = new_title;
-    }
-
-    if (spt.input.has_special_chars(new_view)) {
-        spt.alert("The name contains special characters. Do not use empty spaces.");  
-        return;
-    }
-    if (new_view == "") {
-        spt.alert("Empty view name not permitted");
-        return;
-    }
-    
-    if ((/^(saved_search|link_search)/i).test(new_view)) {
-        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
-        return;
-    }
-    var table = document.getElementById(table_id);
-    if (!table) {
-        spt.alert('This command requires a Table in the main viewing area');
-        return;
-    }
-    var table_search_type = table.getAttribute("spt_search_type");
-    var table_view = table.getAttribute("spt_view");
-    var last_element = top.getAttribute("spt_element_name");
-
-
-    var kwargs = {
-        'new_title' : new_title, 
-        'element_name': new_view,
-        'last_element_name': last_element,
-        'save_mode': save_mode,
-    } 
-
-
-    var class_name = 'tactic.ui.panel.ViewPanelSaveCbk';
-    var server = TacticServerStub.get();
-    var rtn = server.execute_cmd(class_name, kwargs);
-
-
-    if (!rtn)
-        return;
-
-
-    spt.hide(document.id(bvr.dialog_id));
-    var top = bvr.src_el.getParent(".spt_new_view_top");
-    spt.api.Utility.clear_inputs(top);
-    
-    return true;
-
-
-        '''
-
-
+        js_action = "spt.table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
 
         # create the buttons
         save_button = ActionButtonWdg(title='Save')
@@ -3783,7 +3732,6 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         'type': 'click_up',
         'dialog_id': self.kwargs.get("dialog_id"),
         'table_id': self.table_id,
-        #'cbjs_action': js_action,
         'cbjs_action':  '''
             var ret_val = %s;
             if (ret_val) {
@@ -3814,6 +3762,8 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         div.add_style("width: 280px")
         div.add_style("padding: 15px")
         div.add_color("color", "color")
+
+        div.add_style("display", "block")
 
         title_div = DivWdg("View Title: ")
         title_div.add_style('width: 100px')

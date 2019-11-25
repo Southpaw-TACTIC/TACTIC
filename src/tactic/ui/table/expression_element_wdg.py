@@ -14,15 +14,20 @@ __all__ = ['ExpressionElementWdg', "ExpressionValueElementWdg"]
 
 import types, re
 
-from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate
+from pyasm.common import TacticException, Container, FormatValue, jsonloads, jsondumps, SPTDate, Common
 from pyasm.search import Search, SearchKey, SearchType
+from pyasm.security import Sudo
 from pyasm.web import DivWdg, Widget
 from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, CheckboxWdg
 from pyasm.biz import ExpressionParser
 from tactic.ui.common import BaseTableElementWdg, SimpleTableElementWdg
 
-from table_element_wdg import TypeTableElementWdg
+from .table_element_wdg import TypeTableElementWdg
+
 import datetime
+
+import six
+basestring = six.string_types
 
 
 class ExpressionElementWdg(TypeTableElementWdg):
@@ -168,6 +173,8 @@ class ExpressionElementWdg(TypeTableElementWdg):
         self.alt_expression = None
         self.alt_result = None
 
+        self.report_value = None
+
         self.cache_results = None
 
 
@@ -211,7 +218,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
             else:
                 result = self._get_result(sobject, self.expression)
 
-        except Exception, e:
+        except Exception as e:
             result = ""
 
         return result
@@ -364,6 +371,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
         elif self.alt_result:
             td.add_attr("spt_input_value", self.value)
 
+        if self.report_value:
+            td.add_attr("spt_report_value", self.report_value)
+
         super(ExpressionElementWdg,self).handle_td(td)
 
 
@@ -372,10 +382,18 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
 
+
     def _get_result(self, sobject, expression):
         '''get the result of the expression'''
 
         element_name = self.get_name()
+
+        mode = self.get_option("data_mode")
+        if mode == "report":
+            value = sobject.get_value(element_name)
+            return value
+
+
 
         use_cache = self.kwargs.get("use_cache")
         if use_cache == "true":
@@ -385,7 +403,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 print("Error: ", e.message)
 
 
-        if type(sobject) != types.ListType:
+        if isinstance(sobject, list):
             if sobject.is_insert():
                 return ''
 
@@ -398,14 +416,14 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
         return_type = self.kwargs.get("return")
         if return_type == 'single':
-            single = True
-            list = False
+            ret_single = True
+            ret_list = False
         elif return_type == 'list':
-            single = False
-            list = True
+            ret_single = False
+            ret_list = True
         else:
-            single = True
-            list = False
+            ret_single = True
+            ret_list = False
 
         # if this expression is an absolute expression, then don't bother
         # with the sobject
@@ -419,6 +437,10 @@ class ExpressionElementWdg(TypeTableElementWdg):
         #calc_mode = 'fast'
         # parse the expression
         parser = ExpressionParser()
+
+        # expression element widget defintion should only be saved by admin, so it can run
+        # the expression in sudo mode
+        sudo = Sudo()
         
         if calc_mode == 'fast':
             if self.cache_results == None:
@@ -431,32 +453,31 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
             search_key = sobject.get_search_key()
             result = self.cache_results.get(search_key)
-            if single:
+            if ret_single:
                 if result and len(result):
                     result = result[0]
                 else:
                     result = ''
         else:
-          
-            result = parser.eval(expression, sobject, vars=self.vars, single=single, list=list, show_retired=self.show_retired)
 
+            result = parser.eval(expression, sobject, vars=self.vars, single=ret_single, list=ret_list, show_retired=self.show_retired)
 
 
         # if the result has a get_display_value call, then use that.
         try:
-            if not list:
+            if not ret_list:
                 result = result.get_display_value()
-        except AttributeError, e:
+        except AttributeError as e:
             pass
 
-        if list and result:
+        if ret_list and result:
             # turn non basestring into string
             encoded_result = []
             for res in result:
                 if isinstance(res, datetime.datetime):
                     res = SPTDate.convert_to_local(res)
                     res = str(res)
-                elif not isinstance(res, basestring): 
+                elif not Common.IS_Pv3 and not isinstance(res, basestring): 
                     res = unicode(res).encode('utf-8','ignore')
 
                 encoded_result.append(res)
@@ -518,7 +539,13 @@ class ExpressionElementWdg(TypeTableElementWdg):
         '''for csv export'''
         self.sobject = self.get_current_sobject()
 
-        #self.init_kwargs()
+
+        # expressions won't work on virtual sobjects
+        if self.sobject.get_base_search_type() == "sthpw/virtual":
+            return self.sobject.get_value( self.get_name() )
+
+
+
         if not self.expression and not self.alt_expression: 
             return super(ExpressionElementWdg, self).get_display()
 
@@ -631,7 +658,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
         if self.sobject:
             # only set if the value does not exist as a key.  This widget should
             # not be able to change existing data of an sobject
-            self.sobject.set_value(name, result)
+            self.sobject.set_value(name, result, no_exception=True)
 
 
         outer = DivWdg()
@@ -671,17 +698,17 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
                     return_type = self.kwargs.get("return")
                     if return_type == 'single':
-                        single = True
+                        _single = True
                         _list = False
                     elif return_type in ['list']:
-                        single = False
+                        _single = False
                         _list = True
                     else:
-                        single = True
+                        _single = True
                         _list = False
 
                     try:
-                        display_result = Search.eval(display_expr, self.sobject, list=_list, single=single, vars={'VALUE': display_result }, show_retired=self.show_retired)
+                        display_result = Search.eval(display_expr, self.sobject, list=_list, single=_single, vars={'VALUE': display_result }, show_retired=self.show_retired)
                     except Exception as e:
                         print("WARNING in display expression [%s]: " % display_expr, e)
                         display_result = "ERROR: %s" % e
@@ -706,6 +733,9 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 outer.add_style("width: 100%")
 
 
+                self.report_value = display_result
+
+
 
                 # if a DG table td has been provided and if there is an alternate expression
                 # specified then use it for the 'spt_input_value' of the td ...
@@ -722,7 +752,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                 elif isinstance(result, datetime.datetime):
                     div.add_style("text-align: left")
 
-                elif not type(result) in types.StringTypes:
+                elif not isinstance(result, basestring):
                     div.add_style("text-align: right")
                     div.add_style("margin-right: 5px")
 

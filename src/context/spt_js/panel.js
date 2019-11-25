@@ -49,7 +49,7 @@ spt.panel.refresh = function(panel_id, values, kwargs) {
     }
 
     if (values == null || values == undefined || values == {}) {
-        values = spt.api.Utility.get_input_values(panel);
+        values = spt.api.Utility.get_input_values(panel, null, false);
     }
 
     spt.panel._refresh_widget(panel, values, kwargs);
@@ -252,7 +252,7 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         bvr2.options.width = kwargs.width;
     if (kwargs.height) 
         bvr2.options.height = kwargs.height;
-    if (kwargs.resize)
+    if (kwargs.resize != null)
         bvr2.options.resize = kwargs.resize;
     if (kwargs.on_close)
         bvr2.options.on_close = kwargs.on_close;

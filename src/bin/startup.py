@@ -45,22 +45,22 @@ def startup(port, server=""):
         pid = os.getpid()
         file.write(str(pid))
         file.close()
-    except IOError, e:
+    except IOError as e:
         if e.errno == 13:
-            print
-            print "Permission error opening the file [%s/pid.%s]." % (log_dir,port)
-            print
+            print("\n")
+            print("Permission error opening the file [%s/pid.%s]." % (log_dir,port))
+            print("\n")
             if os.name=='nt':
-                print "You may need to run this shell as the Administrator."
+                print("You may need to run this shell as the Administrator.")
             else:
-                print "The file should be owned by the same user that runs this startup.py process."
+                print("The file should be owned by the same user that runs this startup.py process.")
 
             sys.exit(2)
 
     if os.name != 'nt' and os.getuid() == 0:
-        print 
-        print "You should not run this as root. Run it as the Web server process's user. e.g. apache"
-        print
+        print("\n")
+        print("You should not run this as root. Run it as the Web server process's user. e.g. apache")
+        print("\n")
         sys.exit(0)
 
     thread_count = Config.get_value("services", "thread_count") 

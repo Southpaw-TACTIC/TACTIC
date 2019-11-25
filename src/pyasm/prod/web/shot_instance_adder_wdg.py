@@ -25,10 +25,10 @@ from pyasm.biz import Project
 from pyasm.widget import BaseTableElementWdg, FunctionalTableElement, CheckboxWdg, TableWdg, SubmitWdg, ThumbWdg, IconSubmitWdg, IconWdg, SearchLimitWdg, HelpItemWdg, CheckboxColWdg, InsertLinkWdg, HiddenWdg, FilterSelectWdg
 
 
-from shot_navigator_wdg import *
-from asset_filter_wdg import *
-from prod_context import *
-from prod_input_wdg import *
+from .shot_navigator_wdg import *
+from .asset_filter_wdg import *
+from .prod_context import *
+from .prod_input_wdg import *
 
 
 

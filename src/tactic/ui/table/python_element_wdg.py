@@ -12,14 +12,14 @@
 
 __all__ = ['PythonElementWdg']
 
-import types, os
+import types, os, six
 
 from pyasm.common import TacticException, Container, jsonloads, jsondumps
 
 from pyasm.search import Search
 from tactic.command import PythonCmd
 
-from table_element_wdg import TypeTableElementWdg
+from .table_element_wdg import TypeTableElementWdg
 
 class PythonElementWdg(TypeTableElementWdg):
     '''General purpose element widget for expressions'''
@@ -173,7 +173,7 @@ class PythonElementWdg(TypeTableElementWdg):
 
 
     def handle_td(self, td):
-        if isinstance(self.result, basestring):
+        if isinstance(self.result, six.string_types):
             td.add_style("text-align", "left")
         else:
             td.add_style("text-align", "right")

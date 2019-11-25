@@ -20,7 +20,7 @@ from pyasm.widget import HiddenWdg
 from pyasm.prod.web import ProcessFilterWdg
 
 
-from load_options_wdg import LoadOptionsWdg, AnimLoadOptionsWdg, ShotLoadOptionsWdg
+from .load_options_wdg import LoadOptionsWdg, AnimLoadOptionsWdg, ShotLoadOptionsWdg
 
 from tactic.ui.panel import TableLayoutWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -51,7 +51,7 @@ class SObjectLoadWdg(BaseRefreshWdg):
         div.add_color("background", "background2", -35)
 
 
-        from app_init_wdg import PyMayaInit, PyXSIInit, PyHoudiniInit
+        from .app_init_wdg import PyMayaInit, PyXSIInit, PyHoudiniInit
         if WebContainer.get_web().get_selected_app() == 'Maya':
             app = PyMayaInit()
         elif WebContainer.get_web().get_selected_app() == 'XSI':

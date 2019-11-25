@@ -192,9 +192,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         new_submenu_counter = 1
         for cmenu in custom_menus:
-            if cmenu.has_key('add_to_submenu'):
+            if add_to_submenu in cmenu:
                 menu_label = cmenu.get('add_to_submenu')
-                if menu_idx_map.has_key( menu_label ):
+                if menu_label in menu_idx_map:
                     add_to_menu = menus[ menu_idx_map[menu_label] ]
                     add_to_menu.get("opt_spec_list").append( { 'type': 'separator' } )
                     submenu_items = cmenu.get("submenu_items")

@@ -30,6 +30,10 @@ import dateutil, os
 
 from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
 
+import six
+basestring = six.string_types
+
+
 class DiscussionElementWdg(BaseTableElementWdg):
 
     ARGS_KEYS = {
@@ -443,8 +447,6 @@ class DiscussionWdg(BaseRefreshWdg):
             else
                 spt.toggle_show_hide(add_note);
 
-            //new Fx.Tween(add_note,{duration:"short"}).start('margin-top', 0);
-
             // select the appropriate context or process
             var select = add_note.getElement(".spt_add_note_process");
             if (select) {
@@ -553,6 +555,9 @@ class DiscussionWdg(BaseRefreshWdg):
                 server.abort();
             }
 
+            attach_top.files = [];
+            var attach_list = attach_top.getElement(".spt_attachment_list");
+            attach_list.innerHTML = "";
             spt.discussion.refresh(top);
 
             spt.app_busy.hide();
@@ -1169,6 +1174,7 @@ class DiscussionWdg(BaseRefreshWdg):
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
+            no_notes_msg.add_style("display: flex")
             no_notes_div.add(no_notes_msg)
 
 
@@ -1209,7 +1215,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
             
             sk = self.parent.get_search_key(use_id=True)
-            if isinstance(sk, unicode):
+            if not Common.IS_Pv3 and isinstance(sk, unicode):
                 sk = sk.encode('utf-8')
             
             kwargs = {
@@ -1356,7 +1362,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     processes.append(p)
         else:
             # if no workflow, then display alphabetically
-            processes = process_notes.keys()
+            processes = list(process_notes.keys())
             processes.sort()
 
 
@@ -1394,7 +1400,10 @@ class DiscussionWdg(BaseRefreshWdg):
             process_top.add_class("spt_discussion_process_top")
             process_top.add_class("self_context")
             process_top.add_class("hand")
-            process_top.add_attr("self_context", context.encode('utf-8'))
+
+            if not Common.IS_Pv3:
+                context = context.encode("UTF-8")
+            process_top.add_attr("self_context", context)
 
             update_mode = self.kwargs.get("update_mode") or "load"
             process_top.add_attr("spt_update_mode", update_mode)
@@ -1501,7 +1510,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 add_wdg.add_class(add_class)
 
                 sk = self.parent.get_search_key(use_id=True)
-                if isinstance(sk, unicode):
+                if not Common.IS_Pv3 and isinstance(sk, unicode):
                     sk = sk.encode('utf-8')
 
 
@@ -1540,7 +1549,7 @@ class DiscussionWdg(BaseRefreshWdg):
             content.add_style("min-height: 150px")
             content.add_class("spt_discussion_content")
             content.add_color("background", "background")
-            
+
             # context and parent_key are for dynamic update
             process_wdg.add_behavior( {
                 'type': 'load',
@@ -1693,7 +1702,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         if not notes:
             return self.top
 
-        self.default_num_notes = self.kwargs.get("default_num_notes")
+        self.default_num_notes = self.kwargs.get("default_num_notes") or 0
         self.note_expandable = self.kwargs.get("note_expandable")
         self.show_note_status = self.kwargs.get("show_note_status")
 
@@ -1755,6 +1764,27 @@ class NoteCollectionWdg(BaseRefreshWdg):
         context_count = 0
 
         width = self.kwargs.get("width") or "100%"
+
+        # reorder notes so that they are in chronological order
+        from functools import cmp_to_key
+
+        def notes_sort(a, b):
+            at = a.get("timestamp")
+            bt = b.get("timestamp")
+            if at > bt:
+                return 1
+            elif at == bt:
+                return 0
+            else:
+                return -1
+
+        notes.sort( key=cmp_to_key(notes_sort) )
+        notes.reverse()
+
+        # for some reason, default_num_notes can become 'undefined' string.
+        if self.default_num_notes == "undefined":
+            self.default_num_notes = 0
+
 
         for i, note in enumerate(notes):
 
@@ -2010,7 +2040,9 @@ class NoteWdg(BaseRefreshWdg):
             div.add_style("margin-left: 40px")
             div.add_style("border-left: solid 2px #DDD")
 
-        div.add_attr("self_context", context.encode("UTF-8"))
+        if not Common.IS_Pv3:
+            context = context.encode("UTF-8")
+        div.add_attr("self_context", context)
 
         from pyasm.security import Login
         user = Login.get_by_code(login)
@@ -2037,13 +2069,12 @@ class NoteWdg(BaseRefreshWdg):
 
         if context.endswith("/review") or context.endswith("/error"):
             context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
-            tr.add_style("background: rgba(232, 74, 77, 0.8)")
+            #tr.add_style("background: rgba(232, 74, 77, 0.8)")
+            tr.add_style("border-bottom: solid 1px rgba(232, 74, 77, 0.8)")
 
         else:
             #tr.add_color("background", "background", -10)
-            pass
-
-        tr.add_style("border-bottom: solid 2px #DDD")
+            tr.add_style("border-bottom: solid 2px #DDD")
 
         td = content.add_cell()
 
@@ -2541,7 +2572,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
        
         from tactic.ui.input import UploadButtonWdg 
         on_complete = '''
-       
+
         var files = spt.html5upload.get_files(); 
 
         var top = bvr.src_el.getParent(".spt_attachment_top")
@@ -2612,12 +2643,14 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         upload_init = ''' 
         var server = TacticServerStub.get();
-        var ticket_key = server.start({title: 'New Note'});
         var top = bvr.src_el.getParent(".spt_attachment_top");
-        top.setAttribute('ticket_key', ticket_key);
+        var ticket_key = top.getAttribute('ticket_key');
+
+        if (!ticket_key) {
+          ticket_key = server.start({title: 'New Note'});
+          top.setAttribute('ticket_key', ticket_key);
+        }
         upload_file_kwargs['ticket'] = ticket_key;
-      
-       
         '''
 
       

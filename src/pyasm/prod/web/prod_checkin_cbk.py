@@ -18,11 +18,11 @@ from pyasm.web import WebContainer, BaseAppServer
 from pyasm.command import *
 from pyasm.prod.biz import *
 from pyasm.prod.checkin import *
-
-from prod_context import *
-from maya_set_wdg import *
-from prod_checkin_wdg import *
 from pyasm.search import SearchKey
+
+from .prod_context import *
+from .maya_set_wdg import *
+from .prod_checkin_wdg import *
 
 class CheckinException(Exception):
     pass
@@ -67,7 +67,7 @@ class AssetCheckinCbk(Command):
         # ---------
 
 
-        print "setTimeout(function() {checkin_selected_assets('%s', bvr)}, 200)" % cls.BUTTON_NAME
+        print("setTimeout(function() {checkin_selected_assets('%s', bvr)}, 200)" % cls.BUTTON_NAME)
         if not javascript:
             javascript = "setTimeout(function() {checkin_selected_assets('%s', bvr)}, 200)" % cls.BUTTON_NAME
 

@@ -93,7 +93,7 @@ class TableData:
         # print add columns
         extra_columns = [x for x in standard_data.columns if x not in self.columns]
         for column in extra_columns:
-            print standard_data.get_alter_table(column)
+            print(standard_data.get_alter_table(column))
 
         #for column, definition in self.columns.items():
         #    if column in extra_columns:
@@ -113,19 +113,19 @@ class TableData:
         extra_columns = [x for x in data.columns if x not in self.columns]
 
         if missing_columns:
-            print "missing columns: ", missing_columns
+            print("missing columns: ", missing_columns)
         if extra_columns:
-            print "extra columns: ", extra_columns
+            print("extra columns: ", extra_columns)
 
             for extra_column in extra_columns:
-                print data.get_alter_table(extra_column)
+                print(data.get_alter_table(extra_column))
 
         missing_constraints = [x for x in self.constraints if x not in data.constraints]
         extra_constraints = [x for x in data.constraints if x not in self.constraints]
         if missing_constraints:
-            print "missing constraints: ", missing_constraints
+            print("missing constraints: ", missing_constraints)
         if extra_constraints:
-            print "extra constraints: ", extra_constraints
+            print("extra constraints: ", extra_constraints)
 
 
 
@@ -146,7 +146,7 @@ class SqlParser:
 
 
     def get_data(self, table):
-        if self.tables.has_key(table):
+        if table in self.tables:
             return self.tables[table]
         else:
             return TableData(table)
@@ -271,8 +271,8 @@ class SqlParser:
                 expr = '\((.*)\) VALUES \((.*)\);$'
                 info = self._extract_values(expr, line)
                 if not info:
-                    print "Error: "
-                    print line
+                    print("Error: ")
+                    print(line)
                     raise Exception("Improper INSERT statement")
 
                 columns = info[0].split(", ")
@@ -288,7 +288,7 @@ class SqlParser:
                     rows[columns[i]] = values[i]
 
                 # ensure that the data object exists
-                if not self.tables.has_key(data_table):
+                if data_table not in self.tables:
                     data = TableData(create_table)
                     self.tables[data_table] = data
 
@@ -319,7 +319,7 @@ class SqlParser:
 
         for column, schema in columns.items():
 
-            if not columns2.has_key(column):
+            if column not in colums2:
                 database = "x"
             else:
                 database = columns2[column]
@@ -334,23 +334,23 @@ class SqlParser:
 
 
         for column2, database in columns2.items():
-            if not columns.has_key(column2):
+            if column2 not in columns:
                 schema = "x"
                 diffs.append( pattern % (column2,schema,database) )
 
         if diffs:
             print
             print
-            print "Table: ", table
-            print "-"*20
+            print("Table: ", table)
+            print("-"*20)
 
-            print pattern % ("column","standard schema","target schema")
-            print "-"*110
+            print(pattern % ("column","standard schema","target schema"))
+            print("-"*110)
 
             for diff in diffs:
-                print diff
+                print(diff)
 
-            print "-"*110
+            print("-"*110)
 
 
         # print constraints
@@ -358,16 +358,16 @@ class SqlParser:
         constraints2 = data2.constraints
 
         if constraints != constraints2:
-            print constraints
-            print constraints2
+            print(constraints)
+            print(constraints2)
 
         # print indexes
         indexes = data.indexes
         indexes2 = data2.indexes
 
         if indexes != indexes:
-            print indexes
-            print indexes2
+            print(indexes)
+            print(indexes2)
 
 
 

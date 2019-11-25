@@ -20,6 +20,8 @@ from pyasm.command import Trigger, Command
 from pyasm.search import SearchType, Search, SObject
 from pyasm.biz import Pipeline, Task, Note
 
+import six
+
 '''
 "node" and "manual" type nodes are synonymous, but the latter
 is preferred as of 4.5
@@ -215,6 +217,8 @@ class TaskStatusChangeTrigger(Trigger):
         # handle the approve case (which really means complete)
         if status in ["approved", "not_required"]:
             status = "complete"
+        elif status == "in_progress":
+            status = "action"
 
 
         # The task may have a hierarchy in it.  This is denoted by a / (or .) delimiter.
@@ -266,6 +270,14 @@ class TaskStatusChangeTrigger(Trigger):
 
         node_type = process.get_type()
         process_name = process.get_name()
+
+
+        # need to clear message entry
+        key = "%s|%s|status" % (sobject.get_search_key(), process)
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        server.log_message(key, "")
+
 
         if status in PREDEFINED:
             event = "process|%s" % status
@@ -700,30 +712,63 @@ class BaseProcessTrigger(Trigger):
 
 
 
-    def get_process_state(sobject, process):
+    def get_process_state(self, sobject, process=None):
+
+        if not process:
+            process = self.input.get("process")
 
         key = "Workflow|process_state|%s" % sobject.get_search_key()
         process_states_dict = Container.get(key)
         if process_states_dict is None:
             process_states_dict = {}
-            Container.put(key, proces_states_dict)
+            Container.put(key, process_states_dict)
+
+            """
+            if sobject.get_base_search_type() == 'sthpw/virtual':
+                process_state = SearchType.create("config/process_state")
+                process_state.set_sobject_value(sobject)
+                process_state.set_value("process", process)
+
+                process_states_dict[process] = process_state
+                return process_state
+            """
 
             search = Search("config/process_state")
             search.add_sobject_filter(sobject)
-            #search.add_filter("process", process)
-            process_states = search.get_sobjects()
+            cache_process_states = search.get_sobjects()
 
-            for process_state in process_states:
-                process = process_state.get_value("process")
-                process_states_dict[process] = process_state
+            for cache_process_state in cache_process_states:
+                cache_process = cache_process_state.get_value("process")
+                process_states_dict[cache_process] = cache_process_state
+
 
         process_state = process_states_dict.get(process)
         if not process_state:
             process_state = SearchType.create("config/process_state")
             process_state.set_sobject_value(sobject)
             process_state.set_value("process", process)
+            process_state.commit()
 
             process_states_dict[process] = process_state
+
+        return process_state
+
+
+    def get_process_status(self, sobject, process=None):
+        if not process:
+            process = self.input.get("process")
+
+        #TODO: use process_state (instead of messaging)
+        status = ""
+        key = "%s|%s|status" % (sobject.get_search_key(), process)
+        search = Search("sthpw/message")
+        search.add_filter('code', key)
+        message_sobj = search.get_sobject()
+        if message_sobj:
+            message = message_sobj.get_json_value("message")
+            status = message
+
+        return status
 
 
 
@@ -737,11 +782,10 @@ class BaseProcessTrigger(Trigger):
 
         # TODO use process state.
         # status and state will be transitioned to process_state (instead of messaging)
-        """
-        process_state = self.get_process_state(sobject, process)
-        process_state.set_value("status", status)
-        process_state.commit()
-        """
+        if sobject.get_base_search_type() != "sthpw/virtual":
+            process_state = self.get_process_state(sobject, process)
+            process_state.set_value("status", status)
+            process_state.commit()
 
 
 
@@ -897,6 +941,13 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         # check all of the input processes to see if they are all complete
         complete = True
         for input_process in input_processes:
+
+            input_complete = self.is_complete(input_process)
+            if input_complete == False:
+                complete = False
+                break
+
+            """
             key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
             message_sobj = Search.get_by_code("sthpw/message", key)
             if message_sobj:
@@ -916,6 +967,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     if task_status not in ["complete", 'not_required']:
                         complete = False
                         break
+            """
 
 
         if not complete:
@@ -923,6 +975,48 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         else:
             return True
 
+
+
+    def is_complete(self, input_process):
+        pipeline = self.input.get("pipeline")
+        sobject = self.input.get("sobject")
+        process = self.input.get("process")
+
+        complete = True
+
+        # TODO: look at process state
+
+
+        key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
+        search = Search("sthpw/message")
+        search.add_filter('code', key)
+        message_sobj = search.get_sobject()
+        if message_sobj:
+            message = message_sobj.get_json_value("message")
+            if message not in ["complete", "not_required"]:
+                complete = False
+        else:
+            # look for some other means to determine if this is done
+            search = Search("sthpw/task")
+            search.add_parent_filter(sobject)
+            search.add_filter("process", input_process.get_name())
+            task = search.get_sobject()
+            if task:
+                task_status = task.get("status")
+                task_status = task_status.lower().replace(" ", "_")
+                if task_status not in ["complete", 'not_required']:
+                    complete = False
+            # if there is no task and this is a manual node, then this is not blocked
+            else:
+                process_obj = pipeline.get_process(process)
+                node_type = process_obj.get_type()
+                if node_type not in ['manual', 'approval']:
+                    # NOTE: at some point, we should have an has_task method to deal with
+                    # this list
+                    complete = False
+
+
+        return complete
 
 
 
@@ -1057,9 +1151,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
     def handle_complete(self):
 
         # run a nodes complete trigger
-        status = "complete"
+        status = self.input.get("status")
         self.log_message(self.sobject, self.process, status)
-        self.set_all_tasks(self.sobject, self.process, "complete")
+        self.set_all_tasks(self.sobject, self.process, status)
 
         self.run_callback(self.pipeline, self.process, status)
 
@@ -1087,6 +1181,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
         # call the process|pending event for all output processes
+        # (for not required, call process|not_required)
         output_processes = self.pipeline.get_output_processes(self.process)
         for output_process in output_processes:
             output_process = output_process.get_name()
@@ -1105,7 +1200,11 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                 'packages': self.packages
             }
 
-            event = "process|pending"
+            if status == "not_required":
+                event = "process|not_required"
+            else:
+                event = "process|pending"
+
             Trigger.call(self, event, output)
 
 
@@ -1130,6 +1229,153 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
             event = "process|complete"
             Trigger.call(self, event, output)
+
+
+    def handle_not_required(self):
+        if not self.check_not_required_inputs():
+            return
+
+        self.input["status"] = "not_required"
+        #return self.handle_complete()
+        return self._handle_not_required()
+
+
+    def _handle_not_required(self):
+
+        # run a nodes trigger
+        status = self.input.get("status")
+        self.log_message(self.sobject, self.process, status)
+        self.set_all_tasks(self.sobject, self.process, status)
+
+        self.run_callback(self.pipeline, self.process, status)
+
+        process_obj = self.pipeline.get_process(self.process)
+
+
+
+        self.output_data = self.data
+        process_sobj = self.get_process_sobj()
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow", {})
+        else:
+            workflow = {}
+
+
+
+        process_output = workflow.get("output") or {}
+
+
+
+        # These are currently in Manual node.  Note sure if it should be generic to all nodes
+        #packages = self.get_output_packages()
+        #self.store_state()
+
+
+
+        # call the process|pending event for all output processes
+        # (for not required, call process|not_required)
+        output_processes = self.pipeline.get_output_processes(self.process)
+        for output_process in output_processes:
+            output_process = output_process.get_name()
+
+            # if output_process is already in not_required or complete status, skip.
+            if self.get_process_status(self.sobject, output_process) in ["not_required", "complete"]:
+                return
+
+
+            #if self.process_parts:
+            #    output_process = "%s.%s" % (self.process_parts[0], output_process)
+
+            output = {
+                'pipeline': self.pipeline,
+                'sobject': self.sobject,
+                'parent_pipelines': self.parent_pipelines,
+                'parent_processes': self.parent_processes,
+                'calling_process': self.process,
+                'process': output_process,
+                'data': self.output_data,
+                'packages': self.packages
+            }
+
+            if status == "not_required":
+                event = "process|not_required"
+            else:
+                event = "process|pending"
+
+            Trigger.call(self, event, output)
+
+
+
+    def check_not_required_inputs(self):
+        pipeline = self.input.get("pipeline")
+        process = self.input.get("process")
+        sobject = self.input.get("sobject")
+
+        # first check the inputs.  If there is only one input, then
+        # skip this check
+        input_processes = pipeline.get_input_processes(process, to_attr="input")
+        if len(input_processes) <= 1:
+            return True
+
+
+        # check all of the input processes to see if they are all complete
+        complete = True
+        for input_process in input_processes:
+
+            input_complete = self.is_not_required(input_process)
+
+            if input_complete == False:
+                complete = False
+                break
+
+        if not complete:
+            return False
+        else:
+            return True
+
+
+    def is_not_required(self, input_process):
+        pipeline = self.input.get("pipeline")
+        sobject = self.input.get("sobject")
+        process = self.input.get("process")
+
+        complete = True
+
+        # TODO: look at process state
+
+
+        key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
+        search = Search("sthpw/message")
+        search.add_filter('code', key)
+        message_sobj = search.get_sobject()
+        if message_sobj:
+            message = message_sobj.get_json_value("message")
+            if message not in ["not_required"]:
+                complete = False
+        else:
+            # look for some other means to determine if this is done
+            search = Search("sthpw/task")
+            search.add_parent_filter(sobject)
+            search.add_filter("process", input_process.get_name())
+            task = search.get_sobject()
+            if task:
+                task_status = task.get("status")
+                task_status = task_status.lower().replace(" ", "_")
+                if task_status not in ['not_required']:
+                    complete = False
+            # if there is no task and this is a manual node, then this is not blocked
+            else:
+                process_obj = pipeline.get_process(process)
+                node_type = process_obj.get_type()
+                if node_type not in ['manual', 'approval']:
+                    # NOTE: at some point, we should have an has_task method to deal with
+                    # this list
+                    complete = False
+
+
+        return complete
+
+
 
 
 
@@ -1214,6 +1460,18 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
+class WorkflowDisabledNodeHandler(BaseWorkflowNodeHandler):
+
+    def handle_pending(self):
+        if not self.check_inputs():
+            return
+
+        return self.handle_not_required()
+
+    def handle_complete(self):
+        return self.handle_not_required()
+
+
 
 
 class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
@@ -1254,9 +1512,17 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
-            if workflow.get("autocreate_task") in ['true', True]:
+            version = workflow.get("version") or 1
+            version_2 = version in [2, '2']
+
+            properties = workflow.get("properties") or {}
+
+            autocreate_task = properties.get("autocreate_task") if version_2 else workflow.get("autocreate_task")
+            task_creation = properties.get("task_creation") if version_2 else workflow.get("task_creation")
+
+            if autocreate_task in ['true', True]:
                 autocreate_task = True
-            if workflow.get("task_creation") in ['none']:
+            if task_creation in ['none']:
                 autocreate_task = True
 
             process_obj = self.pipeline.get_process(self.process)
@@ -1310,8 +1576,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         # store the state so that it can be remembered until the next status change
         self.store_state()
 
-
-        Trigger.call(self, "process|action", output=self.input)
+        if not self.tasks:
+            Trigger.call(self, "process|action", output=self.input)
 
 
     def get_mapped_status(self, process_obj, status="Pending"):
@@ -1346,11 +1612,13 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             full_process_name = self.get_full_process_name(self.process)
             self.tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
 
+
         # go to complete if there are no tasks
         if not self.tasks:
             Trigger.call(self, "process|complete", output=self.input)
 
         else:
+            process = self.input.get("process")
             # store the state
             self.store_state()
             self.log_message(self.sobject, self.process, "in_progress")
@@ -1358,7 +1626,8 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_complete(self):
 
-        status = "complete"
+        #status = "complete"
+        status = self.input.get("status") or "complete"
 
         # restore the state of the node
         state = self.restore_state()
@@ -1371,7 +1640,12 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         # Handle remapped status.
         process_sobj = self.get_process_sobj(pipeline, process)
         workflow = process_sobj.get_json_value("workflow", {})
-        status_pipeline_code = workflow.get("task_pipeline")
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
+
+        status_pipeline_code = properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")
         #print("status_pipeline_code:", status_pipeline_code)
 
         status_pipeline = None
@@ -1379,29 +1653,31 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
             status_pipeline = Pipeline.get_by_code(status_pipeline_code)
 
 
+        # if this is coming from an internal message (such task status),
         # make sure all of the tasks are complete
-        tasks = Task.get_by_sobject(self.sobject, process=process)
-
-        # Make sure all of the tasks are complete
         is_complete = True
-        for task in tasks:
-            #self.log_message(self.sobject, self.process, status)
 
-            task_status = task.get_value("status")
+        if self.input.get("internal") == True:
+            full_process_name = self.get_full_process_name(process)
+            tasks = Task.get_by_sobject(self.sobject, process=full_process_name)
+            # Make sure all of the tasks are complete
+            for task in tasks:
+                #self.log_message(self.sobject, self.process, status)
 
-            # For remapped status
-            if status_pipeline:
-                status_process_sobj = self.get_process_sobj(status_pipeline, task_status)
+                task_status = task.get_value("status")
 
-                if status_process_sobj:
-                    workflow_data = status_process_sobj.get_json_value("workflow", {})
-                    mapping = workflow_data.get("mapping")
-                    #print("Remapped %s to %s." % (task_status, mapping))
-                    task_status = mapping
-            #print("task_status: %s" % task_status)
-            if task_status.lower().replace(" ","_") not in ['complete','approved','not_required']:
-                is_complete = False
-                break
+                # For remapped status
+                if status_pipeline:
+                    status_process_sobj = self.get_process_sobj(status_pipeline, task_status)
+
+                    if status_process_sobj:
+                        workflow_data = status_process_sobj.get_json_value("workflow", {})
+                        mapping = workflow_data.get("mapping")
+                        #print("Remapped %s to %s." % (task_status, mapping))
+                        task_status = mapping
+                if task_status.lower().replace(" ","_") not in ['complete','approved','not_required']:
+                    is_complete = False
+                    break
 
 
         if not is_complete:
@@ -1413,8 +1689,44 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # store the state
         self.store_state()
-
         return super(WorkflowManualNodeHandler, self).handle_complete()
+
+
+
+
+    def handle_not_required(self):
+        status = "not_required"
+
+        # restore the state of the node
+        state = self.restore_state()
+
+        pipeline = self.input.get("pipeline")
+        process = self.input.get("process")
+        sobject = self.input.get("sobject")
+
+        # Handle remapped status.
+        process_sobj = self.get_process_sobj(pipeline, process)
+        workflow = process_sobj.get_json_value("workflow", {})
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
+
+        # we need to check if the process is already complete. if so, just return.
+        if self.get_process_status(self.sobject, process) in ["not_required", "complete"]:
+            return
+
+
+        # build a standard output package
+        self.packages = self.get_output_packages()
+
+        # store the state
+        self.store_state()
+
+        return super(WorkflowManualNodeHandler, self).handle_not_required()
+
+
+
 
 
 
@@ -1557,8 +1869,16 @@ class WorkflowApprovalNodeHandler(BaseWorkflowNodeHandler):
         assigned = None
         if process_sobj:
             workflow = process_sobj.get_json_value("workflow", {})
-            if workflow:
-                assigned = workflow.get("assigned")
+            version = workflow.get("version") or 1
+            version_2 = version in [2, '2']
+
+            if version_2:
+                data = workflow.get("data") or {}
+                if data:
+                    assigned = data.get("assigned")
+            else:
+                if workflow:
+                    assigned = workflow.get("assigned")
 
 
         # check to see if the tasks exist and if they don't then create one
@@ -1638,6 +1958,7 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(self):
+
         self.log_message(self.sobject, self.process, "in_progress")
         self.set_all_tasks(self.sobject, self.process, "in_progress")
 
@@ -1652,6 +1973,12 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
 
         # use child process
         subpipeline_code = process_sobj.get_value("subpipeline_code")
+        if not subpipeline_code:
+            workflow = process_sobj.get_json_value("workflow", default={})
+            default = workflow.get('default')
+            if default:
+                subpipeline_code = default.get('subpipeline')
+
         if subpipeline_code:
             subpipeline = Search.get_by_code("sthpw/pipeline", subpipeline_code)
         else:
@@ -1726,7 +2053,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         process = self.input.get("process")
         sobject = self.input.get("sobject")
 
-        # attributes for this process
+        # attributes for this process (DEPRECATED)
         process_obj = pipeline.get_process(process)
         related_search_type = process_obj.get_attribute("search_type")
         related_status = process_obj.get_attribute("status")
@@ -1734,7 +2061,11 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         related_scope = process_obj.get_attribute("scope")
         related_wait = process_obj.get_attribute("wait")
 
-        # get the node's triggers
+        related_pipeline_code = None
+
+        process_sobj = None
+
+        # get the node process sobject
         if not related_search_type:
             search = Search("config/process")
             search.add_filter("process", process)
@@ -1742,11 +2073,19 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             process_sobj = search.get_sobject()
 
             workflow = process_sobj.get_json_value("workflow", {})
-            related_search_type = workflow.get("search_type")
-            related_process = workflow.get("process")
-            related_status = workflow.get("status")
-            related_scope = workflow.get("scope")
-            related_wait = workflow.get("wait")
+            version = workflow.get("version") or 1
+
+            if version == 2:
+                settings = workflow.get("default")
+            else:
+                settings = workflow
+
+            related_search_type = settings.get("related_search_type")
+            related_process = settings.get("related_process")
+            related_status = settings.get("related_status")
+            related_scope = settings.get("related_scope")
+            related_wait = settings.get("related_wait")
+            related_pipeline_code = settings.get("related_pipeline_code")
 
 
         if not related_search_type:
@@ -1763,6 +2102,9 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         # override related_status with status passed in
         if status:
             related_status = status
+        elif not related_status:
+            related_status = "pending"
+
 
 
         if related_search_type.startswith("@"):
@@ -1778,24 +2120,46 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
 
 
         for related_sobject in related_sobjects:
-
-            # if the related_sobject is already complete, don't do anything
-            key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
-            message_sobj = Search.get_by_code("sthpw/message", key)
-            if message_sobj:
-                value = message_sobj.get_value("message")
-                if related_status.lower() in ["revise", "reject"]:
-                    pass
-                elif value == "complete" and value not in ['revise', 'reject']:
-                    continue
+            if related_sobject.get_search_key() == sobject.get_search_key():
+                same_sobject = True
+            else:
+                same_sobject = False
 
 
-            # This is for unittests which don't necessarily commit changes
+            # This is for unittests which don't necessarily commit changes, otherwise
+            # it's harmless
             related_sobject = Search.get_by_search_key(related_sobject.get_search_key())
 
-            related_pipeline = Pipeline.get_by_sobject(related_sobject)
+
+            if not same_sobject:
+                # if the related_sobject is already complete, don't do anything
+                key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
+                message_sobj = Search.get_by_code("sthpw/message", key)
+                if message_sobj:
+                    value = message_sobj.get_value("message")
+                    if related_status.lower() in ["revise", "reject"]:
+                        pass
+                    elif value == "complete" and value not in ['revise', 'reject']:
+                        continue
+
+                # get the workflow for the specfic sobject called
+                related_pipeline = Pipeline.get_by_sobject(related_sobject)
+
+
+            # if the related sobject is the same as the original sobject, then we
+            # are just calling a different workflow with the same sobject
+            else:
+                # Need to find related process_sobj
+                search = Search("config/process")
+                search.add_filter("process", related_process)
+                search.add_filter("pipeline_code", related_pipeline_code)
+                related_process_sobj = search.get_sobject()
+
+                related_pipeline = Pipeline.get_by_code(related_pipeline_code)
+
+
+            # if not related process is specified, then get the first one
             if not related_process:
-                # get the first one
                 related_processes = related_pipeline.get_processes()
                 related_process = related_processes[0]
 
@@ -1807,7 +2171,6 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
                     event = "process|%s" % related_status.lower()
                 else:
                     event = "process|%s" % related_status
-
 
             # inputs are reversed as it sends the message
             input = {
@@ -1922,6 +2285,7 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(self):
 
+        self.log_message(self.sobject, self.process, "pending")
         if not self.check_inputs():
             return
 
@@ -1930,7 +2294,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(self):
-        self.log_message(self.sobject, self.process, "action")
+
+        self.log_message(self.sobject, self.process, "in_progress")
 
         # get the node's triggers
         search = Search("config/process")
@@ -1944,6 +2309,51 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
         self.handle_complete()
         self.handle_condition_node(self.sobject, self.pipeline, self.process, triggers)
+
+
+
+    def execute_streams(self, streams, event):
+
+        process = self.input.get("process")
+        sobject = self.input.get("sobject")
+        pipeline = self.input.get("pipeline")
+
+        if not isinstance(streams, list):
+            streams = [streams]
+
+        # depending on has_asset_type, we send the appropriate stream
+
+        event = "process|%s" % event
+
+        output_processes = []
+        for stream in streams:
+            if stream in [True, "Pass"]:
+                outputs = pipeline.get_output_processes(process)
+            elif stream in [False, "Fail"]:
+                outputs = pipeline.get_input_processes(process)
+            else:
+                outputs = pipeline.get_output_processes(process, from_attr=stream)
+
+            if outputs:
+                output_processes.extend(outputs)
+
+        # if there are no output attrs, then check the node names
+        if not output_processes:
+            outputs = pipeline.get_output_processes(process)
+            for output in outputs:
+                if output.get_name() in streams:
+                    output_processes.append(output)
+
+        for output_process in output_processes:
+            output_process_name = output_process.get_name()
+            output = {
+                'sobject': sobject,
+                'pipeline': pipeline,
+                'process': output_process_name,
+                'data': self.data
+            }
+            Trigger.call(self, event, output)
+
 
 
 
@@ -1997,10 +2407,11 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
         else:
 
-            if isinstance(ret_val, basestring): 
+            if isinstance(ret_val, six.string_types):
                 ret_val = [ret_val]
 
             output_processes = []
+            not_required_streams = []
             for attr in ret_val:
                 outputs = pipeline.get_output_processes(process, from_attr=attr)
                 if outputs:
@@ -2013,6 +2424,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     output_process_name = output.get_name()
                     if output.get_name() in ret_val:
                         output_processes.append(output)
+                    else:
+                        not_required_streams.append(output.get_name())
 
             called = set()
             for output_process in output_processes:
@@ -2031,6 +2444,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                 }
                 Trigger.call(self, event, output)
                 called.add(output_process_name)
+
+            self.execute_streams(not_required_streams, "not_required")
 
             return
 
@@ -2090,55 +2505,39 @@ class ProcessPendingTrigger(BaseProcessTrigger):
             process = parts[-1]
 
         process_obj = pipeline.get_process(process)
+        if not process_obj:
+            msg = "ERROR: pipeline [%s] does not have a process [%s]" % (pipeline.get_code(), process)
+            raise Exception(msg)
+
 
         node_type = process_obj.get_type()
 
-        if node_type == "action":
+        state = "active"
+
+        if state == "disabled":
+            handler = WorkflowDisabledNodeHandler(input=self.input)
+        elif node_type == "action":
             handler = WorkflowActionNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "approval":
             handler = WorkflowApprovalNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type in ["manual", "node"]:
             handler = WorkflowManualNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "hierarchy":
             handler = WorkflowHierarchyNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "input":
             handler = WorkflowOutputNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "output":
             handler = WorkflowOutputNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "condition":
             handler = WorkflowConditionNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "dependency":
             handler = WorkflowDependencyNodeHandler(input=self.input)
-            return handler.handle_pending()
         elif node_type == "progress":
             handler = WorkflowProgressNodeHandler(input=self.input)
-            return handler.handle_pending()
-
         else:
             handler = self.get_handler(node_type)
-            return handler.handle_pending()
 
-        """
-        else:
-            process_type = Search.get_by_code("sthpw/process_type", node_type)
-            #handle_class = process_type.get_value("info_handler_class")
-            handle_class = process_type.get_value("node_handler_class")
-            handler = Common.create_from_class_path(handle_class, self.input)
-            handler.handle_pending()
-        """
-
-
-
-
-        # Make sure the below is completely deprecated
-        assert(False)
+        return handler.handle_pending()
 
 
 
@@ -2196,9 +2595,6 @@ class ProcessActionTrigger(BaseProcessTrigger):
             handler = self.get_handler(node_type)
             return handler.handle_action()
 
-        # Make sure the below is completely deprecated
-        assert(False)
-
 
 
 
@@ -2238,6 +2634,12 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         else:
             return
 
+
+        # switch the status to whatever any derived class states (ie: not_required)
+        status = self.get_status()
+        self.input['status'] = status
+
+
         handler = None
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=self.input)
@@ -2262,7 +2664,10 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
 
 
         if handler:
-            return handler.handle_complete()
+            if status == "not_required":
+                return handler.handle_not_required()
+            else:
+                return handler.handle_complete()
 
 
         # Make sure the below is completely deprecated

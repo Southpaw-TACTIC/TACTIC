@@ -54,9 +54,9 @@ class BaseSQLConverter(object):
         for file_name in file_names:
             src_file = "%s/postgresql/%s" % (upgrade_dir, file_name)
             dst_file = "%s/%s/%s" % (upgrade_dir, self.vendor.lower(), file_name)
-            print "Converting .."
-            print "  from: ", src_file
-            print "  to:   ", dst_file
+            print("Converting ..")
+            print("  from: ", src_file)
+            print("  to:   ", dst_file)
             self.convert_file(src_file, dst_file)
 
 

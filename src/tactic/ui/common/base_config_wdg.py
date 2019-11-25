@@ -22,13 +22,17 @@ from pyasm.widget import WidgetConfigView, WidgetConfig
 
 import types
 
-from base_refresh_wdg import BaseRefreshWdg
+from .base_refresh_wdg import BaseRefreshWdg
+
+import six
+basestring = six.string_types
+
 
 class BaseConfigWdg(BaseRefreshWdg):
 
     def __init__(self, search_type, config_base, input_prefix='', config=None):
 
-        if type(search_type) in types.StringTypes:
+        if isinstance(search_type, basestring):
             self.search_type_obj = SearchType.get(search_type)
             self.search_type = search_type
         elif isinstance(search_type, SearchType):
@@ -217,7 +221,11 @@ class BaseConfigWdg(BaseRefreshWdg):
             #for key in display_options.keys():
             element.set_options(display_options)
 
-            self.add_widget(element,element_name)
+            data_mode = self.kwargs.get("data_mode")
+            if data_mode == "report":
+                element.set_option("data_mode", "report")
+
+            self.add_widget(element, element_name)
 
             # layout widgets also categorize their widgets based on type
             if element_name == "Filter":
@@ -255,6 +263,6 @@ class BaseConfigWdg(BaseRefreshWdg):
         try:
             self.widgets.remove(widget)
         except:
-            print "WARNING: cannot remove widget"
+            print("WARNING: cannot remove widget")
 
 

@@ -16,7 +16,8 @@ import os,unittest
 from pyasm.unittest import *
 
 from pyasm.security import *
-from snapshot_builder import *
+from pyasm.search import *
+from .snapshot_builder import *
 
 class SnapshotBuilderTest(unittest.TestCase):
 
@@ -24,23 +25,33 @@ class SnapshotBuilderTest(unittest.TestCase):
         batch = Batch()
 
     def test_all(self):
+        """
+        Tests SnapshotBuilder by checking that the snapshot_xml returns nodes added to the snapshot.
+        """
+        
+        test_env = Sample3dEnvironment()
+        test_env.create()
 
-        builder = SnapshotBuilder()
-        builder._add_ref_node("prod/asset", "132", "12", "prp101_01" )
-        builder._add_file_node("1234", "maya", "prp100")
+        
+        transaction = Transaction.get(create=True)
 
-        snapshot_xml = builder.to_string()
-    
-        expected = \
-        """<?xml version='1.0' encoding='UTF-8'?>
-<snapshot>
-  <ref search_type='prod/asset' instance='prp101_01' version='12' search_id='132'/>
-  <file type='maya' file_code='1234' name='prp100'/>
-</snapshot>
-"""
+        try:
+            asset = SearchType.create("prod/asset")
+            asset.set_value("code", "132")
+            asset.commit()
 
-        self.assertEquals(expected, snapshot_xml)
+            builder = SnapshotBuilder()
+            builder.add_ref(asset, context="publish", version="12", instance_name="prp101_01" )
 
+            builder._add_file_node("1234", "prp100", {'type': 'maya'})
+            snapshot_xml = builder.to_string()
+        
+            expected = """<snapshot>\n  <ref version="12" search_type="prod/asset?project=sample3d" instance="prp101_01" tag="main" context="publish" search_code="132" search_id="2"/>\n  <file file_code="1234" name="prp100" type="maya"/>\n</snapshot>\n"""
+
+            self.assertEquals(expected, snapshot_xml)
+        finally:
+            transaction.rollback()
+            test_env.delete()
 
 
 
