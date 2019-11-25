@@ -484,6 +484,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_viewable = security.check_access('element', access_keys, "view", default=def_default_access)
             is_editable = security.check_access('element', access_keys, "edit", default=def_default_access)
 
+            # hide columns with hidden="true", except when this is a temporary table for dynamic operations
+            is_hidden = (self.kwargs.get("temp") != True) and (attrs.get("hidden") in ['true', True])
+
+            is_viewable = is_viewable and (not is_hidden)
+
             if not is_viewable:
                 # don't remove while looping, it disrupts the loop
                 #self.widgets.remove(widget)

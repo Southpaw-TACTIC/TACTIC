@@ -265,8 +265,8 @@ class Search(Base):
             return
 
         # Commented our for testing
-        #if user in ['admin']:
-        #    return
+        if user in ['admin']:
+            return
 
         if Sudo.is_sudo():
             return
@@ -3458,7 +3458,12 @@ class SObject(object):
                 except:
                     if IS_Pv3 and isinstance(value, bytes):
                         value = value.decode()
-       
+
+            # if the value is None and column info is not nullable then set to
+            # empty string
+            if not value and column_info and column_info.get('nullable') == False:
+                value = ""
+
         self._set_value(name, value, quoted=quoted)
 
 
@@ -4076,7 +4081,7 @@ class SObject(object):
             # needs to be set to localtime
             if column_types.get(key) in ['timestamp', 'datetime','datetime2']:
                 if value and not SObject.is_day_column(key):
-                    info = column_info.get(key)
+                    info = column_info.get(key) or {}
                     if not is_sqlite and not info.get("time_zone"):
                         # if it has no timezone, it assumes it is GMT
                         value = SPTDate.convert_to_local(value)
@@ -4747,7 +4752,9 @@ class SObject(object):
         whenver there is a commit'''
         defaults = {}
         from pyasm.biz import ProjectSetting
-        if ProjectSetting.get_value_by_key('autofill_pipeline_code') != 'false':
+
+        autofill_pipeline_code = ProjectSetting.get_value_by_key('autofill_pipeline_code')
+        if autofill_pipeline_code != 'false':
             base_search_type = self.get_base_search_type() 
             if base_search_type == 'sthpw/task':
                 return defaults
@@ -6033,7 +6040,7 @@ class SearchType(SObject):
         column_info = Container.get("SearchType:column_info:%s" % search_type)
         if column_info == None:
 
-            if search_type == 'sthpw/virtual':
+            if search_type == 'sthpw/virtual' or search_type.startswith("table/"):
                 column_info = {}
             else: 
                 from pyasm.biz import Project
@@ -6573,7 +6580,8 @@ class SearchType(SObject):
             parts = search_type.split("/")
             namespace = parts[0]
             table = parts[1]
-            project = '__NONE__'
+            #project = '__NONE__'
+            project = "{project}"
             columns = ['id', 'table_name', 'title', 'search_type','class_name', 'namespace','database']
             result = ['0', table, Common.get_display_title(table), search_type,'pyasm.search.SObject',namespace,project]
             sobject = cls.create("sthpw/search_object",columns,result)
