@@ -373,11 +373,11 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
         if 'match_width' in kwargs:
             self.match_width = kwargs.get('match_width')
 
-        self.nudge_menu_horiz = 0;
+        self.nudge_menu_horiz = 0
         if kwargs.get('nudge_menu_horiz'):
             self.nudge_menu_horiz = int( kwargs.get('nudge_menu_horiz') )
 
-        self.nudge_menu_vert = 0;
+        self.nudge_menu_vert = 0
         if kwargs.get('nudge_menu_vert'):
             self.nudge_menu_vert = int( kwargs.get('nudge_menu_vert') )
 
@@ -404,7 +404,7 @@ class SmartMenuButtonDropdownWdg(BaseRefreshWdg):
             dd_activator.add_styles( self.style )
 
         dd_activator.add_style( "width: %spx" % self.width )
-        dd_activator.add_class("SPT_DTS");
+        dd_activator.add_class("SPT_DTS")
 
         if self.nudge_menu_horiz != 0:
             dd_activator.set_attr("spt_nudge_menu_horiz", self.nudge_menu_horiz)

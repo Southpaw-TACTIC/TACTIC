@@ -53,6 +53,8 @@ class SwitchLayoutMenu(object):
         self.search_type = self.kwargs.get("search_type")
         activator = self.kwargs.get("activator")
         self.view = self.kwargs.get("view")
+        self.custom_views = self.kwargs.get("custom_views") or None
+        default_views = self.kwargs.get("default_views")
 
         menu = Menu(width=180, allow_icons=True)
         menu_item = MenuItem(type='title', label='Switch Layout')
@@ -144,7 +146,20 @@ class SwitchLayoutMenu(object):
             ['preview','code','task_pipeline_report','summary','completion'],
 	    ]
 
+        if default_views in ['false', False]:
+            views = []
+            labels = []
+            class_names = []
+            layouts = []
+            element_names = []
 
+        if self.custom_views:
+            for key, val in self.custom_views.items():
+                views.append(key)
+                labels.append(val[0])
+                class_names.append(val[1])
+                layouts.append(val[2])
+                element_names.append(val[3])
 
         # add in the default
         #views.insert(0, self.view)
@@ -165,26 +180,43 @@ class SwitchLayoutMenu(object):
 
           
             var table_top = top.getElement(".spt_table_top");
-            var table = table_top.getElement(".spt_table_table");
+            
 
-            var layout = top.getAttribute("spt_layout");
-            var layout_el = top.getElement(".spt_layout");
-
-            var version = layout_el.getAttribute("spt_version");
-            if (version =='2') {
-                var table = table_top.getElement(".spt_table_table");
+            //var layout = top.getAttribute("spt_layout");
+            if (table_top){
+                var layout_el = top.getElement(".spt_layout");
+                var version = layout_el.getAttribute("spt_version") || 1;
+                if (version =='2') {
+                    var table = table_top.getElement(".spt_table_table");
+                } else {
+                    var table = table_top.getElement(".spt_table");
+                }
             } else {
-                var table = table_top.getElement(".spt_table");
+                var table_top = top.getElement(".spt_calendar_top");
+                var table = table_top.getElement("table");
+                table.addClass("spt_table_content");
+                table_top.addClass("spt_table_top");
             }
 
             
-            
-            top.setAttribute("spt_layout", layout);
+            top.setAttribute("spt_layout", bvr.layout);
             var last_view = top.getAttribute("spt_view");
             top.setAttribute("spt_last_view", last_view);
             top.setAttribute("spt_view", bvr.view);
             table_top.setAttribute("spt_class_name", bvr.class_name);
             table_top.setAttribute("spt_view", bvr.view);
+
+            var ls_custom_views = top.getAttribute("spt_layout_switcher_custom_views") || "";
+            if (ls_custom_views) {
+                ls_custom_views = ls_custom_views.replace(/'/g, '"');
+                ls_custom_views = JSON.parse(ls_custom_views);
+                ls_custom_views = JSON.stringify(ls_custom_views);
+                table_top.setAttribute("spt_custom_views", ls_custom_views);
+            }
+
+            if (bvr.custom_views) {
+                table_top.setAttribute("spt_custom_views", bvr.custom_views);
+            }
             
             table.setAttribute("spt_view", bvr.view);
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el, element_names: bvr.element_names, widths:[]} );
@@ -209,9 +241,10 @@ class SwitchLayoutMenu(object):
             label = labels[i]
 
             menu_item = MenuItem(type='action', label=label)
-            if self.view == views[i]:
+            if self.view == labels[i]:
                 menu_item.set_icon(IconWdg.DOT_GREEN)
             menu.add(menu_item)
+
             menu_item.add_behavior( {
             'type': 'click_up',
             'view': view,
@@ -219,6 +252,8 @@ class SwitchLayoutMenu(object):
             'element_names': element_name_list,
             'layout': layout,
             'search_type': self.search_type,
+            'default_views': default_views,
+            'custom_views': self.custom_views,
             'cbjs_action': cbk
             } )
 
@@ -905,7 +940,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             if (bvr.target) {
                 var parent = bvr.src_el.getParent("."+bvr.target);
                 panel = parent.getElement(".spt_layout");
-                console.log(panel);
             }
             else if (popup) {
                 var panel = popup.panel;

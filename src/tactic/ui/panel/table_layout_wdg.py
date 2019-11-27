@@ -874,6 +874,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
 
             width = self.attributes[i].get("width")
+            
 
             if i >= len(column_widths):
                 # default width
@@ -884,8 +885,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             elif not column_widths[i]:
                 column_widths[i] = default_width
-
-
+            
         # resize the widths so that the last one is free
         expand_full_width = True
         default_width = 120
@@ -905,8 +905,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     continue
                 else:
                     item_width = int(float(item_width))
-
-
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -3163,7 +3161,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
-
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             tr.set_attr("spt_is_subscribed","true")
 

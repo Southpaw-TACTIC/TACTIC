@@ -579,7 +579,36 @@ class SObjectCalendarWdg(CalendarWdg):
         if kwargs.get("show_border") == None:
             kwargs['show_border'] = 'false'
         super(SObjectCalendarWdg, self).__init__(**kwargs)
+
+    def set_search_wdg(self, search_wdg):
+        self.search_wdg = search_wdg
     
+
+    def get_kwargs_keys(cls):
+        return ['start_date_col', 'end_date_col', 'extra_codes', 'square_size', 'mode', 'handler', 'sobject_display_expr', 'search_type', 'search_expr', 'view', 'sobject_view', 'detail_view', 'color_mode', 'color']
+    get_kwargs_keys = classmethod(get_kwargs_keys)
+
+
+    def get_layout_wdg(self):
+
+        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+        from pyasm.common import jsonloads
+        from tactic.ui.panel.layout_wdg import SwitchLayoutMenu
+        #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
+        custom_views = self.kwargs.get("layout_switcher_custom_views") or None
+        search_type = self.kwargs.get("search_type") or None
+        name = self.kwargs.get("name") or ""
+        default_views = self.kwargs.get("default_views") or None
+
+
+        if isinstance(custom_views, basestring):
+            custom_views = custom_views.replace("'", '"')
+            custom_views = jsonloads(custom_views)
+
+        SwitchLayoutMenu(search_type=search_type, view=name, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
+        return layout
+
 
     def handle_search(self):
 
@@ -601,8 +630,6 @@ class SObjectCalendarWdg(CalendarWdg):
 
 
         else:
-            
-
             self.op_filters = self.kwargs.get("filters")
             if self.op_filters:
                 if isinstance(self.op_filters, basestring):
@@ -809,11 +836,16 @@ class SObjectCalendarWdg(CalendarWdg):
         outer = DivWdg()
         outer.add_class("spt_calendar_header")
 
+        show_layout_switcher = self.kwargs.get("show_layout_switcher") or None
+        if show_layout_switcher in ['true', True]:
+            layout_wdg = self.get_layout_wdg()
+            outer.add(layout_wdg)
+
         div = DivWdg()
         outer.add(div)
         div.add_color("background", "background", -3)
         div.add_style("padding: 5px")
-        div.add_border()
+        # div.add_border()
 
         table = Table()
         table.add_style("margin-left: auto")
