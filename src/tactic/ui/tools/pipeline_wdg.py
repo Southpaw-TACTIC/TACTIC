@@ -769,7 +769,7 @@ class PipelineToolWdg(BaseRefreshWdg):
         width = self.kwargs.get("width")
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
         width = "100%"
-        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset)
+        pipeline_wdg = PipelineEditorWdg(height=self.kwargs.get('height'), width=width, save_new_event=save_new_event, show_help=show_help, show_gear=self.kwargs.get('show_gear'), window_resize_offset=window_resize_offset, pipeline_code=pipeline_code)
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
@@ -8255,6 +8255,27 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         '''
         } )
+
+        preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_EYE")
+        preview_button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+            var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var pipeline_code = spt.pipeline.get_current_group();
+            var pipeline_xml = spt.pipeline.export_group(pipeline_code);
+            args = {
+                pipeline_code: pipeline_code,
+                pipeline_xml: pipeline_xml
+            }
+            kwargs = {
+                width: 900
+            }
+            spt.panel.load_popup("Workflow Schedule Preview", 'tactic.ui.table.WorkflowSchedulePreviewWdg', args, kwargs);
+            '''
+        })
+
+        button_row.add(preview_button)
 
 
 

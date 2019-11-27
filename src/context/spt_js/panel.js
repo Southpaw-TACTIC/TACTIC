@@ -105,7 +105,6 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
         if (async) {
 
             var size = document.id(panel).getSize();
-            console.log(size);
 
             var env = spt.Environment.get();
             var colors = env.get_colors();
@@ -210,7 +209,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
     new_options = {}
     for (name in options) {
-        new_options[name] = options[name];
+        new_options[name] = options[name] || "";
     }
     delete new_options['path'];
  
