@@ -1,3 +1,4 @@
+import six
 
 from pyasm.biz import Project
 from pyasm.common import Environment, Common
@@ -60,7 +61,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         # add in a context smart menu for all links
         self.add_link_context_menu(content_div)
-        if isinstance(view, basestring):
+        if isinstance(view, six.string_types):
             view = [view]
 
         # draw each view
@@ -75,6 +76,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
             # make up a title
             title = HtmlElement.li()
+            title.add_class("nav-item")
 
             view_attrs = config.get_view_attributes()
             tt = view_attrs.get("title")
@@ -86,6 +88,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 tt = tt.capitalize()
 
             title_label = HtmlElement("a")
+            title_label.add_class("nav-link")
             title.add( title_label )
             title_label.add("""<h6>%s</h6>""" % tt)
 
@@ -446,7 +449,7 @@ body {
     display: block;
 }
 
-.spt_bs_left_sidebar ul li .spt_side_bar_title:hover {
+.spt_bs_left_sidebar ul li .nav-link:hover {
     color: #114e8a;
     background: #fff;
 }
@@ -551,6 +554,16 @@ body {
 
     .spt_tab_content_top {
         height: calc(100vh - 80px);
+    }
+
+    .navbar-toggler {
+        font-size: 1rem;
+        margin: .25rem 0rem;
+    }
+    
+    .spt_toggle_sidebar {
+        justify-items: center;
+        display: flex;
     }
 
 
@@ -695,11 +708,43 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
 
         style = HtmlElement.style("""
 
-.spt_bs_top_nav .spt_logo img { 
-    width: 10em;
-    filter: invert(100%);
-    margin: .5rem 1rem;
-}""")
+            .spt_bs_top_nav .spt_logo img { 
+                width: 10em;
+                filter: invert(100%);
+                margin: .5rem 1rem;
+            }
+
+            // Copy navbar-nav styles
+            .spt_bs_top_nav .spt_side_bar_content {
+                display: flex;
+                flex-direction: column;
+                padding-left: 0;
+                margin-bottom: 0;
+                list-style: none;
+            }
+
+            .spt_bs_top_nav a.nav-link {
+                color: #f5f5f5;
+                padding: .5321rem;
+                font-size: .875rem;
+                font-weight: 400;
+            }
+
+            .spt_bs_top_nav a.nav-link:hover {
+                color: #dcdcdc;
+            }
+
+            .spt_bs_top_nav {
+                max-height: 100vh;
+                overflow-y: hidden;
+                z-index: 10;
+            }
+
+            .spt_bs_top_nav_content {
+                max-height: calc(100vh - 56px);
+                overflow-y: auto;
+            }
+        """)
 
         return style
 
