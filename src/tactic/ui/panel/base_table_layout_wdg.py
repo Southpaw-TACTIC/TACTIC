@@ -177,7 +177,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in self.element_names:
-                    config_xml += "<element name='%s'/>" % element_name
+                        config_xml += "<element name='%s'/>" % element_name
                 config_xml += "</custom></config>"
                 # self.view is changed for a reason, since a dynamic config supercedes all here
                 # We don't want to change the overall view ... just the
@@ -478,7 +478,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
-                    search.add_order_by(tmp_order_element, direction)
+                    tmp_order_element_list = tmp_order_element.split(".")
+                    if 'parent' in tmp_order_element_list:
+                        i = tmp_order_element_list.index('parent')
+                        sobject = search.get_sobjects()[0]
+                        parent = sobject.get_parent()
+                        parent_search_type = parent.get_search_type()
+                        
+                        parent_search_type = parent_search_type + "." + tmp_order_element_list[1 + i]
+
+                        search.add_order_by(parent_search_type, direction)
+                    else:
+                        search.add_order_by(tmp_order_element, direction)
 
             self.show_retired_element = group_values.get("show_retired")
             if self.show_retired_element == "true":
@@ -1993,8 +2004,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
         layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
+        custom_views = self.kwargs.get("layout_switcher_custom_views") or None
+        default_views = self.kwargs.get("default_views") or None
+        view = self.view
 
-        SwitchLayoutMenu(search_type=self.search_type, view=self.view, activator=layout.get_button_wdg())
+
+        if isinstance(custom_views, basestring):
+            custom_views = jsonloads(custom_views)
+        
+        if isinstance(custom_views, dict):
+            if view not in custom_views.keys():
+                for key, val in custom_views.items():
+                    if view in val:
+                        view = val[0]
+                        break
+                
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
         return layout
 
 
