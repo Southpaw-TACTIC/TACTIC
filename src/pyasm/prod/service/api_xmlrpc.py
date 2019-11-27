@@ -389,8 +389,8 @@ def xmlrpc_decorator(meth):
 
                 security = Environment.get_security()
                 user_name = security.get_user_name()
-                #if user_name == "admin":
-                #    allowed = True
+                if user_name == "admin":
+                    allowed = True
 
                 meth_name = meth.__name__
                 if api_mode == "open":
@@ -2341,6 +2341,24 @@ class ApiXMLRPC(BaseApiXMLRPC):
         
         '''
 
+
+        if "@UPDATE" in expression:
+            api_mode = Config.get_value("security", "api_mode")
+            if api_mode in ["query", "closed"]:
+                security = Environment.get_security()
+                user_name = security.get_user_name()
+                if user_name != "admin":
+                    raise ApiException("Access denied")
+        
+        if "@PYTHON" in expression:
+            if Config.get_value("security", "api_cmd_restricted") == "true":
+                security = Environment.get_security()
+                #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
+                class_name = "tactic.command.PythonCmd"
+                access = security.check_access("api_cmd", class_name, "allow", default="allow")
+                if not access:
+                   raise ApiException("Access denied") 
+        
         if search_keys:
             sobjects = self._get_sobjects(search_keys)
         else:
@@ -5490,6 +5508,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
         dictionary - returned data structure
 
         '''
+        
+        class_name = "tactic.command.PythonCmd"
+        if Config.get_value("security", "api_cmd_restricted") == "true":
+            security = Environment.get_security()
+            access = security.check_access("api_cmd", class_name, "allow", default="allow")
+            if not access:
+               raise ApiException("Access denied") 
+        
         ret_val = {}
         try:
             from tactic.command import PythonCmd
@@ -5558,7 +5584,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # Do a security check
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
-            #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
                raise ApiException("Access denied") 
