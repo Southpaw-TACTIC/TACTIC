@@ -513,6 +513,7 @@ class CherryPyStartup(CherryPyStartup20):
 
             db_update = []
             plugin_update = {}
+            plugin_order = {}
 
             if project != "default":
                 Site.set_site(site)
@@ -534,6 +535,8 @@ class CherryPyStartup(CherryPyStartup20):
                         xml = Xml()
                         xml.read_string(manifest)
                         auto_upgrade = xml.get_value("manifest/data/auto_upgrade") or None
+                        order = xml.get_value("manifest/data/order") or '9'
+                        order = int(order)
                         if (not auto_upgrade) or (auto_upgrade in ['false', 'False']):
                             continue
                         latest_version = xml.get_value("manifest/data/version") or None
@@ -541,9 +544,15 @@ class CherryPyStartup(CherryPyStartup20):
                             continue
                         elif not version:
                             plugin_update[code] = [plugin_dir, latest_version]
+                            if not plugin_order.get(order):
+                                plugin_order[order] = []
+                            plugin_order[order].append(code)
                             need_upgrade[0] = True
                         elif version != latest_version:
                             plugin_update[code] = [plugin_dir, latest_version]
+                            if not plugin_order.get(order):
+                                plugin_order[order] = []
+                            plugin_order[order].append(code)
                             need_upgrade[0] = True
                    
                         # Get coplugins
@@ -567,7 +576,10 @@ class CherryPyStartup(CherryPyStartup20):
                 for x in project_versions:
                     if x.get_value("code") == 'admin':
                         continue
-                    if x.get_value("last_version_update") != newest_version:
+                    last_version_update = x.get_value("last_version_update")
+                    last_version_update = last_version_update.split("_")
+                    last_version_update = ".".join(last_version_update)
+                    if last_version_update != newest_version:
                         db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
                                 
@@ -602,7 +614,8 @@ class CherryPyStartup(CherryPyStartup20):
                     'site': site, 
                     'db_update': db_update, 
                     'plugin_update': plugin_update,
-                    'upgrade_status_path': upgrade_status_path    
+                    'upgrade_status_path': upgrade_status_path,
+                    'plugin_order': plugin_order
                 }
             }
 

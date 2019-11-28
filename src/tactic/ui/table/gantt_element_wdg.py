@@ -231,7 +231,6 @@ class GanttElementWdg(BaseTableElementWdg):
 
         self.end_sobj_dates = []
         self.start_sobj_dates = []
-
         # fill in keys for all sobjects
         self.range_data = {}
         for sobject in self.sobjects:
@@ -674,7 +673,7 @@ class GanttElementWdg(BaseTableElementWdg):
 
         day_wdg = DivWdg()
         inner_div.add( day_wdg )
-        day_wdg.add_class("spt_gantt_day");
+        day_wdg.add_class("spt_gantt_day")
         day_wdg.add_class("spt_gantt_scalable")
 
         if pixel_per_day < 12:
@@ -1023,7 +1022,7 @@ class GanttElementWdg(BaseTableElementWdg):
         inner_div.add( day_wdg )
 
 
-        height = self.kwargs.get("bar_height");
+        height = self.kwargs.get("bar_height")
         if not height:
             height = 12
             padding = 3

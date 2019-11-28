@@ -222,6 +222,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
     def handle_td(self, td):
         sobject = self.get_current_sobject()
 
+
         if sobject.get_base_search_type() == "sthpw/task":
             colors = sobject.get_status_colors()
 
@@ -271,7 +272,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
                         pipeline_code = attributes.get('task_pipeline')
 
 
-        value = self.get_value()
+        value = self.get_value(name=self.name)
         color = Task.get_default_color(value)
         
         # If task status  pipeline is chosen, 
