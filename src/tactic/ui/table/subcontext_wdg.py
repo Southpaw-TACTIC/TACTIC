@@ -160,16 +160,17 @@ class ProcessElementWdg(SimpleTableElementWdg):
                 name = sobject.get_value("description")
                 top.add(name)
 
-            else:
+            elif task_type and task_type != "activity":
+                top.add("<i class='fa fa-angle-right'> </i> &nbsp; ")
+
                 for i in range(2, len(parts)):
                     top.add("&nbsp;")
                     top.add("&nbsp;")
                     top.add("&nbsp;")
                     top.add("&nbsp;")
-
+                    
                 top.add("<i class='fa fa-angle-right'> </i> &nbsp; ")
-
-
+                
                 expression = "@SEARCH(sthpw/task['task_type','activity'])"
                 top.add_class("hand")
                 top.set_attribute("spt_state", "none")
@@ -215,6 +216,11 @@ class ProcessElementWdg(SimpleTableElementWdg):
 
                 top.add(parts[-1])
                 top.add_attr("title", value.replace("/", " / "))
+
+            else:
+                name = sobject.get_value("process")
+                top.add(name)
+
         else:
             top.add(value)
 
