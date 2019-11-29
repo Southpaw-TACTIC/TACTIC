@@ -159,26 +159,18 @@ class ProcessElementWdg(SimpleTableElementWdg):
 
                 name = sobject.get_value("description")
                 top.add(name)
+
             elif task_type and task_type != "activity":
                 top.add("<i class='fa fa-angle-right'> </i> &nbsp; ")
 
-                """
-                add_div = DivWdg()
-                top.add(add_div)
-                add_div.add("<i style='opacity: 0.2' class='fa fa-plus'> </i>")
-                add_div.add_style("float: right")
-                add_div.add_behavior( {
-                    'type': 'click',
-                    'cbjs_action': '''
-                    var layout = bvr.src_el.getParent(".spt_layout");
-                    spt.table.set_layout(layout);
-                    var row = bvr.src_el.getParent(".spt_table_row");
-
-                    spt.table.add_new_item( {row: row} );
-                    '''
-                } )
-                """
-
+                for i in range(2, len(parts)):
+                    top.add("&nbsp;")
+                    top.add("&nbsp;")
+                    top.add("&nbsp;")
+                    top.add("&nbsp;")
+                    
+                top.add("<i class='fa fa-angle-right'> </i> &nbsp; ")
+                
                 expression = "@SEARCH(sthpw/task['task_type','activity'])"
                 top.add_class("hand")
                 top.set_attribute("spt_state", "none")
@@ -221,7 +213,9 @@ class ProcessElementWdg(SimpleTableElementWdg):
                 } )
 
                 top.add_style("margin-left: 5px")
-                top.add(parts[1])
+
+                top.add(parts[-1])
+                top.add_attr("title", value.replace("/", " / "))
 
             else:
                 name = sobject.get_value("process")
