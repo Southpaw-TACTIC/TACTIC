@@ -40,6 +40,7 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         self.kwargs = kwargs
         self.pipeline_code = self.kwargs.get("pipeline_code")
         self.pipeline_xml = self.kwargs.get("pipeline_xml")
+        self.nodes_properties = self.kwargs.get("nodes_properties")
 
     def get_styles(self):
         style = HtmlElement.style('''
@@ -66,16 +67,19 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
                     new_process_sobjects.append(process_sobject)
             else:
                 settings = xml.get_attribute(process_node, "settings")
+                if not settings:
+                    settings = self.nodes_properties[process_name]
                 if settings:
-                    settings = jsonloads(settings)
                     if isinstance(settings, basestring):
-                        try:
-                            import ast
-                            settings = ast.literal_eval(settings)
-                        except:
-                            print("WARNING: could not process settings for %s.") % process_name
-                            continue
-                    subpipeline_code = settings.get("subpipeline_code")
+                        settings = jsonloads(settings)
+                        if isinstance(settings, basestring):
+                            try:
+                                import ast
+                                settings = ast.literal_eval(settings)
+                            except:
+                                print("WARNING: could not process settings for %s.") % process_name
+                                continue
+                    subpipeline_code = settings.get("subpipeline_code") or None
                 else:
                     subpipeline_code = None
                     settings = ""
