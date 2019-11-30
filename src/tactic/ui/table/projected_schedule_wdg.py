@@ -106,8 +106,8 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         process_s.add_filter("pipeline_code", self.pipeline_code)
         processes = process_s.get_sobjects()
 
-        if not processes:
-            processes = self._create_virtual_pipeline(self.pipeline_xml)
+        # if not processes:
+        processes = self._create_virtual_pipeline(self.pipeline_xml)
 
         processes = {x.get_value("process"): x for x in processes}
 

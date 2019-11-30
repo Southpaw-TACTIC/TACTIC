@@ -8270,7 +8270,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 var node_name = spt.pipeline.get_node_name(nodes[i]);
                 nodes_properties[node_name] = spt.pipeline.get_node_kwargs(nodes[i]);
             }
-            console.log(nodes_properties);
             args = {
                 pipeline_code: pipeline_code,
                 pipeline_xml: pipeline_xml,
