@@ -185,7 +185,7 @@ class DialogWdg(BaseRefreshWdg):
             };
             var dialog = document.id(bvr.dialog_id);
             if (!dialog){
-                //HACK: the id is overwritten for rows that are chunch loaded, so for now, get the dialog through the spt_dialog_id
+                //HACK: the id is overwritten for rows that are chunk loaded, so for now, get the dialog through the spt_dialog_id
                 dialog = document.querySelector("[spt_dialog_id = '" + bvr.dialog_id + "']" );
             }
             if (dialog) {
