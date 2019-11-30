@@ -500,8 +500,9 @@ class CherryPyStartup(CherryPyStartup20):
 
 
     def upgrade_project(self, project, config, site=None, need_upgrade=[False]):
-       
         
+        upgrade_status = "end"
+
         from pyasm.common import Xml
         from pyasm.security import Sudo
         from pyasm.search import Search
@@ -587,46 +588,54 @@ class CherryPyStartup(CherryPyStartup20):
                     if last_version_update != newest_version:
                         db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
+            
+            """
+            Check upgrade status first
+            end - safe to upgrade
+            start - do not upgrade, upgrade in progress
+            fail - do not upgrade
+            """
+            upgrade_status = self.get_upgrade_status(project, site)
+            if need_upgrade[0] and upgrade_status == "end":
+                self.set_upgrade_status(project, site, "start")
+                upgrade_status = "start"
+                subprocess_kwargs = {
+                    'project_code': project,
+                    'login': Environment.get_user_name(),
+                    'command': "pyasm.command.SiteUpgradeCmd",
+                    'kwargs': {
+                        'project_code': project, 
+                        'site': site, 
+                        'db_update': db_update, 
+                        'plugin_update': plugin_update,
+                        'plugin_order': plugin_order
+                    }
+                }
+                subprocess_kwargs_str = jsondumps(subprocess_kwargs)
+                install_dir = Environment.get_install_dir()
+                python = Common.get_python()
+                args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
+                args.append(subprocess_kwargs_str)
+                import subprocess
+              
+                if site and site != 'default':
+                    p = subprocess.Popen(args)
+                else:
+                    p = subprocess.call(args)
+
+
                             
         finally: 
+
+            from pyasm.search import DbContainer
+            DbContainer.close_thread_sql()
+            DbContainer.close_all()
+            DbContainer.close_thread_sql()
+            
             sudo.exit()
+            Site.pop_site()
 
            
-        """
-        Check upgrade status first
-        end - safe to upgrade
-        start - do not upgrade, upgrade in progress
-        fail - do not upgrade
-        """
-        upgrade_status = self.get_upgrade_status(project, site)
-        if need_upgrade[0] and upgrade_status == "end":
-            self.set_upgrade_status(project, site, "start")
-            upgrade_status = "start"
-            subprocess_kwargs = {
-                'project_code': project,
-                'login': Environment.get_user_name(),
-                'command': "pyasm.command.SiteUpgradeCmd",
-                'kwargs': {
-                    'project_code': project, 
-                    'site': site, 
-                    'db_update': db_update, 
-                    'plugin_update': plugin_update,
-                    'plugin_order': plugin_order
-                }
-            }
-            subprocess_kwargs_str = jsondumps(subprocess_kwargs)
-            install_dir = Environment.get_install_dir()
-            python = Common.get_python()
-            args = ['%s' % python, '%s/src/tactic/command/queue.py' % install_dir]
-            args.append(subprocess_kwargs_str)
-            import subprocess
-          
-            if site and site != 'default':
-                p = subprocess.Popen(args)
-            else:
-                p = subprocess.call(args)
-
-
         return upgrade_status
 
     def get_upgrade_status(self, project, site):
@@ -647,7 +656,13 @@ class CherryPyStartup(CherryPyStartup20):
                 message.commit()
         except Exception as e:
             print(e)
+            raise
         finally:
+            from pyasm.search import DbContainer
+            DbContainer.close_thread_sql()
+            DbContainer.close_all()
+            DbContainer.close_thread_sql()
+            
             sudo.exit()
             Site.pop_site()
             
@@ -671,6 +686,11 @@ class CherryPyStartup(CherryPyStartup20):
             print(e)
             raise
         finally:
+            from pyasm.search import DbContainer
+            DbContainer.close_thread_sql()
+            DbContainer.close_all()
+            DbContainer.close_thread_sql()
+            
             sudo.exit()
             Site.pop_site()
 
