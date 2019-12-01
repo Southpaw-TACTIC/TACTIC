@@ -882,9 +882,13 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
     def get_right_wdg(self):
         right_wdg = DivWdg()
 
-        button = ButtonNewWdg(title="Show workflow info", icon="FA_USER")
-        right_wdg.add(button)
-        button.add_class("bg-light")
+        user_btn = ButtonNewWdg(title="Show workflow info", icon="FA_USER")
+        right_wdg.add(user_btn)
+        user_btn.add_class("bg-light")
+
+        tab_btn = ButtonNewWdg(title="Show workflow info", icon="FA_CLONE")
+        right_wdg.add(tab_btn)
+        tab_btn.add_class("bg-light")
 
         return right_wdg
 

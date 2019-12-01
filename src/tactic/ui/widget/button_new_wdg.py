@@ -492,7 +492,7 @@ class ButtonNewWdg(ButtonWdg):
 
     def get_display(self):
        
-        top = DivWdg()
+        top = self.top
 
         top.add(self.hit_wdg)
         self.hit_wdg.add_class("btn btn-primary bmd-btn-icon")
