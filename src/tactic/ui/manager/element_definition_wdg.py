@@ -385,7 +385,7 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             
             var widget_key = inputs['xxx_option|widget_key'];
             var is_continue = true;
-            var is_insert = '%s';
+            var is_insert = %s;
             var is_edit_layout = '%s';
             if (widget_key && !widget_key[0] && mode.value=='form' && is_insert==true) {
                 if (!confirm('You are about to create a Widget Column without a database column. Continue?')){

@@ -850,10 +850,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             width=width, 
             save_new_event=save_new_event, 
             show_help=show_help, 
-            show_gear=self.kwargs.get('show_gear'),
-            show_save=self.kwargs.get("show_save"),
-            show_wrench=self.kwargs.get("show_wrench"), 
-            window_resize_offset=window_resize_offset
+            show_gear=self.kwargs.get('show_gear'), 
+            window_resize_offset=window_resize_offset, 
+            pipeline_code=pipeline_code
         )
         right.add(pipeline_wdg)
         pipeline_wdg.add_style("position: relative")
@@ -7289,6 +7288,27 @@ class PipelineEditorWdg(BaseRefreshWdg):
             '''
 
             })
+        
+        preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_EYE")
+        preview_button.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+            var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var pipeline_code = spt.pipeline.get_current_group();
+            var pipeline_xml = spt.pipeline.export_group(pipeline_code);
+            args = {
+                pipeline_code: pipeline_code,
+                pipeline_xml: pipeline_xml
+            }
+            kwargs = {
+                width: 900
+            }
+            spt.panel.load_popup("Workflow Schedule Preview", 'tactic.ui.table.WorkflowSchedulePreviewWdg', args, kwargs);
+            '''
+        })
+
+        button_row.add(preview_button)
 
         button_row.add_class("d-flex")
 
@@ -7438,6 +7458,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             'border-radius': '20px',
         });
         '''
+
 
         icon.add_named_listener('pipeline|change', glow_action)
 

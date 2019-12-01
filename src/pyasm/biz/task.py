@@ -1576,6 +1576,7 @@ class TaskGenerator(object):
         self.handled_processes = set()
         self._generate_tasks()
 
+
         return self.tasks
 
 
@@ -1754,13 +1755,18 @@ class TaskGenerator(object):
                 if subpipeline_code:
                     subpipeline = Pipeline.get_by_code(subpipeline_code)
 
+                    if self.parent_process:
+                        full_process_name = "%s/%s" % (self.parent_process, process_name)
+                    else:
+                        full_process_name = process_name
+
                     if subpipeline:
                         generator = TaskGenerator(generate_mode=self.generate_mode)
                         subtasks = generator.execute(
                             self.sobject, 
                             subpipeline, 
                             start_date=self.start_date, 
-                            parent_process=process_name,
+                            parent_process=full_process_name,
                             today=self.today
                         )
  
@@ -1941,6 +1947,8 @@ class TaskGenerator(object):
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
             pipeline_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
+            if self.generate_mode == 'schedule':
+                pipeline_code = pipeline.get_value('code')
 
 
             for context in output_contexts:

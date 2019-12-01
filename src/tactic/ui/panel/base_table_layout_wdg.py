@@ -177,7 +177,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in self.element_names:
-                    config_xml += "<element name='%s'/>" % element_name
+                        config_xml += "<element name='%s'/>" % element_name
                 config_xml += "</custom></config>"
                 # self.view is changed for a reason, since a dynamic config supercedes all here
                 # We don't want to change the overall view ... just the
@@ -478,7 +478,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 try:
                     widget.alter_order_by(search, direction)
                 except AttributeError:
-                    search.add_order_by(tmp_order_element, direction)
+                    tmp_order_element_list = tmp_order_element.split(".")
+                    if 'parent' in tmp_order_element_list:
+                        i = tmp_order_element_list.index('parent')
+                        sobject = search.get_sobjects()[0]
+                        parent = sobject.get_parent()
+                        parent_search_type = parent.get_search_type()
+                        
+                        parent_search_type = parent_search_type + "." + tmp_order_element_list[1 + i]
+
+                        search.add_order_by(parent_search_type, direction)
+                    else:
+                        search.add_order_by(tmp_order_element, direction)
 
             self.show_retired_element = group_values.get("show_retired")
             if self.show_retired_element == "true":
@@ -1070,7 +1081,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     mode="keyword",
                     filter_search_type=self.search_type,
                     icon="",
-                    width="100",
                     show_partial=False,
                     show_toggle=True,
                     hint_text=self.keyword_hint_text,
@@ -1078,9 +1088,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
-            keyword_div.add_style("margin-top: 0px")
-            keyword_div.add_style("height: 30px")
-            keyword_div.add_style("margin-left: -6px")
 
             keyword_div.add_behavior( {
                 'type': 'click_up',
@@ -1111,20 +1118,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     '''
                 } )
 
-            """
-            # this make clicking on the Search not work when the focus is on text input
-            keyword_div.add_relay_behavior( {
-                'type': 'blur',
-                'bvr_match_class': "spt_text_input",
-                'cbjs_action': '''
-                
-                var el = bvr.src_el;
-                
-                el.setStyle("width", "75px");
-
-                '''
-            } )
-            """
 
         else:
             keyword_div = None
@@ -1143,8 +1136,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # -- Button Rows
         button_row_wdg = self.get_button_row_wdg()
-        button_row_wdg.add_style("margin-top: 0px")
-        button_row_wdg.add_style("margin-left: 3px")
 
 
         # -- ITEM COUNT DISPLAY
@@ -1369,10 +1360,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
             button_div.add(button)
-            if show_keyword_search:
-                button_div.add_style("margin-left: -6px")
-            else:
-                button_div.add_style("margin-left: 6px")
             wdg_list.append({'wdg': button_div})
 
 
@@ -1476,7 +1463,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         xx = DivWdg()
-        
+        xx.add_class("d-flex") 
         #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
         #xx.add(horiz_wdg)
 
@@ -1874,7 +1861,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
-       
+      
+
         return button_row_wdg
 
 
@@ -1993,8 +1981,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
         layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
+        custom_views = self.kwargs.get("layout_switcher_custom_views") or None
+        default_views = self.kwargs.get("default_views") or None
+        view = self.view
 
-        SwitchLayoutMenu(search_type=self.search_type, view=self.view, activator=layout.get_button_wdg())
+
+        if isinstance(custom_views, basestring):
+            custom_views = jsonloads(custom_views)
+        
+        if isinstance(custom_views, dict):
+            if view not in custom_views.keys():
+                for key, val in custom_views.items():
+                    if view in val:
+                        view = val[0]
+                        break
+                
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
         return layout
 
 

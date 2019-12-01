@@ -101,24 +101,29 @@ class TextInputWdg(BaseInputWdg):
 
 
     def get_input_group_wdg(self):
+        
         input_group = DivWdg()
+        
         width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
+        if width:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+                input_group.add_style("width: %s" % width)
+            except ValueError:
+                pass
+        
         height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-        input_group.add_style("width: %s" % width)
-        input_group.add_style("height: %s" % height)
-        input_group.add_style("margin-right: 5px")
-
+        if height:
+            try:
+                height = int(height)
+                height = str(height) + "px"
+                input_group.add_style("height: %s" % height)
+            except ValueError:
+                pass
+        
         return input_group
+
  
 
     def __init__(self, **kwargs):
@@ -265,18 +270,20 @@ class TextInputWdg(BaseInputWdg):
 
         self.width = self.kwargs.get("width")
         if not self.width:
-            self.width = 230
+            self.width = None
         else:
             self.width = str(self.width).replace("px", "")
             if not self.width.endswith("%"):
                 self.width = int(self.width)
         width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
-        self.text.add_style("width: %s" % width)
+        
+        if width:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
+            self.text.add_style("width: %s" % width)
 
 
     def add_style(self, name, value=None):
@@ -655,9 +662,6 @@ class TextInputWdg(BaseInputWdg):
                     ''' % (new_color,new_color,new_color,new_color))
 
                 self.text.add_attr('placeholder', hint_text)
-                self.text.add_style("text-overflow: ellipsis")
-                self.text.add_style("overflow: hidden")
-                self.text.add_style("white-space: nowrap")
 
         if not self.readonly:
             # DISABLE for now

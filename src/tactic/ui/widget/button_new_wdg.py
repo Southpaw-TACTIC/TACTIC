@@ -65,72 +65,12 @@ class ButtonRowWdg(BaseRefreshWdg):
     def get_row_wdg_new(self, buttons, show_title=False):
 
         div = DivWdg()
-
-        """
-        div.set_round_corners(8)
-        div.add_border()
-        div.add_style("padding-top: 1px")
-        div.add_style("padding-left: 5px")
-        div.add_style("padding-right: 5px")
-        div.add_gradient("background", "background", 5, -30)
-        """
-
-
-
-        div = DivWdg()
-        div.set_round_corners(3)
-        #div.add_border()
-        div.add_style("padding-top: 1px")
-        div.add_style("padding-left: 5px")
-        div.add_style("padding-right: 5px")
-        #div.add_gradient("background", "background", -5, -10)
-
-
-
-
-
-        web = WebContainer.get_web()
-        browser = web.get_browser()
-
-        table = Table()
-        div.add(table)
-        div.add_style("overflow: hidden")
-
-        table.add_attr("cellspacing", "0px")
-        table.add_attr("cellpadding", "0px")
-        table.add_row()
-
-
-        if browser == "Mozilla":
-            table.add_style("margin-top: -5px")
-            div.add_style("height: 30px")
-        else:
-            table.add_style("margin-top: -5px")
-
-
-
-        base = "%s/%s" % (BASE, self.top.get_theme() )
-
-        for count, button in enumerate(buttons):
-            td = table.add_cell()
-            td.add(button)
-
-            if button.get_show_arrow_menu():
-                spacer = DivWdg()
-                table.add_cell(spacer)
-                spacer.add_style("width: 6px")
-
-
-            if count < len(buttons)-1:
-                spacer = DivWdg()
-                table.add_cell(spacer)
-                spacer.add_style("width: 6px")
-
-
-
+        div.add_class("d-flex")
+        for button in buttons:
+            div.add(button)
         return div
 
-
+    
 
 
     def get_row_wdg(self, buttons, show_title=False):
@@ -266,7 +206,7 @@ class ButtonWdg(BaseRefreshWdg):
         self.arrow_div = DivWdg()
         self.arrow_menu = IconButtonWdg(title="More Options", icon=IconWdg.ARROWHEAD_DARK_DOWN)
 
-        self.show_arrow_menu = False
+        self.show_arrow_menu = self.kwargs.get("show_arrow") or False
         # for icon decoration
         self.icon_div = DivWdg()
 
@@ -459,8 +399,7 @@ class ButtonWdg(BaseRefreshWdg):
         
        
 
-        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
-        if self.show_arrow or self.dialog:
+        if self.show_arrow_menu or self.dialog:
             arrow_div = DivWdg()
             button.add(arrow_div)
             arrow_div.add_style("position: absolute")
@@ -496,7 +435,7 @@ class ButtonWdg(BaseRefreshWdg):
 
 
         # add a second arrow widget
-        if self.show_arrow_menu:
+        if self.show_arrow_menu or self.dialog:
             self.inner.add(self.arrow_div)
             self.arrow_div.add_attr("title", "More Options")
             self.arrow_div.add_style("position: absolute")
@@ -529,18 +468,50 @@ class ButtonWdg(BaseRefreshWdg):
         return top
 
 
+class ButtonNewWdg(ButtonWdg):
 
-    def add_menu_wdg(self, button, menus):
+    def init(self):
+        super(ButtonNewWdg, self).init()
+        
+        from pyasm.web import ButtonWdg as ButtonHtmlWdg
+        self.hit_wdg = ButtonHtmlWdg()
+        self.arrow_menu = ButtonHtmlWdg()
+        
+        icon_str = self.kwargs.get("icon")
 
-        from tactic.ui.container import SmartMenu
+        title = self.kwargs.get("title")
+        tip = self.kwargs.get("tip")
+        if not tip:
+            tip = title
+        self.title = tip
+        
+        self.hit_wdg.add_attr("title", tip)
+        icon = IconWdg(tip, icon_str)
+        self.icon = icon
+    
 
-        self.menus = []
-        self.menus.append(menu.get_data())
+    def get_display(self):
+       
+        top = DivWdg()
 
-        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': self.menus } )
-        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
- 
+        top.add(self.hit_wdg)
+        self.hit_wdg.add_class("btn btn-primary bmd-btn-icon")
+        self.hit_wdg.add(self.icon)
+        
+        if self.show_arrow_menu or self.dialog:
+            top.add(self.arrow_menu)
+            self.arrow_menu.add_class("btn dropdown-toggle")
+            self.arrow_menu.add_style("padding", "3px")
+            self.arrow_menu.add_style("opacity", "0.6")
+            self.arrow_menu.add_style("position", "relative")
+            self.arrow_menu.add_style("top", "17px")
+            self.arrow_menu.add_style("left", "-11px")
+            self.arrow_menu.add_style("height", "4px")
 
+
+            top.add_class("d-flex")
+        
+        return top
 
 
 
@@ -766,8 +737,6 @@ class ActionButtonWdgOld(DivWdg):
 
         if self.browser == 'Qt' and os.name != 'nt':
             text_div.add_style("top: 8px")
-        else:
-            text_div.add_style("top: 6px")
 
 
         text_div.add_style("z-index: 10")
@@ -1003,12 +972,10 @@ class ActionButtonWdg(DivWdg):
 
         if self.browser == 'Qt' and os.name != 'nt':
             button.add_style("top: 8px")
-        else:
-            button.add_style("top: 6px")
 
         # BOOTSTRAP
         if self._use_bootstrap():
-            button.add_class("btn btn-md btn-block btn-outline-primary")
+            button.add_class("btn btn-sm btn-block btn-outline-primary")
         else:
             color = self.kwargs.get("color")
             button.add_class('btn')
@@ -1051,6 +1018,9 @@ class IconButtonWdg(DivWdg):
 
 
     def init(self):
+
+        self.show_arrow_menu = self.kwargs.get("show_arrow") or False
+
         if not Container.get_dict("JSLibraries", "spt_icon_button"):
             doc_top = Container.get("TopWdg::top")
             if doc_top:
@@ -1211,9 +1181,7 @@ class IconButtonWdg(DivWdg):
             display.add_attr("title", tip)
 
 
-        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
-        #if self.show_arrow or self.dialog:
-        if self.show_arrow:
+        if self.show_arrow_menu:
             arrow_div = DivWdg()
             icon_div.add(arrow_div)
             arrow_div.add_style("position: absolute")
@@ -1232,33 +1200,6 @@ class IconButtonWdg(DivWdg):
 
         return super(IconButtonWdg, self).get_display()
 
-class ButtonNewWdg(ButtonWdg):
-
-    def __init__(self, **kwargs):
-        super(ButtonNewWdg, self).__init__(**kwargs)
-        
-        from pyasm.web import ButtonWdg
-        self.button = ButtonWdg()
-        
-        icon_str = kwargs.get("icon")        
-        title = kwargs.get("title")
-        icon = IconWdg(title, icon_str)
-        self.icon = icon
-    
-
-    def add_behavior(self, behavior):
-        self.button.add_behavior(behavior)
-
-    def add_class(self, cls):
-        self.button.add_class(cls)
-
-    def get_display(self):
-        
-        self.button.add_class("btn btn-primary bmd-btn-icon")
-        self.button.add(self.icon)
-
-
-        return self.button
 
 
 from tactic.ui.common import BaseTableElementWdg

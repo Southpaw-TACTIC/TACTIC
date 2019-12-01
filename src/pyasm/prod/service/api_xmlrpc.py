@@ -1835,8 +1835,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def fast_query(self, ticket, search_type, filters=None, limit=None):
         '''optimized query that does not take security into accunt.
         '''
-        #if Config.get_value("security", "enable_fast_query") != 'true':
-        #    raise TacticException("Cannot call fast_query() without enabling in TACTIC config file")
+        if Config.get_value("security", "enable_fast_query") != 'true':
+            raise TacticException("Cannot call fast_query() without enabling in TACTIC config file")
         security = Security()
         Environment.set_security(security)
 
