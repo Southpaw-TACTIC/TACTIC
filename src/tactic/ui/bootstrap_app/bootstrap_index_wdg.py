@@ -6,8 +6,7 @@ from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg
 from pyasm.widget import WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import IconButtonNewWdg
-
+from tactic.ui.widget import ButtonNewWdg
 from tactic.ui.app.page_nav_container_wdg import PageNavContainerWdg
 
 from .bootstrap_tab_wdg import *
@@ -883,7 +882,7 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
     def get_right_wdg(self):
         right_wdg = DivWdg()
 
-        button = IconButtonNewWdg(title="Show workflow info", icon="FA_USER")
+        button = ButtonNewWdg(title="Show workflow info", icon="FA_USER")
         right_wdg.add(button)
         button.add_class("bg-light")
 

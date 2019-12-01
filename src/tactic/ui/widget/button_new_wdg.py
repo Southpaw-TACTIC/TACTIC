@@ -542,9 +542,6 @@ class ButtonWdg(BaseRefreshWdg):
  
 
 
-class ButtonNewWdg(ButtonWdg):
-    pass
-
 
 
 
@@ -1235,22 +1232,19 @@ class IconButtonWdg(DivWdg):
 
         return super(IconButtonWdg, self).get_display()
 
-__all__.append("IconButtonNewWdg")
-class IconButtonNewWdg(DivWdg):
+class ButtonNewWdg(ButtonWdg):
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super(ButtonNewWdg, self).__init__(**kwargs)
         
         from pyasm.web import ButtonWdg
         self.button = ButtonWdg()
         
-        icon_str = self.kwargs.get("icon")        
-        title = self.kwargs.get("title")
+        icon_str = kwargs.get("icon")        
+        title = kwargs.get("title")
         icon = IconWdg(title, icon_str)
         self.icon = icon
-        
-        
-        super(IconButtonNewWdg, self).__init__()
+    
 
     def add_behavior(self, behavior):
         self.button.add_behavior(behavior)
@@ -1265,9 +1259,6 @@ class IconButtonNewWdg(DivWdg):
 
 
         return self.button
-
-
-
 
 
 from tactic.ui.common import BaseTableElementWdg

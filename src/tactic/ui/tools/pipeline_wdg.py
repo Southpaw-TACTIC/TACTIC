@@ -31,7 +31,7 @@ from pyasm.widget import ProdIconButtonWdg, IconWdg, TextWdg, CheckboxWdg, Hidde
         
 
 from tactic.ui.container import DialogWdg, TabWdg, SmartMenu, Menu, MenuItem, ResizableTableWdg
-from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg, IconButtonNewWdg
+from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg, ButtonNewWdg
 from tactic.ui.widget.button_new_wdg import ButtonNewWdg, ButtonRowWdg
 from tactic.ui.input import TextInputWdg, ColorInputWdg, LookAheadTextInputWdg, ColorContainerWdg
 from tactic.ui.panel import DocumentWdg, DocumentItemWdg, DocumentSaveCmd
@@ -7214,7 +7214,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = IconButtonNewWdg(title="Delete Selected", icon="FA_TRASH")
+        button = ButtonNewWdg(title="Delete Selected", icon="FA_TRASH")
         button_row.add(button)
 
         button.add_behavior( {
@@ -7255,7 +7255,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "DG_BUTTON_CTX", True )
 
 
-        button = IconButtonNewWdg(title="Show workflow info", icon="FA_INFO")
+        button = ButtonNewWdg(title="Show workflow info", icon="FA_INFO")
         button_row.add(button)
         button.add_behavior({
             'type': 'click',
@@ -7454,7 +7454,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row = DivWdg()
         button_row.add_class("d-flex")
 
-        button = IconButtonNewWdg(title="Undo", icon="FA_UNDO", show_out=False)
+        button = ButtonNewWdg(title="Undo", icon="FA_UNDO", show_out=False)
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -7464,7 +7464,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
 
-        button = IconButtonNewWdg(title="Redo", icon="FA_REPEAT", show_out=False)
+        button = ButtonNewWdg(title="Redo", icon="FA_REPEAT", show_out=False)
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -7473,7 +7473,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
 
-        button = IconButtonNewWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
+        button = ButtonNewWdg(title="Zoom In", icon="FA_SEARCH_PLUS", show_out=False)
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -7490,7 +7490,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
 
-        button = IconButtonNewWdg(title="Zoom Out", icon="FA_SEARCH_MINUS", show_out=False)
+        button = ButtonNewWdg(title="Zoom Out", icon="FA_SEARCH_MINUS", show_out=False)
         button_row.add(button)
 
         button.add_behavior( {
