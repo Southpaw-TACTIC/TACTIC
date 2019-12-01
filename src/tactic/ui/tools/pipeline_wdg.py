@@ -841,16 +841,20 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
 
-        show_help = self.kwargs.get('show_help') or True
-        width = self.kwargs.get("width")
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
         width = "100%"
+        window_resize_offset = self.kwargs.get("window_resize_offset") or None
+        show_gear=self.kwargs.get('show_gear')
+        show_help = self.kwargs.get('show_help') or True
+        show_wrench = self.kwargs.get("show_wrench")
+        show_save = self.kwargs.get("show_save")
         pipeline_wdg = PipelineEditorWdg(
             height=self.kwargs.get('height'), 
             width=width, 
             save_new_event=save_new_event, 
-            show_help=show_help, 
-            show_gear=self.kwargs.get('show_gear'), 
+            show_gear=show_gear,
+            show_help=show_help,
+            show_wrench=show_wrench,
+            show_save=show_save,
             window_resize_offset=window_resize_offset, 
             pipeline_code=pipeline_code
         )
@@ -7187,7 +7191,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         button_row = DivWdg()
 
         project_code = Project.get_project_code()
-
 
         if self.kwargs.get("show_wrench") not in [False, "false"]:
             button = ButtonNewWdg(title="Add node", icon="FA_WRENCH", sub_icon="FA_PLUS")
