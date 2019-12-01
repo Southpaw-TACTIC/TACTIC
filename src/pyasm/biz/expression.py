@@ -2034,7 +2034,7 @@ class MethodMode(ExpressionParser):
         related_exprs = related_types[:]
         related_types = related_types[:]
 
-        # process the search type
+        # process the search type to find the path
         p = re.compile('^(\w+):')
         for i, related_type in enumerate(related_types):
             m = p.search(related_type)
@@ -2320,10 +2320,11 @@ class MethodMode(ExpressionParser):
                     sub_search.add_op_filters(filters)
 
                     if related_sobjects:
-                        sub_search.add_relationship_filters(related_sobjects)
+                        sub_search.add_relationship_filters(related_sobjects, path=path)
+
                     else:
                         # or from an sobject-less/plain search
-                        sub_search.add_relationship_search_filter(related_search)
+                        sub_search.add_relationship_search_filter(related_search, path=path)
                         
                     related_search = sub_search
 
