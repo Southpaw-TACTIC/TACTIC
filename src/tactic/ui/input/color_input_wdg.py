@@ -12,7 +12,8 @@
 
 # Color wheel input
 
-__all__ = ['ColorWdg', 'ColorInputWdg', 'ColorContainerWdg']
+
+__all__ = ['ColorWdg', 'ColorInputWdg', 'ColorContainerWdg', 'ColorSelectorWdg']
 
 from pyasm.common import Date, Common
 from pyasm.web import Table, DivWdg, SpanWdg, WebContainer, Widget, HtmlElement
@@ -262,7 +263,7 @@ class ColorInputWdg(BaseInputWdg):
 
 
 
-class ColorContainerWdg(BaseRefreshWdg):
+class ColorContainerWdg(BaseInputWdg):
 
     def __init__(self, **kwargs):
         super(ColorContainerWdg,self).__init__(**kwargs)
@@ -403,7 +404,33 @@ class ColorContainerWdg(BaseRefreshWdg):
         return top
 
 
+class ColorSelectorWdg(ColorContainerWdg):
+
+    
+
+    def get_display(self):
 
 
+        top = DivWdg()
+        top.add_class("spt_color_container")
 
+        top.add(self.color_wdg)
+        self.color_wdg.add_class("spt_color_value")
+        self.color_wdg.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            console.log(bvr.src_el);
+            bvr.src_el.setAttribute("name", "edit|color");
+
+        '''
+        })
+
+        color_label = DivWdg("#000000")
+        top.add(color_label)
+        color_label.add_class("spt_color_label")
+
+        top.add(self.get_styles())
+
+        return top
 
