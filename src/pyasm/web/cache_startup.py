@@ -22,7 +22,7 @@ from pyasm.biz import BaseCache, CacheContainer, SearchTypeCache
 
 import time
 
-STPW_TABLES = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket', 'task', 'task', 'status_log', 'pref_setting', 'cache', 'transaction_log', 'change_timestamp']
+STHPW_TABLES = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket', 'task', 'task', 'status_log', 'pref_setting', 'cache', 'transaction_log', 'change_timestamp']
 
 # custom cache class
 class TableInfoCache(BaseCache):
@@ -44,7 +44,7 @@ class TableInfoCache(BaseCache):
 
         # precache some of the sthpw tables
         if not self.tables and  self.db_resource.get_database() == "sthpw":
-            self.tables = STPW_TABLES
+            self.tables = STHPW_TABLES
 
 
 
@@ -89,7 +89,7 @@ class CacheStartup(object):
         # pre-cache sthpw tables definitions
         kwargs = {
             "db_resource": db_resource,
-            "tables": STPW_TABLES
+            "tables": STHPW_TABLES
         }
         cache = TableInfoCache( **kwargs )
 
