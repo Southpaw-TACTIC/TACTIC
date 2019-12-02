@@ -2133,11 +2133,12 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             if prefix.endswith(':sthpw'):
                 from pyasm.biz import CacheContainer
                 from pyasm.security import Site
-                site = Site.get()
+                site = Site.get_site()
                 if site:
                     key = "%s:sthpw_column_info" % site
                 else:
                     key = "sthpw_column_info"
+
                 cache = CacheContainer.get(key)
                 if cache:
                     dict = cache.get_value_by_key("data", table)

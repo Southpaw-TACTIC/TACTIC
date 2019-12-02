@@ -74,7 +74,7 @@ class CacheStartup(object):
 
         data = CacheContainer.get(key)
         if data == None:
-            tables = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket']
+            tables = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket', 'task']
             kwargs = {
                 "key": key,
                 "database": 'sthpw',

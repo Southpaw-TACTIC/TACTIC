@@ -7087,7 +7087,10 @@ class NewProcessInfoCmd(Command):
 
         # Get custom save cmd via node_type
         from pyasm.command import CustomProcessConfig
-        cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        try:
+            cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        except:
+            cmd = None
         if cmd:
             return cmd.execute()
 
