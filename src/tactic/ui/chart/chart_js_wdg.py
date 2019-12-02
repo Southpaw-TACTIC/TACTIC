@@ -382,7 +382,11 @@ options.plugins = {
 }
 
 
-if (!barChartData['datasets'][0]['label']) options['legend']['display'] = false;
+var datasets = barChartData['datasets'][0];
+
+if (!datasets['label']) options['legend']['display'] = false;
+
+if (!datasets.data.some(v => v < 0)) options['scales'] = { yAxes: [{ticks: { beginAtZero:true }}]};
 
 var ctx = bvr.src_el.getContext('2d');
 
