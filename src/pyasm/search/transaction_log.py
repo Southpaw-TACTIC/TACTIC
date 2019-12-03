@@ -353,7 +353,7 @@ class TransactionLog(SObject):
             search.add_filter("namespace", namespace)
 
         if time_interval and time_interval != 'NONE':
-            from sql import Select
+            from .sql import Select
             search.add_where(Select.get_interval_where(time_interval))
 
         search.add_order_by("timestamp desc")
