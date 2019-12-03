@@ -644,7 +644,7 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("a"))
         self.assertEquals( "complete", sobject.get_value("b"))
         self.assertEquals( "complete", sobject.get_value("c"))
-        self.assertEquals( False, sobject.get_value("d"))
+        self.assertEquals( "not_required", sobject.get_value("d"))
         self.assertEquals( "complete", sobject.get_value("e"))
 
 

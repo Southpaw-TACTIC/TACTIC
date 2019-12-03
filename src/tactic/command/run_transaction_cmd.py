@@ -357,16 +357,9 @@ class TransactionQueueCmd(Command):
             job.commit()
             return
 
-
-        import zlib, binascii
-        #transaction_data = Common.process_unicode_string(transaction_xml)
         transaction_data = transaction_xml.to_string()
-        if isinstance(transaction_data, unicode):
-            transaction_data = transaction_data.encode('utf-8')
+        ztransaction_data = Common.compress_transaction(transaction_data)
         length_before = len(transaction_data)
-        compressed = zlib.compress(transaction_data)
-        ztransaction_data = binascii.hexlify(compressed)
-        ztransaction_data = "zlib:%s" % ztransaction_data
         length_after = len(ztransaction_data)
         print("transaction log recompress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
         # reset the transaction log sobject with the new xml.  This
