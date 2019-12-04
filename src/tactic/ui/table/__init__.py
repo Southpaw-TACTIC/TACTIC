@@ -39,6 +39,7 @@ from hidden_row_element_wdg import *
 from sobject_summary_wdg import *
 from preference_wdg import *
 from project_wdg import *
+from projected_schedule_wdg import *
 
 from metadata_element_wdg import *
 
