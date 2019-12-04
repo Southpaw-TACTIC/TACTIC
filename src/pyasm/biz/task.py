@@ -1640,6 +1640,8 @@ class TaskGenerator(object):
             self.last_end_dates[start_process] = self.first_start_date
 
             self.handle_process(start_process)
+            
+            self.handled_processes.add(start_process)
 
             self._handle_downstream_tasks(start_process)
 
@@ -1650,8 +1652,8 @@ class TaskGenerator(object):
 
         # we have a new pipeline
         pipeline = self.pipeline
-        handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
+        handled_processes = self.handled_processes
 
         output_processes = pipeline.get_output_process_names(process)
 
@@ -1672,7 +1674,7 @@ class TaskGenerator(object):
 
 
 
-            if output_process in handled_processes:
+            if output_process in self.handled_processes:
                 continue
 
 
