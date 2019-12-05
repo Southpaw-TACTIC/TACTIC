@@ -839,7 +839,7 @@ class Project(SObject):
     def _get_base_dir(protocol, sobject, decrement=0):
         '''decrement is the number of levels it tries to go up the directory'''
         snapshot = None
-        from snapshot import Snapshot
+        from .snapshot import Snapshot
         if isinstance(sobject,Snapshot):
             snapshot = sobject
 

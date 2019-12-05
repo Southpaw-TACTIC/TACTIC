@@ -5760,13 +5760,23 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Send Message to Related Items::</b>")
+        settings_wdg.add("<b>Start Workflow for Related Items::</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
         settings_wdg.add("<span style='opacity: 0.6'>This will send a message to the selected items</span>")
+        settings_wdg.add("<br/>")
+
+
+        settings_wdg.add("<br/>")
+
+        settings_wdg.add("Expression")
+        text = TextInputWdg(name="expression")
+        text.add_style("width: 100%")
+        settings_wdg.add(text)
+        settings_wdg.add("<span style='opacity: 0.6'>Expression to find related items</span>")
         settings_wdg.add("<br/>")
 
 
