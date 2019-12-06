@@ -1041,13 +1041,6 @@ class HtmlElement(Widget):
 
         from pyasm.common import jsondumps
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-        #tmp_dir = "/tmp"
-
-        #if not ticket:
-        #    ticket = Environment.get_security().get_ticket_key()
-        #tmp_dir = "%s/%s" % (tmp_dir, ticket)
-        #if not os.path.exist(tmp_dir):
-        #    os.makedirs(tmp_dir)
 
         login = Environment.get_user_name()
         key = "$"+Common.generate_random_key()
@@ -1063,6 +1056,35 @@ class HtmlElement(Widget):
         f.close()
 
         self.add_attr("SPT_CMD_KEY", key)
+
+        return key
+
+
+    def generate_api_key(self, api_name, kwargs={}, expected_kwargs=[], ticket=None):
+        if ticket and not ticket.isalnum():
+            raise Exception("No valid ticket")
+
+        from pyasm.common import jsondumps
+        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+
+        if not tmp_dir:
+            raise Exception("TMP_DIR config not defined")
+
+        login = Environment.get_user_name()
+        key = "$"+Common.generate_random_key()
+        filename = "api_key_" + key.lstrip("$")
+        f = open("%s/%s" % (tmp_dir, filename), "w")
+        args = {
+            "api_method": api_name,
+            "login": login,
+            "ticket": ticket,
+            "kwargs": kwargs,
+            "expected_kwargs": expected_kwargs
+        }
+        f.write(jsondumps(args))
+        f.close()
+
+        self.add_attr("SPT_API_KEY", key)
 
         return key
 

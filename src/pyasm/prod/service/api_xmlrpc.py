@@ -372,9 +372,46 @@ def xmlrpc_decorator(meth):
             state  = Container.get(init_data_key)
             if state:
                 Container.put(data_key, state) 
+    
+    def decode_api_key(key):
+        key = key.lstrip("$")
+        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+        path = "%s/api_key_%s" % (tmp_dir,key)
+        if not os.path.exists(path):
+            print("ERROR: API path [%s] not found" % path)
+            raise Exception("API key not valid")
+
+        f = open(path, 'r')
+        data = f.read()
+        f.close()
+        data = jsonloads(data)
+        api_method = data.get("api_method")
+        kwargs = data.get("kwargs")
+        login = data.get("login")
+        expected_kwargs = data.get("expected_kwargs")
+        ticket = data.get("ticket")
+        current_login = Environment.get_user_name()
+        if login == current_login:
+            return (api_method, kwargs, expected_kwargs, ticket)
+        else:
+            raise Exception("Permission Denied: wrong user")
+    
 
 
     def new(self, original_ticket, *args, **kwargs):
+
+        use_api_key = False
+
+        api_key = original_ticket.get("api_key")
+
+        if api_key:
+            if isinstance(api_key, basestring):
+                if api_key.startswith("$"):
+                    use_api_key = True
+                    api_method, api_kwargs, expected_kwargs, api_ticket = decode_api_key(api_key)
+                    if api_method == meth.__name__:
+                        use_api_key = True
+        
         results = None
         try:
             ticket = self.init(original_ticket)
@@ -389,6 +426,41 @@ def xmlrpc_decorator(meth):
 
                 security = Environment.get_security()
                 user_name = security.get_user_name()
+
+                if use_api_key:
+                    for val in args:
+                        if isinstance(val, basestring):
+                            if val not in expected_kwargs and val not in api_kwargs.values():
+                                allowed = False
+                                print("WARNING: Trying to pass in unexpected inputs.")
+                                break
+                            else:
+                                allowed = True
+                        elif isinstance(val, dict):
+                            for x in val.keys():
+                                if x not in expected_kwargs:
+                                    if x not in api_kwargs.keys():
+                                        allowed = False
+                                        print("WARNING: Trying to pass in unexpected inputs.")
+                                        break
+                                    else:
+                                        if val[x] == api_kwargs[x]:
+                                            allowed = True
+                                        else:
+                                            allowed = False
+                                            print("WARNING: Trying to pass in unexpected values.")
+                                            break    
+                                else:
+                                    allowed = True
+                        if allowed == False:
+                            print("WARNING: Trying to pass in unexpected values.")
+                            break
+                    if api_ticket:
+                        if ticket == api_ticket:
+                            allowed = True
+                        else:
+                            allowed = False
+                
                 if user_name == "admin":
                     allowed = True
 
@@ -403,7 +475,6 @@ def xmlrpc_decorator(meth):
                 if api_mode == "query":
                     if meth_name in API_MODE.get("query"):
                         allowed = True
-
                 if not allowed:
                     raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
 

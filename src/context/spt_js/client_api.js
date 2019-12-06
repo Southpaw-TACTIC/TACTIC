@@ -59,6 +59,18 @@ TacticServerStub = function() {
         return this.site;
     }
 
+    this.set_api_key = function(api_key) {
+        if (api_key) {
+            this.api_key = api_key;
+        }
+    }
+    this.get_api_key = function() {
+        return this.api_key
+    }
+    this.clear_api_key = function() {
+        this.api_key = null
+    }
+
 
     this.set_project = function(project) {
         this.project = project;
@@ -167,6 +179,7 @@ TacticServerStub = function() {
         var site = this.get_site();
         var project = this.get_project();
         var ticket = this.get_login_ticket();
+        var api_key = this.get_api_key();
 
         var str = [];
         str.push(server);
@@ -174,6 +187,7 @@ TacticServerStub = function() {
             str.push(site)
         str.push(project)
         str.push(ticket)
+        str.push(api_key)
 
         str = str.join("/");
 
@@ -278,7 +292,8 @@ TacticServerStub = function() {
             'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
-            'language': 'javascript'
+            'language': 'javascript',
+            'api_key': this.get_api_key()
         };
         //args.push(this.login_ticket);
         args.push(ticket);
@@ -1959,6 +1974,7 @@ TacticServerStub = function() {
             'site': this.site,
             'project': this.project,
             'palette': this.get_palette(),
+            'api_key': this.get_api_key() || "",
             'language': 'javascript'
         };
         args.push(ticket);
