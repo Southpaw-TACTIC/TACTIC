@@ -1914,6 +1914,10 @@ class WebLoginWdg2(BaseSignInWdg):
         send_code = web.get_form_value('send_code') == 'true'
         is_err = web.get_form_value('is_err') == 'true'
 
+        print("GET_CONTENT")
+        for key in web.get_form_keys():
+          print("%s: %s" % (key, web.get_form_value(key)))
+
         back_to_login = web.get_form_value("back_to_login") == 'true'
         if back_to_login:
             reset_password = False
@@ -2002,7 +2006,7 @@ class WebLoginWdg2(BaseSignInWdg):
         reset_button.add_class("sign-in-btn hand")
         reset_button.add_attr('title', 'Reset Password')
         code = web.get_form_value('code')
-        reset_button.add_event("onclick", "document.form.elements['code'].value='%s'; document.form.elements['new_password'].value='true'; document.form.submit();" % code)
+        reset_button.add_event("onclick", "document.form.setAttribute('action', document.location.pathname); document.form.elements['code'].value='%s'; document.form.elements['new_password'].value='true'; document.form.submit();" % code)
 
         hidden = HiddenWdg("new_password")
         login_div.add(hidden)
