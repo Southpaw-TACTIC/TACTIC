@@ -279,6 +279,7 @@ class SearchLimitWdg(Widget):
         widget = DivWdg()
         widget.add_class("spt_search_limit_top")
         #widget.add_style("border", "solid 1px blue")
+        widget.add_style("height", "40px")
         widget.add_color("background", "background")
         widget.add_color("color", "color")
 

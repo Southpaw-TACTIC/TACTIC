@@ -645,6 +645,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
+        inner.add_style("display: flex")
+        inner.add_style("flex-direction: column")
+        inner.add_style("height: 100%")
+
         inner.add_style("position: relative")
         inner.add_style("border-style", "solid")
         inner.add_style("border-width: 0px")
@@ -931,7 +935,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
-
+            h_scroll.add_style("height: calc(100% - 80px")
+            h_scroll.add_style("display: flex")
+            h_scroll.add_style("flex-direction: column")
+ 
             scroll = DivWdg()
             h_scroll.add(scroll)
 
@@ -960,6 +967,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             scroll.add_class("spt_table_scroll")
             h_scroll.add(scroll)
+            
+            """
             height = self.kwargs.get("height")
             if height:
                 try:
@@ -968,7 +977,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 except ValueError:
                     pass
                 scroll.add_style("height: %s" % height)
-
+          
 
             window_resize_offset = self.kwargs.get("window_resize_offset")
             if window_resize_offset:
@@ -978,6 +987,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
             if window_resize_xoffset:
                 scroll.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+            """
+
 
             # sync header to this scroll
             # FIXME: this does not work with locked columns as the locked columns have their own
@@ -1010,6 +1021,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+            """
             if not height and self.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -1019,6 +1031,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     bvr.src_el.setStyle('height', y);
                     '''
                     } )
+            """
 
 
             table = self.table

@@ -1505,11 +1505,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             xx.add_style("float: left")
             xx.add_style("margin-left: -25")
             xx.add_style("margin-top: -5")
-            #div.add_style("opacity: 0.6")
-            height = "32px"
-        else:
-            height = "38px"
-            #div.add_style("opacity: 0.6")
 
 
         outer.add(div)
@@ -1518,9 +1513,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.view_save_dialog:
             outer.add(self.view_save_dialog)
 
-        outer.add_style("min-width: 750px")
+        outer.add_style("height: 40px")
         outer.add_style("white-space: nowrap")
-        div.add_style("height: %s" % height)
         
         return outer
 
