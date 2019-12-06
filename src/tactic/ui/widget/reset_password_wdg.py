@@ -123,9 +123,16 @@ class NewPasswordCmd(Command):
             return  
 
         if password == confirm_password:
-            encrypted = hashlib.md5(password).hexdigest()
-            login.set_value('password', encrypted)
-            login.commit()
+            code = web.get_form_value('code')
+
+            if login:
+                data = login.get_json_value('data')
+                if data:
+                    temporary_code = data.get('temporary_code')
+                    if code == temporary_code:
+                      encrypted = hashlib.md5(password).hexdigest()
+                      login.set_value('password', encrypted)
+                      login.commit()
         else:
             web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'The entered passwords do not match.')
             return
