@@ -520,8 +520,13 @@ body {
     CONTENT STYLE
 ----------------------------------------------------- */
 
+.spt_bootstrap_top {
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
 .spt_bs_content {
-    width: 100%;
     transition: all 0.3s;
 }
 
@@ -534,6 +539,14 @@ body {
 }
 
 @media (min-width: 575.98px) {
+
+    .spt_bootstrap_top .spt_bs_content {
+        width: calc(100vw - 175px);
+    }
+    
+    .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
+        width: calc(100vw - 80px);
+    }
 
     .spt_bs_content {
         padding-top: 40px
@@ -580,18 +593,35 @@ body {
     .spt_tab_content_top {
         height: calc(100vh - 96px);
     }
+    
+    .spt_bootstrap_top .spt_bs_content {
+        width: 100vh;
+    }
+
+    .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
+        width: 100vw;
+    }
 
 }
 
 
 @media (max-width: 768px) {
-   
+  
+    .spt_bootstrap_top .spt_bs_content {
+        width: calc(100vw - 80px);
+    }
+
+    .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
+        width: 100vw;
+    }
+
     .spt_bs_left_sidebar {
         min-width: 80px;
         max-width: 80px;
         text-align: center;
         margin-left: -80px !important;
     }
+
     .spt_bs_left_sidebar .dropdown-toggle::after {
         top: auto;
         bottom: 10px;
@@ -600,35 +630,46 @@ body {
         -ms-transform: translateX(50%);
         transform: translateX(50%);
     }
+    
     .spt_bs_left_sidebar.active {
         margin-left: 0 !important;
     }
+    
     .spt_bs_left_sidebar .sidebar-header h3,
     .spt_bs_left_sidebar .CTAs {
         display: none;
     }
+    
+    
     .spt_bs_left_sidebar .sidebar-header strong {
         display: block;
     }
+    
     .spt_bs_left_sidebar ul li a {
         padding: 20px 10px;
     }
+    
     .spt_bs_left_sidebar ul li a span {
         font-size: 0.85em;
     }
+    
     .spt_bs_left_sidebar ul li a i {
         margin-right: 0;
         display: block;
     }
+    
     .spt_bs_left_sidebar ul ul a {
         padding: 10px !important;
     }
+    
     .spt_bs_left_sidebar ul li a i {
         font-size: 1.3em;
     }
+    
     .spt_bs_left_sidebar {
         margin-left: 0;
     }
+    
     .spt_bs_left_sidebarCollapse span {
         display: none;
     }
@@ -824,8 +865,11 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
             'type': 'click',
             'cbjs_action': """
                 var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+                app_top.toggleClass("spt_sidebar_collapse")
+                
                 var sidebar = app_top.getElement(".spt_bs_left_sidebar");
                 sidebar.toggleClass("active");
+
             """
         })
 
@@ -834,6 +878,8 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
             'event_name': 'side_bar|toggle',
             'cbjs_action': '''
             var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+            app_top.toggleClass("spt_sidebar_collapse")
+            
             var sidebar = app_top.getElement(".spt_bs_left_sidebar");
             sidebar.toggleClass("active");
             '''
@@ -859,36 +905,22 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
         
         hidden_nav.add(self.get_bookmark_menu_wdg("", None, views))
         top_nav_wdg.add(hidden_nav)
-        """
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" href="#">Disabled</a>
-            </li>
-          </ul>
-          <form class="form-inline mt-2 mt-md-0">
-            <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form>
-        """
 
         return top_nav_wdg
 
     def get_right_wdg(self):
         right_wdg = DivWdg()
+        right_wdg.add_class("d-flex")
 
         user_btn = ButtonNewWdg(title="Show workflow info", icon="FA_USER")
         right_wdg.add(user_btn)
         user_btn.add_class("bg-light")
-
+        user_btn.add_class("ml-1")
+ 
         tab_btn = ButtonNewWdg(title="Show workflow info", icon="FA_CLONE")
         right_wdg.add(tab_btn)
         tab_btn.add_class("bg-light")
+        tab_btn.add_class("ml-1")
 
         return right_wdg
 
@@ -940,7 +972,6 @@ class BootstrapIndexPage(BaseRefreshWdg):
     def get_display(self):
 
         top = self.top
-        top.add_class("container")
         from tactic.ui.panel import ViewPanelWdg
  
         wdg = ViewPanelWdg(search_type="config/widget_config", show_border=False)

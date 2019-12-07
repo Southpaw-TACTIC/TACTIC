@@ -932,10 +932,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if sticky_header:
 
             h_scroll = DivWdg()
+            h_scroll.add_class("spt_table_horizontal_scroll")
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
-            h_scroll.add_style("height: calc(100% - 80px")
+            h_scroll.add_style("height: calc(100% - 80px)")
             h_scroll.add_style("display: flex")
             h_scroll.add_style("flex-direction: column")
  
@@ -944,7 +945,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             padding = DivWdg()
-            scroll.add(padding)
+            #scroll.add(padding)
             padding.add_class("spt_header_padding")
             padding.add_style("width", "17px")
             padding.add_style("display", "none")
@@ -7903,6 +7904,7 @@ spt.table.expand_table = function(mode) {
 
     // adjust for windows scrollbar
     if (spt.browser.os_is_Windows() && table) {
+        return;
         var div = layout.getElement(".spt_header_padding");
         if (div) {
             spt.behavior.destroy_element(div);

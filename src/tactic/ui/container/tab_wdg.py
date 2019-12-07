@@ -1292,17 +1292,51 @@ spt.tab.view_definition = function(bvr) {
 
 
 
+    
+    def get_bootstrap_styles(self):
+    
+        styles = HtmlElement.style('''
+            .spt_tab_remove {
+                position: absolute;
+                top: 2;
+                left: 108;
+                display: none;
+            }
+
+            .spt_tab_header:hover .spt_tab_remove {
+                display: block;
+            }
+
+            .spt_tab_header_top {
+                height: 40px;
+            }
+
+            .spt_tab_header_label {
+                text-overflow: ellipsis;
+                overflow-x: hidden;
+                white-space: nowrap;
+            }
+        ''')
+
+        return styles
+
+
     def get_styles(self):
         styles = HtmlElement.style('''
 
             /* NEW */
 
             .spt_tab_header_top {
+                white-space: nowrap;
                 height: auto;
                 float: left;
                 position: relative;
                 z-index: 1;
                 margin-bottom: -1px;
+                width: 100%;
+                overflow: hidden;
+                text-align: left;
+                box-sizing: border-box;
             }
 
             .spt_tab_header {
@@ -1400,7 +1434,14 @@ spt.tab.view_definition = function(bvr) {
 
         top = self.top
         top.add_class("spt_tab_top")
-        top.add(self.get_styles())
+        
+
+        if self._use_bootstrap():
+            top.add(self.get_bootstrap_styles())
+        else:
+            top.add(self.get_styles())
+
+
 
         self.search_type = None
 
@@ -1556,27 +1597,18 @@ spt.tab.view_definition = function(bvr) {
             } )
 
 
-        #header_div = DivWdg()
         header_div = HtmlElement.ul()
         inner.add(header_div)
 
         header_div.add_class("spt_tab_header_top")
         header_div.add_class("nav nav-tabs")
         self.header_id = header_div.set_unique_id()
-        # header_div.add_style("height: auto")
-        # header_div.add_style("float: left")
-        # header_div.add_style("position: relative")
-        # header_div.add_style("z-index: 2")
-
-        # header_div.add_style("margin-bottom: -1px")
-
 
         subheader_div = DivWdg()
         subheader_div.add_class("spt_tab_subheader_top")
         subheader_div.add_class("SPT_TEMPLATE")
         inner.add(subheader_div)
         self.add_subheader_behaviors(subheader_div)
-        #subheader_div.add_style("display: none")
  
 
 
@@ -1615,9 +1647,6 @@ spt.tab.view_definition = function(bvr) {
         self.add_context_menu( header_div )
 
 
-        header_div.add_style("width: 100%")
-        header_div.add_style("overflow: hidden")
-
         min_width = self.kwargs.get("min_width")
         if min_width:
             try:
@@ -1628,12 +1657,8 @@ spt.tab.view_definition = function(bvr) {
             header_div.add_style("min-width", min_width)
 
 
-        header_div.add_style("text-align: left")
-        header_div.add_style("box-sizing: border-box")
-
         resize_headers = True
         if resize_headers:
-            header_div.add_style("white-space", "nowrap")
 
             offset = 120
             header_div.add_behavior( { 
@@ -1820,19 +1845,9 @@ spt.tab.view_definition = function(bvr) {
         if show_add:
             header_div.add( self.get_add_wdg() )
 
-        # should only be seen by admin
-        #security = Environment.get_security()
-        #if security.check_access("builtin", "view_site_admin", "allow"):
-        #    inner.add( self.get_edit_wdg() )
-
-
-        if not self.mode == "hidden":
-            inner.add("<br clear='all'>")
-
-
-
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
+        content_top.add_class("mx-2")
 
         inner.add(content_top)
 
@@ -1873,8 +1888,7 @@ spt.tab.view_definition = function(bvr) {
             except ValueError:
                 pass
             content_top.add_style("min-width: %s" % width)
-        else:
-            content_top.add_style("width: 100%")
+        
 
  
         content_top.add_class("tab_content_top")

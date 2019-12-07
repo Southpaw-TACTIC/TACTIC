@@ -23,6 +23,7 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
+from tactic.ui.widget.button_new_wdg import ButtonNewWdg
 
 from .layout_wdg import SwitchLayoutMenu
 
@@ -1045,7 +1046,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # default to true
         show_keyword_search = self.get_setting("keyword_search")
-
         if show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
@@ -1075,6 +1075,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
             self.keyword_hint_text = SimpleSearchWdg.get_hint_text(self.search_type, self.simple_search_view)
 
+            show_toggle = False
+            if simple_search_mode == "hidden":
+                show_toggle = True
+
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(
                     column=self.keyword_column,
@@ -1082,9 +1086,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     filter_search_type=self.search_type,
                     icon="",
                     show_partial=False,
-                    show_toggle=True,
+                    show_toggle=show_toggle,
                     hint_text=self.keyword_hint_text,
-
             )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
@@ -1240,8 +1243,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
  
         expand_wdg = None
         if show_expand:
-            from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-
             button = ButtonNewWdg(title='Expand Table', icon='FA_ARROWS_H', show_menu=False, is_disabled=False)
             
             expand_behavior = self.get_expand_behavior()
@@ -1339,27 +1340,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if keyword_div:
             wdg_list.append( {'wdg': keyword_div} )
-            keyword_div.add_style("margin-left: 0px")
 
-        if self.kwargs.get("show_refresh") != 'false':
-            button_div = DivWdg()
-            #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-
-            search_label = 'Search'
-            button = ActionButtonWdg(title=search_label)
-
-            #button = DivWdg("<button class='btn btn-default' style='height: 30px; margin-left: -1px'><i class='fa fa-search'> </i> </button>")
+       
+        if self.get_setting("show_refresh"):
+            if self.get_setting("show_keyword_search"):
+                button_div = ButtonNewWdg(title='Search', icon="FA_ARROW-CIRCLE-RIGHT")
+            else:
+                button_div = ButtonNewWdg(title='REFRESH', icon="FA_REFRESH")
+               
 
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
-                button.add_behavior(self.run_search_bvr)
+                button_div.add_behavior(self.run_search_bvr)
             else:
-                button.add_behavior( {
+                button_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
             } )
 
-            button_div.add(button)
             wdg_list.append({'wdg': button_div})
 
 
@@ -1538,7 +1536,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
         # Save button
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         if mode == "icon":
             save_button = ButtonNewWdg(title='Save', icon="FA_SAVE", show_menu=False, show_arrow=False)
         else:
@@ -1584,24 +1581,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_button_row_wdg(self):
         '''draws the button row in the shelf'''
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg
 
         button_row_wdg = ButtonRowWdg(show_title=True)
-
-        """
-        if self.kwargs.get("show_refresh") != 'false':
-            button = ButtonNewWdg(title='Refresh', icon=IconWdg.REFRESH_GRAY)
-            button_row_wdg.add(button)
-            self.run_search_bvr = self.kwargs.get('run_search_bvr')
-            if self.run_search_bvr:
-                button.add_behavior(self.run_search_bvr)
-            else:
-                button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
-            } )
-        """
-
 
         # add an item button
         show_insert = self.get_show_insert()
@@ -1850,7 +1832,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if self.can_use_gear() and self.get_setting("gear"):
-            button = ButtonNewWdg(title='More Options', icon="FA_GEAR", show_arrow=True)
+            button = ButtonNewWdg(title='More Options', icon="FA_GEAR")
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
@@ -1863,7 +1845,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def get_search_button_row_wdg(self):
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg, SingleButtonWdg
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, SingleButtonWdg
 
         self.filter_num_div = None
         # Search button
@@ -1972,9 +1954,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_layout_wdg(self):
 
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-        #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
-        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE")
         custom_views = self.kwargs.get("layout_switcher_custom_views") or None
         default_views = self.kwargs.get("default_views") or None
         view = self.view
@@ -1996,7 +1976,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
     def get_quick_add_wdg(self):
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg
 
         button_row = ButtonRowWdg()
 
@@ -2081,7 +2061,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not security.check_access("builtin", access_keys, "allow"):
             return None
 
-        from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
+        from tactic.ui.widget.button_new_wdg import SingleButtonWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
         button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
