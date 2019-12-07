@@ -1847,7 +1847,6 @@ spt.tab.view_definition = function(bvr) {
 
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
-        content_top.add_class("mx-2")
 
         inner.add(content_top)
 

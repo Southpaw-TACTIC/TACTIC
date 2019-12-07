@@ -2155,7 +2155,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
             var search_dict = {'json' : JSON.stringify(new_values)};
         }
         var on_complete = function(){
-            window.onresize();
+            //
         }
         spt.panel.refresh(table_top, search_dict, {call_back: on_complete});
         return;
@@ -2527,7 +2527,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
     spt.kbd.clear_handler_stack();
     var on_complete = function(){
-        window.onresize();
+        //
     }
 
     spt.panel.load(target, class_name, args, search_values_dict, {fade: fade, callback: on_complete});
