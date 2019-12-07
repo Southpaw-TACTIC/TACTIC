@@ -9,7 +9,7 @@
 #    or disclosed in any way without written permission.
 #
 
-# chkconfig: 2345 85 15
+# chkconfig: 2345 100 15
 # description: Startup script for Tactic on UNIX systems.
 
 # Repurposed from WebKit
