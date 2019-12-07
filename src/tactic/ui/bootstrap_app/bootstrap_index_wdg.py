@@ -652,6 +652,10 @@ body {
     }
 }
 
+.spt_mobile_table {
+    display: none;
+}
+
 @media (max-width: 575.98px) {
     .spt_bs_left_sidebar {
         display: none;
@@ -666,11 +670,19 @@ body {
     }
     
     .spt_bootstrap_top .spt_bs_content {
-        width: 100vh;
+        width: 100vw;
     }
 
     .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
         width: 100vw;
+    }
+
+    .spt_mobile_table {
+        display: flex;
+    }
+
+    .spt_table_horizontal_scroll {
+        display: none;
     }
 
 }

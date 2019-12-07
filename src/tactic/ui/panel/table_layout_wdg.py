@@ -944,6 +944,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
 
 
+            # TODO: Remove this padding
             padding = DivWdg()
             #scroll.add(padding)
             padding.add_class("spt_header_padding")
@@ -1074,6 +1075,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_style("overflow-x: auto")
 
         table.set_id(self.table_id)
+
+
+        # TEST TEST TEST
+        from .mobile_wdg import MobileTableWdg
+        mobile_wdg = MobileTableWdg()
+        inner.add(mobile_wdg)
+
 
         # generate dictionary of subscribed search_keys to affect context menu
         self.subscribed_search_keys = {}

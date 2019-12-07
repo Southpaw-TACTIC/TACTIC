@@ -3428,7 +3428,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['extra_keys'] = ",".join(extra_keys)
 
 
-
         if layout == 'tile':
             from .tile_layout_wdg import TileLayoutWdg
             kwargs['top_view'] = self.kwargs.get("top_view")
