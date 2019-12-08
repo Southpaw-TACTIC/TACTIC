@@ -1,7 +1,7 @@
 
 
 from tactic.ui.common import BaseRefreshWdg
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, HtmlElement
 
 class MobileTableWdg(BaseRefreshWdg):
 
@@ -21,7 +21,28 @@ class MobileTableWdg(BaseRefreshWdg):
             'cbjs_action': self.get_onload_js()
         })
 
+        top.add(self.get_styles())
+
         return top
+
+    def get_styles(self):
+        style = HtmlElement.style("""
+.spt_mobile_table {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    .spt_mobile_table {
+        display: flex;
+    }
+
+    .spt_table_horizontal_scroll {
+        display: none;
+    }
+}
+        """)
+
+        return style
 
 
     def get_onload_js(self):
@@ -62,21 +83,35 @@ handle_cell = function(cell) {
     return new_cell;
 }
 
+handle_header = function(header) {
+    var new_header = convert_el_to_div(header)
+    new_header.innerHTML = header.innerHTML;
+    return new_header;
+}
+
+
+
+spt.table.mobile_table.headers = [];
 
 spt.table.mobile_table.create_card = function(row) {
 
     new_row = handle_row(row);
     var children = row.getChildren();
-    children.forEach(function(child) {
-        label = new Element("div")
-        label.innerHTML = "ATTRIBUTE";
-        label.addClass("col-6")
-        label.inject(new_row)
-        
-        new_child = handle_cell(child)
-        new_child.addClass("col-6")
+    
+    
+    for (var i=0; i<children.length; i++) {
+        var child = children[i];
+        if (child.hasClass("spt_table_select")) continue;
+       
+        header = spt.table.mobile_table.headers[i-1];
+        label = header.clone();
+        label.addClass("col-6");
+        label.inject(new_row);
+
+        var new_child = handle_cell(child)
+        new_child.addClass("col-6");
         new_child.inject(new_row);
-    });
+    }
 
     var card = new Element("div");
     new_row.inject(card);
@@ -91,6 +126,14 @@ spt.table.mobile_table.load = function() {
 
     var layout = bvr.src_el.getParent(".spt_layout");
     spt.table.set_layout(layout);
+    
+    headers = spt.table.get_headers()
+    new_headers = [];
+    headers.forEach(function(header) {
+        new_header = handle_header(header);
+        new_headers.push(new_header);
+    });
+    spt.table.mobile_table.headers = new_headers;
 
     var rows = spt.table.get_all_rows();
     rows.forEach(function(row){

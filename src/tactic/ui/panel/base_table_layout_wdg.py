@@ -15,7 +15,7 @@ __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
-from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
+from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget, HtmlElement
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser, Project, ProjectSetting
 
@@ -928,23 +928,52 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         return value
 
 
+    def get_shelf_styles(self):
+
+
+        style = HtmlElement.style("""
+        
+            .SPT_DTS { 
+                color: #000;
+                padding-top: 2px;
+                padding-right: 8px;
+                background: #fcfcfc;
+            }
+      
+            .spt_search_limit_activator {
+                border-radius: 6px;
+                font-size: 10px;
+                vertical-align: middle;
+                color: rgb(0, 0, 0);
+                border-width: 1px;
+                padding: 5px;
+                border-color: rgb(187, 187, 187);
+                border-style: none;
+                margin: 0px 10px;
+                display: inline-block;
+            
+            }
+
+            .spt_table_search_limit {
+                color: #000;
+                width: 300px;
+                background: #FFFFFF;
+            }
+        """)
+
+        return style
+
+
+    def get_bootstrap_shelf_styles(self):
+
+        pass
 
 
     def get_action_wdg(self):
 
+        
         # add the ability to put in a custom shelf
         shelf_view = self.kwargs.get("shelf_view")
-        """
-
-        if shelf_view:
-            from tactic.ui.panel import CustomLayoutWdg
-            kwargs = {
-                "view": shelf_view
-            }
-            shelf = CustomLayoutWdg(**kwargs)
-            return shelf
-        """
-
 
         # determine from the view if the insert button is visible
         show_insert = self.get_show_insert()
@@ -956,15 +985,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         div = DivWdg() 
         div.add_class("SPT_DTS")
-        #div.add_style("overflow: hidden")
-        div.add_style("padding-top: 2px")
-        div.add_style("padding-right: 8px")
-        div.add_color("color", "color")
 
-        border_color = div.get_color("table_border",  default="border")
-        if self.get_setting("header_background"):
-            div.add_color("background", "background",-1)
-
+        if not self._use_bootstrap():
+            style = self.get_shelf_styles()
+            div.add(style)
 
         # the label on the commit button
         commit_label = 'Save'
@@ -1145,11 +1169,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # add number found
         if self.show_search_limit:
             num_div = DivWdg()
-            num_div.add_color("color", "color")
-            #num_div.add_style("float: left")
-            num_div.add_style("margin: 0px 10px")
-            num_div.add_style("font-size: 10px")
-            num_div.add_style("padding: 5px")
+            num_div.add_class("dropdown")
+            num_div.add_class("spt_search_limit_activator")
             
             # -- SEARCH LIMIT DISPLAY
             if self.items_found == 0:
@@ -1165,57 +1186,48 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     self.items_found = 0
 
            
-            if self.items_found == 1:
-                num_div.add( "%s %s" % (self.items_found, _("item found")))
-            else:
-                num_div.add( "%s %s" % (self.items_found, _("items found")))
-            num_div.add_style("margin-right: 0px")
-            num_div.add_border(style="none")
-            num_div.set_round_corners(6)
-        else:
-            num_div = None
         
-
-
-
-        # -- PAGINATION TOOLS
-        limit_span = DivWdg()
-        limit_span.add_style("margin-top: 4px")
-        if self.show_search_limit:
-            search_limit_button = IconButtonWdg("Pagination", IconWdg.ARROWHEAD_DARK_DOWN)
+            search_limit_button = DivWdg()
+            search_limit_button.add_class("dropdown-toggle btn btn-secondary")
             num_div.add(search_limit_button)
+            
+            if self.items_found == 1:
+                search_limit_button.add( "%s %s" % (self.items_found, _("item found")))
+            else:
+                search_limit_button.add( "%s %s" % (self.items_found, _("items found")))
+            
+            
             from tactic.ui.container import DialogWdg
             dialog = DialogWdg()
-            #limit_span.add(dialog)
             dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
             num_div.add_class("hand")
-            color = num_div.get_color("background", -5)
-            num_div.add_behavior( {
-                'type': 'mouseover',
-                'color': color,
-                'cbjs_action': '''
-                bvr.src_el.setStyle("background", bvr.color);
-                '''
-            } )
-            num_div.add_behavior( {
-                'type': 'mouseout',
-                'cbjs_action': '''
-                bvr.src_el.setStyle("background", "");
-                '''
-            } )
+            
+            if not self._use_bootstrap():
+                color = num_div.get_color("background", -5)
+                num_div.add_behavior( {
+                    'type': 'mouseover',
+                    'color': color,
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle("background", bvr.color);
+                    '''
+                } )
+                num_div.add_behavior( {
+                    'type': 'mouseout',
+                    'cbjs_action': '''
+                    bvr.src_el.setStyle("background", "");
+                    '''
+                } )
 
 
             limit_div = DivWdg()
             limit_div.add_class("spt_table_search")
+            limit_div.add_class("spt_table_search_limit")
             limit_div.add(self.search_limit)
             dialog.add(limit_div)
-            limit_div.add_color("color", "color")
-            limit_div.add_color("background", "background")
-            limit_div.add_style("width: 300px")
-            #limit_div.add_style("height: 50px")
-
-            #limit_span.add(self.search_limit)
+        
+        else:
+            num_div = None
 
 
 
@@ -1383,7 +1395,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
-            wdg_list.append( { 'wdg': limit_span } )
         else:
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
