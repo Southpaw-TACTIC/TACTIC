@@ -2409,23 +2409,50 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
             if isinstance(ret_val, six.string_types):
                 ret_val = [ret_val]
+            
+            all_outputs = pipeline.get_output_processes(process)
 
             output_processes = []
+            output_process_names = []
+
             not_required_streams = []
+            
+            
+            """
+            Two types of return values: stream (from_attr on connector)
+            or names of output processes.
+                - If streams have been returned, use these streams to 
+                  find required processes, and set all other output_processes
+                  as not_required.
+                - If processes have been returned, set these processes as required,
+                  and set all other output_processes as not required.
+            """
+           
+            # Check for streams
             for attr in ret_val:
                 outputs = pipeline.get_output_processes(process, from_attr=attr)
                 if outputs:
-                    output_processes.extend(outputs)
+                    for output in outputs:
+                        output_processes.append(output)
+                        output_process_names.append(output.get_name())
+                    
 
-            # if there are no output attrs, then check the node names
-            if not output_processes:
-                outputs = pipeline.get_output_processes(process)
-                for output in outputs:
-                    output_process_name = output.get_name()
+            if output_processes:
+                for output in all_outputs:
+                    if output.get_name() not in output_process_names:
+                        not_required_streams.append(output.get_name())
+
+            
+            else:
+                for output in all_outputs:
                     if output.get_name() in ret_val:
                         output_processes.append(output)
+                        output_process_names.append(output.get_name())
                     else:
                         not_required_streams.append(output.get_name())
+
+            print(output_process_names)
+            print(not_required_streams)
 
             called = set()
             for output_process in output_processes:
