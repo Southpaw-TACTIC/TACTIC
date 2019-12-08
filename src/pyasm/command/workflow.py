@@ -2451,9 +2451,6 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     else:
                         not_required_streams.append(output.get_name())
 
-            print(output_process_names)
-            print(not_required_streams)
-
             called = set()
             for output_process in output_processes:
                 output_process_name = output_process.get_name()
