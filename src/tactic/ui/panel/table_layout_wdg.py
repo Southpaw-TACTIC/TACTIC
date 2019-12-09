@@ -1438,7 +1438,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     search_limit=info.get("search_limit"),
                     current_offset=info.get("current_offset"),
                 )
-               inner.add(limit_wdg)
+                inner.add(limit_wdg)
 
             self.total_count = info.get("count")
             inner.add_attr("total_count", self.total_count)
