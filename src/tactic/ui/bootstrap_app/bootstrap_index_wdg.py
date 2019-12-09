@@ -1164,6 +1164,36 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             quick_box = QuickBoxWdg()
             main_body_panel.add(quick_box)
 
+
+        # TEST for Bootstrap Modal 
+        modal_container = DivWdg()
+        modal_container.add("""
+<!-- The Modal -->
+  <div class="modal fade right" id="myModal">
+    <div class="modal-dialog modal-side modal-top-right">
+      <div class="modal-content">
+      
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Modal Heading</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <!-- Modal body -->
+        <div class="modal-body">
+          Modal body..
+        </div>
+        
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        </div>
+        
+      </div>
+    </div>
+  </div>""")
+        main_body_panel.add(modal_container)
+
  
         return main_body_panel
 
