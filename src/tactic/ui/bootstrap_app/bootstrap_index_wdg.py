@@ -7,7 +7,8 @@ from pyasm.widget import WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ButtonNewWdg
-from tactic.ui.app.page_nav_container_wdg import PageNavContainerWdg
+from tactic.ui.app import PageHeaderWdg, PageNavContainerWdg
+from tactic.ui.container import SmartMenu
 
 from .bootstrap_tab_wdg import *
 
@@ -742,8 +743,7 @@ body {
         return section_wdg
 
 
-
-class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
+class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
     def get_bootstrap_styles(self):
 
@@ -788,8 +788,8 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
 
         return style
 
-    def get_subdisplay(self, views):
-        
+    def get_display(self):
+
         top_nav_wdg =  HtmlElement("nav")
         
         styles = self.get_bootstrap_styles()
@@ -861,6 +861,22 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
                 var left_sidebar = app_top.getElement(".spt_bs_left_sidebar"); 
                 var sidebar_content = left_sidebar.getElement(".spt_side_bar_content");
                 var mobile_sidebar = spt.behavior.clone(sidebar_content);
+
+                //FIX IDs since Bootstrap menus use IDs to target collapsing menus
+                var section_els = mobile_sidebar.getElements(".spt_side_bar_section");
+                var ID = function () {
+                  return '_' + Math.random().toString(36).substr(2, 9);
+                };
+                handle_section = function(section_el) {
+                   var toggle = section_el.getElement(".spt_side_bar_section_link");
+                   var dropdown = section_el.getElement(".spt_side_bar_section_content");
+                   
+                   var new_id = ID();
+                   toggle.setAttribute("href", "#" + new_id);
+                   dropdown.setAttribute("id", new_id);
+                }
+                section_els.forEach(handle_section);
+
                 mobile_sidebar.inject(bvr.src_el);
             '''
         })
@@ -873,17 +889,53 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
-        title = "Logged in as TACTIC user"
-        user_btn = ButtonNewWdg(title=title, icon="FA_USER")
-        right_wdg.add(user_btn)
-        user_btn.add_class("bg-light")
-        user_btn.add_class("ml-1")
+        user_wdg = self.get_user_wdg()
+        right_wdg.add(user_wdg)
 
         tab_div = self.get_tab_manager()
         right_wdg.add(tab_div)
         
         return right_wdg
 
+
+
+    def get_user_wdg(self):
+       
+        user_wdg = DivWdg()
+
+        login = Environment.get_login()
+        display_name = login.get_full_name()
+        if not display_name:
+            display_name = login.get_login()
+       
+        from pyasm.biz import Snapshot
+        snapshot = Snapshot.get_latest_by_sobject(login)
+        if snapshot:
+            path = snapshot.get_web_path_by_type()
+ 
+            user_wdg.add(HtmlElement.style("""
+                .spt_nav_user_btn {                
+                    background-image: url(%s);
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                } 
+            """ % path))
+
+            icon = "FA_USERX"
+        else:
+            icon = "FA_USER"
+
+        title = "Logged in as %s" % display_name
+        user_btn = ButtonNewWdg(title=title, icon=icon)
+        user_wdg.add(user_btn)
+        user_btn.add_class("bg-light ml-1 spt_nav_user_btn")
+        
+        menus = self.get_smart_menu()
+        SmartMenu.add_smart_menu_set(user_wdg, [menus])
+        SmartMenu.assign_as_local_activator(user_wdg, None, True)
+
+        
+        return user_wdg
 
     def get_tab_manager(self):
 

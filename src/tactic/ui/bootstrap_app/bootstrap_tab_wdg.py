@@ -1,5 +1,6 @@
 
 from pyasm.widget import WidgetConfig
+from pyasm.web import DivWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import TabWdg
@@ -12,26 +13,12 @@ class BootstrapTabWdg(BaseRefreshWdg):
 
     def init(self):
         
+        config_xml = "<config><tab/></config>"
         view = "tab"
-        config_xml = '''<config>
-            <tab>
-                <element name="Index Page">
-                    <display class="tactic.ui.bootstrap_app.BootstrapIndexPage"/>
-                </element>
-                <element name="Index Page2">
-                    <display class="tactic.ui.bootstrap_app.BootstrapIndexPage"/>
-                </element>
-                <element name="Index Page3">
-                    <display class="tactic.ui.bootstrap_app.BootstrapIndexPage"/>
-                </element>
-            </tab>
-        </config>'''
         config = WidgetConfig.get(view=view, xml=config_xml)
-        self.tab = TabWdg(config=config, view=view, use_default_style=False)
+        self.tab = TabWdg(config=config, view=view, use_default_style=False, save_state="main_body_tab_state")
         self.unique_id = self.tab.get_tab_id()
         
-        for widget in self.widgets:
-            tab.add(widget)
 
     def get_tab_id(self):
         return self.unique_id
@@ -42,5 +29,25 @@ class BootstrapTabWdg(BaseRefreshWdg):
         top.add(self.tab)
         top.add_class("mx-1")
 
+        for widget in self.widgets:
+            self.tab.add(widget)
+        
+        # HACK set the current one active
+        div = DivWdg()
+        div.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+        spt.tab.set_main_body_top();
+        var headers = spt.tab.get_headers();
+        // if there are no headers, then there was an error
+        if (headers.length == 0) {
+            return;
+        }
+
+        var name = headers[headers.length-1].getAttribute("spt_element_name");
+        spt.tab.select(name);
+        '''
+        } )
+        top.add(div)
 
         return top
