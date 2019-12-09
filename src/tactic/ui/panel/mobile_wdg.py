@@ -118,7 +118,7 @@ spt.table.mobile_table.create_card = function(row) {
 }
 
 spt.table.mobile_table.load = function() {
-
+   
     var layout = bvr.src_el.getParent(".spt_layout");
     spt.table.set_layout(layout);
     

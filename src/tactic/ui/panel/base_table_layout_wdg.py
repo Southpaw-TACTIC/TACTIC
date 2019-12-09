@@ -1352,16 +1352,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
  
 
         if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
+            wdg_list.append( {
+                'mobile_display': True,
+                'wdg': keyword_div
+            } )
 
        
         if self.get_setting("show_refresh"):
             if self.get_setting("show_keyword_search"):
                 button_div = ButtonNewWdg(title='Search', icon="FA_ARROW-CIRCLE-RIGHT")
             else:
-                button_div = ButtonNewWdg(title='REFRESH', icon="FA_REFRESH")
+                button_div = ButtonNewWdg(title='Refresh', icon="FA_REFRESH")
                
-
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
                 button_div.add_behavior(self.run_search_bvr)
@@ -1371,7 +1373,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
             } )
 
-            wdg_list.append({'wdg': button_div})
+            wdg_list.append({
+                'wdg': button_div,
+                'mobile_display': True
+            })
+
 
 
         if save_button:
@@ -1400,27 +1406,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
 
-        #wdg_list.append( { 'wdg': spacing_divs[1] } )
-
         from tactic.ui.widget import ButtonRowWdg
-        button_row_wdg = ButtonRowWdg(show_title=True)
         extra_row_wdg = ButtonRowWdg(show_title=True)
 
         if search_button_row:
-            button_row_wdg.add(search_button_row)
+            wdg_list.append( { 
+                'wdg': search_button_row,
+                'mobile_display': True
+            } )
             if self.filter_num_div:
                 wdg_list.append( { 'wdg': self.filter_num_div } )
             
 
         if column_wdg:
-            button_row_wdg.add(column_wdg)
+            wdg_list.append( { 'wdg': column_wdg } )
 
         if layout_wdg:
-            button_row_wdg.add(layout_wdg)
+            wdg_list.append( { 'wdg': layout_wdg} )
 
-        if button_row_wdg.get_num_buttons() != 0:
-            wdg_list.append( { 'wdg': button_row_wdg } )
-        
         if expand_wdg:
             wdg_list.append( { 'wdg': spacing_divs[0] } )
             wdg_list.append( { 'wdg': extra_row_wdg } )
@@ -1431,7 +1434,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         show_quick_add = self.kwargs.get("show_quick_add")
         if show_quick_add in ['true',True]:
             quick_add_button_row = self.get_quick_add_wdg()
-            wdg_list.append( { 'wdg': spacing_divs[2] } )
             wdg_list.append( { 'wdg': quick_add_button_row } )
 
 
@@ -1473,10 +1475,28 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         xx = DivWdg()
-        xx.add_class("d-flex") 
-        #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
-        #xx.add(horiz_wdg)
+        xx.add_class("navbar navbar-expand-sm") 
+        xx.add_class("spt_base_table_action_wdg")
 
+        xx.add_style("padding: 0px")
+        xx.add_style("box-shadow: none")
+
+        left_div = DivWdg()
+        left_div.add_class("d-flex")
+
+        collapse_div = DivWdg()
+        collapse_id = collapse_div.set_unique_id()
+
+        toggle_div = ButtonNewWdg(title="Tools", icon="FA_ELLIPSIS_V")
+        toggle_div.hit_wdg.add_class("d-block d-sm-none navbar-toggler collapsed")
+        toggle_div.hit_wdg.add_attr("type", "button")
+        toggle_div.hit_wdg.add_attr("data-toggle", "collapse")
+        toggle_div.hit_wdg.add_attr("data-target", "#" + collapse_id)
+        toggle_div.hit_wdg.add_attr("aria-controls", collapse_id)
+        toggle_div.hit_wdg.add_attr("aria-expanded", "false")
+        toggle_div.hit_wdg.add_attr("aria-label", "Toggle Tools")
+
+        collapse_div.add_class("navbar-collapse collapse")
         last_widget = None
         for item in wdg_list:
             widget = item.get('wdg')
@@ -1486,12 +1506,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if last_widget and last_widget.has_class("spt_spacing") and widget.has_class("spt_spacing"):
                 continue
 
-            if widget.get_style("display") != "none":
-                widget.add_style("display: inline-block")
-            widget.add_style("vertical-align: middle")
-            xx.add(widget)
+            if item.get("mobile_display") == True:
+                left_div.add(widget)
+            else:
+                collapse_div.add(widget)
+            
             last_widget = widget
-
+        
+        xx.add(left_div)
+        xx.add(toggle_div)
+        xx.add(collapse_div)
         div.add(xx)
 
         if self.kwargs.get("__hidden__"):
