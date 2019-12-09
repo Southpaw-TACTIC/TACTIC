@@ -10,7 +10,7 @@ class MobileTableWdg(BaseRefreshWdg):
 
         top = self.top
 
-        top.add_class("spt_mobile_table")
+        top.add_class("spt_mobile_table d-block d-sm-none")
 
         div = DivWdg()
         top.add(div)
@@ -28,18 +28,13 @@ class MobileTableWdg(BaseRefreshWdg):
     def get_styles(self):
         style = HtmlElement.style("""
 .spt_mobile_table {
-    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100% - 80px);
+    width: 100%;
 }
 
-@media (max-width: 575.98px) {
-    .spt_mobile_table {
-        display: flex;
-    }
-
-    .spt_table_horizontal_scroll {
-        display: none;
-    }
-}
         """)
 
         return style

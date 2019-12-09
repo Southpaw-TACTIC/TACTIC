@@ -959,6 +959,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 width: 300px;
                 background: #FFFFFF;
             }
+
         """)
 
         return style
@@ -1868,22 +1869,26 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
+            
+            if self.search_wdg:
+                num_filters = self.search_wdg.get_num_filters_enabled()
+            else:
+                num_filters = 0
+            
+            if num_filters > 0:
+                title = "%s filters" % num_filters
+            else:
+                title = "View Advanced Search"
+            
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title=title, icon="FA_SEARCH", show_menu=False, show_arrow=False)
             button.add_class("spt_table_search_button")
             div.add(button)
+            
+            if num_filters > 0:
+                button.add_class("text-primary")
 
-
-            # TEST ADDING SAVED SEARCHES
-            """
-            button_row_wdg = ButtonRowWdg(show_title=True)
-            div.add(button_row_wdg)
-            button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
-            button_row_wdg.add(button)
-            layout = ButtonNewWdg(title='Change Layout', icon=IconWdg.VIEW, show_arrow=True)
-            button_row_wdg.add(layout)
-            """
 
 
             button.add_behavior( {
@@ -1915,47 +1920,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
 
-            """
-            button.set_show_arrow_menu(True)
-            menu = Menu(width=180)
-            menu_item = MenuItem(type='title', label='Saved Searches')
-            menu.add(menu_item)
-            menu_item = MenuItem(type='action', label='Fast Ugly Search')
-            menu.add(menu_item)
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                spt.dg_table.search_cbk( {}, {src_el: activator, expression: "@SOBJECT(project/asset['@LIMIT','2'])"} );
-                '''
-            } )
-            menus = [menu.get_data()]
-            SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
-            SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
-            """
-
-
-            self.filter_num_div = DivWdg()
-            #div.add(self.filter_num_div)
-            self.filter_num_div.add_color("color", "color")
-
-            if self.search_wdg:
-                num_filters = self.search_wdg.get_num_filters_enabled()
-            else:
-                num_filters = 0
-            icon = IconWdg( "Filters enabled", IconWdg.GREEN_LIGHT )
-            self.filter_num_div.add("&nbsp;"*4)
-            self.filter_num_div.add(icon)
-            if num_filters > 1:
-                self.filter_num_div.add("%s filters" % num_filters)
-            else:
-                self.filter_num_div.add("%s filter" % num_filters)
-
-            if not num_filters:
-                self.filter_num_div.add_style("display: none")
-            else:
-                div.add_style("width: 120px")
-
-            #return div
             return button
         else:
             return None

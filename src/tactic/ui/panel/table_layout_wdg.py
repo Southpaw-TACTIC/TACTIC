@@ -933,11 +933,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             h_scroll = DivWdg()
             h_scroll.add_class("spt_table_horizontal_scroll")
+            h_scroll.add_class("d-none d-sm-block")
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
             h_scroll.add_style("height: calc(100% - 80px)")
-            h_scroll.add_style("display: flex")
             h_scroll.add_style("flex-direction: column")
  
             scroll = DivWdg()
