@@ -1911,10 +1911,6 @@ class WebLoginWdg2(BaseSignInWdg):
         reset_request = web.get_form_value('reset_request') == 'true'
         send_code = web.get_form_value('send_code') == 'true'
 
-        print("GET_CONTENT")
-        for key in web.get_form_keys():
-          print("%s: %s" % (key, web.get_form_value(key)))
-
         back_to_login = web.get_form_value("back_to_login") == 'true'
         if back_to_login:
             reset_password = False

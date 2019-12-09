@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["CodeConfirmationWdg", "NewPasswordWdg", "NewPasswordCmd", "ResetOptionsWdg", "ResetOptionsCmd"]
+__all__ = ["CodeConfirmationWdg", "NewPasswordWdg", "NewPasswordCmd", "ResetOptionsWdg", "ResetOptionsCmd", "SendPasswordResetCmd"]
 
 import random
 import hashlib
@@ -301,77 +301,89 @@ class ResetOptionsWdg(BaseSignInWdg):
 
 class ResetOptionsCmd(Command):
 
-    def check(self):
-        web = WebContainer.get_web()
-        self.login = web.get_form_value("reset_login")
-        if self.login =='admin':
-            error_msg = "You are not allowed to reset admin password."
-            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, error_msg)
-            raise TacticException(error_msg)
-            return False
-        return True
-
     def is_undoable(cls):
         return False
     is_undoable = classmethod(is_undoable)
               
     def execute(self):
-        # Since this is not called with Command.execute_cmd
-        self.check()
-
         web = WebContainer.get_web()
+        url = web.get_base_url()
+        url.append_to_base(web.get_site_context_url().to_string())
+        cmd = SendPasswordResetCmd(login=web.get_form_value("reset_login"), project_url=url, reset=True)
 
-        reset_on = self.kwargs.get('reset') == True
-        if reset_on:
-            security = WebContainer.get_security()
-            #Batch()
-            login = Login.get_by_login(self.login, use_upn=True)
-            if not login:
-                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'This user [%s] does not exist or has been disabled. Please contact the Administrator.'%self.login)
-                return
-            email = login.get_value('email')
-            if not email:
-                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.'%self.login)
-                return
+        try:
+            cmd.execute()
+            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, BaseSignInWdg.RESET_COMPLETE_MSG)
+        except TacticException as e:
+            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, e)
 
-        
-            # auto pass generation
-            unique_code = ''.join([ random.choice('abcdefghijklmno12345') for i in xrange(0, 5)])
-            auto_password = unique_code
-            
-            msg = BaseSignInWdg.RESET_COMPLETE_MSG
-            
-            # send the email
-            try:
-                from pyasm.command import EmailTriggerTestCmd
 
-                admin = Login.get_by_login('admin')
-                if admin:
-                    sender_email = admin.get_full_email()
-                    if not sender_email:
-                        from pyasm.common import Config
-                        sender_email = Config.get_value("services", "mail_default_admin_email")
-                    if not sender_email:
-                        sender_email = Config.get_value("services", "mail_user")
-                recipient_emails = [email]
-                email_msg = 'Your TACTIC password reset code is:\n\n%s' % auto_password
-                email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject='TACTIC password change')
 
-                data = login.get_json_value("data", default={})
-                data['temporary_code'] = auto_password
-                login.set_json_value('data', data)
-                login.commit()
+class SendPasswordResetCmd(Command):
 
-                email_cmd.execute()
+    def execute(self):
 
-            except TacticException as e:
-                msg = "Failed to send an email for your new password. Reset aborted."
-                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, msg)
-                raise 
-                
-            # handle windows domains
-            #if self.domain:
-            #    self.login = "%s\\%s" % (self.domain, self.login)
+        self.login = self.kwargs.get("login")
+        if self.login =='admin':
+            error_msg = "You are not allowed to reset admin password."
+            raise TacticException(error_msg)
 
-            web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, msg)
+        reset = (self.kwargs.get('reset') in ["true", True]) or False
 
+        login = Login.get_by_login(self.login, use_upn=True)
+        if not login:
+            error_msg = 'This user [%s] does not exist or has been disabled. Please contact the Administrator.' % self.login
+            raise TacticException(error_msg)
+
+        email = login.get_value('email')
+        if not email:
+            error_msg = 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.' % self.login
+            raise TacticException(error_msg)
+
+        # auto pass generation
+        unique_code = ''.join([ random.choice('abcdefghijklmnopqrstuvwxyz123456789') for i in xrange(0, 10)])
+        auto_password = unique_code
+
+        # send the email
+        try:
+            from pyasm.command import EmailTriggerTestCmd
+
+            admin = Login.get_by_login('admin')
+            if admin:
+                sender_email = admin.get_full_email()
+                if not sender_email:
+                    from pyasm.common import Config
+                    sender_email = Config.get_value("services", "mail_default_admin_email")
+                if not sender_email:
+                    sender_email = Config.get_value("services", "mail_user")
+            recipient_emails = [email]
+
+            url = self.kwargs.get("project_url")
+            if not url:
+                url = WebContainer.get_web().get_project_url()
+
+            url.set_option("reset_password", "true")
+            url.set_option("login", self.login)
+            url.set_option("code", auto_password)
+            url = url.to_string()
+            if reset:
+                email_msg = 'Your TACTIC password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (auto_password, url)
+                subject = 'TACTIC password change'
+            else:
+                email_msg = "You've been invited to a TACTIC project. Visit the following URL to set a password: \n\n%s" % (url)
+                subject = 'TACTIC project invitation'
+            email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject=subject)
+
+            data = login.get_json_value("data", default={})
+            data['temporary_code'] = auto_password
+            login.set_json_value('data', data)
+            login.commit()
+
+            email_cmd.execute()
+
+        except TacticException as e:
+            if reset:
+                error_msg = "Failed to send an email for your new password. Reset aborted."
+            else:
+                error_msg = "Failed to send an invitation email. Please check the email address."
+            raise TacticException(error_msg)
