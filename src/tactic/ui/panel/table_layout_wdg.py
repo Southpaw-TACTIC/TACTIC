@@ -933,7 +933,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             h_scroll = DivWdg()
             h_scroll.add_class("spt_table_horizontal_scroll")
-            h_scroll.add_class("d-none d-sm-block")
+            h_scroll.add_class("d-none d-sm-flex")
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
@@ -1438,19 +1438,35 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     search_limit=info.get("search_limit"),
                     current_offset=info.get("current_offset"),
                 )
-                inner.add(limit_wdg)
+               inner.add(limit_wdg)
 
             self.total_count = info.get("count")
             inner.add_attr("total_count", self.total_count)
 
-
-        top.add(self.get_styles())
+        if self._use_bootstrap():
+            top.add(self.get_bootstrap_styles())
+        else:
+            top.add(self.get_styles())
 
         if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
+
+    def get_bootstrap_styles(self):
+        styles = HtmlElement.style("""
+                
+                
+        @media (min-width: 576px)
+            .d-sm-flex {
+                display: flex! important;
+            }
+        }
+
+        """)
+
+        return styles
 
     def get_styles(self):
 
