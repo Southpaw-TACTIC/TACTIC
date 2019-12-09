@@ -854,7 +854,17 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
         hidden_nav.add_class("navbar-collapse")
         hidden_nav.set_id("navbarCollapse")
         
-        hidden_nav.add(self.get_bookmark_menu_wdg("", None, views))
+        hidden_nav.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+                var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+                var left_sidebar = app_top.getElement(".spt_bs_left_sidebar"); 
+                var sidebar_content = left_sidebar.getElement(".spt_side_bar_content");
+                var mobile_sidebar = spt.behavior.clone(sidebar_content);
+                mobile_sidebar.inject(bvr.src_el);
+            '''
+        })
+
         top_nav_wdg.add(hidden_nav)
 
         return top_nav_wdg
@@ -988,15 +998,40 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
     def get_display(self):
         
+        is_admin_project = Project.get().is_admin()
+        security = Environment.get_security()
+        if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
+            from pyasm.widget import Error403Wdg
+            return Error403Wdg()
+
+        """
+        TODO: This logic must be considered in BootstrapSidebarPanelWdg
+        TODO: If user cannot view_side_bar, then do not template sidebar into view. 
+        TODO: Add listener for sidebar hide and show events. 
+        config = WidgetConfig.get(xml=self.config_xml, view="application")
+        left_nav_handler = config.get_display_handler("left_nav")
+        left_nav_options = config.get_display_options("left_nav")
+
+        view_side_bar = None
+        if left_nav_handler:
+            left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
+
+            # caching
+            side_bar_cache = self.get_side_bar_cache(left_nav_wdg)
+        else:
+            view_side_bar = False
+        
+        if view_side_bar == None:
+            view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
+
+        """
+        
+        
         top = self.top
         top.add_class("d-flex")
         top.add_class("spt_bootstrap_top")
 
         
-        is_admin_project = Project.get().is_admin()
-        security = Environment.get_security() 
-        if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
-            return Error403Wdg()
                 
 
         sidebar_wdg = BootstrapSideBarPanelWdg()
@@ -1020,10 +1055,64 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         top_nav_wdg = BootstrapTopNavWdg(main_body_tab_id=tab_id)
         
         main_body_panel.add(top_nav_wdg)
-        
-        tab.add(self.widget)
         main_body_panel.add(tab)
+        
+        # add the content to the main body panel
+        try:
+            if self.widget:
+                tab.add(self.widget)
+                element_name = self.widget.get_name()
+            else:
+                config = WidgetConfig.get(xml=self.config_xml, view="application")
+                main_body_handler = config.get_display_handler("main_body")
+                main_body_options = config.get_display_options("main_body")
+                element_name = main_body_options.get("element_name")
+                title = main_body_options.get("title")
 
+                main_body_content = Common.create_from_class_path(main_body_handler, [], main_body_options)
+                # get the web values from top_layout
+                main_body_values = config.get_web_options("main_body")
+                web = WebContainer.get_web()
+                if isinstance(main_body_values, dict):
+                    for name, value in main_body_values.items():
+                        web.set_form_value(name, value)
+
+                main_body_content.set_name(element_name)
+                tab.add(main_body_content, element_name, title)
+
+                self.set_as_panel(main_body_panel, class_name=main_body_handler, kwargs=main_body_options)
+
+            main_body_panel.add_behavior( {
+                'type': 'load',
+                'element_name': element_name,
+                'cbjs_action': '''
+                if (spt.help)
+                    spt.help.set_view(bvr.element_name);
+                '''
+            } )
+
+        except Exception as e:
+            # handle an error in the drawing
+            buffer = self.get_buffer_on_exception()
+            error_wdg = self.handle_exception(e)
+            main_body_content = DivWdg()
+            main_body_content.add(error_wdg)
+            main_body_content = main_body_content.get_buffer_display()
+            tab.add(main_body_content, "error", title)
+
+
+        # TODO: Fix the quick box.
+        is_admin = False
+        security = Environment.get_security()
+        if security.check_access("builtin", "view_site_admin", "allow"):
+            is_admin = True
+
+        if is_admin:
+            from tactic.ui.app.quick_box_wdg import QuickBoxWdg
+            quick_box = QuickBoxWdg()
+            main_body_panel.add(quick_box)
+
+ 
         return main_body_panel
 
 
