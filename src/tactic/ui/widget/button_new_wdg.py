@@ -176,6 +176,128 @@ class ButtonRowWdg(BaseRefreshWdg):
         return top
 
 
+__all__.extend(['BootstrapButtonRowWdg'])
+class BootstrapButtonRowWdg(BaseRefreshWdg):
+
+
+    def get_display(self):
+
+        top = self.top
+        top.add_class("spt_bs_btn_row_top")
+
+        top.add(self.get_collapse_display())
+        top.add(self.get_button_display())
+
+        top.add(self.get_bootstrap_styles())
+
+        return top
+
+
+    def get_bootstrap_styles(self):
+        style = HtmlElement.style("""
+        
+        @media (min-width: 576px)
+            .d-sm-flex {
+                display: flex !important;
+            }
+        }
+
+        """)
+        
+        return style
+
+    def get_button_display(self):
+
+        button_row_wdg = DivWdg()
+        button_row_wdg.add_class("d-none d-sm-flex")
+        button_row_wdg.add_class("spt_bs_btn_row")
+
+        for button in self.widgets:
+            button_row_wdg.add(button)
+
+        return button_row_wdg
+        
+        
+    def get_collapse_display(self):
+
+        collapse_div = DivWdg()
+        collapse_div.add_class("dropdown d-block d-sm-none")
+        collapse_div.add_class("spt_bs_collapse_top")
+
+        icon = self.kwargs.get("collapse_icon") or "FA_ELLIPSIS_V"
+        toggle_btn = ButtonNewWdg(title="Tools", icon=icon)
+        toggle_btn_id = toggle_btn.set_unique_id()
+        collapse_div.add(toggle_btn)
+        
+        toggle_btn.add_class("dropdown-toggle") 
+        # Dropdown behavior
+        toggle_btn.add_attr("data-toggle", "dropdown")
+        toggle_btn.add_attr("aria-haspopup", "true")
+        toggle_btn.add_attr("aria-expanded", "false")
+
+        button_menu = DivWdg()
+        collapse_div.add(button_menu)
+        button_menu.add_class("dropdown-menu")
+        
+        # HACK
+        button_menu.add_style("right", "0")
+        button_menu.add_style("left", "auto")
+
+
+        button_menu.add_attr("aria-labelledby", toggle_btn_id)
+
+        item_template = HtmlElement("a")
+        collapse_div.add(item_template)
+        item_template.add_class("SPT_TEMPLATE")
+        item_template.add_class("dropdown-item")
+
+        collapse_div.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            button_row_top = bvr.src_el.getParent(".spt_bs_btn_row_top");
+            row_top = button_row_top.getElement(".spt_bs_btn_row");
+            collapse_top = bvr.src_el;
+            menu = collapse_top.getElement(".dropdown-menu")
+ 
+            // Dynamically build the tab menu
+
+            // Reset menu
+            menu.innerHTML = "";
+
+            item_template = collapse_top.getElement(".SPT_TEMPLATE");
+
+            // TODO: Fix styling.
+            handle_header = function(header) {
+                header.removeAttribute("style");
+            }
+
+            var new_items = [];
+            items = row_top.getElements(".spt_collapsible_btn");
+            items.forEach(function(item) {
+                new_item = spt.behavior.clone(item_template);
+                new_item.removeClass("SPT_TEMPLATE");
+                
+                item.removeClass("d-none");
+                item.inject(new_item);
+                new_items.push(new_item);
+                
+                
+                /*new_btn = spt.behavior.clone(item);
+                new_items.push(new_btn);*/
+                
+            });
+
+            new_items.forEach(function(item){
+                item.inject(menu);
+            }); 
+        
+                 
+            '''
+        })
+
+        return collapse_div
+
 
 class ButtonWdg(BaseRefreshWdg):
     ARGS_KEYS = {
@@ -315,6 +437,9 @@ class ButtonWdg(BaseRefreshWdg):
 
     def get_button_wdg(self):
         return self.hit_wdg
+
+    def get_collapsible_wdg(self):
+        return self.collapsible_btn
 
     def get_icon_wdg(self):
         return self.icon_div
@@ -491,27 +616,55 @@ class ButtonNewWdg(ButtonWdg):
         self.hit_wdg.add_attr("title", tip)
         icon = IconWdg(tip, icon_str)
         self.icon = icon
-    
+
+        self.collapsible_btn = DivWdg()
+
+    def add_behavior(self, behavior):              
+        self.hit_wdg.add_behavior(behavior)
+        self.collapsible_btn.add_behavior(behavior)
+                                                   
+    def add_class(self, class_name):               
+        self.hit_wdg.add_class(class_name)        
+        self.collapsible_btn.add_class(class_name)
+                                                   
+    def set_attr(self, attr, name):                
+        self.hit_wdg.set_attr(attr, name)
+        self.collapsible_btn.set_attr(attr, name)
+                                                   
+    def get_bootstrap_styles(self):
+
+        style = HtmlElement.style("""
+            .spt_arrow_hit_wdg {
+                padding: 3px;
+                opacity: 0.6;
+                top: 17px;
+                left: -11px;
+                height: 4px;
+            }
+
+        """)
+
+
+        return style
+
 
     def get_display(self):
        
         top = self.top
 
+        top.add(self.get_bootstrap_styles())
+        
+        top.add(self.collapsible_btn)
+        self.collapsible_btn.add_class("spt_collapsible_btn d-none")
+        self.collapsible_btn.add(self.title)
+
         top.add(self.hit_wdg)
-        self.hit_wdg.add_class("btn btn-primary bmd-btn-icon")
+        self.hit_wdg.add_class("btn btn-primary bmd-btn-icon spt_hit_wdg")
         self.hit_wdg.add(self.icon)
         
         if self.show_arrow_menu or self.dialog:
             top.add(self.arrow_menu)
-            self.arrow_menu.add_class("btn dropdown-toggle")
-            self.arrow_menu.add_style("padding", "3px")
-            self.arrow_menu.add_style("opacity", "0.6")
-            self.arrow_menu.add_style("position", "relative")
-            self.arrow_menu.add_style("top", "17px")
-            self.arrow_menu.add_style("left", "-11px")
-            self.arrow_menu.add_style("height", "4px")
-
-
+            self.arrow_menu.add_class("btn dropdown-toggle spt_arrow_hit_wdg")
             top.add_class("d-flex")
         
         return top
@@ -757,6 +910,23 @@ class ActionButtonWdgOld(DivWdg):
 
         return super(ActionButtonWdgOld,self).get_display()
 
+
+
+class BootstrapButtonWdg(DivWdg):
+ 
+    
+    def get_collapsible_wdg(self):
+        pass 
+
+    def get_button_wdg(self):
+        pass 
+
+    def get_display(self):
+        
+        top = self.top
+        top.add_class()
+
+        pass
 
 
 

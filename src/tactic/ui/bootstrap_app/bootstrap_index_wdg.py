@@ -1000,6 +1000,10 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         tab_menu.add_class("dropdown-menu dropdown-menu-right")
         tab_menu.add_attr("aria-labelledby", tab_btn_id)
 
+        #HACK
+        tab_menu.add_style("right", "0")
+        tab_menu.add_style("left", "auto")
+
         item_template = HtmlElement("a")
         tab_div.add(item_template)
         item_template.add_class("SPT_TEMPLATE")
@@ -1039,10 +1043,6 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         })
 
         
-        # HACK
-        tab_menu.add_style("position", "absolute")
-        tab_menu.add_style("left", "-152px")
-
         return tab_div
 
 

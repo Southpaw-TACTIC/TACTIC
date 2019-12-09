@@ -715,7 +715,6 @@ class MainBodyTabWdg(BaseRefreshWdg):
         config = WidgetConfig.get(view=self.view, xml=config_xml)
 
         top = DivWdg()
-        #tab = TabWdg(width=1000, save_state="admin_tab_state")
         tab = TabWdg(config=config, view=self.view, width=1000, resize_offset="70")
         top.add(tab)
         for widget in self.widgets:

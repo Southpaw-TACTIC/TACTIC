@@ -1151,17 +1151,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div = None
 
 
-
-        spacing_divs = []
-        for i in range(0, 6):
-            spacing_div = DivWdg()
-            spacing_divs.append(spacing_div)
-            spacing_div.add_class("spt_spacing")
-            spacing_div.add_style("height: 32px")
-            spacing_div.add_style("width: 2px")
-            spacing_div.add_style("margin: 0 7 0 7")
-
-
         # -- Button Rows
         button_row_wdg = self.get_button_row_wdg()
 
@@ -1197,7 +1186,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 search_limit_button.add( "%s %s" % (self.items_found, _("items found")))
             
-            
+           
             from tactic.ui.container import DialogWdg
             dialog = DialogWdg()
             dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
@@ -1382,7 +1371,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if save_button:
             wdg_list.append( {'wdg': save_button} )
-            wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
         show_collection_tool = self.kwargs.get("show_collection_tool")
@@ -1393,10 +1381,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( {'wdg': collection_div} )
         
 
-
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
-            wdg_list.append( { 'wdg': spacing_divs[0] } )
             
         if self.show_search_limit:
             
@@ -1406,9 +1392,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
 
-        from tactic.ui.widget import ButtonRowWdg
-        extra_row_wdg = ButtonRowWdg(show_title=True)
-
         if search_button_row:
             wdg_list.append( { 
                 'wdg': search_button_row,
@@ -1417,7 +1400,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if self.filter_num_div:
                 wdg_list.append( { 'wdg': self.filter_num_div } )
             
-
         if column_wdg:
             wdg_list.append( { 'wdg': column_wdg } )
 
@@ -1425,10 +1407,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( { 'wdg': layout_wdg} )
 
         if expand_wdg:
-            wdg_list.append( { 'wdg': spacing_divs[0] } )
-            wdg_list.append( { 'wdg': extra_row_wdg } )
-            extra_row_wdg.add(expand_wdg)
-
+            wdg_list.append( { 'wdg': expand_wdg } )
 
 
         show_quick_add = self.kwargs.get("show_quick_add")
@@ -1439,13 +1418,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # add the help widget
         if help_wdg:
-            wdg_list.append( { 'wdg': spacing_divs[4] } )
             wdg_list.append( { 'wdg': help_wdg } )
 
 
         shelf_wdg = self.get_shelf_wdg()
         if shelf_wdg:
-            wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
 
@@ -1484,27 +1461,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         left_div = DivWdg()
         left_div.add_class("d-flex")
 
-        collapse_div = DivWdg()
-        collapse_id = collapse_div.set_unique_id()
+        from tactic.ui.widget import BootstrapButtonRowWdg
+        collapse_div = BootstrapButtonRowWdg() 
 
-        toggle_div = ButtonNewWdg(title="Tools", icon="FA_ELLIPSIS_V")
-        toggle_div.hit_wdg.add_class("d-block d-sm-none navbar-toggler collapsed")
-        toggle_div.hit_wdg.add_attr("type", "button")
-        toggle_div.hit_wdg.add_attr("data-toggle", "collapse")
-        toggle_div.hit_wdg.add_attr("data-target", "#" + collapse_id)
-        toggle_div.hit_wdg.add_attr("aria-controls", collapse_id)
-        toggle_div.hit_wdg.add_attr("aria-expanded", "false")
-        toggle_div.hit_wdg.add_attr("aria-label", "Toggle Tools")
-
-        collapse_div.add_class("navbar-collapse collapse")
         last_widget = None
         for item in wdg_list:
             widget = item.get('wdg')
-            if item == wdg_list[-1] and widget.has_class("spt_spacing"):
-                continue
-
-            if last_widget and last_widget.has_class("spt_spacing") and widget.has_class("spt_spacing"):
-                continue
 
             if item.get("mobile_display") == True:
                 left_div.add(widget)
@@ -1514,7 +1476,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             last_widget = widget
         
         xx.add(left_div)
-        xx.add(toggle_div)
         xx.add(collapse_div)
         div.add(xx)
 
@@ -1632,8 +1593,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search_type_obj = SearchType.get(self.search_type)
             search_type_title = search_type_obj.get_value("title")
 
-            #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
-            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="FA_PLUS")
+            button = ButtonNewWdg(title='Add New Item', icon="FA_PLUS")
 
             button_row_wdg.add(button)
             button.add_behavior( {
@@ -1873,6 +1833,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
+            
+            smenu_set = SmartMenu.add_smart_menu_set( button.get_collapsible_wdg(), { 'BUTTON_MENU': self.gear_menus } )
+            SmartMenu.assign_as_local_activator( button.get_collapsible_wdg(), "BUTTON_MENU", True )
       
 
         return button_row_wdg
@@ -1969,7 +1932,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         view = val[0]
                         break
                 
-        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
+        button_wdg = layout.get_button_wdg()
+        collapsible_wdg = layout.get_collapsible_wdg()
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=button_wdg)
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=collapsible_wdg)
         return layout
 
 
