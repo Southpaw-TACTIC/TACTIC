@@ -375,6 +375,7 @@ def xmlrpc_decorator(meth):
     
     def decode_api_key(key):
         key = key.lstrip("$")
+        print(Environment.get_security())
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
         path = "%s/api_key_%s" % (tmp_dir,key)
         if not os.path.exists(path):
@@ -386,20 +387,19 @@ def xmlrpc_decorator(meth):
         f.close()
         data = jsonloads(data)
         api_method = data.get("api_method")
-        kwargs = data.get("kwargs")
+        inputs = data.get("inputs")
         login = data.get("login")
-        expected_kwargs = data.get("expected_kwargs")
+        expected_args = data.get("expected_args")
         ticket = data.get("ticket")
         current_login = Environment.get_user_name()
         if login == current_login:
-            return (api_method, kwargs, expected_kwargs, ticket)
+            return (api_method, inputs, expected_args, ticket)
         else:
             raise Exception("Permission Denied: wrong user")
     
 
 
     def new(self, original_ticket, *args, **kwargs):
-
         use_api_key = False
 
         api_key = original_ticket.get("api_key")
@@ -408,13 +408,14 @@ def xmlrpc_decorator(meth):
             if isinstance(api_key, basestring):
                 if api_key.startswith("$"):
                     use_api_key = True
-                    api_method, api_kwargs, expected_kwargs, api_ticket = decode_api_key(api_key)
+                    api_method, api_inputs, expected_args, api_ticket = decode_api_key(api_key)
                     if api_method == meth.__name__:
                         use_api_key = True
         
         results = None
         try:
             ticket = self.init(original_ticket)
+            # ticket = original_ticket.get("ticket")
 
             # These modes disable a good chunk of the API for a more secure
             # environment.
@@ -428,32 +429,27 @@ def xmlrpc_decorator(meth):
                 user_name = security.get_user_name()
 
                 if use_api_key:
-                    for val in args:
-                        if isinstance(val, basestring):
-                            if val not in expected_kwargs and val not in api_kwargs.values():
-                                allowed = False
-                                print("WARNING: Trying to pass in unexpected inputs.")
-                                break
-                            else:
-                                allowed = True
-                        elif isinstance(val, dict):
-                            for x in val.keys():
-                                if x not in expected_kwargs:
-                                    if x not in api_kwargs.keys():
-                                        allowed = False
-                                        print("WARNING: Trying to pass in unexpected inputs.")
-                                        break
-                                    else:
-                                        if val[x] == api_kwargs[x]:
-                                            allowed = True
-                                        else:
-                                            allowed = False
-                                            print("WARNING: Trying to pass in unexpected values.")
-                                            break    
-                                else:
-                                    allowed = True
-                        if allowed == False:
-                            print("WARNING: Trying to pass in unexpected values.")
+                    if expected_args:
+                        for arg in expected_args:
+                            changed_input = args[arg[0]][arg[1]]
+                            api_inputs[arg[0]][arg[1]] = changed_input
+                    else:
+                        for i in range(len(api_inputs)):
+                            if api_inputs[i] == "*":
+                                api_inputs[i] = args[i]
+                            
+                            if isinstance(api_inputs[i], dict):
+                                for k, v in api_inputs[i]:
+                                    if v == "*":
+                                        api_inputs[i][v] = args[i][v]
+
+                        
+                    for i in range(len(api_inputs)):
+                        if api_inputs[i] == args[i]:
+                            allowed = True
+                        else:
+                            allowed = False
+                            print("WARNING: Trying to pass in unexpected inputs.")
                             break
                     if api_ticket:
                         if ticket == api_ticket:

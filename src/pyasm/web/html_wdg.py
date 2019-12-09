@@ -1060,7 +1060,7 @@ class HtmlElement(Widget):
         return key
 
 
-    def generate_api_key(self, api_name, kwargs={}, expected_kwargs=[], ticket=None):
+    def generate_api_key(self, api_name, inputs=[], expected_args=[], ticket=None):
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
@@ -1078,8 +1078,8 @@ class HtmlElement(Widget):
             "api_method": api_name,
             "login": login,
             "ticket": ticket,
-            "kwargs": kwargs,
-            "expected_kwargs": expected_kwargs
+            "inputs": inputs,
+            "expected_args": expected_args
         }
         f.write(jsondumps(args))
         f.close()
