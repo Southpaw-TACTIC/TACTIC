@@ -663,7 +663,7 @@ body {
     }
     
     .spt_tab_content_top {
-        height: calc(100vh - 96px);
+        height: calc(100vh - 56px);
     }
     
     .spt_bootstrap_top .spt_bs_content {
@@ -777,7 +777,6 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
 
             .spt_bs_top_nav {
                 max-height: 100vh;
-                overflow-y: hidden;
                 z-index: 10;
             }
 
@@ -788,55 +787,6 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
         """)
 
         return style
-
-    """
-    def get_subdisplay(self, views):
-
-        div = DivWdg()
-        div.add_class("bg-spt-blue-fade")
-        div.add_class("spt_bs_left_sidebar")
-        div.set_attr('spt_class_name', Common.get_full_class_name(self))
-        div.add_behavior( {
-            'type': 'load',
-            'cbjs_action': self.get_onload_js()
-        } )
-
-        # add the down button
-        down = DivWdg()
-        down.set_id("side_bar_scroll_down")
-        down.add_class("hand")
-        down.add_looks("navmenu_scroll")
-        down.add_style("display: none")
-        down.add_style("height: 10px")
-        down.add("<div style='margin-bottom: 4px; text-align: center'>" \
-                 "<img class='spt_order_icon' src='/context/icons/common/order_array_up_1.png'></div>")
-        down.add_event("onclick", "new Fx.Tween('side_bar_scroll').start('margin-top', 0);" \
-                       "document.id(this).setStyle('display', 'none');")
-        div.add(down)
-
-
-        outer_div = DivWdg()
-
-        div.add(outer_div)
-
-        inner_div = DivWdg()
-        inner_div.set_id("side_bar_scroll")
-        outer_div.add(inner_div)
-
-        behavior = {
-            'type': 'wheel',
-            'cbjs_action': 'spt.side_bar.scroll(evt,bvr)',
-        }
-        inner_div.add_behavior(behavior)
-
-        styles = self.get_bootstrap_styles()
-        inner_div.add(styles)
-
-        inner_div.add(HtmlElement.br())
-
-        return div
-    """
-
 
     def get_subdisplay(self, views):
         
@@ -913,17 +863,125 @@ class BootstrapTopNavWdg(BootstrapSideBarPanelWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
-        user_btn = ButtonNewWdg(title="Show workflow info", icon="FA_USER")
+        title = "Logged in as TACTIC user"
+        user_btn = ButtonNewWdg(title=title, icon="FA_USER")
         right_wdg.add(user_btn)
         user_btn.add_class("bg-light")
         user_btn.add_class("ml-1")
- 
-        tab_btn = ButtonNewWdg(title="Show workflow info", icon="FA_CLONE")
-        right_wdg.add(tab_btn)
+
+        tab_div = self.get_tab_manager()
+        right_wdg.add(tab_div)
+        
+        return right_wdg
+
+
+    def get_tab_manager(self):
+
+
+        tab_div = DivWdg()
+        tab_div.add_class("spt_mobile_tab_manager")
+        tab_div.add_class("dropdown d-block d-sm-none")
+
+        tab_btn = ButtonNewWdg(title="View tabs", icon="FA_CLONE")
+        tab_div.add(tab_btn)
+
+        tab_btn.add_class("dropdown-toggle")
         tab_btn.add_class("bg-light")
         tab_btn.add_class("ml-1")
+        tab_btn.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+                
+                // Dynamically build the tab menu
+                tab_div = bvr.src_el.getParent(".spt_mobile_tab_manager");
+                menu = tab_div.getElement(".dropdown-menu");
+                
+                // Reset menu
+                menu.innerHTML = "";
+                
+                item_template = tab_div.getElement(".SPT_TEMPLATE");
 
-        return right_wdg
+                spt.tab.set_main_body_tab();
+                var headers = spt.tab.get_headers();
+
+ 
+                // TODO: Fix styling.
+                handle_header = function(header) {
+                    header.removeAttribute("style");
+                }
+
+                var new_items = [];
+                headers.forEach(function(header) {
+                    new_item = spt.behavior.clone(item_template);
+                    handle_header(new_item);
+                    new_item.removeClass("SPT_TEMPLATE");
+                    new_header = header.clone();
+                    new_header.inject(new_item)
+                    new_items.push(new_item);
+                });
+
+                new_items.forEach(function(item){
+                    item.inject(menu);
+                });
+
+            '''
+        })
+
+        # Dropdown behavior
+        tab_btn_id = tab_btn.set_unique_id()
+        tab_btn.add_attr("data-toggle", "dropdown")
+        tab_btn.add_attr("aria-haspopup", "true")
+        tab_btn.add_attr("aria-expanded", "false")
+
+        tab_menu = DivWdg()
+        tab_div.add(tab_menu)
+        tab_menu.add_class("dropdown-menu dropdown-menu-right")
+        tab_menu.add_attr("aria-labelledby", tab_btn_id)
+
+        item_template = HtmlElement("a")
+        tab_div.add(item_template)
+        item_template.add_class("SPT_TEMPLATE")
+        item_template.add_class("dropdown-menu-item")
+        
+        main_body_tab_id = self.kwargs.get("main_body_tab_id")
+        item_template.add_attr("spt_tab_id", main_body_tab_id)
+        
+        item_template.add_behavior({
+            'type': 'click',
+            'tab_id': main_body_tab_id,
+            'cbjs_action': '''
+                var tab_id = bvr.tab_id;
+                spt.tab.top = document.id(tab_id);
+                var header = bvr.src_el.getElement(".spt_tab_header");
+                if (header.hasClass("spt_is_selected")) return;
+                var element_name = header.getAttribute("spt_element_name");
+                spt.tab.select(element_name);
+            '''
+        })
+
+        
+        item_template.add_relay_behavior({
+            'type': 'click',
+            'tab_id': main_body_tab_id,
+            'bvr_match_class': 'spt_tab_remove',
+            'cbjs_action': '''
+                
+                var mobile_header = bvr.src_el.getParent(".spt_tab_header");
+                var element_name = mobile_header.getAttribute("spt_element_name");
+
+                spt.tab.top = document.id(bvr.tab_id);
+                orig_header = spt.tab.get_header(element_name);
+                orig_tab_remove = orig_header.getElement(".spt_tab_remove"); 
+                spt.tab.close(orig_tab_remove);
+            '''
+        })
+
+        
+        # HACK
+        tab_menu.add_style("position", "absolute")
+        tab_menu.add_style("left", "-152px")
+
+        return tab_div
 
 
 class BootstrapIndexWdg(PageNavContainerWdg):
@@ -956,10 +1014,13 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         main_body_panel.add_class("spt_main_panel")
         main_body_panel.add_class("spt_bs_content")
 
-        top_nav_wdg = BootstrapTopNavWdg()
-        main_body_panel.add(top_nav_wdg)
-
         tab = BootstrapTabWdg()
+        tab_id = tab.get_tab_id()
+        
+        top_nav_wdg = BootstrapTopNavWdg(main_body_tab_id=tab_id)
+        
+        main_body_panel.add(top_nav_wdg)
+        
         tab.add(self.widget)
         main_body_panel.add(tab)
 

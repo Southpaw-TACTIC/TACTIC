@@ -50,6 +50,15 @@ class TabWdg(BaseRefreshWdg):
  
     }
 
+
+
+    def __init__(self, **kwargs):
+        super(TabWdg, self).__init__(**kwargs)
+
+        self.unique_id = self.generate_unique_id()
+
+
+
     def get_onload_js(self):
 
         return r'''
@@ -91,6 +100,8 @@ spt.tab.set_tab_top_from_child = function( el ) {
     if (! el.hasClass("spt_tab_top") ) {
         el = el.getParent(".spt_tab_top");
     }
+    
+    
     spt.tab.top = el;
     return spt.tab.top;
 }
@@ -1064,6 +1075,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
 }
 
+
 spt.tab.close = function(src_el) {
     // src_el should be a child of spt_tab_content or spt_tab_header
     if (!src_el) {
@@ -1071,6 +1083,7 @@ spt.tab.close = function(src_el) {
         return;
     }
     spt.tab.top = src_el.getParent(".spt_tab_top");
+    
     var top = spt.tab.top;
     var headers = spt.tab.get_headers();
     if (headers.length == 1) {
@@ -1309,6 +1322,13 @@ spt.tab.view_definition = function(bvr) {
 
             .spt_tab_header_top {
                 height: 40px;
+                display: none !important;
+            }
+            
+            @media (min-width: 576px) {
+                .spt_tab_header_top {
+                    display: flex !important;
+                }
             }
 
             .spt_tab_header_label {
@@ -1428,7 +1448,10 @@ spt.tab.view_definition = function(bvr) {
 
         return styles
 
- 
+
+    def get_tab_id(self):
+        return self.unique_id
+
 
     def get_display(self):
 
@@ -1576,7 +1599,7 @@ spt.tab.view_definition = function(bvr) {
 
 
         #top.add_style("padding: 10px")
-        self.unique_id = top.set_unique_id()
+        top.set_id(self.unique_id)
         top.set_attr("spt_tab_id", self.unique_id)
 
         top.set_attr("spt_tab_mode", self.mode)

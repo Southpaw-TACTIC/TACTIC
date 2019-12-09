@@ -290,6 +290,9 @@ class ButtonWdg(BaseRefreshWdg):
     def set_attr(self, attr, name):
         self.hit_wdg.set_attr(attr, name)
 
+    def set_unique_id(self):
+        return self.hit_wdg.set_unique_id()
+
     def add_arrow_behavior(self, behavior):
         self.arrow_menu.add_behavior(behavior)
         self.show_arrow_menu = True

@@ -9,6 +9,7 @@ __all__ = ['BootstrapTabWdg']
 
 class BootstrapTabWdg(BaseRefreshWdg):
 
+
     def init(self):
         
         view = "tab"
@@ -27,9 +28,13 @@ class BootstrapTabWdg(BaseRefreshWdg):
         </config>'''
         config = WidgetConfig.get(view=view, xml=config_xml)
         self.tab = TabWdg(config=config, view=view, use_default_style=False)
+        self.unique_id = self.tab.get_tab_id()
         
         for widget in self.widgets:
             tab.add(widget)
+
+    def get_tab_id(self):
+        return self.unique_id
 
     def get_display(self):
 
