@@ -35,6 +35,18 @@ class MobileTableWdg(BaseRefreshWdg):
     width: 100%;
 }
 
+.spt_mobile_table .spt_resize_handle {
+    display: none;
+}
+
+.spt_mobile_table .spt_table_row {
+    height: unset !important;
+    min-height: unset !important;
+}
+
+.spt_mobile_table .spt_table_row .spt_filter_button {
+    display: none;
+}
         """)
 
         return style
@@ -52,13 +64,7 @@ convert_el_to_div = function(el) {
     var new_el = new Element("div");
     var attrs = el.getAttributeNames()
     attrs.forEach(function(attr) {
-        if (attr == "class") {
-            new_el.setAttribute("table_class", el.getAttribute(attr));
-        } else if (attr == "style") {
-            new_el.setAttribute("table_style", el.getAttribute(attr));
-        } else {
-            new_el.setAttribute(attr, el.getAttribute(attr));
-        }
+        new_el.setAttribute(attr, el.getAttribute(attr));
     });
 
     return new_el;
@@ -67,7 +73,11 @@ convert_el_to_div = function(el) {
 
 handle_row = function(row) {
     var new_row = convert_el_to_div(row);
+
+    remove_desktop_styles(row);
+    
     new_row.addClass("row");
+
     return new_row;
 }
 
@@ -75,13 +85,39 @@ handle_cell = function(cell) {
         
     var new_cell = convert_el_to_div(cell);
     new_cell.innerHTML = cell.innerHTML;
+    
+    remove_desktop_styles(cell);
+
     return new_cell;
 }
 
 handle_header = function(header) {
     var new_header = convert_el_to_div(header)
     new_header.innerHTML = header.innerHTML;
+
+    remove_desktop_styles(new_header);
+
     return new_header;
+}
+
+remove_desktop_styles = function(el) {
+    el.setAttribute("table_style", el.getAttribute("style"));
+    el.removeAttribute("style");
+    
+    children = el.getChildren();
+    if (children.length > 0) {
+        new_children = []
+        el.innerHTML = "";
+        children.forEach(function(child) {
+            new_child = remove_desktop_styles(child);
+            new_child.inject(el);
+        });
+    }
+    return el;
+}
+
+reapply_desktop_styles = function(el) {
+
 }
 
 
