@@ -140,7 +140,7 @@ class NewPasswordCmd(Command):
                 if data:
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
-                      encrypted = hashlib.md5(password).hexdigest()
+                      encrypted = Login.encrypt_password(password)
                       login.set_value('password', encrypted)
                       login.commit()
         else:
