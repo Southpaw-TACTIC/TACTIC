@@ -26,6 +26,7 @@ from pyasm.biz import Task, Pipeline, Project, ProjectSetting
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
+from pyasm.security import Sudo
 from tactic.ui.panel import FastTableLayoutWdg
 from pyasm.widget import SwapDisplayWdg
 
@@ -6781,7 +6782,6 @@ class ProcessInfoCmd(Command):
 
         if script:
 
-            from pyasm.security import Sudo
 
             sudo = Sudo()
             try:
@@ -7172,7 +7172,6 @@ class NewProcessInfoCmd(Command):
         trigger.commit()
 
         if script:
-            from pyasm.security import Sudo
 
             sudo = Sudo()
             try:
@@ -8980,7 +8979,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
         # The search needed for the login_group select widgets
-        login_group_search = Search('sthpw/login_group')
+        
+        sudo = Sudo()
+        try:
+            login_group_search = Search('sthpw/login_group')
+        finally:
+            sudo.exit()
+
 
         # assigned_group
         table.add_row()
