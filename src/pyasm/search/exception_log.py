@@ -76,13 +76,28 @@ class ExceptionLog(SObject):
             
             from pyasm.security import Site
             site = Site.get_site()
+           
+            from pyasm.biz import Project
+            project = Project.get_project_code()
+
+            try:
+                from pyasm.web import WebContainer
+                web = WebContainer.get_web()
+            except Exception as e:
+                web = None
+
+            url = "UNKNOWN" 
+            if web:
+                url = web.get_base_url().to_string()
 
             sender_name = Config.get_value("services", "notify_user_name")
             recipient_emails = [sender_email]
             message = """
 An exception has been reported in the TACTIC Exception Log.
-           
+
+Url: %s
 Site: %s
+Project: %s
 Login: %s
 Class: %s
 Message: 
@@ -92,10 +107,12 @@ Message:
 Stack trace: 
             
 %s
-            """ % (site, user_name, class_name, message, stacktrace_str)
+            """ % (url, site, project, user_name, class_name, message, stacktrace_str)
             
             exception_code = exception_log.get_code()
             subject = "New TACTIC Exception Log from %s [%s]" % (user_name, exception_code)
+            if url != "UNKNOWN":
+                subject += " [%s]" % url
             
             from pyasm.command import SendEmail
             email_cmd = SendEmail(
