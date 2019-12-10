@@ -799,6 +799,9 @@ class NamingUtil(object):
         #NOTE: no file kwarg
         # parse the pattern string
         #expression = re.compile(r'{([\w|\.|\#]+\[?\d?\]?)}')
+        if template is None:
+            return None
+
         expression = re.compile(r'{(.*?)}')
         temp_list = expression.findall(template)
 
