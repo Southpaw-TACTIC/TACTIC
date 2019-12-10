@@ -27,7 +27,6 @@ class BootstrapTabWdg(BaseRefreshWdg):
 
         top = self.top
         top.add(self.tab)
-        top.add_class("mx-1")
 
         for widget in self.widgets:
             self.tab.add(widget)

@@ -56,7 +56,6 @@ class MobileTableWdg(BaseRefreshWdg):
     flex-direction: column;
     overflow-y: auto;
     overflow-x: hidden;
-    height: calc(100% - 80px);
     width: 100%;
 }
 

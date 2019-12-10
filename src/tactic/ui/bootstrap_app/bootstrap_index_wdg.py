@@ -540,7 +540,9 @@ body {
 /* TODO: Remove and place in TabWdg */
 .spt_tab_content_top {
     overflow-y: auto;
+    height: calc(100% - 80px);
 }
+
 
 @media (min-width: 575.98px) {
 
@@ -568,10 +570,6 @@ body {
         display: none !important;
     }
 
-    // TODO: This should be % not vh
-    .spt_tab_content_top {
-        height: calc(100vh - 80px);
-    }
 
     .navbar-toggler {
         font-size: 1rem;
@@ -667,9 +665,8 @@ body {
         padding-top: 56px;
     }
     
-    // TODO: This should be percentage, not vh
     .spt_tab_content_top {
-        height: calc(100vh - 56px);
+        height: 100%;
     }
     
     .spt_bootstrap_top .spt_bs_content {
@@ -681,6 +678,7 @@ body {
     }
 
 }
+
 
         """)
 
@@ -781,7 +779,6 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             }
 
             .spt_bs_top_nav {
-                max-height: 100vh;
                 z-index: 10;
             }
 

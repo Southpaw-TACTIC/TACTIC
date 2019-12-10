@@ -1431,10 +1431,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         xx = DivWdg()
-        xx.add_class("navbar navbar-expand-sm") 
+        xx.add_class("navbar") 
         xx.add_class("spt_base_table_action_wdg")
 
-        xx.add_style("padding: 0px")
         xx.add_style("box-shadow: none")
 
         left_div = DivWdg()
@@ -1487,7 +1486,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.view_save_dialog:
             outer.add(self.view_save_dialog)
 
-        outer.add_style("height: 40px")
         outer.add_style("white-space: nowrap")
         
         return outer

@@ -645,14 +645,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
-        inner.add_style("display: flex")
-        inner.add_style("flex-direction: column")
-        inner.add_style("height: 100%")
 
-        inner.add_style("position: relative")
-        inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px")
-        inner.add_style("border-color", inner.get_color("border"))
         has_extra_header = self.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -937,7 +930,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
-            h_scroll.add_style("height: calc(100% - 80px)")
             h_scroll.add_style("flex-direction: column")
  
             scroll = DivWdg()
@@ -1459,7 +1451,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_bootstrap_styles(self):
         styles = HtmlElement.style("""
                 
-                
+        .spt_layout_inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            border-style: solid; 
+            border-width: 0px;
+        }
+
         @media (min-width: 576px)
             .d-sm-flex {
                 display: flex! important;
