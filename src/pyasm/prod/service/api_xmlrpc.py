@@ -11,7 +11,7 @@
 #
 from __future__ import print_function
 
-__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', "API_MODE"]
+__all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', 'RemoteApiException', "API_MODE"]
 
 import decimal
 import shutil, os, types, sys
@@ -53,7 +53,13 @@ class ApiClientCmd(Command):
 
 
 class ApiException(Exception):
-    pass
+    
+    def __init__(self, message):
+
+        super(ApiException, self).__init__(message)
+
+        from pyasm.search import ExceptionLog
+        ExceptionLog.log(self)
 
 
 class RemoteApiException(Exception):
@@ -62,6 +68,9 @@ class RemoteApiException(Exception):
         self.class_name = error.get('type')
         self.message = error.get('message')
         self.args = error.get('args')
+        
+        from pyasm.search import ExceptionLog
+        ExceptionLog.log(self)
 
 
 # methods that only query.  These do not need the overhead of a transaction
@@ -200,7 +209,7 @@ def get_full_cmd(self, meth, ticket, args):
             if transaction_log:
                 transaction = Transaction.resume(transaction_log)
             else:
-                raise Exception( "Can't resume transaction" )
+                raise ApiException( "Can't resume transaction" )
 
             #transaction = Transaction.get(create=True)
 
@@ -378,7 +387,7 @@ def xmlrpc_decorator(meth):
         path = "%s/api_key_%s.txt" % (tmp_dir,key)
         if not os.path.exists(path):
             print("ERROR: API path [%s] not found" % path)
-            raise Exception("API key not valid")
+            raise ApiException("API key not valid")
         
         f = open(path, 'r')
         data = f.read()
@@ -393,7 +402,7 @@ def xmlrpc_decorator(meth):
             if login == current_login:
                 return api_method, inputs, ticket
             else:
-                raise Exception("Permission Denied: wrong user")
+                raise ApiException("Permission Denied: wrong user")
         else:
             return api_method, inputs, ticket
         
@@ -460,7 +469,7 @@ def xmlrpc_decorator(meth):
                                         raise ApiException("Try to access API's that are not allowed.")
 
                 if not allowed:
-                    raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
+                    raise ApiException("Permission Denied [%s] [%s]" % (meth.__name__, args))
 
 
             try:
@@ -1890,7 +1899,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''optimized query that does not take security into accunt.
         '''
         if Config.get_value("security", "enable_fast_query") != 'true':
-            raise TacticException("Cannot call fast_query() without enabling in TACTIC config file")
+            raise ApiException("Cannot call fast_query() without enabling in TACTIC config file")
         security = Security()
         Environment.set_security(security)
 
@@ -5442,7 +5451,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 args_array = []
                 widget = Common.create_from_class_path(class_name, args_array, args)
                 if not isinstance(widget, Widget):
-                    raise Exception("Must be derived from Widget")
+                    raise ApiException("Must be derived from Widget")
 
 
                 if 'spt_help' in libraries:
@@ -5675,7 +5684,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 path = "%s/key_%s.txt" % (tmp_dir,key)
                 if not os.path.exists(path):
                     print("ERROR: Command path [%s] not found" % path)
-                    raise Exception("Command key not valid")
+                    raise ApiException("Command key not valid")
 
                 f = open(path, 'r')
                 data = f.read()
@@ -5691,22 +5700,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 login = data.get("login")
                 current_login = Environment.get_user_name()
                 if login != current_login:
-                    raise Exception("Permission Denied: wrong user")
+                    raise ApiException("Permission Denied: wrong user")
 
 
             args_array = []
             cmd = Common.create_from_class_path(class_name, args_array, args)
 
             if cmd.requires_key() and not key:
-                raise Exception("Permission Denied: command requires key")
+                raise ApiException("Permission Denied: command requires key")
 
 
 
             if not isinstance(cmd, Command):
-                raise Exception("Cannot run command [%s].  Must be derived from Command." % class_name)
+                raise ApiException("Cannot run command [%s].  Must be derived from Command." % class_name)
 
             if not cmd.can_run(source="api"):
-                raise Exception("Cannot run command [%s] from API." % class_name)
+                raise ApiException("Cannot run command [%s] from API." % class_name)
 
 
             if use_transaction:
