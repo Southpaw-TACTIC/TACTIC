@@ -390,8 +390,12 @@ class HashPanelWdg(BaseRefreshWdg):
 
         if is_admin and use_admin:
             # use admin
-            from tactic.ui.app import PageNavContainerWdg
-            top = PageNavContainerWdg( hash=hash, use_sidebar=use_sidebar )
+            top_class_name = WebEnvironment.get_admin_top_class_name()
+            kwargs = {
+                'hash': hash,
+                'use_sidebar': use_sidebar
+            }
+            top = Common.create_from_class_path(top_class_name, [], kwargs)
             return top.get_buffer_display()
 
         elif use_index:
@@ -402,8 +406,12 @@ class HashPanelWdg(BaseRefreshWdg):
             index = search.get_sobject()
             # just use admin if no index page is found
             if not index:
-                from tactic.ui.app import PageNavContainerWdg
-                top = PageNavContainerWdg( hash=hash, use_sidebar=use_sidebar )
+                top_class_name = WebEnvironment.get_top_class_name()
+                kwargs = {
+                    'hash': hash,
+                    'use_sidebar': use_sidebar
+                }
+                top = Common.create_from_class_path(top_class_name, [], kwargs)
                 return top.get_buffer_display()
                 
             config = index.get_value("widget")

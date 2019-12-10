@@ -349,11 +349,13 @@ body {
     height: 40px;
 }
 
+/* TODO REMOVE and put in TabWdg */
 .spt_tab_selected {
     border-bottom: solid .214rem #114e8a;
     height: 40px;
 }
 
+/* TODO REMOVE and put in TabWdg */
 .nav-tabs .spt_tab_selected .nav-link {
     color: rgba(0,0,0,.87);
 }
@@ -535,6 +537,7 @@ body {
     MEDIAQUERIES
 ----------------------------------------------------- */
 
+/* TODO: Remove and place in TabWdg */
 .spt_tab_content_top {
     overflow-y: auto;
 }
@@ -565,6 +568,7 @@ body {
         display: none !important;
     }
 
+    // TODO: This should be % not vh
     .spt_tab_content_top {
         height: calc(100vh - 80px);
     }
@@ -663,6 +667,7 @@ body {
         padding-top: 56px;
     }
     
+    // TODO: This should be percentage, not vh
     .spt_tab_content_top {
         height: calc(100vh - 56px);
     }

@@ -6492,7 +6492,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         ticket = self.init(ticket)
         if key == "top_layout":
-            class_name = "tactic.ui.app.PageNavContainerWdg"
+            from pyasm.web import WebEnvironment
+            class_name = WebEnvironment.get_top_class_name()
         else:
             raise ApiException("layout [%s] not supported" % key)
 

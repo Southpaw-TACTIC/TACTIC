@@ -1009,7 +1009,7 @@ class TopWdg(Widget):
         version = Environment.get_release_version()
 
         #ui_library = "bootstrap_material"
-        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "default"
+        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "bootstrap_material"
         if ui_library == "default":
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
 
@@ -1477,9 +1477,6 @@ class SitePage(AppServer):
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
-            elif bootstrap == 'true':
-                widget = BootstrapIndexWdg()
-                return widget
             elif widget == 'true':
                 hash = "/".join(self.hash)
                 hash = "/%s" % hash
