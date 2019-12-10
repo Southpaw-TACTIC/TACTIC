@@ -1060,7 +1060,7 @@ class HtmlElement(Widget):
         return key
 
 
-    def generate_api_key(self, api_name, inputs=[], expected_args=[], ticket=None):
+    def generate_api_key(self, api_name, inputs=[], ticket=None):
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
@@ -1069,6 +1069,12 @@ class HtmlElement(Widget):
 
         if not tmp_dir:
             raise Exception("TMP_DIR config not defined")
+        
+        if not ticket:
+            ticket = Environment.get_ticket()
+        
+        if api_name.startswith("p_"):
+            api_name = api_name.lstrip("p_")
 
         login = Environment.get_user_name()
         key = "$"+Common.generate_random_key()
@@ -1078,8 +1084,7 @@ class HtmlElement(Widget):
             "api_method": api_name,
             "login": login,
             "ticket": ticket,
-            "inputs": inputs,
-            "expected_args": expected_args
+            "inputs": inputs
         }
         f.write(jsondumps(args))
         f.close()

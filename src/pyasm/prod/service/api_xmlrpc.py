@@ -64,7 +64,6 @@ class RemoteApiException(Exception):
         self.args = error.get('args')
 
 
-
 # methods that only query.  These do not need the overhead of a transaction
 # so run outside of transaction, increasing performance. 
 
@@ -375,13 +374,12 @@ def xmlrpc_decorator(meth):
     
     def decode_api_key(key):
         key = key.lstrip("$")
-        print(Environment.get_security())
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
         path = "%s/api_key_%s" % (tmp_dir,key)
         if not os.path.exists(path):
             print("ERROR: API path [%s] not found" % path)
             raise Exception("API key not valid")
-
+        
         f = open(path, 'r')
         data = f.read()
         f.close()
@@ -389,30 +387,24 @@ def xmlrpc_decorator(meth):
         api_method = data.get("api_method")
         inputs = data.get("inputs")
         login = data.get("login")
-        expected_args = data.get("expected_args")
         ticket = data.get("ticket")
         current_login = Environment.get_user_name()
-        if login == current_login:
-            return (api_method, inputs, expected_args, ticket)
+        if current_login:
+            if login == current_login:
+                return api_method, inputs, ticket
+            else:
+                raise Exception("Permission Denied: wrong user")
         else:
-            raise Exception("Permission Denied: wrong user")
+            return api_method, inputs, ticket
+        
     
 
 
     def new(self, original_ticket, *args, **kwargs):
-        use_api_key = False
 
         api_key = original_ticket.get("api_key")
-
-        if api_key:
-            if isinstance(api_key, basestring):
-                if api_key.startswith("$"):
-                    use_api_key = True
-                    api_method, api_inputs, expected_args, api_ticket = decode_api_key(api_key)
-                    if api_method == meth.__name__:
-                        use_api_key = True
-        
         results = None
+
         try:
             ticket = self.init(original_ticket)
             # ticket = original_ticket.get("ticket")
@@ -427,35 +419,6 @@ def xmlrpc_decorator(meth):
 
                 security = Environment.get_security()
                 user_name = security.get_user_name()
-
-                if use_api_key:
-                    if expected_args:
-                        for arg in expected_args:
-                            changed_input = args[arg[0]][arg[1]]
-                            api_inputs[arg[0]][arg[1]] = changed_input
-                    else:
-                        for i in range(len(api_inputs)):
-                            if api_inputs[i] == "*":
-                                api_inputs[i] = args[i]
-                            
-                            if isinstance(api_inputs[i], dict):
-                                for k, v in api_inputs[i]:
-                                    if v == "*":
-                                        api_inputs[i][v] = args[i][v]
-
-                        
-                    for i in range(len(api_inputs)):
-                        if api_inputs[i] == args[i]:
-                            allowed = True
-                        else:
-                            allowed = False
-                            print("WARNING: Trying to pass in unexpected inputs.")
-                            break
-                    if api_ticket:
-                        if ticket == api_ticket:
-                            allowed = True
-                        else:
-                            allowed = False
                 
                 if user_name == "admin":
                     allowed = True
@@ -465,12 +428,38 @@ def xmlrpc_decorator(meth):
                     allowed = True
 
                 if api_mode in ["closed", "query"]:
-                    if meth_name in API_MODE.get("closed"):
-                        allowed = True
+                    if api_mode == "closed":
+                        if meth_name in API_MODE.get("closed"):
+                            allowed = True
+                    elif api_mode == "query":
+                        if meth_name in API_MODE.get("query") or meth_name in API_MODE.get("closed"):
+                            allowed = True
 
-                if api_mode == "query":
-                    if meth_name in API_MODE.get("query"):
-                        allowed = True
+                    if not allowed:
+                        if api_key:
+                            if isinstance(api_key, basestring):
+                                if api_key.startswith("$"):
+                                    api_method, api_inputs, api_ticket = decode_api_key(api_key)
+
+                                    if api_method == meth.__name__:
+                                        for i in range(len(api_inputs)):
+                                            if api_inputs[i] == "__API_UNKNOWN__":
+                                                api_inputs[i] = args[i]
+                                            
+                                            if isinstance(api_inputs[i], dict):
+                                                for k, v in api_inputs[i].items():
+                                                    if v == "__API_UNKNOWN__":
+                                                        api_inputs[i][k] = args[i][k]
+                                            
+                                            if api_inputs[i] == args[i]:
+                                                allowed = True
+                                            else:
+                                                allowed = False
+                                                print("WARNING: Trying to pass in unexpected inputs.")
+                                                break
+                                    else:
+                                        raise ApiException("Try to access API's that are not allowed.")
+
                 if not allowed:
                     raise Exception("Permission Denied [%s] [%s]" % (meth.__name__, args))
 
@@ -827,7 +816,6 @@ class BaseApiXMLRPC(XmlrpcServer):
 
         # if a session container has been cached, use that
         key = ticket
-
         # start a new session and store the container
         container = Container.create()
         #self.session_containers[key] = container

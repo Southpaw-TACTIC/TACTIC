@@ -482,9 +482,7 @@ class Project(SObject):
         security_version = get_security_version()
         if security_version != 1 and not project_code == 'admin':
             key = { 'code': project_code }
-            key2 = { 'code': "*" }
-            keys = [key, key2]
-            if not security.check_access("project", keys, access="allow", default="deny"):
+            if not security.check_access("project", key, access="allow", default="deny"):
                 user = Environment.get_login()
                 if user:
                     user = user.get_value("login")
