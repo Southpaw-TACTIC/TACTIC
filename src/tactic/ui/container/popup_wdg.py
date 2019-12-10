@@ -68,7 +68,7 @@ class PopupWdg(BaseRefreshWdg):
         if self.kwargs.get('allow_page_activity'):
             self.allow_page_activity = True
 
-        self.z_start = 200
+        self.z_start = 1050
         if self.kwargs.get('z_start'):
             self.z_start = self.kwargs.get('z_start')
 
@@ -100,7 +100,7 @@ class PopupWdg(BaseRefreshWdg):
         self.aux_wdg = Widget()
 
     def get_cancel_script(self):
-
+        
         #TODO: when the add_named_listener is fixed, will add these closing function into the listener
         cbjs_action = '''
             var popup=spt.popup.get_popup( bvr.src_el );
@@ -144,8 +144,35 @@ class PopupWdg(BaseRefreshWdg):
         else:
             self.content_wdg.add(widget, name)
         
+
+    def get_bootstrap_styles(self):
+        
+        style = HtmlElement.style(""" 
+    
+        @media (min-width: 576px) {
+            .spt_popup_top.spt_popup {
+                width: fit-content;
+            }
+
+            .spt_popup_top .modal-dialog {
+                margin: 0; 
+                pointer-events: unset;
+                max-width: fit-content;
+            }
+
+            .spt_popup_top .spt_popup_width {
+                width: fit-content;
+            }
+
+        }
+
+        """)
+        
+        return style 
+
+
     def get_styles(self):
-       
+        
         # Style of title_div
         div = DivWdg()
         palette = div.get_palette()
@@ -182,9 +209,52 @@ class PopupWdg(BaseRefreshWdg):
                 border-style: solid;
                 border-width: 1px;
                 border-color: %s;
+                position: absolute;
+                background: rgb(255, 255, 255);
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 20px;
+                margin-left: 0px;
             }
 
         ''' % border_color)
+
+        style.add('''
+
+            .spt_popup_background {
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                opacity: 0.4;
+                background: rgb(0, 0, 0);
+                padding: 100px;
+                height: 100%;
+                width: 100%;
+                z-index: 2;
+            }
+        ''')
+
+
+        style.add(''' 
+        
+            .spt_popup_content { 
+                color: rgb(51, 51, 51);
+                background: rgb(255, 255, 255);
+                margin: 0px -1px;
+                width: 100%;
+                overflow: hidden auto;
+            }        
+        ''')
+
+
+        style.add('''
+        
+        .spt_popup_width {
+            font-size: 1.1em;
+            text-align: left;
+            min-width: 200px;
+        }
+
+        ''')
+
 
         return style 
 
@@ -193,19 +263,10 @@ class PopupWdg(BaseRefreshWdg):
 
         div = DivWdg()
 
-
         if not Container.get_dict("JSLibraries", "spt_popup"):
-            div.add_style("position: fixed")
-            div.add_style("top: 0px")
-            div.add_style("left: 0px")
-            div.add_style("opacity: 0.4")
-            div.add_style("background", "#000")
-            div.add_style("padding: 100px")
-            div.add_style("height: 100%")
-            div.add_style("width: 100%")
+            #TODO: Remove
             div.add_class("spt_popup_background")
             div.add_style("display: none")
-            div.add_style("z-index: 2")
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
@@ -218,10 +279,14 @@ class PopupWdg(BaseRefreshWdg):
 
         widget = DivWdg()
         div.add(widget)
-        
+       
+        #widget.add_class("spt_popup_top")
+        widget.add_class("spt_popup_top")
+        widget.add_class("modal")
+        widget.add_attr("data-backdrop", "static")
         widget.add_class("spt_popup")
         
-
+        
 
 
         if not Container.get_dict("JSLibraries", "spt_popup"):
@@ -244,54 +309,14 @@ class PopupWdg(BaseRefreshWdg):
         else:
             widget.add_style("display: none")
 
-        widget.add_style("position: absolute")
-        widget.add_style("left: 400px")
-        widget.add_style("top: 100px")
-
-        widget.add_color("background", "background")
-
-        #widget.set_box_shadow(color="#000")
-        widget.set_box_shadow()
-
-
-        table = Table()
-        table.add_behavior( {
-        'type': 'load',
-        'width': width,
-        'cbjs_action': '''
-        bvr.src_el.setStyle("width", bvr.width)
-
-        var popup = bvr.src_el.getParent(".spt_popup");
-        var window_size = document.id(window).getSize();
-        var size = bvr.src_el.getSize();
-        var left = window_size.x/2 - size.x/2;
-        var top = window_size.y/2 - size.y/2;
-        popup.setStyle("left", left);
-        //popup.setStyle("top", top);
-
-        var content = popup.getElement(".spt_popup_content");
-        content.setStyle("max-height", window_size.y - 100);
-        content.setStyle("overflow-y", "auto");
-
-        '''
-        } )
-
-
-
-        table.add_row()
-
-        content_td = table.add_cell()
+        content_td = DivWdg()
         content_td.add_class("css_shadow_td")
-
+        content_td.add_class("modal-dialog")
+ 
         drag_div = DivWdg()
 
-        #from tactic.ui.container import ArrowWdg
-        #arrow = ArrowWdg()
-        #drag_div.add(arrow)
-
-
         self.add_header_context_menu(drag_div)
-
+      
 
         # create the 'close' button ...
         if self.allow_close:
@@ -351,10 +376,8 @@ class PopupWdg(BaseRefreshWdg):
         width = self.kwargs.get("width")
 
         # style
-        drag_div.add_style("font-size: 1.1em")
-
-        drag_div.add_style("text-align: left")
         drag_div.add_class("spt_popup_width")
+        drag_div.add_class("modal-content")
 
         drag_handle_div = DivWdg(id='%s_title' %self.name)
 
@@ -378,9 +401,7 @@ class PopupWdg(BaseRefreshWdg):
                   spt.popup.offset_y = document.body.scrollTop;
                   spt.popup.hide_background();
                   var parent = bvr.src_el.getParent(".spt_popup");
-                  parent.setStyle("box-shadow","0px 0px 20px " + bvr.shadow_color);
-              }
-              else {
+              } else {
                   spt.popup.offset_x = 0;
                   spt.popup.offset_y = 0;
               }
@@ -402,8 +423,6 @@ class PopupWdg(BaseRefreshWdg):
         title_wdg = self.title_wdg
         if not title_wdg:
             title_wdg = "No Title"
-        #else:
-        #    title_wdg = title_wdg
 
         drag_handle_div.add_behavior({
             'type': 'double_click',
@@ -424,28 +443,17 @@ class PopupWdg(BaseRefreshWdg):
 
         # add the content
         content_div = DivWdg()
-        content_div.add_color("color", "color2")
-        content_div.add_color("background", "background2")
-
-        content_div.add_style("margin", "0px -1px 0px -1px")
-
         content_div.set_id("%s_content" % self.name)
         content_div.add_class("spt_popup_content")
-        content_div.add_style("width: 100%")
-        content_div.add_style("overflow-x: hidden")
-        content_div.add_style("overflow-y: auto")
-        content_div.add_style("display: block")
-        #content_div.add_style("padding: 10px")
         if not self.content_wdg:
             self.content_wdg = "No Content"
-        content_div.add_color("background", "background")
 
         content_div.add(self.content_wdg)
 
         drag_div.add( drag_handle_div )
         self.position_aux_div(drag_div, content_div)
         content_td.add(drag_div)
-        widget.add(table)
+        widget.add(content_td)
 
         # ALWAYS make the Popup a Page Utility Widget (now processed client side)
         widget.add_class( "SPT_PUW" )
@@ -456,17 +464,14 @@ class PopupWdg(BaseRefreshWdg):
         else:
             widget.add_style("z-index: 102")
 
-
         # add the resize icon
         icon = IconWdg( "Resize", IconWdg.RESIZE_CORNER )
         icon.add_style("cursor: nw-resize")
         icon.add_style("z-index: 1000")
         icon.add_class("spt_popup_resize")
-        #icon.add_style("float: right")
         icon.add_style("position: absolute")
         icon.add_style("bottom: 0px")
         icon.add_style("right: 0px")
-        #icon.add_style("margin-top: -15px")
         icon.add_behavior( {
         'type': 'drag',
         "drag_el": '@',
@@ -475,9 +480,10 @@ class PopupWdg(BaseRefreshWdg):
 
         content_td.add(icon)
 
-      
-        style = self.get_styles()
-        div.add(style)
+        if self._use_bootstrap():
+            div.add(self.get_bootstrap_styles())
+        else:
+            div.add(self.get_styles())
         
         return div
 
@@ -741,8 +747,18 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
 
 spt.popup.open = function( popup_el_or_id, use_safe_position )
 {
+
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     if( ! popup ) { return; }
+    $(popup_el_or_id).modal("toggle");
+
+    backdrop = document.getElement(".modal-backdrop");
+    bvr = {
+        'type': 'click',
+        'cbjs_action': 'bvr.src_el.destroy();'
+    }
+    spt.behavior.add(backdrop, bvr);    
+    return;
 
     spt.popup._position( popup, use_safe_position );
     spt.show( popup.getElement('.spt_popup_content') );
@@ -765,10 +781,14 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 
 spt.popup.close = function( popup_el_or_id , fade, close_fn)
 {
+    
+    
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     popup = popup ? popup : spt.popup.get_popup(popup_el_or_id);
 
     if (!popup) return;
+
+    $(popup).modal("hide");
 
     if (fade) {
         popup.fade('out').get('tween').chain(
@@ -883,6 +903,8 @@ spt.popup._position = function( popup, use_safe_position )
 spt.popup.destroy = function( popup_el_or_id, fade )
 {
     var popup = document.id(popup_el_or_id);
+    if (!popup) return; 
+    $(popup).modal("hide");
 
     var is_minimized = popup.hasClass("spt_popup_minimized");
 
@@ -1020,7 +1042,6 @@ spt.popup.get_widget = function( evt, bvr )
 
     // get the content container
     var width_wdg = popup.getElement(".spt_popup_width");
-    width_wdg.setStyle("min-width", "200px");
     if (width != null) {
         //width_wdg.setStyle("width", width);
         var content = popup.getElement(".spt_popup_content");

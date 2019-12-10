@@ -190,15 +190,6 @@ class TextInputWdg(BaseInputWdg):
 
                 var value = bvr.src_el.value;
                 var last_value = bvr.src_el.getAttribute("spt_last_value");
-                if (value == "") {
-                    bvr.src_el.setStyle("background", bvr.bgcolor);
-                }
-                else if (!last_value && last_value != value) {
-                    //bvr.src_el.setStyle("background", bvr.bgcolor2);
-                }
-                else {
-                    //bvr.src_el.setStyle("background", bvr.bgcolor);
-                }
 
                 bvr.src_el.setAttribute("spt_last_value", value);
 
