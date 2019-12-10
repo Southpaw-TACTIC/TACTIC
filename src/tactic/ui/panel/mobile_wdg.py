@@ -10,7 +10,7 @@ class MobileTableWdg(BaseRefreshWdg):
 
         top = self.top
 
-        top.add_class("spt_mobile_table d-block d-sm-none")
+        top.add_class("spt_mobile_table d-block d-sm-none row")
 
         div = DivWdg()
         top.add(div)
@@ -23,7 +23,32 @@ class MobileTableWdg(BaseRefreshWdg):
 
         top.add(self.get_styles())
 
+        
+        table_id = self.kwargs.get("table_id")
+        top.add_behavior({
+            'type': 'listen',
+            'event_name': 'loading_pending|%s' % table_id,
+            'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+                
+                spt.table.mobile_table.load();
+            '''
+        })
+
+        top.add_behavior({
+            'type': 'listen',
+            'event_name': 'window_resize',
+            'cbjs_action': '''
+                var layout = bvr.src_el.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+                
+                spt.table.mobile_table.load();
+            '''
+        })
+
         return top
+
 
     def get_styles(self):
         style = HtmlElement.style("""
@@ -58,11 +83,21 @@ class MobileTableWdg(BaseRefreshWdg):
 
 spt.table.mobile_table = {}
 
+spt.table.mobile_table.top;
+spt.table.mobile_table.set_top = function() {
+    spt.table.mobile_table.top = spt.table.get_layout().getElement(".spt_mobile_table");
+}
 
-convert_el_to_div = function(el) {
+spt.table.mobile_table.get_top = function() {
+    spt.table.mobile_table.top = spt.table.get_layout().getElement(".spt_mobile_table");
+    return spt.table.mobile_table.top;
+}
 
-    var new_el = new Element("div");
-    var attrs = el.getAttributeNames()
+
+spt.table.mobile_table._convert_el_to_div = function(el) {
+
+    let new_el = new Element("div");
+    let attrs = el.getAttributeNames()
     attrs.forEach(function(attr) {
         new_el.setAttribute(attr, el.getAttribute(attr));
     });
@@ -71,52 +106,51 @@ convert_el_to_div = function(el) {
 
 }
 
-handle_row = function(row) {
-    var new_row = convert_el_to_div(row);
+spt.table.mobile_table._handle_row = function(row) {
+    let new_row = spt.table.mobile_table._convert_el_to_div(row);
 
-    remove_desktop_styles(row);
+    spt.table.mobile_table._remove_desktop_styles(row);
     
     new_row.addClass("row");
 
     return new_row;
 }
 
-handle_cell = function(cell) {
+spt.table.mobile_table._handle_cell = function(cell) {
         
-    var new_cell = convert_el_to_div(cell);
+    let new_cell = spt.table.mobile_table._convert_el_to_div(cell);
     new_cell.innerHTML = cell.innerHTML;
     
-    remove_desktop_styles(cell);
+    spt.table.mobile_table._remove_desktop_styles(cell);
 
     return new_cell;
 }
 
-handle_header = function(header) {
-    var new_header = convert_el_to_div(header)
+spt.table.mobile_table._handle_header = function(header) {
+    let new_header = spt.table.mobile_table._convert_el_to_div(header)
     new_header.innerHTML = header.innerHTML;
 
-    remove_desktop_styles(new_header);
+    spt.table.mobile_table._remove_desktop_styles(new_header);
 
     return new_header;
 }
 
-remove_desktop_styles = function(el) {
+spt.table.mobile_table._remove_desktop_styles = function(el) {
     el.setAttribute("table_style", el.getAttribute("style"));
     el.removeAttribute("style");
     
-    children = el.getChildren();
+    let children = el.getChildren();
     if (children.length > 0) {
-        new_children = []
         el.innerHTML = "";
         children.forEach(function(child) {
-            new_child = remove_desktop_styles(child);
+            let new_child = spt.table.mobile_table._remove_desktop_styles(child);
             new_child.inject(el);
         });
     }
     return el;
 }
 
-reapply_desktop_styles = function(el) {
+spt.table.mobile_table._reapply_desktop_styles = function(el) {
 
 }
 
@@ -126,55 +160,68 @@ spt.table.mobile_table.headers = [];
 
 spt.table.mobile_table.create_card = function(row) {
 
-    new_row = handle_row(row);
-    var children = row.getChildren();
-    
+    let new_row = spt.table.mobile_table._handle_row(row);
+    let children = row.getChildren();
     
     for (var i=0; i<children.length; i++) {
-        var child = children[i];
+        let child = children[i];
         if (child.hasClass("spt_table_select")) continue;
        
-        header = spt.table.mobile_table.headers[i-1];
-        label = header.clone();
+        let header = spt.table.mobile_table.headers[i-1];
+        if (header) {
+            var label = header.clone();
+        } else {
+            var label = new Element("div");
+            label.innerHTML = "HEADER";
+        }
         label.addClass("col-6");
         label.inject(new_row);
 
-        var new_child = handle_cell(child)
+        let new_child = spt.table.mobile_table._handle_cell(child)
         new_child.addClass("col-6");
         new_child.inject(new_row);
     }
 
-    var card = new Element("div");
+    let card = new Element("div");
     new_row.inject(card);
 
-    var col = new Element("div");
+    let col = new Element("div");
     col.addClass("col-md-4 card box-shadow m-2");
     card.inject(col);
     return col;
 }
 
+spt.table.mobile_table.get_mobile_cards = function() {
+    mobile_table = spt.table.mobile_table.get_top();
+    let rows = mobile_table.getElements(".spt_table_row");
+    return rows;
+}
+
+
 spt.table.mobile_table.load = function() {
-   
-    var layout = bvr.src_el.getParent(".spt_layout");
-    spt.table.set_layout(layout);
+    mobile_table = spt.table.mobile_table.get_top();
+    if (!spt.is_shown(mobile_table)) return;
+
     
-    headers = spt.table.get_headers()
-    new_headers = [];
+    let headers = spt.table.get_headers()
+    let new_headers = [];
     headers.forEach(function(header) {
-        new_header = handle_header(header);
+        let new_header = spt.table.mobile_table._handle_header(header);
         new_headers.push(new_header);
     });
     spt.table.mobile_table.headers = new_headers;
 
-    var rows = spt.table.get_all_rows();
-    rows.forEach(function(row){
-        var card = spt.table.mobile_table.create_card(row);
-        card.inject(bvr.src_el);
+    let mobile_rows = spt.table.mobile_table.get_mobile_cards();
+    let rows = spt.table.get_all_rows();
+    let new_rows = rows.slice(mobile_rows.length);
+    if (!new_rows || new_rows.length == 0) return;
+    new_rows.forEach(function(row){
+        let card = spt.table.mobile_table.create_card(row);
+        card.inject(mobile_table);
     });
 
-    bvr.src_el.addClass("row");
 }
 
+spt.table.mobile_table.load();
 
-spt.table.mobile_table.load()
         '''

@@ -23,7 +23,7 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-from tactic.ui.widget.button_new_wdg import ButtonNewWdg
+from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg
 
 from .layout_wdg import SwitchLayoutMenu
 
@@ -1158,9 +1158,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # -- ITEM COUNT DISPLAY
         # add number found
         if self.show_search_limit:
-            num_div = DivWdg()
-            num_div.add_class("dropdown")
-            num_div.add_class("spt_search_limit_activator")
             
             # -- SEARCH LIMIT DISPLAY
             if self.items_found == 0:
@@ -1175,41 +1172,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     self.items_found = 0
 
-           
-        
-            search_limit_button = DivWdg()
-            search_limit_button.add_class("dropdown-toggle btn btn-secondary")
-            num_div.add(search_limit_button)
-            
             if self.items_found == 1:
-                search_limit_button.add( "%s %s" % (self.items_found, _("item found")))
+                title = "%s %s" % (self.items_found, _("item found"))
             else:
-                search_limit_button.add( "%s %s" % (self.items_found, _("items found")))
+                title = "%s %s" % (self.items_found, _("items found"))
             
-           
+            num_div = BootstrapButtonWdg(title=title)
+            num_div.add_class("spt_search_limit_activator")
+            
+            #HACK
+            num_div.add_style("height", "32px")
+
             from tactic.ui.container import DialogWdg
             dialog = DialogWdg()
-            dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
+            dialog.set_as_activator(num_div.get_button_wdg(), offset={'x':0,'y': 0})
+            dialog.set_as_activator(num_div.get_collapsible_wdg(), offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
-            num_div.add_class("hand")
             
-            if not self._use_bootstrap():
-                color = num_div.get_color("background", -5)
-                num_div.add_behavior( {
-                    'type': 'mouseover',
-                    'color': color,
-                    'cbjs_action': '''
-                    bvr.src_el.setStyle("background", bvr.color);
-                    '''
-                } )
-                num_div.add_behavior( {
-                    'type': 'mouseout',
-                    'cbjs_action': '''
-                    bvr.src_el.setStyle("background", "");
-                    '''
-                } )
-
-
             limit_div = DivWdg()
             limit_div.add_class("spt_table_search")
             limit_div.add_class("spt_table_search_limit")

@@ -56,6 +56,12 @@ class TabWdg(BaseRefreshWdg):
         super(TabWdg, self).__init__(**kwargs)
 
         self.unique_id = self.generate_unique_id()
+        
+        self.use_default_style = kwargs.get("use_default_style")
+        if self.use_default_style not in [False, 'false']:
+            self.use_default_style = True
+        else:
+            self.use_default_style = False
 
 
 
@@ -1249,11 +1255,6 @@ spt.tab.view_definition = function(bvr) {
 
     def add_styles(self):
 
-        self.use_default_style = self.kwargs.get("use_default_style")
-        if self.use_default_style not in [False, 'false']:
-            self.use_default_style = True
-        else:
-            self.use_default_style = False
 
         if self.use_default_style:
 
@@ -1312,7 +1313,7 @@ spt.tab.view_definition = function(bvr) {
             .spt_tab_remove {
                 position: absolute;
                 top: 2;
-                left: 108;
+                right: 0;
                 display: none;
             }
 
@@ -1635,7 +1636,8 @@ spt.tab.view_definition = function(bvr) {
  
 
 
-        self.add_styles()
+        if not self._use_bootstrap():
+            self.add_styles()
 
 
         # if a search_key has been passed in, add it to the state.

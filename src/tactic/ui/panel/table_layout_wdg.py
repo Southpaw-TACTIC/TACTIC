@@ -1079,7 +1079,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # TEST TEST TEST
         from .mobile_wdg import MobileTableWdg
-        mobile_wdg = MobileTableWdg()
+        mobile_wdg = MobileTableWdg(table_id=self.table_id)
         inner.add(mobile_wdg)
 
 
@@ -1329,7 +1329,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             spt.table.set_layout(layout);
             var rows = layout.getElements(".spt_loading");
 
-            var unique_id = "loading|"+bvr.unique_id;
+            var loaded_event = "loading|" + bvr.unique_id;
+            var loading_event = "loading_pending|" + bvr.unique_id;
 
             var jobs = [];
             var count = 0;
@@ -1352,10 +1353,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             }
 
             var func = function() {
+                spt.named_events.fire_event(loading_event, {});
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
-                    spt.named_events.fire_event(unique_id, {});
+                    spt.named_events.fire_event(loaded_event, {});
                     // run at the end of last load
                     if (bvr.expand_on_load) {
                         spt.table.set_layout(layout);
@@ -1364,7 +1366,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     return;
                 }
                 spt.table.apply_undo_queue();
-
+                
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
                     spt.table.expand_table("full");
@@ -1394,7 +1396,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
 
 
-
+        
 
         if not self.sobjects:
             self.handle_no_results(table)

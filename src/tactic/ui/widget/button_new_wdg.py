@@ -911,22 +911,71 @@ class ActionButtonWdgOld(DivWdg):
         return super(ActionButtonWdgOld,self).get_display()
 
 
-
-class BootstrapButtonWdg(DivWdg):
- 
+__all__.extend(['BootstrapButtonWdg'])
+class BootstrapButtonWdg(BaseRefreshWdg):
     
+    ARGS_KEYS = {
+        'title': {
+            'description': 'Value to show on actual button',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'title2': {
+            'description': 'Alt Value to show on actual button when clicked on',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'tip': {
+            'description': 'Tool tip info to show when mouse hovers over button',
+            'type': 'TextWdg',
+            'order': 1,
+            'category': 'Options'
+        },
+        'action': {
+            'description': 'Javascript callback',
+            'type': 'TextAreaWdg',
+            'order': 1,
+            'category': 'Options'
+        }
+    }
+
+
+    def init(self):
+        from pyasm.web import ButtonWdg as ButtonHtmlWdg
+        self.button_wdg = ButtonHtmlWdg()
+        self.collapsible_wdg = DivWdg()
+
+    def add_behavior(self, behavior):
+        self.button_wdg.add_behavior(behavior)
+        self.collapsible_wdg.add_behavior(behavior)
+
     def get_collapsible_wdg(self):
-        pass 
+        return self.collapsible_wdg
 
     def get_button_wdg(self):
-        pass 
+        return self.button_wdg
 
     def get_display(self):
         
-        top = self.top
-        top.add_class()
+        title = self.kwargs.get("title")
 
-        pass
+        top = self.top
+        
+        top.add(self.button_wdg)
+        self.button_wdg.add_class("btn")
+        self.button_wdg.add(title)
+
+        
+        top.add(self.collapsible_wdg)
+        self.collapsible_wdg.add_class("spt_collapsible_btn")
+        self.collapsible_wdg.add(title)
+
+        return top
+        
+
+
 
 
 
@@ -935,30 +984,30 @@ class ActionButtonWdg(DivWdg):
 
 
     ARGS_KEYS = {
-    'title': {
-        'description': 'Value to show on actual button',
-        'type': 'TextWdg',
-        'order': 0,
-        'category': 'Options'
-    },
-    'title2': {
-        'description': 'Alt Value to show on actual button when clicked on',
-        'type': 'TextWdg',
-        'order': 0,
-        'category': 'Options'
-    },
-    'tip': {
-        'description': 'Tool tip info to show when mouse hovers over button',
-        'type': 'TextWdg',
-        'order': 1,
-        'category': 'Options'
-    },
-    'action': {
-        'description': 'Javascript callback',
-        'type': 'TextAreaWdg',
-        'order': 1,
-        'category': 'Options'
-    }
+        'title': {
+            'description': 'Value to show on actual button',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'title2': {
+            'description': 'Alt Value to show on actual button when clicked on',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'tip': {
+            'description': 'Tool tip info to show when mouse hovers over button',
+            'type': 'TextWdg',
+            'order': 1,
+            'category': 'Options'
+        },
+        'action': {
+            'description': 'Javascript callback',
+            'type': 'TextAreaWdg',
+            'order': 1,
+            'category': 'Options'
+        }
     }
  
     def __init__(self, **kwargs):

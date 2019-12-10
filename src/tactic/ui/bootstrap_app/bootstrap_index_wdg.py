@@ -889,6 +889,9 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
+        gear_menu_wdg = BootstrapIndexGearMenuWdg()
+        right_wdg.add(gear_menu_wdg)
+
         user_wdg = self.get_user_wdg()
         right_wdg.add(user_wdg)
 
@@ -1091,9 +1094,19 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
         content_wdg = self.get_content_wdg()
         top.add(content_wdg)
-        
+
+        top.add_behavior( {                                                                      
+            "type": "load",                                                                                
+            "cbjs_action": '''                                                                             
+                                                                                                           
+            window.onresize = function() {
+                spt.named_events.fire_event("window_resize");
+            }
+            
+        '''})
         
         return top
+
 
     def get_content_wdg(self):
         main_body_panel = DivWdg()
@@ -1210,3 +1223,29 @@ class BootstrapIndexPage(BaseRefreshWdg):
         wdg = ViewPanelWdg(search_type="config/widget_config", show_border=False)
         top.add(wdg)
         return top
+
+
+
+
+from tactic.ui.widget import PageHeaderGearMenuWdg
+class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
+
+    def get_display(self):
+
+        security = Environment.get_security()
+        if security.check_access("builtin", "view_site_admin", "allow"):
+            menus = [ self.get_main_menu(), self.get_add_menu(), self.get_edit_menu(), self.get_tools_menu(), self.get_help_menu() ]
+        else:
+            menus = [ self.get_main_menu(), self.get_edit_menu(), self.get_help_menu() ]
+
+        btn = ButtonNewWdg(title='Global Options', icon="FA_GEAR")
+        btn.add_class("bg-light ml-1")
+        
+        smenu_set = SmartMenu.add_smart_menu_set( btn.get_button_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )
+        SmartMenu.assign_as_local_activator( btn.get_button_wdg(), "DG_TABLE_GEAR_MENU", True )
+        
+        smenu_set = SmartMenu.add_smart_menu_set( btn.get_collapsible_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )
+        SmartMenu.assign_as_local_activator( btn.get_collapsible_wdg(), "DG_TABLE_GEAR_MENU", True )
+        
+        return btn
+
