@@ -334,13 +334,13 @@ class HashPanelWdg(BaseRefreshWdg):
             security = Environment.get_security()
             login = security.get_user_name()
             if login == "guest" and key == 'admin':
-                from pyasm.widget import WebLoginWdg
+                from pyasm.widget import WebLoginWdg2
                 # HACK: if the guest access is full, the the outer form
                 # is not defined ... force it in here.  This is because the
                 # top used it TopWdg and not TitleTopWdg
                 div = DivWdg()
                 div.add("<form id='form' name='form' method='post' enctype='multipart/form-data'>\n")
-                web_login_wdg = WebLoginWdg().get_buffer_display()
+                web_login_wdg = WebLoginWdg2().get_buffer_display()
                 div.add(web_login_wdg)
                 div.add("</form>\n")
                 return div
