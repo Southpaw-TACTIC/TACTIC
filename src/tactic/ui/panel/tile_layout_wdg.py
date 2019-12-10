@@ -2315,6 +2315,13 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_display_value", display_value)
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        access_keys = self._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
+            search_key = sobject.get_search_key(use_id=True)
+            div.generate_api_key("retire_sobject", inputs=[search_key], attr="ret")
+            div.generate_api_key("delete_sobject", inputs=[search_key], attr="del")
 
         
         if self.show_drop_shadow:
