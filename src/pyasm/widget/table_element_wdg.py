@@ -1149,8 +1149,7 @@ class XmlWdg(BaseTableElementWdg):
             value = jsondumps(value)
 
         elif value.startswith("zlib:"):
-            import zlib, binascii
-            value = zlib.decompress( binascii.unhexlify(value[5:]) )
+            value = Common.decompress_transaction(value)
 
         widget = DivWdg()
         widget.add_style("min-width: 300px")

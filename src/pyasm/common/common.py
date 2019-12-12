@@ -992,6 +992,35 @@ class Common(Base):
         dict_str = dict_str.replace('"', '&quot;')
         return dict_str
     convert_to_json = staticmethod(convert_to_json)
+    
+
+
+    def compress_transaction(transaction_data):
+        '''Compress and hexify large string.'''
+        import zlib, binascii
+        if IS_Pv3:
+            transaction_data = transaction_data.encode()
+        else:
+            transaction_data = Common.process_unicode_string(transaction_data)
+
+        ztransaction_data = binascii.hexlify(zlib.compress(transaction_data))
+        if Common.IS_Pv3:
+            ztransaction_data = ztransaction_data.decode()
+
+        ztransaction_data = "zlib:%s" % ztransaction_data
+        return ztransaction_data
+    compress_transaction = staticmethod(compress_transaction)
+
+
+
+    def decompress_transaction(ztransaction_data):
+        '''Unhexify and decompress data.'''
+        import zlib, binascii
+        value = zlib.decompress(binascii.unhexlify(ztransaction_data[5:]))
+        if IS_Pv3:
+            value = value.decode()
+        return value
+    decompress_transaction = staticmethod(decompress_transaction)
         
 
 
@@ -999,6 +1028,7 @@ class Common(Base):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(data)
     pretty_print = staticmethod(pretty_print)
+
 
 
     def get_pretty_print(data):
