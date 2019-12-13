@@ -1981,9 +1981,12 @@ class WebLoginWdg2(BaseSignInWdg):
         login_div.add(reset_button)
         reset_button.add_class("sign-in-btn hand")
         reset_button.add_attr('title', 'Reset Password')
-        reset_button.add_event("onclick", "document.form.elements['new_password'].value='true'; document.form.submit()")
+        code = web.get_form_value('code')
+        reset_button.add_event("onclick", "document.form.setAttribute('action', document.location.pathname); document.form.elements['code'].value='%s'; document.form.elements['new_password'].value='true'; document.form.submit();" % code)
 
         hidden = HiddenWdg("new_password")
+        login_div.add(hidden)
+        hidden = HiddenWdg("code")
         login_div.add(hidden)
 
         div.add(self.get_content_styles())
