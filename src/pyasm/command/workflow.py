@@ -986,7 +986,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # TODO: look at process state
 
-
         key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
         search = Search("sthpw/message")
         search.add_filter('code', key)
@@ -1014,7 +1013,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     # NOTE: at some point, we should have an has_task method to deal with
                     # this list
                     complete = False
-
 
         return complete
 
@@ -1763,7 +1761,6 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_pending(self):
-
         if not self.check_inputs():
             return
 
@@ -2450,6 +2447,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                         output_process_names.append(output.get_name())
                     else:
                         not_required_streams.append(output.get_name())
+            
+            self.execute_streams(not_required_streams, "not_required")
 
             called = set()
             for output_process in output_processes:
@@ -2469,7 +2468,6 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                 Trigger.call(self, event, output)
                 called.add(output_process_name)
 
-            self.execute_streams(not_required_streams, "not_required")
 
             return
 
