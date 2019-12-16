@@ -2170,32 +2170,31 @@ class WebLoginWdg2(BaseSignInWdg):
             from pyasm.security import Sudo
             sudo = Sudo()
             try:
-                admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+                admin_login = Login.get_by_login("admin")
+                
+                # FIXME: This expression returns None causing security hole.
+                #admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+                if admin_login and admin_login.get_value('s_status') =='retired':
+                    admin_login.reactivate()
+                    web = WebContainer.get_web()
+                    web.set_form_value(self.LOGIN_MSG_LABEL, "admin user has been reactivated.")
+                    admin_password = admin_log.get_value("password")
+                    if admin_password == Login.get_default_encrypted_password():
+                        change_admin = True
+
+             
+                if admin_login:
+                    password = admin_login.get_value("password")
+                    if password == Login.get_default_encrypted_password() or not password:
+                        change_admin = True
+                else:
+                    admin_login = SearchType.create('sthpw/login')
+                    admin_login.set_value('login','admin')
+                    admin_login.commit()
+                    change_admin = True
+                    # recreate the admin_login
             finally:
                 sudo.exit()
-            if admin_login and admin_login.get_value('s_status') =='retired':
-                admin_login.reactivate()
-                web = WebContainer.get_web()
-                web.set_form_value(self.LOGIN_MSG_LABEL, "admin user has been reactivated.")
-                admin_password = admin_log.get_value("password")
-                if admin_password == Login.get_default_encrypted_password():
-                    change_admin = True
-
-         
-            if admin_login:
-                password = admin_login.get_value("password")
-                if password == Login.get_default_encrypted_password() or not password:
-
-                    change_admin = True
-            else:
-                admin_login = SearchType.create('sthpw/login')
-                admin_login.set_value('login','admin')
-                admin_login.commit()
-                change_admin = True
-                # recreate the admin_login
-                
-
-            sudo.exit()
 
 
         ####### CONTENT #######
