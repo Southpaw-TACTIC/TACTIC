@@ -18,6 +18,7 @@ from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
 from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, WidgetConfigView, TextWdg, ButtonWdg, CheckboxWdg, ProdIconButtonWdg, HiddenWdg
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.container import RoundedCornerDivWdg, LabeledHidableWdg, PopupWdg
@@ -3116,6 +3117,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # make some checks to see if search will actually work
         try:
+            sudo = Sudo()
             search = Search(search_type)
             search.set_null_filter()
             sobjects = search.get_sobjects()
@@ -3123,6 +3125,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             impl = SearchType.get_database_impl_by_search_type(search_type)
             if impl.get_database_type() == "MongoDb":
                 can_search = False
+        finally:
+            sudo.exit()
 
 
 

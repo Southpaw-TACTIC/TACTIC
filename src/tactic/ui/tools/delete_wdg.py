@@ -17,7 +17,7 @@ from pyasm.command import Command
 from pyasm.search import Search, SearchKey, SearchType, TableDropUndo, FileUndo, SqlException, SearchException
 from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement
 from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, TextWdg, TextAreaWdg, SelectWdg, HiddenWdg, WidgetConfig, CheckboxWdg, RadioWdg
-from pyasm.security import Site
+from pyasm.security import Site, Sudo
 
 from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, ButtonRowWdg, ButtonNewWdg
 from tactic.ui.common import BaseRefreshWdg
@@ -46,8 +46,12 @@ class DeleteToolWdg(BaseRefreshWdg):
         search_key = self.kwargs.get("search_key")
         search_keys = self.kwargs.get("search_keys")
         if search_key:
-            sobject = Search.get_by_search_key(search_key)
-            sobjects = [sobject]
+            try:
+                sudo = Sudo()
+                sobject = Search.get_by_search_key(search_key)
+                sobjects = [sobject]
+            finally:
+                sudo.exit()
             search_keys = [search_key]
         elif search_keys:
             sobjects = Search.get_by_search_keys(search_keys)
@@ -322,7 +326,11 @@ class DeleteCmd(Command):
             sobjects = [sobject]
         else:
             search_keys = self.kwargs.get("search_keys")
-            sobjects = Search.get_by_search_keys(search_keys)
+            try:
+                sudo = Sudo()
+                sobjects = Search.get_by_search_keys(search_keys)
+            finally:
+                sudo.exit()
 
         if not sobjects:
             return

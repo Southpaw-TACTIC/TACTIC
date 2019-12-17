@@ -19,7 +19,7 @@ import string, sys, types
 from pyasm.common import *
 from pyasm.search import Search, SearchType, SearchKey, SqlException
 from pyasm.command import Command
-from pyasm.common import TacticException
+from pyasm.security import Sudo
 
 import six
 basestring = six.string_types
@@ -292,7 +292,11 @@ class EditCmd(Command):
 
         sobject = None
         if self.search_key:
-            sobject = SearchKey.get_by_search_key(self.search_key)
+            try:
+                sudo = Sudo()
+                sobject = SearchKey.get_by_search_key(self.search_key)
+            finally:
+                sudo.exit()
             if not sobject:
                 raise TacticException('This search key [%s] no longer exists.'%self.search_key)
             # this is needed for action handler below
@@ -314,9 +318,13 @@ class EditCmd(Command):
                 sobject = SearchType.create(self.search_type)
             
             else:
-                search = Search(self.search_type)
-                search.add_id_filter( search_id )
-                sobject = search.get_sobject()
+                try:
+                    sudo = Sudo()
+                    search = Search(self.search_type)
+                    search.add_id_filter( search_id )
+                    sobject = search.get_sobject()
+                finally:
+                    sudo.exit()
 
                 # there has to be an sobject to edit
                 if sobject == None:
@@ -572,8 +580,12 @@ class RelatedDatabaseAction(DatabaseAction):
                     related.commit()
 
                 # create a new one dynamically
-                related = SearchType.create(related_type)
-                related.add_relationship(sobject)
+                try:
+                    sudo = Sudo()
+                    related = SearchType.create(related_type)
+                    related.add_relationship(sobject)
+                finally:
+                    sudo.exit()
 
                 # add initial values
                 data = self.get_option("data")
