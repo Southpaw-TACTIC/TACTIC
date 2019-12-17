@@ -45,6 +45,7 @@ class ProcessGroupSelectWdg(BaseInputWdg):
             self.labels_attr = ["display_name"]
 
         from tactic.ui.panel import EditWdg
+        from pyasm.security import Sudo
         if hasattr(self, 'parent_wdg') and isinstance(self.get_parent_wdg(), EditWdg):
             sobject = self.get_current_sobject()
             parent = sobject.get_parent()
@@ -90,7 +91,11 @@ class ProcessGroupSelectWdg(BaseInputWdg):
 
 
         #all_users = Search.eval("@GET(sthpw/login.login)")
-        all_users = Search.eval("@SOBJECT(sthpw/login)")
+        try:
+            sudo = Sudo()
+            all_users = Search.eval("@SOBJECT(sthpw/login)")
+        finally:
+            sudo.exit()
         all_users_label =  []
 
         # don't use expression here since it's not as db-efficient as retrieving the sobjects
@@ -113,7 +118,11 @@ Search.eval("@GET(sthpw/login_group['login_group',
             user_name = user.get_value('login')
             logins_dict[user_name] = {}
         group_dict = {}
-        items = Search.eval("@SOBJECT(sthpw/login_in_group)")
+        try:
+            sudo = Sudo()
+            items = Search.eval("@SOBJECT(sthpw/login_in_group)")
+        finally:
+            sudo.exit()
         for item in items:
              item_login = item.get_value("login")
              if logins_dict.get(item_login) == None:
@@ -338,6 +347,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
             div.add_attr("name", value)
 
             # click up blocks any other behavior
+            div.generate_api_key("eval", inputs=[link_expr, {"search_keys": self.sobject.get_search_key(), "single": True}])
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
