@@ -1943,15 +1943,21 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 // correct viewport left and top clipping
                 var rect = body.getBoundingClientRect();
-
+                var pointer = dialog.getElement(".spt_popup_pointer");
                 var left = offset.x + rect.x;
                 if (left < 0) {
                     offset.x = offset.x - left;
+                    if (pointer) {
+                        pointer.hide();
+                    }
                 }
 
                 var top = offset.y + rect.y;
                 if (top < 0) {
                     offset.y = offset.y - top;
+                    if (pointer) {
+                        pointer.hide();
+                    }
                 }
 
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
