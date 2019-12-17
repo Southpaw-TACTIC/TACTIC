@@ -1940,8 +1940,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
                 offset.x = offset.x - scroll_left;
+
+                // correct viewport left and top clipping
+                var rect = body.getBoundingClientRect();
+
+                var left = offset.x + rect.x;
+                if (left < 0) {
+                    offset.x = offset.x - left;
+                }
+
+                var top = offset.y + rect.y;
+                if (top < 0) {
+                    offset.y = offset.y - top;
+                }
+
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
-                
+
                 spt.toggle_show_hide(dialog);
 
                 if (spt.is_shown(dialog))
