@@ -535,7 +535,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 
                 Object.keys(bvr.sobject_data).forEach(function(item) {
                     data = bvr.sobject_data[item];
-                    //console.log(data); 
 
                     var tile = spt.behavior.clone(template_tile);
                     tile.removeClass("spt_template_tile_top");
@@ -1097,6 +1096,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         if self.upload_mode in ['drop','both']:
+            insert_api_key = layout_wdg.generate_api_key("insert", inputs=[self.search_type, "__API_UNKNOWN__", {"parent_key": self.parent_key}])
+            checkin_api_key = layout_wdg.generate_api_key("simple_checkin", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", "__API_UNKNOWN__", {"mode": 'uploaded', "use_handoff_dir": False}])
+
             layout_wdg.add_behavior( {
             'type': 'load',
             'search_type': self.search_type,
@@ -1107,6 +1109,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             'border_color': border_color,
             'format_context': format_context,
             'extra_data': extra_data,
+            'insert_api_key': insert_api_key,
+            'checkin_api_key': checkin_api_key,
             'cbjs_action': '''
             
             spt.thumb = {};
@@ -1131,6 +1135,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 
                 evt.dataTransfer.dropEffect = 'copy';
                 var files = evt.dataTransfer.files;
+                var insert_api_key = bvr.insert_api_key;
+                var checkin_api_key = bvr.checkin_api_key;
                 evt.stopPropagation();
                 evt.preventDefault();
 
@@ -1176,9 +1182,11 @@ class TileLayoutWdg(ToolLayoutWdg):
                                     data[key] = bvr.extra_data[key];
                                 }
 
+                                server.set_api_key(insert_api_key);
+
                                 if (mode == "insert") {
                                     var search_type = bvr.search_type;
-                                    var item = server.insert(search_type, data, { collection_key: bvr.collection_key} );
+                                    var item = server.insert(search_type, data, { collection_key: bvr.collection_key});
                                     search_key = item.__search_key__;
                                 }
                                 else if (mode == "child") {
@@ -1189,6 +1197,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 else {
                                     search_key = bvr.search_key;
                                 }
+                                server.clear_api_key();
 
                                 if (bvr.format_context)
                                     var context = bvr.process + "/" + filename;
@@ -1197,7 +1206,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                             
                             
                                 var kwargs = {mode: 'uploaded'};
+                                server.set_api_key(checkin_api_key);
                                 server.simple_checkin( search_key, context, filename, kwargs);
+                                server.clear_api_key();
 
                             }
                             server.finish();
@@ -1229,8 +1240,6 @@ class TileLayoutWdg(ToolLayoutWdg):
                 //var use_ingest = true;
                 var use_ingest = false;
                 if (use_ingest) {
-                    console.log("extra_data");
-                    console.log(bvr.extra_data);
                     var class_name = 'tactic.ui.tools.IngestUploadWdg';
                     var kwargs = {
                         context_mode: 'case_sensitive',
@@ -1326,9 +1335,12 @@ class TileLayoutWdg(ToolLayoutWdg):
                             files: files,
                             upload_complete: function() {
                                 try {
+                                    var api_key = bvr.checkin_api_key;
                                     var server = TacticServerStub.get();
                                     var kwargs = {mode: 'uploaded'};
+                                    server.set_api_key(api_key);
                                     server.simple_checkin( search_key, context, filename, kwargs);
+                                    server.clear_api_key();
                                     spt.notify.show_message("Check-in completed for " + search_key);
                                 } catch(e) {
                                     spt.alert(spt.exception.handler(e));
@@ -2303,6 +2315,13 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_display_value", display_value)
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        access_keys = self._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
+            search_key = sobject.get_search_key(use_id=True)
+            div.generate_api_key("retire_sobject", inputs=[search_key], attr="ret")
+            div.generate_api_key("delete_sobject", inputs=[search_key], attr="del")
 
         
         if self.show_drop_shadow:

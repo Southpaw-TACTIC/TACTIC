@@ -3089,6 +3089,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if self.connect_key:
             tr.add_attr("spt_connect_key", self.connect_key )
 
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        access_keys = self._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
+            search_key = sobject.get_search_key(use_id=True)
+            ret_api_key = tr.generate_api_key("retire_sobject", inputs=[search_key], attr="ret")
+            del_api_key = tr.generate_api_key("delete_sobject", inputs=[search_key], attr="del")
+            reac_api_key = tr.generate_api_key("reactivate_sobject", inputs=[search_key], attr="reac")
+
 
         # TEST TEST TEST
         document_mode = self.kwargs.get("document_mode") or False
@@ -3543,6 +3552,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #tr.add_attr("ondragenter", "return false")
         tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
         tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.generate_api_key("insert", inputs=[self.search_type, {"name": "__API_UNKNOWN__"}], attr="insert")
+        tr.generate_api_key("simple_checkin", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", "__API_UNKNOWN__", {"mode": "uploaded", "use_handoff_dir": False}], attr="checkin")
         tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
@@ -4117,7 +4128,10 @@ spt.table.drop_row = function(evt, el) {
             var layout = spt.table.get_layout();
             var search_type = layout.getAttribute("spt_search_type");
             var server = TacticServerStub.get();
+            var insert_key = el.getAttribute("SPT_INSERT_API_KEY");
+            server.set_api_key(insert_key);
             var sobject = server.insert(search_type, {name: filename})
+            server.clear_api_key();
             search_key = sobject.__search_key__;
         }
         var context = "publish" + "/" + filename;
@@ -4129,7 +4143,10 @@ spt.table.drop_row = function(evt, el) {
                 var kwargs = {mode: 'uploaded'};
                 spt.table.dragleave_row(evt, el);
                 try {
+                    var checkin_key = el.getAttribute("SPT_CHECKIN_API_KEY");
+                    server.set_api_key(checkin_key);
                     server.simple_checkin( search_key, context, filename, kwargs);
+                    server.clear_api_key();
                 }
                 catch(e) {
                     spt.alert("An error occured in the check-in: ["+e+"]");
@@ -5756,8 +5773,11 @@ spt.table.open_link = function(bvr) {
 
     if (expression) {
         var server = TacticServerStub.get();
+        var api_key = bvr.src_el.getAttribute("SPT_API_KEY");
+        server.set_api_key(api_key);
         var sss = server.eval(expression, {search_keys: search_key, single: true})
         search_key = sss.__search_key__;
+        server.clear_api_key();
 
         title = sss.code;
         name = sss.code;
@@ -8386,10 +8406,16 @@ spt.table.operate_selected = function(action)
                 if (search_key.test('sthpw/project?'))
                     is_project = true;
 
-                if (action == 'retire')
+                if (action == 'retire') {
+                    var retire_key = selected_rows[i].getAttribute("SPT_RET_API_KEY");
+                    server.set_api_key(retire_key);
                     server.retire_sobject(search_key);
-                else if (action == 'delete')
+                } else if (action == 'delete') {
+                    var del_key = selected_rows[i].getAttribute("SPT_DEL_API_KEY");
+                    server.set_api_key(del_key);
                     server.delete_sobject(search_key);
+                }
+                server.clear_api_key();
             }
         }
         catch(e) {
