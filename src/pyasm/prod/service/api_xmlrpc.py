@@ -375,7 +375,7 @@ def xmlrpc_decorator(meth):
     def decode_api_key(key):
         key = key.lstrip("$")
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-        path = "%s/api_key_%s" % (tmp_dir,key)
+        path = "%s/api_key_%s.txt" % (tmp_dir,key)
         if not os.path.exists(path):
             print("ERROR: API path [%s] not found" % path)
             raise Exception("API key not valid")
@@ -440,7 +440,6 @@ def xmlrpc_decorator(meth):
                             if isinstance(api_key, basestring):
                                 if api_key.startswith("$"):
                                     api_method, api_inputs, api_ticket = decode_api_key(api_key)
-
                                     if api_method == meth.__name__:
                                         for i in range(len(api_inputs)):
                                             if api_inputs[i] == "__API_UNKNOWN__":
@@ -455,7 +454,7 @@ def xmlrpc_decorator(meth):
                                                 allowed = True
                                             else:
                                                 allowed = False
-                                                print("WARNING: Trying to pass in unexpected inputs.")
+                                                print("WARNING: Trying to pass in unexpected inputs: %s" % args[i])
                                                 break
                                     else:
                                         raise ApiException("Try to access API's that are not allowed.")
@@ -5673,7 +5672,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if class_name.startswith("$"):
                 key = class_name.lstrip("$")
                 tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-                path = "%s/key_%s" % (tmp_dir,key)
+                path = "%s/key_%s.txt" % (tmp_dir,key)
                 if not os.path.exists(path):
                     print("ERROR: Command path [%s] not found" % path)
                     raise Exception("Command key not valid")
@@ -6605,6 +6604,23 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             security = Environment.get_security()
             transaction_ticket = security.get_ticket_key()
+            
+            original_ticket = ticket.get("ticket")
+            if original_ticket != transaction_ticket:
+                import os
+                import shutil
+                tmp_dir = Environment.get_tmp_dir()
+                dir_path = os.path.join(tmp_dir, "temp", ticket)
+                dest = os.path.join(tmp_dir, "temp", transaction_ticket)
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                files = os.listdir(dir_path)
+                for f in files:
+                    full_path = os.path.join(dir_path, f)
+                    des_full_path = os.path.join(dest, f)
+                    if os.path.isfile(full_path) and not os.path.isfile(des_full_path):
+                        shutil.copy(full_path, dest)
+
             return transaction_ticket
 
         # otherwise use xmlrpc mode
@@ -6659,6 +6675,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             Container.put("API:xmlrpc_transaction", False)
 
+            if ticket != transaction_ticket:
+                import os
+                import shutil
+                tmp_dir = Environment.get_tmp_dir()
+                dir_path = os.path.join(tmp_dir, "temp", ticket)
+                dest = os.path.join(tmp_dir, "temp", transaction_ticket)
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                files = os.listdir(dir_path)
+                for f in files:
+                    full_path = os.path.join(dir_path, f)
+                    des_full_path = os.path.join(dest, f)
+                    if os.path.isfile(full_path) and not os.path.isfile(des_full_path):
+                        shutil.copy(full_path, dest)
         finally:
             if not self.get_protocol() == "local":
                 DbContainer.release_thread_sql()
