@@ -118,7 +118,7 @@ class WebLoginCmd(Command):
                 search2 = Search("sthpw/login")              
                 search2.add_filter('email',self.login)
                 login_sobject = search2.get_sobject()
-        except:
+        finally:
             sudo.exit()
 
 

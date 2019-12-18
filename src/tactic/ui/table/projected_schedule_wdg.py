@@ -70,9 +70,9 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
                 if not settings:
                     settings = self.nodes_properties[process_name]
                 if settings:
-                    if isinstance(settings, basestring):
+                    if isinstance(settings, six.string_types):
                         settings = jsonloads(settings)
-                        if isinstance(settings, basestring):
+                        if isinstance(settings, six.string_types):
                             try:
                                 import ast
                                 settings = ast.literal_eval(settings)
