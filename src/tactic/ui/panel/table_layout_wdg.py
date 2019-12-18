@@ -22,6 +22,7 @@ from pyasm.common import Common, jsonloads, jsondumps, Environment, Container
 from pyasm.search import Search, SearchKey, SObject, SearchType, SearchException
 from pyasm.web import DivWdg, Table, HtmlElement, WebContainer, FloatDivWdg
 from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, WidgetConfigView, SwapDisplayWdg, CheckboxWdg
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
@@ -533,7 +534,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 self.sobjects = []
             else:
-                self.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+                try:
+                    sudo = Sudo()
+                    self.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+                finally:
+                    sudo.exit()
 
             self.items_found = len(self.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
@@ -3610,8 +3615,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 bg_color_map = {}
 
                 search_type, match_col, color_col = query.split("|")
-                search = Search(search_type)
-                sobjects = search.get_sobjects()
+                try:
+                    sudo = Sudo()
+                    search = Search(search_type)
+                    sobjects = search.get_sobjects()
+                finally:
+                    sudo.exit()
 
                 # match to a second atble
                 if query2:
