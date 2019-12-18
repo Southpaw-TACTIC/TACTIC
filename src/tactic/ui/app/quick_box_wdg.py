@@ -33,7 +33,7 @@ class QuickBoxWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 5px")
-        section_wdg.add_style("box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1)")
+        section_wdg.add_style("box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1)")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -122,9 +122,9 @@ class QuickBoxWdg(BaseRefreshWdg):
         div.add_style("position: fixed")
         div.add_style("z-index: 1000")
         #div.set_box_shadow("2px 2px 4px 4px")
-        div.set_box_shadow(color="rgba(0,0,0,0.1)")
+        div.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
         div.set_round_corners(5)
-        div.add_border()
+        div.add_style("border: solid 1px #DDD")
 
         content_top_wdg = DivWdg()
         content_top_wdg.add_style("position: fixed")
