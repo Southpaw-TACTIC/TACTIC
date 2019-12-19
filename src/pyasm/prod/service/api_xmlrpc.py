@@ -5424,6 +5424,55 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp.setrelheap()
         '''
 
+        '''
+        print("********************************************************************************************")
+        print("ticket: %s" % ticket)
+        print("class_name: %s" % class_name)
+        print("args: %s" % args)
+        print("values: %s" % values)
+        print("libraries: %s" % libraries)
+        print("interaction: %s" % interaction)
+        '''
+
+
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        allowed = False
+
+        
+        if class_name.startswith("$"):
+            key = class_name.lstrip("$")
+            tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+            path = "%s/widget_key_%s.txt" % (tmp_dir,key)
+            if not os.path.exists(path):
+                print("ERROR: Command path [%s] not found" % path)
+                raise Exception("Command key not valid")
+
+            f = open(path, 'r')
+            data = f.read()
+            f.close()
+            data = jsonloads(data)
+            class_name = data.get("class_name")
+            static_kwargs = data.get("kwargs") or {}
+            if static_kwargs:
+                print("Adding kwargs: %s" % static_kwargs)
+                for n, v in static_kwargs.items():
+                    args[n] = v
+
+            login = data.get("login")
+            current_login = Environment.get_user_name()
+            if login != current_login:
+                raise Exception("Permission Denied: wrong user")
+        else:
+            key = "widget/%s" % (class_name)
+            access_key = {
+                'key': key,
+                'project': project_code
+            }
+            if not security.check_access("builtin", access_key, "allow"):
+                raise Exception("Trying to access widgets that are not allowed, please use widget key")
+
+        
         try:
             Ticket.update_session_expiry()
         except:
