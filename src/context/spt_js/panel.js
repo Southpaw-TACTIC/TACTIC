@@ -75,6 +75,8 @@ spt.panel.async_load = function(panel_id, class_name, options, values) {
 
 
 spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
+    console.log("cccccccccccccccccccccc")
+    console.trace()
     var fade = kwargs ? kwargs.fade : true;
     var async = kwargs ? kwargs.async : true;
     var show_loading = kwargs ? kwargs.show_loading : true;
@@ -380,7 +382,10 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     var title = element.getAttribute("spt_title");
     var view = element.getAttribute("spt_view");
 
-    var widget_class = element.getAttribute("spt_class_name");
+    var widget_class = element.getAttribute("SPT_WIDGET_KEY");
+    if (!widget_class) {
+        var widget_class = element.getAttribute("spt_class_name");
+    }
     if( ! widget_class || widget_class == 'undefined' ) {
         spt.alert("Cannot refresh ["+element_id+"].  No spt_class_name attribute found");
         return;
@@ -418,9 +423,11 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
             }
             spt.panel.is_refreshing = false;
         }
+        console.log("hhhhhhhhhhhhhhhhhhhhhhhh")
         server.async_get_widget(widget_class, wdg_kwargs);
     }
     else {
+        console.log("jjjjjjjjjjjjjjjjjjjjjjjjj")
         var widget_html = server.get_widget(widget_class, wdg_kwargs);
         // replace the former element with the new element
         spt.behavior.replace_inner_html( element, widget_html );

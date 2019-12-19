@@ -1097,7 +1097,8 @@ class HtmlElement(Widget):
         return key
     
 
-    def generate_widget_key(self, api_name, inputs=[], ticket=None, attr=""):
+    def generate_widget_key(self, class_name, kwargs={}, ticket=None, attr="", sidebar=True):
+
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
@@ -1106,19 +1107,19 @@ class HtmlElement(Widget):
             ticket = Environment.get_ticket()
         
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-
+        
         if not tmp_dir:
             raise Exception("TMP_DIR config not defined")
 
         login = Environment.get_user_name()
         key = "$"+Common.generate_random_key()
-        filename = "api_key_" + key.lstrip("$") + ".txt"
+        filename = "widget_key_" + key.lstrip("$") + ".txt"
         f = open("%s/%s" % (tmp_dir, filename), "w")
         args = {
-            "api_method": api_name,
+            "class_name": class_name,
             "login": login,
             "ticket": ticket,
-            "inputs": inputs
+            "kwargs": kwargs
         }
         f.write(jsondumps(args))
         f.close()
