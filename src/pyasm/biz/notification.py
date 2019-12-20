@@ -14,7 +14,7 @@ __all__ = ["Notification", "GroupNotification"]
 
 
 from pyasm.search import Search, SObject, SearchType
-from pyasm.security import LoginGroup, Login, LoginInGroup
+from pyasm.security import LoginGroup, Login, LoginInGroup, Sudo
 
 class Notification(SObject):
 
@@ -65,24 +65,32 @@ class GroupNotification(SObject):
     def get_groups_by_code(note_code):
         group_note = SearchType.get(GroupNotification.SEARCH_TYPE)
         
-        search = Search(LoginGroup.SEARCH_TYPE)
-        search.add_where('''"login_group" in (select "login_group" from "%s" where "notification_code" = '%s')''' %(group_note.get_table(), note_code))
-            
+        sudo = Sudo()
+        try:
+            search = Search(LoginGroup.SEARCH_TYPE)
+            search.add_where('''"login_group" in (select "login_group" from "%s" where "notification_code" = '%s')''' %(group_note.get_table(), note_code))
+        finally:
+            sudo.exit()
+
         return search.get_sobjects()
     get_groups_by_code = staticmethod(get_groups_by_code)
-   
+  
     def get_logins_by_id(note_id):
-        login_in_group = SearchType.get(LoginInGroup.SEARCH_TYPE)
-        group_note = SearchType.get(GroupNotification.SEARCH_TYPE)
-        search = Search(Login.SEARCH_TYPE)
-        query_str = ''
         
-        if isinstance(note_id, list):
-            query_str = "in (%s)" %",".join([str(id) for id in note_id])
-        else:
-            query_str = "= %d" %note_id
-        search.add_where('''"login" in (select "login" from "%s" where "login_group" in (select "login_group" from "%s" where "notification_id" %s)) ''' % (login_in_group.get_table(), group_note.get_table(), query_str))
+        sudo = Sudo()
+        try:
+            login_in_group = SearchType.get(LoginInGroup.SEARCH_TYPE)
+            group_note = SearchType.get(GroupNotification.SEARCH_TYPE)
+            search = Search(Login.SEARCH_TYPE)
+            query_str = ''
             
+            if isinstance(note_id, list):
+                query_str = "in (%s)" %",".join([str(id) for id in note_id])
+            else:
+                query_str = "= %d" %note_id
+            search.add_where('''"login" in (select "login" from "%s" where "login_group" in (select "login_group" from "%s" where "notification_id" %s)) ''' % (login_in_group.get_table(), group_note.get_table(), query_str))
+        finally:
+            sudo.exit()
             
         return search.get_sobjects()
     get_logins_by_id = staticmethod(get_logins_by_id)

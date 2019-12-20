@@ -35,8 +35,6 @@ class UnittestEnvironment(object):
 
             self.delete()
 
-        print("Setting up clean Unittest project")
-
         # create the project
         create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Unittest") #, project_type="unittest")
         create_cmd.execute()
@@ -48,7 +46,6 @@ class UnittestEnvironment(object):
 
 
     def delete(self):
-        print("Deleting existing Unittest project")
         related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
         self.commit()
         from tactic.ui.tools import DeleteProjectCmd
@@ -57,7 +54,7 @@ class UnittestEnvironment(object):
 
 
     def commit(self):
-        db_res = DbResource.get_default('unittest')
+        db_res = DbResource.get_default(self.project_code)
         sql = DbContainer.get(db_res)
         impl = sql.get_database_impl()
         if impl.commit_on_schema_change():
@@ -77,7 +74,6 @@ class Sample3dEnvironment(UnittestEnvironment):
 
         project = Project.get_by_code(self.project_code)
         if project:
-
             self.delete()
 
         print("Setting up a basic Sample3d project")
