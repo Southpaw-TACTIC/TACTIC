@@ -17,7 +17,6 @@ from pyasm.widget import IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 
-
 class PopupWdg(BaseRefreshWdg):
     '''Container widget which creates a popup on the screen.  This popup
     window current has a title widget and a content widget
@@ -146,10 +145,26 @@ class PopupWdg(BaseRefreshWdg):
         
 
     def get_bootstrap_styles(self):
-        
+              
         style = HtmlElement.style(""" 
+          
+        .spt_popup_top.spt_popup_minimized {
+            top: unset;
+            right: unset;
+        }
+
+        .spt_popup_top .spt_popup_title_top { 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
     
         @media (min-width: 576px) {
+            .spt_popup_top .spt_popup_title {
+                margin: .25rem;
+                cursor: move;
+            }
+            
             .spt_popup_top.spt_popup {
                 width: fit-content;
             }
@@ -165,8 +180,17 @@ class PopupWdg(BaseRefreshWdg):
             }
 
         }
-
-        """)
+ 
+  
+        @media (max-width: 575.98px) { 
+            .spt_popup_top .spt_popup_title_top { 
+                padding: 1rem;
+                border-bottom: 1px solid #e9ecef;
+                border-top-left-radius: .3rem;
+                border-top-right-radius: .3rem;
+            }
+        }
+                """)
         
         return style 
 
@@ -314,40 +338,54 @@ class PopupWdg(BaseRefreshWdg):
         content_td.add_class("modal-dialog")
  
         drag_div = DivWdg()
+        drag_div.add_class("spt_popup_width")
+        drag_div.add_class("modal-content")
 
         self.add_header_context_menu(drag_div)
-      
+     
+        popup_title_top = DivWdg()
+        drag_div.add(popup_title_top)
+        popup_title_top.add_class("spt_popup_title_top")
+        
+        drag_handle_div = DivWdg(id='%s_title' %self.name)
+        popup_title_top.add(drag_handle_div)
 
         # create the 'close' button ...
         if self.allow_close:
-            close_wdg = DivWdg(css='spt_popup_close')
-            close_wdg.add_style("display: inline-block")
-            close_wdg.add( IconWdg("Close", "FA_REMOVE", size=14) )
-            close_wdg.add_style("float: right")
-            close_wdg.add_class("hand")
+
+            button_wdg = DivWdg()
+            button_wdg.add_class("d-flex")
+            popup_title_top.add(button_wdg)
+
+            from tactic.ui.widget import ButtonNewWdg
+            close_wdg = DivWdg()
+            close_wdg.add_class("spt_popup_close")
+
+            close_btn = ButtonNewWdg(title="Close", icon="FA_REMOVE")
+            close_wdg.add(close_btn)
 
             close_wdg.add_behavior({
                 'type': 'click_up',
                 'cbjs_action': self.get_cancel_script()
             })
 
-            drag_div.add(close_wdg)
+            button_wdg.add(close_wdg)
 
 
             # create the 'minimize' button ...
-            minimize_wdg = DivWdg(css='spt_popup_min')
-            minimize_wdg.add_style("margin: 9px 1px 3px 1px")
+            minimize_wdg = DivWdg()
+            minimize_wdg.add_class("spt_popup_min")
+            
+            minimize_btn = ButtonNewWdg(title="Minimize", icon="FA_WINDOW_MINIMIZE")
+            minimize_btn.add_class("spt_minimize", redirect=False)
+           
+            maximum_wdg = DivWdg()
+            maximize_btn = ButtonNewWdg(title="Maximize", icon="FA_WINDOW_MAXIMIZE")
+            maximize_btn.add_class("spt_maximize", redirect=False)
+            maximize_btn.add_style("display: none")
 
-            minimize = IconWdg("Minimize", "FA_WINDOW_MINIMIZE", size=12)
-            minimize.add_class("spt_minimize")
-            minimize.add_style("vertical-align: middle")
-            maximize = IconWdg("Maximize", "FA_WINDOW_MAXIMIZE", size=12)
-            maximize.add_class("spt_maximize")
-            maximize.add_style("display: none")
-            maximize.add_style("vertical-align: middle")
-
-            minimize_wdg.add( minimize )
-            minimize_wdg.add( maximize )
+            minimize_wdg.add( minimize_btn )
+            minimize_wdg.add( maximize_btn )
             minimize_wdg.add_style("float: right")
             minimize_wdg.add_class("hand")
             behavior = {
@@ -355,7 +393,7 @@ class PopupWdg(BaseRefreshWdg):
                 'cbjs_action': "spt.popup.toggle_minimize( bvr.src_el );"
             }
             minimize_wdg.add_behavior( behavior )
-            drag_div.add(minimize_wdg)
+            button_wdg.add(minimize_wdg)
 
 
 
@@ -376,18 +414,13 @@ class PopupWdg(BaseRefreshWdg):
         width = self.kwargs.get("width")
 
         # style
-        drag_div.add_class("spt_popup_width")
-        drag_div.add_class("modal-content")
 
-        drag_handle_div = DivWdg(id='%s_title' %self.name)
 
         # add the drag capability.
         # NOTE: need to use getParent because spt.popup has not yet been
         # initialized when this is processed
-        shadow_color = drag_div.get_color("shadow")
         drag_div.add_behavior( {
             'type':'smart_drag',
-            'shadow_color': shadow_color,
             'drag_el': "@.getParent('.spt_popup')",
             'bvr_match_class': 'spt_popup_title',
             'options': {'z_sort': 'bring_forward'},
@@ -450,7 +483,6 @@ class PopupWdg(BaseRefreshWdg):
 
         content_div.add(self.content_wdg)
 
-        drag_div.add( drag_handle_div )
         self.position_aux_div(drag_div, content_div)
         content_td.add(drag_div)
         widget.add(content_td)

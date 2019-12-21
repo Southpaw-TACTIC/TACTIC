@@ -623,9 +623,12 @@ class ButtonNewWdg(ButtonWdg):
         self.hit_wdg.add_behavior(behavior)
         self.collapsible_btn.add_behavior(behavior)
                                                    
-    def add_class(self, class_name):               
-        self.hit_wdg.add_class(class_name)        
-        self.collapsible_btn.add_class(class_name)
+    def add_class(self, class_name, redirect=True):
+        if redirect:
+            self.hit_wdg.add_class(class_name)        
+            self.collapsible_btn.add_class(class_name)
+        else:
+            self.top.add_class(class_name)
                                                    
     def set_attr(self, attr, name):                
         self.hit_wdg.set_attr(attr, name)
