@@ -2995,8 +2995,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         font_size = 12
         padding = 10
         extra_data = self.kwargs.get("extra_data") or {}
-        open_icon = "FA_FOLDER_OPEN_O"
-        closed_icon = "FA_FOLDER_O"
+        open_icon = "FA_FOLDER_OPEN"
+        closed_icon = "FA_FOLDER"
         group_icon_styles = ""
         if extra_data and isinstance(extra_data, basestring):
             try:

@@ -1514,7 +1514,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
         """
 
         from tactic.ui.widget import SingleButtonWdg
-        btn_dd = SingleButtonWdg(title='Global Options', icon="G_SETTINGS_GRAY", show_arrow=True)
+        btn_dd = SingleButtonWdg(title='Global Options', icon="FA_COG", show_arrow=True)
 
 
 

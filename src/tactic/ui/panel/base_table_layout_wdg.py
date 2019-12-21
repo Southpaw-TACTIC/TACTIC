@@ -1330,7 +1330,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if self.get_setting("show_keyword_search"):
                 button_div = ButtonNewWdg(title='Search', icon="FA_ARROW-CIRCLE-RIGHT")
             else:
-                button_div = ButtonNewWdg(title='Refresh', icon="FA_REFRESH")
+                button_div = ButtonNewWdg(title='Refresh', icon="FA_SYNC")
                
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
@@ -1805,7 +1805,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if self.can_use_gear() and self.get_setting("gear"):
-            button = ButtonNewWdg(title='More Options', icon="FA_GEAR")
+            button = ButtonNewWdg(title='More Options', icon="FA_COG")
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )

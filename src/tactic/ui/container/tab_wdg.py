@@ -2727,7 +2727,7 @@ spt.tab.view_definition = function(bvr) {
             icon.add_styles("padding: 2px; width: 11px")
             remove_wdg.add_style("right: 6px;")
         else:
-            icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
+            icon = IconWdg("Remove Tab", "FA_TIMES", size=12)
         icon.add_class("spt_icon_active")
         remove_wdg.add(icon)
         

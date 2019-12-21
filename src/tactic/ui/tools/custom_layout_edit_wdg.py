@@ -1652,7 +1652,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         button_row = ButtonRowWdg()
         shelf_wdg.add(button_row)
         button_row.add_style("float: left")
-        button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
+        button = ButtonNewWdg(title="Refresh", icon="FA_SYNC")
         button_row.add(button)
 
         button.add_behavior( {
@@ -1780,7 +1780,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
         # add new button
-        button = ButtonNewWdg(title="Add Elements", icon="FA_GEAR", show_arrow=True)
+        button = ButtonNewWdg(title="Add Elements", icon="FA_COG", show_arrow=True)
         button_row.add(button)
 
         # add in a context menu

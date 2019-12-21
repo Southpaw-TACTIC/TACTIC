@@ -239,7 +239,7 @@ class PluginWdg(BaseRefreshWdg):
                 icon = "FA_LIST_UL"
                 title = "Show Folders"
             else:
-                icon = "FA_FOLDER_O"
+                icon = "FA_FOLDER"
                 title = "Show Only Active Plugins"
             add_button = ButtonNewWdg(title=title, icon=icon)
             button_row.add(add_button)
@@ -977,7 +977,7 @@ class PluginEditWdg(BaseRefreshWdg):
             button_row.add_style("float: left")
 
 
-            button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
+            button = ButtonNewWdg(title="Refresh", icon="FA_SYNC")
             button_row.add(button)
             button.add_behavior( {
                 'type': 'click_up',

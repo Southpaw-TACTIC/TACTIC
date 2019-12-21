@@ -4428,7 +4428,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
+        button = ButtonNewWdg(title="More Options", icon="FA_COG", show_arrow=True)
         button_row.add(button)
 
         gear_menu = self.get_gear_menu()
@@ -4893,7 +4893,7 @@ class GearMenuButtonWdg(ButtonNewWdg):
         self.process = self.kwargs.get("process")
 
 
-        button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
+        button = ButtonNewWdg(title="More Options", icon="FA_COG", show_arrow=True)
 
         gear_menu = self.get_gear_menu()
         SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': gear_menu } )

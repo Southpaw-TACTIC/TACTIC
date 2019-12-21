@@ -1068,8 +1068,7 @@ class TopWdg(Widget):
 <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
             ''')
 
-
-        Container.append_seq("Page:css", "%s/spt_js/font-awesome-4.7.0/css/font-awesome.css?ver=%s" % (context_url, version))
+        Container.append_seq("Page:css", "%s/spt_js/font-awesome-5.12.0/css/all.css?ver=%s" % (context_url, version))
 
 
 

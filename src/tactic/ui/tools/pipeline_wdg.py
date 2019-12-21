@@ -7246,7 +7246,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
 
         if show_gear not in ['false', False]:
-            button = ButtonNewWdg(title="Extra View", icon="G_SETTINGS_GRAY", show_arrow=True)
+            button = ButtonNewWdg(title="Extra View", icon="FA_COG", show_arrow=True)
             button_row.add(button)
 
             tab = PipelineTabWdg()

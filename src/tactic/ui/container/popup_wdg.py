@@ -67,7 +67,7 @@ class PopupWdg(BaseRefreshWdg):
         if self.kwargs.get('allow_page_activity'):
             self.allow_page_activity = True
 
-        self.z_start = 1050
+        self.z_start = 200
         if self.kwargs.get('z_start'):
             self.z_start = self.kwargs.get('z_start')
 
@@ -147,7 +147,11 @@ class PopupWdg(BaseRefreshWdg):
     def get_bootstrap_styles(self):
               
         style = HtmlElement.style(""" 
-          
+    
+        .modal-backdrop {
+            z-index: 150 !important;
+        }
+
         .spt_popup_top.spt_popup_minimized {
             top: unset;
             right: unset;
@@ -167,6 +171,7 @@ class PopupWdg(BaseRefreshWdg):
             
             .spt_popup_top.spt_popup {
                 width: fit-content;
+                height: fit-content;
             }
 
             .spt_popup_top .modal-dialog {
@@ -361,7 +366,7 @@ class PopupWdg(BaseRefreshWdg):
             close_wdg = DivWdg()
             close_wdg.add_class("spt_popup_close")
 
-            close_btn = ButtonNewWdg(title="Close", icon="FA_REMOVE")
+            close_btn = ButtonNewWdg(title="Close", icon="FA_WINDOW_CLOSE")
             close_wdg.add(close_btn)
 
             close_wdg.add_behavior({
@@ -780,16 +785,20 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
 spt.popup.open = function( popup_el_or_id, use_safe_position )
 {
 
+    
+    console.log(popup_el_or_id);
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     if( ! popup ) { return; }
-    $(popup_el_or_id).modal("toggle");
+    $(popup_el_or_id).modal("show");
 
     backdrop = document.getElement(".modal-backdrop");
-    bvr = {
-        'type': 'click',
-        'cbjs_action': 'bvr.src_el.destroy();'
+    if (backdrop) {
+        bvr = {
+            'type': 'click',
+            'cbjs_action': 'bvr.src_el.destroy();'
+        }
+        spt.behavior.add(backdrop, bvr);
     }
-    spt.behavior.add(backdrop, bvr);    
     return;
 
     spt.popup._position( popup, use_safe_position );
@@ -1040,6 +1049,8 @@ spt.popup.get_widget = function( evt, bvr )
         }
         spt.puw.process_new( popup.parentNode );
     }
+
+    console.log("Created popup!", popup);
 
     if (top_class) popup.addClass(top_class);
 

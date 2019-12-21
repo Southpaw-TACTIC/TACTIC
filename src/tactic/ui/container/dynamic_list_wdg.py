@@ -142,7 +142,7 @@ class DynamicListWdg(BaseRefreshWdg):
         remove_wdg.add_class("SPT_DTS")
         #remove_wdg.add("(-)")
         remove_wdg.add_class("spt_remove")
-        button = IconButtonWdg(title="Remove Entry", icon="FA_REMOVE", size=8)
+        button = IconButtonWdg(title="Remove Entry", icon="FA_TIMES", size=8)
         remove_wdg.add(button)
         remove_wdg.add_style("float: left")
         remove_wdg.add_style("opacity: 0.5")

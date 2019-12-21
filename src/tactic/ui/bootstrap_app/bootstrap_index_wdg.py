@@ -1240,7 +1240,7 @@ class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
         else:
             menus = [ self.get_main_menu(), self.get_edit_menu(), self.get_help_menu() ]
 
-        btn = ButtonNewWdg(title='Global Options', icon="FA_GEAR")
+        btn = ButtonNewWdg(title='Global Options', icon="FA_COG")
         btn.add_class("bg-light ml-1")
         
         smenu_set = SmartMenu.add_smart_menu_set( btn.get_button_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )

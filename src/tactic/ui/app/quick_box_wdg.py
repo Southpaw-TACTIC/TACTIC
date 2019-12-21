@@ -183,7 +183,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = IconWdg('Configuration', 'FA_GEARS', size=32)
+        image = IconWdg('Configuration', 'FA_COGS', size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
