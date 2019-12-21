@@ -612,6 +612,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             '''
         } )
         search_wdg.add_style("background: #E0E0E0")
+        search_wdg.add_style("font-size: 1.0em")
 
 
         recent_div = DivWdg()
@@ -1798,15 +1799,38 @@ spt.custom_layout_editor.filter = function(keyword) {
             return;
         }
 
-        var title_el = item.getElement(".spt_title");
-        var title = title_el.innerHTML;
-        if (title.startsWith(keyword)) {
+        var view = item.getAttribute("spt_view");
+        var parts = view.split(".");
+        var matches = false;
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (part.startsWith(keyword)) {
+                matches = true;
+                break;
+            }
+        };
+
+        //var title_el = item.getElement(".spt_title");
+        //var title = title_el.innerHTML;
+        //if (title.startsWith(keyword)) {
+
+        if (matches) {
             var clone = spt.behavior.clone(item);
             clone.setStyle("display", "block");
             search_el.appendChild(clone);
             var title_el = clone.getElement(".spt_title");
-            var view = item.getAttribute("spt_view");
-            title_el.innerHTML = view.replace(/\./g, " / ");
+
+            var display = "";
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].startsWith(keyword)) {
+                    parts[i] = "<b>" + parts[i] + "</b>";
+                }
+                else {
+                    parts[i] = "<span style='opacity: 0.7'>" + parts[i] + "</span>";
+                }
+            }
+            view = parts.join(" / ");
+            title_el.innerHTML = view
         }
         else {
             //item.setStyle("display", "none");
