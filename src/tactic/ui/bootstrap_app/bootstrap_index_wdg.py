@@ -6,8 +6,8 @@ from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg
 from pyasm.widget import WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import ButtonNewWdg
-from tactic.ui.app import PageHeaderWdg, PageNavContainerWdg
+from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg, BootstrapButtonRowWdg
+from tactic.ui.app import PageHeaderWdg, PageNavContainerWdg, ProjectSelectWdg
 from tactic.ui.container import SmartMenu
 
 from .bootstrap_tab_wdg import *
@@ -891,8 +891,15 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
+        button_row = BootstrapButtonRowWdg(collapse_icon="FA_COG", collapse_title="SETTINGS")
+        button_row.toggle_btn.add_class("bg-light")
+        right_wdg.add(button_row)
+
+        project_select_wdg = BootstrapProjectSelectWdg()
+        button_row.add(project_select_wdg)
+
         gear_menu_wdg = BootstrapIndexGearMenuWdg()
-        right_wdg.add(gear_menu_wdg)
+        button_row.add(gear_menu_wdg)
 
         user_wdg = self.get_user_wdg()
         right_wdg.add(user_wdg)
@@ -1250,4 +1257,27 @@ class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
         SmartMenu.assign_as_local_activator( btn.get_collapsible_wdg(), "DG_TABLE_GEAR_MENU", True )
         
         return btn
+
+
+
+
+class BootstrapProjectSelectWdg(ProjectSelectWdg):
+
+
+    def get_activator(self, menus):
+
+        project = Project.get()
+        activator = BootstrapButtonWdg(title=project.get_value("title"))
+        activator.button_wdg.add_class("text-white")
+        activator.add_class("dropdown-toggle")
+        
+        smenu_set = SmartMenu.add_smart_menu_set( activator.get_button_wdg(), { 'BUTTON_MENU': menus } )
+        SmartMenu.assign_as_local_activator( activator.get_button_wdg(), "BUTTON_MENU", True )
+        
+        smenu_set = SmartMenu.add_smart_menu_set( activator.get_collapsible_wdg(), { 'BUTTON_MENU': menus } )
+        SmartMenu.assign_as_local_activator( activator.get_collapsible_wdg(), "BUTTON_MENU", True )
+        
+        
+        
+        return activator
 

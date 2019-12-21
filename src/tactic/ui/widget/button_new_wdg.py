@@ -179,16 +179,21 @@ class ButtonRowWdg(BaseRefreshWdg):
 __all__.extend(['BootstrapButtonRowWdg'])
 class BootstrapButtonRowWdg(BaseRefreshWdg):
 
+    def init(self):
+
+        icon = self.kwargs.get("collapse_icon") or "FA_ELLIPSIS_V"
+        collapse_title = self.kwargs.get("collapse_title") or "Tools"
+        self.toggle_btn = ButtonNewWdg(title="Tools", icon=icon)
 
     def get_display(self):
 
         top = self.top
         top.add_class("spt_bs_btn_row_top")
+        top.add(self.get_bootstrap_styles())
 
         top.add(self.get_collapse_display())
         top.add(self.get_button_display())
 
-        top.add(self.get_bootstrap_styles())
 
         return top
 
@@ -224,8 +229,7 @@ class BootstrapButtonRowWdg(BaseRefreshWdg):
         collapse_div.add_class("dropdown d-block d-sm-none")
         collapse_div.add_class("spt_bs_collapse_top")
 
-        icon = self.kwargs.get("collapse_icon") or "FA_ELLIPSIS_V"
-        toggle_btn = ButtonNewWdg(title="Tools", icon=icon)
+        toggle_btn = self.toggle_btn
         toggle_btn_id = toggle_btn.set_unique_id()
         collapse_div.add(toggle_btn)
         
@@ -249,6 +253,7 @@ class BootstrapButtonRowWdg(BaseRefreshWdg):
         item_template = HtmlElement("a")
         collapse_div.add(item_template)
         item_template.add_class("SPT_TEMPLATE")
+        item_template.add_class("d-none")
         item_template.add_class("dropdown-item")
 
         collapse_div.add_behavior({
@@ -277,14 +282,11 @@ class BootstrapButtonRowWdg(BaseRefreshWdg):
             items.forEach(function(item) {
                 new_item = spt.behavior.clone(item_template);
                 new_item.removeClass("SPT_TEMPLATE");
+                new_item.removeClass("d-none");
                 
                 item.removeClass("d-none");
                 item.inject(new_item);
                 new_items.push(new_item);
-                
-                
-                /*new_btn = spt.behavior.clone(item);
-                new_items.push(new_btn);*/
                 
             });
 
@@ -624,6 +626,7 @@ class ButtonNewWdg(ButtonWdg):
         self.collapsible_btn.add_behavior(behavior)
                                                    
     def add_class(self, class_name, redirect=True):
+        print(class_name, "!")
         if redirect:
             self.hit_wdg.add_class(class_name)        
             self.collapsible_btn.add_class(class_name)
@@ -950,6 +953,10 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         self.button_wdg = ButtonHtmlWdg()
         self.collapsible_wdg = DivWdg()
 
+    def add_class(self, class_name):
+        self.button_wdg.add_class(class_name)
+        self.collapsible_wdg.add_class(class_name)
+    
     def add_behavior(self, behavior):
         self.button_wdg.add_behavior(behavior)
         self.collapsible_wdg.add_behavior(behavior)
@@ -972,7 +979,7 @@ class BootstrapButtonWdg(BaseRefreshWdg):
 
         
         top.add(self.collapsible_wdg)
-        self.collapsible_wdg.add_class("spt_collapsible_btn")
+        self.collapsible_wdg.add_class("spt_collapsible_btn d-none")
         self.collapsible_wdg.add(title)
 
         return top

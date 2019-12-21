@@ -354,26 +354,30 @@ class PageHeaderWdg(Widget):
 
 class ProjectSelectWdg(BaseRefreshWdg):
 
+
+    def get_activator(self, menus):
+        from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
+        icon = self.kwargs.get("icon")
+        if icon:
+            button = IconButtonWdg(title='Open Project', icon=icon)
+        else:
+            button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
+        
+        from tactic.ui.container import SmartMenu
+        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': menus } )
+        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
+        
+        return button
+
+     
+
     def get_display(self):
 
         menus = []
 
         widget = DivWdg(id='ProjectSelectWdg', css='spt_panel')
         widget.set_attr('spt_class_name', 'tactic.ui.app.ProjectSelectWdg') 
-        if not WebContainer.get_web().is_IE():
-            widget.add_style("float: right")
 
-        from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
-
-        icon = self.kwargs.get("icon")
-        if icon:
-            button = IconButtonWdg(title='Open Project', icon=icon)
-        else:
-            button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
-
-
-
-        widget.add(button)
 
 
         #from tactic.ui.activator import ButtonForDropdownMenuWdg
@@ -603,9 +607,9 @@ class ProjectSelectWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.container import SmartMenu
-        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': menus } )
-        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
+        button = self.get_activator(menus)
+
+        widget.add(button)
 
 
         return widget
