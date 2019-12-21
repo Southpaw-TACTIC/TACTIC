@@ -57,6 +57,9 @@ class TabWdg(BaseRefreshWdg):
 
         self.unique_id = self.generate_unique_id()
         
+        self.header = HtmlElement.ul()
+        self.header_id = self.header.set_unique_id()
+
         self.use_default_style = kwargs.get("use_default_style")
         if self.use_default_style not in [False, 'false']:
             self.use_default_style = True
@@ -1321,16 +1324,6 @@ spt.tab.view_definition = function(bvr) {
                 display: block;
             }
 
-            .spt_tab_header_top {
-                height: 40px;
-                display: none !important;
-            }
-            
-            @media (min-width: 576px) {
-                .spt_tab_header_top {
-                    display: flex !important;
-                }
-            }
 
             .spt_tab_header_label {
                 text-overflow: ellipsis;
@@ -1453,6 +1446,8 @@ spt.tab.view_definition = function(bvr) {
     def get_tab_id(self):
         return self.unique_id
 
+    def get_header_id(self):
+        return self.header_id
 
     def get_display(self):
 
@@ -1621,12 +1616,12 @@ spt.tab.view_definition = function(bvr) {
             } )
 
 
-        header_div = HtmlElement.ul()
+        header_div = self.header
+        header_id = self.get_header_id()
         inner.add(header_div)
 
         header_div.add_class("spt_tab_header_top")
         header_div.add_class("nav nav-tabs")
-        self.header_id = header_div.set_unique_id()
 
         subheader_div = DivWdg()
         subheader_div.add_class("spt_tab_subheader_top")
@@ -1659,7 +1654,6 @@ spt.tab.view_definition = function(bvr) {
         offset = self.kwargs.get("tab_offset")
         if offset:
             header_div.add_style("padding-left: %s" % offset)
-
 
         if self.mode == "hidden":
             header_div.add_style("display: none")

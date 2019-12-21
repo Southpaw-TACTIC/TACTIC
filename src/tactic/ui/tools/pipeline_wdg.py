@@ -7495,7 +7495,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
 
-        button = ButtonNewWdg(title="Redo", icon="FA_REPEAT", show_out=False)
+        button = ButtonNewWdg(title="Redo", icon="FA_REDO", show_out=False)
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',

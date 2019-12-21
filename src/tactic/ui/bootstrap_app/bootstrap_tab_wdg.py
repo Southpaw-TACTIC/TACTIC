@@ -1,6 +1,6 @@
 
 from pyasm.widget import WidgetConfig
-from pyasm.web import DivWdg
+from pyasm.web import DivWdg, HtmlElement
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import TabWdg
@@ -18,14 +18,41 @@ class BootstrapTabWdg(BaseRefreshWdg):
         config = WidgetConfig.get(view=view, xml=config_xml)
         self.tab = TabWdg(config=config, view=view, use_default_style=False, save_state="main_body_tab_state")
         self.unique_id = self.tab.get_tab_id()
+        self.header_id = self.tab.get_header_id()
         
 
     def get_tab_id(self):
         return self.unique_id
 
+    def get_header_id(self):
+        return self.header_id
+
+    def get_bootstrap_styles(self):
+
+        header_id = self.get_header_id()
+        style = HtmlElement.style("""
+            #%(header_id)s {
+                height: 40px;
+                display: none !important;
+            }
+
+            @media (min-width: 576px) {
+                #%(header_id)s {
+                    display: flex !important;
+                }
+            }
+
+        """ % {'header_id': header_id})
+
+        return style
+
+
     def get_display(self):
 
         top = self.top
+
+        top.add(self.get_bootstrap_styles())
+
         top.add(self.tab)
 
         for widget in self.widgets:
