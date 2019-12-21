@@ -599,6 +599,21 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left_div.add_style("width: 100%")
 
 
+        search_wdg = TextInputWdg(name="filter", height="25", placholder="Filter")
+        title_wdg.add(search_wdg)
+        search_wdg.add_style("width: 75px")
+        search_wdg.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_custom_layout_top");
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.filter(value);
+            '''
+        } )
+        search_wdg.add_style("background: #E0E0E0")
+
+
         recent_div = DivWdg()
         recent_div.add_class("spt_recent_top")
         title_wdg.add(recent_div)
@@ -716,7 +731,27 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         } )
 
 
+
+        search_wdg = DivWdg()
+        search_wdg.add_class("spt_custom_layout_search_top")
+        left_div.add(search_wdg)
+        search_wdg.add_style("display: none")
+
+        search_title_wdg = DivWdg()
+        search_wdg.add(search_title_wdg)
+        search_title_wdg.add("Search Results:")
+        search_title_wdg.add_style("border-bottom: solid 1px #DDD")
+        search_title_wdg.add_style("padding: 20px 10px 5px 10px")
+        search_title_wdg.add_style("font-weight: bold")
+
+        search_result_wdg = DivWdg()
+        search_wdg.add(search_result_wdg)
+        search_result_wdg.add_class("spt_custom_layout_search")
+        search_result_wdg.add_style("font-size: 0.9em")
+
+
         content_div = DivWdg()
+        content_div.add_class("spt_custom_layout_view_top")
         left_div.add_widget(content_div, "content")
         content_div.add_color("color", "color3")
 
@@ -789,6 +824,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     if i != 1:
                         folder_wdg.add_style("padding-left: 13px")
 
+                    folder_wdg.add_class("spt_custom_layout_folder")
+
                     # add it to the parent and remember this as the last parent
                     parent_wdg.get_widget("content").add(folder_wdg)
                     parent_wdg = folder_wdg
@@ -804,7 +841,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     #icon.add_style("margin-top: -2px")
                     #icon.add_style("margin-left: -5px")
 
-                    icon = IconWdg(folder, "BS_FOLDER_OPEN", inline=False, size=12)
+                    icon = IconWdg(folder, "FA_FOLDER_O", inline=False, size=12)
                     icon.add_style("margin-top: 0px")
                     icon.add_style("margin-left: -3px")
                     icon.add_style("margin-right: 3px")
@@ -857,19 +894,23 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             config_div = DivWdg()
             folder_content.add(config_div)
             if folder != "/":
-                config_div.add_style("padding-left: 28px")
+                config_div.add_style("padding-left: 20px")
             else:
                 config_div.add_style("padding-left: 5px")
 
             config_div.add_class("spt_custom_layout_item")
             #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
-            icon = IconWdg("Custom Layout View", "BS_FILE", inline=False, size=12)
-            icon.add_style("margin-left: 3px")
+            icon = IconWdg("Custom Layout View", "FA_FILE_O", inline=False, size=12)
             icon.add_style("margin-right: 1px")
             icon.add_style("opacity: 0.8")
             config_div.add(icon)
 
-            config_div.add(display_view)
+            display_view_wdg = DivWdg()
+            display_view_wdg.add_class("spt_title")
+            display_view_wdg.add_style("white-space: nowrap")
+            config_div.add(display_view_wdg)
+            display_view_wdg.add(display_view)
+
             config_div.add_attr("spt_view", config_view)
             config_div.add_attr("spt_search_key", config.get_search_key())
             
@@ -1733,6 +1774,48 @@ spt.custom_layout_editor.refresh = function() {
 }
 
 
+spt.custom_layout_editor.filter = function(keyword) {
+    var top = spt.custom_layout_editor.top;
+
+    var search_top = top.getElement(".spt_custom_layout_search_top");
+    var search_el = top.getElement(".spt_custom_layout_search");
+
+    var view_top = top.getElement(".spt_custom_layout_view_top");
+
+    search_el.innerHTML = "";
+    if (keyword == "") {
+        search_top.setStyle("display", "none");
+        view_top.setStyle("display", "block");
+        return;
+    }
+
+    search_top.setStyle("display", "block");
+    view_top.setStyle("display", "none");
+
+    var items = top.getElements(".spt_custom_layout_item");
+    items.forEach( function(item) {
+        if (item.hasClass("spt_recent_item")) {
+            return;
+        }
+
+        var title_el = item.getElement(".spt_title");
+        var title = title_el.innerHTML;
+        if (title.startsWith(keyword)) {
+            var clone = spt.behavior.clone(item);
+            clone.setStyle("display", "block");
+            search_el.appendChild(clone);
+            var title_el = clone.getElement(".spt_title");
+            var view = item.getAttribute("spt_view");
+            title_el.innerHTML = view.replace(/\./g, " / ");
+        }
+        else {
+            //item.setStyle("display", "none");
+        }
+    } );
+
+}
+
+
 spt.custom_layout_editor.add_recent_item = function(data) {
     let top = spt.custom_layout_editor.top;
     let recent_top = top.getElement(".spt_recent_top");
@@ -1772,6 +1855,7 @@ spt.custom_layout_editor.add_recent_item = function(data) {
     var new_item = document.createElement("a");
     new_item.addClass("dropdown-item");
     new_item.addClass("spt_custom_layout_item");
+    new_item.addClass("spt_recent_item");
     new_item.addClass("hand");
     menu.prepend(new_item);
     new_item.setAttribute("spt_view", data.view);
