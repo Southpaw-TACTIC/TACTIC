@@ -13,7 +13,7 @@ from tactic.ui.container import SmartMenu
 from .bootstrap_tab_wdg import *
 
 
-__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg']
+__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg', 'BootstrapTopNavWdg']
 
 
 from tactic.ui.panel import SideBarPanelWdg, SideBarBookmarkMenuWdg
@@ -103,6 +103,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 title.add_style("display: none")
 
             """
+            #TODO: What does this do?
             error_list = Container.get_seq(self.ERR_MSG)
             if error_list:
                 span = SpanWdg()
@@ -961,6 +962,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             config = '''
             <config>
             <application>
+            <element name="top_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
+              </display>
+            </element>
             
             <element name="left_nav">
               <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
@@ -1022,6 +1027,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             config = '''
             <config>
             <application>
+            <element name="top_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
+              </display>
+            </element>
             <element name="main_body">
               <display class="tactic.ui.startup.MainWdg"/>
               <web/>
@@ -1033,6 +1042,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             config = '''
             <config>
             <application>
+            <element name="top_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
+              </display>
+            </element>
             <element name="left_nav">
               <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
                 <auto_size>True</auto_size>
@@ -1215,7 +1228,12 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         tab = BootstrapTabWdg()
         tab_id = tab.get_tab_id()
         
-        top_nav_wdg = BootstrapTopNavWdg(main_body_tab_id=tab_id, view_side_bar=self.view_side_bar)
+        config = WidgetConfig.get(xml=self.config_xml, view="application")
+        top_nav_handler = config.get_display_handler("top_nav")
+        top_nav_options = config.get_display_options("top_nav")
+        top_nav_options['main_body_tab_id'] = tab_id
+        top_nav_options['view_side_bar'] = self.view_side_bar
+        top_nav_wdg = Common.create_from_class_path(top_nav_handler, [], top_nav_options)
         
         main_body_panel.add(top_nav_wdg)
         main_body_panel.add(tab)
