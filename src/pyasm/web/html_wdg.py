@@ -1060,7 +1060,7 @@ class HtmlElement(Widget):
         return key
 
 
-    def generate_api_key(self, api_name, inputs=[], ticket=None, attr=""):
+    def generate_api_key(self, api_name, inputs={}, ticket=None, attr=""):
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
@@ -1081,7 +1081,7 @@ class HtmlElement(Widget):
         filename = "api_key_" + key.lstrip("$") + ".txt"
         f = open("%s/%s" % (tmp_dir, filename), "w")
         args = {
-            "api_method": api_name,
+            "method": api_name,
             "login": login,
             "ticket": ticket,
             "inputs": inputs
@@ -1097,7 +1097,7 @@ class HtmlElement(Widget):
         return key
     
 
-    def generate_widget_key(self, class_name, kwargs={}, ticket=None, attr="", sidebar=True):
+    def generate_widget_key(self, class_name, inputs=[], ticket=None, attr="", sidebar=True):
 
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
@@ -1110,16 +1110,19 @@ class HtmlElement(Widget):
         
         if not tmp_dir:
             raise Exception("TMP_DIR config not defined")
+        
+        if class_name.startswith("$"):
+            raise Exception("Wrong class name")
 
         login = Environment.get_user_name()
         key = "$"+Common.generate_random_key()
         filename = "widget_key_" + key.lstrip("$") + ".txt"
         f = open("%s/%s" % (tmp_dir, filename), "w")
         args = {
-            "class_name": class_name,
+            "method": class_name,
             "login": login,
             "ticket": ticket,
-            "kwargs": kwargs
+            "inputs": inputs
         }
         f.write(jsondumps(args))
         f.close()

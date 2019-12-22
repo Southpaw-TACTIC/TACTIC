@@ -36,6 +36,7 @@ from pyasm.biz import Project
 from pyasm.web import DivWdg, SpanWdg, Table, WebContainer
 from pyasm.widget import CheckboxWdg, SelectWdg, TextWdg, HiddenWdg
 from pyasm.search import Search, SearchException, SearchType
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
@@ -316,7 +317,6 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 search.add_relationship_search_filter(sub_search, op=op)
         else:
             search.set_null_filter()
-
 
 
 
@@ -642,17 +642,21 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         overall_search = search
         self.overall_search_type = overall_search.get_search_type()
         search_type = self.overall_search_type
-        search = Search(self.overall_search_type)
-        
-        value = self.values.get("value")
-        if not value:
-            return
+        try:
+            sudo = Sudo()
+            search = Search(self.overall_search_type)
+            
+            value = self.values.get("value")
+            if not value:
+                return
 
-        name = self.get_name()
-        if not self.columns:
+            name = self.get_name()
+            if not self.columns:
             self.columns = [name]
 
-        partial = self.values.get("partial") == 'on'
+            partial = self.values.get("partial") == 'on'
+        finally:
+            sudo.exit()
 
         try:
             value.encode('ascii')

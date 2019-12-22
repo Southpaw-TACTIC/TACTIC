@@ -347,6 +347,32 @@ API_MODE = {
 } 
 
 
+def decode_security_key(key, security_method="api"):
+    key = key.lstrip("$")
+    tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+    path = "%s/%s_key_%s.txt" % (tmp_dir, security_method, key)
+    if not os.path.exists(path):
+        print("ERROR: %s path [%s] not found" % (security_method, path))
+        raise Exception("%s key not valid" % security_method)
+    
+    f = open(path, 'r')
+    data = f.read()
+    f.close()
+    data = jsonloads(data)
+    method = data.get("method")
+    inputs = data.get("inputs")
+    login = data.get("login")
+    ticket = data.get("ticket")
+    current_login = Environment.get_user_name()
+    if current_login:
+        if login == current_login:
+            return method, inputs, ticket
+        else:
+            raise Exception("Permission Denied: wrong user")
+    else:
+        return method, inputs, ticket
+
+
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -370,35 +396,8 @@ def xmlrpc_decorator(meth):
         if isinstance(ticket, dict):
             state  = Container.get(init_data_key)
             if state:
-                Container.put(data_key, state) 
-    
-    def decode_api_key(key):
-        key = key.lstrip("$")
-        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-        path = "%s/api_key_%s.txt" % (tmp_dir,key)
-        if not os.path.exists(path):
-            print("ERROR: API path [%s] not found" % path)
-            raise Exception("API key not valid")
+                Container.put(data_key, state)
         
-        f = open(path, 'r')
-        data = f.read()
-        f.close()
-        data = jsonloads(data)
-        api_method = data.get("api_method")
-        inputs = data.get("inputs")
-        login = data.get("login")
-        ticket = data.get("ticket")
-        current_login = Environment.get_user_name()
-        if current_login:
-            if login == current_login:
-                return api_method, inputs, ticket
-            else:
-                raise Exception("Permission Denied: wrong user")
-        else:
-            return api_method, inputs, ticket
-        
-    
-
 
     def new(self, original_ticket, *args, **kwargs):
 
@@ -439,7 +438,7 @@ def xmlrpc_decorator(meth):
                         if api_key:
                             if isinstance(api_key, basestring):
                                 if api_key.startswith("$"):
-                                    api_method, api_inputs, api_ticket = decode_api_key(api_key)
+                                    api_method, api_inputs, api_ticket = decode_security_key(api_key)
                                     if api_method == meth.__name__:
                                         for i in range(len(api_inputs)):
                                             if api_inputs[i] == "__API_UNKNOWN__":
@@ -5424,54 +5423,40 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp.setrelheap()
         '''
 
-        print("********************************************************************************************")
-        print("ticket: %s" % ticket)
-        print("class_name: %s" % class_name)
-        print("args: %s" % args)
-        print("values: %s" % values)
-        print("libraries: %s" % libraries)
-        print("interaction: %s" % interaction)
 
 
         security = Environment.get_security()
         project_code = Project.get_project_code()
 
         if isinstance(class_name, basestring):
-            if class_name.startswith("$"):
-                key = class_name.lstrip("$")
-                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-                path = "%s/widget_key_%s.txt" % (tmp_dir,key)
-                if not os.path.exists(path):
-                    print("ERROR: Command path [%s] not found" % path)
-                    raise Exception("Command key not valid")
-
-                f = open(path, 'r')
-                data = f.read()
-                f.close()
-                data = jsonloads(data)
-                print("data: %s" % data)
-                class_name = data.get("class_name")
-                static_kwargs = data.get("kwargs") or {}
-                if static_kwargs:
-                    print("Adding kwargs: %s" % static_kwargs)
-                    for n, v in static_kwargs.items():
-                        args[n] = v
-
-                login = data.get("login")
-                current_login = Environment.get_user_name()
-                if login != current_login:
-                    raise Exception("Permission Denied: wrong user")
-            else:
-                key = "widget/%s" % (class_name)
-                access_key = {
-                    'key': key,
-                    'project': project_code
-                }
-                if not security.check_access("builtin", access_key, "allow"):
-                    raise Exception("Trying to access widgets that are not allowed, please use widget key")
+            if Config.get_value("security", "api_widget_restricted") == "true":
+                if class_name.startswith("$"):
+                    class_name, inputs, ticket = decode_security_key(class_name, "widget")
+                    if not args:
+                        args = inputs
+                    else:
+                        if not inputs:
+                            raise Exception("WARNING: Trying to pass in unexpected inputs: %s." % args)
+                        else:
+                            for k, v in args.items():
+                                if not inputs.get(k):
+                                    raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
+                                elif v != inputs.get(k):
+                                    if inputs.get(k) == "__WIDGET_UNKNOWN__":
+                                        inputs[k] = v
+                                    else:
+                                        raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
+                else:
+                    key = "widget/%s" % (class_name)
+                    access_key = {
+                        'key': key,
+                        'project': project_code
+                    }
+                    if not security.check_access("builtin", access_key, "allow"):
+                        raise Exception("Trying to access widgets that are not allowed, please use widget key")
 
             
-            print("class_name: %s" % class_name)
+
             try:
                 Ticket.update_session_expiry()
             except:

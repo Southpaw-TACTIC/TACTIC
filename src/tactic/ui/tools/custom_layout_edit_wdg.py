@@ -449,7 +449,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view = view.replace("/", ".")
         
         search_key = self.kwargs.get("search_key")
-        print("search_key: ", search_key)
 
         if view == '__new__':
             cur_config = None

@@ -445,9 +445,18 @@ class PipelineToolWdg(BaseRefreshWdg):
                 '''
                 })
 
+            pipeline_code = self.kwargs.get("pipeline") or "__WIDGET_UNKNOWN__"
+            inputs = {
+                    "pipeline_code": pipeline_code,
+                    "process": "__WIDGET_UNKNOWN__",
+                    "node_type": '__WIDGET_UNKNOWN__',
+                    "properties": "__WIDGET_UNKNOWN__",
+                }
+            widget_key = container.generate_widget_key('tactic.ui.tools.ProcessInfoWdg', inputs=inputs, attr="info")
             container.add_relay_behavior({
                 'type': 'click',
                 'bvr_match_class': 'spt_node_search_result',
+                'widget_key': widget_key,
                 'cbjs_action': '''
 
                 var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
@@ -477,7 +486,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                     node_type = "unknown";
                 }
 
-                var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+                var class_name = bvr.widget_key;
                 var kwargs = {
                     pipeline_code: group_name,
                     process: node_name,
@@ -1809,8 +1818,18 @@ class PipelineListWdg(BaseRefreshWdg):
 class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
     def get_node_behaviors(self):
+        div = DivWdg()
+        inputs =  {
+            'process': "__WIDGET_UNKNOWN__", 
+            'node_type': "__WIDGET_UNKNOWN__", 
+            'pipeline_code': '__WIDGET_UNKNOWN__', 
+            'properties': "__WIDGET_UNKNOWN__"
+            }
+        widget_key = div.generate_widget_key('tactic.ui.tools.ProcessInfoWdg', inputs=inputs)
+        
         behavior = {
         'type': 'click_up',
+        'widget_key': widget_key,
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
@@ -1831,7 +1850,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
             node_type = "unknown";
         }
 
-        var class_name = 'tactic.ui.tools.ProcessInfoWdg';
+        var class_name = bvr.widget_key;
         var kwargs = {
             pipeline_code: group_name,
             process: node_name,
@@ -1856,9 +1875,18 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
     def get_canvas_behaviors(self):
 
-
+        div = DivWdg()
+        inputs = {
+            'to_type': '__WIDGET_UNKNOWN__',
+            'pipeline_code': '__WIDGET_UNKNOWN__',
+            'from_type': '__WIDGET_UNKNOWN__',
+            'from_node': '__WIDGET_UNKNOWN__', 
+            'to_node': '__WIDGET_UNKNOWN__'
+        }
+        widget_key = div.generate_widget_key('tactic.ui.tools.NewConnectorInfoWdg', inputs=inputs)
         behavior = {
         'type': 'click',
+        'widget_key': widget_key,
         'cbjs_action': '''
         spt.pipeline.init(bvr);
         var node = bvr.src_el;
@@ -1885,7 +1913,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
 
             var group_name = spt.pipeline.get_current_group();
 
-            var class_name = 'tactic.ui.tools.NewConnectorInfoWdg';
+            var class_name = bvr.widget_key;
             var kwargs = {
                 pipeline_code: group_name,
                 from_node: from_node.spt_name,
@@ -8180,8 +8208,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         button = ButtonNewWdg(title="Show workflow info", icon="FA_INFO")
         button_row.add(button)
+        div = DivWdg()
+        widget_key = div.generate_widget_key('tactic.ui.tools.PipelineInfoWdg', inputs={'pipeline_code': '__WIDGET_UNKNOWN__'})
         button.add_behavior({
             'type': 'click',
+            "widget_key": widget_key,
             'cbjs_action': '''
 
             var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
@@ -8198,7 +8229,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
             var group_name = spt.pipeline.get_current_group();
 
-            var class_name = 'tactic.ui.tools.PipelineInfoWdg';
+            var class_name = bvr.widget_key;
             var kwargs = {
                 pipeline_code: group_name,
             }
@@ -8257,14 +8288,24 @@ class PipelineEditorWdg(BaseRefreshWdg):
         } )
 
         preview_button = ButtonNewWdg(title="Workflow Schedule Preview", icon="FA_EYE")
+        tmp_div = DivWdg()
+        pipeline_code = self.kwargs.get("pipeline") or "__WIDGET_UNKNOWN__"
+        inputs = {
+            'nodes_properties': "__WIDGET_UNKNOWN__", 
+            'pipeline_code': pipeline_code,
+            'pipeline_xml': '__WIDGET_UNKNOWN__'
+            }
+        widget_key = tmp_div.generate_widget_key("tactic.ui.table.WorkflowSchedulePreviewWdg", inputs=inputs)
         preview_button.add_behavior({
             'type': 'click',
+            'widget_key': widget_key,
             'cbjs_action': '''
             var toolTop = bvr.src_el.getParent('.spt_pipeline_tool_top');
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
             var pipeline_code = spt.pipeline.get_current_group();
             var pipeline_xml = spt.pipeline.export_group(pipeline_code);
             var nodes = spt.pipeline.get_all_nodes();
+            var widget_key = bvr.widget_key;
             var nodes_properties = {};
             for (var i=0; i<nodes.length; i++) {
                 var node_name = spt.pipeline.get_node_name(nodes[i]);
@@ -8278,7 +8319,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             kwargs = {
                 width: 900
             }
-            spt.panel.load_popup("Workflow Schedule Preview", 'tactic.ui.table.WorkflowSchedulePreviewWdg', args, kwargs);
+            spt.panel.load_popup("Workflow Schedule Preview", widget_key, args, kwargs);
             '''
         })
 
