@@ -1097,7 +1097,7 @@ class HtmlElement(Widget):
         return key
     
 
-    def generate_widget_key(self, class_name, inputs=[], ticket=None, attr="", sidebar=True):
+    def generate_widget_key(self, class_name, inputs=[], ticket=None, attr=""):
 
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
