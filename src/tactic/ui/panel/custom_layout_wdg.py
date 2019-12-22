@@ -1526,7 +1526,8 @@ class CustomLayoutCbk(Command):
         if callback.startswith("$"):
             key = callback.lstrip("$")
             tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-            path = "%s/key_%s" % (tmp_dir,key)
+            path = "%s/key_%s.txt" % (tmp_dir,key)
+            print("path: ", path)
             if not os.path.exists(path):
                 print("ERROR: Command path [%s] not found" % path)
                 raise Exception("Command key not valid")

@@ -602,6 +602,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         search_wdg = TextInputWdg(name="filter", height="25", placholder="Filter")
         title_wdg.add(search_wdg)
         search_wdg.add_style("width: 75px")
+        search_wdg.add_style("padding: 3px 5px")
         search_wdg.add_behavior( {
             'type': 'keyup',
             'cbjs_action': '''
@@ -1160,7 +1161,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("width: 400px")
             view_wdg.add_style("margin-top: 4px")
             view_wdg.add_style("margin-left: 10px")
-            view_wdg.add_style("padding-left: 230px")
+            view_wdg.add_style("padding-left: 30px")
             text.add_class("spt_view")
             text.add_style("font-family: courier")
             text.add_style("float: left")
@@ -1915,6 +1916,9 @@ spt.custom_layout_editor.add_recent_item = function(data) {
     def get_shelf_wdg(self):
 
         shelf_wdg = DivWdg()
+        shelf_wdg.add_style("display: flex")
+        shelf_wdg.add_style("align-items: center")
+        shelf_wdg.add_style("justify-content: left")
 
         shelf_wdg.add_style("height: 35px")
         shelf_wdg.add_color("background", "background", -10)
