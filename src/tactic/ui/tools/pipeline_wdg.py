@@ -97,12 +97,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             'labels': 'Node Types|Pipelines',
             'default': 'pipelines'
         },
-        "window_resize_offset": {
-            'description': "Vertical resize offset",
-            'type': 'TextWdg',
-            'order': 7,
-            'category': 'Display',
-        },
 
     }
 
@@ -117,41 +111,39 @@ class PipelineToolWdg(BaseRefreshWdg):
         styles = HtmlElement.style('''
 
             .spt_pipeline_tool_left {
+                width: 200px;
+                height: 100%;
                 position: absolute;
                 left: 0px;
                 transition: .25s;
                 border: 1px solid #ccc;
                 border-width: 0px 1px 1px 1px;
-                width: 20%;
-                height:100%;
             }
 
             .spt_pipeline_tool_right {
-                width: 79%;
+                width: calc(100% - 200px);
                 height: 100%;
                 padding: 0 2px;
-                overflow: hidden;
+                overflow-x: hidden;
+                overflow-y: auto;
                 position: relative;
-                margin-left: 20.3%;
+                margin-left: 200px;
                 transition: .25s;
             }
 
             .spt_pipeline_tool_info {
-                max-width: 400px;
                 width: 400px;
-                min-width: 400px;
                 position: absolute;
                 right: -400px;
                 transition: 0.25s;
                 top: 33px;
                 bottom: 0px;
                 border: 1px solid #ccc;
-                //height: 600;
-                box-sizing: border-box;
                 padding-top: 20px;
                 border-width: 1px 0px 1px 1px;
                 background: white;
                 overflow-y: auto;
+                z-index: 250;
             }
 
             .spt_pipeline_tool_top .search-results {
@@ -174,7 +166,6 @@ class PipelineToolWdg(BaseRefreshWdg):
                 display: flex;
                 align-items: center;
                 padding: 7px 6px;
-                box-sizing: border-box;
                 overflow-x: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -214,7 +205,6 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border: 1px solid #ccc;
                 border-radius: 3px;
                 padding: 5px;
-                box-sizing: border-box;
                 font-size: 10px;
                 color: #7e7e7e;
             }
@@ -222,7 +212,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             .spt_pipeline_tool_top .spt_pipeline_toolbar {
                 border: 1px solid #ccc;
                 border-width: 0 0 1 0;
-                height: 28px;
+                height: 33px;
 
                 display: flex;
                 align-items: center;
@@ -231,7 +221,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             .spt_pipeline_tool_top .spt_hide_sidebar {
                 padding: 5px;
                 height: 100%;
-                box-sizing: border-box;
                 border-right: 1px solid #ccc;
             }
 
@@ -283,6 +272,26 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border-radius: 2px;
                 border: 1px solid #ccc;
             }
+            
+            .spt_pipeline_tool_top_container {
+                display: flex;
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+                background: #FFFFFF;
+                position: relative;
+            }
+
+            .spt_pipeline_list_top {
+                height: calc(100% - 33px);
+                overflow-y: auto;
+
+            }
+
+            .spt_pipeline_nodes {
+                overflow-y: auto;
+                height: calc(100% - 33px);
+            }
 
             ''')
 
@@ -313,108 +322,30 @@ class PipelineToolWdg(BaseRefreshWdg):
         top.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
+            // Resize canvas
             if (window.onresize) {
                 window.onresize();
             }
 
-            var tabTop = bvr.src_el.getParent(".spt_tab_content");
-            if (tabTop) tabTop.setStyle("overflow-x", "hidden");
             '''
         } )
 
         show_pipelines = self.kwargs.get("show_pipeline_list")
 
 
-        use_table = ProjectSetting.get_value_by_key("use_table")
-        if use_table in [True, "true"]:
-            #table = Table()
-            table = ResizableTableWdg()
-            inner.add(table)
-            table.add_style("width: 100%")
-            table.add_color("background", "background")
-            table.add_color("color", "color")
-
-
-
-            table.add_row()
-            if show_pipelines not in [False, 'false']:
-                left = table.add_cell()
-            right = table.add_cell()
-            info = table.add_cell()
-
-
-            right.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-
-            var body = document.id(document.body);
-
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
-            var container = top.getElement(".spt_pipeline_top");
-
-            var top = bvr.src_el;
-            container.last_size = {};
-            var canvas = top.getElement("canvas");
-            var resize = function() {
-                //spt.pipeline.init_cbk(wrapper);
-
-                if (! top.isVisible() ) {
-                    return;
-                }
-
-
-                var size = container.getSize();
-                var lastSize = container.last_size;
-
-                if (size.x == lastSize.x) {
-                    return;
-                }
-
-                var newSizeX = size.x < 410 ? 410 : size.x;
-                spt.pipeline.set_size(newSizeX);
-                container.last_size = size;
-            }
-            var interval_id = setInterval( resize, 250);
-            top.interval_id = interval_id;
-            '''
-            } )
-
-
-            right.add_behavior( {
-            'type': 'unload',
-            'cbjs_action': '''
-            var top = bvr.src_el;
-            clearInterval( top.interval_id );
-            '''
-            } )
-
-
-        else:
+        if True:
             container = DivWdg()
-            inner.add(container)
-            container.add_style("display: flex")
-            container.add_style("flex-wrap: nowrap")
-            container.add_style("align-items: stretch")
-            container.add_style("align-content: stretch")
-            container.add_style("width: 100%")
-            # container.add_style("height: 100%")
-            container.add_color("background", "background")
-            container.add_style("position: relative")
+            container.add_class("spt_pipeline_tool_top_container")
 
+            inner.add(container)
 
             if show_pipelines not in [False, 'false']:
                 left = DivWdg()
                 container.add(left)
                 left.add_class("spt_pipeline_tool_left")
-                # left.add_style("overflow-y: auto")
-                # left.add_style("overflow-x: hidden")
-                # left.add_style("width: 250px")
-                # left.add_style("min-width: 250px")
 
             right = DivWdg()
             right.add_class("spt_pipeline_tool_right")
-            right.add_style("overflow-y: auto")
             container.add(right)
 
             info = DivWdg()
@@ -424,35 +355,29 @@ class PipelineToolWdg(BaseRefreshWdg):
             'type': 'load',
             'cbjs_action': '''
 
-            var body = document.id(document.body);
-
+            // This resizes pipeline canvas
             var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var wrapper = top.getElement(".spt_pipeline_wrapper");
             var container = top.getElement(".spt_pipeline_top");
 
             var top = bvr.src_el;
             container.last_size = {};
             var canvas = top.getElement("canvas");
             var resize = function() {
-                //spt.pipeline.init_cbk(wrapper);
-
                 if (! top.isVisible() ) {
                     return;
                 }
                 var size = container.getSize();
                 var lastSize = container.last_size;
 
-                if (size.x == lastSize.x) {
-                    return;
-                }
-
-                spt.pipeline.set_size(size.x);
+                spt.pipeline.set_size(size.x, size.y);
                 container.last_size = size;
             }
             var interval_id = setInterval( resize, 250);
             top.interval_id = interval_id;
             '''
             } )
+
+            
 
             right.add_behavior( {
             'type': 'unload',
@@ -654,7 +579,6 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         if show_pipelines not in [False, 'false']:
-            left.add_style("vertical-align: top")
 
             expression = self.kwargs.get("expression")
 
@@ -709,8 +633,8 @@ class PipelineToolWdg(BaseRefreshWdg):
 
                 left.setStyle("margin-left", "0px");
                 left.setStyle("opacity", "1");
-                right.setStyle("margin-left", "20.3%");
-                right.setStyle("width", "79%");
+                right.setStyle("margin-left", "200px");
+                right.setStyle("width", "calc(100% - 200px)");
                 left.gone = false;
                 setTimeout(function(){
                     left.setStyle("z-index", "");
@@ -779,14 +703,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             pipeline_list_top.add_class("spt_pipeline_list_top")
 
 
-            window_resize_offset = self.kwargs.get("window_resize_offset") or None
-            if window_resize_offset:
-                pipeline_list_top.add_class("spt_window_resize")
-                pipeline_list_top.add_attr("spt_window_resize_offset", window_resize_offset)
-                pipeline_list_top.add_style("overflow-y: auto")
-            else:
-                pipeline_list_top.add_style("height", "600")
-
             list_kwargs = {
                 "save_event": save_event,
                 "save_new_event": save_new_event,
@@ -809,15 +725,13 @@ class PipelineToolWdg(BaseRefreshWdg):
                 })
 
 
-            pipeline_list = PipelineDocumentWdg(window_resize_offset=window_resize_offset)
+            pipeline_list = PipelineDocumentWdg()
             pipeline_list_content.add_attr("mode", "document")
             
             # By default, show pipeline document    
-            #pipeline_list = PipelineListWdg(save_event=save_event, save_new_event=save_new_event, settings=self.settings, expression=expression, window_resize_offset=window_resize_offset )
-            #pipeline_list_content.add_attr("mode", "list")
             pipeline_list_content.add(pipeline_list)
 
-            process_type_widget = PipelineProcessTypeWdg(window_resize_offset=window_resize_offset)
+            process_type_widget = PipelineProcessTypeWdg()
             process_type_widget.add_class("spt_pipeline_nodes")
             left.add(process_type_widget)
                 
@@ -842,7 +756,6 @@ class PipelineToolWdg(BaseRefreshWdg):
 
 
         width = "100%"
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
         show_gear=self.kwargs.get('show_gear')
         show_help = self.kwargs.get('show_help') or True
         show_wrench = self.kwargs.get("show_wrench")
@@ -855,11 +768,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             show_help=show_help,
             show_wrench=show_wrench,
             show_save=show_save,
-            window_resize_offset=window_resize_offset, 
             pipeline_code=pipeline_code
         )
         right.add(pipeline_wdg)
-        pipeline_wdg.add_style("position: relative")
         pipeline_wdg.add_style("z-index: 0")
         #pipeline_wdg.add_style("opacity", 0.3)
 
@@ -874,7 +785,6 @@ class PipelineToolWdg(BaseRefreshWdg):
         start_div.add_border()
         start_div.add_style("border-width: 0px 1px 1px 1px")
         start_div.add_style("z-index: 0")
-        start_div.add_style("box-sizing: border-box")
 
         msg_div = DivWdg()
 
@@ -892,7 +802,6 @@ class PipelineToolWdg(BaseRefreshWdg):
         msg_div.add_style("font-size: 1.2em")
         msg_div.add_style("font-weight: bold")
 
-        right.add_style("position: relative")
 
 
 
@@ -1166,14 +1075,7 @@ class PipelineListWdg(BaseRefreshWdg):
         top = self.top
         top.add_class("spt_pipeline_list")
         self.set_as_panel(top)
-        top.add_style("position: relative")
         top.add_style("padding: 0px 0px")
-
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
-        if window_resize_offset:
-            top.add_class("spt_window_resize")
-            top.add_attr("spt_window_resize_offset", window_resize_offset)
-            top.add_style("overflow-y: auto")
 
         title_div = DivWdg()
 
@@ -2413,47 +2315,6 @@ class PipelineInfoWdg(BaseRefreshWdg):
             '''
         } )
 
-        # text = ColorInputWdg()
-        # div.add(text)
-        # text.add_style("width: 100%")
-        # text.add_style("height: 100px")
-        # text.add_style("padding: 10px")
-        # text.add_style("box-sizing: border-box")
-        # text.set_value(color)
-        # text.add_behavior( {
-        #     'type': 'load',
-        #     'cbjs_action': '''
-
-        #     var data = spt.pipeline.get_data();
-        #     var group_name = spt.pipeline.get_current_group();
-        #     var group = spt.pipeline.get_group(group_name);
-        #     color = group.get_color();
-
-        #     bvr.src_el.value = color;
-        #     bvr.src_el.setStyle("background", color);
-
-        #     '''
-        # } )
-
-        # text.add_behavior( {
-        #     'type': 'blur',
-        #     'cbjs_action': '''
-        #     var color = bvr.src_el.value;
-        #     bvr.src_el.setStyle("background", color);
-
-        #     var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-        #     var wrapper = top.getElement(".spt_pipeline_wrapper");
-        #     spt.pipeline.init_cbk(wrapper);
-
-        #     var group_name = spt.pipeline.get_current_group();
-        #     var group = spt.pipeline.get_group(group_name);
-        #     group.set_color(color);
-
-        #     spt.named_events.fire_event('pipeline|change', {});
-
-        #     '''
-        # } )
-
         div.add(HtmlElement.style('''
 
             .spt_color_wdg .spt_color_container {
@@ -2849,7 +2710,6 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
                 height: 36px;
                 font-size: 10px;
                 border: 1px solid #ccc;
-                box-sizing: border-box;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -2942,9 +2802,6 @@ class NewConnectorInfoWdg(BaseRefreshWdg):
 
             }
 
-            .spt_pipeline_tool_info {
-                padding-top: 0px;
-            }
 
 
             ''')
@@ -3598,7 +3455,6 @@ class BaseInfoWdg(BaseRefreshWdg):
             'properties': properties,
             'cbjs_action': '''
             
-            console.log("hello", bvr.kwargs, bvr.properties);
             var node = spt.pipeline.get_info_node();
             
             var version = spt.pipeline.get_node_kwarg(node, 'version');
@@ -6829,8 +6685,17 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 height: 26px;
                 padding: 2px 6px;
                 width: 164px;
-                box-sizing: border-box;
                 border: 1px solid #ccc;
+            }
+
+            .spt_pipeline_editor_top {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+            }
+
+            .spt_pipeline_wrapper {
+                height: calc(100% - 33px);
             }
 
 
@@ -6875,8 +6740,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         canvas_top = DivWdg()
         inner.add(canvas_top)
         canvas_top.add_class("spt_pipeline_wrapper")
-        canvas_top.add_style("position: relative")
-        canvas_top.add_color("background", "background", -2)
         canvas = self.get_canvas()
         self.unique_id = canvas.get_unique_id()
         canvas_top.add(canvas)
@@ -7178,9 +7041,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
             node_types.append(config.get_value("view"))
 
         is_editable = self.kwargs.get("is_editable")
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
         canvas = PipelineToolCanvasWdg(height=self.height, width=self.width, is_editable=is_editable,
-            use_mouse_wheel=True, node_types=node_types, window_resize_offset=window_resize_offset)
+            use_mouse_wheel=True, node_types=node_types)
         return canvas
 
 
@@ -8829,12 +8691,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_document {
-                //border: 1px solid #ccc;
                 overflow: auto;
-                min-height: 300px;
-
-                //width: 250px;
-                box-sizing: border-box;
             }
 
             .spt_pipeline_document .group-label {
@@ -8865,11 +8722,9 @@ class PipelineDocumentWdg(BaseRefreshWdg):
                 min-height: 28px;
                 padding: 4px 10px 4px 10px;
                 width: 100%;
-                box-sizing: border-box;
             }
 
             .spt_pipeline_document .document-item-input {
-                box-sizing: content-box;
                 border: none;
             }
 
@@ -9865,33 +9720,11 @@ __all__.append("PipelineProcessTypeWdg")
 class PipelineProcessTypeWdg(BaseRefreshWdg):
 
 
-    def get_styles(self):
-
-        styles = HtmlElement.style('''
-
-            .spt_process_select_top {
-                box-sizing: border-box;
-            }
-
-
-            ''')
-
-        return styles
-
-
     def get_display(self):
 
         top = self.top
-        # top.add_style("min-width: 200px")
-        # top.add_style("max-width: 300px")
 
         top.add_class("spt_process_select_top")
-        top.add_style("overflow-y: auto")
-
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
-        if (window_resize_offset):
-            top.add_class("spt_window_resize")
-            top.add_attr("spt_window_resize_offset", window_resize_offset)
 
         # get all of the custom process node types
         search = Search("config/widget_config")
@@ -10169,8 +10002,7 @@ spt.process_tool.show_side_bar = function(activator) {
 
             node_wdg = None
             if (view in ['approval', 'condition', 'hierarchy', 'dependency', 'progress', 'action', 'manual']):
-                window_resize_offset = self.kwargs.get("window_resize_offset")
-                pipeline_canvas_wdg = PipelineCanvasWdg(add_node_behaviors=False, height=self.kwargs.get("height"), window_resize_offset=window_resize_offset)
+                pipeline_canvas_wdg = PipelineCanvasWdg(add_node_behaviors=False, height=self.kwargs.get("height"))
 
                 if (view == 'approval'):
                     node_wdg = pipeline_canvas_wdg.get_approval_node("approval")
@@ -10257,8 +10089,6 @@ spt.process_tool.show_side_bar = function(activator) {
             "cb_set_prefix": 'spt.process_tool.item_drag'
             } )
 
-
-        top.add(self.get_styles())
 
         return top
 
