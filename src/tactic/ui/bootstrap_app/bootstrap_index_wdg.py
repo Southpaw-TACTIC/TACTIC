@@ -2,7 +2,7 @@ import six
 
 from pyasm.biz import Project
 from pyasm.common import Environment, Common
-from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg
+from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg, Palette
 from pyasm.widget import WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
@@ -13,7 +13,7 @@ from tactic.ui.container import SmartMenu
 from .bootstrap_tab_wdg import *
 
 
-__all__ = ['BootstrapIndexWdg', 'BootstrapIndexPage']
+__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg']
 
 
 from tactic.ui.panel import SideBarPanelWdg, SideBarBookmarkMenuWdg
@@ -323,47 +323,6 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     def get_bootstrap_styles(self):
         style = HtmlElement.style("""
 
-/*
-    DEMO STYLE
-*/
-
-/* -------------------------------------------------
-    GLOBAL OVERRIDES
----------------------------------------------------*/
-
-body {
-    overflow-y: hidden;
-}
-
-.bg-spt-blue {
-    background: #114e8a
-}
-
-.bg-spt-blue-fade {
-    background: linear-gradient(0deg, #629bd3 40%, #114e8a 80%);
-}
-
-.nav-pills .nav-link, .nav-tabs .nav-link {
-    padding: .5em .8575em;
-    font-size: 12px;
-    height: 40px;
-}
-
-/* TODO REMOVE and put in TabWdg */
-.spt_tab_selected {
-    border-bottom: solid .214rem #114e8a;
-    height: 40px;
-}
-
-/* TODO REMOVE and put in TabWdg */
-.nav-tabs .spt_tab_selected .nav-link {
-    color: rgba(0,0,0,.87);
-}
-
-
-/* ---------------------------------------------------
-    SIDEBAR STYLE
------------------------------------------------------ */
 .spt_bs_left_sidebar a, a:hover, a:focus {
     color: inherit;
     text-decoration: none;
@@ -519,81 +478,9 @@ body {
     color: #fff !important;
 }
 
-/* ---------------------------------------------------
-    CONTENT STYLE
------------------------------------------------------ */
-
-.spt_bootstrap_top {
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-}
-
-.spt_bs_content {
-    transition: all 0.3s;
-}
-
-/* ---------------------------------------------------
-    MEDIAQUERIES
------------------------------------------------------ */
-
-/* TODO: Remove and place in TabWdg */
-.spt_tab_content_top {
-    overflow-y: auto;
-    height: calc(100% - 80px);
-}
-
-
-@media (min-width: 575.98px) {
-
-    .spt_bootstrap_top .spt_bs_content {
-        width: calc(100vw - 175px);
-    }
-    
-    .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
-        width: calc(100vw - 80px);
-    }
-
-    .spt_bs_content {
-        padding-top: 40px
-    }
-
-    .spt_bs_top_nav {
-        height: 40px;
-    }
-
-    .spt_bs_top_nav.navbar {
-        padding: 0rem 1rem;
-    }
-
-    .spt_bs_top_nav_content {
-        display: none !important;
-    }
-
-
-    .navbar-toggler {
-        font-size: 1rem;
-        margin: .25rem 0rem;
-    }
-    
-    .spt_toggle_sidebar {
-        justify-items: center;
-        display: flex;
-    }
-
-
-}
 
 
 @media (max-width: 768px) {
-  
-    .spt_bootstrap_top .spt_bs_content {
-        width: 100vw;
-    }
-
-    .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
-        width: calc(100vw - 80px);
-    }
 
     .spt_bs_left_sidebar {
         min-width: 80px;
@@ -660,24 +547,8 @@ body {
     .spt_bs_left_sidebar {
         display: none;
     }
-    
-    .spt_bs_content {
-        padding-top: 56px;
-    }
-    
-    .spt_tab_content_top {
-        height: 100%;
-    }
-    
-    .spt_bootstrap_top .spt_bs_content {
-        width: 100vw;
-    }
+}    
 
-    .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
-        width: 100vw;
-    }
-
-}
 
 
         """)
@@ -804,86 +675,89 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         nav_header.add_class("d-flex")
 
 
-        toggle_div = DivWdg()
-        nav_header.add(toggle_div)
-        toggle_div.add_class("spt_toggle_sidebar")
+        view_side_bar = self.kwargs.get("view_side_bar")
+        if view_side_bar:
+            toggle_div = DivWdg()
+            nav_header.add(toggle_div)
+            toggle_div.add_class("spt_toggle_sidebar")
 
-        toggle_div.add("""
-        <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" 
-             aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"> </span>
-        </button>""")
+            toggle_div.add("""
+            <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" 
+                 aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"> </span>
+            </button>""")
       
-        toggle_div.add_behavior({
-            'type': 'click',
-            'cbjs_action': """
+            toggle_div.add_behavior({
+                'type': 'click',
+                'cbjs_action': """
+                    var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+                    app_top.toggleClass("spt_sidebar_collapse")
+                    
+                    var sidebar = app_top.getElement(".spt_bs_left_sidebar");
+                    sidebar.toggleClass("active");
+
+                """
+            })
+
+            toggle_div.add_behavior( {
+                'type': 'listen',
+                'event_name': 'side_bar|toggle',
+                'cbjs_action': '''
                 var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
                 app_top.toggleClass("spt_sidebar_collapse")
                 
                 var sidebar = app_top.getElement(".spt_bs_left_sidebar");
                 sidebar.toggleClass("active");
+                '''
+            } )
 
-            """
-        })
-
-        toggle_div.add_behavior( {
-            'type': 'listen',
-            'event_name': 'side_bar|toggle',
-            'cbjs_action': '''
-            var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-            app_top.toggleClass("spt_sidebar_collapse")
             
-            var sidebar = app_top.getElement(".spt_bs_left_sidebar");
-            sidebar.toggleClass("active");
-            '''
-        } )
-
-        
         brand_div = DivWdg()
         nav_header.add(brand_div)
         brand_div.add_class("spt_logo")
         brand_div.add("""
         <a>
-            <img src="/tactic/plugins/community/theme/media/TACTIC_logo.svg"> 
+            <img src="/context/tactic_logo_black.svg"> 
         </a>""")
        
         right_wdg = self.get_right_wdg()
         top_nav_wdg.add(right_wdg)
 
-        hidden_nav = DivWdg()
-        hidden_nav.add_class("spt_bs_top_nav_content")
-        hidden_nav.add_class("collapse")
-        hidden_nav.add_class("navbar-collapse")
-        hidden_nav.set_id("navbarCollapse")
-        
-        hidden_nav.add_behavior({
-            'type': 'load',
-            'cbjs_action': '''
-                var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-                var left_sidebar = app_top.getElement(".spt_bs_left_sidebar"); 
-                var sidebar_content = left_sidebar.getElement(".spt_side_bar_content");
-                var mobile_sidebar = spt.behavior.clone(sidebar_content);
+        if view_side_bar:
+            hidden_nav = DivWdg()
+            hidden_nav.add_class("spt_bs_top_nav_content")
+            hidden_nav.add_class("collapse")
+            hidden_nav.add_class("navbar-collapse")
+            hidden_nav.set_id("navbarCollapse")
+            
+            hidden_nav.add_behavior({
+                'type': 'load',
+                'cbjs_action': '''
+                    let app_top = bvr.src_el.getParent(".spt_bootstrap_top");
+                    let left_sidebar = app_top.getElement(".spt_bs_left_sidebar"); 
+                    let sidebar_content = left_sidebar.getElement(".spt_side_bar_content");
+                    let mobile_sidebar = spt.behavior.clone(sidebar_content);
 
-                //FIX IDs since Bootstrap menus use IDs to target collapsing menus
-                var section_els = mobile_sidebar.getElements(".spt_side_bar_section");
-                var ID = function () {
-                  return '_' + Math.random().toString(36).substr(2, 9);
-                };
-                handle_section = function(section_el) {
-                   var toggle = section_el.getElement(".spt_side_bar_section_link");
-                   var dropdown = section_el.getElement(".spt_side_bar_section_content");
-                   
-                   var new_id = ID();
-                   toggle.setAttribute("href", "#" + new_id);
-                   dropdown.setAttribute("id", new_id);
-                }
-                section_els.forEach(handle_section);
+                    //FIX IDs since Bootstrap menus use IDs to target collapsing menus
+                    let section_els = mobile_sidebar.getElements(".spt_side_bar_section");
+                    let ID = function () {
+                      return '_' + Math.random().toString(36).substr(2, 9);
+                    };
+                    let handle_section = function(section_el) {
+                       let toggle = section_el.getElement(".spt_side_bar_section_link");
+                       let dropdown = section_el.getElement(".spt_side_bar_section_content");
+                       
+                       let new_id = ID();
+                       toggle.setAttribute("href", "#" + new_id);
+                       dropdown.setAttribute("id", new_id);
+                    }
+                    section_els.forEach(handle_section);
 
-                mobile_sidebar.inject(bvr.src_el);
-            '''
-        })
+                    mobile_sidebar.inject(bvr.src_el);
+                '''
+            })
 
-        top_nav_wdg.add(hidden_nav)
+            top_nav_wdg.add(hidden_nav)
 
         return top_nav_wdg
 
@@ -1059,6 +933,232 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
 
 class BootstrapIndexWdg(PageNavContainerWdg):
+    
+    def init(self):
+
+        link = self.kwargs.get('link')
+        hash = self.kwargs.get('hash')
+        
+        self.widget = None
+
+        if link:
+            from tactic.ui.panel import SideBarBookmarkMenuWdg
+            personal = False
+            if '.' in link:
+                personal = True
+
+            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
+            options = config.get_display_options(link)
+
+            # this is vital for view saving
+            element_name = link
+            attr_dict = config.get_element_attributes(link)
+            title = attr_dict.get('title')
+
+            hash = "/tab/%s" % link
+
+           
+            config = '''
+            <config>
+            <application>
+            
+            <element name="left_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
+              </display>
+            </element>
+
+            <element name="main_body">
+              <display class="tactic.ui.panel.HashPanelWdg">
+                <hash>%s</hash>
+                <element_name>%s</element_name>
+                <title>%s</title>
+              </display>
+              <web/>
+            </element>
+            </application>
+            </config>
+            ''' % (hash, element_name, title)
+
+
+        elif hash:
+            from tactic.ui.panel import HashPanelWdg
+            self.widget = HashPanelWdg.get_widget_from_hash(hash, force_no_index=True)
+            config = None
+        else:
+            config = None
+            """
+            security = Environment.get_security()
+            start_link = security.get_start_link()
+            if start_link:
+                self.kwargs['link'] = start_link
+                return self.init()
+
+            # search for a defined welcome view
+            from pyasm.search import Search
+            from pyasm.web import WidgetSettings
+            search = Search("config/widget_config")
+            search.add_filter("category", "top_layout")
+            search.add_filter("view", "welcome")
+            config_sobj = search.get_sobject()
+            if config_sobj:
+                config = config_sobj.get_value("config")
+
+            else:
+                config = WidgetSettings.get_value_by_key("top_layout")
+            """
+
+
+        if not config:
+            config = self.get_default_config()
+
+        from pyasm.common import Xml
+        self.config_xml = Xml()
+        self.config_xml.read_string(config)
+ 
+
+    def get_default_config(self):
+        use_sidebar = self.kwargs.get('use_sidebar')
+        if use_sidebar==False:
+            config = '''
+            <config>
+            <application>
+            <element name="main_body">
+              <display class="tactic.ui.startup.MainWdg"/>
+              <web/>
+            </element>
+            </application>
+            </config>
+            '''
+        else:
+            config = '''
+            <config>
+            <application>
+            <element name="left_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
+                <auto_size>True</auto_size>
+              </display>
+            </element>
+
+            <element name="main_body">
+              <display class="tactic.ui.startup.MainWdg"/>
+              <web/>
+            </element>
+            </application>
+            </config>
+            '''
+        return config
+
+
+
+    def get_bootstrap_styles(self):
+
+        # Declare CSS variables
+        palette = Palette.get()
+        keys = palette.get_keys()
+        
+        css_vars = ""
+        for key in keys:
+            value = palette.color(key)
+            css_vars += "--spt_palette_%s: %s;" % (key, value)
+
+        style = ":root {%s}" % css_vars
+        
+        style += """
+            .bg-spt-blue {
+                background: #114e8a
+            }
+
+            .bg-spt-blue-fade {
+                background: linear-gradient(0deg, #629bd3 40%, #114e8a 80%);
+            }
+
+            .spt_bootstrap_top {
+                overflow: hidden;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            .spt_bs_content {
+                transition: all 0.3s;
+            }
+
+            @media (min-width: 575.98px) {
+
+                .spt_bootstrap_top .spt_bs_content{
+                    width: 100vw;
+                }
+                
+                .spt_bootstrap_top.spt_view_side_bar .spt_bs_content {
+                    width: calc(100vw - 175px);
+                }
+                
+                .spt_bootstrap_top.spt_view_side_bar.spt_sidebar_collapse .spt_bs_content {
+                    width: calc(100vw - 80px);
+                }
+
+
+                .spt_bs_content {
+                    padding-top: 40px
+                }
+
+                .spt_bs_top_nav {
+                    height: 40px;
+                }
+
+                .spt_bs_top_nav.navbar {
+                    padding: 0rem 1rem;
+                }
+
+                .spt_bs_top_nav_content {
+                    display: none !important;
+                }
+
+
+                .navbar-toggler {
+                    font-size: 1rem;
+                    margin: .25rem 0rem;
+                }
+                
+                .spt_toggle_sidebar {
+                    justify-items: center;
+                    display: flex;
+                }
+
+
+            }
+
+            @media (max-width: 575.98px) {
+
+                .spt_bs_content {
+                    padding-top: 56px;
+                }
+                
+                
+                .spt_bootstrap_top .spt_bs_content {
+                    width: 100vw;
+                }
+
+                .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
+                    width: 100vw;
+                }
+
+            }
+
+            @media (max-width: 768px) {
+              
+                .spt_bootstrap_top .spt_bs_content {
+                    width: 100vw;
+                }
+
+                .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
+                    width: calc(100vw - 80px);
+                }
+
+            }
+            """
+
+
+        return HtmlElement.style(style) 
 
     def get_display(self):
         
@@ -1067,51 +1167,40 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
             from pyasm.widget import Error403Wdg
             return Error403Wdg()
-
-        """
-        TODO: This logic must be considered in BootstrapSidebarPanelWdg
-        TODO: If user cannot view_side_bar, then do not template sidebar into view. 
-        TODO: Add listener for sidebar hide and show events. 
-        config = WidgetConfig.get(xml=self.config_xml, view="application")
-        left_nav_handler = config.get_display_handler("left_nav")
-        left_nav_options = config.get_display_options("left_nav")
-
-        view_side_bar = None
-        if left_nav_handler:
-            left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
-
-            # caching
-            side_bar_cache = self.get_side_bar_cache(left_nav_wdg)
-        else:
-            view_side_bar = False
-        
-        if view_side_bar == None:
-            view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
-
-        """
-        
         
         top = self.top
         top.add_class("d-flex")
         top.add_class("spt_bootstrap_top")
 
-        
-                
+        top.add(self.get_bootstrap_styles())            
 
-        sidebar_wdg = BootstrapSideBarPanelWdg()
-        top.add(sidebar_wdg)
+        view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
+        if view_side_bar:
+            config = WidgetConfig.get(xml=self.config_xml, view="application")
+            left_nav_handler = config.get_display_handler("left_nav")
+            left_nav_options = config.get_display_options("left_nav")
+            if left_nav_handler:
+                left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
+                # caching
+                side_bar_cache = self.get_side_bar_cache(left_nav_wdg)
+                
+                top.add_class("spt_view_side_bar")
+                top.add(left_nav_wdg)
+            else:
+                view_side_bar = False
+        
+
+        self.view_side_bar = view_side_bar
 
         content_wdg = self.get_content_wdg()
         top.add(content_wdg)
 
         top.add_behavior( {                                                                      
-            "type": "load",                                                                                
-            "cbjs_action": '''                                                                             
-                                                                                                           
-            window.onresize = function() {
-                spt.named_events.fire_event("window_resize");
-            }
-            
+            "type": "load",
+            "cbjs_action": '''
+                window.onresize = function() {
+                    spt.named_events.fire_event("window_resize");
+                }
         '''})
         
         return top
@@ -1126,7 +1215,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         tab = BootstrapTabWdg()
         tab_id = tab.get_tab_id()
         
-        top_nav_wdg = BootstrapTopNavWdg(main_body_tab_id=tab_id)
+        top_nav_wdg = BootstrapTopNavWdg(main_body_tab_id=tab_id, view_side_bar=self.view_side_bar)
         
         main_body_panel.add(top_nav_wdg)
         main_body_panel.add(tab)
@@ -1218,20 +1307,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
  
         return main_body_panel
-
-
-
-
-class BootstrapIndexPage(BaseRefreshWdg):
-
-    def get_display(self):
-
-        top = self.top
-        from tactic.ui.panel import ViewPanelWdg
- 
-        wdg = ViewPanelWdg(search_type="config/widget_config", show_border=False)
-        top.add(wdg)
-        return top
 
 
 
