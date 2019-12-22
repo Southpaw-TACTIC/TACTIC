@@ -933,14 +933,37 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
 
 class BootstrapIndexWdg(PageNavContainerWdg):
-    
+   
+    def _get_top_nav_xml(self):
+        return """
+        <element name="top_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
+              </display>
+        </element>"""
+
+
+    def _get_left_nav_xml(self):
+         return """
+         <element name="left_nav">
+           <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
+           </display>
+         </element> """
+
+    def _get_startup_xml(self):
+         return """
+            <element name="main_body">
+              <display class="tactic.ui.startup.MainWdg"/>
+              <web/>
+            </element>
+         """
+
     def init(self):
 
         link = self.kwargs.get('link')
         hash = self.kwargs.get('hash')
         
         self.widget = None
-
+ 
         if link:
             from tactic.ui.panel import SideBarBookmarkMenuWdg
             personal = False
@@ -957,31 +980,21 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
             hash = "/tab/%s" % link
 
-           
             config = '''
             <config>
-            <application>
-            <element name="top_nav">
-              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
-              </display>
-            </element>
-            
-            <element name="left_nav">
-              <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
-              </display>
-            </element>
-
-            <element name="main_body">
-              <display class="tactic.ui.panel.HashPanelWdg">
-                <hash>%s</hash>
-                <element_name>%s</element_name>
-                <title>%s</title>
-              </display>
-              <web/>
-            </element>
-            </application>
+                <application>
+                    %s
+                    %s
+                    <element name="main_body">
+                      <display class="tactic.ui.panel.HashPanelWdg">
+                        <hash>%s</hash>
+                        <element_name>%s</element_name>
+                        <title>%s</title>
+                      </display>
+                    </element>
+                </application>
             </config>
-            ''' % (hash, element_name, title)
+            ''' % (self._get_top_nav_xml(), self._get_left_nav_xml(), hash, element_name, title)
 
 
         elif hash:
@@ -990,7 +1003,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             config = None
         else:
             config = None
-            """
+            
             security = Environment.get_security()
             start_link = security.get_start_link()
             if start_link:
@@ -1007,11 +1020,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             if config_sobj:
                 config = config_sobj.get_value("config")
 
-            else:
-                config = WidgetSettings.get_value_by_key("top_layout")
-            """
-
-
         if not config:
             config = self.get_default_config()
 
@@ -1025,40 +1033,25 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         if use_sidebar==False:
             config = '''
             <config>
-            <application>
-            <element name="top_nav">
-              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
-              </display>
-            </element>
-            <element name="main_body">
-              <display class="tactic.ui.startup.MainWdg"/>
-              <web/>
-            </element>
-            </application>
+                <application>
+                    %s
+                    %s
+                </application>
             </config>
-            '''
+            ''' % (self._get_top_nav_xml(), _get_startup_xml())
         else:
             config = '''
             <config>
-            <application>
-            <element name="top_nav">
-              <display class="tactic.ui.bootstrap_app.BootstrapTopNavWdg">
-              </display>
-            </element>
-            <element name="left_nav">
-              <display class="tactic.ui.bootstrap_app.BootstrapSideBarPanelWdg">
-                <auto_size>True</auto_size>
-              </display>
-            </element>
-
-            <element name="main_body">
-              <display class="tactic.ui.startup.MainWdg"/>
-              <web/>
-            </element>
-            </application>
+                <application>
+                    %s
+                    %s
+                    %s
+                </application>
             </config>
-            '''
+            ''' % (self._get_top_nav_xml(), self._get_left_nav_xml(), self._get_startup_xml())
+
         return config
+
 
 
 
@@ -1219,30 +1212,32 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         main_body_panel.add_class("spt_main_panel")
         main_body_panel.add_class("spt_bs_content")
 
-        tab = BootstrapTabWdg()
-        tab_id = tab.get_tab_id()
-        
-        config = WidgetConfig.get(xml=self.config_xml, view="application")
-        top_nav_handler = config.get_display_handler("top_nav")
-        top_nav_options = config.get_display_options("top_nav")
-        top_nav_options['main_body_tab_id'] = tab_id
-        top_nav_options['view_side_bar'] = self.view_side_bar
-        top_nav_wdg = Common.create_from_class_path(top_nav_handler, [], top_nav_options)
-        
-        main_body_panel.add(top_nav_wdg)
-        main_body_panel.add(tab)
-        
         # add the content to the main body panel
         try:
             if self.widget:
+                tab = BootstrapTabWdg()
                 tab.add(self.widget)
                 element_name = self.widget.get_name()
             else:
+               
+                # TODO. This should extract the main body xml
+                # from self.config_xml
+                tab_config = """
+                    <config>
+                        <tab>
+                            %s
+                        </tab>
+                    </config>""" % self._get_startup_xml()
+                
+                tab = BootstrapTabWdg(config_xml=tab_config)
+
+                """
                 config = WidgetConfig.get(xml=self.config_xml, view="application")
                 main_body_handler = config.get_display_handler("main_body")
                 main_body_options = config.get_display_options("main_body")
                 element_name = main_body_options.get("element_name")
                 title = main_body_options.get("title")
+                self.set_as_panel(main_body_panel, class_name=main_body_handler, kwargs=main_body_options)
 
                 main_body_content = Common.create_from_class_path(main_body_handler, [], main_body_options)
                 # get the web values from top_layout
@@ -1254,9 +1249,9 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
                 main_body_content.set_name(element_name)
                 tab.add(main_body_content, element_name, title)
+                """
 
-                self.set_as_panel(main_body_panel, class_name=main_body_handler, kwargs=main_body_options)
-
+            """
             main_body_panel.add_behavior( {
                 'type': 'load',
                 'element_name': element_name,
@@ -1265,15 +1260,30 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                     spt.help.set_view(bvr.element_name);
                 '''
             } )
+            """
 
         except Exception as e:
+            print(e)
             # handle an error in the drawing
             buffer = self.get_buffer_on_exception()
             error_wdg = self.handle_exception(e)
             main_body_content = DivWdg()
             main_body_content.add(error_wdg)
             main_body_content = main_body_content.get_buffer_display()
-            tab.add(main_body_content, "error", title)
+            tab = BootstrapTabWdg()
+            tab.add(main_body_content, "error", "Error")
+        
+        
+        tab_id = tab.get_tab_id()
+        config = WidgetConfig.get(xml=self.config_xml, view="application")
+        top_nav_handler = config.get_display_handler("top_nav")
+        top_nav_options = config.get_display_options("top_nav")
+        top_nav_options['main_body_tab_id'] = tab_id
+        top_nav_options['view_side_bar'] = self.view_side_bar
+        top_nav_wdg = Common.create_from_class_path(top_nav_handler, [], top_nav_options)
+        
+        main_body_panel.add(top_nav_wdg)
+        main_body_panel.add(tab)
 
 
         # TODO: Fix the quick box.

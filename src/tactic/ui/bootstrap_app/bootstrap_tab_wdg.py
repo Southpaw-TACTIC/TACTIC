@@ -13,9 +13,13 @@ class BootstrapTabWdg(BaseRefreshWdg):
 
     def init(self):
         
-        config_xml = "<config><tab/></config>"
+        config_xml = self.kwargs.get("config_xml")
+        if not config_xml:
+            config_xml = "<config><tab/></config>"
+        
         view = "tab"
         config = WidgetConfig.get(view=view, xml=config_xml)
+        
         self.tab = TabWdg(config=config, view=view, use_default_style=False, save_state="main_body_tab_state")
         self.unique_id = self.tab.get_tab_id()
         self.header_id = self.tab.get_header_id()
