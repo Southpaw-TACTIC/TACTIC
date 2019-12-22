@@ -5649,7 +5649,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(tip="Refresh", icon="BS_REFRESH", long=False)
+        button = SingleButtonWdg(tip="Refresh", icon="FA_SYNC", long=False)
         filter_wdg.add(button)
         button.add_style("float: left")
         button.add_behavior( {

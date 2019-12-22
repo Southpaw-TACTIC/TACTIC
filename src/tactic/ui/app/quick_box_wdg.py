@@ -137,7 +137,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
         close_wdg = DivWdg()
         content_top_wdg.add(close_wdg)
-        icon = IconWdg('Close Quick Links', "BS_REMOVE")
+        icon = IconWdg('Close Quick Links', "FA_TIMES")
         close_wdg.add(icon)
         #close_wdg.add_style("position: fixed")
         #close_wdg.add_style("float: right")

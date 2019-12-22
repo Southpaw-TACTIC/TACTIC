@@ -1077,6 +1077,8 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         style = ":root {%s}" % css_vars
         
         style += """
+            body {overflow: hidden;}
+            
             .bg-spt-blue {
                 background: #114e8a
             }

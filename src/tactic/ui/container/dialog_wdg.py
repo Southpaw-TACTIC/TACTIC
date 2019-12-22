@@ -346,7 +346,7 @@ class DialogWdg(BaseRefreshWdg):
 
         # create the 'close' button ...
         close_wdg = SpanWdg()
-        close_wdg.add( IconWdg("Close", "BS_REMOVE") )
+        close_wdg.add( IconWdg("Close", "FA_TIMES") )
         close_wdg.add_style("float: right")
         close_wdg.add_class("hand")
         close_wdg.add_style("margin: 3px 1px 3px 1px")

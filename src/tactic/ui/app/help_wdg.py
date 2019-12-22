@@ -583,7 +583,7 @@ class HelpWdg(BaseRefreshWdg):
 
         #button = SingleButtonWdg(title="Edit Help", icon=IconWdg.EDIT)
         if self.show_add_new:
-            button = IconButtonWdg(title="Add New Help", icon="BS_EDIT")
+            button = IconButtonWdg(title="Add New Help", icon="FA_EDIT")
             shelf_div.add(button)
             button.add_style("float: left")
             button.add_style("margin: 0px 10px")

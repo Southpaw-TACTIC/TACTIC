@@ -691,7 +691,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             #button.add_style("display: inline-block")
             #button.add_style("width: auto")
 
-            button = IconButtonWdg(title='Add New Collection', icon="BS_PLUS")
+            button = IconButtonWdg(title='Add New Collection', icon="FA_PLUS")
             shelf_div.add(button)
             button.add_style("display: inline-block")
             button.add_style("vertical-align: top")

@@ -666,12 +666,12 @@ class TextInputWdg(BaseInputWdg):
 
 
 
-            icon = IconWdg("Clear", "BS_REMOVE", opacity=0.3)
+            icon = IconWdg("Clear", "FA_TIMES", opacity=0.3)
             icon.add_class("spt_icon_inactive")
             icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
             icon_wdg.add(icon)
             #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
-            icon = IconWdg("Clear", "BS_REMOVE")
+            icon = IconWdg("Clear", "FA_TIMES")
             icon.add_class("spt_icon_active")
             icon.add_style("display: none")
             icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")

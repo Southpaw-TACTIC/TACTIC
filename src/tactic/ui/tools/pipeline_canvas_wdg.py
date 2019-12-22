@@ -263,6 +263,56 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.is_editable = True
         #self.is_editable = False
 
+        self.top.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+
+            // This resizes pipeline canvas
+            let container = bvr.src_el;
+            container.last_size = {};
+            var canvas = container.getElement("canvas");
+            var resize = function() {
+                let container = spt.pipeline.top;
+                if (!container || !container.isVisible() ) {
+                    return;
+                }
+                
+                let size = container.getSize();
+                spt.pipeline.set_size(size.x, size.y);
+                container.last_size = size;
+            }
+            var interval_id = setInterval( resize, 250);
+            container = interval_id;
+        '''
+        } )
+
+        
+
+        self.top.add_behavior( {
+        'type': 'unload',
+        'cbjs_action': '''
+            let container = bvr.src_el;
+            clearInterval( container.interval_id );
+        '''
+        } )
+
+        self.top.add_behavior( { 
+            'type': 'listen',
+            'event_name': 'window_resize',
+            'cbjs_action': '''
+                let container = bvr.src_el;
+                
+                if (!container.isVisible()) return;
+                
+                if (!spt.pipeline) return;
+
+                spt.pipeline.set_top(container);
+                
+                let size = container.getSize();
+                spt.pipeline.set_size(size.x, size.y);
+                container.last_size = size;
+            '''
+        } )
 
         default_node_type = self.kwargs.get("default_node_type") or ""
         self.top.add_attr("spt_default_node_type", default_node_type)
@@ -2693,6 +2743,15 @@ spt.pipeline.background_color = "#fff";
 spt.pipeline.allow_cycle = true;
 
 // External method to initialize callback
+spt.pipeline.hide_start = function(start) {
+    start.setStyle("display", "none");
+
+    right = start.getParent(".spt_pipeline_tool_right");
+    editor = right.getElement(".spt_pipeline_editor_top");
+    editor.setStyle("display", "flex");
+
+}
+
 spt.pipeline.init_cbk = function(common_top) {
     spt.pipeline.top = common_top.getElement(".spt_pipeline_top");
     spt.pipeline._init();

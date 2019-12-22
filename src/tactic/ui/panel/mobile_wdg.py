@@ -29,7 +29,11 @@ class MobileTableWdg(BaseRefreshWdg):
             'type': 'listen',
             'event_name': 'loading_pending|%s' % table_id,
             'cbjs_action': '''
+                if (!spt.table) return;
+                
                 var layout = bvr.src_el.getParent(".spt_layout");
+                
+                
                 if (layout) spt.table.set_layout(layout);
                 
                 if (spt.mobile_table) spt.mobile_table.load();
@@ -40,6 +44,9 @@ class MobileTableWdg(BaseRefreshWdg):
             'type': 'listen',
             'event_name': 'window_resize',
             'cbjs_action': '''
+
+                if (!spt.table) return;
+
                 var layout = bvr.src_el.getParent(".spt_layout");
                 if (layout) spt.table.set_layout(layout);
                 

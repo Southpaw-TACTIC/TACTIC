@@ -2773,7 +2773,7 @@ spt.tab.view_definition = function(bvr) {
 
             subheader.add_class("spt_tab_subheader_item")
 
-            icon = IconWdg("Remove Tab", "BS_REMOVE", opacity=0.3)
+            icon = IconWdg("Remove Tab", "FA_TIMES", opacity=0.3)
             subheader.add(icon)
             icon.add_class("spt_icon_inactive")
             icon.add_styles("position: absolute; right: 0; top: 3px;")

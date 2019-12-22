@@ -130,6 +130,14 @@ class PipelineToolWdg(BaseRefreshWdg):
                 margin-left: 200px;
                 transition: .25s;
             }
+            
+            .spt_pipeline_editor_start {
+                height: 100%;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
 
             .spt_pipeline_tool_info {
                 width: 400px;
@@ -351,41 +359,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             info = DivWdg()
             container.add(info)
 
-            right.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-
-            // This resizes pipeline canvas
-            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
-            var container = top.getElement(".spt_pipeline_top");
-
-            var top = bvr.src_el;
-            container.last_size = {};
-            var canvas = top.getElement("canvas");
-            var resize = function() {
-                if (! top.isVisible() ) {
-                    return;
-                }
-                var size = container.getSize();
-                var lastSize = container.last_size;
-
-                spt.pipeline.set_size(size.x, size.y);
-                container.last_size = size;
-            }
-            var interval_id = setInterval( resize, 250);
-            top.interval_id = interval_id;
-            '''
-            } )
-
-            
-
-            right.add_behavior( {
-            'type': 'unload',
-            'cbjs_action': '''
-            var top = bvr.src_el;
-            clearInterval( top.interval_id );
-            '''
-            } )
 
             node_results = DivWdg()
             container.add(node_results)
@@ -508,8 +481,9 @@ class PipelineToolWdg(BaseRefreshWdg):
                 'cbjs_action': '''
                 setTimeout( function() {
                 var top = bvr.src_el;
-                var start = top.getElement(".spt_pipeline_editor_start");
-                start.setStyle("display", "none");
+                
+                let start_el = top.getElement(".spt_pipeline_editor_start");
+                spt.pipeline.hide_start(start_el);
 
                 var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 var wrapper = top.getElement(".spt_pipeline_wrapper");
@@ -560,8 +534,8 @@ class PipelineToolWdg(BaseRefreshWdg):
         var list = top.getElement(".spt_pipeline_list");
         spt.panel.refresh(list);
 
-        var start = top.getElement(".spt_pipeline_editor_start");
-        start.setStyle("display", "none");
+        let start = top.getElement(".spt_pipeline_editor_start");
+        spt.pipeline.hide_start(start_el);
 
         spt.pipeline.clear_canvas();
         spt.pipeline.import_pipeline(group_name);
@@ -770,37 +744,19 @@ class PipelineToolWdg(BaseRefreshWdg):
             show_save=show_save,
             pipeline_code=pipeline_code
         )
+
+        pipeline_wdg.add_style("display", "none")
         right.add(pipeline_wdg)
-        pipeline_wdg.add_style("z-index: 0")
-        #pipeline_wdg.add_style("opacity", 0.3)
 
         start_div = DivWdg()
         start_div.add_class("spt_pipeline_editor_start")
         right.add(start_div)
-        start_div.add_style("position: absolute")
-        start_div.add_style("height: 100%")
-        start_div.add_style("width: 100%")
-        start_div.add_style("top: 0px")
-        start_div.add_style("background: rgba(240,240,240,0.8)")
-        start_div.add_border()
-        start_div.add_style("border-width: 0px 1px 1px 1px")
-        start_div.add_style("z-index: 0")
 
-        msg_div = DivWdg()
+        msg_div = HtmlElement.p()
+        msg_div.add_class("lead")
+        msg_div.add("Select a workflow or create a new one")
 
         start_div.add(msg_div)
-        msg_div.add("Select a workflow<br/><br/>or<br/><br/>Create a new one")
-        msg_div.add_style("width: 300px")
-        msg_div.add_style("height: 150px")
-        # msg_div.add_style("margin-top: 10%")
-        # msg_div.add_style("margin-left: 15%")
-        msg_div.add_style("margin: 10% 33%")
-        msg_div.add_border()
-        msg_div.add_color("background", "background")
-        msg_div.add_style("padding-top: 40px")
-        msg_div.add_style("text-align: center")
-        msg_div.add_style("font-size: 1.2em")
-        msg_div.add_style("font-weight: bold")
 
 
 
@@ -1558,7 +1514,7 @@ class PipelineListWdg(BaseRefreshWdg):
             spt.pipeline.init_cbk(wrapper);
 
             var start_el = top.getElement(".spt_pipeline_editor_start")
-            start_el.setStyle("display", "none")
+            spt.pipeline.hide_start(start_el);
 
             spt.pipeline.clear_canvas();
 
@@ -6694,6 +6650,11 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 height: 100%;
             }
 
+            .spt_pipeline_editor_inner_top {
+                width: 100%;
+                height: 100%;
+            }
+
             .spt_pipeline_wrapper {
                 height: calc(100% - 33px);
             }
@@ -9007,7 +8968,7 @@ class PipelineDocumentItem(BaseRefreshWdg):
                 spt.pipeline.init_cbk(wrapper);
 
                 var start_el = top.getElement(".spt_pipeline_editor_start")
-                start_el.setStyle("display", "none")
+                spt.pipeline.hide_start(start_el);
 
                 spt.pipeline.clear_canvas();
 

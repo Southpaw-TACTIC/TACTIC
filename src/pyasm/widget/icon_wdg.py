@@ -360,6 +360,7 @@ class IconWdg(DivWdg):
     'G_CLOSE'             : '/context/icons/glyphs/close.png',
     'G_CLOSE_BLACK'       : '/context/icons/glyphs/close_black.png',
     'G_HOME_BLACK'        : '/context/icons/glyphs/home_black.png',
+    'G_WORKFLOW'          : '/context/icons/glyphs/workflow-filled.png'
 
 
     

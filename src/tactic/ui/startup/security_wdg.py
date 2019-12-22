@@ -1460,7 +1460,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
  
-        refresh_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
+        refresh_button = ButtonNewWdg(tip="Refresh", icon="FA_SYNC")
         button_row.add(refresh_button)
         refresh_button.add_behavior( {
             'type': 'click_up',
@@ -1474,7 +1474,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
         
-        save_button = ButtonNewWdg(tip="Save Changes", icon="BS_SAVE")
+        save_button = ButtonNewWdg(tip="Save Changes", icon="FA_SAVE")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',
@@ -1495,7 +1495,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         if show_add in [True, 'true']:
             project_code = Project.get_project_code()
 
-            add_button = ButtonNewWdg(tip="Refresh", icon="BS_PLUS")
+            add_button = ButtonNewWdg(tip="Refresh", icon="FA_PLUS")
             button_row.add(add_button)
             add_button.add_behavior( {
                 'type': 'click_up',

@@ -3266,7 +3266,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             elif self.get_show_insert():
                 msg.add("<br/><br/>Click on the &nbsp;")
-                icon = IconWdg("Add", "BS_PLUS")
+                icon = IconWdg("Add", "FA_PLUS")
                 msg.add(icon)
                 msg.add(" button to add new items")
                 msg.add("<br/>")
