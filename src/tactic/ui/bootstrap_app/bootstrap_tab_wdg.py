@@ -32,8 +32,13 @@ class BootstrapTabWdg(BaseRefreshWdg):
         header_id = self.get_header_id()
         style = """
             #%(header_id)s {
-                height: 40px;
                 display: none !important;
+                background: var(--spt_palette_md_primary_light);
+            }
+
+
+            #%(header_id)s .spt_tab_header_label {
+                color: var(--spt_palette_side_bar_title_color);
             }
 
             @media (min-width: 576px) {
@@ -41,6 +46,7 @@ class BootstrapTabWdg(BaseRefreshWdg):
                     display: flex !important;
                 }
             }
+            
 
 
         """ % {'header_id': header_id}
@@ -59,22 +65,6 @@ class BootstrapTabWdg(BaseRefreshWdg):
             }
             
 
-            .nav-pills .nav-link, .nav-tabs .nav-link {
-                padding: .5em .8575em;
-                font-size: 12px;
-                height: 40px;
-            }
-
-            /* TODO REMOVE and put in TabWdg */
-            .spt_tab_selected {
-                border-bottom: solid .214rem #114e8a;
-                height: 40px;
-            }
-
-            /* TODO REMOVE and put in TabWdg */
-            .nav-tabs .spt_tab_selected .nav-link {
-                color: rgba(0,0,0,.87);
-            }
         """
 
         return HtmlElement.style(style)

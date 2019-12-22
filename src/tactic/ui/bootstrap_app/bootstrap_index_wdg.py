@@ -331,14 +331,14 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }
 
 .spt_bs_left_sidebar {
+    background: var(--spt_palette_md_primary);
     min-width: 175px;
     max-width: 175px;
-    color: #fff;
+    color: var(--spt_palette_side_bar_title_color);
     transition: all 0.3s;
     z-index: 1;
     border: 0;
     border-radius: 0;
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
     padding-top: 40px;
     height: 100vh;
 }
@@ -389,18 +389,6 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     transform: translateX(50%);
 }
 
-.spt_bs_left_sidebar .spt_logo {
-    margin: 10px auto;
-}
-
-.spt_bs_left_sidebar .spt_toggle_sidebar {
-    margin: 10px auto;
-}
-
-.spt_bs_left_sidebar.active .sidebar-header .spt_logo {
-    display: none;
-}
-
 .spt_bs_left_sidebar ul.components {
     padding: 20px 0;
 }
@@ -412,8 +400,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }
 
 .spt_bs_left_sidebar ul li .nav-link:hover {
-    color: #114e8a;
-    background: #fff;
+    background: var(--spt_palette_md_primary_dark);
 }
 
 .spt_bs_left_sidebar ul li a i {
@@ -421,8 +408,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }
 
 .spt_bs_left_sidebar ul li.active>a, a[aria-expanded="true"] {
-    color: #fff;
-    background: #114e8a;
+    background: var(--spt_palette_md_primary_dark);
 }
 
 .spt_bs_left_sidebar a[data-toggle="collapse"] {
@@ -437,23 +423,26 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     transform: translateY(-50%);
 }
 
+/* Submenu */
 .spt_bs_left_sidebar ul ul a {
     font-size: 0.9em !important;
     padding-left: 20px !important;
-    background: #114e8a;
+    background: var(--spt_palette_md_primary_dark);
 }
 
+/* Dropdown divider */
 .spt_bs_left_sidebar ul ul .dropdown-divider {
     margin: 0rem 0rem;
     padding: .5rem 0rem;
-    background: #114e8a;
+    background: var(--spt_palette_md_primary_dark);
 }
 
 
+/* Sub-sub-menu style */
 .spt_bs_left_sidebar ul ul ul a {
     font-size: 0.9em !important;
     padding-left: 40px !important;
-    background: #0d355c;
+    background: var(--spt_palette_md_primary_dark);
 }
 
 
@@ -469,14 +458,10 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     margin-bottom: 5px;
 }
 
-.spt_bs_left_sidebar a.download {
-    background: #fff;
-    color: #7386D5;
-}
-
-.spt_bs_left_sidebar a.article, a.article:hover {
-    background: #6d7fcc !important;
-    color: #fff !important;
+/* Sidebar item hover */
+.spt_bs_left_sidebar ul li .nav-link:hover {
+    color: var(--spt_palette_side_bar_title_color);
+    background: var(--spt_palette_md_primary_dark);
 }
 
 
@@ -560,7 +545,6 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     def get_subdisplay(self, views):
 
         div = DivWdg()
-        div.add_class("bg-spt-blue-fade")
         div.add_class("spt_bs_left_sidebar")
         div.set_attr('spt_class_name', Common.get_full_class_name(self))
         div.add_behavior( {
@@ -624,13 +608,10 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
         style = HtmlElement.style("""
 
-            .spt_bs_top_nav .spt_logo img { 
-                width: 10em;
-                filter: invert(100%);
-                margin: .5rem 1rem;
+            .spt_bs_top_nav {
+                background: var(--spt_palette_md_primary_dark);
             }
 
-            // Copy navbar-nav styles
             .spt_bs_top_nav .spt_side_bar_content {
                 display: flex;
                 flex-direction: column;
@@ -669,11 +650,11 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         styles = self.get_bootstrap_styles()
         top_nav_wdg.add(styles)
 
-        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top bg-spt-blue")
+        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top")
         
         nav_header = DivWdg()
         top_nav_wdg.add(nav_header)
-        nav_header.add_class("d-flex")
+        nav_header.add_class("spt_bs_top_nav_left d-flex")
 
 
         view_side_bar = self.kwargs.get("view_side_bar")
@@ -712,16 +693,11 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
                 '''
             } )
 
-            
-        brand_div = DivWdg()
-        nav_header.add(brand_div)
-        brand_div.add_class("spt_logo")
-        brand_div.add("""
-        <a>
-            <img src="/context/tactic_logo_black.svg"> 
-        </a>""")
-       
+        logo_div = self.get_logo_div()
+        nav_header.add(logo_div)
+
         right_wdg = self.get_right_wdg()
+        right_wdg.add_class("spt_bs_top_nav_right")
         top_nav_wdg.add(right_wdg)
 
         if view_side_bar:
@@ -761,6 +737,29 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             top_nav_wdg.add(hidden_nav)
 
         return top_nav_wdg
+
+
+    def get_logo_div(self):
+        
+        brand_div = DivWdg()
+        brand_div.add_class("spt_logo")
+        brand_div.add("""
+        <a>
+            <img src="/context/tactic_logo_black.svg"> 
+        </a>""")
+
+        style = HtmlElement.style(""" 
+            .spt_bs_top_nav .spt_logo img { 
+                width: 10em;
+                filter: invert(100%);
+                margin: .5rem 1rem;
+            }
+        """)
+        brand_div.add(style)
+        
+        return brand_div
+
+
 
     def get_right_wdg(self):
         right_wdg = DivWdg()
@@ -1079,14 +1078,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         style += """
             body {overflow: hidden;}
             
-            .bg-spt-blue {
-                background: #114e8a
-            }
-
-            .bg-spt-blue-fade {
-                background: linear-gradient(0deg, #629bd3 40%, #114e8a 80%);
-            }
-
             .spt_bootstrap_top {
                 overflow: hidden;
                 width: 100vw;
@@ -1141,6 +1132,18 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
 
             }
+            
+            @media (max-width: 768px) {
+              
+                .spt_bootstrap_top .spt_bs_content {
+                    width: 100vw;
+                }
+
+                .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
+                    width: calc(100vw - 80px);
+                }
+
+            }
 
             @media (max-width: 575.98px) {
 
@@ -1159,17 +1162,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
             }
 
-            @media (max-width: 768px) {
-              
-                .spt_bootstrap_top .spt_bs_content {
-                    width: 100vw;
-                }
-
-                .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
-                    width: calc(100vw - 80px);
-                }
-
-            }
             """
 
 

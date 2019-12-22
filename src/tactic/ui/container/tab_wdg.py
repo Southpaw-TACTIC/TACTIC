@@ -1313,6 +1313,25 @@ spt.tab.view_definition = function(bvr) {
     def get_bootstrap_styles(self):
     
         styles = HtmlElement.style('''
+            .nav-pills .nav-link, .nav-tabs .nav-link {
+                padding: .5em .8575em;
+                font-size: 12px;
+                height: 40px;
+            }
+
+            .spt_tab_header_top {
+                height: 40px;
+            }
+
+            .spt_tab_header_top .spt_tab_selected {
+                height: 40px;
+                border-bottom: solid .214rem var(--spt_palette_md_secondary);
+            }
+
+            .spt_tab_header_top .spt_tab_selected .nav-link {
+                color: rgba(0,0,0,.87);
+            }
+
             .spt_tab_remove {
                 position: absolute;
                 top: 2;

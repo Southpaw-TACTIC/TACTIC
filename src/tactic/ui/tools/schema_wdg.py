@@ -86,7 +86,11 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         canvas_wrapper = DivWdg()
         td = table.add_cell(canvas_wrapper)
+        td.add_style("height", "400px")
         canvas_wrapper.add_class("spt_pipeline_wrapper")
+        canvas_wrapper.add_style("height: 100%")
+        canvas_wrapper.add_style("width: 100%")
+
         canvas = self.get_canvas()
         self.unique_id = canvas.get_unique_id()
         canvas_wrapper.add( canvas )

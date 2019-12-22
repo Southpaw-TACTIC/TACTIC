@@ -19,7 +19,8 @@ from pyasm.search import Search
 import colorsys, types
 
 class Palette(object):
-    
+
+
     # default color palette
     DEFAULT = {
     'color':        '#AAA',         # main font color
@@ -34,6 +35,7 @@ class Palette(object):
 
     'table_border': '#494949',
     'side_bar_title': '#3C76C2',
+    
     }
     DARK = DEFAULT
 
@@ -64,14 +66,18 @@ class Palette(object):
     'border':       '#BBB',         # main border color
 
     'side_bar_title': '#3C76C2',
-    'side_bar_title_color': '#FFF',
+    'side_bar_title_color': '#000000',
     'tab_background': '#3C76C2',
     'table_border': '#E0E0E0',
     'theme':        'default',
     'shadow':       'rgba(0,0,0,0.1)',
+    'md_primary_dark': '#c7c7c7', 
+    'md_primary': '#fafafa',
+    'md_primary_light': '#fffff',
+    'md_secondary_dark': '#00275c',
+    'md_secondary': '#114e8a',
+    'md_secondary_light': '#4f7aba'
     }
-
-
 
 
     # silver theme
@@ -191,30 +197,8 @@ class Palette(object):
         self.kwargs = kwargs
 
         self.colors = self.kwargs.get("colors")
-        palette = self.kwargs.get("palette")
-        if palette:
-            self.set_palette(palette)
-        else:
-            # look at the project
-            from pyasm.biz import Project
-            project = Project.get(no_exception=True)
-            if project:
-                value = project.get_value("palette")
-                self.set_palette(value)
-
-
-        # otherwise look at the user
         if not self.colors:
-            from pyasm.biz import PrefSetting
-            value = PrefSetting.get_value_by_key("palette")
-            self.set_palette(value)
-
-
-        # look in the config
-        if not self.colors:
-            value = Config.get_value("look", "palette")
-            self.set_palette(value)
-
+            self._init_palette()
 
         if not self.colors:
             self.colors = self.COLORS
@@ -229,13 +213,70 @@ class Palette(object):
                 self.colors[name] = value
 
 
-    def set_palette(self, palette):
+    def _init_palette(self):
+        value = self.kwargs.get("palette")
+        if value:
+            self.set_palette(value)
+            if self.colors:
+                return
+
+        from pyasm.biz import ProjectSetting
+        value = ProjectSetting.get_value_by_key("palette")
+        if value:
+            self.set_palette(value)
+            if self.colors:
+                return
+
+        value = ProjectSetting.get_json_value_by_key("palette/colors")
+        if value:
+            self.set_palette(palette=None, colors=value)
+            if self.colors:
+                return
+
+        
+        from pyasm.biz import Project
+        project = Project.get(no_exception=True)
+        if project:
+            value = project.get_value("palette")
+            self.set_palette(value)
+            if self.colors:
+                return
+
+        # otherwise look at the user
+        from pyasm.biz import PrefSetting
+        value = PrefSetting.get_value_by_key("palette")
+        if value:
+            self.set_palette(value)
+            if self.colors:
+                return
+        
+        value = Config.get_value("look", "palette")
+        if value:
+            self.set_palette(value)
+            if self.colors:
+                return
+        
+
+
+
+
         value = palette
         if not value:
             return
 
+
+
+    def set_palette(self, palette=None, colors=None):
+        
+        if not palette and not colors:
+            return 
+
         try:
-            self.colors = eval(value)
+            if palette:
+                value = palette
+                self.colors = eval(value)
+            elif colors:
+                self.colors = colors
 
             # make sure all of the colors are defined
             for name, value in self.DEFAULT.items():
@@ -448,5 +489,6 @@ class Palette(object):
     def set(cls, palette):
         Container.put("Palette:palette", palette)
     set = classmethod(set)
+
 
 
