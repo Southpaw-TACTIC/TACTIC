@@ -13,7 +13,7 @@ from tactic.ui.container import SmartMenu
 from .bootstrap_tab_wdg import *
 
 
-__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg', 'BootstrapTopNavWdg']
+__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg', 'BootstrapTopNavWdg', 'BootstrapProjectSelectWdg']
 
 
 from tactic.ui.panel import SideBarPanelWdg, SideBarBookmarkMenuWdg
