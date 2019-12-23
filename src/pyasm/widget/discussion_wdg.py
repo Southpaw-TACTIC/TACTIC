@@ -443,7 +443,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
 
            
         except:
-            from tactic.ui.app import SearchWdg
+            from .tactic.ui.app import SearchWdg
             parent_search_type = self.sobjects[0].get_search_type()
             SearchWdg.clear_search_data(parent_search_type)
             raise
@@ -1327,7 +1327,7 @@ class DiscussionWdg(BaseTableElementWdg, AjaxWdg):
         m = p.search(comment)
         if m:
             search_key = m.groups()[0]
-            from file_wdg import ThumbWdg
+            from .file_wdg import ThumbWdg
             from pyasm.search import Search
             ref = Search.get_by_search_key(search_key)
             thumb = ThumbWdg()

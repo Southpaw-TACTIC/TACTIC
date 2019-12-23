@@ -18,6 +18,7 @@ from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, D
 from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget, HtmlElement
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser, Project, ProjectSetting
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
@@ -236,7 +237,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
-                self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
+                try:
+                    sudo = Sudo()
+                    self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
+                finally:
+                    sudo.exit()
                 parser = ExpressionParser() 
                 related = parser.get_plain_related_types(expression)
 
@@ -574,9 +579,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 # this is not so efficient: better to use @SEARCH,
                 # but we support in anyway, just in case
-                expr_search = Search(self.search_type)
-                ids = SObject.get_values(self.expr_sobjects, 'id')
-                expr_search.add_filters('id', ids)
+                try:
+                    sudo = Sudo()
+
+                    expr_search = Search(self.search_type)
+                    ids = SObject.get_values(self.expr_sobjects, 'id')
+                    expr_search.add_filters('id', ids)
+                finally: 
+                    sudo.exit()
 
         elif expression:
             # if the expr_sobjects is empty and there is an expression, this
@@ -609,11 +619,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not self.search_wdg:
             search = self.kwargs.get("search")
 
-            from tactic.ui.app import SearchWdg
-            # if this is not passed in, then create one
-            # custom_filter_view and custom_search_view are less used, so excluded here
-            self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=filter_view)
+            try:
+                sudo = Sudo()
 
+                from tactic.ui.app import SearchWdg
+                # if this is not passed in, then create one
+                # custom_filter_view and custom_search_view are less used, so excluded here
+                self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=filter_view)
+            finally:
+                sudo.exit()
         
         search = self.search_wdg.get_search()
         self.search = search
@@ -1207,7 +1221,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         column_wdg = None
         
         show_column_wdg = self.get_setting("column_manager")
-        show_layout_wdg = self.get_setting('layout_switcher') 
+        show_layout_wdg = self.get_setting('layout_switcher')
         
         if show_column_wdg and self.can_add_columns():
             column_wdg = self.get_column_manager_wdg()
@@ -2704,8 +2718,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 use_html5 = False
             else:
                 use_html5 = True
-
+            
+            div = DivWdg()
+            search_api_key = div.generate_api_key("get_by_search_key", inputs=["__API_UNKNOWN__"], attr=False)
+            add_api_key = div.generate_api_key("add_file", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", {"file_type": 'icon', "mode": 'upload', "create_icon": 'True'}], attr=False)
+            checkin_api_key = div.generate_api_key("simple_checkin", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", "__API_UNKNOWN__", {"mode": 'uploaded', 'use_handoff_dir': False, 'checkin_type': 'auto'}], attr=False)
+            
             if not use_html5:
+                
                 bvr_cb = {
                 'cbjs_action': r'''
 
@@ -2761,12 +2781,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     var server = TacticServerStub.get();
                     try {
-                        spt.app_busy.show(bvr.description, file);                   
+                        spt.app_busy.show(bvr.description, file);
+                        var search_api_key = '%s';
+                        server.set_api_key(search_api_key);
                         var snapshot = server.get_by_search_key(search_key);
+                        server.clear_api_key();
                         var snapshot_code = snapshot.code;
-                        if (search_key.search('sthpw/snapshot')!= -1){                       
-                            var kwargs = {file_type:'icon', mode: 'upload', create_icon: 'True'};                        
-                            server.add_file( snapshot_code, file, kwargs );                                              
+                        if (search_key.search('sthpw/snapshot')!= -1){
+                            var kwargs = {file_type:'icon', mode: 'upload', create_icon: 'True'};
+                            var add_api_key = '%s';
+                            server.set_api_key(add_api_key);
+                            server.add_file( snapshot_code, file, kwargs );
+                            server.clear_api_key();
                         }
                         else {
                             file = file.replace(/\\/g, "/");
@@ -2782,7 +2808,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             else {
                                 kwargs = {mode: 'upload'};
                             }
+                            var checkin_api_key = '%s';
+                            server.set_api_key(checkin_api_key);
                             server.simple_checkin( search_key, context, file, kwargs);
+                            server.clear_api_key();
                         }
                     } catch(e) {
                         var error_str = spt.exception.handler(e);
@@ -2797,7 +2826,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     spt.named_events.fire_event(update_event);
                     spt.app_busy.hide();
 
-                    ''' % format_context
+                    ''' % (format_context, search_api_key, add_api_key, checkin_api_key)
                 }
 
             else:
@@ -2858,11 +2887,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                         try {
                             
-                            if (search_key.search('sthpw/snapshot')!= -1){                       
+                            if (search_key.search('sthpw/snapshot')!= -1){
+                                var search_api_key = '%s';
+                                server.set_api_key(search_api_key);
                                 var snapshot = server.get_by_search_key(search_key);
+                                server.clear_api_key();
                                 var snapshot_code = snapshot.code;
-                                var kwargs = {file_type:'icon', mode: 'uploaded', create_icon: 'True'};  
-                                server.add_file( snapshot_code, file, kwargs );                                              
+                                var kwargs = {file_type:'icon', mode: 'uploaded', create_icon: 'True'};
+                                var add_api_key = '%s';
+                                server.set_api_key(add_api_key);
+                                server.add_file( snapshot_code, file, kwargs );
+                                server.clear_api_key();
                             }
                             else {
 
@@ -2887,7 +2922,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                     kwargs = {mode: 'uploaded'};
                                     
                                 }
+                                var checkin_api_key = '%s';
+                                server.set_api_key(checkin_api_key);
                                 server.simple_checkin( search_key, context, file, kwargs);
+                                server.clear_api_key();
                             }
                         } catch(e) {
                             var error_str = spt.exception.handler(e);
@@ -2948,7 +2986,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         spt.app_busy.hide();
                     }
 
-                    ''' % format_context
+                    ''' % (format_context, search_api_key, add_api_key, checkin_api_key)
 
                 }
 
@@ -2981,7 +3019,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "label": "Check in New File",
                 "upload_id": self.upload_id,
                 "mode": "file",
-                #"icon": IconWdg.PHOTOS,
                 "bvr_cb": bvr_cb2,
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
@@ -3202,8 +3239,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         }
 
         access_key2 = {
-            'key': key 
-
+            'key': key
         }
         access_keys = [access_key1, access_key2]
         return access_keys

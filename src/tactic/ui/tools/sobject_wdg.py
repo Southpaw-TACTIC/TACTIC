@@ -246,27 +246,29 @@ class SObjectDetailWdg(BaseRefreshWdg):
                     search_type = self.search_type,
                     search_key = self.search_key,
                     pipeline_code = self.pipeline_code,
-                    selected = selected
+                    selected = selected,
+                    show_header = self.kwargs.get("show_header"),
             )
             top.add(layout)
             return layout
 
 
+        show_header = self.kwargs.get("show_header")
+        if show_header not in ['false', False]:
+            title_wdg = self.get_title_wdg()
+            title_wdg.add_class("spt_detail_title")
+            top.add(title_wdg)
+            title_wdg.add_style("display: inline-block")
+            title_wdg.add_style("vertical-align: top")
+            title_wdg.add_style("width: 500px")
 
-        title_wdg = self.get_title_wdg()
-        title_wdg.add_class("spt_detail_title")
-        top.add(title_wdg)
-        title_wdg.add_style("display: inline-block")
-        title_wdg.add_style("vertical-align: top")
-        title_wdg.add_style("width: 500px")
-
-        """
-        title_wdg.add_style("background: #FFF")
-        title_wdg.add_style("margin: 10px")
-        title_wdg.add_style("border-radius: 10px")
-        title_wdg.add_style("border: solid 1px #DDD")
-        top.add_style("background: #F9F9F9")
-        """
+            """
+            title_wdg.add_style("background: #FFF")
+            title_wdg.add_style("margin: 10px")
+            title_wdg.add_style("border-radius: 10px")
+            title_wdg.add_style("border: solid 1px #DDD")
+            top.add_style("background: #F9F9F9")
+            """
 
 
 

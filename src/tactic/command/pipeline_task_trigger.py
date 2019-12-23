@@ -386,6 +386,7 @@ class RelatedTaskUpdateTrigger(Trigger):
     '''This is called on every task change.  It syncronizes tasks with
     the same context'''
     def execute(self):
+        return
 
         sudo = Sudo()
 
@@ -408,7 +409,6 @@ class RelatedTaskUpdateTrigger(Trigger):
         # multiple people assigned to a task.  While this may be desireable, the mechanism
         # used below checks for the same process and context to identify tasks tat are connected.
         # This is too broad and should be done more explicitly rather than implicitly
-        return
 
 
 

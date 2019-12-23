@@ -986,7 +986,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # TODO: look at process state
 
-
         key = "%s|%s|status" % (sobject.get_search_key(), input_process.get_name())
         search = Search("sthpw/message")
         search.add_filter('code', key)
@@ -1014,7 +1013,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                     # NOTE: at some point, we should have an has_task method to deal with
                     # this list
                     complete = False
-
 
         return complete
 
@@ -1763,7 +1761,6 @@ class WorkflowActionNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_pending(self):
-
         if not self.check_inputs():
             return
 
@@ -2061,8 +2058,11 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         related_scope = process_obj.get_attribute("scope")
         related_wait = process_obj.get_attribute("wait")
 
-        related_pipeline_code = None
+        related_expression = process_obj.get_attribute("expression")
 
+
+
+        related_pipeline_code = None
         process_sobj = None
 
         # get the node process sobject
@@ -2072,9 +2072,10 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             search.add_filter("pipeline_code", pipeline.get_code())
             process_sobj = search.get_sobject()
 
+
+            # TODO: deprecate version 1
             workflow = process_sobj.get_json_value("workflow", {})
             version = workflow.get("version") or 1
-
             if version == 2:
                 settings = workflow.get("default")
             else:
@@ -2087,15 +2088,19 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             related_wait = settings.get("related_wait")
             related_pipeline_code = settings.get("related_pipeline_code")
 
-
-        if not related_search_type:
-            print("WARNING: no related search_type found")
-            return
+            related_expression = settings.get("expression")
 
 
-        if not related_process:
-            print("WARNING: no related process found")
-            return
+        if not related_expression:
+
+            if not related_search_type:
+                print("WARNING: no related search_type found")
+                return
+
+
+            if not related_process:
+                print("WARNING: no related process found")
+                return
 
 
 
@@ -2105,9 +2110,11 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
         elif not related_status:
             related_status = "pending"
 
+        if related_expression:
+            expression = related_expression
+            related_scope = "related"
 
-
-        if related_search_type.startswith("@"):
+        elif related_search_type.startswith("@"):
             expression = related_search_type
         else:
             expression = "@SOBJECT(%s)" % related_search_type
@@ -2117,6 +2124,11 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             related_sobjects = Search.eval(expression)
         else:
             related_sobjects = Search.eval(expression, sobjects=[sobject])
+
+        if isinstance(related_sobjects, Search):
+            related_sobjects = related_sobjects.get_sobjects()
+
+
 
 
         for related_sobject in related_sobjects:
@@ -2129,10 +2141,29 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             # This is for unittests which don't necessarily commit changes, otherwise
             # it's harmless
             related_sobject = Search.get_by_search_key(related_sobject.get_search_key())
+            pipeline_state = self.get_process_state(related_sobject, "__PIPELINE__")
+
+
+            # use the workflow for the related processes
+            if not related_process:
+                related_pipeline = Pipeline.get_by_sobject(related_sobject)
+                process_names = related_pipeline.get_process_names()
+                related_process = process_names[0]
 
 
             if not same_sobject:
+                s = related_sobject.get_value("status", no_exception=True)
+                if not s:
+                    s = pipeline_state.get_value("status")
+
+                if s.lower() in ['complete', 'approved', 'not_required']:
+                    continue
+
+                
+
                 # if the related_sobject is already complete, don't do anything
+                # DEPRECATED: don't look at message table anymore
+                """
                 key = "%s|%s|status" % (related_sobject.get_search_key(), related_process)
                 message_sobj = Search.get_by_code("sthpw/message", key)
                 if message_sobj:
@@ -2141,6 +2172,7 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
                         pass
                     elif value == "complete" and value not in ['revise', 'reject']:
                         continue
+                """
 
                 # get the workflow for the specfic sobject called
                 related_pipeline = Pipeline.get_by_sobject(related_sobject)
@@ -2172,7 +2204,25 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
                 else:
                     event = "process|%s" % related_status
 
-            # inputs are reversed as it sends the message
+
+            # Store this in the process state
+            # Need a place to store this data so that the entire workflow has
+            # access to it
+            namespace = "__DEFAULT__"
+            state = {
+                'related_sobject': sobject.get_search_key(),
+                'related_pipeline': pipeline.get_code(),
+                'related_process': process,
+                'related_namespace': namespace,
+            }
+            pipeline_state = self.get_process_state(related_sobject, "__PIPELINE__")
+            pipeline_state.set_value("status", "in_progress")
+            pipeline_state.set_json_value("state", state)
+            pipeline_state.commit()
+
+
+
+            # inputs are reversed as it sends the message to the related sobjects
             input = {
                 'sobject': related_sobject,
                 'pipeline': related_pipeline,
@@ -2185,11 +2235,73 @@ class WorkflowDependencyNodeHandler(BaseWorkflowNodeHandler):
             Trigger.call(self, event, input)
 
 
+
+
         if status not in ['revise','reject'] and related_wait in [False, 'false', None]:
             event = "process|complete"
             Trigger.call(self, event, self.input)
 
 
+
+    def handle_complete(self, status=None):
+
+        pipeline = self.input.get("pipeline")
+        process = self.input.get("process")
+        sobject = self.input.get("sobject")
+
+        # process_sobject
+        process_sobj = self.get_process_sobj(pipeline, process)
+        workflow = process_sobj.get_json_value("workflow", {})
+        settings = workflow.get("default") or {}
+
+        related_search_type = settings.get("related_search_type")
+        related_process = settings.get("related_process")
+        related_status = settings.get("related_status")
+        related_scope = settings.get("related_scope")
+        related_wait = settings.get("related_wait")
+        related_pipeline_code = settings.get("related_pipeline_code")
+
+        related_expression = settings.get("expression")
+
+        if related_expression:
+            expression = related_expression
+            related_scope = "related"
+
+        elif related_search_type.startswith("@"):
+            expression = related_search_type
+        else:
+            expression = "@SOBJECT(%s)" % related_search_type
+
+
+        if related_scope == "global":
+            related_sobjects = Search.eval(expression)
+        else:
+            related_sobjects = Search.eval(expression, sobjects=[sobject])
+
+        if isinstance(related_sobjects, Search):
+            related_sobjects = related_sobjects.get_sobjects()
+
+
+
+        # get all of the related sobjects to check if they are complete
+        is_complete = True
+        for related_sobject in related_sobjects:
+            pipeline_state = self.get_process_state(related_sobject, "__PIPELINE__")
+            state = pipeline_state.get_json_value("state") or {}
+
+            status = pipeline_state.get_value("status")
+            if not status in ["complete", "approved", "not_required"]:
+                is_complete = False
+                break
+
+
+        # if the related are not complete, then block the completion
+        if not is_complete:
+            self.log_message(sobject, process, "in_progress")
+            return
+
+
+        return super(WorkflowDependencyNodeHandler, self).handle_complete()
 
 
 
@@ -2409,23 +2521,49 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
 
             if isinstance(ret_val, six.string_types):
                 ret_val = [ret_val]
+            
+            all_outputs = pipeline.get_output_processes(process)
 
             output_processes = []
+            output_process_names = []
+
             not_required_streams = []
+            
+            
+            """
+            Two types of return values: stream (from_attr on connector)
+            or names of output processes.
+                - If streams have been returned, use these streams to 
+                  find required processes, and set all other output_processes
+                  as not_required.
+                - If processes have been returned, set these processes as required,
+                  and set all other output_processes as not required.
+            """
+           
+            # Check for streams
             for attr in ret_val:
                 outputs = pipeline.get_output_processes(process, from_attr=attr)
                 if outputs:
-                    output_processes.extend(outputs)
+                    for output in outputs:
+                        output_processes.append(output)
+                        output_process_names.append(output.get_name())
+                    
 
-            # if there are no output attrs, then check the node names
-            if not output_processes:
-                outputs = pipeline.get_output_processes(process)
-                for output in outputs:
-                    output_process_name = output.get_name()
+            if output_processes:
+                for output in all_outputs:
+                    if output.get_name() not in output_process_names:
+                        not_required_streams.append(output.get_name())
+
+            
+            else:
+                for output in all_outputs:
                     if output.get_name() in ret_val:
                         output_processes.append(output)
+                        output_process_names.append(output.get_name())
                     else:
                         not_required_streams.append(output.get_name())
+            
+            self.execute_streams(not_required_streams, "not_required")
 
             called = set()
             for output_process in output_processes:
@@ -2445,7 +2583,6 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                 Trigger.call(self, event, output)
                 called.add(output_process_name)
 
-            self.execute_streams(not_required_streams, "not_required")
 
             return
 
@@ -3046,11 +3183,92 @@ class ProcessListenTrigger(BaseProcessTrigger):
         current_sobject = self.input.get("sobject")
 
 
+        # search the process state for data on callers
+        pipeline_state = self.get_process_state(current_sobject, "__PIPELINE__")
+        output_processes = current_pipeline.get_output_processes(current_process_name)
+        if not output_processes:
+            # first set the pipeline to complete
+            pipeline_state.set_value("status", "complete")
+            pipeline_state.commit()
+
+
+        use_process_state = True
+        if use_process_state:
+
+            # set the pipeline to "complete"
+            state = pipeline_state.get_json_value("state") or {}
+
+            related_sobject_key = state.get("related_sobject")
+            related_pipeline_code = state.get("related_pipeline")
+
+            related_sobject = Search.get_by_search_key(related_sobject_key)
+            related_pipeline = Search.get_by_code("sthpw/pipeline", related_pipeline_code)
+            related_process = state.get("related_process")
+
+
+            # inputs are reversed as it sends the message
+            event = "process|complete"
+            input = {
+                'sobject': related_sobject,
+                'pipeline': related_pipeline,
+                'process': related_process,
+            }
+
+            Trigger.call(self, event, output=input)
+            return
+
+
+
         listeners = Container.get("process_listeners")
         if listeners == None:
             # build up a data structure of listeners from the pipelines
             listeners = {}
             Container.put("process_listeners", listeners)
+
+
+            # FIXME: what if there many many many workflows??
+            # should probably go directly to the process table
+            """
+            search = Search("config/process")
+            search.add_filter("workflow->node_type", ["dependency", "progress"], op="in")
+
+            process_sobjs = search.get_sobjects()
+            for process_sobj in process_sobjs:
+                workflow = process_sobj.get_json_value("workflow") or {}
+                settings = workflow.get("default") or {}
+
+                process_name = process_sobj.get_value("process")
+
+                listen_stype = settings.get("search_type")
+                listen_status = settings.get("status")
+                listen_process_name = settings.get("process")
+                listen_pipeline_code = settings.get("pipeline_code")
+
+
+                if listen_pipeline_code:
+                    listen_pipeline = Pipeline.get_by_code(listen_pipeline_code)
+                    listen_process = listen_pipeline.get_process(listen_process_name)
+                else:
+                    listen_pipeline = None
+                    listen_process = None
+
+
+                if listen_pipeline_code:
+                    listen_key = "%s:%s:%s:%s" % (listen_stype, listen_pipeline_code, listen_process_name, listen_status)
+                else:
+                    listen_key = "%s:%s:%s" % (listen_stype, listen_process_name, listen_status)
+
+                items = listeners.get(listen_key)
+                if items == None:
+                    items = []
+                    listeners[listen_key] = items
+
+                items.append( {
+                    "pipeline": listen_pipeline,
+                    "process": listen_process,
+                } )
+
+            """
 
 
             search_type = current_sobject.get_base_search_type()
@@ -3059,20 +3277,21 @@ class ProcessListenTrigger(BaseProcessTrigger):
             related_search_types = schema.get_related_search_types(search_type)
             related_search_types.append(search_type)
 
+
             # get all of the pipelines
             search = Search("sthpw/pipeline")
             search.add_filters("search_type", related_search_types)
             listen_pipelines = search.get_sobjects()
 
+
             for listen_pipeline in listen_pipelines:
                 pipeline_code = listen_pipeline.get_code()
                 listen_processes = listen_pipeline.get_processes()
 
-                pipeline_code = listen_pipeline.get_value("code")
-
                 for listen_process in listen_processes:
-                    listen_stype = listen_process.get_attribute("search_type")
 
+                    # FIXME: this is not saved in the workflow anymore
+                    listen_stype = listen_process.get_attribute("search_type")
 
                     listen_status = listen_process.get_attribute("status")
                     listen_pipeline_code = listen_process.get_attribute("pipeline_code")

@@ -661,6 +661,17 @@ class ScriptDirListWdg(DirListWdg):
         self.kwargs['background'] = "background3"
         super(ScriptDirListWdg, self).init()
 
+
+
+    def get_file_icon(self, dir, item):
+        return ""
+
+    def get_dir_icon(self, dir, item):
+        return "FA_FOLDER_O"
+
+
+
+
     def add_top_behaviors(self, top):
 
         top.add_relay_behavior( {

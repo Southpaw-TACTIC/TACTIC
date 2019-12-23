@@ -482,9 +482,7 @@ class Project(SObject):
         security_version = get_security_version()
         if security_version != 1 and not project_code == 'admin':
             key = { 'code': project_code }
-            key2 = { 'code': "*" }
-            keys = [key, key2]
-            if not security.check_access("project", keys, access="allow", default="deny"):
+            if not security.check_access("project", key, access="allow", default="deny"):
                 user = Environment.get_login()
                 if user:
                     user = user.get_value("login")
@@ -839,7 +837,7 @@ class Project(SObject):
     def _get_base_dir(protocol, sobject, decrement=0):
         '''decrement is the number of levels it tries to go up the directory'''
         snapshot = None
-        from snapshot import Snapshot
+        from .snapshot import Snapshot
         if isinstance(sobject,Snapshot):
             snapshot = sobject
 

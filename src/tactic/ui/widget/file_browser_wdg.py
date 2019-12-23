@@ -399,7 +399,8 @@ class DirListWdg(BaseRefreshWdg):
 
             icon_div = DivWdg()
             dir_title.add(icon_div)
-            icon = IconWdg("%s" % base_dir, IconWdg.LOAD)
+
+            icon = IconWdg("%s" % base_dir, "FA_FOLDER_O")
             icon_div.add(icon)
             icon_div.add_style("float: left")
 
@@ -1089,16 +1090,16 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def get_dir_icon_wdg(self, dirname, basename):
-        return
+        return 
 
 
     def get_file_icon(self, dir, item):
-        return IconWdg.DETAILS
+        return "FA_FILE_O"
 
 
 
     def get_dir_icon(self, dir, item):
-        return IconWdg.LOAD
+        return "FA_FOLDER_O"
 
 
 

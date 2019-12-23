@@ -24,6 +24,7 @@ from pyasm.biz import Task, Pipeline, Project, ProjectSetting
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
+from pyasm.security import Sudo
 from tactic.ui.panel import FastTableLayoutWdg
 from pyasm.widget import SwapDisplayWdg
 
@@ -5618,7 +5619,7 @@ class ProgressInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Listen to events from:</b>")
+        settings_wdg.add("<b>Start Workflow for Related Items::</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         select.set_option("values", values)
@@ -5655,6 +5656,13 @@ class ProgressInfoWdg(BaseInfoWdg):
 
             '''
         } )
+
+
+
+        settings_wdg.add("Expression")
+        text = TextInputWdg(name="expression")
+        settings_wdg.add(text)
+        settings_wdg.add("<span style='opacity: 0.6'>Expression to find related items</span>")
 
 
         from pyasm.widget import RadioWdg
@@ -5928,6 +5936,94 @@ class TaskStatusInfoWdg(BaseInfoWdg):
             '''
         } )
 
+        # settings_wdg.add(color_div)
+        # color_input = ColorInputWdg("color")
+        # color_input.add_behavior( {
+        #     'type': 'load',
+        #     'cbjs_action': '''
+
+        #     var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        #     spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+        #     var node = spt.pipeline.get_info_node();
+        #     var color = spt.pipeline.get_node_property(node, "color");
+        #     bvr.src_el.value = color;
+        #     bvr.src_el.setStyle("background", color);
+
+        #     '''
+        # } )
+
+        # color_input.add_behavior( {
+        #     'type': 'blur',
+        #     'cbjs_action': '''
+
+        #     var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+        #     spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+        #     var node = spt.pipeline.get_info_node();
+        #     var color = bvr.src_el.value;
+        #     spt.pipeline.set_node_property(node, "color", color);
+
+        #     spt.named_events.fire_event('pipeline|change', {});
+
+        #     '''
+        # } )
+        # color_input.set_value(color)
+        # settings_wdg.add(color_input)
+
+        settings_wdg.add("<br/>")
+
+        save_button = ActionButtonWdg(title="Save", color="primary")
+        #settings_wdg.add(save_button)
+        save_button.add_style("float: right")
+        save_button.add_style("padding-top: 3px")
+        save_button.add_behavior( {
+            'type': 'click_up',
+            'process': process,
+            'pipeline_code': pipeline_code,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_status_top");
+            var values = spt.api.get_input_values(top, null, false);
+            var class_name = 'tactic.ui.tools.ProcessInfoCmd';
+            var kwargs = values;
+            values['node_type'] = 'status';
+            values['process'] = bvr.process;
+            values['pipeline_code'] = bvr.pipeline_code;
+
+            // Update process sObject
+            var server = TacticServerStub.get();
+            server.execute_cmd( class_name, values);
+
+            // Update pipeline sObject xml
+            color = values['color'];
+            var node = spt.pipeline.get_selected_node();
+            if (!node) {
+                node = spt.pipeline.get_node_by_name(bvr.process);
+            }
+            node.properties['color'] = color;
+
+            var groups = spt.pipeline.get_groups();
+            for (group_name in groups) {
+                var xml = spt.pipeline.export_group(group_name);
+                var search_key = server.build_search_key("sthpw/pipeline", group_name);
+                try {
+                    // Refresh the canvas to display new color.
+                    spt.pipeline.remove_group(group_name);
+                    spt.pipeline.unselect_all_nodes();
+                    results = server.insert_update(search_key, {'pipeline': xml});
+                } catch(e) {
+                    spt.alert(spt.exception.handler(e));
+                }
+                spt.pipeline.import_pipeline(group_name);
+            }
+
+
+            '''
+        } )
+
+
+
+
         return top
 
 
@@ -6142,8 +6238,401 @@ class ProcessInfoCmd(Command):
 
         if script:
 
-            from pyasm.security import Sudo
 
+            sudo = Sudo()
+            try:
+
+                # check to see if the script already exists
+                search = Search("config/custom_script")
+                search.add_filter("folder", folder)
+                search.add_filter("title", "%s" % title)
+                script_obj = search.get_sobject()
+                if not script_obj:
+                    script_obj = SearchType.create("config/custom_script")
+                    script_obj.set_value("folder", folder)
+                    script_obj.set_value("title", "%s" % title)
+
+                script_obj.set_value("language", language)
+                script_obj.set_value("script", script)
+                script_obj.commit()
+
+            finally:
+                sudo.exit()
+
+        self.set_description(process_sobj)
+        process_sobj.commit()
+
+
+
+    def handle_dependency(self):
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        related_search_type = self.kwargs.get("related_search_type")
+        related_process = self.kwargs.get("related_process")
+        related_status = self.kwargs.get("related_status")
+        related_scope = self.kwargs.get("related_scope")
+        related_wait = self.kwargs.get("related_wait")
+
+        workflow = process_sobj.get_json_value("workflow")
+        if not workflow:
+            workflow = {}
+
+        if related_search_type:
+            workflow['search_type'] = related_search_type
+        if related_process:
+            workflow['process'] = related_process
+        if related_status:
+            workflow['status'] = related_status
+        if related_scope:
+            workflow['scope'] = related_scope
+        if related_scope:
+            workflow['wait'] = related_wait
+
+        color = Task.get_default_color(process)
+
+        settings_wdg = DivWdg()
+        top.add(settings_wdg)
+        settings_wdg.add_style("padding: 0px 10px")
+
+        settings_wdg.add("<b>Task Status Action</b>")
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<br/>")
+
+        title = DivWdg("When set to this status, do the following:")
+        title.add_style('padding-bottom: 12px')
+
+        settings_wdg.add(title)
+
+        div = DivWdg("Behave as:")
+        div.add_style('padding-bottom: 2px')
+
+        settings_wdg.add(div)
+        select = SelectWdg(name="mapping")
+        select.add_class('spt_task_direction')
+        select.add_empty_option()
+        select.set_option('values', 'Assignment|Pending|In Progress|Waiting|Need Assistance|Revise|Reject|Complete|Approved')
+        self.add_session_behavior(select, "select", "spt_status_top", "mapping")
+        settings_wdg.add(select)
+
+
+        settings_wdg.add(HtmlElement.br())
+        sep = DivWdg("OR")
+        sep.add_style('text-align: center')
+        sep.add_style('margin: auto')
+        settings_wdg.add(sep)
+        settings_wdg.add(HtmlElement.br())
+
+        select = SelectWdg(name="direction")
+        select.add_empty_option()
+        settings_wdg.add(select)
+        values = ["output", "input", "process"]
+        # we don't know the parent process this could be used in
+        labels = ["Set output process", "Set input process", "Set this process"]
+        self.add_session_behavior(select, "select", "spt_status_top", "direction")
+        select.set_option("values", values)
+        select.set_option("labels", labels)
+
+        settings_wdg.add("<br/>")
+
+        div = DivWdg("to Status:")
+        div.add_style('padding-bottom: 2px')
+        settings_wdg.add(div)
+        text = TextInputWdg(name="status")
+        self.add_session_behavior(text, "text", "spt_status_top", "status")
+        text.add_behavior({'type': 'blur',
+            'cbjs_action':
+
+            '''var top = bvr.src_el.getParent('.spt_status_top');
+            var map = top.getElement('.spt_task_direction');
+            if (map.value && bvr.src_el.value) {
+                bvr.src_el.value = '';
+                spt.info('"Behave as" should be cleared if you want to set a custom status.');
+            }'''})
+
+        settings_wdg.add(text)
+        text.add_style("width: 100%")
+
+        settings_wdg.add("<br/>")
+        settings_wdg.add("<hr/>")
+        settings_wdg.add("<br/>")
+
+        # Color
+        color_div = DivWdg("<b>Color</b>:")
+        color_div.add_style('padding-bottom: 2px')
+        settings_wdg.add(color_div)
+
+        container = ColorContainerWdg(name="color")
+        settings_wdg.add(container)
+
+        color_wdg = container.get_color_wdg()
+
+        color_wdg.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var node = spt.pipeline.get_info_node();
+            var color = spt.pipeline.get_node_property(node, "color");
+            bvr.src_el.value = color;
+
+            '''
+        } )
+
+        color_wdg.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+
+            var node = spt.pipeline.get_info_node();
+            var color = bvr.src_el.value;
+            spt.pipeline.set_node_property(node, "color", color);
+
+            spt.named_events.fire_event('pipeline|change', {});
+
+            '''
+        } )
+
+        return top
+
+
+
+    def get_default_kwargs(self):
+
+        direction = self.workflow.get("direction")
+        to_status = self.workflow.get("status")
+        mapping = self.workflow.get("mapping")
+
+        return {
+            "direction": direction,
+            "to_status": to_status,
+            "mapping": mapping
+        }
+
+
+    def get_default_properties(self):
+
+        process = self.kwargs.get("process")
+        if self.process_sobj:
+            color = self.process_sobj.get_value("color")
+        else:
+            color = Task.get_default_color(process)
+
+        return {
+            "color": color
+        }
+
+
+
+
+class ProcessInfoCmd(Command):
+
+    def execute(self):
+        node_type = self.kwargs.get("node_type")
+
+        if node_type in ["manual", "node"]:
+            return self.handle_manual()
+
+        if node_type in ["action", "condition"]:
+            return self.handle_action()
+
+        if node_type == 'dependency':
+            return self.handle_dependency()
+
+        if node_type == 'status':
+            return self.handle_status()
+
+        if node_type == 'approval':
+            return self.handle_approval()
+
+        if node_type == 'hierarchy':
+            return self.handle_hierarchy()
+
+        if node_type == 'progress':
+            return self.handle_progress()
+
+        # Get custom save cmd via node_type
+        from pyasm.command import CustomProcessConfig
+        try:
+            cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+            return cmd.execute()
+        except Exception as e:
+            print
+            print("Failed saving node for node type [%s]:" % node_type)
+            print(e)
+            print
+            return self.handle_default()
+
+
+    def set_description(self, process_sobj):
+        description = self.kwargs.get("description")
+        if description or description == "":
+            process_sobj.set_value("description", description)
+
+
+    def handle_default(self):
+
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+        description = self.kwargs.get("description")
+        if not description:
+            return
+
+        process_sobj.set_value("description", description)
+
+        process_sobj.commit()
+
+
+
+
+    def handle_manual(self):
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+        self.set_description(process_sobj)
+        process_sobj.commit()
+
+        cbk_classes = self.kwargs.get("_cbk_classes") or []
+
+        handled = set()
+        for cbk_class in cbk_classes:
+            if cbk_class in handled:
+                continue
+            cmd = Common.create_from_class_path(cbk_class, {}, self.kwargs)
+            cmd.execute()
+            handled.add(cbk_class)
+
+        if node_type in ['manual', 'approval', 'action', 'condition', 'hierarchy', 'progress', 'dependency']:
+            return
+
+        # Get custom save cmd via node_type
+        from pyasm.command import CustomProcessConfig
+        try:
+            cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        except:
+            cmd = None
+        if cmd:
+            return cmd.execute()
+
+
+
+    def handle_action(self):
+
+        is_admin = Environment.get_security().is_admin()
+
+        action = self.kwargs.get("action") or "create_new"
+        script = self.kwargs.get("script")
+        script_path = self.kwargs.get("script_path")
+        on_action_class = self.kwargs.get("on_action_class")
+
+
+        # version 1 command handling
+        version_str = self.kwargs.get('version') or 1
+        version = int(version_str)
+        command = self.kwargs.get("command")
+        if version == 1 and command:
+            action = command.get("action") or "create_new"
+            script = command.get("script")
+            script_path = command.get("script_path")
+            on_action_class = command.get("on_action_class")
+
+
+        execute_mode = self.kwargs.get("execute_mode")
+
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+
+
+        if is_admin:
+            language = self.kwargs.get("language")
+            if not language:
+                language = "python"
+        else:
+            language = "server_js"
+
+        pipeline = Pipeline.get_by_code(pipeline_code)
+
+
+        search = Search("config/process")
+        search.add_filter("pipeline_code", pipeline_code)
+        search.add_filter("process", process)
+        process_sobj = search.get_sobject()
+
+
+        event = "process|action"
+
+        from .trigger_wdg import TriggerToolWdg
+
+        folder = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, pipeline.get_code())
+        title = process_sobj.get_code()
+
+        # check to see if the trigger already exists
+        search = Search("config/trigger")
+        search.add_filter("event", event)
+        search.add_filter("process", process_sobj.get_code())
+        trigger = search.get_sobject()
+        if not trigger:
+            # create a new one
+            trigger = SearchType.create("config/trigger")
+            trigger.set_value("event", event)
+            trigger.set_value("process", process_sobj.get_code())
+
+
+        if action == "command":
+            trigger.set_value("script_path", "NULL", quoted=False)
+            trigger.set_value("class_name", on_action_class)
+
+        else:
+            if script_path:
+                folder, title = os.path.split(script_path)
+            else:
+                script_path = "%s/%s" % (folder, title)
+
+            if script:
+                trigger.set_value("script_path", script_path)
+            else:
+                trigger.set_value("script_path", "NULL", quoted=False)
+
+            trigger.set_value("class_name", "NULL", quoted=False)
+
+
+
+
+        if execute_mode:
+            trigger.set_value("mode", execute_mode)
+
+
+        trigger.commit()
+
+        if script:
+
+            from pyasm.security import Sudo
             sudo = Sudo()
             try:
 

@@ -787,6 +787,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
 
 
                     # click up blocks any other behavior
+                    div.generate_api_key("eval", inputs=[link_expr, {"search_keys": self.sobject.get_search_key(), "single": True}])
                     div.add_behavior( {
                         'type': 'click_up',
                         'cbjs_action': '''
@@ -810,6 +811,7 @@ class ExpressionElementWdg(TypeTableElementWdg):
                     div.add_attr("name", display_result)
 
                     # click up blocks any other behavior
+                    div.generate_api_key("eval", inputs=[link_expr, {"search_keys": self.sobject.get_search_key(), "single": True}])
                     div.add_behavior( {
                         'type': 'click_up',
                         'cbjs_action': '''

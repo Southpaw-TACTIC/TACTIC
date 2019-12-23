@@ -147,13 +147,7 @@ class TransactionLog(SObject):
         length_before = len(transaction_data)
         cutoff = 10*1024
         if length_before > cutoff:
-            import zlib, binascii
-            if IS_Pv3:
-                transaction_data = transaction_data.encode()
-            else:
-                transaction_data = Common.process_unicode_string(transaction_data)
-            ztransaction_data = binascii.hexlify(zlib.compress(transaction_data))
-            ztransaction_data = "zlib:%s" % ztransaction_data
+            ztransaction_data = Common.compress_transaction(transaction_data)
             length_after = len(ztransaction_data)
             print("transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
         else:
@@ -353,7 +347,7 @@ class TransactionLog(SObject):
             search.add_filter("namespace", namespace)
 
         if time_interval and time_interval != 'NONE':
-            from sql import Select
+            from .sql import Select
             search.add_where(Select.get_interval_where(time_interval))
 
         search.add_order_by("timestamp desc")
