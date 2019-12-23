@@ -1681,6 +1681,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         elif self.order_element and self.order_element.endswith(' desc'):
             reverse = True
 
+
         sobjects = Common.sort_dict(self.group_dict, reverse=reverse)
         for sobject in sobjects:
             sub_group_columns = group_columns[1:]
@@ -2773,7 +2774,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             # break groups by a "/" delimiter
-            if group_value.find("/"):
+            if isinstance(group_value, six.string_types) and group_value.find("/"):
                 parts = group_value.split("/")
                 if not parts[0].endswith(" "):
                     group_value = parts[0]
