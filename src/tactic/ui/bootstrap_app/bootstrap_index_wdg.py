@@ -476,6 +476,27 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 
 
+
+/* REMKO (for admin site) */
+.spt_bs_left_sidebar.active ul li a {
+    padding: 10px 0px;
+    padding-left: 50px;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-align: left;
+}
+
+.spt_bs_left_sidebar .nav-link h6 {
+    margin-left: -35px;
+    margin-top: 15px;
+    padding-left: 10px;
+    border-bottom: solid 1px #999;
+}
+
+
+
+
+
 @media (max-width: 768px) {
 
 
@@ -564,6 +585,14 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         div.add_behavior( {
             'type': 'load',
             'cbjs_action': self.get_onload_js()
+        } )
+
+
+        div.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            spt.named_events.fire_event("side_bar|toggle")
+            '''
         } )
 
         # add the down button
