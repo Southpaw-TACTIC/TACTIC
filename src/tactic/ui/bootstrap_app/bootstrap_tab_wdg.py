@@ -57,19 +57,19 @@ class BootstrapTabWdg(BaseRefreshWdg):
             
         
         style += """
-            .spt_tab_content_top {
+            .spt_tab_content_top[spt_tab_id="%(tab_id)s"] {
                 overflow-y: auto;
-                height: calc(100% - 80px);
+                height: calc(100vh - 80px);
             }
             
             @media (max-width: 575.98px) {
-                .spt_tab_content_top {
-                    height: 100%;
+                .spt_tab_content_top[spt_tab_id="%(tab_id)s"] {
+                    height: 100%%;
                 }
             }
             
 
-        """
+        """ % {'tab_id': self.get_tab_id()}
 
         return HtmlElement.style(style)
 

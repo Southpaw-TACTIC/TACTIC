@@ -963,7 +963,8 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         hash = self.kwargs.get('hash')
         
         self.widget = None
- 
+        config = None
+
         if link:
             from tactic.ui.panel import SideBarBookmarkMenuWdg
             personal = False
@@ -980,52 +981,52 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
             hash = "/tab/%s" % link
 
-            config = '''
-            <config>
-                <application>
-                    %s
-                    %s
-                    <element name="main_body">
-                      <display class="tactic.ui.panel.HashPanelWdg">
-                        <hash>%s</hash>
-                        <element_name>%s</element_name>
-                        <title>%s</title>
-                      </display>
-                    </element>
-                </application>
-            </config>
-            ''' % (self._get_top_nav_xml(), self._get_left_nav_xml(), hash, element_name, title)
-
-
-        elif hash:
+        if hash:
             from tactic.ui.panel import HashPanelWdg
             self.widget = HashPanelWdg.get_widget_from_hash(hash, force_no_index=True)
-            config = None
         else:
-            config = None
             
+            # get start up link from security
             security = Environment.get_security()
             start_link = security.get_start_link()
             if start_link:
                 self.kwargs['link'] = start_link
                 return self.init()
 
-            # search for a defined welcome view
+            # get start up link from widget config
             from pyasm.search import Search
-            from pyasm.web import WidgetSettings
             search = Search("config/widget_config")
             search.add_filter("category", "top_layout")
             search.add_filter("view", "welcome")
             config_sobj = search.get_sobject()
             if config_sobj:
                 config = config_sobj.get_value("config")
-
+ 
         if not config:
+            # get start link from defualt config
             config = self.get_default_config()
-
+        
         from pyasm.common import Xml
         self.config_xml = Xml()
         self.config_xml.read_string(config)
+ 
+        """
+        if not self.widget:
+            config = WidgetConfig.get(xml=self.config_xml, view="application")
+            main_body_handler = config.get_display_handler("main_body")
+            main_body_options = config.get_display_options("main_body")
+            element_name = main_body_options.get("element_name")
+            title = main_body_options.get("title")
+            main_body_content = Common.create_from_class_path(main_body_handler, [], main_body_options)
+            main_body_values = config.get_web_options("main_body")
+            web = WebContainer.get_web()
+            if isinstance(main_body_values, dict):
+                for name, value in main_body_values.items():
+                    web.set_form_value(name, value)
+            main_body_content.set_name(element_name)
+
+            self.widget = main_body_content
+        """
  
 
     def get_default_config(self):
@@ -1214,42 +1215,21 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
         # add the content to the main body panel
         try:
+            startup_xml = """
+            <config>
+                <tab>
+                    %s
+                </tab>
+            </config>
+            """ % self._get_startup_xml()
+
+            # Sets default xml when no WidgetSetting exists
+            tab = BootstrapTabWdg(config_xml=startup_xml)
+            
+            # Hash is additive
             if self.widget:
-                tab = BootstrapTabWdg()
                 tab.add(self.widget)
-                element_name = self.widget.get_name()
-            else:
-               
-                # TODO. This should extract the main body xml
-                # from self.config_xml
-                tab_config = """
-                    <config>
-                        <tab>
-                            %s
-                        </tab>
-                    </config>""" % self._get_startup_xml()
-                
-                tab = BootstrapTabWdg(config_xml=tab_config)
 
-                """
-                config = WidgetConfig.get(xml=self.config_xml, view="application")
-                main_body_handler = config.get_display_handler("main_body")
-                main_body_options = config.get_display_options("main_body")
-                element_name = main_body_options.get("element_name")
-                title = main_body_options.get("title")
-                self.set_as_panel(main_body_panel, class_name=main_body_handler, kwargs=main_body_options)
-
-                main_body_content = Common.create_from_class_path(main_body_handler, [], main_body_options)
-                # get the web values from top_layout
-                main_body_values = config.get_web_options("main_body")
-                web = WebContainer.get_web()
-                if isinstance(main_body_values, dict):
-                    for name, value in main_body_values.items():
-                        web.set_form_value(name, value)
-
-                main_body_content.set_name(element_name)
-                tab.add(main_body_content, element_name, title)
-                """
 
             """
             main_body_panel.add_behavior( {

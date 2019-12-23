@@ -1885,6 +1885,7 @@ spt.tab.view_definition = function(bvr) {
 
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
+        content_top.add_attr("spt_tab_id", self.get_tab_id())
 
         inner.add(content_top)
 
