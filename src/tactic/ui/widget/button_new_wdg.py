@@ -606,6 +606,7 @@ class ButtonNewWdg(ButtonWdg):
         from pyasm.web import ButtonWdg as ButtonHtmlWdg
         self.hit_wdg = ButtonHtmlWdg()
         self.arrow_menu = ButtonHtmlWdg()
+        self.arrow_menu.add_class("btn dropdown-toggle spt_arrow_hit_wdg")
         
         icon_str = self.kwargs.get("icon")
 
@@ -652,6 +653,8 @@ class ButtonNewWdg(ButtonWdg):
 
         return style
 
+    def set_arrow_wdg(self, wdg):
+        self.arrow_menu = wdg
 
     def get_display(self):
        
@@ -669,7 +672,6 @@ class ButtonNewWdg(ButtonWdg):
         
         if self.show_arrow_menu or self.dialog:
             top.add(self.arrow_menu)
-            self.arrow_menu.add_class("btn dropdown-toggle spt_arrow_hit_wdg")
             top.add_class("d-flex")
         
         return top

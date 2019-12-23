@@ -11,7 +11,7 @@
 #
 
 __all__ = ['CustomLayoutEditWdg', 'CustomLayoutEditTestWdg','CustomLayoutHelpWdg', 'CustomLayoutEditSaveCmd', 'CustomLayoutActionCbk']
-from pyasm.common import  jsondumps, jsonloads, TacticException, Environment
+from pyasm.common import  jsondumps, jsonloads, TacticException, Environment, Common
 from pyasm.search import Search, SearchType
 from pyasm.biz import Project, ProjectSetting
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg, Widget, WebContainer
@@ -1397,7 +1397,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                     remove_div = DivWdg()
                     header_div.add(remove_div)
-                    remove_div.add("<i class='fa fa-remove'/>")
+                    remove_div.add("<i class='fa fa-times'/>")
                     remove_div.add_style("margin-left: 15px")
                     remove_div.add_class("hand")
                     remove_div.add_class("tactic_hover")
@@ -1444,12 +1444,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                             value = value[1:]
                         if value.endswith('\n'):
                             value = value[:-1]
+         
+                        editor_id = Common.generate_random_key()
                         editor = AceEditorWdg(
                             width="100%", 
                             language="javascript", 
                             code=value, 
                             show_options=False, 
-                            editor_id='custom_layout_behavior',
+                            editor_id=editor_id,
                             dynamic_height=True
                         )
                         content_div.add(editor)

@@ -815,10 +815,13 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         user_btn = ButtonNewWdg(title=title, icon=icon)
         user_wdg.add(user_btn)
         user_btn.add_class("bg-light ml-1 spt_nav_user_btn")
+        user_btn.get_collapsible_wdg().add_class("dropdown-toggle")
         
         menus = self.get_smart_menu()
-        SmartMenu.add_smart_menu_set(user_wdg, [menus])
-        SmartMenu.assign_as_local_activator(user_wdg, None, True)
+        SmartMenu.add_smart_menu_set(user_btn.get_button_wdg(), [menus])
+        SmartMenu.add_smart_menu_set(user_btn.get_collapsible_wdg(), [menus])
+        SmartMenu.assign_as_local_activator(user_btn.get_button_wdg(), None, True)
+        SmartMenu.assign_as_local_activator(user_btn.get_collapsible_wdg(), None, True)
 
         
         return user_wdg
@@ -1347,6 +1350,9 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
         activator = BootstrapButtonWdg(title=project.get_value("title"))
         activator.button_wdg.add_class("text-white")
         activator.add_class("dropdown-toggle")
+
+        #HACK
+        activator.button_wdg.add_style("margin-bottom: unset")
         
         smenu_set = SmartMenu.add_smart_menu_set( activator.get_button_wdg(), { 'BUTTON_MENU': menus } )
         SmartMenu.assign_as_local_activator( activator.get_button_wdg(), "BUTTON_MENU", True )

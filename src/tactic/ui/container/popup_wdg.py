@@ -147,7 +147,12 @@ class PopupWdg(BaseRefreshWdg):
     def get_bootstrap_styles(self):
               
         style = HtmlElement.style(""" 
-    
+     
+        /* HACK */
+        .spt_popup_top.spt_popup {
+            overflow: unset;
+        }
+        
         .modal-backdrop {
             z-index: 150 !important;
         }
@@ -188,6 +193,11 @@ class PopupWdg(BaseRefreshWdg):
  
   
         @media (max-width: 575.98px) { 
+            .spt_popup_top.spt_popup {
+                top: 0 !important;
+                left: 0 !important;
+            }
+
             .spt_popup_top .spt_popup_title_top { 
                 padding: 1rem;
                 border-bottom: 1px solid #e9ecef;
@@ -786,7 +796,6 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
 {
 
     
-    console.log(popup_el_or_id);
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     if( ! popup ) { return; }
     $(popup_el_or_id).modal("show");
@@ -1050,8 +1059,6 @@ spt.popup.get_widget = function( evt, bvr )
         spt.puw.process_new( popup.parentNode );
     }
 
-    console.log("Created popup!", popup);
-
     if (top_class) popup.addClass(top_class);
 
     var close_wdg = popup.getElement('.spt_popup_close');
@@ -1189,6 +1196,10 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_header = content_wdg.getElement(".spt_popup_header");
     var popup_body = content_wdg.getElement(".spt_popup_body");
     var popup_footer = content_wdg.getElement(".spt_popup_footer");
+
+    if (popup_header) popup_header.addClass("modal-header");
+    if (popup_body) popup_body.addClass("modal-body");
+    if (popup_footer) popup_footer.addClass("modal-footer")
 
     var popup_header_height = 0;
     var popup_footer_height = 0;

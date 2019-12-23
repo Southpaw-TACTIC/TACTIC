@@ -217,9 +217,12 @@ class TopWdg(Widget):
             var title = bvr.src_el.getAttribute("title");
 
             var class_name = 'tactic.ui.panel.CustomLayoutWdg';
-            var kwargs = {
+            var args = {
                 view: view,  
             }
+            var kwargs = {};
+
+            var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
 
             var attributes = bvr.src_el.attributes;
             for (var i = 0; i < attributes.length; i++) {
@@ -227,12 +230,15 @@ class TopWdg(Widget):
                 if (name == "class") {
                     continue;
                 }
+                
                 var value = attributes[i].value;
-                kwargs[name] = value;
+
+                if (popup_args_keys.indexOf(name) > -1) kwargs[name] = value;
+                else args[name] = value;
             }
 
 
-            var popup = spt.panel.load_popup(title, class_name, kwargs);
+            var popup = spt.panel.load_popup(title, class_name, args, kwargs);
             popup.activator = bvr.src_el;
             '''
         } )
