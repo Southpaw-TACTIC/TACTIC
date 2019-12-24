@@ -1452,7 +1452,7 @@ spt.tab.view_definition = function(bvr) {
                 min-height: 500px;
                 width: 100%;
                 z-index: 1;
-                background: #FFFFFF;
+                background: var(--spt_palette_background);
                 border-top-right-radius: 5px;
                 border: 1px solid #BBB;
             }
