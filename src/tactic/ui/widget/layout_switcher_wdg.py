@@ -317,13 +317,13 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         } )
 
                 if display_class:
+                    item_div.generate_widget_key(display_class, inputs=display_options)
                     item_div.add_behavior( {
                         'type': 'click_up',
-                        'display_class': display_class,
-                        'display_options': display_options,
                         'element_name': element_name,
                         'target': target,
                         'save_state': save_state,
+                        'display_options': display_options,
                         'hidden': hidden,
                         'cbjs_action': '''
                         var menu_item = bvr.src_el;
@@ -349,7 +349,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         }
                         var target = target_top.getElement("."+target_class);
                         if (target) {
-                            spt.panel.load(target, bvr.display_class, bvr.display_options);
+                            var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
+                            spt.panel.load(target, widget_key, bvr.display_options);
                         }
 
                         menu.setStyle("display", "none");

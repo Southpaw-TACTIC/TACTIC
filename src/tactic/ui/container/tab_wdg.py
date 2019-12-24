@@ -770,7 +770,10 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     }
 
     if (typeof(class_name) == 'undefined') {
-        class_name = header.getAttribute("spt_class_name");
+        var class_name = header.getAttribute("SPT_WIDGET_KEY");
+        if (! class_name) {
+            class_name = header.getAttribute("spt_class_name");
+        }
     }
 
     if (typeof(kwargs) == 'undefined') {
@@ -2137,7 +2140,7 @@ spt.tab.view_definition = function(bvr) {
             'cbjs_action': add_bvr
         } )
 
-        div.add(icon_div);
+        div.add(icon_div)
 
         self.extra_menu = self.kwargs.get("extra_menu")
         if self.extra_menu:
@@ -2639,6 +2642,11 @@ spt.tab.view_definition = function(bvr) {
             header.add_attr("spt_kwargs", '')
 
            
+        if not class_name:
+            widget_key = header.generate_widget_key("tactic.ui.panel.CustomLayoutWdg", inputs=kwargs)
+        else:
+            widget_key = header.generate_widget_key(class_name, inputs=kwargs)
+
         header.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -2999,6 +3007,23 @@ class TabSaveStateCmd(Command):
             display = xml.create_element("display")
             xml.append_child(element, display)
 
+            if class_name.startswith("$"):
+                from pyasm.common import jsonloads
+
+                key = class_name
+                key = key.lstrip("$")
+                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                path = "%s/%s_key_%s.txt" % (tmp_dir, "widget", key)
+                if not os.path.exists(path):
+                    print("ERROR: %s path [%s] not found" % ("widget", path))
+                    raise Exception("widget key not valid")
+                
+                f = open(path, 'r')
+                data = f.read()
+                f.close()
+                data = jsonloads(data)
+                class_name = data.get("method")
+            
             xml.set_attribute(display, "class", class_name)
 
             for key, value in kwargs.items():
