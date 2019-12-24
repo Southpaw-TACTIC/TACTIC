@@ -6871,7 +6871,11 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         spt.pipeline.load_connects(pipeline_code, xml_connects);
     }
 
-    //spt.pipeline.fit_to_canvas(pipeline_code);
+    container = spt.pipeline.top;
+    let size = container.getSize();
+    spt.pipeline.set_size(size.x, size.y);
+    container.last_size = size;
+    spt.pipeline.fit_to_canvas(pipeline_code);
 
     if (pipeline_stype == "sthpw/task") {
         spt.pipeline.set_task_color();
