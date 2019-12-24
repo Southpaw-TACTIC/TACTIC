@@ -1341,6 +1341,10 @@ spt.tab.view_definition = function(bvr) {
                 display: block;
             }
 
+            .spt_tab_header_label_container {
+                display: flex;
+                align-items: center;
+            }
 
             .spt_tab_header_label {
                 text-overflow: ellipsis;
@@ -1693,7 +1697,7 @@ spt.tab.view_definition = function(bvr) {
             header_div.add_style("min-width", min_width)
 
 
-        resize_headers = True
+        resize_headers = self.kwargs.get("resize_headers")
         if resize_headers:
 
             offset = 120
@@ -2647,21 +2651,21 @@ spt.tab.view_definition = function(bvr) {
         SmartMenu.assign_as_local_activator( header, 'DG_HEADER_CTX' )
 
 
- 
+        title_container = DivWdg(css="spt_tab_header_label_container")
+        title_container.add_class("nav-link")
+        header.add(title_container)
+
         title_div = DivWdg()
-        title_div.add_style("display: flex")
-        title_div.add_style("align-items: center")
         title_div.add_class("spt_tab_header_label")
-        title_div.add_class("nav-link")
         display_title = title
         title_div.add(display_title)
-        header.add(title_div)
+        title_container.add(title_div)
 
         title_div.add_attr("title", "%s" % (title))
 
         count_wdg = SpanWdg()
         count_wdg.add_class("badge badge-secondary spt_tab_header_count")
-        title_div.add(count_wdg)
+        title_container.add(count_wdg)
         #count_wdg.add_style("float: right")
         #count_wdg.add_style("font-size: 0.7em")
         count_wdg.add_style("margin-left: 10px")

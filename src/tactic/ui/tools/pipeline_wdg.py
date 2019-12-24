@@ -7851,7 +7851,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         select = SelectWdg("zoom")
         select.add_class("form-control")
-        select.add_class("form-control-sm")
         select.set_option("labels", ["10%", "25%", "50%", "75%", "100%", "125%", "150%", "----", "Fit To Canvas"])
         select.set_option("values", ["0.1", "0.25", "0.50", "0.75", "1.0", "1.25", "1.5", "", "fit_to_canvas"])
         select.add_empty_option("Zoom")

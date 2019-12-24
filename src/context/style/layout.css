@@ -20,25 +20,37 @@
  * will work properly.
  */
 
-body {
-    font-size: 12px;
-}
-
-
-label {
-    font-size: 12px;
-}
-
-/*
- * We have to define a font size for tables because the body setting does not
- * pass through
- */
-table {
-    font-size: 12px;
-}
-
-
 /* Set some standard properties for various elements. */
+
+
+.checkbox label input[type=checkbox], label.checkbox-inline input[type=checkbox] {
+    position: unset;
+    left: unset;
+    z-index: unset;
+    width: unset;
+    height: unset;
+    margin: unset;
+    overflow: unset;
+    pointer-events: unset;
+    opacity: unset;
+}
+
+.radio label input[type=radio], label.radio-inline input[type=radio] {
+    position: unset;
+    left: unset;
+    z-index: unset;
+    width: unset;
+    height: unset;
+    margin: unset;
+    overflow: unset;
+    pointer-events: unset;
+    opacity: unset;
+}
+
+
+table {
+    font-size: .75rem;
+}
 
 .hand
 {

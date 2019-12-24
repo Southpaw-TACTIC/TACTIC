@@ -1030,7 +1030,10 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
 
 class BootstrapIndexWdg(PageNavContainerWdg):
-   
+  
+    def _get_tab_save_state(self):
+        return "main_body_tab_state"
+
     def _get_top_nav_xml(self):
         return """
         <element name="top_nav">
@@ -1302,7 +1305,8 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             """ % self._get_startup_xml()
 
             # Sets default xml when no WidgetSetting exists
-            tab = BootstrapTabWdg(config_xml=startup_xml)
+            save_state = self._get_tab_save_state()
+            tab = BootstrapTabWdg(config_xml=startup_xml, save_state=save_state)
             
             # Hash is additive
             if self.widget:
