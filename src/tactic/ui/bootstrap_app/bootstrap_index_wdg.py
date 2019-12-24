@@ -560,6 +560,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
             style.add('''
 /* REMKO (for admin site) */
 .spt_bs_left_sidebar.active ul li a {
+    background: var(--spt_palette_md_primary);
     padding: 10px 0px;
     padding-left: 50px;
     font-size: 0.75rem;

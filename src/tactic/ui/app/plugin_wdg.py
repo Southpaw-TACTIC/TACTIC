@@ -364,7 +364,8 @@ class PluginWdg(BaseRefreshWdg):
 
                     # fill it in
                     icon = IconWdg(folder, "FA_FOLDER_OPEN", inline=False)
-                    icon.add_style("margin-left: -3px")
+                    icon.add_style("margin-left: -5px")
+                    icon.add_style("margin-right: 3px")
 
                     folder_header = DivWdg()
                     folder_content = DivWdg()
