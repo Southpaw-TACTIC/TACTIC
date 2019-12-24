@@ -1276,8 +1276,7 @@ class ActionButtonWdgOld(DivWdg):
 
         # BOOTSTRAP
         if self._use_bootstrap():
-            #button.add_class("btn btn-sm btn-block btn-outline-primary")
-            button.add_class("btn btn-sm btn-block btn-raised btn-primary")
+            button.add_class("btn btn-sm btn-block btn-outline-primary")
         else:
             color = self.kwargs.get("color")
             button.add_class('btn')
