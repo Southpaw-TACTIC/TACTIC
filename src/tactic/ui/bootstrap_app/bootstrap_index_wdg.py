@@ -655,7 +655,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
         view_side_bar = self.kwargs.get("view_side_bar")
         if view_side_bar:
-            btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+            btn_class = "btn text-white bmd-btn-icon"
             toggle_div = ButtonNewWdg(
                 icon="FA_TH", 
                 title="Toggle Sidebar", 
@@ -751,10 +751,6 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
                 align-items: center;
             }
 
-            .spt_bs_top_nav .spt_logo a {
-                margin-bottom: .3125rem;
-            }
-
             .spt_bs_top_nav .spt_logo img { 
                 height: 16px;
                 filter: invert(100%);
@@ -770,7 +766,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
-        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        btn_class = "btn text-white bmd-btn-icon"
         toggle_btn = ButtonNewWdg(
             icon="FA_COG",
             title="Settings",
@@ -828,7 +824,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         title = "Logged in as %s" % display_name
         
         
-        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        btn_class = "btn text-white bmd-btn-icon"
         user_btn = ButtonNewWdg(
             icon=icon, 
             title=title, 
@@ -857,7 +853,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         tab_div.add_class("spt_mobile_tab_manager")
         tab_div.add_class("dropdown d-block d-sm-none")
 
-        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        btn_class = "btn text-white bmd-btn-icon"
         tab_btn = ButtonNewWdg(
             icon="FA_CLONE",
             title="View Tabs",
@@ -1312,7 +1308,7 @@ class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
         else:
             menus = [ self.get_main_menu(), self.get_edit_menu(), self.get_help_menu() ]
 
-        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        btn_class = "btn text-white bmd-btn-icon"
         btn = ButtonNewWdg(
             icon="FA_COG", 
             title="Global Options", 
