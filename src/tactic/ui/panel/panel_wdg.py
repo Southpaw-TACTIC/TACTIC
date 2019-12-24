@@ -80,9 +80,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
     def get_display(self):
         views = self.get_views()
 
-        #FIXME self.top is None element
-        top = self.top
-        top.add( self.get_subdisplay(views) )
+        top = self.get_subdisplay(views)
         return top
 
 

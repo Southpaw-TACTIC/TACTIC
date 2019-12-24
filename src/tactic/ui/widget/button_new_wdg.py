@@ -185,6 +185,9 @@ class BootstrapButtonRowWdg(BaseRefreshWdg):
         collapse_title = self.kwargs.get("collapse_title") or "Tools"
         self.toggle_btn = ButtonNewWdg(title="Tools", icon=icon)
 
+    def set_toggle_btn(self, wdg):
+        self.toggle_btn = wdg
+
     def get_display(self):
 
         top = self.top
@@ -617,10 +620,16 @@ class ButtonNewWdg(ButtonWdg):
         self.title = tip
         
         self.hit_wdg.add_attr("title", tip)
-        icon = IconWdg(tip, icon_str)
+        
+        opacity = self.kwargs.get("opacity") or None
+        icon = IconWdg(tip, icon_str, opacity=opacity)
         self.icon = icon
 
         self.collapsible_btn = DivWdg()
+
+        self.btn_class = self.kwargs.get("btn_class") or "btn btn-primary bmd-btn-icon"
+
+        self.navbar_collapse_target = self.kwargs.get("navbar_collapse_target")
 
     def add_behavior(self, behavior):              
         self.hit_wdg.add_behavior(behavior)
@@ -667,12 +676,22 @@ class ButtonNewWdg(ButtonWdg):
         self.collapsible_btn.add(self.title)
 
         top.add(self.hit_wdg)
-        self.hit_wdg.add_class("btn btn-primary bmd-btn-icon spt_hit_wdg")
+        self.hit_wdg.add_class(self.btn_class)
+        self.hit_wdg.add_class("spt_hit_wdg")
         self.hit_wdg.add(self.icon)
         
         if self.show_arrow_menu or self.dialog:
             top.add(self.arrow_menu)
             top.add_class("d-flex")
+
+        if self.navbar_collapse_target:
+            self.add_class("collapsed")
+            self.set_attr("type", "button")
+            self.set_attr("data-toggle", "collapse")
+            self.set_attr("data-target", "#%s" % self.navbar_collapse_target)
+            self.set_attr("aria-controls", self.navbar_collapse_target)
+            self.set_attr("aria-expanded", "false")
+            self.set_attr("aria-label", self.title)
         
         return top
 

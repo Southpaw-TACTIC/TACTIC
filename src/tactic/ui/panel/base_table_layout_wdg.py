@@ -981,7 +981,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_bootstrap_shelf_styles(self):
 
-        pass
+        return HtmlElement.style(""" 
+
+            .spt_table_action_wdg {
+                 background: var(--spt_palette_background2);
+            }
+            
+        """)        
 
 
     def get_action_wdg(self):
@@ -999,11 +1005,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
 
         div = DivWdg() 
+        div.add_class("spt_table_action_wdg")
         div.add_class("SPT_DTS")
 
-        if not self._use_bootstrap():
-            style = self.get_shelf_styles()
-            div.add(style)
+        if self._use_bootstrap():
+            div.add(self.get_bootstrap_shelf_styles())
+        else:
+            div.add(self.get_shelf_styles())
 
         # the label on the commit button
         commit_label = 'Save'

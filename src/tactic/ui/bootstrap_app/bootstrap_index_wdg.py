@@ -332,21 +332,20 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 .spt_bs_left_sidebar {
     background: var(--spt_palette_md_primary);
-    min-width: 175px;
-    max-width: 175px;
+    min-width: var(--left_modal_width, 300px);
+    max-width: var(--left_modal_width, 300px);
     color: var(--spt_palette_side_bar_title_color);
     transition: all 0.3s;
-    z-index: 1;
-    border: 0;
-    border-radius: 0;
+    z-index: 9;
     padding-top: 40px;
     height: 100vh;
+    position: absolute;
+    left: calc(-1 * var(--left_modal_width, 300px));
+    top: 0;
 }
 
 .spt_bs_left_sidebar.active {
-    min-width: 80px;
-    max-width: 80px;
-    text-align: center;
+    left: 0px;
 }
 
 .spt_bs_left_sidebar.active .sidebar-header h3,
@@ -468,12 +467,6 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 @media (max-width: 768px) {
 
-    .spt_bs_left_sidebar {
-        min-width: 80px;
-        max-width: 80px;
-        text-align: center;
-        margin-left: -80px !important;
-    }
 
     .spt_bs_left_sidebar .dropdown-toggle::after {
         top: auto;
@@ -526,14 +519,17 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     .spt_bs_left_sidebarCollapse span {
         display: none;
     }
+    
 }
 
-
 @media (max-width: 575.98px) {
-    .spt_bs_left_sidebar {
+    
+   .spt_bs_left_sidebar {
         display: none;
     }
 }    
+
+
 
 
 
@@ -659,16 +655,17 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
         view_side_bar = self.kwargs.get("view_side_bar")
         if view_side_bar:
-            toggle_div = DivWdg()
+            btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+            toggle_div = ButtonNewWdg(
+                icon="FA_TH", 
+                title="Toggle Sidebar", 
+                btn_class=btn_class,
+                opacity="1.0",
+                navbar_collapse_target="navbarCollapse"
+            )
             nav_header.add(toggle_div)
             toggle_div.add_class("spt_toggle_sidebar")
 
-            toggle_div.add("""
-            <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarCollapse" 
-                 aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"> </span>
-            </button>""")
-      
             toggle_div.add_behavior({
                 'type': 'click',
                 'cbjs_action': """
@@ -749,10 +746,18 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         </a>""")
 
         style = HtmlElement.style(""" 
+            .spt_bs_top_nav .spt_logo {
+                display: flex;
+                align-items: center;
+            }
+
+            .spt_bs_top_nav .spt_logo a {
+                margin-bottom: .3125rem;
+            }
+
             .spt_bs_top_nav .spt_logo img { 
-                width: 10em;
+                height: 16px;
                 filter: invert(100%);
-                margin: .5rem 1rem;
             }
         """)
         brand_div.add(style)
@@ -765,8 +770,17 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
-        button_row = BootstrapButtonRowWdg(collapse_icon="FA_COG", collapse_title="SETTINGS")
-        button_row.toggle_btn.add_class("bg-light")
+        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        toggle_btn = ButtonNewWdg(
+            icon="FA_COG",
+            title="Settings",
+            btn_class=btn_class,
+            opacity="1.0",
+        )
+        toggle_btn.add_class("ml-1")
+        button_row = BootstrapButtonRowWdg()
+        button_row.set_toggle_btn(toggle_btn)
+
         right_wdg.add(button_row)
 
         project_select_wdg = BootstrapProjectSelectWdg()
@@ -812,9 +826,19 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             icon = "FA_USER"
 
         title = "Logged in as %s" % display_name
-        user_btn = ButtonNewWdg(title=title, icon=icon)
+        
+        
+        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        user_btn = ButtonNewWdg(
+            icon=icon, 
+            title=title, 
+            btn_class=btn_class,
+            opacity="1.0"
+        )
+        
+        
         user_wdg.add(user_btn)
-        user_btn.add_class("bg-light ml-1 spt_nav_user_btn")
+        user_btn.add_class("ml-1 spt_nav_user_btn")
         user_btn.get_collapsible_wdg().add_class("dropdown-toggle")
         
         menus = self.get_smart_menu()
@@ -833,11 +857,16 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         tab_div.add_class("spt_mobile_tab_manager")
         tab_div.add_class("dropdown d-block d-sm-none")
 
-        tab_btn = ButtonNewWdg(title="View tabs", icon="FA_CLONE")
+        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        tab_btn = ButtonNewWdg(
+            icon="FA_CLONE",
+            title="View Tabs",
+            btn_class=btn_class,
+            opacity="1.0",
+        )
         tab_div.add(tab_btn)
 
         tab_btn.add_class("dropdown-toggle")
-        tab_btn.add_class("bg-light")
         tab_btn.add_class("ml-1")
         tab_btn.add_behavior({
             'type': 'click',
@@ -1070,6 +1099,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             value = palette.color(key)
             css_vars += "--spt_palette_%s: %s;" % (key, value)
 
+        css_vars += "--left_modal_width: 300px;"
         style = ":root {%s}" % css_vars
         
         style += """
@@ -1077,28 +1107,15 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             
             .spt_bootstrap_top {
                 overflow: hidden;
-                width: 100vw;
                 height: 100vh;
             }
 
             .spt_bs_content {
+                width: 100vw;
                 transition: all 0.3s;
             }
 
-            @media (min-width: 575.98px) {
-
-                .spt_bootstrap_top .spt_bs_content{
-                    width: 100vw;
-                }
-                
-                .spt_bootstrap_top.spt_view_side_bar .spt_bs_content {
-                    width: calc(100vw - 175px);
-                }
-                
-                .spt_bootstrap_top.spt_view_side_bar.spt_sidebar_collapse .spt_bs_content {
-                    width: calc(100vw - 80px);
-                }
-
+            @media (min-width: 576px) {
 
                 .spt_bs_content {
                     padding-top: 40px
@@ -1117,46 +1134,14 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                 }
 
 
-                .navbar-toggler {
-                    font-size: 1rem;
-                    margin: .25rem 0rem;
-                }
-                
-                .spt_toggle_sidebar {
-                    justify-items: center;
-                    display: flex;
-                }
-
-
             }
             
-            @media (max-width: 768px) {
-              
-                .spt_bootstrap_top .spt_bs_content {
-                    width: 100vw;
-                }
-
-                .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
-                    width: calc(100vw - 80px);
-                }
-
-            }
-
             @media (max-width: 575.98px) {
 
                 .spt_bs_content {
                     padding-top: 56px;
                 }
                 
-                
-                .spt_bootstrap_top .spt_bs_content {
-                    width: 100vw;
-                }
-
-                .spt_bootstrap_top.spt_sidebar_collapse .spt_bs_content {
-                    width: 100vw;
-                }
-
             }
 
             """
@@ -1327,8 +1312,14 @@ class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
         else:
             menus = [ self.get_main_menu(), self.get_edit_menu(), self.get_help_menu() ]
 
-        btn = ButtonNewWdg(title='Global Options', icon="FA_COG")
-        btn.add_class("bg-light ml-1")
+        btn_class = "btn text-white bmd-btn-fab bmd-btn-fab-sm"
+        btn = ButtonNewWdg(
+            icon="FA_COG", 
+            title="Global Options", 
+            btn_class=btn_class,
+            opacity="1.0",
+        )
+        btn.add_class("ml-1")
         
         smenu_set = SmartMenu.add_smart_menu_set( btn.get_button_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )
         SmartMenu.assign_as_local_activator( btn.get_button_wdg(), "DG_TABLE_GEAR_MENU", True )

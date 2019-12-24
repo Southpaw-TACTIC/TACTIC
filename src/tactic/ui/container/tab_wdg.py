@@ -698,7 +698,6 @@ spt.tab.select = function(element_name) {
         header.addClass("spt_is_selected");
         header.addClass("spt_tab_selected");
         header.removeClass("spt_tab_unselected");
-        header.setStyle("z-index", "200");
     }
 
     var content_top = top.getElement(".spt_tab_content_top");
@@ -821,7 +820,6 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
         select_header.addClass("spt_is_selected");
         select_header.addClass("spt_tab_selected");
         select_header.removeClass("spt_tab_unselected");
-        select_header.setStyle("z-index", "200");
 
 
 

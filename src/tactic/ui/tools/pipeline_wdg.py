@@ -7134,7 +7134,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_editor_top {
-                overflow: hidden;
+                overflow: auto;
                 width: 100%;
                 height: 100%;
             }
