@@ -321,7 +321,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
     def get_bootstrap_styles(self):
-        style = HtmlElement.style("""
+        style = HtmlElement.style('''
 
 .spt_bs_left_sidebar a, a:hover, a:focus {
     color: inherit;
@@ -477,26 +477,6 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 
 
-/* REMKO (for admin site) */
-.spt_bs_left_sidebar.active ul li a {
-    padding: 10px 0px;
-    padding-left: 50px;
-    font-size: 0.75rem;
-    font-weight: 300;
-    text-align: left;
-}
-
-.spt_bs_left_sidebar .nav-link h6 {
-    margin-left: -35px;
-    margin-top: 15px;
-    padding-left: 10px;
-    border-bottom: solid 1px #999;
-}
-
-
-
-
-
 @media (max-width: 768px) {
 
 
@@ -568,10 +548,36 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }    
 
 
+        ''')
+
+
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+        is_admin_page = web.is_admin_page()
+        is_admin_page = True
+        if is_admin_page:
+
+            style.add('''
+/* REMKO (for admin site) */
+.spt_bs_left_sidebar.active ul li a {
+    padding: 10px 0px;
+    padding-left: 50px;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-align: left;
+}
+
+.spt_bs_left_sidebar .nav-link h6 {
+    margin-left: -35px;
+    margin-top: 15px;
+    padding-left: 10px;
+    border-bottom: solid 1px #999;
+}
+            ''')
 
 
 
-        """)
+
 
 
         return style
