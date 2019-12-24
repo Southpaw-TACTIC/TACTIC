@@ -2651,6 +2651,7 @@ spt.tab.view_definition = function(bvr) {
         else:
             widget_key = header.generate_widget_key(class_name, inputs=kwargs)
 
+
         header.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
