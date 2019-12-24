@@ -631,7 +631,7 @@ class ButtonNewWdg(ButtonWdg):
 
         self.collapsible_btn = DivWdg()
 
-        self.btn_class = self.kwargs.get("btn_class") or "btn btn-primary bmd-btn-icon"
+        self.btn_class = self.kwargs.get("btn_class") or "btn bmd-btn-icon"
 
         self.navbar_collapse_target = self.kwargs.get("navbar_collapse_target")
 
@@ -706,13 +706,20 @@ class ButtonNewWdg(ButtonWdg):
             self.set_attr("aria-expanded", "false")
             self.set_attr("aria-label", self.title)
         
+        self.hit_wdg.add_behavior ( {
+            "type": "load",
+            "cbjs_action": """
+                $(bvr.src_el).bmdRipples();
+            """
+        } )
+        
         return top
 
 
 
 
 
-class ActionButtonWdgOld(DivWdg):
+class ActionButtonWdgOldX(DivWdg):
 
 
     ARGS_KEYS = {
@@ -758,7 +765,7 @@ class ActionButtonWdgOld(DivWdg):
         self.table.add_style("color", "#333")
         self.td = self.table.add_cell()
         self.td.add_class("spt_action_button")
-        super(ActionButtonWdgOld,self).__init__()
+        super(ActionButtonWdgOldX,self).__init__()
 
         web = WebContainer.get_web() 
         self.browser = web.get_browser()
@@ -947,11 +954,11 @@ class ActionButtonWdgOld(DivWdg):
         text_div.add_class("hand")
 
 
-        return super(ActionButtonWdgOld,self).get_display()
+        return super(ActionButtonWdgOldX,self).get_display()
 
 
 __all__.extend(['BootstrapButtonWdg'])
-class BootstrapButtonWdg(BaseRefreshWdg):
+class BootstrapButtonWdg(DivWdg):
     
     ARGS_KEYS = {
         'title': {
@@ -972,19 +979,31 @@ class BootstrapButtonWdg(BaseRefreshWdg):
             'order': 1,
             'category': 'Options'
         },
-        'action': {
-            'description': 'Javascript callback',
-            'type': 'TextAreaWdg',
-            'order': 1,
-            'category': 'Options'
+        'btn_class': {
+            'description': 'Bootstrap btn classes',
+            'type': 'TextWdg',
+            'order': '4',
+            'category': 'Options',
+            'default': 'btn btn-primary'
         }
     }
 
 
-    def init(self):
+    #FIXME: Should this be moved to BaseRefreshWdg?
+    def generate_command_key(self, cmd, kwargs={}, ticket=None):
+        return self.top.generate_command_key(cmd, kwargs, ticket)
+            
+    def __init__(self, **kwargs):
+
+        self.kwargs = kwargs
+
+        self.top = DivWdg()
+
         from pyasm.web import ButtonWdg as ButtonHtmlWdg
         self.button_wdg = ButtonHtmlWdg()
         self.collapsible_wdg = DivWdg()
+
+        super(BootstrapButtonWdg, self).__init__(**kwargs)
 
     def add_class(self, class_name):
         self.button_wdg.add_class(class_name)
@@ -1007,23 +1026,40 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         top = self.top
         
         top.add(self.button_wdg)
-        self.button_wdg.add_class("btn spt_hit_wdg")
+        btn_class = self.kwargs.get("btn_class") or "btn btn-primary"
+        self.button_wdg.add_class(btn_class)
+        self.button_wdg.add_class("spt_hit_wdg")
         self.button_wdg.add(title)
+        self.button_wdg.add_behavior ( {
+            "type": "load",
+            "cbjs_action": """
+                $(bvr.src_el).bmdRipples();
+            """
+        } )
 
         
         top.add(self.collapsible_wdg)
         self.collapsible_wdg.add_class("spt_collapsible_btn d-none")
         self.collapsible_wdg.add(title)
+        
+        self.dropdown_id = self.kwargs.get("dropdown_id")
+        if self.dropdown_id:
+            #FIXME: Cannot be combined with collapsible menu
+            top.set_id(self.dropdown_id)
+            top.set_attr("data-toggle", "dropdown")
+            top.set_attr("aria-haspopup", "true")
+            top.set_attr("aria-expanded", "false")
 
         return top
         
 
 
 
+class ActionButtonWdg(BootstrapButtonWdg):
+    pass
 
 
-
-class ActionButtonWdg(DivWdg):
+class ActionButtonWdgOld(DivWdg):
 
 
     ARGS_KEYS = {
@@ -1060,7 +1096,7 @@ class ActionButtonWdg(DivWdg):
 
         #is_Qt_OSX = False
         if is_Qt_OSX:
-            self.redirect = ActionButtonWdgOld(**kwargs)
+            self.redirect = ActionButtonWdgOldX(**kwargs)
         else:
             self.redirect = None
 
@@ -1072,7 +1108,7 @@ class ActionButtonWdg(DivWdg):
         self.table.add_style("color", "#333")
         self.td = self.table.add_cell()
         self.td.add_class("spt_action_button")
-        super(ActionButtonWdg,self).__init__()
+        super(ActionButtonWdgOld,self).__init__()
 
 
     def add_behavior(self, behavior):
@@ -1265,7 +1301,7 @@ class ActionButtonWdg(DivWdg):
         td.add_class("spt_action_button_hit")
         button.add_class("hand")
 
-        return super(ActionButtonWdg,self).get_display()
+        return super(ActionButtonWdgOld,self).get_display()
 
 
 

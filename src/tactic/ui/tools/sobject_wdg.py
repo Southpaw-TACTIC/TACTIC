@@ -352,7 +352,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #top.add("<hr/>")
 
 
-        top.add("<br clear='all'/>")
+        top.add("<br class='spt_sobject_detail_spacer' clear='all'/>")
 
         top.add( self.get_tab_wdg() )
 

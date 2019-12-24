@@ -6,7 +6,7 @@ from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg, Palette
 from pyasm.widget import WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg, BootstrapButtonRowWdg
+from tactic.ui.widget import ButtonNewWdg, ActionButtonWdg, BootstrapButtonRowWdg
 from tactic.ui.app import PageHeaderWdg, PageNavContainerWdg, ProjectSelectWdg
 from tactic.ui.container import SmartMenu
 
@@ -1291,6 +1291,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             "type": "load",
             "cbjs_action": self.get_onload_js()
         })
+
         
         return top
 
@@ -1439,7 +1440,7 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
     def get_activator(self, menus):
 
         project = Project.get()
-        activator = BootstrapButtonWdg(title=project.get_value("title"))
+        activator = ActionButtonWdg(title=project.get_value("title"), btn_class = "btn")
         activator.add_class("dropdown-toggle")
         activator.button_wdg.add_class("spt_nav_icon")
 
