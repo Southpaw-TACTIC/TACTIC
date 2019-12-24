@@ -55,7 +55,7 @@ class TabWdg(BaseRefreshWdg):
     def __init__(self, **kwargs):
         super(TabWdg, self).__init__(**kwargs)
 
-        self.unique_id = self.generate_unique_id()
+        self.unique_id = self.generate_unique_id(is_random=True)
         
         self.header = HtmlElement.ul()
         self.header_id = self.header.set_unique_id()
