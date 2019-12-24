@@ -2119,6 +2119,8 @@ spt.tab.view_definition = function(bvr) {
         #icon.add_style("left: 0px")
         #icon.add_style("position: absolute")
         icon.add_style("margin-left: 3px")
+        icon.add_style("margin-top: 5px")
+        icon.add_style("display: block")
         icon_div.add_class("hand")
 
         icon_div.add(icon)
@@ -2746,6 +2748,7 @@ spt.tab.view_definition = function(bvr) {
             icon = IconWdg("Remove Tab", "FA_TIMES", size=12)
         icon.add_class("spt_icon_active")
         remove_wdg.add(icon)
+        icon.add_style("margin: 3px")
         
 
        
