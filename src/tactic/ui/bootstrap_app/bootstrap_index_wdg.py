@@ -1190,6 +1190,11 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
         return HtmlElement.style(style) 
 
+
+    def get_onload_js(self):
+        return ""
+
+
     def get_display(self):
         
         is_admin_project = Project.get().is_admin()
@@ -1242,6 +1247,11 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                     spt.named_events.fire_event("window_resize");
                 }
         '''})
+
+        top.add_behavior( {
+            "type": "load",
+            "cbjs_action": self.get_onload_js()
+        })
         
         return top
 
@@ -1391,7 +1401,7 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
         project = Project.get()
         activator = BootstrapButtonWdg(title=project.get_value("title"))
         activator.add_class("dropdown-toggle")
-        activator.button_wdg.add_class("text-white")
+        activator.button_wdg.add_class("spt_nav_icon")
 
         #HACK
         activator.button_wdg.add_style("margin-bottom: unset")

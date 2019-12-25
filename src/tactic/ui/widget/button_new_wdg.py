@@ -994,7 +994,7 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         top = self.top
         
         top.add(self.button_wdg)
-        self.button_wdg.add_class("btn")
+        self.button_wdg.add_class("btn spt_hit_wdg")
         self.button_wdg.add(title)
 
         
