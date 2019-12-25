@@ -60,23 +60,23 @@ class Palette(object):
     'color':        '#000',         # main font color
     'color2':       '#333',         # secondary font color
     'color3':       '#333',         # tertiary font color
-    'background':   '#FFFFFF',      # main background color
-    'background2':  '#BBBBBB',      # secondary background color
+    'background':   '#F5F5F6',      # main background color
+    'background2':  '#E1E2E1',      # secondary background color
     'background3':  '#D1D7E2',      # tertiary background color
     'border':       '#BBB',         # main border color
 
     'side_bar_title': '#3C76C2',
     'side_bar_title_color': '#000000',
-    'tab_background': '#3C76C2',
+    #'tab_background': '#3C76C2',
     'table_border': '#E0E0E0',
     'theme':        'default',
     'shadow':       'rgba(0,0,0,0.1)',
     'md_primary_dark': '#c7c7c7', 
     'md_primary': '#fafafa',
-    'md_primary_light': '#fffff',
-    'md_secondary_dark': '#00275c',
-    'md_secondary': '#114e8a',
-    'md_secondary_light': '#4f7aba'
+    'md_primary_light': '#ffffff',
+    'md_secondary_dark': '#00675b',
+    'md_secondary': '#009688',
+    'md_secondary_light': '#52c7b8'
     }
 
 

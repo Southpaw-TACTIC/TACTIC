@@ -45,7 +45,6 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         # get the content div
         section_div = HtmlElement("nav")
-        section_div.set_id("sidebar")
         section_div.add_class("spt_bs_left_sidebar_inner") 
 
         section_div.set_attr('spt_class_name', Common.get_full_class_name(self))
@@ -336,13 +335,25 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     max-width: var(--left_modal_width, 300px);
     color: var(--spt_palette_side_bar_title_color);
     transition: all 0.3s;
-    z-index: 9;
+    z-index: 1000;
     padding-top: 40px;
     height: 100vh;
     position: absolute;
     left: calc(-1 * var(--left_modal_width, 300px));
     top: 0;
 }
+
+.spt_bs_left_sidebar_overlay.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    opacity: .26;
+}
+
 
 .spt_bs_left_sidebar.active {
     left: 0px;
@@ -524,9 +535,15 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 @media (max-width: 575.98px) {
     
-   .spt_bs_left_sidebar {
+    .spt_bs_left_sidebar {
         display: none;
     }
+
+    .spt_bs_left_sidebar_overlay {
+        display: none;
+    }
+
+
 }    
 
 
@@ -542,6 +559,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
         div = DivWdg()
         div.add_class("spt_bs_left_sidebar")
+        div.set_id("side_bar")
         div.set_attr('spt_class_name', Common.get_full_class_name(self))
         div.add_behavior( {
             'type': 'load',
@@ -655,38 +673,35 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
         view_side_bar = self.kwargs.get("view_side_bar")
         if view_side_bar:
-            btn_class = "btn text-white bmd-btn-icon"
-            toggle_div = ButtonNewWdg(
+            toggle_div = DivWdg()
+            nav_header.add(toggle_div)
+            
+            btn_class = "btn bmd-btn-icon"
+            toggle_btn = ButtonNewWdg(
                 icon="FA_TH", 
                 title="Toggle Sidebar", 
                 btn_class=btn_class,
                 opacity="1.0",
                 navbar_collapse_target="navbarCollapse"
             )
-            nav_header.add(toggle_div)
-            toggle_div.add_class("spt_toggle_sidebar")
+            toggle_div.add(toggle_btn)
+            
+            toggle_btn.add_class("spt_toggle_sidebar")
+            toggle_btn.add_class("spt_nav_icon")
 
             toggle_div.add_behavior({
                 'type': 'click',
                 'cbjs_action': """
-                    var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-                    app_top.toggleClass("spt_sidebar_collapse")
-                    
-                    var sidebar = app_top.getElement(".spt_bs_left_sidebar");
-                    sidebar.toggleClass("active");
-
+                    spt.named_events.fire_event("side_bar|toggle")
                 """
             })
+
 
             toggle_div.add_behavior( {
                 'type': 'listen',
                 'event_name': 'side_bar|toggle',
                 'cbjs_action': '''
-                var app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-                app_top.toggleClass("spt_sidebar_collapse")
-                
-                var sidebar = app_top.getElement(".spt_bs_left_sidebar");
-                sidebar.toggleClass("active");
+                    spt.side_bar.toggle()
                 '''
             } )
 
@@ -740,10 +755,14 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         
         brand_div = DivWdg()
         brand_div.add_class("spt_logo")
-        brand_div.add("""
-        <a>
-            <img src="/context/tactic_logo_black.svg"> 
-        </a>""")
+       
+        palette = Palette()
+        sidebar_title_color = palette.color("side_bar_title_color")
+        if sidebar_title_color == "#000000":
+            src = "/context/logo/tactic_logo_black.svg"
+        else:
+            src=  "/context/logo/tactic_logo_white.svg"
+        brand_div.add("""<a><img src="%s"/></a>""" % src)
 
         style = HtmlElement.style(""" 
             .spt_bs_top_nav .spt_logo {
@@ -753,7 +772,6 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
             .spt_bs_top_nav .spt_logo img { 
                 height: 16px;
-                filter: invert(100%);
             }
         """)
         brand_div.add(style)
@@ -766,14 +784,14 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         right_wdg = DivWdg()
         right_wdg.add_class("d-flex")
 
-        btn_class = "btn text-white bmd-btn-icon"
+        btn_class = "btn bmd-btn-icon"
         toggle_btn = ButtonNewWdg(
             icon="FA_COG",
             title="Settings",
             btn_class=btn_class,
             opacity="1.0",
         )
-        toggle_btn.add_class("ml-1")
+        toggle_btn.add_class("ml-1 spt_nav_icon")
         button_row = BootstrapButtonRowWdg()
         button_row.set_toggle_btn(toggle_btn)
 
@@ -824,7 +842,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         title = "Logged in as %s" % display_name
         
         
-        btn_class = "btn text-white bmd-btn-icon"
+        btn_class = "btn bmd-btn-icon"
         user_btn = ButtonNewWdg(
             icon=icon, 
             title=title, 
@@ -834,7 +852,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         
         
         user_wdg.add(user_btn)
-        user_btn.add_class("ml-1 spt_nav_user_btn")
+        user_btn.add_class("ml-1 spt_nav_user_btn spt_nav_icon")
         user_btn.get_collapsible_wdg().add_class("dropdown-toggle")
         
         menus = self.get_smart_menu()
@@ -853,7 +871,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         tab_div.add_class("spt_mobile_tab_manager")
         tab_div.add_class("dropdown d-block d-sm-none")
 
-        btn_class = "btn text-white bmd-btn-icon"
+        btn_class = "btn bmd-btn-icon"
         tab_btn = ButtonNewWdg(
             icon="FA_CLONE",
             title="View Tabs",
@@ -862,8 +880,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         )
         tab_div.add(tab_btn)
 
-        tab_btn.add_class("dropdown-toggle")
-        tab_btn.add_class("ml-1")
+        tab_btn.add_class("dropdown-toggle ml-1 spt_nav_icon")
         tab_btn.add_behavior({
             'type': 'click',
             'cbjs_action': '''
@@ -1013,7 +1030,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             from tactic.ui.panel import HashPanelWdg
             self.widget = HashPanelWdg.get_widget_from_hash(hash, force_no_index=True)
         else:
-            
             # get start up link from security
             security = Environment.get_security()
             start_link = security.get_start_link()
@@ -1140,6 +1156,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                 
             }
 
+            .spt_nav_icon {
+                color: var(--spt_palette_side_bar_title_color) !important;
+            }
+
             """
 
 
@@ -1171,6 +1191,16 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                 
                 top.add_class("spt_view_side_bar")
                 top.add(left_nav_wdg)
+                
+                sidebar_overlay = DivWdg()
+                top.add(sidebar_overlay)
+                sidebar_overlay.set_id("side_bar_overlay")
+                sidebar_overlay.add_class("spt_bs_left_sidebar_overlay")
+                sidebar_overlay.add_behavior({ 
+                    'type': 'click',
+                    'cbjs_action': '''spt.side_bar.toggle();'''
+                })
+
             else:
                 view_side_bar = False
         
@@ -1308,14 +1338,14 @@ class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
         else:
             menus = [ self.get_main_menu(), self.get_edit_menu(), self.get_help_menu() ]
 
-        btn_class = "btn text-white bmd-btn-icon"
+        btn_class = "btn bmd-btn-icon"
         btn = ButtonNewWdg(
             icon="FA_COG", 
             title="Global Options", 
             btn_class=btn_class,
             opacity="1.0",
         )
-        btn.add_class("ml-1")
+        btn.add_class("ml-1 spt_nav_icon")
         
         smenu_set = SmartMenu.add_smart_menu_set( btn.get_button_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )
         SmartMenu.assign_as_local_activator( btn.get_button_wdg(), "DG_TABLE_GEAR_MENU", True )
@@ -1335,7 +1365,7 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
 
         project = Project.get()
         activator = BootstrapButtonWdg(title=project.get_value("title"))
-        activator.button_wdg.add_class("text-white")
+        activator.button_wdg.add_class("spt_nav_icon")
         activator.add_class("dropdown-toggle")
 
         #HACK

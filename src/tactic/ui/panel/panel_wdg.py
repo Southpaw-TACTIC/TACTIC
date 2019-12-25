@@ -1370,7 +1370,13 @@ spt.side_bar.save_definition_cbk = function( bvr )
 }
 
 
+spt.side_bar.toggle = function() {
+    sidebar = document.id("side_bar");
+    sidebar.toggleClass("active");
 
+    overlay = document.id("side_bar_overlay");
+    overlay.toggleClass("active");
+}
 
 
 
