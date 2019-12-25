@@ -857,7 +857,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background.add_color("color", "color", 70)
 
 
-        icon = "<i class='fa fa-cloud-upload' style='font-size: 150px'> </i>"
+        icon = "<i class='fa fa-cloud-upload-alt' style='font-size: 150px'> </i>"
         background.add(icon)
 
         background_text = DivWdg("<p>Drag Files Here</p>")

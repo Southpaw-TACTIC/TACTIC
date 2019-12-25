@@ -1018,6 +1018,17 @@ class BootstrapIndexWdg(PageNavContainerWdg):
          </element> """
 
     def _get_startup_xml(self):
+         security = Environment.get_security()
+         start_link = security.get_start_link()
+         if start_link:
+             return """
+                 <element name="main_body">
+                     <display class="tactic.ui.panel.HashPanelWdg">
+                         <hash>%s</hash>
+                     </display>
+                 </element>
+             """ % start_link
+         
          return """
             <element name="main_body">
               <display class="tactic.ui.startup.MainWdg"/>
@@ -1041,11 +1052,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
             options = config.get_display_options(link)
-
-            # this is vital for view saving
-            element_name = link
-            attr_dict = config.get_element_attributes(link)
-            title = attr_dict.get('title')
+            title = config.get_element_title(link)
+            if not title:
+                attr_dict = config.get_element_attributes(link)
+                title = attr_dict.get('title')
 
             hash = "/tab/%s" % link
 
@@ -1053,14 +1063,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             from tactic.ui.panel import HashPanelWdg
             self.widget = HashPanelWdg.get_widget_from_hash(hash, force_no_index=True)
         else:
-            # get start up link from security
-            security = Environment.get_security()
-            start_link = security.get_start_link()
-            if start_link:
-                self.kwargs['link'] = start_link
-                return self.init()
-
-            # get start up link from widget config
             from pyasm.search import Search
             search = Search("config/widget_config")
             search.add_filter("category", "top_layout")
@@ -1068,9 +1070,9 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             config_sobj = search.get_sobject()
             if config_sobj:
                 config = config_sobj.get_value("config")
- 
+            
         if not config:
-            # get start link from defualt config
+            # get start link from default config
             config = self.get_default_config()
         
         from pyasm.common import Xml
