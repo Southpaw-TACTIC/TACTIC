@@ -165,9 +165,9 @@ class FileDetailWdg(BaseRefreshWdg):
                     file_range_div.add_style("margin: 15px 0px")
 
                     """
-                    left_chevron = IconWdg("Previous", "BS_CHEVRON_LEFT")
+                    left_chevron = IconWdg("Previous", "FA_CHEVRON_LEFT")
                     file_range_div.add(left_chevron)
-                    right_chevron = IconWdg("Next", "BS_CHEVRON_RIGHT")
+                    right_chevron = IconWdg("Next", "FA_CHEVRON_RIGHT")
                     file_range_div.add(right_chevron)
                     """
 
