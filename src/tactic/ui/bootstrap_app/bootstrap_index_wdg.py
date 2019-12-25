@@ -748,6 +748,29 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
             top_nav_wdg.add(hidden_nav)
 
+
+        # HELP POPUP
+        from tactic.ui.container import DialogWdg
+        help_dialog = DialogWdg(z_index=900, show_pointer=False)
+        top_nav_wdg.add(help_dialog)
+        help_dialog.add_title("Help")
+        help_dialog.add_class("spt_help")
+
+        help_div = DivWdg()
+        help_dialog.add(help_div)
+
+        from tactic.ui.app import HelpWdg
+        help_wdg = HelpWdg()
+        help_div.add(help_wdg)
+
+        # License Manager
+        license = Environment.get_security().get_license()
+        if not license.is_licensed():
+            from tactic.ui.app import LicenseManagerWdg
+            license_manager = LicenseManagerWdg(use_popup=True)
+            top_nav_wdg.add(license_manager)
+
+
         return top_nav_wdg
 
 
@@ -828,7 +851,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             path = snapshot.get_web_path_by_type()
  
             user_wdg.add(HtmlElement.style("""
-                .spt_nav_user_btn {                
+                .spt_hit_wdg.spt_nav_user_btn {                
                     background-image: url(%s);
                     background-size: cover;
                     background-repeat: no-repeat;
@@ -1156,7 +1179,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                 
             }
 
-            .spt_nav_icon {
+            .spt_hit_wdg.spt_nav_icon {
                 color: var(--spt_palette_side_bar_title_color) !important;
             }
 
@@ -1365,8 +1388,8 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
 
         project = Project.get()
         activator = BootstrapButtonWdg(title=project.get_value("title"))
-        activator.button_wdg.add_class("spt_nav_icon")
         activator.add_class("dropdown-toggle")
+        activator.button_wdg.add_class("text-white")
 
         #HACK
         activator.button_wdg.add_style("margin-bottom: unset")
