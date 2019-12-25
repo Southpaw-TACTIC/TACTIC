@@ -35,7 +35,6 @@ except:
     except:
         HAS_PIL = False
 
-
 # check if imagemagick is installed, and find exe if possible
 convert_exe = ''
 HAS_IMAGE_MAGICK = False
@@ -59,6 +58,9 @@ if os.name == "nt":
         try:
             convert_process = Popen(['convert.exe','-version'], stdout=PIPE, stderr=PIPE)
             convert_return,convert_err = convert_process.communicate()
+            if Common.IS_Pv3:
+                convert_return = convert_return.decode()
+            
             if 'ImageMagick' in convert_return:
                 convert_exe = 'convert.exe'
                 HAS_IMAGE_MAGICK = True
@@ -69,11 +71,16 @@ else:
     try:
         convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
         convert_return,convert_err = convert_process.communicate()
+        if Common.IS_Pv3:
+            convert_return = convert_return.decode()
+        
         if 'ImageMagick' in convert_return:
             convert_exe = 'convert'
             HAS_IMAGE_MAGICK = True
-    except:
+    except Exception as e:
+        print(e)
         pass
+
 
 ffprobe_exe = "ffprobe"
 ffmpeg_exe = "ffmpeg"
