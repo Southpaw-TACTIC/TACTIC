@@ -637,21 +637,44 @@ class TopWdg(Widget):
         security = Environment.get_security()
         if not web.is_admin_page() and security.check_access("builtin", "view_site_admin", "allow"):
 
-            div = DivWdg()
-            top.add(div)
-            top.add_style("padding-top: 21px")
+            admin_bar = DivWdg()
+            top.add(admin_bar)
+            admin_bar.add_class("spt_admin_bar")
+            admin_bar.add(HtmlElement.style('''
+            .spt_admin_bar { 
+                display: flex;
+                justify-content: space-between;
+                padding: 3px 0px 3px 15px;
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                opacity: 0.7;
+                width: 100%;
+                background-color: rgb(0, 0, 0);
+                color: rgb(255, 255, 255);
+                z-index: 1000;
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 5px 5px;
+            }
+            
+            .spt_admin_bar:hover {
+                opacity: 1.0;
+            }
 
-            div.add_class("spt_admin_bar")
+            .spt_admin_bar_left {display: flex;}
+            .spt_admin_bar_right {display: flex;}
 
+            '''))
 
+            admin_bar_left = DivWdg(css="spt_admin_bar_left")
+            admin_bar.add(admin_bar_left)
+            admin_bar_right = DivWdg(css="spt_admin_bar_right")
+            admin_bar.add(admin_bar_right)
 
+            
             # home
             icon_div = DivWdg()
-            div.add(icon_div)
-            icon_div.add_style("float: left")
-            icon_div.add_style("margin-right: 10px")
-            icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Home", icon="BS_HOME")
+            admin_bar_left.add(icon_div)
+            icon_button = IconButtonWdg(icon="FA_HOME", title="Go to index")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -660,47 +683,23 @@ class TopWdg(Widget):
                 '''
             } )
 
-
-
-            div.add_style("height: 15px")
-            div.add_style("padding: 3px 0px 3px 15px")
-            #div.add_style("margin-bottom: -5px")
-            div.add_style("position: fixed")
-            div.add_style("top: 0px")
-            div.add_style("left: 0px")
-            div.add_style("opacity: 0.7")
-            div.add_style("width: 100%")
-            #div.add_gradient("background", "background2", 20, 10)
-            div.add_style("background-color", "#000")
-            div.add_style("color", "#FFF")
-            div.add_style("z-index", "1000")
-            div.add_class("hand")
-            div.set_box_shadow("0px 5px 5px")
-
             # remove
             icon_div = DivWdg()
-            div.add(icon_div)
-            icon_div.add_style("float: right")
-            icon_div.add_style("margin-right: 10px")
-            icon_div.add_style("margin-top: -3px")
+            admin_bar_right.add(icon_div)
             icon_button = IconButtonWdg(title="Remove Admin Bar", icon="FA_TIMES")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
                 var parent = bvr.src_el.getParent(".spt_admin_bar");
-                bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(parent);
                 '''
             } )
 
             # sign-out
             icon_div = DivWdg()
-            div.add(icon_div)
-            icon_div.add_style("float: right")
-            icon_div.add_style("margin-right: 5px")
-            icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Sign Out", icon="BS_LOG_OUT")
+            admin_bar_right.add(icon_div)
+            icon_button = IconButtonWdg(title="Sign Out", icon="FA_SIGN_OUT_ALT")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -715,37 +714,19 @@ class TopWdg(Widget):
                 '''
             } )
 
+            admin_bar_left.add("<b>ADMIN >></b>")
 
-
-            div.add("<b>ADMIN >></b>")
-
-
-            div.add_behavior( {
+            admin_bar.add_behavior( {
                 'type': 'listen',
                 'event_name': 'close_admin_bar',
                 'cbjs_action': '''
-                bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(bvr.src_el);
                 '''
             } )
 
-            div.add_behavior( {
-                'type': 'mouseover',
-                'cbjs_action': '''
-                bvr.src_el.setStyle("opacity", 0.85)
-                //new Fx.Tween(bvr.src_el).start('height', "30px");
-                '''
-            } )
-            div.add_behavior( {
-                'type': 'mouseout',
-                'cbjs_action': '''
-                bvr.src_el.setStyle("opacity", 0.7)
-                //new Fx.Tween(bvr.src_el).start('height', "15px");
-                '''
-            } )
             project_code = Project.get_project_code()
             site_root = web.get_site_root()
-            div.add_behavior( {
+            admin_bar.add_behavior( {
                 'type': 'click_up',
                 'site_root': site_root,
                 'project_code': project_code,
