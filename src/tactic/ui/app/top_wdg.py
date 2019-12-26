@@ -850,6 +850,10 @@ class TopWdg(Widget):
 
         site = Site.get_site()
 
+        web = WebContainer.get_web()
+        if web.is_admin_page():
+            palette = 'AQUA'
+
         master_enabled = Config.get_value("master", "enabled")
         forwarding_type = Config.get_value("master", "forwarding_type")
         if forwarding_type == "xmlrpc_only":
@@ -873,28 +877,39 @@ class TopWdg(Widget):
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
             kiosk_mode = 'false'
-        # add environment information
-        script = HtmlElement.script('''
+        
+        script = '''
         var env = spt.Environment.get();
-        env.set_site('%s');
-        env.set_project('%s');
-        env.set_user('%s');
-        env.set_user_id('%s');
+        '''
+        
+        script += '''env.set_site('%s');''' % site
+        script += '''env.set_project('%s');''' % Project.get_project_code()
+        script += '''env.set_user('%s');''' % user_name
+        script += '''env.set_user_id('%s');''' % user_id
+        script += '''
         var login_groups = '%s'.split('|');
         env.set_login_groups(login_groups);
-        env.set_client_handoff_dir('%s');
-        env.set_client_repo_dir('%s');
-        env.set_kiosk_mode('%s');
-        env.set_master_enabled('%s');
-        env.set_master_url('%s');
-        env.set_master_login_ticket('%s');
-        env.set_master_project_code('%s');
-        env.set_master_site('%s');
-        env.set_user_timezone('%s');
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
-		master_enabled, master_url, login_ticket, master_project_code, master_site, user_timezone))
+        ''' % '|'.join(login_groups)
+        script += '''env.set_client_handoff_dir('%s');''' % client_handoff_dir
+        script += '''env.set_client_repo_dir('%s');''' % client_asset_dir
+        script += '''env.set_kiosk_mode('%s'); ''' % kiosk_mode
+
+        if master_enabled in ['true', True]:
+            script += '''
+            env.set_master_enabled('%s');
+            env.set_master_url('%s');
+            env.set_master_login_ticket('%s');
+            env.set_master_project_code('%s');
+            env.set_master_site('%s');
+            ''' % (master_enabled, master_url, login_ticket, master_project_code, master_site)
+
+        script += '''env.set_user_timezone('%s');''' % user_timezone
         
-        
+        if palette:
+            script += '''env.set_palette('%s');''' % palette
+
+       
+        script = HtmlElement.script(script)
         top.add(script)
 
 
