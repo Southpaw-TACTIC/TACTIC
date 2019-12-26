@@ -781,6 +781,7 @@ class TopWdg(Widget):
 
         # tactic_kbd is only true for standard TACTIC index
         tactic_kbd = True
+        palette_key = None
 
         hash = self.kwargs.get("hash")
         if isinstance(hash, tuple) and len(hash) > 0:
@@ -800,6 +801,7 @@ class TopWdg(Widget):
             search.add_where("or")
             url = search.get_sobject()
             
+        
         if url:
             xml = url.get_xml_value("widget")
 
@@ -810,7 +812,13 @@ class TopWdg(Widget):
             if xml.get_value("element/@tactic_kbd") in [True, "true"]:
                 tactic_kbd = True
 
-            # look up palette the expression for index
+         
+        if not palette_key:
+            web = WebContainer.get_web()
+            if web.is_admin_page():
+                palette_key = 'AQUA'
+        
+        if palette_key:
             from pyasm.web import Palette
             palette = Palette.get()
 
@@ -850,9 +858,6 @@ class TopWdg(Widget):
 
         site = Site.get_site()
 
-        web = WebContainer.get_web()
-        if web.is_admin_page():
-            palette = 'AQUA'
 
         master_enabled = Config.get_value("master", "enabled")
         forwarding_type = Config.get_value("master", "forwarding_type")
@@ -905,8 +910,6 @@ class TopWdg(Widget):
 
         script += '''env.set_user_timezone('%s');''' % user_timezone
         
-        if palette:
-            script += '''env.set_palette('%s');''' % palette
 
        
         script = HtmlElement.script(script)
