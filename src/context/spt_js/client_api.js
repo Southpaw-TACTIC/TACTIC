@@ -1962,6 +1962,7 @@ TacticServerStub = function() {
     //      This is used be get_async_widget() and others
     this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
 
+        
         if (spt._delegate) {
             return spt._delegate(func_name, passed_args, kwargs);
         }
@@ -1994,14 +1995,20 @@ TacticServerStub = function() {
         args.push(ticket);
 
 
-        if (typeof(passed_args) == 'undefined') {
+        if (typeof(passed_args) == undefined) {
             passed_args = [];
+        } else if (passed_args.length > 0) {
+            // Trim off undefined kwargs
+            if (passed_args[passed_args.length-1] == undefined) {
+                passed_args = passed_args.splice(0, passed_args.length-1);
+            }
         }
 
         // determine if there was a kwargs passed in
         var num_args;
         var has_kwargs;
-        if (typeof(kwargs) == 'undefined' || kwargs == null) {
+
+        if (typeof(kwargs) == undefined || kwargs == null) {
             num_args = passed_args.length;
             has_kwargs = false;
         }
