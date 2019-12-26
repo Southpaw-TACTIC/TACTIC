@@ -20,25 +20,11 @@
  * will work properly.
  */
 
-body {
-    font-size: 12px;
-}
-
-
-label {
-    font-size: 12px;
-}
-
-/*
- * We have to define a font size for tables because the body setting does not
- * pass through
- */
-table {
-    font-size: 12px;
-}
-
-
 /* Set some standard properties for various elements. */
+
+table {
+    font-size: .75rem;
+}
 
 .hand
 {

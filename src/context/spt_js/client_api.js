@@ -1994,13 +1994,17 @@ TacticServerStub = function() {
         };
         args.push(ticket);
 
-
+        // Trims off undefined kwargs
         if (typeof(passed_args) == undefined) {
             passed_args = [];
-        } else if (passed_args.length > 0) {
-            // Trim off undefined kwargs
-            if (passed_args[passed_args.length-1] == undefined) {
-                passed_args = passed_args.splice(0, passed_args.length-1);
+        } else {
+            if (typeOf(passed_args) == "arguments") {
+                passed_args = Array.from(passed_args);
+            } 
+            if (passed_args.length > 0) {
+                if (passed_args[passed_args.length-1] == undefined) {
+                    passed_args = passed_args.splice(0, passed_args.length-1);
+                }
             }
         }
 
