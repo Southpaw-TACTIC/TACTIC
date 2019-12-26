@@ -663,7 +663,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             .spt_layout .spt_cell_edit {
 
                 padding: 3px 8px;
-                vertical-align: top;
+                vertical-align: middle;
 
                 background-repeat: no-repeat;
                 background-position: bottom right;
@@ -2030,7 +2030,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             cell_styles["padding"] = "3px"
             select_styles["border-bottom"] = "solid 1px %s" % border_color
 
-        elif show_border not in [False, "false"]:
+        elif show_border not in [False, "false", "none"]:
             cell_styles["border"] = "solid 1px %s" % border_color
             cell_styles["padding"] = "3px"
             select_styles["border"] = "solid 1px %s" % border_color

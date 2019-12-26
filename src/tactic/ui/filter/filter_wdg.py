@@ -867,10 +867,15 @@ class GeneralFilterWdg(BaseFilterWdg):
             name_div = DivWdg()
             div.add(name_div)
             name_div.add(title)
-            name_div.add_style("margin: 0px 10px")
+            name_div.add_style("margin: 0px 10px 0px 0px")
             name_div.add_style("text-align: center")
-            name_div.add_style("width: 100px")
-            name_div.add_style("width: 120px")
+            #name_div.add_style("width: 120px")
+
+            border_color = name_div.get_color("border")
+            name_div.add_style("border: solid 1px %s" % border_color)
+            name_div.add_style("padding: 3px 10px")
+            name_div.add_style("border-radius: 3px")
+            name_div.add_color("background", "background", -5)
 
 
             extra_options = {

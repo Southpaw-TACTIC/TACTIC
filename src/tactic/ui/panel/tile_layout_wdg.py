@@ -2092,7 +2092,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             detail_div.add(count_div)
             count_div.add_class("spt_tile_collection")
             count_div.add_style("display", "none")
-            count_div.add("<div class='spt_tile_collection_count hand badge'>0</div>")
+            count_div.add("<div class='spt_tile_collection_count hand badge badge-secondary'>0</div>")
             
             expand_div = DivWdg()
             detail_div.add(expand_div)
@@ -3138,7 +3138,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                 collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
                 num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
-                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge'>%s</div>" % num_items)
+                detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge badge-secondary'>%s</div>" % num_items)
                 detail_div.add_style("margin-right: 5px")
             else:
                 detail_div.add_class("spt_tile_detail")

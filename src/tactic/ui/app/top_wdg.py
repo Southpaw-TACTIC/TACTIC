@@ -1028,8 +1028,8 @@ class TopWdg(Widget):
 <!-- Form builder -->
 <link rel='stylesheet' href='https://unpkg.com/formiojs@latest/dist/formio.full.min.css'>
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
-''')
 
+''')
 
         if ui_library == "bootstrap":
             widget.add('''
@@ -1042,12 +1042,14 @@ class TopWdg(Widget):
 <!-- Material Design for Bootstrap fonts and icons -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
 
-<!-- Material Design for Bootstrap CSS -->
+<!-- Material Design for Bootstrap JS -->
 <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 
 
 
            ''')
+
+
             self.body.add('''
 <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
             ''')

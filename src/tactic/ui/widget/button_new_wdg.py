@@ -1247,6 +1247,7 @@ class ActionButtonWdg(DivWdg):
                     button.add_class('btn-%s' % color)
             else:
                 button.add_class('btn-default')
+            button.add_class('btn-default btn-secondary')
 
             if size == 'b':
                 button.add_class('btn-block')

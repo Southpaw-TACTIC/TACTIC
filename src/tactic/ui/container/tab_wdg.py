@@ -2649,12 +2649,21 @@ spt.tab.view_definition = function(bvr) {
 
  
         title_div = DivWdg()
+        title_div.add_style("display: flex")
+        title_div.add_style("align-items: center")
+        title_div.add_class("spt_tab_header_label")
+        title_div.add_class("nav-link")
+        display_title = title
+        title_div.add(display_title)
+        header.add(title_div)
+
+        title_div.add_attr("title", "%s" % (title))
 
         count_wdg = SpanWdg()
-        count_wdg.add_class("badge spt_tab_header_count")
+        count_wdg.add_class("badge badge-secondary spt_tab_header_count")
         title_div.add(count_wdg)
-        count_wdg.add_style("float: right")
-        count_wdg.add_style("font-size: 0.7em")
+        #count_wdg.add_style("float: right")
+        #count_wdg.add_style("font-size: 0.7em")
         count_wdg.add_style("margin-left: 10px")
 
         icon = None
@@ -2690,15 +2699,6 @@ spt.tab.view_definition = function(bvr) {
 
 
 
-        title_div.add_class("spt_tab_header_label")
-        title_div.add_class("nav-link")
-        display_title = title
-        title_div.add(display_title)
-        header.add(title_div)
-
-
-
-        title_div.add_attr("title", "%s" % (title))
 
         remove_wdg = DivWdg()
         remove_wdg.add_class("spt_tab_remove")
