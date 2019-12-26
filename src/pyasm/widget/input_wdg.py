@@ -1128,7 +1128,6 @@ class SelectWdg(BaseInputWdg):
         # BOOTSTRAP
         if bs != False:
             self.add_class("form-control")
-            self.add_class("input-sm")
 
 
 
