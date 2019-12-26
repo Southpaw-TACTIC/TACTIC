@@ -63,6 +63,27 @@ class SObjectDetailWdg(BaseRefreshWdg):
     def init(self):
         self.show_task_process = self.kwargs.get('show_task_process')
 
+    
+    def get_styles(self):
+
+        return HtmlElement.style(""" 
+            
+            .spt_detail_title {
+                display: inline-block;
+                vertical-align: top;
+                width: 500px
+            }
+
+            .spt_detail_panel {
+                display: inline-block;
+                vertical-align: top;
+            }
+                
+                    
+        """)
+
+
+
     def get_title_wdg(self):
 
 
@@ -202,6 +223,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         top = self.top
+        
+        
+        top.add(self.get_styles())
+
         top.add_class("spt_detail_top")
 
 
@@ -238,6 +263,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
             key = "sobject_detail_view"
             custom_view = ProjectSetting.get_value_by_key(key, search_type=self.sobject.get_base_search_type())
 
+        print("hello")
+        print(custom_view)
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
             selected = self.kwargs.get("selected") or ""
@@ -258,25 +285,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
             title_wdg = self.get_title_wdg()
             title_wdg.add_class("spt_detail_title")
             top.add(title_wdg)
-            title_wdg.add_style("display: inline-block")
-            title_wdg.add_style("vertical-align: top")
-            title_wdg.add_style("width: 500px")
-
-            """
-            title_wdg.add_style("background: #FFF")
-            title_wdg.add_style("margin: 10px")
-            title_wdg.add_style("border-radius: 10px")
-            title_wdg.add_style("border: solid 1px #DDD")
-            top.add_style("background: #F9F9F9")
-            """
 
 
 
         panel_wdg = DivWdg()
         top.add(panel_wdg)
         panel_wdg.add_class("spt_detail_panel")
-        panel_wdg.add_style("display: inline-block")
-        panel_wdg.add_style("vertical-align: top")
 
 
 

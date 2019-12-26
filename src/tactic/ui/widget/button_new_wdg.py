@@ -631,6 +631,8 @@ class ButtonNewWdg(ButtonWdg):
 
         self.navbar_collapse_target = self.kwargs.get("navbar_collapse_target")
 
+        self.dropdown_id = self.kwargs.get("dropdown_id")
+
     def add_behavior(self, behavior):              
         self.hit_wdg.add_behavior(behavior)
         self.collapsible_btn.add_behavior(behavior)
@@ -683,6 +685,13 @@ class ButtonNewWdg(ButtonWdg):
         if self.show_arrow_menu or self.dialog:
             top.add(self.arrow_menu)
             top.add_class("d-flex")
+
+        if self.dropdown_id:
+            #FIXME: Cannot be combined with collapsible menu
+            top.set_id(self.dropdown_id)
+            top.set_attr("data-toggle", "dropdown")
+            top.set_attr("aria-haspopup", "true")
+            top.set_attr("aria-expanded", "false")
 
         if self.navbar_collapse_target:
             self.add_class("collapsed")

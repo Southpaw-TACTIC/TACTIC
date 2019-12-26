@@ -77,14 +77,13 @@ class EditLayoutWdg(TableLayoutWdg):
 
     def get_display(self):
 
+        styles = ""
 
         # NOTE: need to add this to fit as a table layout
         self.chunk_size = 10000
         self.edit_permission = True
         self.view_editable = True
         is_responsive = self.kwargs.get("is_responsive") or None
-        if is_responsive:
-            is_responsive = int(is_responsive)
 
 
         search_key = self.kwargs.get("search_key")
@@ -121,31 +120,12 @@ class EditLayoutWdg(TableLayoutWdg):
 
 
 
-        #is_refresh = self.kwargs.get("is_refresh")
-        #if self.kwargs.get("show_shelf") not in ['false', False]:
-        #    action = self.get_action_wdg()
-        #    inner.add(action)
-
-
-        # get all the edit widgets
-        """
-        if self.view_editable and self.edit_permission:
-            edit_wdgs = self.get_edit_wdgs()
-            edit_div = DivWdg()
-            edit_div.add_class("spt_edit_top")
-            edit_div.add_style("display: none")
-            inner.add(edit_div)
-            for name, edit_wdg in edit_wdgs.items():
-                edit_div.add(edit_wdg)
-        """
-
         inner.set_unique_id()
         inner.add_smart_style("spt_header", "vertical-align", "top")
         inner.add_smart_style("spt_header", "text-align", "left")
         inner.add_smart_style("spt_header", "width", "150px")
         inner.add_smart_style("spt_header", "padding", "5px")
         border = inner.get_color("table_border")
-        #inner.add_smart_style("spt_header", "border", "solid 1px %s" % border)
 
         inner.add_smart_style("spt_cell_edit", "background-repeat", "no-repeat")
         inner.add_smart_style("spt_cell_edit", "background-position", "bottom right")
@@ -186,58 +166,126 @@ class EditLayoutWdg(TableLayoutWdg):
                         tr.add_color("background-color", "background")
 
 
-                    # indicator that a cell is editable
-                    #td.add_event( "onmouseover", "document.id(this).setStyle('background-image', " \
-                    #                  "'url(/context/icons/silk/page_white_edit.png)')" )
-                    #td.add_event( "onmouseout",  "document.id(this).setStyle('background-image', '')")
+            elif is_responsive == "custom":
+                grid_container = HtmlElement.ul()
+                grid_container.add_class("spt_grid_container")
+                grid_container.set_unique_id()
+
+                inner.add(grid_container)
+               
+                for j, widget in enumerate(self.widgets):
+                    attr = widget.get_name()
+                    if not attr:
+                        continue
+                    
+                    value = widget.get_buffer_display()
+                    if not value:
+                        continue
+                    
+                    title = widget.get_title()
+                    title_div = DivWdg(title)
+                    if not title:
+                        title = DivWdg(attr)
+                    
+                    title_div.add_class("spt_widget_title")
+                    
+                    
+                    value_div = DivWdg(value)
+                   
+                    value_div.add_class("spt_widget_value")
+                    
+                    grid_item = HtmlElement("a")
+                    grid_item.add_class("spt_widget_container")
+                   
+                    grid_item_inner = DivWdg()
+                    grid_item.add(grid_item_inner)
+                    grid_item_inner.add_class("spt_widget_container_inner")
+
+                    grid_item_inner.add(title_div)
+                    grid_item_inner.add(value_div)
+                    
+                    grid_container.add(grid_item)
+            
             else:
                 grid_container = DivWdg()
                 grid_container.add_class("spt_grid_container")
                 grid_container.set_unique_id()
+
                 inner.add(grid_container)
-                num_columns = "auto "*is_responsive
-                inner.add_smart_styles("spt_grid_container", {
-                    "display": "grid",
-                    "padding": "0px",
-                    "width": "100%"
-                })
-                inner.add_smart_style("spt_grid_container", "grid-template-columns", num_columns)
-
-                inner.add_smart_styles("spt_grid_cell_attr", {
-                    "font-weight": "bold",
-                    "min-width": "100px",
-                    "padding-right": "5px",
-                })
-
-                inner.add_smart_style("spt_grid_cell_value", "text-align", "right")
-
+               
+                num_columns = "auto "*int(is_responsive)
+                styles += """
                 
+                    .spt_grid_container {
+                        display: grid;
+                        padding: 0px;
+                        width: 100%%;
+                        grid-template-columns: %s;
+                    }
+                    
+                """ % num_columns
+                
+                styles += """
+                    
+                    .spt_grid_cell_attr {
+                        font-weight: bold;
+                        min-width: 100px;
+                        padding-right: 5px;
+                    }
+
+                    .spt_grid_cell_value {
+                        text-align: right;
+                    }
+                    
+                    .spt_widget_title {
+                        font-weight: bold;
+                        padding-right: 10px;
+                        min-width: 80px;
+                    }
+                    
+                    .spt_widget_value {
+                        padding-top: 6px;
+                        text-align: right;
+                        width: -webkit-fill-available;
+                    }
+                    
+                    .spt_widget_container {
+                        display: inline-flex;
+                        min-width: 150px;
+                        padding: 0px 10px;
+                        font-size: 12px;
+                    }
+
+                """
+
                 
                 for j, widget in enumerate(self.widgets):
                     attr = widget.get_name()
                     if not attr:
                         continue
-                    title = widget.get_title()
-                    title_div = DivWdg(title)
-                    title_div.add_style("font-weight", "bold")
-                    title_div.add_style("padding-right", "10px")
-                    title_div.add_style("min-width", "80px")
-                    if not title:
-                        title = DivWdg(attr)
+                    
                     value = widget.get_buffer_display()
-                    value_div = DivWdg(value)
-                    value_div.add_style("padding-top", "6px")
-                    value_div.add_style("text-align", "right")
-                    value_div.add_style("width", "-webkit-fill-available")
                     if not value:
                         continue
+                    
+                    title = widget.get_title()
+                    title_div = DivWdg(title)
+                    if not title:
+                        title = DivWdg(attr)
+                    
+                    title_div.add_class("spt_widget_title")
+                    
+                    
+                    value_div = DivWdg(value)
+                   
+                    value_div.add_class("spt_widget_value")
+                    
                     grid_item = DivWdg()
-                    grid_item.add_style("display", "inline-flex")
-                    grid_item.add_style("min-width", "150px")
-                    grid_item.add_style("padding", "0px 10px")
-                    grid_item.add_style("font-size", "12px")
+                    grid_item.add_class("spt_widget_container")
+                    
                     grid_item.add(title_div)
                     grid_item.add(value_div)
+                    
                     grid_container.add(grid_item)
 
 
@@ -250,6 +298,8 @@ class EditLayoutWdg(TableLayoutWdg):
         inner.add_class("spt_table_content")
         inner.add_attr("spt_search_type", self.kwargs.get('search_type'))
         inner.add_attr("spt_view", self.kwargs.get('view'))
+
+        inner.add(HtmlElement.style(styles))
 
         if self.kwargs.get("is_refresh") == 'true':
             return inner
