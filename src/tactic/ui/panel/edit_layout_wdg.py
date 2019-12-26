@@ -102,10 +102,6 @@ class EditLayoutWdg(TableLayoutWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_color("background", "background")
-        inner.add_color("color", "color")
-        # NOTE: this is not the table and is called this for backwards
-        # compatibility
         if (not is_responsive) or (is_responsive == 0):
             inner.add_class("spt_table")
         inner.add_class("spt_layout")

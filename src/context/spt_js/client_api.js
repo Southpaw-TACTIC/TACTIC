@@ -387,7 +387,8 @@ TacticServerStub = function() {
     this.get_message = function(key, kwargs, on_complete, on_error) {
         //return this._delegate("get_message", arguments);
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        var ret_val = this._delegate("get_message", arguments, kwargs, null, on_complete, on_error);
+        passed_args = [key, kwargs];
+        var ret_val = this._delegate("get_message", passed_args, kwargs, null, on_complete, on_error);
         // asynchronouse
         if (on_complete) {
             return;
@@ -1244,8 +1245,9 @@ TacticServerStub = function() {
             value = JSON.parse(value);
             on_complete(value);
         }
-
-        var value = this._delegate("query", arguments, kwargs, "string", on_complete2, on_error);
+       
+        passed_args = [search_type, kwargs];
+        var value = this._delegate("query", passed_args, kwargs, "string", on_complete2, on_error);
         // asynchronouse
         if (on_complete) {
             return;
@@ -1269,7 +1271,8 @@ TacticServerStub = function() {
 
     this.get_by_search_key = function(search_key, kwargs, on_complete, on_error) {
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        var value = this._delegate("get_by_search_key", arguments, kwargs, null, on_complete, on_error);
+        passed_args = [search_key, kwargs];
+        var value = this._delegate("get_by_search_key", passed_args, kwargs, null, on_complete, on_error);
         // asynchronouse
         if (on_complete) {
             return;
@@ -1325,7 +1328,9 @@ TacticServerStub = function() {
     this.update = function(search_key, data, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        var ret_val = this._delegate("update", arguments, kwargs, null, on_complete, on_error);
+
+        passed_args = [search_key, data, kwargs];
+        var ret_val = this._delegate("update", passed_args, kwargs, null, on_complete, on_error);
         if (on_complete) {
             return;
         }
@@ -1393,7 +1398,9 @@ TacticServerStub = function() {
     this.eval = function(expression, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        var ret_val = this._delegate("eval", arguments, kwargs, null, on_complete, on_error);
+       
+        passed_args = [expression, kwargs];
+        var ret_val = this._delegate("eval", passed_args, kwargs, null, on_complete, on_error);
         // asynchronouse
         if (on_complete) {
             return;
@@ -1554,8 +1561,9 @@ TacticServerStub = function() {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
 
+        passed_args = [class_name, kwargs];
         try {
-            var ret_val = this._delegate("get_widget", arguments, kwargs, "string", on_complete, on_error);
+            var ret_val = this._delegate("get_widget", passed_args, kwargs, "string", on_complete, on_error);
             return ret_val;
         }
         catch(e) {
@@ -1618,7 +1626,8 @@ TacticServerStub = function() {
     this.execute_cmd = function(class_name, args, values, kwargs, on_complete, on_error) {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        var ret_val = this._delegate("execute_cmd", arguments, kwargs, null, on_complete, on_error);
+        passed_args = [class_name, args, values, kwargs];
+        var ret_val = this._delegate("execute_cmd", passed_args, kwargs, null, on_complete, on_error);
         if (on_complete) {
             return;
         }
@@ -1770,7 +1779,8 @@ TacticServerStub = function() {
     //
     this.call_trigger = function(search_key, event, kwargs, on_complete, on_error) {
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
-        var ret_val = this._delegate("call_trigger", arguments, kwargs, null, on_complete, on_error);
+        passed_args = [search_key, event, kwargs];
+        var ret_val = this._delegate("call_trigger", passed_args, kwargs, null, on_complete, on_error);
         return ret_val
     }
 
@@ -1850,7 +1860,7 @@ TacticServerStub = function() {
     this.async_get_widget = function(class_name, kwargs, on_complete, on_error) {
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
-
+        
         var callback = kwargs['cbjs_action'];
         if (!callback) {
             callback = kwargs['callback'];
@@ -1861,6 +1871,8 @@ TacticServerStub = function() {
         if (!callback) {
             callback = on_complete;
         }
+
+
         var err_callback = function(e) {
             if (e == 0) {
                 e = 'Received an error (Error 0)';
@@ -1883,11 +1895,14 @@ TacticServerStub = function() {
                 spt.alert(e);
             }
         };
-        this._delegate("get_widget", arguments, kwargs, "string", callback, err_callback);
+        passed_args = [class_name, kwargs];
+        this._delegate("get_widget", passed_args, kwargs, "string", callback, err_callback);
         return;
     }
 
+    //DEPRECATED use eval
     this.async_eval = function(class_name, kwargs) {
+        alert("Client API function async_eval is deprecated. Use eval")
         var callback = kwargs['cbjs_action'];
         if (!callback) {
             callback = kwargs['callback'];
@@ -1947,7 +1962,6 @@ TacticServerStub = function() {
     //      This is used be get_async_widget() and others
     this._delegate = function(func_name, passed_args, kwargs, ret_type, callback, on_error) {
 
-
         if (spt._delegate) {
             return spt._delegate(func_name, passed_args, kwargs);
         }
@@ -1994,12 +2008,11 @@ TacticServerStub = function() {
         else if (kwargs.__empty__) {
             num_args = passed_args.length;
             has_kwargs = true;
-        }
-        else {
+        } else {
             num_args = passed_args.length - 1;
             has_kwargs = true;
         }
-
+       
         if (passed_args != undefined) {
             for (var i=0; i < num_args; i++) {
                 args.push(passed_args[i]);
@@ -2015,8 +2028,7 @@ TacticServerStub = function() {
             delete kwargs.__empty__;
             args.push(kwargs);
         }
-   
-        //console.log(args);
+
 
         // handle asynchronous mode
         if (typeof(callback) != 'undefined' && callback != null) {
@@ -2096,8 +2108,6 @@ TacticServerStub = function() {
         if (ret_val.status != 200) {
             throw(ret_val.status);
         }
-
-        console.log(ret_val);
 
         if (ret_type == "raw") {
             return ret_val.responseText;
