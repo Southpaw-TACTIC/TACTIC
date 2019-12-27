@@ -620,9 +620,13 @@ class ButtonNewWdg(ButtonWdg):
         self.title = tip
         
         self.hit_wdg.add_attr("title", tip)
+
+        size = self.kwargs.get("size")
+        if not size:
+            size = 14
         
         opacity = self.kwargs.get("opacity") or None
-        icon = IconWdg(tip, icon_str, opacity=opacity)
+        icon = IconWdg(tip, icon_str, opacity=opacity, size=size)
         self.icon = icon
 
         self.collapsible_btn = DivWdg()

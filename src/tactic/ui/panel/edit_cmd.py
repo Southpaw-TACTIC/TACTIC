@@ -176,7 +176,6 @@ class EditCmd(Command):
 
 
 
-
         # if element names are not specified, then get it from the view
         if not self.element_names:
             config = WidgetConfigView.get_by_search_type(search_type_obj, self.view)
