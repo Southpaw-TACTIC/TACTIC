@@ -954,7 +954,7 @@ class ActionButtonWdgOldX(DivWdg):
 
 
 __all__.extend(['BootstrapButtonWdg'])
-class BootstrapButtonWdg(BaseRefreshWdg):
+class BootstrapButtonWdg(DivWdg):
     
     ARGS_KEYS = {
         'title': {
@@ -989,10 +989,17 @@ class BootstrapButtonWdg(BaseRefreshWdg):
     def generate_command_key(self, cmd, kwargs={}, ticket=None):
         return self.top.generate_command_key(cmd, kwargs, ticket)
             
-    def init(self):
+    def __init__(self, **kwargs):
+
+        self.kwargs = kwargs
+
+        self.top = DivWdg()
+
         from pyasm.web import ButtonWdg as ButtonHtmlWdg
         self.button_wdg = ButtonHtmlWdg()
         self.collapsible_wdg = DivWdg()
+
+        super(BootstrapButtonWdg, self).__init__(**kwargs)
 
     def add_class(self, class_name):
         self.button_wdg.add_class(class_name)
