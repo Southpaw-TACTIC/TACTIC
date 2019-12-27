@@ -780,8 +780,7 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
         var kwargs_str = header.getAttribute("spt_kwargs");
         if (kwargs_str == '') {
             kwargs = {};
-        }
-        else {
+        } else if (kwargs_str) {
             kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
         }
@@ -1354,6 +1353,10 @@ spt.tab.view_definition = function(bvr) {
                 text-overflow: ellipsis;
                 overflow-x: hidden;
                 white-space: nowrap;
+            }
+
+            .spt_tab_header_count {
+                margin-left: 10px;
             }
         ''')
 

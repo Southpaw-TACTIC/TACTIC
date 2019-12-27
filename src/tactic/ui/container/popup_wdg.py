@@ -166,12 +166,12 @@ class PopupWdg(BaseRefreshWdg):
             display: flex;
             align-items: center;
             justify-content: space-between;
+            cursor: move;
         }
     
         @media (min-width: 576px) {
             .spt_popup_top .spt_popup_title {
                 margin: .25rem;
-                cursor: move;
             }
             
             .spt_popup_top.spt_popup {
@@ -440,7 +440,7 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_behavior( {
             'type':'smart_drag',
             'drag_el': "@.getParent('.spt_popup')",
-            'bvr_match_class': 'spt_popup_title',
+            'bvr_match_class': 'spt_popup_title_top',
             'options': {'z_sort': 'bring_forward'},
             'ignore_default_motion': 'true',
             "cbjs_setup": '''
