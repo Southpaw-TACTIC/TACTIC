@@ -5572,6 +5572,8 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
+    clone.setStyle("background-color", "var(--spt_palette_background)");
+    clone.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.1)");
 
     return clone;
 

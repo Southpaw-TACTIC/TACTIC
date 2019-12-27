@@ -1487,10 +1487,10 @@ class IconButtonWdg(DivWdg):
             arrow_div = DivWdg()
             icon_div.add(arrow_div)
             arrow_div.add_style("position: absolute")
-            arrow_div.add_style("top: 13px")
-            arrow_div.add_style("left: 11px")
+            arrow_div.add_style("top: 2px")
+            arrow_div.add_style("left: 14px")
 
-            arrow = IconWdg(title, IconWdg.ARROW_MORE_INFO)
+            arrow = IconWdg(title, "FA_CARET_DOWN")
             arrow_div.add(arrow)
 
 

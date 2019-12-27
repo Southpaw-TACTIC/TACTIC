@@ -558,7 +558,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         if is_admin_page:
 
             style.add('''
-/* REMKO (for admin site) */
+/* (for admin site) */
 .spt_bs_left_sidebar.active ul li a {
     background: var(--spt_palette_md_primary);
     padding: 10px 0px;
@@ -574,14 +574,25 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     padding-left: 10px;
     border-bottom: solid 1px #999;
 }
+
+
+.spt_bs_left_sidebar .dropdown-toggle::after {
+    top: 50%;
+    right: 15px;
+}
+.spt_bs_left_sidebar.active .dropdown-toggle::after {
+    top: 50%;
+    right: 15px;
+}
+
+
+
             ''')
 
 
-
-
-
-
         return style
+
+
 
     def get_subdisplay(self, views):
 

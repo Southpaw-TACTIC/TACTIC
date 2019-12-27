@@ -273,6 +273,9 @@ class ButtonElementWdg(BaseTableElementWdg):
         search_key = SearchKey.build_by_sobject(sobject)
         td.set_attr('search_key', search_key)
 
+        td.add_style("text-align: center")
+        td.add_style("vertical-align: middle")
+
 
 
     def preprocess(self):
@@ -318,37 +321,8 @@ class ButtonElementWdg(BaseTableElementWdg):
         display = DivWdg()
         display.add_style("position: relative")
         display.add_class("spt_button_top")
-        display.add_style("width: 26px")
-        display.add_style("margin-left: auto")
-        display.add_style("margin-right: auto")
 
-
-        """
-        BASE = '/context/themes2/default/'
-        over_div = DivWdg()
-        display.add(over_div)
-        over_div.add_class("spt_button_over")
-        over_img = "<img src='%s/MainButton_over.png'/>" % BASE
-        over_div.add(over_img)
-        over_div.add_style("position: absolute")
-        over_div.add_style("top: -9px")
-        over_div.add_style("left: 0px")
-        over_div.add_style("display: none")
-
-        click_div = DivWdg()
-        display.add(click_div)
-        click_div.add_class("spt_button_click")
-        click_img = "<img src='%s/MainButton_click.png'/>" % BASE
-        click_div.add(click_img)
-        click_div.add_style("position: absolute")
-        click_div.add_style("top: -9px")
-        click_div.add_style("left: 0px")
-        click_div.add_style("display: none")
-
-        """
-
-
-
+        display.add_style("padding: 4px")
 
         if self.get_option('align') == 'left':
             display.add_style("text-align: left")
@@ -388,9 +362,6 @@ class ButtonElementWdg(BaseTableElementWdg):
 
         icon_div = DivWdg()
         icon_div.add(icon_wdg)
-        #icon_div.add_style("position: absolute")
-        #icon_div.add_style("top: 2px")
-        #icon_div.add_style("left: 5px")
         display.add(icon_div)
 
         hit_wdg = icon_div
@@ -403,15 +374,15 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
 
-        display.add_style("height: 18px")
+        display.add_style("height: 24px")
         display.add_style("min-width: 21px")
         #display.add_style("overflow: hidden")
-        display.add_style("margin-top: 0px")
+        display.add_style("margin-top: 3px")
 
         display.add_class("btn")
         #display.add_style("box-sizing: border-box")
-        display.add_style("padding: 0px 6px")
-        display.add_style("margin-top: -3px")
+        #display.add_style("padding: 0px 6px")
+        #display.add_style("margin-top: -3px")
         display.add_style("text-align: center")
 
         expression = self.kwargs.get('expression')

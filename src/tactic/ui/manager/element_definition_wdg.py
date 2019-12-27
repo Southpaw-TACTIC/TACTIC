@@ -584,9 +584,11 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             '''
         })
         mode_wdg.add(mode_select)
-        mode_wdg.add_style("float: right")
-        mode_wdg.add_style("margin: 0px 8px 0 0")
+        mode_wdg.add_style("margin: 0px -2px 0px 0px")
         mode_wdg.add_style("width: 160px")
+        mode_wdg.add_style("white-space: nowrap")
+        mode_wdg.add_style("display: flex")
+        mode_wdg.add_style("align-items: center")
         mode = mode_select.get_value()
 
 
@@ -604,7 +606,9 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
 
 
         title_div = DivWdg()
-        #top.add(title_div)
+        top.add(title_div)
+        title_div.add_style("display: flex")
+        title_div.add_style("justify-content: space-between")
         title_div.add_color("background", "background", -3 )
         title_div.add_style("margin: 0 -1 10 -1")
         title_div.add_style("font-weight: bold")
@@ -618,14 +622,19 @@ class ViewElementDefinitionWdg(BaseRefreshWdg):
             title_div.add("Edit Column Definition")
 
         if (not self.is_insert) and (not self.simple_view_only):
+
             title_div.add(mode_wdg)
+
+            shelf_wdg = DivWdg()
+            top.add(shelf_wdg)
+            shelf_wdg.add_style("display: flex")
+            shelf_wdg.add_style("align-items: center")
+            shelf_wdg.add_style("justify-content: flex-end")
             gear = self.get_gear_menu(view)
-            gear.add_style("float: right")
-            gear.add_style("margin: 5px 0px 5px 10px")
                 
             # add gear menu 
-            top.add(gear)
-            top.add(save_button)
+            shelf_wdg.add(save_button)
+            shelf_wdg.add(gear)
 
 
 
