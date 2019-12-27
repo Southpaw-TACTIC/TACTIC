@@ -2347,6 +2347,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var extra_data = target.getAttribute("spt_extra_data") || "";
     var default_data = target.getAttribute("spt_default_data") || "";
 
+    var resize_cbjs = target.getAttribute("spt_resize_cbjs") || "";
+    var reorder_cbjs = target.getAttribute("spt_reorder_cbjs") || "";
+
     var filter_view = target.getAttribute("spt_filter_view") || "";
 
     var height = target.getAttribute("spt_height") || "";
@@ -2445,6 +2448,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'default_data': default_data,
         'window_resize_offset': window_resize_offset,
         'custom_views': custom_views,
+        'resize_cbjs': resize_cbjs,
+        'reorder_cbjs': reorder_cbjs
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
