@@ -985,6 +985,10 @@ class BootstrapButtonWdg(BaseRefreshWdg):
     }
 
 
+    #FIXME: Should this be moved to BaseRefreshWdg?
+    def generate_command_key(self, cmd, kwargs={}, ticket=None):
+        return self.top.generate_command_key(cmd, kwargs, ticket)
+            
     def init(self):
         from pyasm.web import ButtonWdg as ButtonHtmlWdg
         self.button_wdg = ButtonHtmlWdg()

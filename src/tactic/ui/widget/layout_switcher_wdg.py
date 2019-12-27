@@ -18,7 +18,7 @@ from pyasm.web import WidgetSettings, DivWdg, Table, HtmlElement, SpanWdg
 from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import IconButtonWdg, ActionButtonWdg
+from tactic.ui.widget import IconButtonWdg, ActionButtonWdg, ButtonNewWdg
 
 from mako import exceptions
 
@@ -317,7 +317,7 @@ class LayoutSwitcherWdgOld(BaseRefreshWdg):
         self.title = title
         
         self.mode = self.kwargs.get("mode")
-        self.badge_count = self.kwargs.get("badge_count") or None
+        self.badge_count = self.kwargs.get("badge_count") or ""
         self.color = self.kwargs.get("color") or "default"
         self.background = self.kwargs.get("background") or "transparent"
 
@@ -436,9 +436,10 @@ class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
     def get_styles(self):
         return HtmlElement.style("""
 
-        .spt_view_switcher_top .dropdown {
+        .spt_switcher_top.dropdown{
             display: block !important;
         }
+
         """)
 
 
@@ -452,11 +453,21 @@ class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
         self.dropdown_id = Common.generate_random_key()
 
     def get_activator(self):
-
+        
+        if self.mode == "icon":
+            activator = ButtonNewWdg(
+                title=self.title, 
+                icon="FA_TABLE",
+                dropdown_id=self.dropdown_id
+            )
+            return activator
+        
+        
+        
         title = """
             <span class='spt_title'>%s</span>
-            <span class='badge spt_task_count'></span>
-        """ % self.title
+            <span class='badge spt_task_count'>%s</span>
+        """ % (self.title, self.badge_count) 
         
         activator = ActionButtonWdg(
             title=title, 
@@ -502,6 +513,7 @@ class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
             else {
                 var target_top = document.id(document.body);
             }
+            
             var target = target_top.getElement("."+target_class);
             if (target) {
                 spt.panel.load(target, bvr.display_class, bvr.display_options);
