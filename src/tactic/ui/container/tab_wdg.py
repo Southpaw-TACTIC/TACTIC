@@ -1202,7 +1202,6 @@ spt.tab.close = function(src_el) {
 spt.tab.view_definition = function(bvr) {
     var activator = spt.smenu.get_activator(bvr);
     var header = activator;
-    var class_name = header.getAttribute("spt_class_name");
     var kwargs_str = header.getAttribute("spt_kwargs");
     var kwargs;
     if (kwargs_str != '') {
@@ -1212,7 +1211,9 @@ spt.tab.view_definition = function(bvr) {
     else {
         kwargs = {};
     }
-
+    
+    var class_name = header.getAttribute("spt_class_name_decoded");
+    
 
     /* TEST: show widget editor
     var class_name2 = 'tactic.ui.tools.WidgetEditorWdg';
@@ -2576,27 +2577,8 @@ spt.tab.view_definition = function(bvr) {
             'cbjs_action': '''$(bvr.src_el).bmdRipples();'''
         })
 
-        # header.add_style("overflow: hidden")
-        # header.add_style("box-sizing: border-box")
-
         if self.use_default_style:
             header.add_class("rounded-top-corners")
-
-
-        #header.add_style("border-style: solid")
-        #header.add_style("border-color: %s" % border)
-        #header.add_style("border-width: 1px 1px 0px 1px")
-        #header.add_style("padding: 7px 5px")
-        #header.add_color("color", "color")
-
-        #header.add_style("float: left")
-        # header.add_style("display: inline-block")
-        # header.add_style("vertical-align: top")
-        # header.add_style("margin-right: 1px")
-
-        # TODO: this should be the default
-        #header.add_style("box-sizing: border-box")
-
 
         if is_selected:
             header.add_class("spt_tab_selected")
@@ -2605,51 +2587,27 @@ spt.tab.view_definition = function(bvr) {
             header.add_class("spt_tab_unselected")
 
 
-        palette = header.get_palette()
-        hover_color = palette.color("background3")
-
-        header.add_behavior( {
-            'type': 'mouseenter',
-            'color': hover_color,
-            'cbjs_action': '''
-
-            if (bvr.src_el.hasClass("spt_tab_selected")) return;
-
-            bvr.src_el.setStyle("background", bvr.color);
-            '''
-        } )
-        header.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-
-            bvr.src_el.setStyle("background", "");
-            '''
-        } )
-
-
         count = attrs.get("count")
-
+       
         header.add_attr("spt_element_name", element_name)
         header.add_attr("spt_title", title)
 
         if not is_template:
-            header.add_attr("spt_class_name", class_name)
             if kwargs:
-                kwargs['count'] = count
-                # FIXME: this kwargs processing is a big HACK ...
-                # need to extract what add_behavior does.
+                if count:
+                    kwargs['count'] = count
                 kwargs_str = Common.convert_to_json(kwargs)
                 header.add_attr("spt_kwargs", kwargs_str)
-            else:
-                header.add_attr("spt_kwargs", '')
+            
+            widget_key = header.generate_widget_key(class_name, inputs=kwargs)
+            header.add_attr("spt_class_name", widget_key)
+            header.add_attr("spt_class_name_decoded", class_name)
+
         else:
             header.add_attr("spt_kwargs", '')
+            
+            widget_key = None
 
-           
-        if not class_name:
-            widget_key = header.generate_widget_key("tactic.ui.panel.CustomLayoutWdg", inputs=kwargs)
-        else:
-            widget_key = header.generate_widget_key(class_name, inputs=kwargs)
 
 
         header.add_behavior( {
@@ -2681,9 +2639,6 @@ spt.tab.view_definition = function(bvr) {
         count_wdg = SpanWdg()
         count_wdg.add_class("badge badge-secondary spt_tab_header_count")
         title_container.add(count_wdg)
-        #count_wdg.add_style("float: right")
-        #count_wdg.add_style("font-size: 0.7em")
-        count_wdg.add_style("margin-left: 10px")
 
         icon = None
         if icon:
@@ -2747,11 +2702,6 @@ spt.tab.view_definition = function(bvr) {
         if show_remove == "hover":
             remove_wdg.add_style("display: none")
 
-        #remove_wdg.add_style("float: right")
-        #remove_wdg.add_style("position: relative")
-        #remove_wdg.add_style("padding-right: 10px")
-
-
         remove_icon_path = self.kwargs.get("remove_icon_path")
         if (remove_icon_path):
             icon = HtmlElement.img(remove_icon_path)
@@ -2772,13 +2722,9 @@ spt.tab.view_definition = function(bvr) {
             header.add_class("drag-header")
             header.add_behavior( {
             'type': 'drag',
-            #"mouse_btn": 'LMB',
             "drag_el": '@',
             "cb_set_prefix": 'spt.tab.header_drag'
             } )
-
-        #header.add("&nbsp;")
-
 
         return header
 
