@@ -71,7 +71,8 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         kwargs = jsondumps(self.kwargs)
 
         name = self.get_name()
-
+        
+        self.layout.generate_widget_key(class_name)
         self.layout.add_relay_behavior( {
         'type': 'click',
         'col_name': name,
@@ -86,7 +87,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         var search_key = row.getAttribute("spt_search_key");
         search_key = search_key.replace(/\\&/, "\\&amp;");
 
-        var class_name = '%s';
+        var class_name = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
 
         eval("var kwargs = " + %s);
         kwargs['search_key'] = search_key;
@@ -97,11 +98,10 @@ class HiddenRowElementWdg(BaseTableElementWdg):
             spt.table.remove_hidden_row(row, bvr.col_name);
         }
         else {
-            //spt.table.add_hidden_row(row, bvr.class_name, bvr.kwargs);
             spt.table.add_hidden_row(row, class_name, kwargs);
         }
 
-        ''' % (class_name, jsondumps(kwargs))
+        ''' % (jsondumps(kwargs))
         } )
 
 

@@ -13,6 +13,7 @@
 __all__ = [ 'EditTitleWdg', 'EditCustomWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
+from pyasm.security import Sudo
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
 from pyasm.search import SearchType, Search, SearchKey, WidgetDbConfig
 from pyasm.web import DivWdg, Table, SpanWdg, WebContainer, HtmlElement
@@ -223,7 +224,12 @@ class EditWdg(BaseRefreshWdg):
         self.code = self.kwargs.get("code")
         sobject = None
         if self.search_key:
-            sobject = Search.get_by_search_key(self.search_key)
+            sudo = Sudo()
+            try:
+                sobject = Search.get_by_search_key(self.search_key)
+            finally:
+                sudo.exit()
+
             if not sobject:
                 raise Exception("No sobject found for search_key [%s]" % self.search_key)
             self.search_id = sobject.get_id()

@@ -14,6 +14,7 @@ __all__ = ['ParserImportError', 'CheckinMetadataHandler', 'BaseMetadataParser', 
 
 
 import os, sys, re, subprocess
+import six
 
 from pyasm.common import Common, Xml
 from pyasm.biz import File
@@ -199,7 +200,7 @@ class CheckinMetadataHandler():
             
             keys = [] 
             # otherwise it could an int or float
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = value.lower()
                 value = value.replace("(", "")
                 value = value.replace(")", "")
@@ -668,7 +669,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         geometry = metadata.get("Geometry")
 
         if geometry:
-            if not isinstance(geometry, basestring):
+            if not isinstance(geometry, six.string_types):
                 geometry = str(geometry)
                 
             p = re.compile("(\d+)x(\d+)\+(\d+)\+(\d+)")
