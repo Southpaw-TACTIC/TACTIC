@@ -5630,15 +5630,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
         dictionary - returned data structure
 
         '''
-
+        
         class_name = "tactic.command.PythonCmd"
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
                raise ApiException("Access denied") 
-
-
+        
         ret_val = {}
         try:
             from tactic.command import PythonCmd
@@ -5707,7 +5706,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # Do a security check
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
-            #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
                raise ApiException("Access denied") 
@@ -6614,8 +6612,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         ticket = self.init(ticket)
         if key == "top_layout":
-            from pyasm.web import WebEnvironment
-            class_name = WebEnvironment.get_top_class_name()
+            class_name = "tactic.ui.app.PageNavContainerWdg"
         else:
             raise ApiException("layout [%s] not supported" % key)
 
