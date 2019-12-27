@@ -18,6 +18,7 @@ from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
 from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, WidgetConfigView, TextWdg, ButtonWdg, CheckboxWdg, ProdIconButtonWdg, HiddenWdg
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
 from tactic.ui.container import RoundedCornerDivWdg, LabeledHidableWdg, PopupWdg
@@ -2892,6 +2893,19 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order": '21',
             'category': 'Display'
         },
+        "default_views": {
+            'description': "determines whether or not showing the default layout switching options",
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'default': 'true (displays the default layout switching options)',
+            'category': 'Optional'
+        },
+        "layout_switcher_custom_views": {
+            'description': "an optional dictionary containing all the information of the custom layout switchin options",
+            'type': 'TextWdg',
+            'values': '{"view": ["display_name", "class_name", "layout", "element_names"]}',
+            'category': 'Optional'
+        }
 
     }
 
@@ -3103,6 +3117,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # make some checks to see if search will actually work
         try:
+            sudo = Sudo()
             search = Search(search_type)
             search.set_null_filter()
             sobjects = search.get_sobjects()
@@ -3110,6 +3125,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             impl = SearchType.get_database_impl_by_search_type(search_type)
             if impl.get_database_type() == "MongoDb":
                 can_search = False
+        finally:
+            sudo.exit()
 
 
 
@@ -3265,6 +3282,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         badge_view = self.kwargs.get("badge_view")
         filter_view = self.kwargs.get("filter_view")
         extra_data = self.kwargs.get("extra_data")
+        layout_switcher_custom_views = self.kwargs.get("layout_switcher_custom_views")
+        default_views = self.kwargs.get("default_views")
+        name = self.kwargs.get("name")
+        column_widths = self.kwargs.get("column_widths")
+
         if extra_data:
             if isinstance(extra_data, dict):
                 extra_data = jsondumps(extra_data)
@@ -3385,7 +3407,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             "document_mode": document_mode,
             "window_resize_offset": window_resize_offset,
             "collapse_default": collapse_default,
-            "collapse_level": collapse_level
+            "collapse_level": collapse_level,
+            "layout_switcher_custom_views": layout_switcher_custom_views,
+            "default_views": default_views,
+            "name": name,
+            "column_widths": column_widths
         }
 
 
@@ -3523,7 +3549,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 extra_keys = []
 
             for key in extra_keys:
-                kwargs[key] = self.kwargs.get(key)
+                kwargs[key] = self.kwargs.get(key) or None
             kwargs['extra_keys'] = ",".join(extra_keys)
             layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
 
@@ -3549,7 +3575,10 @@ class ViewPanelWdg(BaseRefreshWdg):
         #layout_table.search_container_wdg.add(search_wdg)
 
         search_keys = self.kwargs.get("search_keys")
-        if search_keys:
+        sobjects = self.kwargs.get("sobjects")
+        if sobjects:
+            self.sobjects = sobjects
+        elif search_keys:
             self.sobjects = Search.get_by_search_keys(search_keys)
 
 

@@ -53,6 +53,8 @@ class SwitchLayoutMenu(object):
         self.search_type = self.kwargs.get("search_type")
         activator = self.kwargs.get("activator")
         self.view = self.kwargs.get("view")
+        self.custom_views = self.kwargs.get("custom_views") or None
+        default_views = self.kwargs.get("default_views")
 
         menu = Menu(width=180, allow_icons=True)
         menu_item = MenuItem(type='title', label='Switch Layout')
@@ -144,7 +146,20 @@ class SwitchLayoutMenu(object):
             ['preview','code','task_pipeline_report','summary','completion'],
 	    ]
 
+        if default_views in ['false', False]:
+            views = []
+            labels = []
+            class_names = []
+            layouts = []
+            element_names = []
 
+        if self.custom_views:
+            for key, val in self.custom_views.items():
+                views.append(key)
+                labels.append(val[0])
+                class_names.append(val[1])
+                layouts.append(val[2])
+                element_names.append(val[3])
 
         # add in the default
         #views.insert(0, self.view)
@@ -165,26 +180,43 @@ class SwitchLayoutMenu(object):
 
           
             var table_top = top.getElement(".spt_table_top");
-            var table = table_top.getElement(".spt_table_table");
+            
 
-            var layout = top.getAttribute("spt_layout");
-            var layout_el = top.getElement(".spt_layout");
-
-            var version = layout_el.getAttribute("spt_version");
-            if (version =='2') {
-                var table = table_top.getElement(".spt_table_table");
+            //var layout = top.getAttribute("spt_layout");
+            if (table_top){
+                var layout_el = top.getElement(".spt_layout");
+                var version = layout_el.getAttribute("spt_version") || 1;
+                if (version =='2') {
+                    var table = table_top.getElement(".spt_table_table");
+                } else {
+                    var table = table_top.getElement(".spt_table");
+                }
             } else {
-                var table = table_top.getElement(".spt_table");
+                var table_top = top.getElement(".spt_calendar_top");
+                var table = table_top.getElement("table");
+                table.addClass("spt_table_content");
+                table_top.addClass("spt_table_top");
             }
 
             
-            
-            top.setAttribute("spt_layout", layout);
+            top.setAttribute("spt_layout", bvr.layout);
             var last_view = top.getAttribute("spt_view");
             top.setAttribute("spt_last_view", last_view);
             top.setAttribute("spt_view", bvr.view);
             table_top.setAttribute("spt_class_name", bvr.class_name);
             table_top.setAttribute("spt_view", bvr.view);
+
+            var ls_custom_views = top.getAttribute("spt_layout_switcher_custom_views") || "";
+            if (ls_custom_views) {
+                ls_custom_views = ls_custom_views.replace(/'/g, '"');
+                ls_custom_views = JSON.parse(ls_custom_views);
+                ls_custom_views = JSON.stringify(ls_custom_views);
+                table_top.setAttribute("spt_custom_views", ls_custom_views);
+            }
+
+            if (bvr.custom_views) {
+                table_top.setAttribute("spt_custom_views", bvr.custom_views);
+            }
             
             table.setAttribute("spt_view", bvr.view);
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el, element_names: bvr.element_names, widths:[]} );
@@ -209,9 +241,10 @@ class SwitchLayoutMenu(object):
             label = labels[i]
 
             menu_item = MenuItem(type='action', label=label)
-            if self.view == views[i]:
+            if self.view == labels[i]:
                 menu_item.set_icon(IconWdg.DOT_GREEN)
             menu.add(menu_item)
+
             menu_item.add_behavior( {
             'type': 'click_up',
             'view': view,
@@ -219,6 +252,8 @@ class SwitchLayoutMenu(object):
             'element_names': element_name_list,
             'layout': layout,
             'search_type': self.search_type,
+            'default_views': default_views,
+            'custom_views': self.custom_views,
             'cbjs_action': cbk
             } )
 
@@ -258,6 +293,8 @@ class CellEditWdg(BaseRefreshWdg):
         search_type = self.kwargs['search_type']
         layout_version = self.kwargs['layout_version']
 
+        config_xml = self.kwargs['config_xml']
+
         configs = Container.get("CellEditWdg:configs")
         if not configs:
             configs = {}
@@ -271,6 +308,11 @@ class CellEditWdg(BaseRefreshWdg):
 
             self.config = WidgetConfigView.get_by_search_type(search_type, view)
             configs[key] = self.config
+
+            # get the base configs
+            if config_xml:
+                extra_config = WidgetConfig.get(view="edit", xml=config_xml)
+                self.config.get_configs().insert(0, extra_config)
 
             # add an override if it exists
             view = "edit_item"
@@ -773,6 +815,23 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
         count = 0
+
+        # column edit option pass-throughs
+        edit_options = self.kwargs.get("edit_options")
+
+        if isinstance(edit_options, six.string_types):
+            try:
+                # hack taken from gear_settings kwarg in ui.panel.BaseTableLayoutWdg
+                edit_options = edit_options.replace("'", '"')
+                edit_options = jsonloads(edit_options)
+            except ValueError:
+                edit_options = None
+        if not isinstance(edit_options, dict):
+            edit_options = None
+
+        # column edit exclusions
+        static_elements = self.kwargs.get("static_element_names") or []
+
         for element_name in element_names:
 
             count += 1
@@ -881,7 +940,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             if (bvr.target) {
                 var parent = bvr.src_el.getParent("."+bvr.target);
                 panel = parent.getElement(".spt_layout");
-                console.log(panel);
             }
             else if (popup) {
                 var panel = popup.panel;
@@ -918,7 +976,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             elements_wdg.add(menu_item_container)
             menu_item_container.add(menu_item)
 
-            if (self.kwargs.get("edit") in ['true', True]):
+            if (self.kwargs.get("edit") in ['true', True]) and (element_name not in static_elements):
                 button = IconButtonWdg(name="Edit", icon="FA_EDIT")
                 menu_item_container.add(button)
                 button.add_behavior( {
@@ -926,6 +984,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 'target_id': self.target_id,
                 'target': target,
                 'element_name': element_name,
+                'edit_options': edit_options or {},
                 'cbjs_action': '''
 
                 var panel;
@@ -967,8 +1026,14 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
                 var args = {
                     'search_type': search_type,
                     'view': view,
-                    'element_name': element_name
+                    'element_name': element_name,
+                    'is_insert': "false"
                 };
+                var edit_options = bvr.edit_options;
+
+                for (var key in edit_options) {
+                    args[key] = edit_options[key];
+                }
 
                 spt.panel.load_popup(title, class_name, args=args);
                 '''
@@ -1092,8 +1157,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         context_menu.add_style("overflow-x: hidden")
 
 
-
-        self.config = WidgetConfigView.get_by_search_type(search_type, "definition")
+        element_view = self.kwargs.get("element_view") or "definition"
+        self.config = WidgetConfigView.get_by_search_type(search_type, element_view)
 
         predefined_element_names = ['preview', 'edit_item', 'delete', 'notes', 'notes_popup', 'task', 'task_edit', 'task_schedule', 'task_pipeline_panels', 'task_pipeline_vertical', 'task_pipeline_report', 'task_status_history', 'task_status_summary', 'completion', 'file_list', 'group_completion', 'general_checkin_simple', 'general_checkin', 'explorer', 'show_related', 'detail', 'notes_sheet', 'work_hours', 'history', 'summary', 'metadata']
         predefined_element_names.sort()

@@ -22,6 +22,7 @@ from pyasm.common import Common, jsonloads, jsondumps, Environment, Container
 from pyasm.search import Search, SearchKey, SObject, SearchType, SearchException
 from pyasm.web import DivWdg, Table, HtmlElement, WebContainer, FloatDivWdg
 from pyasm.widget import ThumbWdg, IconWdg, WidgetConfig, WidgetConfigView, SwapDisplayWdg, CheckboxWdg
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import SmartMenu
@@ -484,6 +485,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_viewable = security.check_access('element', access_keys, "view", default=def_default_access)
             is_editable = security.check_access('element', access_keys, "edit", default=def_default_access)
 
+            # hide columns with hidden="true", except when this is a temporary table for dynamic operations
+            is_hidden = (self.kwargs.get("temp") != True) and (attrs.get("hidden") in ['true', True])
+
+            is_viewable = is_viewable and (not is_hidden)
+
             if not is_viewable:
                 # don't remove while looping, it disrupts the loop
                 #self.widgets.remove(widget)
@@ -528,7 +534,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 self.sobjects = []
             else:
-                self.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+                try:
+                    sudo = Sudo()
+                    self.sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
+                finally:
+                    sudo.exit()
 
             self.items_found = len(self.sobjects)
             # if there is no parent_key and  search_key doesn't belong to search_type, just do a general search
@@ -610,6 +620,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         for sobject in self.sobjects:
             self.sobject_levels.append(0)
 
+        self.edit_config_xml = self.kwargs.get("edit_config_xml")
 
         # Force the mode to widget because raw does work with FastTable
         # anymore (due to fast table constantly asking widgets for info)
@@ -868,6 +879,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
 
             width = self.attributes[i].get("width")
+            
 
             if i >= len(column_widths):
                 # default width
@@ -878,8 +890,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             elif not column_widths[i]:
                 column_widths[i] = default_width
-
-
+            
         # resize the widths so that the last one is free
         expand_full_width = True
         default_width = 120
@@ -899,8 +910,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     continue
                 else:
                     item_width = int(float(item_width))
-
-
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -3085,6 +3094,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if self.connect_key:
             tr.add_attr("spt_connect_key", self.connect_key )
 
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        access_keys = self._get_access_keys("retire_delete",  project_code)
+        if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
+            search_key = sobject.get_search_key(use_id=True)
+            ret_api_key = tr.generate_api_key("retire_sobject", inputs=[search_key], attr="ret")
+            del_api_key = tr.generate_api_key("delete_sobject", inputs=[search_key], attr="del")
+            reac_api_key = tr.generate_api_key("reactivate_sobject", inputs=[search_key], attr="reac")
+
 
         # TEST TEST TEST
         document_mode = self.kwargs.get("document_mode") or False
@@ -3157,7 +3175,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         display_value = sobject.get_display_value(long=True)
         tr.add_attr("spt_display_value", display_value)
-
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             tr.set_attr("spt_is_subscribed","true")
 
@@ -3540,6 +3557,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #tr.add_attr("ondragenter", "return false")
         tr.add_attr("ondragover", "spt.table.dragover_row(event, this); return false;")
         tr.add_attr("ondragleave", "spt.table.dragleave_row(event, this); return false;")
+        tr.generate_api_key("insert", inputs=[self.search_type, {"name": "__API_UNKNOWN__"}], attr="insert")
+        tr.generate_api_key("simple_checkin", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", "__API_UNKNOWN__", {"mode": "uploaded", "use_handoff_dir": False}], attr="checkin")
         tr.add_attr("ondrop", "spt.table.drop_row(event, this); return false;")
 
 
@@ -3596,8 +3615,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 bg_color_map = {}
 
                 search_type, match_col, color_col = query.split("|")
-                search = Search(search_type)
-                sobjects = search.get_sobjects()
+                try:
+                    sudo = Sudo()
+                    search = Search(search_type)
+                    sobjects = search.get_sobjects()
+                finally:
+                    sudo.exit()
 
                 # match to a second atble
                 if query2:
@@ -3794,7 +3817,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 if editable == True:
                     from .layout_wdg import CellEditWdg
-                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version())
+                    edit = CellEditWdg(x=j, element_name=name, search_type=self.search_type, state=self.state, layout_version=self.get_layout_version(), config_xml=self.edit_config_xml)
                     edit_wdgs[name] = edit
                     # now set up any validations on this edit cell,
                     # if any have been configured on it
@@ -4114,7 +4137,10 @@ spt.table.drop_row = function(evt, el) {
             var layout = spt.table.get_layout();
             var search_type = layout.getAttribute("spt_search_type");
             var server = TacticServerStub.get();
+            var insert_key = el.getAttribute("SPT_INSERT_API_KEY");
+            server.set_api_key(insert_key);
             var sobject = server.insert(search_type, {name: filename})
+            server.clear_api_key();
             search_key = sobject.__search_key__;
         }
         var context = "publish" + "/" + filename;
@@ -4126,7 +4152,10 @@ spt.table.drop_row = function(evt, el) {
                 var kwargs = {mode: 'uploaded'};
                 spt.table.dragleave_row(evt, el);
                 try {
+                    var checkin_key = el.getAttribute("SPT_CHECKIN_API_KEY");
+                    server.set_api_key(checkin_key);
                     server.simple_checkin( search_key, context, filename, kwargs);
+                    server.clear_api_key();
                 }
                 catch(e) {
                     spt.alert("An error occured in the check-in: ["+e+"]");
@@ -5753,8 +5782,11 @@ spt.table.open_link = function(bvr) {
 
     if (expression) {
         var server = TacticServerStub.get();
+        var api_key = bvr.src_el.getAttribute("SPT_API_KEY");
+        server.set_api_key(api_key);
         var sss = server.eval(expression, {search_keys: search_key, single: true})
         search_key = sss.__search_key__;
+        server.clear_api_key();
 
         title = sss.code;
         name = sss.code;
@@ -8383,10 +8415,16 @@ spt.table.operate_selected = function(action)
                 if (search_key.test('sthpw/project?'))
                     is_project = true;
 
-                if (action == 'retire')
+                if (action == 'retire') {
+                    var retire_key = selected_rows[i].getAttribute("SPT_RET_API_KEY");
+                    server.set_api_key(retire_key);
                     server.retire_sobject(search_key);
-                else if (action == 'delete')
+                } else if (action == 'delete') {
+                    var del_key = selected_rows[i].getAttribute("SPT_DEL_API_KEY");
+                    server.set_api_key(del_key);
                     server.delete_sobject(search_key);
+                }
+                server.clear_api_key();
             }
         }
         catch(e) {

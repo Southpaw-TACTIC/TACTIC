@@ -10,46 +10,64 @@
 #
 #
 
-__all__ = ['CacheStartup']
+__all__ = ['CacheStartup', 'TableInfoCache']
 
 import tacticenv
 
 from pyasm.common import Config, Common, Container, GlobalContainer
-from pyasm.search import DbContainer
+from pyasm.search import DbContainer, DatabaseImpl, DbResource
 from tactic.command import Scheduler, SchedulerTask
 from pyasm.security import Batch
 from pyasm.biz import BaseCache, CacheContainer, SearchTypeCache
 
 import time
 
+STHPW_TABLES = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket', 'task', 'task', 'status_log', 'pref_setting', 'cache', 'transaction_log', 'change_timestamp']
+
 # custom cache class
 class TableInfoCache(BaseCache):
     def __init__(self, **kwargs):
-        self.key = kwargs.get("key")
         self.database = kwargs.get("database")
-        self.tables = kwargs.get("tables")
+        self.tables = kwargs.get("tables") or []
+
+        self.db_resource = kwargs.get("db_resource")
+        if not self.db_resource:
+            self.db_resource = DbResource.get_default(self.database)
+
+        if not kwargs.get("key") and self.db_resource:
+            self.key = str(self.db_resource)
+        else:
+            self.key = kwargs.get("key")
+
         super(TableInfoCache, self).__init__(self.key)
 
+
+        # precache some of the sthpw tables
+        if not self.tables and  self.db_resource.get_database() == "sthpw":
+            self.tables = STHPW_TABLES
+
+
+
     def init_cache(self):
-        from pyasm.search import DatabaseImpl, DbContainer
-        self.caches = {}
 
         data = {}
-        for table in self.tables:
-            column_data = DatabaseImpl.get().get_column_info(self.database, table)
-            data[table] = column_data
         self.caches['data'] = data
-
-        # get the order columns
         columns = {}
-        sql = DbContainer.get(self.database)
-        for table in self.tables:
-            column_list = sql.get_columns(table)
-            columns[table] = column_list
-
-        self.caches = {}
-        self.caches['data'] = data
         self.caches['columns'] = columns
+
+        for table in self.tables:
+            DatabaseImpl.get().get_column_info(self.db_resource, table)
+
+
+
+    def add_table(self, table, column_data):
+        data = self.caches['data']
+        data[table] = column_data
+
+        sql = self.db_resource.get_sql()
+        columns = self.caches['columns']
+        column_list = sql.get_columns(table)
+        columns[table] = column_list
 
 
 
@@ -64,23 +82,18 @@ class CacheStartup(object):
         if self.mode == 'basic':
             return
 
-        # cache sthpw tables definitions
-        from pyasm.security import Site
-        site = Site.get_site()
-        if site:
-            key = "%s:sthpw_column_info" % site
-        else:
-            key = "sthpw_column_info"
 
-        data = CacheContainer.get(key)
-        if data == None:
-            tables = ['project', 'search_object', 'login', 'login_group', 'login_in_group','snapshot','file','trigger','notification','ticket']
-            kwargs = {
-                "key": key,
-                "database": 'sthpw',
-                "tables": tables,
-            }
-            cache = TableInfoCache( **kwargs )
+        from pyasm.search import DbResource
+        db_resource = DbResource.get_default("sthpw")
+
+        # pre-cache sthpw tables definitions
+        kwargs = {
+            "db_resource": db_resource,
+            "tables": STHPW_TABLES
+        }
+        cache = TableInfoCache( **kwargs )
+
+
 
 
         from pyasm.security import Sudo
@@ -164,7 +177,7 @@ class CacheStartup(object):
                 DbContainer.close_all()
 
         task = RefreshTask()
-        interval = 180
+        interval = 600 
         scheduler.add_interval_task(task, interval=interval, mode='threaded', delay=30)
 
 

@@ -318,8 +318,9 @@ class Project(SObject):
         assert not isinstance(search_type, SearchType)
 
         project_code = cls.extract_project_code(search_type)
-        assert project_code != "__NONE__"
-
+        if project_code == "__NONE__":
+            return cls.get()
+        #assert project_code != "__NONE__"
 
         project = cls.get_by_code(project_code)
         return project
@@ -481,9 +482,7 @@ class Project(SObject):
         security_version = get_security_version()
         if security_version != 1 and not project_code == 'admin':
             key = { 'code': project_code }
-            key2 = { 'code': "*" }
-            keys = [key, key2]
-            if not security.check_access("project", keys, access="allow", default="deny"):
+            if not security.check_access("project", key, access="allow", default="deny"):
                 user = Environment.get_login()
                 if user:
                     user = user.get_value("login")
@@ -642,11 +641,16 @@ class Project(SObject):
 
 
         project_code = cls.get_database_by_search_type(search_type)
-        project = Project.get_by_code(project_code)
+
+        if project_code == "__NONE__":
+            project = Project.get()
+        else:
+            project = Project.get_by_code(project_code)
+
         if not project:
             raise Exception("Error: Project [%s] does not exist" % project_code)
 
-
+        #TEST
         if search_type.startswith("salesforce/"):
             db_resource_code = "Salesforce"
             db_resource = DbResource.get_by_code(db_resource_code, project_code)
@@ -833,7 +837,7 @@ class Project(SObject):
     def _get_base_dir(protocol, sobject, decrement=0):
         '''decrement is the number of levels it tries to go up the directory'''
         snapshot = None
-        from snapshot import Snapshot
+        from .snapshot import Snapshot
         if isinstance(sobject,Snapshot):
             snapshot = sobject
 

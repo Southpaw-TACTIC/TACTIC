@@ -1576,6 +1576,7 @@ class TaskGenerator(object):
         self.handled_processes = set()
         self._generate_tasks()
 
+
         return self.tasks
 
 
@@ -1639,6 +1640,8 @@ class TaskGenerator(object):
             self.last_end_dates[start_process] = self.first_start_date
 
             self.handle_process(start_process)
+            
+            self.handled_processes.add(start_process)
 
             self._handle_downstream_tasks(start_process)
 
@@ -1649,8 +1652,8 @@ class TaskGenerator(object):
 
         # we have a new pipeline
         pipeline = self.pipeline
-        handled_processes = self.handled_processes
         process_sobjects = self.process_sobjects
+        handled_processes = self.handled_processes
 
         output_processes = pipeline.get_output_process_names(process)
 
@@ -1671,7 +1674,7 @@ class TaskGenerator(object):
 
 
 
-            if output_process in handled_processes:
+            if output_process in self.handled_processes:
                 continue
 
 
@@ -1754,13 +1757,18 @@ class TaskGenerator(object):
                 if subpipeline_code:
                     subpipeline = Pipeline.get_by_code(subpipeline_code)
 
+                    if self.parent_process:
+                        full_process_name = "%s/%s" % (self.parent_process, process_name)
+                    else:
+                        full_process_name = process_name
+
                     if subpipeline:
                         generator = TaskGenerator(generate_mode=self.generate_mode)
                         subtasks = generator.execute(
                             self.sobject, 
                             subpipeline, 
                             start_date=self.start_date, 
-                            parent_process=process_name,
+                            parent_process=full_process_name,
                             today=self.today
                         )
  
@@ -1941,6 +1949,8 @@ class TaskGenerator(object):
             else:
                 output_contexts = pipeline.get_output_contexts(process_obj.get_name(), show_process=False)
             pipeline_code = (properties.get("task_pipeline") if version_2 else workflow.get("task_pipeline")) or process_obj.get_task_pipeline()
+            if self.generate_mode == 'schedule':
+                pipeline_code = pipeline.get_value('code')
 
 
             for context in output_contexts:

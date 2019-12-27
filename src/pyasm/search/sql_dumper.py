@@ -357,7 +357,7 @@ class TableDataDumper(object):
 
                 if path:
                     #dirname = os.path.dirname(path)
-                    subpath = "%s/%s.spt" % (path, sobject.get_value(relative_dir_column).replace(".","/"))
+                    subpath = "%s/%s.spt" % (path, str(sobject.get_value(relative_dir_column)).replace(".","/"))
 
                     if not os.path.exists(os.path.dirname(subpath)):
                         os.makedirs(os.path.dirname(subpath))

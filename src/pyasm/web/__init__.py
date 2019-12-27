@@ -43,3 +43,5 @@ from .web_init import *
 
 from .monitor import *
 
+from .cache_startup import *
+

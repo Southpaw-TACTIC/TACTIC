@@ -31,7 +31,7 @@ class Sudo(object):
 
     def __init__(self):
         count = Container.increment("Sudo::is_sudo")
-        if count < 0:
+        if count <= 0:
             raise Exception("count of sudo: ", count)
 
         self.security = Environment.get_security()
@@ -419,7 +419,7 @@ class AccessManager(Base):
                 key2.pop('project')
             
             # backward compatibility with the key attribute
-            if len(key2) == 1 and key2.keys() == ['key']:
+            if len(key2) == 1 and list(key2.keys()) == ['key']:
                 key = key2['key']
             else:
                 key = Common.get_dict_list(key2)

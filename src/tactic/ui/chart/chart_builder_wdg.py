@@ -65,9 +65,11 @@ class ChartBuilderWdg(BaseRefreshWdg):
 
         .spt_graph_option_menu {
             display: flex;
+            margin-bottom: -10px;
         }
 
         .spt_chart_column_select {
+            margin-top: 10px;
             margin-bottom: 10px;
         }
         ''')
@@ -145,10 +147,10 @@ class ChartBuilderWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
         let top = bvr.src_el.getParent(".spt_chart_builder"); 
-        let select = top.getElement(".spt_chart_column_select");
+        let input_div = top.getElement(".spt_input_div");
         let detail = top.getElement(".spt_bar_chart_detail");
         
-        let clone = spt.behavior.clone(select);
+        let clone = spt.behavior.clone(input_div);
         detail.appendChild(clone);
         '''
         } )
@@ -162,14 +164,20 @@ class ChartBuilderWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': '''
         let top = bvr.src_el.getParent(".spt_chart_builder"); 
-        let selects = top.getElementsByClassName("spt_chart_column_select");
+        let inputs = top.getElementsByClassName("spt_input_div");
       
-        if (selects.length > 1) {
-            spt.behavior.destroy(selects[selects.length - 1]);
+        if (inputs.length > 1) {
+            spt.behavior.destroy(inputs[inputs.length - 1]);
         }
         '''
         } )
         container.add(minus_button)
+
+
+
+        input_div = DivWdg()
+        input_div.add_class("spt_input_div")
+        detail_div.add(input_div)
 
         column_select_div = SelectWdg("y_axis")
         column_select_div.set_option("values", self.columns + "expression")
@@ -177,8 +185,8 @@ class ChartBuilderWdg(BaseRefreshWdg):
         column_select_div.add_class("spt_chart_column_select")
 
         onchange_action = '''
-        let top = bvr.src_el.getParent(".spt_chart_builder");
-        let expr = top.getElement(".spt_expression_div");
+        let input_div = bvr.src_el.getParent(".spt_input_div");
+        let expr = input_div.getElement(".spt_expression_div");
 
         if (bvr.src_el.value == "expression") {
             if (expr.hasClass("hidden")) expr.removeClass("hidden");
@@ -188,7 +196,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         '''
 
         column_select_div.set_option("onchange", onchange_action)
-        detail_div.add(column_select_div)
+        input_div.add(column_select_div)
 
         expression_div = DivWdg()
         expression_div.add_class("spt_expression_div")
@@ -198,7 +206,7 @@ class ChartBuilderWdg(BaseRefreshWdg):
         expr_input= TextInputWdg(name="expression")
         expr_input.add_style("width", "100%")
         expression_div.add(expr_input)
-        detail_div.add(expression_div)
+        input_div.add(expression_div)
 
         return detail_div 
 
@@ -382,9 +390,14 @@ class ChartBuilderWdg(BaseRefreshWdg):
         let top = bvr.src_el.getParent(".spt_chart_builder");
         let chart = top.getElement(".spt_chart");
         let values = spt.api.get_input_values(top, null, null, null, null, false);
-        
-        if (values.expression) values.y_axis = values.expression;
+       
+        if (values.expression) {
+            for (let i = 0; i < values.y_axis.length; i++) {
+                if (values.y_axis[i] == 'expression') values.y_axis[i] = values.expression.shift();
+            }
 
+        }
+        
         let y_axis = values.y_axis.join();
         let chart_type = values.chart_type.join();
 

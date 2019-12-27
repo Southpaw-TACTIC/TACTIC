@@ -1337,7 +1337,9 @@ class SelectWdg(BaseInputWdg):
 
             else:
                 sobjects = []
+            from pyasm.security import Sudo
             try:
+                sudo = Sudo()
                 parser = ExpressionParser()
                 self.values = parser.eval(values_expr, sobjects=sobjects)
             except Exception as e:
@@ -1346,10 +1348,13 @@ class SelectWdg(BaseInputWdg):
                 self.labels = self.values[:]
                 # don't raise anything yet until things are properly drawn
 				#raise InputException(e) 
+            finally:
+                sudo.exit()
 
             
             if labels_expr:
                 try:
+                    sudo = Sudo()
                     self.labels = parser.eval(labels_expr, sobjects=sobjects)
                     # expression may return it as a string when doing concatenation is done on a 1-item list
                     if isinstance(self.labels, basestring):
@@ -1357,6 +1362,8 @@ class SelectWdg(BaseInputWdg):
                 except Exception as e:
                     print("Expression error: ", str(e))
                     self.labels = ['Error in labels expression']
+                finally:
+                    sudo.exit()
             else:
                 self.labels = self.values[:]
 

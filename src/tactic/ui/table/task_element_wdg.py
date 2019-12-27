@@ -2386,7 +2386,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     parent_sk =  task.get_parent_search_key()
                     stype = SearchKey.extract_search_type(parent_sk)
                     update = {
-                        "search_type": stype, 
                         "search_key": parent_sk,
                         "expression": "@GET(sthpw/task['process','%s'].id)" % process,
                         "cbjs_action": ''' var el = bvr.src_el;
@@ -2502,7 +2501,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         parent_sk =  task.get_parent_search_key()
                         stype = SearchKey.extract_search_type(parent_sk)
                         update = {
-                            "search_type": stype, 
                             "search_key": parent_sk,
                             "expression": "@GET(sthpw/task['process','%s'].id)" % process,
                             "cbjs_action": ''' var el = bvr.src_el;

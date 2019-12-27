@@ -959,36 +959,36 @@ class Sql(Base):
 
         # replace all single quotes with two single quotes
         value_type = type(value)
-        #if value_type in [types.ListType, types.TupleType]:
         if isinstance(value, (list, tuple)):
             if len(value) == 0:
                 # Previously no check if list is empty, which is an issue
                 # for trying to get 'value[0]' as it's not defined. Assuming
                 # that if the list is empty, the intended value  is NULL
                 return "NULL"
-            value = value[0]
+            #value = value[0]
+            #value = [x.replace("'", "''") for x in value]
+            has_outside_quotes = False
             value_type = type(value)
 
-
-
+            value = ["'%s'" % x.replace("'", "''") for x in value]
+            value = "(%s)" % ", ".join(value)
 
         # quote types
-        if isinstance(value, basestring):
+        elif isinstance(value, basestring):
             value = value.replace("'", "''")
         elif isinstance(value, int):
             value = str(value)
-        #elif value_type == types.BooleanType:
         elif isinstance(value_type, bool):
             if value == True:
                 value = "1"
             else:
                 value = "0"
-        elif isinstance(value, list):
-            value = value[0]
-            value = value.replace("'", "''")
+        #elif isinstance(value, list):
+        #    value = value[0]
+        #    value = value.replace("'", "''")
+
         elif isinstance(value_type, types.MethodType):
             raise SqlException("Value passed in was an <instancemethod>")
-        #elif value_type in [types.FloatType, types.IntType]:
         elif isinstance(value_type, (float, int)):
             pass
         elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
@@ -2125,6 +2125,7 @@ class Select(object):
                 return '0'
         return value
 
+
     def add_filter(self, column, value, column_type="", op='=', quoted=None, table=''):
         assert self.tables
 
@@ -2223,6 +2224,9 @@ class Select(object):
                 value = self._convert_to_database_boolean(value)
                 quoted = info.get("quoted")
 
+
+        if op not in ['in', 'not in'] and isinstance(value, (list,tuple)):
+            value = value[0]
 
         if quoted:
             value = Sql.quote(value)

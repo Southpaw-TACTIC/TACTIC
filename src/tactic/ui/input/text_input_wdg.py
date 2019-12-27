@@ -800,6 +800,10 @@ class LookAheadTextInputWdg(TextInputWdg):
         self.hidden.set_name(name)
 
 
+    def set_hidden_value(self, value, set_form_value=False):
+        self.hidden.set_value(value, set_form_value=set_form_value)
+
+
     def get_styles(self):
 
         styles = HtmlElement.style("")
@@ -809,6 +813,8 @@ class LookAheadTextInputWdg(TextInputWdg):
 
 
     def init(self):
+
+
         self.text.add_attr("autocomplete", "off")
 
         self.search_type = self.kwargs.get("search_type")
@@ -985,7 +991,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             }
 
             '''
-        } )
+            })
+
+
 
         self.hidden = HiddenWdg(self.name)
         self.top.add(self.hidden)

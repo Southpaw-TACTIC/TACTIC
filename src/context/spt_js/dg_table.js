@@ -550,7 +550,10 @@ spt.dg_table.retire_selected = function(table)
             for (var i=0; i < selected_rows.length; i++)
             {
                 var search_key = selected_rows[i].getAttribute("spt_search_key");
+                var api_key = selected_rows[i].getAttribute("SPT_RET_API_KEY");
+                server.set_api_key(api_key);
                 server.retire_sobject(search_key);
+                server.clear_api_key();
             }
         }
         catch(e) {
@@ -714,7 +717,10 @@ spt.dg_table._delete_selected = function( table, kwargs, num, selected_rows, sea
         for (var i=0; i < selected_rows.length; i++) {
 
             var search_key = selected_rows[i].getAttribute("spt_search_key");
+            var api_key = selected_rows[i].getAttribute("SPT_DEL_API_KEY");
+            server.set_api_key(api_key);
             server.delete_sobject(search_key);
+            server.clear_api_key();
 
             /*
             var tr = selected_rows[i];
@@ -1024,7 +1030,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={"extra_data": {}})
 {
     var table = document.id(table_id);
     var definition_view = table.getAttribute("spt_view");
@@ -1089,6 +1095,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
     config += '>\n';
     // go through each header cell and get the element name
     // skip the first selection 
+    var table_elements = [];
     for( var c=first_idx; c < row.cells.length; c++ ) {
         var cell = row.cells[c];
         var name = cell.getAttribute("spt_element_name");
@@ -1096,9 +1103,28 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
             continue;
         }
         var width = spt.get_element_width(cell);
-        config += '    <element name="'+ name +'" width="'+ width +'"/>\n';
+        config += '    <element name="'+ name +'" hidden="false" width="'+ width +'"/>\n';
+        table_elements.push(name);
     }
 
+    // if saving definitions, add elements not present in table from view, setting them as hidden
+    var server = TacticServerStub.get()
+    var definitions;
+    var definition_elements;
+    if (kwargs.save_definitions) {
+        definitions = server.eval("@GET(config/widget_config['search_type', '" + search_type + "']['view', '" + definition_view + "'].config)", {single: true});
+        if (definitions) {
+            var definition_xml = spt.parse_xml(definitions);
+            definition_elements = Array.prototype.slice.call(definition_xml.getElementsByTagName("element"), 0);
+            for (var i = 0; i < definition_elements.length; i++) {
+                var name = definition_elements[i].getAttribute("name");
+
+                if (table_elements.indexOf(name) == -1) {
+                    config += '    <element name="'+ name +'" hidden="true"/>\n';
+                }
+            }
+        }
+    }
     if (view.test(/@/)) 
         config += '  </view>\n';
     else
@@ -1107,48 +1133,40 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
 
     config += '</config>\n';
 
-
-    var server = TacticServerStub.get();
-
     // copy definitions
-    if (kwargs.save_definitions) {
-        var definitions = server.eval("@GET(config/widget_config['search_type', '" + search_type + "']['view', '" + definition_view + "'].config)", {single: true});
+    if (definitions) {
+        // work with XML doc for convenience
+        var config_xml = spt.parse_xml(config);
 
-        if (definitions) {
-            // work with XML docs for convenience
-            var definition_xml = spt.parse_xml(definitions);
-            var config_xml = spt.parse_xml(config);
+        // get all elements to check for definitions, and all available definitions respectively
+        var config_elements = config_xml.getElementsByTagName("element");
 
-            // get all elements to check for definitions, and all available definitions respectively
-            var config_elements = config_xml.getElementsByTagName("element");
-            var definition_elements = Array.prototype.slice.call(definition_xml.getElementsByTagName("element"), 0);
+        // for each element in the new config, copy the element definition
+        for (var i = 0; i < config_elements.length; i++) {
 
-            // for each element in the new config, copy the element definition
-            for (var i = 0; i < config_elements.length; i++) {
+            // check if a definition with the same name exists
+            var definition_element = definition_elements.filter(function(el) {
+                return config_elements[i].getAttribute("name") == el.getAttribute("name");
+            });
 
-                // check if a definition with the same name exists
-                var definition_element = definition_elements.filter(function(el) {
-                    return config_elements[i].getAttribute("name") == el.getAttribute("name");
-                });
+            // copy only the first definition found
+            if (definition_element.length > 0) {
+                definition_element = definition_element[0];
 
-                if (definition_element.length > 0) {
-                    definition_element = definition_element[0];
+                // copy over the definition, prioritizing newly defined attribute values (just "width"
+                // and "hidden" for now) and using the unmodified ones from the definition
+                var attributes = config_elements[i].getAttributeNames();
 
-                    // copy over the definition, prioritizing newly defined attribute values (just width for now) and using the unmodified ones from the
-                    // definition
-                    var attributes = config_elements[i].getAttributeNames();
-
-                    for (var j = 0; j < attributes.length; j++) {
-                        definition_element.setAttribute(attributes[j], config_elements[i].getAttribute(attributes[j]))
-                    }
-
-                    config_elements[i].outerHTML = definition_element.outerHTML;
+                for (var j = 0; j < attributes.length; j++) {
+                    definition_element.setAttribute(attributes[j], config_elements[i].getAttribute(attributes[j]))
                 }
-            }
 
-            // re-serialize the config with the definitions
-            config = new XMLSerializer().serializeToString(config_xml);
+                config_elements[i].outerHTML = definition_element.outerHTML;
+            }
         }
+
+        // re-serialize the config with the definitions
+        config = new XMLSerializer().serializeToString(config_xml);
     }
 
     var config_search_type = 'config/widget_config';
@@ -2201,6 +2219,12 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var view = null;
     if (view == '' || view == null) {
         view = table.getAttribute("spt_view");
+        var class_name = target.getAttribute("spt_class_name");
+        if (class_name == 'tactic.ui.panel.CustomLayoutWdg') {
+            if (!view.includes(".")) {
+                view = target.getAttribute("spt_view");
+            }
+        }
     }
 
     // get all of the search input values
@@ -2336,6 +2360,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var element_names;
     var column_widths = [];
     var search_keys = [];
+    var custom_views = target.getAttribute("spt_custom_views") || "{}";
     
     if (version == "2") {
         if (bvr.element_names) {
@@ -2425,6 +2450,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'extra_data': extra_data,
         'default_data': default_data,
         'window_resize_offset': window_resize_offset,
+        'custom_views': custom_views,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -2446,7 +2472,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
     if (extra_keys) {
         args['extra_keys'] = extra_keys;
         extra_keys = extra_keys.split(",");
-        console.log(extra_keys);
         for (var k = 0; k < extra_keys.length; k++) {
             var key = extra_keys[k];
             args[key] = target.getAttribute("spt_"+key) || "";
@@ -4294,11 +4319,13 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
+        var api_key = row.getAttribute("SPT_RET_API_KEY");
 
 
 
 
         var server = TacticServerStub.get();
+        server.set_api_key(api_key);
         var show_retired = spt.dg_table.get_show_retired_flag( row );
         var is_project = search_key.test('sthpw/project?') ? true : false;
         try {
@@ -4318,6 +4345,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
                 Effects.fade_out(row, 500, on_complete);
                 
             }
+            server.clear_api_key();
             if (is_project)
                 setTimeout("spt.panel.refresh('ProjectSelectWdg');", 2000);
         } catch(e) {
@@ -4329,8 +4357,10 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     else {
         var tbody = activator.getParent('.spt_table_tbody');
         var search_key = tbody.get("spt_search_key");
+        var api_key = tbody.getAttribute("SPT_RET_API_KEY");
 
         var server = TacticServerStub.get();
+        server.set_api_key(api_key);
         var show_retired = spt.dg_table.get_show_retired_flag( tbody );
         try {
             if( show_retired ) {
@@ -4345,6 +4375,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
         } catch(e) {
             spt.alert(spt.exception.handler(e));
         }
+        server.clear_api_key();
     }
 }
 
@@ -4359,9 +4390,12 @@ spt.dg_table.drow_smenu_reactivate_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
+        var api_key = row.getAttribute("SPT_REAC_API_KEY");
 
         var server = TacticServerStub.get();
+        server.set_api_key(api_key);
         server.reactivate_sobject(search_key);
+        server.clear_api_key();
         var is_project = search_key.test('sthpw/project?') ? true : false;
         
         
@@ -4378,6 +4412,7 @@ spt.dg_table.drow_smenu_reactivate_cbk = function(evt, bvr)
     else {
         var tbody = activator.getParent('.spt_table_tbody');
         var search_key = tbody.get("spt_search_key");
+        var api_key = tbody.getAttribute("SPT_REAC_API_KEY");
 
         var table = tbody.getParent(".spt_table");
         var element_names = spt.dg_table.get_element_names(table);
@@ -4385,7 +4420,9 @@ spt.dg_table.drow_smenu_reactivate_cbk = function(evt, bvr)
         tbody.setAttribute("spt_element_names", element_names_str);
 
         var server = TacticServerStub.get();
+        server.set_api_key(api_key);
         server.reactivate_sobject(search_key);
+        server.clear_api_key();
         on_complete = "spt.panel.refresh(id)";
         Effects.fade_out(tbody, 500, on_complete);
     }

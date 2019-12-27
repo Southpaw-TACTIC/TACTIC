@@ -184,6 +184,10 @@ class DialogWdg(BaseRefreshWdg):
                 y: pos.y + size.y + bvr.offset.y + 10
             };
             var dialog = document.id(bvr.dialog_id);
+            if (!dialog){
+                //HACK: the id is overwritten for rows that are chunk loaded, so for now, get the dialog through the spt_dialog_id
+                dialog = document.querySelector("[spt_dialog_id = '" + bvr.dialog_id + "']" );
+            }
             if (dialog) {
                 var target = evt.target;
                 var in_dialog = target.getParent('.spt_dialog_top');
@@ -196,8 +200,12 @@ class DialogWdg(BaseRefreshWdg):
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
 
                 // avoid toggle when the dialog is a child of the activator
-                if (!in_dialog)
-                    spt.toggle_show_hide(dialog);
+                if (!in_dialog) {
+                    if (!spt.is_shown(dialog)){
+                        spt.toggle_show_hide(dialog);
+                    }
+                }
+                    
 
                 // reposition if offscreen for offset x only
                 var size = dialog.getSize();
@@ -285,7 +293,7 @@ class DialogWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
 
         widget.set_id(self.name)
-        widget.add_attr("spt_dialog_id", self.name)
+        widget.set_attr("spt_dialog_id", self.name)
         if self.kwargs.get("display") not in [True, "true"]:
             widget.add_style("display: none")
 
@@ -482,9 +490,6 @@ class DialogWdg(BaseRefreshWdg):
             "cb_set_prefix": 'spt.popup.resize_drag'
             } )
             widget.add(icon)
-
-
-
 
         return widget
 
