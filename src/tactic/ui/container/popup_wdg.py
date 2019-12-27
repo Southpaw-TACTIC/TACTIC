@@ -384,7 +384,6 @@ class PopupWdg(BaseRefreshWdg):
                 'cbjs_action': self.get_cancel_script()
             })
 
-            button_wdg.add(close_wdg)
 
 
             # create the 'minimize' button ...
@@ -408,7 +407,11 @@ class PopupWdg(BaseRefreshWdg):
                 'cbjs_action': "spt.popup.toggle_minimize( bvr.src_el );"
             }
             minimize_wdg.add_behavior( behavior )
+            
+            
+            
             button_wdg.add(minimize_wdg)
+            button_wdg.add(close_wdg)
 
 
 
