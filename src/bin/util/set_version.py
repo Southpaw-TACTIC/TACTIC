@@ -53,7 +53,7 @@ def main(args):
         print('The VERSION_API file contains:                             ', version_client_prev)
 
         prompt_str = 'The file will be changed to (%s): '%version_client_prev
-        version_client_new = raw_input(prompt_str)
+        version_client_new = input(prompt_str)
         print(" ")
         if version_client_new in [ version_client_prev, '']:
             print('--')
