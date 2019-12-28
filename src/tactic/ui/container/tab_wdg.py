@@ -722,7 +722,7 @@ spt.tab.select = function(element_name) {
 
 
     var kwargs_str = header ? header.getAttribute("spt_kwargs") : '';
-    if (kwargs_str == '') {
+    if (!kwargs_str) {
         kwargs = {};
     }
     else {
@@ -777,13 +777,12 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
     }
 
     if (typeof(kwargs) == 'undefined') {
+        kwargs = {};
         var kwargs_str = header.getAttribute("spt_kwargs");
-        if (kwargs_str == '') {
-            kwargs = {};
-        } else if (kwargs_str) {
+        if (kwargs_str) {
             kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
-        }
+        } 
     }
 
 
@@ -973,7 +972,7 @@ spt.tab.save_state = function() {
         var kwargs_str = header.getAttribute("spt_kwargs");
 
         var kwargs;
-        if (kwargs_str != '') {
+        if (kwargs_str) {
             kwargs_str = kwargs_str.replace(/\&amp;quot\;/g, '"');
             kwargs = JSON.parse(kwargs_str);
         }

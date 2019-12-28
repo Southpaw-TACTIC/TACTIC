@@ -515,6 +515,8 @@ class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
                 var target_top = document.id(document.body);
             }
             
+            if (!target_top) return;
+
             var target = target_top.getElement("."+target_class);
             if (target) {
                 var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");

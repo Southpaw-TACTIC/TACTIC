@@ -998,6 +998,7 @@ class CalendarInputWdg(BaseInputWdg):
                     'offset_y' : offset_y
                     })
 
+            """
             # FIXME: keyup 'tab' occurs after blur
             text.add_behavior({'type': 'keyupX', 'cbjs_action': 
                     '''
@@ -1007,6 +1008,8 @@ class CalendarInputWdg(BaseInputWdg):
                     }
                     '''
                     })
+            """
+
             # TODO: this onblur is nice because it hides the calendar,
             # but it stops the input from functioning
             # input.add_event('onblur', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top'); spt.hide(el);''')
