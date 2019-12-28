@@ -1005,9 +1005,12 @@ class BootstrapButtonWdg(DivWdg):
 
         super(BootstrapButtonWdg, self).__init__(**kwargs)
 
-    def add_class(self, class_name):
-        self.button_wdg.add_class(class_name)
-        self.collapsible_wdg.add_class(class_name)
+    def add_class(self, class_name, redirect=True):
+        if redirect:
+            self.button_wdg.add_class(class_name)
+            self.collapsible_wdg.add_class(class_name)
+        else:
+            self.top.add_class(class_name)
     
     def add_behavior(self, behavior):
         self.button_wdg.add_behavior(behavior)
@@ -1024,6 +1027,8 @@ class BootstrapButtonWdg(DivWdg):
         title = self.kwargs.get("title")
 
         top = self.top
+
+        top.add_class("spt_action_button")
         
         top.add(self.button_wdg)
         btn_class = self.kwargs.get("btn_class") or "btn btn-primary"

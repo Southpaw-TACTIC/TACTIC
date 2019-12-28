@@ -1205,7 +1205,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     
         ingest_btn_top = top.getElement(".spt_ingest_btn");
-        ingest_btn = ingest_btn_top.getElement(".spt_action_button");
+        ingest_btn = ingest_btn_top.getElement(".spt_hit_wdg");
         ingest_btn.in_progress = false;
         
          
@@ -1384,6 +1384,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         };
 
         on_error = function(error) {
+            console.log(error, "%");
             spt.alert(error);
             progress_el.setStyle("background", "#F00");
             spt.message.stop_interval(message_key);
@@ -1397,7 +1398,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var class_name = bvr.action_handler;
         // TODO: make the async_callback return throw an e so we can run
         // server.abort
-        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete, on_error: on_error});
+        server.execute_cmd(class_name, kwargs, {}, {}, on_complete, on_error);
 
         on_progress = function(message) {
 
@@ -1436,11 +1437,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         else:
             button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
         upload_div.add(button)
-        #button.add_style("float: right")
-        #upload_div.add_style("margin-bottom: 20px")
 
 
-        button.add_class("spt_ingest_btn")
+        button.add_class("spt_ingest_btn", redirect=False)
 
         upload_div.add("<br clear='all'/>")
 

@@ -1902,7 +1902,7 @@ TacticServerStub = function() {
 
     //DEPRECATED use eval
     this.async_eval = function(class_name, kwargs) {
-        alert("Client API function async_eval is deprecated. Use eval")
+        //alert("Client API function async_eval is deprecated. Use eval")
         var callback = kwargs['cbjs_action'];
         if (!callback) {
             callback = kwargs['callback'];
