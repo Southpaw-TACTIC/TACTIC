@@ -17,7 +17,7 @@ __all__ = [
         'DateFilterElementWdg',
         'DateRangeFilterElementWdg',
         'LoginFilterElementWdg',
-        'MultiSelectFilterElementWdg',
+        #'MultiSelectFilterElementWdg',
         'MultiFieldFilterElementWdg',
         'CompoundValueFilterElementWdg',
         'ExpressionFilterElementWdg',
@@ -1831,39 +1831,6 @@ class LoginFilterElementWdg(BaseFilterElementWdg):
         div.add(checkbox)
         return div
 
-
-
-#
-# FIXME: hardcoded for MMS
-#
-class MultiSelectFilterElementWdg(BaseFilterElementWdg):
-
-    def alter_search(self, search):
-
-        filters = ['MMS/job.job_number_prefix', 'MMS/job.job_number_year', 'MMS/job.job_number']
-        for filter in filters:
-            value = self.values.get(filter)
-            if value:
-                #search.add_relationship_filter(filter)
-                search_type, column = filter.split('.')
-                search.add_filter(column, value)
-
-
-
-    def get_display(self):
-
-        top = SpanWdg()
-        top.add("&nbsp; matches &nbsp;")
-
-        filters = ['MMS/job.job_number_prefix', 'MMS/job.job_number_year', 'MMS/job.job_number']
-
-        for filter in filters:
-            text = TextWdg(filter)
-            text.add_attr("size", "5")
-            top.add(text)
-            top.add("&nbsp;-&nbsp;")
-
-        return top
 
 
 

@@ -602,6 +602,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         search_wdg = TextInputWdg(name="filter", height="25", placholder="Filter")
         title_wdg.add(search_wdg)
         search_wdg.add_style("width: 75px")
+        search_wdg.add_style("padding: 3px 5px")
         search_wdg.add_behavior( {
             'type': 'keyup',
             'cbjs_action': '''
@@ -612,6 +613,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             '''
         } )
         search_wdg.add_style("background: #E0E0E0")
+        search_wdg.add_style("font-size: 1.0em")
 
 
         recent_div = DivWdg()
@@ -1159,7 +1161,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("width: 400px")
             view_wdg.add_style("margin-top: 4px")
             view_wdg.add_style("margin-left: 10px")
-            view_wdg.add_style("padding-left: 230px")
+            view_wdg.add_style("padding-left: 30px")
             text.add_class("spt_view")
             text.add_style("font-family: courier")
             text.add_style("float: left")
@@ -1798,15 +1800,38 @@ spt.custom_layout_editor.filter = function(keyword) {
             return;
         }
 
-        var title_el = item.getElement(".spt_title");
-        var title = title_el.innerHTML;
-        if (title.startsWith(keyword)) {
+        var view = item.getAttribute("spt_view");
+        var parts = view.split(".");
+        var matches = false;
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (part.startsWith(keyword)) {
+                matches = true;
+                break;
+            }
+        };
+
+        //var title_el = item.getElement(".spt_title");
+        //var title = title_el.innerHTML;
+        //if (title.startsWith(keyword)) {
+
+        if (matches) {
             var clone = spt.behavior.clone(item);
             clone.setStyle("display", "block");
             search_el.appendChild(clone);
             var title_el = clone.getElement(".spt_title");
-            var view = item.getAttribute("spt_view");
-            title_el.innerHTML = view.replace(/\./g, " / ");
+
+            var display = "";
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].startsWith(keyword)) {
+                    parts[i] = "<b>" + parts[i] + "</b>";
+                }
+                else {
+                    parts[i] = "<span style='opacity: 0.7'>" + parts[i] + "</span>";
+                }
+            }
+            view = parts.join(" / ");
+            title_el.innerHTML = view
         }
         else {
             //item.setStyle("display", "none");
@@ -1891,6 +1916,9 @@ spt.custom_layout_editor.add_recent_item = function(data) {
     def get_shelf_wdg(self):
 
         shelf_wdg = DivWdg()
+        shelf_wdg.add_style("display: flex")
+        shelf_wdg.add_style("align-items: center")
+        shelf_wdg.add_style("justify-content: left")
 
         shelf_wdg.add_style("height: 35px")
         shelf_wdg.add_color("background", "background", -10)
