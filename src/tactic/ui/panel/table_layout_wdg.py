@@ -4333,8 +4333,10 @@ spt.table.get_all_rows = function(embedded) {
 
 spt.table.get_first_row = function(embedded) {
     var table = spt.table.get_table();
-    var row = table.getElement(".spt_table_row");
-    return row;
+    if (table) {
+        var row = table.getElement(".spt_table_row");
+        return row;
+    }
 }
 
 
@@ -7579,6 +7581,9 @@ spt.table.set_column_width = function(element_name, width) {
     var header_table = spt.table.get_header_table();
 
     var row = spt.table.get_first_row();
+    if (!row)
+        return;
+
     var cell = spt.table.get_cell(element_name, row);
     if (!cell) {
         //alert("Cell for ["+element_name+"] does not exist");
@@ -7707,6 +7712,9 @@ spt.table.align_column_widths = function() {
     var headers = header_row.getElements(".spt_table_header");
 
     var row = spt.table.get_first_row();
+    if (!row)
+        return;
+
     var cells = row.getElements(".spt_cell_edit");
 
     // set the row widths to that of the header
