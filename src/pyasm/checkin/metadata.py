@@ -14,6 +14,7 @@ __all__ = ['ParserImportError', 'CheckinMetadataHandler', 'BaseMetadataParser', 
 
 
 import os, sys, re, subprocess
+import six
 
 from pyasm.common import Common, Xml
 from pyasm.biz import File
@@ -199,7 +200,7 @@ class CheckinMetadataHandler():
             
             keys = [] 
             # otherwise it could an int or float
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = value.lower()
                 value = value.replace("(", "")
                 value = value.replace(")", "")
@@ -635,10 +636,11 @@ class ImageMagickMetadataParser(BaseMetadataParser):
             name = parts[0]
             value = parts[1]
             try:
-                if isinstance(value, unicode):
-                   value = value.encode('utf-8', 'ignore')
-                else:
-                   value = unicode(value, errors='ignore').encode('utf-8')
+                if not Common.IS_Pv3:
+                    if isinstance(value, unicode):
+                        value = value.encode('utf-8', 'ignore')
+                    else:
+                        value = unicode(value, errors='ignore').encode('utf-8')
 
                 ret[name] = value
                 names.add(name)
@@ -667,7 +669,7 @@ class ImageMagickMetadataParser(BaseMetadataParser):
         geometry = metadata.get("Geometry")
 
         if geometry:
-            if not isinstance(geometry, basestring):
+            if not isinstance(geometry, six.string_types):
                 geometry = str(geometry)
                 
             p = re.compile("(\d+)x(\d+)\+(\d+)\+(\d+)")
@@ -1007,6 +1009,5 @@ if __name__ == '__main__':
     import tacticenv
     parser = FFProbeMetadataParser(path=sys.argv[1])
     metadata = parser.get_metadata()
-    from pyasm.common import Common
     Common.pretty_print(metadata)
 
