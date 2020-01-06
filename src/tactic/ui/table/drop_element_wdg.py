@@ -311,7 +311,7 @@ class DropElementWdg(SimpleTableElementWdg):
 
         icon_div = DivWdg()
         top.add(icon_div)
-        icon = IconWdg(icon="BS_REMOVE")
+        icon = IconWdg(icon="FA_TIMES")
         icon_div.add(icon)
         icon_div.add_behavior( {
             'type': 'click_up',

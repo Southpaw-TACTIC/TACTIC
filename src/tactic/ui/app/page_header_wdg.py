@@ -20,8 +20,7 @@ from pyasm.widget import ThumbWdg, SelectWdg, ButtonWdg, TextWdg, CheckboxWdg, I
 
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.container import PopupWdg, SmartMenu
-#from tactic.ui.popups import HelpPopupWdg, ActionBarWdg
+from tactic.ui.container import PopupWdg, SmartMenu, Menu, MenuItem
 from tactic.ui.widget import PageHeaderGearMenuWdg, TextBtnWdg, ActionButtonWdg
 from tactic.ui.input import UploadButtonWdg
 
@@ -354,32 +353,21 @@ class PageHeaderWdg(Widget):
 
 class ProjectSelectWdg(BaseRefreshWdg):
 
-    def get_display(self):
 
-        menus = []
-
-        widget = DivWdg(id='ProjectSelectWdg', css='spt_panel')
-        widget.set_attr('spt_class_name', 'tactic.ui.app.ProjectSelectWdg') 
-        if not WebContainer.get_web().is_IE():
-            widget.add_style("float: right")
-
+    def get_activator(self, menus):
         from tactic.ui.widget import SingleButtonWdg, IconButtonWdg
-
         icon = self.kwargs.get("icon")
         if icon:
             button = IconButtonWdg(title='Open Project', icon=icon)
         else:
             button = SingleButtonWdg(title='Open Project', icon="BS_FOLDER_OPEN", show_arrow=True)
+        
+        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': menus } )
+        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
+        
+        return button
 
-
-
-        widget.add(button)
-
-
-        #from tactic.ui.activator import ButtonForDropdownMenuWdg
-        #menu_data = []
-        #menu_id = "project_select_menu"
-
+    def get_projects(self):
         allowed = Project.get_user_projects()
         allowed_codes = [x.get_code() for x in allowed]
 
@@ -388,17 +376,75 @@ class ProjectSelectWdg(BaseRefreshWdg):
         # ignore some builtin projects
         search.add_where("\"code\" not in ('admin','sthpw','unittest')")
         search.add_op("begin")
-        #search.add_filter("is_template", 'true', quoted=False, op='!=')
         search.add_filter("is_template", True, op='!=')
         search.add_filter("is_template", 'NULL', quoted=False, op='is')
         search.add_op("or")
         projects = search.get_sobjects()
 
+        return projects
 
-        from tactic.ui.container import  Menu, MenuItem
+
+    def get_display(self):
+        widget = DivWdg(id='ProjectSelectWdg', css='spt_panel')
+        widget.set_attr('spt_class_name', 'tactic.ui.app.ProjectSelectWdg') 
+
+        menus = self._get_project_menus()
+
+        button = self.get_activator(menus)
+        widget.add(button)
+   
+        return widget
+   
+
+    def _add_project_menu(self, menu, project, site=None):
+        if isinstance(project, dict):
+            project_code = project.get("code")
+            title = project.get("title")
+        else:
+            project_code = project.get_value("code")
+            title = project.get_value("title")
+
+        menu_item = MenuItem(type='action', label=title)
+
+        web = WebContainer.get_web()
+        browser = web.get_browser()
+        if not site:
+            site = web.get_site_root()
+        
+        url = "/%s/%s" % (site, project_code)
+
+        if browser != 'Qt':
+
+            menu_item.add_behavior( {
+                'type': 'click_up',
+                'project_code': project_code,
+                'url': url,
+                'cbjs_action': '''
+                    window.open(bvr.url);
+                '''
+            } )
+
+        else:
+            menu_item.add_behavior( {
+                'project_code': project_code,
+                'url': url,
+                'cbjs_action': '''
+                    spt.app_busy.show("Jumping to Project ["+bvr.project_code+"]", "");
+                    document.location = bvr.url;
+                '''
+            } )
+
+        menu.add(menu_item)
+
+
+    def _get_project_menus(self):
+        menus = []
         menu = Menu(width=240)
         menus.append(menu)
         menu.set_allow_icons(False)
+        
+        
+        projects = self.get_projects()
 
         show_create = self.kwargs.get("show_create")
         if show_create in [False, 'false']:
@@ -416,20 +462,18 @@ class ProjectSelectWdg(BaseRefreshWdg):
             menu.add(menu_item)
             menu_item.add_behavior( {
             'cbjs_action': '''
-            //spt.popup.open('create_project_wizard');
-            //Effects.fade_in(document.id('create_project_wizard'), 200);
-            var env = spt.Environment.get();
-            var project = env.get_project();
-            if (project == 'admin') {
-                spt.tab.set_main_body_top();
-                var class_name = 'tactic.ui.app.ProjectCreateWdg';
-                spt.tab.add_new("create_project", "Create Project", class_name);
-            }
-            else {
-                var site = spt.Environment.get().get_site();
-                var url = site ? "/tactic/" + site + "/admin/link/create_project" : "/tactic/admin/link/create_project";
-                document.location = url;
-            }
+                var env = spt.Environment.get();
+                var project = env.get_project();
+                if (project == 'admin') {
+                    spt.tab.set_main_body_top();
+                    var class_name = 'tactic.ui.app.ProjectCreateWdg';
+                    spt.tab.add_new("create_project", "Create Project", class_name);
+                }
+                else {
+                    var site = spt.Environment.get().get_site();
+                    var url = site ? "/tactic/" + site + "/admin/link/create_project" : "/tactic/admin/link/create_project";
+                    document.location = url;
+                }
             '''
             } )
 
@@ -442,10 +486,10 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 menu.add(menu_item)
                 menu_item.add_behavior( {
                 'cbjs_action': '''
-                var env = spt.Environment.get();
-                var project = env.get_project();
-                //document.location = "/tactic/" + project + "/";
-                window.open('/tactic/'+project+'/');
+                    var env = spt.Environment.get();
+                    var project = env.get_project();
+                    //document.location = "/tactic/" + project + "/";
+                    window.open('/tactic/'+project+'/');
                 '''
                 } )
 
@@ -456,38 +500,6 @@ class ProjectSelectWdg(BaseRefreshWdg):
         menu.add(menu_item)
 
 
-        def add_project_menu(menu, project):
-            project_code = project.get_code()
-            menu_item = MenuItem(type='action', label=project.get_value("title"))
-
-            web = WebContainer.get_web()
-            browser = web.get_browser()
-
-            site_root = web.get_site_root()
-            url = "/%s/%s" % (site_root, project_code)
-
-            if browser != 'Qt':
-
-                menu_item.add_behavior( {
-                'type': 'click_up',
-                'project_code': project_code,
-                'url': url,
-                'cbjs_action': '''
-                window.open(bvr.url);
-                '''
-                } )
-
-            else:
-                menu_item.add_behavior( {
-                'project_code': project_code,
-                'url': url,
-                'cbjs_action': '''
-                spt.app_busy.show("Jumping to Project ["+bvr.project_code+"]", "");
-                document.location = bvr.url;
-                '''
-                } )
-
-            menu.add(menu_item)
 
 
         search = Search("sthpw/project")
@@ -520,7 +532,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 submenu = Menu(width=200, menu_tag_suffix=suffix)
                 menus.append(submenu)
                 for project in category_projects:
-                    add_project_menu(submenu, project)
+                    self._add_project_menu(submenu, project)
 
 
         from pyasm.security import get_security_version
@@ -542,7 +554,7 @@ class ProjectSelectWdg(BaseRefreshWdg):
                 if not security.check_access("project", project_code, "view", default="allow"):
                     continue
 
-            add_project_menu(menu, project)
+            self._add_project_menu(menu, project)
 
 
 
@@ -597,18 +609,11 @@ class ProjectSelectWdg(BaseRefreshWdg):
             menu_item = MenuItem(type='title', label="Admin")
             menu.add(menu_item)
             project = Project.get_by_code("admin")
-            add_project_menu(menu, project)
+            self._add_project_menu(menu, project)
+
+        return menus
 
 
-
-
-
-        from tactic.ui.container import SmartMenu
-        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': menus } )
-        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
-
-
-        return widget
 
 
 

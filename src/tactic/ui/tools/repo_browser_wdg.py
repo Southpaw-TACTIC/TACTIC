@@ -203,7 +203,7 @@ class RepoBrowserWdg(BaseRefreshWdg):
 
 
             """
-            button = ButtonNewWdg(title="Options", icon=IconWdg.GEAR, show_arrow=True)
+            button = ButtonNewWdg(title="Options", icon="FA_COG", show_arrow=True)
             button_row.add( button )
             dialog = DialogWdg(show_title=False)
             dialog.add( self.get_options_wdg() )

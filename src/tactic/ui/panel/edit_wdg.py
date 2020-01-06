@@ -1168,10 +1168,6 @@ class EditWdg(BaseRefreshWdg):
 
 
         div = DivWdg(css='centered')
-        div.add_color("background", "background", -8)
-        div.add_style("padding-top: 5px")
-        div.add_style("padding-bottom: 30px")
-
 
         # construct the bvr
         element_names = self.element_names[:]
@@ -1211,7 +1207,6 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-        div.add_style('height: 35px')
         div.add_named_listener('close_EditWdg', '''
             var popup = spt.popup.get_popup( document.id('edit_popup') );
             if (popup != null) {

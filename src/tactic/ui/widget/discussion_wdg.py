@@ -1185,7 +1185,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
 
             else:
-                add_wdg = IconWdg("Add Note", "BS_PLUS", size=12)
+                add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
                 no_notes_msg.add(add_wdg)
                 add_wdg.add_style("display: inline-block")
                 msg = "No notes."

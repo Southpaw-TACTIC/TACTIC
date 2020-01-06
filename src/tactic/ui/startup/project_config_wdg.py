@@ -307,7 +307,7 @@ class SearchTypePanel(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="BS_PLUS")
+        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="FA_PLUS")
         top.add(button)
         button.add_style("display: inline-block")
         button.add_style("vertical-align: middle")

@@ -360,6 +360,7 @@ class IconWdg(DivWdg):
     'G_CLOSE'             : '/context/icons/glyphs/close.png',
     'G_CLOSE_BLACK'       : '/context/icons/glyphs/close_black.png',
     'G_HOME_BLACK'        : '/context/icons/glyphs/home_black.png',
+    'G_WORKFLOW'          : '/context/icons/glyphs/workflow-filled.png'
 
 
     
@@ -449,6 +450,7 @@ class IconWdg(DivWdg):
             part = part.lower()
             part = part.replace("_","-")
             icon.add_class("fa-%s" % part)
+
             if not self.size:
                 self.size = "16px"
             size = self.size
@@ -460,6 +462,8 @@ class IconWdg(DivWdg):
             icon.add_style("font-size: %s" % size)
             if not self.opacity:
                 self.opacity = 0.6
+            
+            self.right_margin = None
 
 
         elif icon_path:

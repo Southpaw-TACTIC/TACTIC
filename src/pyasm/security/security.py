@@ -89,7 +89,9 @@ class Login(SObject):
         return self.get_value("login")
 
     def get_full_name(self):
-        return "%s %s" % (self.get_value("first_name"), self.get_value("last_name"))
+        full_name = "%s %s" % (self.get_value("first_name"), self.get_value("last_name"))
+        full_name = full_name.strip()
+        return full_name
 
     def get_full_email(self):
         email = self.get_value("email")

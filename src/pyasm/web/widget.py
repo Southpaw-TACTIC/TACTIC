@@ -142,6 +142,14 @@ class Widget(object):
         # the existence of this function to optimize
         pass
     """
+
+    def _use_bootstrap(self):
+        from pyasm.biz import ProjectSetting
+        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "bootstrap_material"
+        if ui_library not in ['bootstrap', 'bootstrap_material']:
+            return False
+        
+        return True
     
     def init_dynamic(arg_dict):
         '''it returns a dynamically instantiated widget'''

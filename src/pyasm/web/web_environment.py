@@ -29,6 +29,9 @@ class WebEnvironment(Environment):
     '''abstract class that defines an interface for access to web
     functionality.  This protects the framework from the various
     implementations such as webware, mod_python, twisted, etc'''
+
+    DEFAULT_TOP_CLASS = 'tactic.ui.bootstrap_app.BootstrapIndexWdg'
+
     ARG_NAME = 'args'
 
 
@@ -459,6 +462,9 @@ class WebEnvironment(Environment):
     get_palette = classmethod(get_palette)
 
 
+    def get_admin_top_class_name(cls):
+        return cls.DEFAULT_TOP_CLASS
+    get_admin_top_class_name = classmethod(get_admin_top_class_name)
 
     def get_top_class_name(cls):
         project = Project.get()
@@ -466,7 +472,7 @@ class WebEnvironment(Environment):
         if not class_name:
             class_name = Config.get_value("install", "top_class_name")
         if not class_name:
-            class_name = 'tactic.ui.app.PageNavContainerWdg'
+            class_name = cls.DEFAULT_TOP_CLASS
         return class_name
     get_top_class_name = classmethod(get_top_class_name)
 
@@ -478,7 +484,7 @@ class WebEnvironment(Environment):
         if not class_name:
             class_name = Config.get_value("install", "header_class_name")
         if not class_name:
-            class_name = 'tactic.ui.app.PageNavContainerWdg'
+            class_name = cls.DEFAULT_TOP_CLASS
         return class_name
     get_header_class_name = classmethod(get_header_class_name)
 

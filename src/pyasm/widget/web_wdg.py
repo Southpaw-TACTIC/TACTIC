@@ -2200,7 +2200,6 @@ class WebLoginWdg2(BaseSignInWdg):
             finally:
                 sudo.exit()
 
-
         ####### CONTENT #######
         div = DivWdg()
 

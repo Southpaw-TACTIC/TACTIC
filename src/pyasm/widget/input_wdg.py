@@ -757,27 +757,35 @@ class TextAreaWdg(BaseTextWdg):
             if cols:
                 self.set_attr("cols", cols)
 
-        browser = web.get_browser()
-        if not width and not cols:
-            width = "300px"
-            self.add_style("width", width)
 
 
 
         self.add_class("spt_input")
-        self.add_border()
+        
 
+    def handle_styles(self):
+        
+        if False:
+        #if not self._use_bootstrap():
+            self.add_color("background", "background", 10)
+            self.add_color("color", "color")
+            web = WebContainer.get_web()
+            
+            browser = web.get_browser()
+            if not width and not cols:
+                width = "300px"
+                self.add_style("width", width)
+            
+            self.add_border()
 
 
     def get_display(self):
+        
+        self.handle_styles()
+
         self.set_attr("name", self.get_input_name())
-        #self.add_style("font-family: Courier New")
 
-        self.add_color("background", "background", 10)
-        self.add_color("color", "color")
-        #self.add_border()
-
-
+        
         rows = self.get_option("rows")
         cols = self.get_option("cols")
         if not rows:
@@ -809,6 +817,8 @@ class TextAreaWdg(BaseTextWdg):
             self._add_required(wdg)
             wdg.add(text_area)
             return wdg
+
+        self.add_class("form-control")
 
         return super(TextAreaWdg,self).get_display()
 
@@ -1477,13 +1487,14 @@ class SelectWdg(BaseInputWdg):
                 pass
             self.add_style("width: %s" % width)
 
-        border_mode = self.get_option("border_mode") or "box"
-        if border_mode == "box":
-            self.add_border()
-        elif border_mode == "custom":
-            pass
-        else:
-            self.add_style("border", "none")
+        if not self._use_bootstrap():
+            border_mode = self.get_option("border_mode") or "box"
+            if border_mode == "box":
+                self.add_border()
+            elif border_mode == "custom":
+                pass
+            else:
+                self.add_style("border", "none")
 
 
         #self.add_style("margin: 0px 5px")

@@ -635,10 +635,11 @@ class ImageMagickMetadataParser(BaseMetadataParser):
             name = parts[0]
             value = parts[1]
             try:
-                if isinstance(value, unicode):
-                   value = value.encode('utf-8', 'ignore')
-                else:
-                   value = unicode(value, errors='ignore').encode('utf-8')
+                if not Common.IS_Pv3:
+                    if isinstance(value, unicode):
+                        value = value.encode('utf-8', 'ignore')
+                    else:
+                        value = unicode(value, errors='ignore').encode('utf-8')
 
                 ret[name] = value
                 names.add(name)
@@ -1007,6 +1008,5 @@ if __name__ == '__main__':
     import tacticenv
     parser = FFProbeMetadataParser(path=sys.argv[1])
     metadata = parser.get_metadata()
-    from pyasm.common import Common
     Common.pretty_print(metadata)
 

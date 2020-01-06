@@ -345,7 +345,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
         td = table.add_cell(month_div)
         td.add_style('width', '%spx'%self.MONTH_WIDTH)
 
-        icon = IconButtonWdg(tip="Previous Week", icon="BS_CHEVRON_LEFT")
+        icon = IconButtonWdg(tip="Previous Week", icon="FA_CHEVRON_LEFT")
         td = table.add_cell(icon)
         offset = 0
         if not self.use_straight_time:
@@ -384,7 +384,7 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             td.add(day_wdg)
             td.add_styles("text-align: center; padding-left: 2px;min-width: %spx"%self.day_width)
 
-        icon = IconButtonWdg(tip="Next Week", icon="BS_CHEVRON_RIGHT")
+        icon = IconButtonWdg(tip="Next Week", icon="FA_CHEVRON_RIGHT")
         icon.add_behavior( {
         'type': 'click_up',
         'start_date': next_start_date.__str__(),

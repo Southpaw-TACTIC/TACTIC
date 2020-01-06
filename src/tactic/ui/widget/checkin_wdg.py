@@ -4428,7 +4428,7 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
-        button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
+        button = ButtonNewWdg(title="More Options", icon="FA_COG", show_arrow=True)
         button_row.add(button)
 
         gear_menu = self.get_gear_menu()
@@ -4893,7 +4893,7 @@ class GearMenuButtonWdg(ButtonNewWdg):
         self.process = self.kwargs.get("process")
 
 
-        button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
+        button = ButtonNewWdg(title="More Options", icon="FA_COG", show_arrow=True)
 
         gear_menu = self.get_gear_menu()
         SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': gear_menu } )
@@ -5649,7 +5649,7 @@ class SObjectCheckinHistoryWdg(BaseRefreshWdg):
 
 
         from tactic.ui.widget import SingleButtonWdg
-        button = SingleButtonWdg(tip="Refresh", icon="BS_REFRESH", long=False)
+        button = SingleButtonWdg(tip="Refresh", icon="FA_SYNC", long=False)
         filter_wdg.add(button)
         button.add_style("float: left")
         button.add_behavior( {

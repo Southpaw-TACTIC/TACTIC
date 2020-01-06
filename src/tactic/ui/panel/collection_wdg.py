@@ -39,7 +39,7 @@ class CollectionAddWdg(BaseRefreshWdg):
         
         top = self.top
         top.add_class("spt_dialog")
-        button = IconButtonWdg(title='Add to Collection', icon="BS_TH_LARGE", show_arrow=True)
+        button = ButtonNewWdg(title='Add to Collection', icon="FA_TH_LARGE")
         top.add(button)
 
         detail_wdg = DivWdg()
@@ -251,7 +251,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             go_wdg.add_style("float: right")
         
             #TODO: add some interaction with this arrow
-            # icon = IconWdg(name="View Collection", icon="BS_CHEVRON_RIGHT")
+            # icon = IconWdg(name="View Collection", icon="FA_CHEVRON_RIGHT")
             # go_wdg.add(icon)
             #go_wdg.add_behavior( {
             #    'type': 'click_upX',
@@ -686,12 +686,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             shelf_div.add_style("margin-bottom: 15px")
 
 
-            #button = IconButtonWdg(title='Delete Selected Collection', icon="BS_TRASH")
-            #shelf_div.add(button)
-            #button.add_style("display: inline-block")
-            #button.add_style("width: auto")
-
-            button = IconButtonWdg(title='Add New Collection', icon="BS_PLUS")
+            button = ButtonNewWdg(title='Add New Collection', icon="FA_PLUS")
             shelf_div.add(button)
             button.add_style("display: inline-block")
             button.add_style("vertical-align: top")
@@ -1139,7 +1134,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 	    # Asset Library folder access
             library_title = "Asset Library"
-            icon = IconWdg(name=library_title, icon="BS_FOLDER_OPEN")
+            icon = IconWdg(name=library_title, icon="FA_FOLDER_OPEN")
 
             asset_lib_span_div.add(icon)
 
@@ -1259,7 +1254,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         if self.collection_key:
 
-            button = IconButtonWdg(title='Remove Selected Items from Collection', icon="BS_MINUS")
+            button = ButtonNewWdg(title='Remove Selected Items from Collection', icon="FA_MINUS")
             div.add(button)
             button.add_style("display: inline-block")
             button.add_style("vertical-align: top")
@@ -1321,8 +1316,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
 
-            button = IconButtonWdg(title='Delete Collection', icon="BS_TRASH")
-            #button = ActionButtonWdg(title='Delete Collection', icon="BS_TRASH")
+            button = ButtonNewWdg(title='Delete Collection', icon="FA_TRASH")
             div.add(button)
             button.add_style("display: inline-block")
             button.add_style("vertical-align: top")
@@ -1362,25 +1356,6 @@ class CollectionContentWdg(BaseRefreshWdg):
             } )
 
 
-
-        """
-        button = IconButtonWdg(title='Download Selected Items', icon="BS_DOWNLOAD")
-        div.add(button)
-        button.add_style("display: inline-block")
-        button.add_style("vertical-align: top")
-
-        text_div = DivWdg()
-        div.add(text_div)
-        text_div.add_style("width: 200px")
-        text = LookAheadTextInputWdg(
-            name="name",
-            icon="BS_SEARCH",
-            icon_pos="right",
-            width="100%"
-        ) 
-        text_div.add(text)
-        text_div.add_style("display: inline-block")
-        """
 
         div.add_style("width: auto")
         div.add_style("float: right")
@@ -1555,7 +1530,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         
         if has_child_collections:
             icon_div = DivWdg()
-            icon = IconWdg(name="View Collection", icon="BS_CHEVRON_DOWN")
+            icon = IconWdg(name="View Collection", icon="FA_CHEVRON_DOWN")
             icon_div.add(icon)
             icon.add_style("float: right")
             icon.add_style("margin-top: -20px")

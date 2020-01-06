@@ -194,18 +194,6 @@ class TopWdg(Widget):
         } )
 
         web = WebContainer.get_web()
-        self.body.add_color("color", "color")
-
-        #if web.is_title_page():
-        #    self.body.add_gradient("background", "background", 0, -20)
-        #else:
-        #    self.body.add_gradient("background", "background", 0, -15)
-        self.body.add_color("background", "background")
-
-        self.body.add_style("background-attachment: fixed !important")
-        self.body.add_style("margin: 0px")
-        self.body.add_style("padding: 0px")
-
 
         # ensure that any elements that force the default menu over any TACTIC right-click context menus has the
         # 'force_default_context_menu' flag reset for the next right click that occurs ...
@@ -229,9 +217,12 @@ class TopWdg(Widget):
             var title = bvr.src_el.getAttribute("title");
 
             var class_name = 'tactic.ui.panel.CustomLayoutWdg';
-            var kwargs = {
+            var args = {
                 view: view,  
             }
+            var kwargs = {};
+
+            var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
 
             var attributes = bvr.src_el.attributes;
             for (var i = 0; i < attributes.length; i++) {
@@ -239,12 +230,15 @@ class TopWdg(Widget):
                 if (name == "class") {
                     continue;
                 }
+                
                 var value = attributes[i].value;
-                kwargs[name] = value;
+
+                if (popup_args_keys.indexOf(name) > -1) kwargs[name] = value;
+                else args[name] = value;
             }
 
 
-            var popup = spt.panel.load_popup(title, class_name, kwargs);
+            var popup = spt.panel.load_popup(title, class_name, args, kwargs);
             popup.activator = bvr.src_el;
             '''
         } )
@@ -548,9 +542,10 @@ class TopWdg(Widget):
         head = HtmlElement("head")
         html.add(head)
 
+
         head.add('<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>\n')
         head.add('<meta http-equiv="X-UA-Compatible" content="IE=edge"/>\n')
-
+ 
         # Add the tactic favicon
         head.add('<link rel="shortcut icon" href="/context/favicon.ico" type="image/x-icon"/>')
 
@@ -585,9 +580,6 @@ class TopWdg(Widget):
         html.add( body )
 
  
-        body.add_style('overflow', 'hidden')
-
-
         top = self.top
 
         # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
@@ -691,7 +683,7 @@ class TopWdg(Widget):
             icon_div.add_style("float: right")
             icon_div.add_style("margin-right: 10px")
             icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="BS_REMOVE")
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="FA_TIMES")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -1022,107 +1014,65 @@ class TopWdg(Widget):
 
         version = Environment.get_release_version()
 
-        #ui_library = "bootstrap_material"
-        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "default"
-        if ui_library == "default":
-            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
+        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "bootstrap_material"
+        
+        css_library = ProjectSetting.get_value_by_key("feature/css_library") or "bootstrap_material"
 
-        elif ui_library == "bootstrap":
-
-            # TEST: new version of bootstrap
-            widget.add('''
+        widget.add('''
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        ''')
-
-            widget.add('''
-
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
-            ''')
-
-        elif ui_library == "form_builder":
-            widget.add('''
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 
-<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
+<!-- Form builder -->
 <link rel='stylesheet' href='https://unpkg.com/formiojs@latest/dist/formio.full.min.css'>
-<!--
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
--->
-<script src='https://unpkg.com/formiojs@4.8.0-rc.10/dist/formio.full.min.js'></script>
-        ''')
 
+''')
 
-
-        elif ui_library == "form_builder":
-
+        if ui_library == "bootstrap":
             widget.add('''
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-<script src="https://formbuilder.online/assets/js/form-builder.min.js"></script>
-<script src="https://formbuilder.online/assets/js/form-render.min.js"></script>
-            ''')
-
-
-            # TEST: new version of bootstrap
-            widget.add('''
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        ''')
-
-            widget.add('''
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+''')
 
-            ''')
+        else:
 
-
-
-        elif ui_library == "bootstrap_material":
-            # TEST bootstrap material design
             widget.add('''
-
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
 <!-- Material Design for Bootstrap fonts and icons -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
 
-<!-- Material Design for Bootstrap CSS -->
-<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
-
-<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
-            ''')
-            widget.add('''
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+<!-- Material Design for Bootstrap JS -->
 <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 
-<script src="/plugins/arrive.min.js"></script>
 
-            ''')
+
+           ''')
 
 
             self.body.add('''
 <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
             ''')
 
-
-        Container.append_seq("Page:css", "%s/spt_js/font-awesome-4.7.0/css/font-awesome.css?ver=%s" % (context_url, version))
+            
+        if css_library == "default":
+            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
+            
+        elif css_library == "bootstrap":
+            widget.add("""
+<!-- Bootstrap CSS -->
+<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
+""")
+        
+        elif css_library == "bootstrap_material":
+            widget.add("""
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+""")
+        
+        else:
+            Container.append_seq("Page:css", css_library)
+            
+        Container.append_seq("Page:css", "%s/spt_js/font-awesome-5.12.0/css/all.css?ver=%s" % (context_url, version))
 
 
 
@@ -1372,10 +1322,6 @@ class IndexWdg(Widget):
 
         top = self.top
         top.set_id('top_of_application')
-        top.add_style("height: 100%")
-        top.add_style("width: 100%")
-        top.add_style("overflow-x: auto")
-        top.add_style("overflow-y: auto")
 
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
@@ -1534,9 +1480,6 @@ class SitePage(AppServer):
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
-            elif bootstrap == 'true':
-                widget = BootstrapIndexWdg()
-                return widget
             elif widget == 'true':
                 hash = "/".join(self.hash)
                 hash = "/%s" % hash

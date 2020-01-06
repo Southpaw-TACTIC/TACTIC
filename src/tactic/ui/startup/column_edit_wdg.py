@@ -63,7 +63,7 @@ class ColumnEditWdg(BaseRefreshWdg):
         shelf_wdg = DivWdg()
         inner.add(shelf_wdg)
         shelf_wdg.add_style("height: 35px")
-        button = ActionButtonWdg(title='Create', color="default", icon="BS_SAVE")
+        button = ActionButtonWdg(title='Create', color="default", icon="FA_SAVE")
         shelf_wdg.add(button)
         shelf_wdg.add_style("float: right")
 
@@ -233,7 +233,7 @@ class ColumnEditWdg(BaseRefreshWdg):
             table.add_cell(format)
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Edit Definition", icon="BS_EDIT")
+            button = IconButtonWdg(title="Edit Definition", icon="FA_EDIT")
             td.add(button)
 
             button.add_behavior( {

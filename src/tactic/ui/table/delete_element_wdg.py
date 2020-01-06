@@ -26,7 +26,7 @@ class DeleteElementWdg(ButtonElementWdg):
     def preprocess(self):
 
         #self.set_option( "icon", "DELETE" )
-        #self.set_option( "icon", "BS_REMOVE" )
+        #self.set_option( "icon", "FA_TIMES" )
         self.set_option("icon", "FA_TRASH")
         self.set_option("icon_tip", "Delete")
 
