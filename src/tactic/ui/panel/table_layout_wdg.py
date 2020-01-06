@@ -1770,11 +1770,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+        resize_cbjs = self.kwargs.get("resize_cbjs") or ""
+
         self.header_table.add_behavior( {
             'type': 'smart_drag',
             'drag_el': '@',
             'bvr_match_class': 'spt_resize_handle',
             'ignore_default_motion': 'true',
+            'resize_cbjs': resize_cbjs,
             "cbjs_setup": 'spt.table.drag_resize_header_setup(evt, bvr, mouse_411);',
             "cbjs_motion": 'spt.table.drag_resize_header_motion(evt, bvr, mouse_411)',
             "cbjs_action": 'spt.table.drag_resize_header_action(evt, bvr, mouse_411)',
@@ -2320,6 +2323,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 #header_div.add_style("white-space: nowrap")
 
 
+            reorder_cbjs = self.kwargs.get("reorder_cbjs") or ""
 
             # put reorder directly here
             behavior = {
@@ -2327,6 +2331,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 #"drag_el": 'drag_ghost_copy',
                 "drag_el": '@',
                 "drop_code": 'DgTableColumnReorder',   # can only specify single drop code for each drag behavior
+                "reorder_cbjs": reorder_cbjs,
                 "cb_set_prefix": "spt.table.drag_reorder_header",
             }
 
@@ -7993,6 +7998,9 @@ spt.table.drag_resize_header_action = function(evt, bvr, mouse_411) {
     spt.table.resize_div = null;
 
     spt.table.drag_init();
+
+    var resize_cbjs = bvr.resize_cbjs || "";
+    Function("evt", "bvr", "mouse_411", "'use strict';" + resize_cbjs)(evt, bvr, mouse_411);
 }
 
 
@@ -8145,6 +8153,9 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
     spt.table.drag_init();
 
     spt.table.expand_table("free");
+
+    var reorder_cbjs = bvr.reorder_cbjs || "";
+    Function("evt", "bvr", "mouse_411", "'use strict';" + reorder_cbjs)(evt, bvr, mouse_411);
 }
 
 
