@@ -24,6 +24,7 @@ from pyasm.widget import IconWdg, TextWdg, HiddenWdg
 from pyasm.command import Command
 
 import os
+import six
 
 from pyasm.web import WebContainer
 from pyasm.widget import CheckboxWdg
@@ -1460,7 +1461,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
  
-        refresh_button = ButtonNewWdg(tip="Refresh", icon="BS_REFRESH")
+        refresh_button = ButtonNewWdg(tip="Refresh", icon="FA_REFRESH")
         button_row.add(refresh_button)
         refresh_button.add_behavior( {
             'type': 'click_up',
@@ -1474,7 +1475,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
         
-        save_button = ButtonNewWdg(tip="Save Changes", icon="BS_SAVE")
+        save_button = ButtonNewWdg(tip="Save Changes", icon="FA_SAVE")
         button_row.add(save_button)
         save_button.add_behavior( {
             'type': 'click_up',
@@ -1495,7 +1496,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         if show_add in [True, 'true']:
             project_code = Project.get_project_code()
 
-            add_button = ButtonNewWdg(tip="Refresh", icon="BS_PLUS")
+            add_button = ButtonNewWdg(tip="Refresh", icon="FA_PLUS")
             button_row.add(add_button)
             add_button.add_behavior( {
                 'type': 'click_up',
@@ -2204,11 +2205,11 @@ class ProjectSecurityCbk(Command):
 
         search_keys = self.kwargs.get("search_keys")
         update_data = self.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
+        if isinstance(update_data, six.string_types):
             update_data = jsonloads(update_data)
 
         extra_data = self.kwargs.get("extra_data")
-        if isinstance(extra_data, basestring):
+        if isinstance(extra_data, six.string_types):
             extra_data = jsonloads(extra_data)
 
 
@@ -2254,11 +2255,11 @@ class UserSecurityCbk(Command):
 
         search_keys = self.kwargs.get("search_keys")
         update_data = self.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
+        if isinstance(update_data, six.string_types):
             update_data = jsonloads(update_data)
 
         extra_data = self.kwargs.get("extra_data")
-        if isinstance(extra_data, basestring):
+        if isinstance(extra_data, six.string_types):
             extra_data = jsonloads(extra_data)
 
 
@@ -2303,11 +2304,11 @@ class SearchTypeSecurityCbk(Command):
 
         search_keys = self.kwargs.get("search_keys")
         update_data = self.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
+        if isinstance(update_data, six.string_types):
             update_data = jsonloads(update_data)
 
         extra_data = self.kwargs.get("extra_data")
-        if isinstance(extra_data, basestring):
+        if isinstance(extra_data, six.string_types):
             extra_data = jsonloads(extra_data)
 
 
@@ -2354,12 +2355,12 @@ class GearMenuSecurityCbk(Command):
 
         search_keys = self.kwargs.get("search_keys")
         update_data = self.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
+        if isinstance(update_data, six.string_types):
             update_data = jsonloads(update_data)
 
         extra_data = self.kwargs.get("extra_data")
 
-        if isinstance(extra_data, basestring):
+        if isinstance(extra_data, six.string_types):
             extra_data = jsonloads(extra_data)
 
         project = Project.get()
@@ -2399,11 +2400,11 @@ class LinkSecurityCbk(Command):
 
         search_keys = self.kwargs.get("search_keys")
         update_data = self.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
+        if isinstance(update_data, six.string_types):
             update_data = jsonloads(update_data)
 
         extra_data = self.kwargs.get("extra_data")
-        if isinstance(extra_data, basestring):
+        if isinstance(extra_data, six.string_types):
             extra_data = jsonloads(extra_data)
 
         project = Project.get()
@@ -2452,11 +2453,11 @@ class ProcessSecurityCbk(Command):
 
         search_keys = self.kwargs.get("search_keys")
         update_data = self.kwargs.get("update_data")
-        if isinstance(update_data, basestring):
+        if isinstance(update_data, six.string_types):
             update_data = jsonloads(update_data)
 
         extra_data = self.kwargs.get("extra_data")
-        if isinstance(extra_data, basestring):
+        if isinstance(extra_data, six.string_types):
             extra_data = jsonloads(extra_data)
 
         project = Project.get()
