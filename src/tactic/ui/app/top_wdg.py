@@ -1050,13 +1050,15 @@ class TopWdg(Widget):
         elif ui_library == "form_builder":
             widget.add('''
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
 <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
 <link rel='stylesheet' href='https://unpkg.com/formiojs@latest/dist/formio.full.min.css'>
+<!--
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
+-->
+<script src='https://unpkg.com/formiojs@4.8.0-rc.10/dist/formio.full.min.js'></script>
         ''')
 
 

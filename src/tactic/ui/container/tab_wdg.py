@@ -2620,12 +2620,34 @@ spt.tab.view_definition = function(bvr) {
 
  
         title_div = DivWdg()
+        title_div.add_style("display: flex")
+        title_div.add_style("align-items: center")
+
+
+        #if self.use_default_style:
+        # if True:
+        #     title_div.add_style("text-align: left")
+        #     title_div.add_style("overflow: hidden")
+        #     title_div.add_style("text-overflow: ellipsis")
+        #     title_div.add_style("white-space", "nowrap");
+        #     #title_div.add_style("float: left")
+        #     title_div.add_style("z-index: 1")
+        #     #title_div.add_style("width: auto")
+
+
+        title_div.add_class("spt_tab_header_label")
+        display_title = title
+        title_div.add(display_title)
+        header.add(title_div)
+
+
+
 
         count_wdg = SpanWdg()
-        count_wdg.add_class("badge spt_tab_header_count")
+        count_wdg.add_class("badge badge-secondary spt_tab_header_count")
         title_div.add(count_wdg)
-        count_wdg.add_style("float: right")
-        count_wdg.add_style("font-size: 0.7em")
+        #count_wdg.add_style("float: right")
+        #count_wdg.add_style("font-size: 0.7em")
         count_wdg.add_style("margin-left: 10px")
 
         icon = None
@@ -2658,24 +2680,6 @@ spt.tab.view_definition = function(bvr) {
                     'expr_key': search_key,
                 } )
 
-
-
-
-        #if self.use_default_style:
-        # if True:
-        #     title_div.add_style("text-align: left")
-        #     title_div.add_style("overflow: hidden")
-        #     title_div.add_style("text-overflow: ellipsis")
-        #     title_div.add_style("white-space", "nowrap");
-        #     #title_div.add_style("float: left")
-        #     title_div.add_style("z-index: 1")
-        #     #title_div.add_style("width: auto")
-
-
-        title_div.add_class("spt_tab_header_label")
-        display_title = title
-        title_div.add(display_title)
-        header.add(title_div)
 
 
 

@@ -449,7 +449,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view = view.replace("/", ".")
         
         search_key = self.kwargs.get("search_key")
-        print("search_key: ", search_key)
 
         if view == '__new__':
             cur_config = None
@@ -512,7 +511,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left.add_style("vertical-align: top")
         left_div.add_style("width: 250px")
         left_div.add_style("height", "100%")
-        left_div.add_style("overflow: auto")
+        #left_div.add_style("overflow: auto")
 
         left_div.set_unique_id()
         left_div.add_smart_styles( "spt_custom_layout_item", {
@@ -531,8 +530,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             top.setAttribute("spt_view", view);
             top.setAttribute("spt_search_key", search_key);
-            spt.app_busy.show("Loading view ["+view+"]");
-
 
             var top = bvr.src_el.getParent(".spt_views_top");
             var states_el = top.getElement(".spt_folder_states");
@@ -544,10 +541,19 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 state_value = {}
             }
 
-            spt.panel.refresh_element(top, {folder_state: state_value});
-            spt.app_busy.hide();
+
+            var data = {
+                view: view,
+                search_key: search_key,
+            }
+            spt.custom_layout_editor.add_recent_item(data);
+
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.refresh();
+
             '''
         } )
+
 
 
         bg_color = left_div.get_color("background")
@@ -574,7 +580,13 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         error_msgs = []
 
 
+        
+
+
         title_wdg = DivWdg()
+        title_wdg.add_style("display: flex")
+        title_wdg.add_style("align-items: center")
+        title_wdg.add_style("justify-content: space-between")
         left_div.add(title_wdg)
         title_wdg.add("<b>Views</b>")
         title_wdg.add_color("color", "color")
@@ -587,8 +599,97 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         left_div.add_style("width: 100%")
 
 
-        web = WebContainer.get_web()
-        #folder_states = web.get_form_value("folder_states")
+        search_wdg = TextInputWdg(name="filter", height="25", placholder="Filter")
+        title_wdg.add(search_wdg)
+        search_wdg.add_style("width: 75px")
+        search_wdg.add_style("padding: 3px 5px")
+        search_wdg.add_behavior( {
+            'type': 'keyup',
+            'cbjs_action': '''
+            var value = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_custom_layout_top");
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.filter(value);
+            '''
+        } )
+        search_wdg.add_style("background: #E0E0E0")
+        search_wdg.add_style("font-size: 1.0em")
+
+
+        recent_div = DivWdg()
+        recent_div.add_class("spt_recent_top")
+        title_wdg.add(recent_div)
+        recent_div.add_style("display: none")
+
+
+
+        recent_states = self.kwargs.get("recent_state")
+        if recent_states:
+            try:
+                if isinstance(recent_states, basestring):
+                    recent_states = jsonloads(recent_states)
+            except Exception as e:
+                print("WARNINIG: can't parse json string [%s]" % recent_states)
+                recent_states = []
+        else:
+            recent_states = []
+
+        recent_text = TextAreaWdg("recent_states")
+        recent_text.add_style("display: none")
+        recent_text.set_value( jsondumps(recent_states) )
+        left_div.add(recent_text)
+        recent_text.add_class("spt_recent_states")
+
+        recent_div.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_recent_button',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".dropdown");
+            var el = top.getElement(".dropdown-menu");
+            el.setStyle("display", "block");
+            spt.body.add_focus_element(el);
+            '''
+        } )
+
+
+
+
+        recent_div.add('''
+<div class="dropdown">
+  <button class="btn btn-link dropdown-toggle spt_recent_button" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-history"> </i></button>
+  <div class="spt_recent_item_top dropdown-menu" aria-labelledby="dropdownMenuButton" style="display: none; font-size: 0.9em">
+  </div>
+</div>
+<style>
+.dropdown .dropdown-toggle {
+    color: #555;
+}
+</style>
+        ''')
+
+        data = recent_states
+
+        recent_div.add_behavior( {
+            'type': 'load',
+            'data': data,
+            'cbjs_action': '''
+            let data = bvr.data;
+            let menu = bvr.src_el.getElement(".dropdown-menu");
+
+            var top = bvr.src_el.getParent(".spt_custom_layout_top");
+            spt.custom_layout_editor.set_top(top);
+            data.forEach( function(data_item) {
+                spt.custom_layout_editor.add_recent_item(data_item);
+            } );
+            
+            '''
+        } )
+
+
+
+
+
+
         folder_states = self.kwargs.get("folder_state")
         if folder_states:
             try:
@@ -632,7 +733,27 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         } )
 
 
+
+        search_wdg = DivWdg()
+        search_wdg.add_class("spt_custom_layout_search_top")
+        left_div.add(search_wdg)
+        search_wdg.add_style("display: none")
+
+        search_title_wdg = DivWdg()
+        search_wdg.add(search_title_wdg)
+        search_title_wdg.add("Search Results:")
+        search_title_wdg.add_style("border-bottom: solid 1px #DDD")
+        search_title_wdg.add_style("padding: 20px 10px 5px 10px")
+        search_title_wdg.add_style("font-weight: bold")
+
+        search_result_wdg = DivWdg()
+        search_wdg.add(search_result_wdg)
+        search_result_wdg.add_class("spt_custom_layout_search")
+        search_result_wdg.add_style("font-size: 0.9em")
+
+
         content_div = DivWdg()
+        content_div.add_class("spt_custom_layout_view_top")
         left_div.add_widget(content_div, "content")
         content_div.add_color("color", "color3")
 
@@ -705,6 +826,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     if i != 1:
                         folder_wdg.add_style("padding-left: 13px")
 
+                    folder_wdg.add_class("spt_custom_layout_folder")
+
                     # add it to the parent and remember this as the last parent
                     parent_wdg.get_widget("content").add(folder_wdg)
                     parent_wdg = folder_wdg
@@ -720,7 +843,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     #icon.add_style("margin-top: -2px")
                     #icon.add_style("margin-left: -5px")
 
-                    icon = IconWdg(folder, "BS_FOLDER_OPEN", inline=False, size=12)
+                    icon = IconWdg(folder, "FA_FOLDER_O", inline=False, size=12)
                     icon.add_style("margin-top: 0px")
                     icon.add_style("margin-left: -3px")
                     icon.add_style("margin-right: 3px")
@@ -773,19 +896,23 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             config_div = DivWdg()
             folder_content.add(config_div)
             if folder != "/":
-                config_div.add_style("padding-left: 28px")
+                config_div.add_style("padding-left: 20px")
             else:
                 config_div.add_style("padding-left: 5px")
 
             config_div.add_class("spt_custom_layout_item")
             #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
-            icon = IconWdg("Custom Layout View", "BS_FILE", inline=False, size=12)
-            icon.add_style("margin-left: 3px")
+            icon = IconWdg("Custom Layout View", "FA_FILE_O", inline=False, size=12)
             icon.add_style("margin-right: 1px")
             icon.add_style("opacity: 0.8")
             config_div.add(icon)
 
-            config_div.add(display_view)
+            display_view_wdg = DivWdg()
+            display_view_wdg.add_class("spt_title")
+            display_view_wdg.add_style("white-space: nowrap")
+            config_div.add(display_view_wdg)
+            display_view_wdg.add(display_view)
+
             config_div.add_attr("spt_view", config_view)
             config_div.add_attr("spt_search_key", config.get_search_key())
             
@@ -1034,7 +1161,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             text.add_style("width: 400px")
             view_wdg.add_style("margin-top: 4px")
             view_wdg.add_style("margin-left: 10px")
-            view_wdg.add_style("padding-left: 230px")
+            view_wdg.add_style("padding-left: 30px")
             text.add_class("spt_view")
             text.add_style("font-family: courier")
             text.add_style("float: left")
@@ -1571,60 +1698,210 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             'type': 'load',
             'cbjs_action': """
 
-                spt.custom_layout_editor = {};
-                 
-                spt.custom_layout_editor.compile_behaviors = function(values) {
-                    
-                    
-                    var behavior_tab = bvr.src_el.getElement(".spt_behavior_top");
-                    
-                    var behavior_elements = behavior_tab.getElements(".spt_behavior_item");
-                    
-                    var behavior = '\\n';
-                    for (var i = 0; i < behavior_elements.length; i++) {
-                        
-                        var item = behavior_elements[i];
-                        var inputs = spt.api.get_input_values(item, null, false);
-                        var behavior_name = inputs.behavior_name[0];
-                        var behavior_is_relay = inputs.behavior_is_relay;
-                        var behavior_event = inputs.behavior_event[0];
-                        var behavior_event_name = inputs.behavior_event_name[0];
+spt.custom_layout_editor = {};
 
-                        try {
-                            spt.ace_editor.set_editor_top(item);
-                            var content = spt.ace_editor.get_value();
-                        } catch(e) {
-                            var content = inputs.behavior_content[0];
-                        }
+spt.custom_layout_editor.top = null;
 
-                        behavior += '<behavior '
-                        if (behavior_name && behavior_is_relay == 'on') {
-                            behavior += 'relay_class="'+behavior_name+'" ';
-                        } else if (behavior_name) {
-                            behavior += 'class="'+behavior_name+'" ';
-                        } else {
-                            //TODO: Should raise exception of some kind.
-                        }
-                        
-                        if (behavior_event) behavior += 'event="'+behavior_event+'" ';
-                        if (behavior_event_name) behavior += 'event_name="'+behavior_event_name+'" ';
-                        
-                        // Strip off end whitespace
-                        behavior = behavior.trim()
-                        
-                        behavior += '>';
-                        behavior += '\\n';
-                        behavior += content;
-                        behavior += '\\n';
-                        behavior += '</behavior>';
-                        behavior += '\\n';
-                        behavior += '\\n';
-                        behavior += '\\n';
-                    }
+spt.custom_layout_editor.set_top = function(top) {
+    spt.custom_layout_editor.top = top;
+}
 
-                    return behavior;
 
-                };
+ 
+spt.custom_layout_editor.compile_behaviors = function(values) {
+    
+    
+    var behavior_tab = bvr.src_el.getElement(".spt_behavior_top");
+    
+    var behavior_elements = behavior_tab.getElements(".spt_behavior_item");
+    
+    var behavior = '\\n';
+    for (var i = 0; i < behavior_elements.length; i++) {
+        
+        var item = behavior_elements[i];
+        var inputs = spt.api.get_input_values(item, null, false);
+        var behavior_name = inputs.behavior_name[0];
+        var behavior_is_relay = inputs.behavior_is_relay;
+        var behavior_event = inputs.behavior_event[0];
+        var behavior_event_name = inputs.behavior_event_name[0];
+
+        try {
+            spt.ace_editor.set_editor_top(item);
+            var content = spt.ace_editor.get_value();
+        } catch(e) {
+            var content = inputs.behavior_content[0];
+        }
+
+        behavior += '<behavior '
+        if (behavior_name && behavior_is_relay == 'on') {
+            behavior += 'relay_class="'+behavior_name+'" ';
+        } else if (behavior_name) {
+            behavior += 'class="'+behavior_name+'" ';
+        } else {
+            //TODO: Should raise exception of some kind.
+        }
+        
+        if (behavior_event) behavior += 'event="'+behavior_event+'" ';
+        if (behavior_event_name) behavior += 'event_name="'+behavior_event_name+'" ';
+        
+        // Strip off end whitespace
+        behavior = behavior.trim()
+        
+        behavior += '>';
+        behavior += '\\n';
+        behavior += content;
+        behavior += '\\n';
+        behavior += '</behavior>';
+        behavior += '\\n';
+        behavior += '\\n';
+        behavior += '\\n';
+    }
+
+    return behavior;
+
+};
+
+spt.custom_layout_editor.refresh = function() {
+    let top = spt.custom_layout_editor.top;
+    let menu = top.getElement(".spt_recent_item_top");
+
+    var folder_states_el = top.getElement(".spt_folder_states");
+    var folder_state_value = folder_states_el.value;
+    var recent_states_el = top.getElement(".spt_recent_states");
+    var recent_state_value = recent_states_el.value;
+    spt.panel.refresh_element(top, {
+        folder_state: folder_state_value,
+        recent_state: recent_state_value,
+    });
+}
+
+
+spt.custom_layout_editor.filter = function(keyword) {
+    var top = spt.custom_layout_editor.top;
+
+    var search_top = top.getElement(".spt_custom_layout_search_top");
+    var search_el = top.getElement(".spt_custom_layout_search");
+
+    var view_top = top.getElement(".spt_custom_layout_view_top");
+
+    search_el.innerHTML = "";
+    if (keyword == "") {
+        search_top.setStyle("display", "none");
+        view_top.setStyle("display", "block");
+        return;
+    }
+
+    search_top.setStyle("display", "block");
+    view_top.setStyle("display", "none");
+
+    var items = top.getElements(".spt_custom_layout_item");
+    items.forEach( function(item) {
+        if (item.hasClass("spt_recent_item")) {
+            return;
+        }
+
+        var view = item.getAttribute("spt_view");
+        var parts = view.split(".");
+        var matches = false;
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (part.startsWith(keyword)) {
+                matches = true;
+                break;
+            }
+        };
+
+        //var title_el = item.getElement(".spt_title");
+        //var title = title_el.innerHTML;
+        //if (title.startsWith(keyword)) {
+
+        if (matches) {
+            var clone = spt.behavior.clone(item);
+            clone.setStyle("display", "block");
+            search_el.appendChild(clone);
+            var title_el = clone.getElement(".spt_title");
+
+            var display = "";
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].startsWith(keyword)) {
+                    parts[i] = "<b>" + parts[i] + "</b>";
+                }
+                else {
+                    parts[i] = "<span style='opacity: 0.7'>" + parts[i] + "</span>";
+                }
+            }
+            view = parts.join(" / ");
+            title_el.innerHTML = view
+        }
+        else {
+            //item.setStyle("display", "none");
+        }
+    } );
+
+}
+
+
+spt.custom_layout_editor.add_recent_item = function(data) {
+    let top = spt.custom_layout_editor.top;
+    let recent_top = top.getElement(".spt_recent_top");
+    recent_top.setStyle("display", "block");
+    let menu = top.getElement(".spt_recent_item_top");
+
+
+
+    var recent_states_el = top.getElement(".spt_recent_states");
+    var recent_state_value = recent_states_el.value;
+    if (recent_state_value) {
+        recent_state_value = JSON.parse(recent_state_value);
+    }
+    else {
+        recent_state_value = [];
+    }
+
+
+    // find if the item is already in the list
+    let current_items = menu.getElements(".spt_custom_layout_item");
+    let found = false;
+    for (var i = 0; i < current_items.length; i++) {
+        var view = current_items[i].getAttribute("spt_view");
+        if (view == data.view) {
+            menu.prepend(current_items[i]);
+            found = true;
+            break;
+        }
+    }
+
+    if (found) return;
+
+    recent_state_value.push(data);
+    recent_states_el.value = JSON.stringify(recent_state_value)
+
+
+    var new_item = document.createElement("a");
+    new_item.addClass("dropdown-item");
+    new_item.addClass("spt_custom_layout_item");
+    new_item.addClass("spt_recent_item");
+    new_item.addClass("hand");
+    menu.prepend(new_item);
+    new_item.setAttribute("spt_view", data.view);
+    new_item.setAttribute("spt_search_key", data.search_key);
+
+
+    var title = data.view.replace(/\./g, " / ");
+    new_item.innerHTML = title;
+
+    /*
+    var remove_el = document.createElement("i");
+    remove_el.addClass("fa");
+    remove_el.addClass("fa-remove");
+    remove_el.addClass("spt_remove_recent_item");
+    new_item.appendChild(remove_el);
+    remove_el.innerHTML = " ";
+    */
+
+    return new_item;
+
+}
             """
         })
 
@@ -1639,6 +1916,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     def get_shelf_wdg(self):
 
         shelf_wdg = DivWdg()
+        shelf_wdg.add_style("display: flex")
+        shelf_wdg.add_style("align-items: center")
+        shelf_wdg.add_style("justify-content: left")
 
         shelf_wdg.add_style("height: 35px")
         shelf_wdg.add_color("background", "background", -10)
@@ -1659,9 +1939,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             'cbjs_action': '''
             spt.app_busy.show("Refreshing ...")
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
-            var states_el = top.getElement(".spt_folder_states");
-            var state_value = states_el.value;
-            spt.panel.refresh_element(top, {folder_state: state_value});
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.refresh();
             spt.app_busy.hide();
             '''
         } )
@@ -1753,9 +2032,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             
 
             top.setAttribute("spt_view", view);
-            var states_el = top.getElement(".spt_folder_states");
-            var state_value = states_el.value;
-            spt.panel.refresh_element(top, {folder_state: state_value});
+
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.refresh();
 
             '''
         } )
@@ -1771,9 +2050,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_custom_layout_top");
             top.setAttribute("spt_view", "__new__");
-            var states_el = top.getElement(".spt_folder_states");
-            var state_value = states_el.value;
-            spt.panel.refresh_element(top, {folder_state: state_value});
+
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.refresh();
+
             '''
         } )
 
@@ -1984,11 +2264,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             var top = activator.getParent(".spt_custom_layout_top");
 
-            //spt.panel.refresh(top);
-            var states_el = top.getElement(".spt_folder_states");
-            var state_value = states_el.value;
-            spt.panel.refresh_element(top, {folder_state: state_value});
-
+            spt.custom_layout_editor.set_top(top);
+            spt.custom_layout_editor.refresh();
 
             spt.app_busy.hide();
         ''' } )
@@ -2068,11 +2345,9 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 top.setAttribute("spt_widget_type", "");
 
                 var top = activator.getParent(".spt_custom_layout_top");
-                //spt.panel.refresh(top);
+                spt.custom_layout_editor.set_top(top);
+                spt.custom_layout_editor.refresh();
 
-                var states_el = top.getElement(".spt_folder_states");
-                var state_value = states_el.value;
-                spt.panel.refresh_element(top, {folder_state: state_value});
 
                 spt.app_busy.hide();
             ''' } )
