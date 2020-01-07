@@ -675,20 +675,35 @@ class PipelineToolWdg(BaseRefreshWdg):
             toggle_button = PipelineDocumentGroupLabel.get_button_wdg("spt_pipeline_toggle_btn", "Toggle Workflow List", "fa-list-ul")
             toolbar_icons.add(toggle_button)
             toggle_button.add_style("margin: 0 3px")
+
+            list_kwargs = {
+                "save_event": save_event,
+                "save_new_event": save_new_event,
+                "settings": self.settings,
+                "expression": expression
+            }
+            toolbar_icons.generate_widget_key("tactic.ui.tools.PipelineListWdg", inputs=list_kwargs, attr="doc")
+            toolbar_icons.generate_widget_key("tactic.ui.tools.PipelineDocumentWdg", attr="list")
             toggle_button.add_behavior({
                 'type': 'click',
+                'widget_key': widget_key,
                 'cbjs_action': '''
 
                 var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
                 var left = top.getElement(".spt_pipeline_tool_left");
                 var content = left.getElement(".spt_pipeline_tool_left_content");
+                var icon = bvr.src_el.getParent(".spt_toolbar_content");
+                var list_widget_key = icon.getAttribute("SPT_LIST_WIDGET_KEY");
+                var doc_widget_key = icon.getAttribute("SPT_DOC_WIDGET_KEY");
 
                 if (content.getAttribute("mode") == "list") {
                     content.setAttribute("mode", "document");
-                    spt.panel.load(content, 'tactic.ui.tools.PipelineDocumentWdg');
+                    var class_name = list_widget_key || 'tactic.ui.tools.PipelineDocumentWdg';
+                    spt.panel.load(content, class_name);
                 } else if (content.getAttribute("mode") == "document") {
                     content.setAttribute("mode", "list");
-                    spt.panel.load(content, 'tactic.ui.tools.PipelineListWdg', content.list_kwargs);
+                    var class_name = doc_widget_key || 'tactic.ui.tools.PipelineListWdg';
+                    spt.panel.load(content, class_name, content.list_kwargs);
                 }
 
                 '''
@@ -733,12 +748,6 @@ class PipelineToolWdg(BaseRefreshWdg):
             else:
                 pipeline_list_top.add_style("height", "600")
 
-            list_kwargs = {
-                "save_event": save_event,
-                "save_new_event": save_new_event,
-                "settings": self.settings,
-                "expression": expression
-            }
 
             pipeline_list_content = DivWdg()
             pipeline_list_top.add(pipeline_list_content)

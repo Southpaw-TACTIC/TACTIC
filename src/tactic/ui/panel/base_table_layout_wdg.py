@@ -2524,11 +2524,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 bvr.args.searchable_search_type =  activator.getProperty("spt_searchable_search_type");
                                 spt.popup.get_widget(evt, bvr);
                                 ''',
-                'options' : {'class_name' : widget_key }
-                'args' : {'use_last_search': True,
--                          'display' : True,
--                          'search_type': self.search_type
--                          }
+                'options' : {'class_name' : widget_key },
+                'args' : {
+                    'use_last_search': True,
+                    'display' : True,
+                    'search_type': self.search_type
+                }
             }
         } )
        

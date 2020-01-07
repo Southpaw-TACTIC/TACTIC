@@ -652,7 +652,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             name = self.get_name()
             if not self.columns:
-            self.columns = [name]
+                self.columns = [name]
 
             partial = self.values.get("partial") == 'on'
         finally:

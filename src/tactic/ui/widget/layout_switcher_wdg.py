@@ -323,6 +323,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         'element_name': element_name,
                         'target': target,
                         'save_state': save_state,
+                        'display_options': display_options,
                         'hidden': hidden,
                         'cbjs_action': '''
                         var menu_item = bvr.src_el;

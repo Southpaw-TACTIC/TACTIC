@@ -5427,33 +5427,32 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         security = Environment.get_security()
         project_code = Project.get_project_code()
+        has_key = False
 
         if isinstance(class_name, basestring):
-            if Config.get_value("security", "api_widget_restricted") == "true":
-                if class_name.startswith("$"):
-                    class_name, inputs, ticket = decode_security_key(class_name, "widget")
-                    if not args:
-                        args = inputs
-                    else:
-                        if not inputs:
-                            raise Exception("WARNING: Trying to pass in unexpected inputs: %s." % args)
+            if class_name.startswith("$"):
+                has_key = True
+                class_name, inputs, ticket = decode_security_key(class_name, "widget")
+                for k, v in args.items():
+                    inputs_v = inputs.get(k)
+                    if "&amp;" in inputs_v:
+                        inputs_v = inputs_v.replace("&amp;", "&")
+
+                    if v != inputs_v:
+                        if inputs.get(k) == "__WIDGET_UNKNOWN__":
+                            inputs[k] = v
                         else:
-                            for k, v in args.items():
-                                if not inputs.get(k):
-                                    raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
-                                elif v != inputs.get(k):
-                                    if inputs.get(k) == "__WIDGET_UNKNOWN__":
-                                        inputs[k] = v
-                                    else:
-                                        raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
-                else:
-                    key = "widget/%s" % (class_name)
-                    access_key = {
-                        'key': key,
-                        'project': project_code
-                    }
-                    if not security.check_access("builtin", access_key, "allow"):
-                        raise Exception("Trying to access widgets that are not allowed, please use widget key")
+                            raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
+            else:
+                if Config.get_value("security", "api_widget_restricted") == "true":
+                    if not has_key:
+                        key = "widget/%s" % (class_name)
+                        access_key = {
+                            'key': key,
+                            'project': project_code
+                        }
+                        if not security.check_access("builtin", access_key, "allow"):
+                            raise Exception("Trying to access widgets that are not allowed, please use widget key")
 
             
 

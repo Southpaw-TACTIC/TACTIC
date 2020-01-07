@@ -2608,25 +2608,9 @@ spt.tab.view_definition = function(bvr) {
 
            
         if not class_name:
-            header.generate_widget_key("tactic.ui.panel.CustomLayoutWdg", inputs=kwargs)
+            widget_key = header.generate_widget_key("tactic.ui.panel.CustomLayoutWdg", inputs=kwargs)
         else:
-            if class_name.startswith("$"):
-                from pyasm.common import jsonloads
-
-                key = class_name
-                key = key.lstrip("$")
-                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-                path = "%s/%s_key_%s.txt" % (tmp_dir, "widget", key)
-                if not os.path.exists(path):
-                    print("ERROR: %s path [%s] not found" % ("widget", path))
-                    raise Exception("widget key not valid")
-                
-                f = open(path, 'r')
-                data = f.read()
-                f.close()
-                data = jsonloads(data)
-                class_name = data.get("method")
-            header.generate_widget_key(class_name, inputs=kwargs)
+            widget_key = header.generate_widget_key(class_name, inputs=kwargs)
 
         header.add_behavior( {
         'type': 'click_up',
@@ -2997,6 +2981,23 @@ class TabSaveStateCmd(Command):
             display = xml.create_element("display")
             xml.append_child(element, display)
 
+            if class_name.startswith("$"):
+                from pyasm.common import jsonloads
+
+                key = class_name
+                key = key.lstrip("$")
+                tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                path = "%s/%s_key_%s.txt" % (tmp_dir, "widget", key)
+                if not os.path.exists(path):
+                    print("ERROR: %s path [%s] not found" % ("widget", path))
+                    raise Exception("widget key not valid")
+                
+                f = open(path, 'r')
+                data = f.read()
+                f.close()
+                data = jsonloads(data)
+                class_name = data.get("method")
+            
             xml.set_attribute(display, "class", class_name)
 
             for key, value in kwargs.items():
