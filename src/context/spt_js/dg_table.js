@@ -1030,7 +1030,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={"extra_data": {}})
 {
     var table = document.id(table_id);
     var definition_view = table.getAttribute("spt_view");

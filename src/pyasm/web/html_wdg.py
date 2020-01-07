@@ -12,7 +12,7 @@
 
 
 __all__ = ['HtmlException', 'HtmlElement', 'DivWdg', 'FloatDivWdg', 
-        'SpanWdg', 'ButtonWdg', 'Tbody', 'Table', 'Canvas', 'Video']
+        'SpanWdg', 'ButtonWdg', 'StyleWdg', 'Tbody', 'Table', 'Canvas', 'Video']
 
 import os
 import re
@@ -327,7 +327,7 @@ class HtmlElement(Widget):
 
 
     def add_relay_style(self, class_name, name, value):
-        return self.add_relay_style(class_name, name, value)
+        return self.add_smart_style(class_name, name, value)
 
     def add_relay_styles(self, class_name, data):
         for name, value in data.items():
@@ -1557,11 +1557,21 @@ class SpanWdg(HtmlElement):
             
 
 class ButtonWdg(HtmlElement):
-    '''Basic SPAN element'''
+    '''Basic Button element'''
     def __init__(self,string=None, css=None, id=None):
-        super(ButtonWdg,self).__init__("span", css=css, id=id)
+        super(ButtonWdg,self).__init__("button", css=css, id=id)
         if string:
             self.add(string)
+
+      
+
+class StyleWdg(HtmlElement):
+    '''Basic Style element'''
+    def __init__(self,string=None, css=None, id=None):
+        super(StyleWdg,self).__init__("style", css=css, id=id)
+        if string:
+            self.add(string)
+
 
 
 

@@ -26,6 +26,7 @@ from pyasm.biz import Task, Pipeline, Project, ProjectSetting
 from pyasm.command import Command
 from pyasm.web import DivWdg, WebContainer, Table, SpanWdg, HtmlElement
 from pyasm.search import Search, SearchType, SearchKey, SObject
+from pyasm.security import Sudo
 from tactic.ui.panel import FastTableLayoutWdg
 from pyasm.widget import SwapDisplayWdg
 
@@ -5797,13 +5798,23 @@ class DependencyInfoWdg(BaseInfoWdg):
 
 
         settings_wdg.add("<br/>")
-        settings_wdg.add("<b>Send Message to Related Items::</b>")
+        settings_wdg.add("<b>Start Workflow for Related Items::</b>")
         select = SelectWdg("related_search_type")
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
         select.add_empty_option("-- Select --")
         settings_wdg.add("<span style='opacity: 0.6'>This will send a message to the selected items</span>")
+        settings_wdg.add("<br/>")
+
+
+        settings_wdg.add("<br/>")
+
+        settings_wdg.add("Expression")
+        text = TextInputWdg(name="expression")
+        text.add_style("width: 100%")
+        settings_wdg.add(text)
+        settings_wdg.add("<span style='opacity: 0.6'>Expression to find related items</span>")
         settings_wdg.add("<br/>")
 
 
@@ -6808,7 +6819,6 @@ class ProcessInfoCmd(Command):
 
         if script:
 
-            from pyasm.security import Sudo
 
             sudo = Sudo()
             try:
@@ -7114,7 +7124,10 @@ class NewProcessInfoCmd(Command):
 
         # Get custom save cmd via node_type
         from pyasm.command import CustomProcessConfig
-        cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        try:
+            cmd = CustomProcessConfig.get_save_handler(node_type, self.kwargs)
+        except:
+            cmd = None
         if cmd:
             return cmd.execute()
 
@@ -7196,7 +7209,6 @@ class NewProcessInfoCmd(Command):
         trigger.commit()
 
         if script:
-            from pyasm.security import Sudo
 
             sudo = Sudo()
             try:
@@ -9017,7 +9029,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
         # The search needed for the login_group select widgets
-        login_group_search = Search('sthpw/login_group')
+        
+        sudo = Sudo()
+        try:
+            login_group_search = Search('sthpw/login_group')
+        finally:
+            sudo.exit()
+
 
         # assigned_group
         table.add_row()

@@ -2122,30 +2122,42 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     def get_column_info(cls, db_resource, table, use_cache=True):
         '''get column info like data types, is_nullable in a dict'''
 
-        from .sql import DbContainer, Sql
+        from .sql import DbContainer, Sql, DbResource
         if isinstance(db_resource, Sql):
+            db_resource = db_resource.get_db_resoure()
             prefix = "%s" % db_resource.get_db_resource()
+        elif not isinstance(db_resource, DbResource):
+            prefix = "%s" % db_resource
+            db_resource = DbResource.get_default(db_resource)
         else:
             prefix = "%s" % db_resource
 
+
+        cache_container = None
         if use_cache:
-            # use global cache
-            if prefix.endswith(':sthpw'):
-                from pyasm.biz import CacheContainer
-                from pyasm.security import Site
-                site = Site.get()
-                if site:
-                    key = "%s:sthpw_column_info" % site
-                else:
-                    key = "sthpw_column_info"
-                cache = CacheContainer.get(key)
-                if cache:
-                    dict = cache.get_value_by_key("data", table)
-                    if dict != None:
-                        return dict
+            key = str(db_resource)
 
+            # use lazy global cache
+            from pyasm.biz import CacheContainer
+            cache_container = CacheContainer.get(key)
+
+            if cache_container is None:
+                kwargs = {
+                    "db_resource": db_resource,
+                }
+                from pyasm.web import TableInfoCache
+                cache_container = TableInfoCache( **kwargs )
+
+            else:
+                dict = cache_container.get_value_by_key("data", table)
+                if dict != None:
+                    return dict
+
+
+
+        # FIXME: this cache is probably no longer needed as the global cache above takes over
+        """
         key2 = "%s:%s" % (prefix, table)
-
         key = "DatabaseImpl:column_info"
         cache_dict = Container.get(key)
         if cache_dict == None:
@@ -2156,9 +2168,10 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             cache = cache_dict.get(key2)
             if cache != None:
                 return cache
+        """
 
         cache = {}
-        cache_dict[key2] = cache
+        #cache_dict[key2] = cache
 
 
         # get directly from the database
@@ -2202,6 +2215,10 @@ class PostgresImpl(BaseSQLDatabaseImpl):
 
 
                 cache[name] = info_dict
+
+
+        if cache_container:
+            cache_container.add_table(table, cache)
 
         return cache
 

@@ -66,7 +66,7 @@ class Palette(object):
     'side_bar_title': '#3C76C2',
     'side_bar_title_color': '#FFF',
     'tab_background': '#3C76C2',
-    'table_border': '#E0E0E0',
+    'table_border': '#F0F0F0',
     'theme':        'default',
     'shadow':       'rgba(0,0,0,0.1)',
     }

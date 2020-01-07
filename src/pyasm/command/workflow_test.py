@@ -75,13 +75,7 @@ class WorkflowCmd(Command):
         try:
             Workflow().init()
             
-            
-            self._test_hierarchy()
-            self._test_double_hierarchy()
-
-
             self._test_namespace_dependency()
-
 
             # FIXM:: these are currently broken
             #self._test_check()
@@ -113,6 +107,10 @@ class WorkflowCmd(Command):
             self._test_projected_schedule()
             self._test_not_required()
 
+            self._test_hierarchy()
+            self._test_double_hierarchy()
+            self._test_nested_hierarchy()
+            self._test_nested_hierarchy_manual()
         except Exception as e:
             print("Error: ", e)
             raise
@@ -644,7 +642,7 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("a"))
         self.assertEquals( "complete", sobject.get_value("b"))
         self.assertEquals( "complete", sobject.get_value("c"))
-        self.assertEquals( False, sobject.get_value("d"))
+        self.assertEquals( "not_required", sobject.get_value("d"))
         self.assertEquals( "complete", sobject.get_value("e"))
 
 
@@ -906,7 +904,6 @@ class WorkflowCmd(Command):
         '''
         pipeline, processes = self.get_pipeline(pipeline_xml)
 
-        
         # create the sub pipeline
         subpipeline_xml = '''
         <pipeline>
@@ -1042,6 +1039,221 @@ class WorkflowCmd(Command):
         self.assertEquals( "complete", sobject.get_value("subb"))
         self.assertEquals( "complete", sobject.get_value("subc"))
         self.assertEquals( "complete", sobject.get_value("end"))
+
+    def _test_nested_hierarchy(self):
+        '''Tests nested hierarchy node with action nodes'''
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+        pipeline_xml = '''
+        <pipeline>
+         <process type="action" name="a"/>
+         <process type="hierarchy" name="b"/>
+         <process type="action" name="c"/>
+         <connect from="a" to="b"/>
+         <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+        # create the first sub_pipeline
+        subpipeline_xml = '''
+        <pipeline>
+         <process type="action" name="d"/>
+         <process type="hierarchy" name="e"/>
+         <process type="action" name="f"/>
+         <connect from="d" to="e"/>
+         <connect from="e" to="f"/>
+        </pipeline>
+        '''
+        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
+        subpipeline.commit()
+        subpipeline_code = subpipeline.get_code()
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+        # create the nested sub_pipeline
+        nested_sub_xml = '''
+        <pipeline>
+         <process type="action" name="g"/>
+         <process type="manual" name="h"/>
+         <process type="action" name="i"/>
+         <connect from="g" to="h"/>
+         <connect from="h" to="i"/>
+        </pipeline>
+        '''
+        nested_subpipeline, nested_subprocesses = self.get_pipeline(nested_sub_xml)
+        nested_subpipeline.commit()
+        nested_subpipeline_code = nested_subpipeline.get_code()
+        p = subprocesses.get("e")
+        p.set_value("subpipeline_code", nested_subpipeline_code)
+        p.commit()
+        # Run the pipeline
+        process = "a"
+        output = {
+          "pipeline": pipeline,
+          "sobject": sobject,
+          "process": process
+        }
+
+        Trigger.call(self, "process|pending", output)
+
+        self.assertEquals( "complete", sobject.get_value("a"))
+        self.assertEquals( "complete", sobject.get_value("b"))
+        self.assertEquals( "complete", sobject.get_value("d"))
+        self.assertEquals( "complete", sobject.get_value("e"))
+        self.assertEquals( "complete", sobject.get_value("g"))
+        self.assertEquals( "complete", sobject.get_value("h"))
+        self.assertEquals( "complete", sobject.get_value("i"))
+        self.assertEquals( "complete", sobject.get_value("f"))
+        self.assertEquals( "complete", sobject.get_value("c"))
+
+
+
+    def _test_nested_hierarchy_manual(self):
+        '''Tests nested hierarchy node with some manual nodes'''
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+        pipeline_xml = '''
+        <pipeline>
+         <process type="action" name="a"/>
+         <process type="hierarchy" name="b"/>
+         <process type="action" name="c"/>
+         <connect from="a" to="b"/>
+         <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+        # create the first sub_pipeline
+        subpipeline_xml = '''
+        <pipeline>
+         <process type="action" name="d"/>
+         <process type="hierarchy" name="e"/>
+         <process type="action" name="f"/>
+         <connect from="d" to="e"/>
+         <connect from="e" to="f"/>
+        </pipeline>
+        '''
+        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
+        subpipeline.commit()
+        subpipeline_code = subpipeline.get_code()
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+        # create the nested sub_pipeline
+        nested_sub_xml = '''
+        <pipeline>
+         <process type="action" name="g"/>
+         <process type="manual" name="h"/>
+         <process type="manual" name="i"/>
+         <process type="manual" name="j"/>
+         <connect from="g" to="h"/>
+         <connect from="h" to="i"/>
+         <process type="i" name="j"/>
+        </pipeline>
+        '''
+        nested_subpipeline, nested_subprocesses = self.get_pipeline(nested_sub_xml)
+        nested_subpipeline.commit()
+        nested_subpipeline_code = nested_subpipeline.get_code()
+        p = subprocesses.get("e")
+        p.set_value("subpipeline_code", nested_subpipeline_code)
+        p.commit()
+
+        # generate tasks
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+        tasks = Task.add_initial_tasks(sobject) 
+
+
+        # Run the pipeline
+        process = "a"
+        output = {
+          "pipeline": pipeline,
+          "sobject": sobject,
+          "process": process
+        }
+        Trigger.call(self, "process|pending", output)
+
+
+        task = Task.get_by_sobject(sobject, process="b/e/h")
+        task = task[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Pending")
+
+        task = Task.get_by_sobject(sobject, process="b/e/i")
+        task = task[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Assignment")
+
+        task = Task.get_by_sobject(sobject, process="b/e/h")
+        task = task[0]
+        task.set_value("status", "Complete")
+        task.commit()
+
+        task = Task.get_by_sobject(sobject, process="b/e/i")
+        task = task[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Pending")
+
+
+    def _test_hierarchy_manual(self):
+        '''Tests nested hierarchy node with manual nodes'''
+        # create a dummy sobject
+        sobject = SearchType.create("unittest/person")
+        pipeline_xml = '''
+        <pipeline>
+         <process type="action" name="a"/>
+         <process type="hierarchy" name="b"/>
+         <process type="action" name="c"/>
+         <connect from="a" to="b"/>
+         <connect from="b" to="c"/>
+        </pipeline>
+        '''
+        pipeline, processes = self.get_pipeline(pipeline_xml)
+        # create the first sub_pipeline
+        subpipeline_xml = '''
+        <pipeline>
+         <process type="manual" name="d"/>
+         <process type="manual" name="e"/>
+         <process type="action" name="f"/>
+         <connect from="d" to="e"/>
+         <connect from="e" to="f"/>
+        </pipeline>
+        '''
+        subpipeline, subprocesses = self.get_pipeline(subpipeline_xml)
+        subpipeline.commit()
+        subpipeline_code = subpipeline.get_code()
+        p = processes.get("b")
+        p.set_value("subpipeline_code", subpipeline_code)
+        p.commit()
+
+        # Run the pipeline
+        process = "a"
+        output = {
+          "pipeline": pipeline,
+          "sobject": sobject,
+          "process": process
+        }
+
+        sobject.set_value("pipeline_code", pipeline.get_code())
+        sobject.commit()
+        tasks = Task.add_initial_tasks(sobject) 
+
+        Trigger.call(self, "process|pending", output)
+
+
+        task = Task.get_by_sobject(sobject, process="b/d")
+        task = task[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Pending")
+
+        task.set_value("status", "Complete")
+        task.commit()
+
+        task = Task.get_by_sobject(sobject, process="b/e")
+        task = task[0]
+        status = task.get_value("status")
+        self.assertEquals(status, "Pending")
+
+
 
 
     def _test_dependency(self):

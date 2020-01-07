@@ -1229,14 +1229,14 @@ class WebLoginWdg(Widget):
 
                     change_admin = True
             else:
-                admin_login = SearchType.create('sthpw/login')
+                # FIXME: This should use logic in Login.get_by_login
+                # that creates the admin login with certain Config settings 
+                 
+                admin_login = SearchType.create("sthpw/login")
                 admin_login.set_value('login','admin')
                 admin_login.commit()
                 change_admin = True
-                # recreate the admin_login
-                
 
-            sudo.exit()
 
         if override_logo:
             div.add("<div class='spt_tactic_logo'></div>")
@@ -2001,9 +2001,12 @@ class WebLoginWdg2(BaseSignInWdg):
         login_div.add(reset_button)
         reset_button.add_class("sign-in-btn hand")
         reset_button.add_attr('title', 'Reset Password')
-        reset_button.add_event("onclick", "document.form.elements['new_password'].value='true'; document.form.submit()")
+        code = web.get_form_value('code')
+        reset_button.add_event("onclick", "document.form.setAttribute('action', document.location.pathname); document.form.elements['code'].value='%s'; document.form.elements['new_password'].value='true'; document.form.submit();" % code)
 
         hidden = HiddenWdg("new_password")
+        login_div.add(hidden)
+        hidden = HiddenWdg("code")
         login_div.add(hidden)
 
         msg = web.get_form_value(BaseSignInWdg.RESET_MSG_LABEL)
@@ -2167,32 +2170,35 @@ class WebLoginWdg2(BaseSignInWdg):
             from pyasm.security import Sudo
             sudo = Sudo()
             try:
-                admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+                # FIXME: This expression returns None causing security hole.
+                # admin_login = Search.eval("@SOBJECT(sthpw/login['login','admin'])", single=True, show_retired=True)
+                login_s = Search("sthpw/login")
+                login_s.add_filter("login", "admin")
+                admin_login = login_s.get_sobject()
+                
+                if admin_login and admin_login.get_value('s_status') =='retired':
+                    admin_login.reactivate()
+                    web = WebContainer.get_web()
+                    web.set_form_value(self.LOGIN_MSG_LABEL, "admin user has been reactivated.")
+                    admin_password = admin_log.get_value("password")
+                    if admin_password == Login.get_default_encrypted_password():
+                        change_admin = True
+
+                elif admin_login:
+                    password = admin_login.get_value("password")
+                    if password == Login.get_default_encrypted_password() or not password:
+                        change_admin = True
+                
+                else: 
+                    # FIXME: This should use logic in Login.get_by_login
+                    # that creates the admin login with certain Config settings 
+                    #admin_login = Login.get_by_login("admin")
+                    admin_login = SearchType.create("sthpw/login")
+                    admin_login.set_value('login','admin')
+                    admin_login.commit()
+                    change_admin = True
             finally:
                 sudo.exit()
-            if admin_login and admin_login.get_value('s_status') =='retired':
-                admin_login.reactivate()
-                web = WebContainer.get_web()
-                web.set_form_value(self.LOGIN_MSG_LABEL, "admin user has been reactivated.")
-                admin_password = admin_log.get_value("password")
-                if admin_password == Login.get_default_encrypted_password():
-                    change_admin = True
-
-         
-            if admin_login:
-                password = admin_login.get_value("password")
-                if password == Login.get_default_encrypted_password() or not password:
-
-                    change_admin = True
-            else:
-                admin_login = SearchType.create('sthpw/login')
-                admin_login.set_value('login','admin')
-                admin_login.commit()
-                change_admin = True
-                # recreate the admin_login
-                
-
-            sudo.exit()
 
 
         ####### CONTENT #######
