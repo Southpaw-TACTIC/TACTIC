@@ -279,8 +279,16 @@ class HtmlElement(Widget):
         self.attrs['style'] = style
 
 
-    def add_style(self, name, value=None, override=True):
-        '''add a style attribute'''
+    def add_style(self, name, value=None, override=True, bs=True):
+        '''add a style attribute
+
+        bs refers to compatibility with updated Bootstrap
+        UI. If bs is False and the Bootstrap UI is used,
+        the style will not be added.'''
+
+        if not bs and self._use_bootstrap():
+            return
+
         if not name:
             return
         if value == None:

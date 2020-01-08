@@ -260,7 +260,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         remove_div = DivWdg()
         remove_div.add_class("spt_remove")
         file_template.add(remove_div)
-        icon = IconButtonWdg(title="Remove", icon="BS_REMOVE")
+        icon = IconButtonWdg(title="Remove", icon="FA_TIMES")
         icon.add_style("float: right")
         remove_div.add(icon)
         #remove_div.add_style("text-align: right")
@@ -857,7 +857,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background.add_color("color", "color", 70)
 
 
-        icon = "<i class='fa fa-cloud-upload' style='font-size: 150px'> </i>"
+        icon = "<i class='fa fa-cloud-upload-alt' style='font-size: 150px'> </i>"
         background.add(icon)
 
         background_text = DivWdg("<p>Drag Files Here</p>")

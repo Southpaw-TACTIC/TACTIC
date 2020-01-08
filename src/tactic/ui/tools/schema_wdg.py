@@ -86,7 +86,11 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         canvas_wrapper = DivWdg()
         td = table.add_cell(canvas_wrapper)
+        td.add_style("height", "400px")
         canvas_wrapper.add_class("spt_pipeline_wrapper")
+        canvas_wrapper.add_style("height: 100%")
+        canvas_wrapper.add_style("width: 100%")
+
         canvas = self.get_canvas()
         self.unique_id = canvas.get_unique_id()
         canvas_wrapper.add( canvas )
@@ -475,7 +479,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         button_row = ButtonRowWdg(show_title=True)
 
 
-        button = ButtonNewWdg(title="Refresh Schema", icon="BS_REFRESH")
+        button = ButtonNewWdg(title="Refresh Schema", icon="FA_SYNC")
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -488,7 +492,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
  
 
-        button = ButtonNewWdg(title="Save Schema on Canvas", icon="BS_SAVE")
+        button = ButtonNewWdg(title="Save Schema on Canvas", icon="FA_SAVE")
         icon = button.get_icon_wdg()
       
         """
@@ -552,7 +556,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
 
-        button = ButtonNewWdg(title="Add sType Node", icon="BS_PLUS")
+        button = ButtonNewWdg(title="Add sType Node", icon="FA_PLUS")
         button_row.add(button)
 
         button.add_behavior( {
@@ -570,7 +574,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
 
 
-        button = ButtonNewWdg(title="Delete Selected", icon="BS_REMOVE")
+        button = ButtonNewWdg(title="Delete Selected", icon="FA_TIMES")
         button_row.add(button)
 
         button.add_behavior( {
@@ -664,7 +668,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
         button_row = ButtonRowWdg(show_title=True)
 
-        button = ButtonNewWdg(title="Register Selected sType", icon="BS_EDIT")
+        button = ButtonNewWdg(title="Register Selected sType", icon="FA_EDIT")
         button_row.add(button)
 
         # Note this is a copy of the context menu
@@ -703,7 +707,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         } )
 
         
-        button = ButtonNewWdg(title="Edit Pipelines", icon="BS_RANDOM")
+        button = ButtonNewWdg(title="Edit Pipelines", icon="FA_RANDOM")
         button_row.add(button)
         button.add_behavior( {
         'type': 'click_up',
@@ -745,7 +749,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
         project_code = Project.get_project_code()
-        button = ButtonNewWdg(title="Edit Properties", icon="BS_INFO_SIGN")
+        button = ButtonNewWdg(title="Edit Properties", icon="FA_INFO")
         button.add_dialog(self.properties_dialog)
         button_row.add(button)
         button.add_behavior( {

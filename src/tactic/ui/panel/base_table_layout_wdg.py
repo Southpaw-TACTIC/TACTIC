@@ -15,7 +15,7 @@ __all__ = ["BaseTableLayoutWdg"]
 
 from pyasm.common import Common, Environment, jsondumps, jsonloads, Container, TacticException
 from pyasm.search import SearchType, Search, SqlException, SearchKey, SObject, DbContainer
-from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget
+from pyasm.web import WebContainer, Table, DivWdg, SpanWdg, Widget, HtmlElement
 from pyasm.widget import WidgetConfig, WidgetConfigView, IconWdg, IconButtonWdg, HiddenWdg
 from pyasm.biz import ExpressionParser, Project, ProjectSetting
 from pyasm.security import Sudo
@@ -24,6 +24,7 @@ from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
 from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
+from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg
 
 from .layout_wdg import SwitchLayoutMenu
 
@@ -941,23 +942,59 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         return value
 
 
+    def get_shelf_styles(self):
+
+
+        style = HtmlElement.style("""
+        
+            .SPT_DTS { 
+                color: #000;
+                padding-top: 2px;
+                padding-right: 8px;
+                background: #fcfcfc;
+            }
+      
+            .spt_search_limit_activator {
+                border-radius: 6px;
+                font-size: 10px;
+                vertical-align: middle;
+                color: rgb(0, 0, 0);
+                border-width: 1px;
+                padding: 5px;
+                border-color: rgb(187, 187, 187);
+                border-style: none;
+                margin: 0px 10px;
+                display: inline-block;
+            
+            }
+
+            .spt_table_search_limit {
+                color: #000;
+                width: 300px;
+                background: #FFFFFF;
+            }
+
+        """)
+
+        return style
+
+
+    def get_bootstrap_shelf_styles(self):
+
+        return HtmlElement.style(""" 
+
+            .spt_table_action_wdg {
+                 background: var(--spt_palette_background2);
+            }
+            
+        """)        
 
 
     def get_action_wdg(self):
 
+        
         # add the ability to put in a custom shelf
         shelf_view = self.kwargs.get("shelf_view")
-        """
-
-        if shelf_view:
-            from tactic.ui.panel import CustomLayoutWdg
-            kwargs = {
-                "view": shelf_view
-            }
-            shelf = CustomLayoutWdg(**kwargs)
-            return shelf
-        """
-
 
         # determine from the view if the insert button is visible
         show_insert = self.get_show_insert()
@@ -968,16 +1005,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
 
         div = DivWdg() 
+        div.add_class("spt_table_action_wdg")
         div.add_class("SPT_DTS")
-        #div.add_style("overflow: hidden")
-        div.add_style("padding-top: 2px")
-        div.add_style("padding-right: 8px")
-        div.add_color("color", "color")
 
-        border_color = div.get_color("table_border",  default="border")
-        if self.get_setting("header_background"):
-            div.add_color("background", "background",-1)
-
+        if self._use_bootstrap():
+            div.add(self.get_bootstrap_shelf_styles())
+        else:
+            div.add(self.get_shelf_styles())
 
         # the label on the commit button
         commit_label = 'Save'
@@ -1059,7 +1093,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # default to true
         show_keyword_search = self.get_setting("keyword_search")
-
         if show_keyword_search:
             from tactic.ui.filter import FilterData
             filter_data = FilterData.get_from_cgi()
@@ -1089,23 +1122,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
             self.keyword_hint_text = SimpleSearchWdg.get_hint_text(self.search_type, self.simple_search_view)
 
+            show_toggle = False
+            if simple_search_mode == "hidden":
+                show_toggle = True
+
             from tactic.ui.filter import KeywordFilterElementWdg
             keyword_filter = KeywordFilterElementWdg(
                     column=self.keyword_column,
                     mode="keyword",
                     filter_search_type=self.search_type,
                     icon="",
-                    width="100",
                     show_partial=False,
-                    show_toggle=True,
+                    show_toggle=show_toggle,
                     hint_text=self.keyword_hint_text,
-
             )
             keyword_filter.set_values(values)
             keyword_div.add(keyword_filter)
-            keyword_div.add_style("margin-top: 0px")
-            keyword_div.add_style("height: 30px")
-            keyword_div.add_style("margin-left: -6px")
 
             keyword_div.add_behavior( {
                 'type': 'click_up',
@@ -1136,51 +1168,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     '''
                 } )
 
-            """
-            # this make clicking on the Search not work when the focus is on text input
-            keyword_div.add_relay_behavior( {
-                'type': 'blur',
-                'bvr_match_class': "spt_text_input",
-                'cbjs_action': '''
-                
-                var el = bvr.src_el;
-                
-                el.setStyle("width", "75px");
-
-                '''
-            } )
-            """
 
         else:
             keyword_div = None
 
 
-
-        spacing_divs = []
-        for i in range(0, 6):
-            spacing_div = DivWdg()
-            spacing_divs.append(spacing_div)
-            spacing_div.add_class("spt_spacing")
-            spacing_div.add_style("height: 32px")
-            spacing_div.add_style("width: 2px")
-            spacing_div.add_style("margin: 0 7 0 7")
-
-
         # -- Button Rows
         button_row_wdg = self.get_button_row_wdg()
-        button_row_wdg.add_style("margin-top: 0px")
-        button_row_wdg.add_style("margin-left: 3px")
 
 
         # -- ITEM COUNT DISPLAY
         # add number found
         if self.show_search_limit:
-            num_div = DivWdg()
-            num_div.add_color("color", "color")
-            #num_div.add_style("float: left")
-            num_div.add_style("margin: 0px 10px")
-            num_div.add_style("font-size: 10px")
-            num_div.add_style("padding: 5px")
             
             # -- SEARCH LIMIT DISPLAY
             if self.items_found == 0:
@@ -1195,58 +1194,31 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                     self.items_found = 0
 
-           
             if self.items_found == 1:
-                num_div.add( "%s %s" % (self.items_found, _("item found")))
+                title = "%s %s" % (self.items_found, _("item found"))
             else:
-                num_div.add( "%s %s" % (self.items_found, _("items found")))
-            num_div.add_style("margin-right: 0px")
-            num_div.add_border(style="none")
-            num_div.set_round_corners(6)
-        else:
-            num_div = None
-        
+                title = "%s %s" % (self.items_found, _("items found"))
+            
+            num_div = BootstrapButtonWdg(title=title)
+            num_div.add_class("spt_search_limit_activator")
+            
+            #HACK
+            num_div.add_style("height", "32px")
 
-
-
-        # -- PAGINATION TOOLS
-        limit_span = DivWdg()
-        limit_span.add_style("margin-top: 4px")
-        if self.show_search_limit:
-            search_limit_button = IconButtonWdg("Pagination", IconWdg.ARROWHEAD_DARK_DOWN)
-            num_div.add(search_limit_button)
             from tactic.ui.container import DialogWdg
             dialog = DialogWdg()
-            #limit_span.add(dialog)
-            dialog.set_as_activator(num_div, offset={'x':0,'y': 0})
+            dialog.set_as_activator(num_div.get_button_wdg(), offset={'x':0,'y': 0})
+            dialog.set_as_activator(num_div.get_collapsible_wdg(), offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
-            num_div.add_class("hand")
-            color = num_div.get_color("background", -5)
-            num_div.add_behavior( {
-                'type': 'mouseover',
-                'color': color,
-                'cbjs_action': '''
-                bvr.src_el.setStyle("background", bvr.color);
-                '''
-            } )
-            num_div.add_behavior( {
-                'type': 'mouseout',
-                'cbjs_action': '''
-                bvr.src_el.setStyle("background", "");
-                '''
-            } )
-
-
+            
             limit_div = DivWdg()
             limit_div.add_class("spt_table_search")
+            limit_div.add_class("spt_table_search_limit")
             limit_div.add(self.search_limit)
             dialog.add(limit_div)
-            limit_div.add_color("color", "color")
-            limit_div.add_color("background", "background")
-            limit_div.add_style("width: 300px")
-            #limit_div.add_style("height: 50px")
-
-            #limit_span.add(self.search_limit)
+        
+        else:
+            num_div = None
 
 
 
@@ -1274,8 +1246,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
  
         expand_wdg = None
         if show_expand:
-            from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-
             button = ButtonNewWdg(title='Expand Table', icon='FA_ARROWS_H', show_menu=False, is_disabled=False)
             
             expand_behavior = self.get_expand_behavior()
@@ -1372,38 +1342,36 @@ class BaseTableLayoutWdg(BaseConfigWdg):
  
 
         if keyword_div:
-            wdg_list.append( {'wdg': keyword_div} )
-            keyword_div.add_style("margin-left: 0px")
+            wdg_list.append( {
+                'mobile_display': True,
+                'wdg': keyword_div
+            } )
 
-        if self.kwargs.get("show_refresh") != 'false':
-            button_div = DivWdg()
-            #button = ActionButtonWdg(title='Search', icon=IconWdg.REFRESH_GRAY)
-
-            search_label = 'Search'
-            button = ActionButtonWdg(title=search_label)
-
-            #button = DivWdg("<button class='btn btn-default' style='height: 30px; margin-left: -1px'><i class='fa fa-search'> </i> </button>")
-
+       
+        if self.get_setting("show_refresh"):
+            if self.get_setting("show_keyword_search"):
+                button_div = ButtonNewWdg(title='Search', icon="FA_ARROW-CIRCLE-RIGHT")
+            else:
+                button_div = ButtonNewWdg(title='Refresh', icon="FA_SYNC")
+               
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
-                button.add_behavior(self.run_search_bvr)
+                button_div.add_behavior(self.run_search_bvr)
             else:
-                button.add_behavior( {
+                button_div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
             } )
 
-            button_div.add(button)
-            if show_keyword_search:
-                button_div.add_style("margin-left: -6px")
-            else:
-                button_div.add_style("margin-left: 6px")
-            wdg_list.append({'wdg': button_div})
+            wdg_list.append({
+                'wdg': button_div,
+                'mobile_display': True
+            })
+
 
 
         if save_button:
             wdg_list.append( {'wdg': save_button} )
-            wdg_list.append( { 'wdg': spacing_divs[3] } )
 
 
         show_collection_tool = self.kwargs.get("show_collection_tool")
@@ -1414,64 +1382,48 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( {'wdg': collection_div} )
         
 
-
         if button_row_wdg.get_num_buttons() != 0:
             wdg_list.append( { 'wdg': button_row_wdg } )
-            wdg_list.append( { 'wdg': spacing_divs[0] } )
             
         if self.show_search_limit:
             
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
-            wdg_list.append( { 'wdg': limit_span } )
         else:
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
 
-        #wdg_list.append( { 'wdg': spacing_divs[1] } )
-
-        from tactic.ui.widget import ButtonRowWdg
-        button_row_wdg = ButtonRowWdg(show_title=True)
-        extra_row_wdg = ButtonRowWdg(show_title=True)
-
         if search_button_row:
-            button_row_wdg.add(search_button_row)
+            wdg_list.append( { 
+                'wdg': search_button_row,
+                'mobile_display': True
+            } )
             if self.filter_num_div:
                 wdg_list.append( { 'wdg': self.filter_num_div } )
             
-
         if column_wdg:
-            button_row_wdg.add(column_wdg)
+            wdg_list.append( { 'wdg': column_wdg } )
 
         if layout_wdg:
-            button_row_wdg.add(layout_wdg)
+            wdg_list.append( { 'wdg': layout_wdg} )
 
-        if button_row_wdg.get_num_buttons() != 0:
-            wdg_list.append( { 'wdg': button_row_wdg } )
-        
         if expand_wdg:
-            wdg_list.append( { 'wdg': spacing_divs[0] } )
-            wdg_list.append( { 'wdg': extra_row_wdg } )
-            extra_row_wdg.add(expand_wdg)
-
+            wdg_list.append( { 'wdg': expand_wdg } )
 
 
         show_quick_add = self.kwargs.get("show_quick_add")
         if show_quick_add in ['true',True]:
             quick_add_button_row = self.get_quick_add_wdg()
-            wdg_list.append( { 'wdg': spacing_divs[2] } )
             wdg_list.append( { 'wdg': quick_add_button_row } )
 
 
         # add the help widget
         if help_wdg:
-            wdg_list.append( { 'wdg': spacing_divs[4] } )
             wdg_list.append( { 'wdg': help_wdg } )
 
 
         shelf_wdg = self.get_shelf_wdg()
         if shelf_wdg:
-            wdg_list.append( { 'wdg': spacing_divs[5] } )
             wdg_list.append( { 'wdg': shelf_wdg } )
 
 
@@ -1501,25 +1453,30 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         
         xx = DivWdg()
-        
-        #horiz_wdg = HorizLayoutWdg( widget_map_list = wdg_list, spacing = 4 )
-        #xx.add(horiz_wdg)
+        xx.add_class("navbar") 
+        xx.add_class("spt_base_table_action_wdg")
+
+        xx.add_style("box-shadow: none")
+
+        left_div = DivWdg()
+        left_div.add_class("d-flex")
+
+        from tactic.ui.widget import BootstrapButtonRowWdg
+        collapse_div = BootstrapButtonRowWdg() 
 
         last_widget = None
         for item in wdg_list:
             widget = item.get('wdg')
-            if item == wdg_list[-1] and widget.has_class("spt_spacing"):
-                continue
 
-            if last_widget and last_widget.has_class("spt_spacing") and widget.has_class("spt_spacing"):
-                continue
-
-            if widget.get_style("display") != "none":
-                widget.add_style("display: inline-block")
-            widget.add_style("vertical-align: middle")
-            xx.add(widget)
+            if item.get("mobile_display") == True:
+                left_div.add(widget)
+            else:
+                collapse_div.add(widget)
+            
             last_widget = widget
-
+        
+        xx.add(left_div)
+        xx.add(collapse_div)
         div.add(xx)
 
         if self.kwargs.get("__hidden__"):
@@ -1543,11 +1500,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             xx.add_style("float: left")
             xx.add_style("margin-left: -25")
             xx.add_style("margin-top: -5")
-            #div.add_style("opacity: 0.6")
-            height = "32px"
-        else:
-            height = "38px"
-            #div.add_style("opacity: 0.6")
 
 
         outer.add(div)
@@ -1556,9 +1508,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.view_save_dialog:
             outer.add(self.view_save_dialog)
 
-        outer.add_style("min-width: 750px")
         outer.add_style("white-space: nowrap")
-        div.add_style("height: %s" % height)
         
         return outer
 
@@ -1582,7 +1532,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             return
 
         # Save button
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
         if mode == "icon":
             save_button = ButtonNewWdg(title='Save', icon="FA_SAVE", show_menu=False, show_arrow=False)
         else:
@@ -1628,24 +1577,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_button_row_wdg(self):
         '''draws the button row in the shelf'''
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg
 
         button_row_wdg = ButtonRowWdg(show_title=True)
-
-        """
-        if self.kwargs.get("show_refresh") != 'false':
-            button = ButtonNewWdg(title='Refresh', icon=IconWdg.REFRESH_GRAY)
-            button_row_wdg.add(button)
-            self.run_search_bvr = self.kwargs.get('run_search_bvr')
-            if self.run_search_bvr:
-                button.add_behavior(self.run_search_bvr)
-            else:
-                button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
-            } )
-        """
-
 
         # add an item button
         show_insert = self.get_show_insert()
@@ -1658,8 +1592,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search_type_obj = SearchType.get(self.search_type)
             search_type_title = search_type_obj.get_value("title")
 
-            #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
-            button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="FA_PLUS")
+            button = ButtonNewWdg(title='Add New Item', icon="FA_PLUS")
 
             button_row_wdg.add(button)
             button.add_behavior( {
@@ -1894,19 +1827,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         if self.can_use_gear() and self.get_setting("gear"):
-            button = ButtonNewWdg(title='More Options', icon="FA_GEAR", show_arrow=True)
+            button = ButtonNewWdg(title='More Options', icon="FA_COG")
             button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
-       
+            
+            smenu_set = SmartMenu.add_smart_menu_set( button.get_collapsible_wdg(), { 'BUTTON_MENU': self.gear_menus } )
+            SmartMenu.assign_as_local_activator( button.get_collapsible_wdg(), "BUTTON_MENU", True )
+      
+
         return button_row_wdg
 
 
 
 
     def get_search_button_row_wdg(self):
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg, SingleButtonWdg
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, SingleButtonWdg
 
         self.filter_num_div = None
         # Search button
@@ -1918,22 +1855,26 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
+            
+            if self.search_wdg:
+                num_filters = self.search_wdg.get_num_filters_enabled()
+            else:
+                num_filters = 0
+            
+            if num_filters > 0:
+                title = "%s filters" % num_filters
+            else:
+                title = "View Advanced Search"
+            
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            button = ButtonNewWdg(title='View Advanced Search', icon="FA_SEARCH", show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title=title, icon="FA_SEARCH", show_menu=False, show_arrow=False)
             button.add_class("spt_table_search_button")
             div.add(button)
+            
+            if num_filters > 0:
+                button.add_class("text-primary")
 
-
-            # TEST ADDING SAVED SEARCHES
-            """
-            button_row_wdg = ButtonRowWdg(show_title=True)
-            div.add(button_row_wdg)
-            button = ButtonNewWdg(title='View Advanced Search', icon=IconWdg.ZOOM, show_menu=False, show_arrow=False)
-            button_row_wdg.add(button)
-            layout = ButtonNewWdg(title='Change Layout', icon=IconWdg.VIEW, show_arrow=True)
-            button_row_wdg.add(layout)
-            """
 
 
             button.add_behavior( {
@@ -1965,47 +1906,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
 
-            """
-            button.set_show_arrow_menu(True)
-            menu = Menu(width=180)
-            menu_item = MenuItem(type='title', label='Saved Searches')
-            menu.add(menu_item)
-            menu_item = MenuItem(type='action', label='Fast Ugly Search')
-            menu.add(menu_item)
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                var activator = spt.smenu.get_activator(bvr);
-                spt.dg_table.search_cbk( {}, {src_el: activator, expression: "@SOBJECT(project/asset['@LIMIT','2'])"} );
-                '''
-            } )
-            menus = [menu.get_data()]
-            SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
-            SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
-            """
-
-
-            self.filter_num_div = DivWdg()
-            #div.add(self.filter_num_div)
-            self.filter_num_div.add_color("color", "color")
-
-            if self.search_wdg:
-                num_filters = self.search_wdg.get_num_filters_enabled()
-            else:
-                num_filters = 0
-            icon = IconWdg( "Filters enabled", IconWdg.GREEN_LIGHT )
-            self.filter_num_div.add("&nbsp;"*4)
-            self.filter_num_div.add(icon)
-            if num_filters > 1:
-                self.filter_num_div.add("%s filters" % num_filters)
-            else:
-                self.filter_num_div.add("%s filter" % num_filters)
-
-            if not num_filters:
-                self.filter_num_div.add_style("display: none")
-            else:
-                div.add_style("width: 120px")
-
-            #return div
             return button
         else:
             return None
@@ -2015,9 +1915,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_layout_wdg(self):
 
-        from tactic.ui.widget.button_new_wdg import ButtonNewWdg
-        #layout = ButtonNewWdg(title='Switch Layout', icon=IconWdg.VIEW, show_arrow=True)
-        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE", show_arrow=True)
+        layout = ButtonNewWdg(title='Switch Layout', icon="FA_TABLE")
         custom_views = self.kwargs.get("layout_switcher_custom_views") or None
         default_views = self.kwargs.get("default_views") or None
         view = self.view
@@ -2033,13 +1931,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         view = val[0]
                         break
                 
-        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=layout.get_button_wdg())
+        button_wdg = layout.get_button_wdg()
+        collapsible_wdg = layout.get_collapsible_wdg()
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=button_wdg)
+        SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=collapsible_wdg)
         return layout
 
 
 
     def get_quick_add_wdg(self):
-        from tactic.ui.widget.button_new_wdg import ButtonRowWdg, ButtonNewWdg
+        from tactic.ui.widget.button_new_wdg import ButtonRowWdg
 
         button_row = ButtonRowWdg()
 
@@ -2124,7 +2025,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not security.check_access("builtin", access_keys, "allow"):
             return None
 
-        from tactic.ui.widget.button_new_wdg import SingleButtonWdg, ButtonNewWdg
+        from tactic.ui.widget.button_new_wdg import SingleButtonWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
         button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
@@ -3422,7 +3323,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             elif self.get_show_insert():
                 msg.add("<br/><br/>Click on the &nbsp;")
-                icon = IconWdg("Add", "BS_PLUS")
+                icon = IconWdg("Add", "FA_PLUS")
                 msg.add(icon)
                 msg.add(" button to add new items")
                 msg.add("<br/>")

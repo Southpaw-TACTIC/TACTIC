@@ -253,9 +253,10 @@ class PageNavContainerWdg(BaseRefreshWdg):
         return html
 
 
-
-
     def get_display(self):
+    
+        hash = self.kwargs.get("hash")
+
         is_admin_project = Project.get().is_admin()
         security = Environment.get_security() 
         if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
@@ -714,7 +715,6 @@ class MainBodyTabWdg(BaseRefreshWdg):
         config = WidgetConfig.get(view=self.view, xml=config_xml)
 
         top = DivWdg()
-        #tab = TabWdg(width=1000, save_state="admin_tab_state")
         tab = TabWdg(config=config, view=self.view, width=1000, resize_offset="70")
         top.add(tab)
         for widget in self.widgets:

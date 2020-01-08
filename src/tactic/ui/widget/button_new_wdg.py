@@ -65,72 +65,12 @@ class ButtonRowWdg(BaseRefreshWdg):
     def get_row_wdg_new(self, buttons, show_title=False):
 
         div = DivWdg()
-
-        """
-        div.set_round_corners(8)
-        div.add_border()
-        div.add_style("padding-top: 1px")
-        div.add_style("padding-left: 5px")
-        div.add_style("padding-right: 5px")
-        div.add_gradient("background", "background", 5, -30)
-        """
-
-
-
-        div = DivWdg()
-        div.set_round_corners(3)
-        #div.add_border()
-        div.add_style("padding-top: 1px")
-        div.add_style("padding-left: 5px")
-        div.add_style("padding-right: 5px")
-        #div.add_gradient("background", "background", -5, -10)
-
-
-
-
-
-        web = WebContainer.get_web()
-        browser = web.get_browser()
-
-        table = Table()
-        div.add(table)
-        div.add_style("overflow: hidden")
-
-        table.add_attr("cellspacing", "0px")
-        table.add_attr("cellpadding", "0px")
-        table.add_row()
-
-
-        if browser == "Mozilla":
-            table.add_style("margin-top: -5px")
-            div.add_style("height: 30px")
-        else:
-            table.add_style("margin-top: -5px")
-
-
-
-        base = "%s/%s" % (BASE, self.top.get_theme() )
-
-        for count, button in enumerate(buttons):
-            td = table.add_cell()
-            td.add(button)
-
-            if button.get_show_arrow_menu():
-                spacer = DivWdg()
-                table.add_cell(spacer)
-                spacer.add_style("width: 6px")
-
-
-            if count < len(buttons)-1:
-                spacer = DivWdg()
-                table.add_cell(spacer)
-                spacer.add_style("width: 6px")
-
-
-
+        div.add_class("d-flex")
+        for button in buttons:
+            div.add(button)
         return div
 
-
+    
 
 
     def get_row_wdg(self, buttons, show_title=False):
@@ -236,6 +176,133 @@ class ButtonRowWdg(BaseRefreshWdg):
         return top
 
 
+__all__.extend(['BootstrapButtonRowWdg'])
+class BootstrapButtonRowWdg(BaseRefreshWdg):
+
+    def init(self):
+
+        icon = self.kwargs.get("collapse_icon") or "FA_ELLIPSIS_V"
+        collapse_title = self.kwargs.get("collapse_title") or "Tools"
+        self.toggle_btn = ButtonNewWdg(title="Tools", icon=icon)
+
+    def set_toggle_btn(self, wdg):
+        self.toggle_btn = wdg
+
+    def get_display(self):
+
+        top = self.top
+        top.add_class("spt_bs_btn_row_top")
+        top.add(self.get_bootstrap_styles())
+
+        top.add(self.get_collapse_display())
+        top.add(self.get_button_display())
+
+
+        return top
+
+
+    def get_bootstrap_styles(self):
+        style = HtmlElement.style("""
+        
+        @media (min-width: 576px)
+            .d-sm-flex {
+                display: flex !important;
+            }
+        }
+
+        """)
+        
+        return style
+
+    def get_button_display(self):
+
+        button_row_wdg = DivWdg()
+        button_row_wdg.add_class("d-none d-sm-flex")
+        button_row_wdg.add_class("spt_bs_btn_row")
+
+        for button in self.widgets:
+            button_row_wdg.add(button)
+
+        return button_row_wdg
+        
+        
+    def get_collapse_display(self):
+
+        collapse_div = DivWdg()
+        collapse_div.add_class("dropdown d-block d-sm-none")
+        collapse_div.add_class("spt_bs_collapse_top")
+
+        toggle_btn = self.toggle_btn
+        toggle_btn_id = toggle_btn.set_unique_id()
+        collapse_div.add(toggle_btn)
+        
+        toggle_btn.add_class("dropdown-toggle") 
+        # Dropdown behavior
+        toggle_btn.add_attr("data-toggle", "dropdown")
+        toggle_btn.add_attr("aria-haspopup", "true")
+        toggle_btn.add_attr("aria-expanded", "false")
+
+        button_menu = DivWdg()
+        collapse_div.add(button_menu)
+        button_menu.add_class("dropdown-menu")
+        
+        # HACK
+        button_menu.add_style("right", "0")
+        button_menu.add_style("left", "auto")
+
+
+        button_menu.add_attr("aria-labelledby", toggle_btn_id)
+
+        item_template = HtmlElement("a")
+        collapse_div.add(item_template)
+        item_template.add_class("SPT_TEMPLATE")
+        item_template.add_class("d-none")
+        item_template.add_class("dropdown-item")
+
+        collapse_div.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+
+            button_row_top = bvr.src_el.getParent(".spt_bs_btn_row_top");
+            row_top = button_row_top.getElement(".spt_bs_btn_row");
+            collapse_top = bvr.src_el;
+            menu = collapse_top.getElement(".dropdown-menu")
+ 
+            // Dynamically build the tab menu
+
+            // Reset menu
+            menu.innerHTML = "";
+
+            item_template = collapse_top.getElement(".SPT_TEMPLATE");
+
+            // TODO: Fix styling.
+            handle_header = function(header) {
+                header.removeAttribute("style");
+            }
+
+            var new_items = [];
+            items = row_top.getElements(".spt_collapsible_btn");
+            items.forEach(function(item) {
+                new_item = spt.behavior.clone(item_template);
+                new_item.removeClass("SPT_TEMPLATE");
+                new_item.removeClass("d-none");
+                
+                item.removeClass("d-none");
+                item.inject(new_item);
+                new_items.push(new_item);
+                
+            });
+
+            new_items.forEach(function(item){
+                item.inject(menu);
+            }); 
+        
+                 
+            '''
+        })
+
+        return collapse_div
+
 
 class ButtonWdg(BaseRefreshWdg):
     ARGS_KEYS = {
@@ -266,12 +333,11 @@ class ButtonWdg(BaseRefreshWdg):
         self.arrow_div = DivWdg()
         self.arrow_menu = IconButtonWdg(title="More Options", icon=IconWdg.ARROWHEAD_DARK_DOWN)
 
-        self.show_arrow_menu = False
+        self.show_arrow_menu = self.kwargs.get("show_arrow") or False
         # for icon decoration
         self.icon_div = DivWdg()
 
         self.is_disabled = self.kwargs.get("is_disabled") in [True,"true"]
-
 
         if not Container.get_dict("JSLibraries", "spt_button"):
             doc_top = Container.get("TopWdg::top")
@@ -351,8 +417,8 @@ class ButtonWdg(BaseRefreshWdg):
     def set_attr(self, attr, name):
         self.hit_wdg.set_attr(attr, name)
 
-
-    
+    def set_unique_id(self):
+        return self.hit_wdg.set_unique_id()
 
     def add_arrow_behavior(self, behavior):
         self.arrow_menu.add_behavior(behavior)
@@ -377,6 +443,9 @@ class ButtonWdg(BaseRefreshWdg):
     def get_button_wdg(self):
         return self.hit_wdg
 
+    def get_collapsible_wdg(self):
+        return self.collapsible_btn
+
     def get_icon_wdg(self):
         return self.icon_div
 
@@ -394,7 +463,6 @@ class ButtonWdg(BaseRefreshWdg):
         is_disabled = self.kwargs.get("is_disabled")
 
         button = DivWdg()
-        button.add_style("float: left")
         
         self.inner = button
         top.add(button)
@@ -402,19 +470,13 @@ class ButtonWdg(BaseRefreshWdg):
 
         button.add_class("spt_button_top")
         button.add_style("position: relative")
-
-        #img = "<img src='%s/MainButtonSlices_button.png'/>" % base
-        #img_div = DivWdg(img)
-        #button.add(img_div)
-        #img_div.add_style("opacity", ALPHA)
+        button.add_style("float: left")
 
         img_div = DivWdg()
         button.add(img_div)
         img_div.add_style("width: 30px")
         img_div.add_style("height: 35px")
        
-       
-
         over_div = DivWdg()
         button.add(over_div)
         over_div.add_class("spt_button_over")
@@ -435,7 +497,6 @@ class ButtonWdg(BaseRefreshWdg):
         click_div.add_style("top: 0px")
         click_div.add_style("left: 0px")
         click_div.add_style("display: none")
-
 
         title = self.kwargs.get("title")
        
@@ -471,8 +532,7 @@ class ButtonWdg(BaseRefreshWdg):
         
        
 
-        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
-        if self.show_arrow or self.dialog:
+        if self.show_arrow_menu or self.dialog:
             arrow_div = DivWdg()
             button.add(arrow_div)
             arrow_div.add_style("position: absolute")
@@ -507,40 +567,14 @@ class ButtonWdg(BaseRefreshWdg):
         self.hit_wdg.add_attr("title", tip)
 
 
-        """
-        self.hit_wdg.add_behavior( {
-        'type': 'hover',
-        'cbjs_action_over': '''
-            var top = bvr.src_el.getParent(".spt_button_top")
-            var over = top.getElement(".spt_button_over");
-            var click = top.getElement(".spt_button_click");
-            over.setStyle("display", "");
-            click.setStyle("display", "none");
-        ''',
-        'cbjs_action_out': '''
-            var top = bvr.src_el.getParent(".spt_button_top")
-            var over = top.getElement(".spt_button_over");
-            var click = top.getElement(".spt_button_click");
-            over.setStyle("display", "none");
-            click.setStyle("display", "none");
-        '''
-        } )
-        """
-
-
-
         # add a second arrow widget
-        if self.show_arrow_menu:
+        if self.show_arrow_menu or self.dialog:
             self.inner.add(self.arrow_div)
             self.arrow_div.add_attr("title", "More Options")
             self.arrow_div.add_style("position: absolute")
             self.arrow_div.add_style("top: 11px")
             self.arrow_div.add_style("left: 20px")
             self.arrow_div.add(self.arrow_menu)
-
-
-
-
 
 
         if self.dialog:
@@ -567,229 +601,108 @@ class ButtonWdg(BaseRefreshWdg):
         return top
 
 
+class ButtonNewWdg(ButtonWdg):
 
-
-    def get_displayxx(self):
-
-        show_menu = self.kwargs.get("show_menu")
-        is_disabled = self.kwargs.get("is_disabled")
-
-        show_title = self.kwargs.get("show_title")
-        show_title = show_title in ['True', True]
-
-        width = 35 
-        if show_title:
-            height = 26
-        else:
-            height = 20
-        height = 30
-
-        top = self.top
-        top.add_class("spt_button_top")
-        top.add_style("overflow: hidden")
-
-
-        #border = top.get_color("border")
-        #top.add_border(-20)
-        top.add_gradient("background", "background", 20, -35)
-        top.add_style("border-width: 1px 0 1px 0")
-        top.add_style("border-style: solid")
-        top.add_style("border-color: %s" % top.get_color('border'))
-        #top.add_style("margin-left: -1px")
-
-        inner = self.inner
-        top.add(inner)
-        inner.add_color("color", "color3")
-        inner.add_style("padding-top: 3px")
-        inner.add_style("overflow: hidden")
+    def init(self):
+        super(ButtonNewWdg, self).init()
+        
+        from pyasm.web import ButtonWdg as ButtonHtmlWdg
+        self.hit_wdg = ButtonHtmlWdg()
+        self.arrow_menu = ButtonHtmlWdg()
+        self.arrow_menu.add_class("btn dropdown-toggle spt_arrow_hit_wdg")
+        
+        icon_str = self.kwargs.get("icon")
 
         title = self.kwargs.get("title")
+        tip = self.kwargs.get("tip")
+        if not tip:
+            tip = title
+        self.title = tip
+        
+        self.hit_wdg.add_attr("title", tip)
+        
+        opacity = self.kwargs.get("opacity") or None
+        icon = IconWdg(tip, icon_str, opacity=opacity)
+        self.icon = icon
 
-        inner.add_class("hand")
-        inner.add_style("z-index: 20")
-        #inner.add_style("overflow: hidden")
-        #inner.add_style("opacity: 0.5")
-        inner.add_attr("title", title)
+        self.collapsible_btn = DivWdg()
 
-        self.button.add_style("margin-top: 5px")
-        inner.add(self.button)
-        icon_str = self.kwargs.get("icon")
-        icon = IconWdg(title, icon_str)
-        self.button.add(icon)
-        icon.add_class("spt_button_icon")
+        self.btn_class = self.kwargs.get("btn_class") or "btn btn-primary bmd-btn-icon"
 
-        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
-        if self.show_arrow or self.dialog:
-            arrow = IconWdg(title, IconWdg.ARROW_MORE_INFO)
-            inner.add(arrow)
-            arrow.add_style("position: absolute")
-            arrow.add_style("float: left")
-            arrow.add_style("margin-left: 2px")
-            arrow.add_style("margin-top: -10px")
+        self.navbar_collapse_target = self.kwargs.get("navbar_collapse_target")
 
+        self.dropdown_id = self.kwargs.get("dropdown_id")
 
+    def add_behavior(self, behavior):              
+        self.hit_wdg.add_behavior(behavior)
+        self.collapsible_btn.add_behavior(behavior)
+                                                   
+    def add_class(self, class_name, redirect=True):
+        if redirect:
+            self.hit_wdg.add_class(class_name)        
+            self.collapsible_btn.add_class(class_name)
+        else:
+            self.top.add_class(class_name)
+                                                   
+    def set_attr(self, attr, name):                
+        self.hit_wdg.set_attr(attr, name)
+        self.collapsible_btn.set_attr(attr, name)
+                                                   
+    def get_bootstrap_styles(self):
 
+        style = HtmlElement.style("""
+            .spt_arrow_hit_wdg {
+                padding: 3px;
+                opacity: 0.6;
+                top: 17px;
+                left: -11px;
+                height: 4px;
+            }
 
-        inner.add_style("font-size: 8px")
-        inner.add_style("height: %spx" % height)
-        inner.add_style("width: %spx" % width)
-        inner.add_style("text-align: center")
-
-        show_title = False
-        if show_title:
-            title_div = DivWdg()
-            title_div.add(title)
-            inner.add(title_div)
-
-
-
-        inner.add_behavior( {
-        'type': 'click',
-        'width': width,
-        'cbjs_action': '''
-            var button = bvr.src_el;
-            button.setStyle("border-style", "ridge");
-            button.setStyle("width", bvr.width-2 + "px");
-        '''
-        } )
+        """)
 
 
-        inner.add_behavior( {
-        'type': 'click_up',
-        'width': width,
-        'cbjs_action': '''
-            var button = bvr.src_el;
-            button.setStyle("border-style", "none");
-            button.setStyle("width", bvr.width);
-        '''
-        } )
+        return style
 
+    def set_arrow_wdg(self, wdg):
+        self.arrow_menu = wdg
 
-        inner.add_behavior( {
-        'type': 'hover',
-        'width': width,
-        'cbjs_action_over': '''
-            var button = bvr.src_el;
-            var icon = button.getElement(".spt_button_icon");
-            icon.setStyle('opacity', '1');
-        ''',
-        'cbjs_action_out': '''
-            var button = bvr.src_el;
-            button.setStyle("border-style", "none");
-            var icon = button.getElement(".spt_button_icon");
-            icon.setStyle('opacity', '0.5');
+    def get_display(self):
+       
+        top = self.top
 
-            button.setStyle("width", bvr.width);
+        top.add(self.get_bootstrap_styles())
+        
+        top.add(self.collapsible_btn)
+        self.collapsible_btn.add_class("spt_collapsible_btn d-none")
+        self.collapsible_btn.add(self.title)
 
-        '''
- 
-        } )
+        top.add(self.hit_wdg)
+        self.hit_wdg.add_class(self.btn_class)
+        self.hit_wdg.add_class("spt_hit_wdg")
+        self.hit_wdg.add(self.icon)
+        
+        if self.show_arrow_menu or self.dialog:
+            top.add(self.arrow_menu)
+            top.add_class("d-flex")
 
+        if self.dropdown_id:
+            #FIXME: Cannot be combined with collapsible menu
+            top.set_id(self.dropdown_id)
+            top.set_attr("data-toggle", "dropdown")
+            top.set_attr("aria-haspopup", "true")
+            top.set_attr("aria-expanded", "false")
 
-        if show_menu in ['true', True]:
-            inner.add_style("float: left")
-            arrow_div = DivWdg()
-            top.add(arrow_div)
-            arrow_div.add_style("opacity: 0.5")
-            arrow_div.add_style("z-index: 100")
-            arrow_div.add_style("height: %spx" % height)
-            arrow_div.add_style("border-left: dotted 1px %s" % arrow_div.get_color("border") )
-            #arrow_div.add_style("margin-left: -15px")
-            arrow_div.add_style("float: left")
-
-            arrow = DivWdg(IconWdg("More Options", IconWdg.ARROW_MORE_INFO))
-            arrow.add_style("margin-top: 8px")
-            arrow_div.add(arrow)
-            arrow_div.add_style("position: relative")
-
-
-            arrow_div.add_behavior( {
-            'type': 'hover',
-            'cbjs_action_over': '''
-                var button = bvr.src_el;
-                var height = parseInt(button.getStyle("height").replace("px",""));
-                var width = parseInt(button.getStyle("width").replace("px",""));
-                button.setStyle('opacity', '1');
-                button.setStyle('border', 'solid 1px red');
-                button.setStyle("height", height-2+"px");
-                button.setStyle("width", width-2+"px");
-            ''',
-            'cbjs_action_out': '''
-                var button = bvr.src_el;
-
-                var height = parseInt(button.getStyle("height").replace("px",""));
-                var width = parseInt(button.getStyle("width").replace("px",""));
-
-                button.setStyle('opacity', '0.5');
-                button.setStyle('border', '');
-                button.setStyle("height", height+2+"px");
-                button.setStyle("width", width+2+"px");
-            '''
-     
-            } )
-
-            self.add_menu_wdg(arrow_div)
-
-
-
-        if is_disabled in ['true', True]:
-            disabled_div = DivWdg()
-            disabled_div.add_class("spt_save_button_disabled")
-            disabled_div.set_attr("title", "%s (Disabled)" % title)
-            disabled_div.add_style("position: relative")
-            disabled_div.add_style("height: %spx" % (height+3))
-            disabled_div.add_style("width: %spx" % width)
-            #disabled_div.add_style("margin-left: -%spx" % width)
-            disabled_div.add_style("margin-top: -%spx" % (height+3))
-            disabled_div.add_style("opacity", "0.6")
-            disabled_div.add_style("background", "#AAA")
-            inner.add_style("opacity", "1")
-            top.add(disabled_div)
-
-
-
-        if self.dialog:
-            top.add(self.dialog)
-            dialog_id = self.dialog.get_id()
-            inner.add_behavior( {
-            'type': 'load',
-            'height': height,
-            'dialog_id': dialog_id,
-            'cbjs_action': '''
-            var pos = bvr.src_el.getPosition();
-            var el = document.id(bvr.dialog_id);
-            el.setStyle("left", pos.x);
-            el.setStyle("top", pos.y+bvr.height+13);
-            '''
-            } )
-
-            self.inner.add_behavior( {
-            'type': 'click_up',
-            'dialog_id': dialog_id,
-            'cbjs_action': '''
-            var dialog = document.id(bvr.dialog_id);
-            spt.toggle_show_hide(dialog);
-            '''
-            } )
-
-
+        if self.navbar_collapse_target:
+            self.add_class("collapsed")
+            self.set_attr("type", "button")
+            self.set_attr("data-toggle", "collapse")
+            self.set_attr("data-target", "#%s" % self.navbar_collapse_target)
+            self.set_attr("aria-controls", self.navbar_collapse_target)
+            self.set_attr("aria-expanded", "false")
+            self.set_attr("aria-label", self.title)
+        
         return top
-
-
-
-    def add_menu_wdg(self, button, menus):
-
-        from tactic.ui.container import SmartMenu
-
-        self.menus = []
-        self.menus.append(menu.get_data())
-
-        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': self.menus } )
-        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
- 
-
-class ButtonNewWdg(ButtonWdg):
-    pass
 
 
 
@@ -1015,8 +928,6 @@ class ActionButtonWdgOld(DivWdg):
 
         if self.browser == 'Qt' and os.name != 'nt':
             text_div.add_style("top: 8px")
-        else:
-            text_div.add_style("top: 6px")
 
 
         text_div.add_style("z-index: 10")
@@ -1035,6 +946,76 @@ class ActionButtonWdgOld(DivWdg):
         return super(ActionButtonWdgOld,self).get_display()
 
 
+__all__.extend(['BootstrapButtonWdg'])
+class BootstrapButtonWdg(BaseRefreshWdg):
+    
+    ARGS_KEYS = {
+        'title': {
+            'description': 'Value to show on actual button',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'title2': {
+            'description': 'Alt Value to show on actual button when clicked on',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'tip': {
+            'description': 'Tool tip info to show when mouse hovers over button',
+            'type': 'TextWdg',
+            'order': 1,
+            'category': 'Options'
+        },
+        'action': {
+            'description': 'Javascript callback',
+            'type': 'TextAreaWdg',
+            'order': 1,
+            'category': 'Options'
+        }
+    }
+
+
+    def init(self):
+        from pyasm.web import ButtonWdg as ButtonHtmlWdg
+        self.button_wdg = ButtonHtmlWdg()
+        self.collapsible_wdg = DivWdg()
+
+    def add_class(self, class_name):
+        self.button_wdg.add_class(class_name)
+        self.collapsible_wdg.add_class(class_name)
+    
+    def add_behavior(self, behavior):
+        self.button_wdg.add_behavior(behavior)
+        self.collapsible_wdg.add_behavior(behavior)
+
+    def get_collapsible_wdg(self):
+        return self.collapsible_wdg
+
+    def get_button_wdg(self):
+        return self.button_wdg
+
+    def get_display(self):
+        
+        title = self.kwargs.get("title")
+
+        top = self.top
+        
+        top.add(self.button_wdg)
+        self.button_wdg.add_class("btn spt_hit_wdg")
+        self.button_wdg.add(title)
+
+        
+        top.add(self.collapsible_wdg)
+        self.collapsible_wdg.add_class("spt_collapsible_btn d-none")
+        self.collapsible_wdg.add(title)
+
+        return top
+        
+
+
+
 
 
 
@@ -1042,30 +1023,30 @@ class ActionButtonWdg(DivWdg):
 
 
     ARGS_KEYS = {
-    'title': {
-        'description': 'Value to show on actual button',
-        'type': 'TextWdg',
-        'order': 0,
-        'category': 'Options'
-    },
-    'title2': {
-        'description': 'Alt Value to show on actual button when clicked on',
-        'type': 'TextWdg',
-        'order': 0,
-        'category': 'Options'
-    },
-    'tip': {
-        'description': 'Tool tip info to show when mouse hovers over button',
-        'type': 'TextWdg',
-        'order': 1,
-        'category': 'Options'
-    },
-    'action': {
-        'description': 'Javascript callback',
-        'type': 'TextAreaWdg',
-        'order': 1,
-        'category': 'Options'
-    }
+        'title': {
+            'description': 'Value to show on actual button',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'title2': {
+            'description': 'Alt Value to show on actual button when clicked on',
+            'type': 'TextWdg',
+            'order': 0,
+            'category': 'Options'
+        },
+        'tip': {
+            'description': 'Tool tip info to show when mouse hovers over button',
+            'type': 'TextWdg',
+            'order': 1,
+            'category': 'Options'
+        },
+        'action': {
+            'description': 'Javascript callback',
+            'type': 'TextAreaWdg',
+            'order': 1,
+            'category': 'Options'
+        }
     }
  
     def __init__(self, **kwargs):
@@ -1252,25 +1233,27 @@ class ActionButtonWdg(DivWdg):
 
         if self.browser == 'Qt' and os.name != 'nt':
             button.add_style("top: 8px")
-        else:
-            button.add_style("top: 6px")
 
         # BOOTSTRAP
-        color = self.kwargs.get("color")
-        button.add_class('btn')
-        if color:
-            if color.startswith("#"):
-                button.add_style("background", color)
-            else:
-                button.add_class('btn-%s' % color)
+        if self._use_bootstrap():
+            button.add_class("btn btn-sm btn-block btn-outline-primary")
         else:
+            color = self.kwargs.get("color")
+            button.add_class('btn')
+            if color:
+                if color.startswith("#"):
+                    button.add_style("background", color)
+                else:
+                    button.add_class('btn-%s' % color)
+            else:
+                button.add_class('btn-default')
             button.add_class('btn-default btn-secondary')
 
-        if size == 'b':
-            button.add_class('btn-block')
-        else:
-            button.add_class('btn-sm')
-        button.add_style("top: 0px")
+            if size == 'b':
+                button.add_class('btn-block')
+            else:
+                button.add_class('btn-sm')
+            button.add_style("top: 0px")
 
 
         button.add_attr('spt_text_label', title)
@@ -1297,6 +1280,9 @@ class IconButtonWdg(DivWdg):
 
 
     def init(self):
+
+        self.show_arrow_menu = self.kwargs.get("show_arrow") or False
+
         if not Container.get_dict("JSLibraries", "spt_icon_button"):
             doc_top = Container.get("TopWdg::top")
             if doc_top:
@@ -1457,9 +1443,7 @@ class IconButtonWdg(DivWdg):
             display.add_attr("title", tip)
 
 
-        self.show_arrow = self.kwargs.get("show_arrow") in [True, 'true']
-        #if self.show_arrow or self.dialog:
-        if self.show_arrow:
+        if self.show_arrow_menu:
             arrow_div = DivWdg()
             icon_div.add(arrow_div)
             arrow_div.add_style("position: absolute")
@@ -1477,6 +1461,7 @@ class IconButtonWdg(DivWdg):
 
 
         return super(IconButtonWdg, self).get_display()
+
 
 
 from tactic.ui.common import BaseTableElementWdg

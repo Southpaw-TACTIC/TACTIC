@@ -650,10 +650,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_table")
         inner.add_class("spt_layout_inner")
 
-        inner.add_style("position: relative")
-        inner.add_style("border-style", "solid")
-        inner.add_style("border-width: 0px")
-        inner.add_style("border-color", inner.get_color("border"))
+
         has_extra_header = self.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -933,16 +930,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if sticky_header:
 
             h_scroll = DivWdg()
+            h_scroll.add_class("spt_table_horizontal_scroll")
+            h_scroll.add_class("d-none d-sm-flex")
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
-
+            h_scroll.add_style("flex-direction: column")
+ 
             scroll = DivWdg()
             h_scroll.add(scroll)
 
 
+            # TODO: Remove this padding
             padding = DivWdg()
-            scroll.add(padding)
+            #scroll.add(padding)
             padding.add_class("spt_header_padding")
             padding.add_style("width", "17px")
             padding.add_style("display", "none")
@@ -965,6 +966,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             scroll.add_class("spt_table_scroll")
             h_scroll.add(scroll)
+            
+            """
             height = self.kwargs.get("height")
             if height:
                 try:
@@ -973,7 +976,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 except ValueError:
                     pass
                 scroll.add_style("height: %s" % height)
-
+          
 
             window_resize_offset = self.kwargs.get("window_resize_offset")
             if window_resize_offset:
@@ -983,6 +986,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
             if window_resize_xoffset:
                 scroll.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
+            """
+
 
             # sync header to this scroll
             # FIXME: this does not work with locked columns as the locked columns have their own
@@ -1015,6 +1020,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+            """
             if not height and self.kwargs.get("__hidden__") not in [True, 'True', 'true']:
                 # set to browser height
                 scroll.add_behavior( {
@@ -1024,6 +1030,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     bvr.src_el.setStyle('height', y);
                     '''
                     } )
+            """
 
 
             table = self.table
@@ -1065,6 +1072,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add_style("overflow-x: auto")
 
         table.set_id(self.table_id)
+
+
+        # TEST TEST TEST
+        from .mobile_wdg import MobileTableWdg
+        mobile_wdg = MobileTableWdg(table_id=self.table_id)
+        inner.add(mobile_wdg)
+
 
         # generate dictionary of subscribed search_keys to affect context menu
         self.subscribed_search_keys = {}
@@ -1312,7 +1326,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             spt.table.set_layout(layout);
             var rows = layout.getElements(".spt_loading");
 
-            var unique_id = "loading|"+bvr.unique_id;
+            var loaded_event = "loading|" + bvr.unique_id;
+            var loading_event = "loading_pending|" + bvr.unique_id;
 
             var jobs = [];
             var count = 0;
@@ -1335,10 +1350,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             }
 
             var func = function() {
+                spt.named_events.fire_event(loading_event, {});
                 count += 1;
                 var rows = jobs[count];
                 if (! rows || rows.length == 0) {
-                    spt.named_events.fire_event(unique_id, {});
+                    spt.named_events.fire_event(loaded_event, {});
                     // run at the end of last load
                     if (bvr.expand_on_load) {
                         spt.table.set_layout(layout);
@@ -1347,7 +1363,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     return;
                 }
                 spt.table.apply_undo_queue();
-
+                
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
                     spt.table.expand_table("full");
@@ -1377,7 +1393,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
 
 
-
+        
 
         if not self.sobjects:
             self.handle_no_results(table)
@@ -1426,14 +1442,38 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.total_count = info.get("count")
             inner.add_attr("total_count", self.total_count)
 
-
-        top.add(self.get_styles())
+        if self._use_bootstrap():
+            top.add(self.get_bootstrap_styles())
+        else:
+            top.add(self.get_styles())
 
         if self.kwargs.get("is_refresh") == 'true':
             return inner
         else:
             return top
 
+
+    def get_bootstrap_styles(self):
+        styles = HtmlElement.style("""
+                
+        .spt_layout_inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            border-style: solid; 
+            border-width: 0px;
+        }
+
+        @media (min-width: 576px)
+            .d-sm-flex {
+                display: flex! important;
+            }
+        }
+
+        """)
+
+        return styles
 
     def get_styles(self):
 
@@ -2960,8 +3000,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         font_size = 12
         padding = 10
         extra_data = self.kwargs.get("extra_data") or {}
-        open_icon = "FA_FOLDER_OPEN_O"
-        closed_icon = "FA_FOLDER_O"
+        open_icon = "FA_FOLDER_OPEN"
+        closed_icon = "FA_FOLDER"
         group_icon_styles = ""
         if extra_data and isinstance(extra_data, basestring):
             try:
@@ -7918,6 +7958,7 @@ spt.table.expand_table = function(mode) {
 
     // adjust for windows scrollbar
     if (spt.browser.os_is_Windows() && table) {
+        return;
         var div = layout.getElement(".spt_header_padding");
         if (div) {
             spt.behavior.destroy_element(div);

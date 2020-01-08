@@ -50,6 +50,24 @@ class TabWdg(BaseRefreshWdg):
  
     }
 
+
+
+    def __init__(self, **kwargs):
+        super(TabWdg, self).__init__(**kwargs)
+
+        self.unique_id = self.generate_unique_id(is_random=True)
+        
+        self.header = HtmlElement.ul()
+        self.header_id = self.header.set_unique_id()
+
+        self.use_default_style = kwargs.get("use_default_style")
+        if self.use_default_style not in [False, 'false']:
+            self.use_default_style = True
+        else:
+            self.use_default_style = False
+
+
+
     def get_onload_js(self):
 
         return r'''
@@ -91,6 +109,8 @@ spt.tab.set_tab_top_from_child = function( el ) {
     if (! el.hasClass("spt_tab_top") ) {
         el = el.getParent(".spt_tab_top");
     }
+    
+    
     spt.tab.top = el;
     return spt.tab.top;
 }
@@ -678,7 +698,6 @@ spt.tab.select = function(element_name) {
         header.addClass("spt_is_selected");
         header.addClass("spt_tab_selected");
         header.removeClass("spt_tab_unselected");
-        header.setStyle("z-index", "200");
     }
 
     var content_top = top.getElement(".spt_tab_content_top");
@@ -804,7 +823,6 @@ spt.tab.load_class = function(header, class_name, kwargs, values, force) {
         select_header.addClass("spt_is_selected");
         select_header.addClass("spt_tab_selected");
         select_header.removeClass("spt_tab_unselected");
-        select_header.setStyle("z-index", "200");
 
 
 
@@ -1067,6 +1085,7 @@ spt.tab.header_drag_action = function( evt, bvr, mouse_411) {
 
 }
 
+
 spt.tab.close = function(src_el) {
     // src_el should be a child of spt_tab_content or spt_tab_header
     if (!src_el) {
@@ -1074,6 +1093,7 @@ spt.tab.close = function(src_el) {
         return;
     }
     spt.tab.top = src_el.getParent(".spt_tab_top");
+    
     var top = spt.tab.top;
     var headers = spt.tab.get_headers();
     if (headers.length == 1) {
@@ -1239,11 +1259,6 @@ spt.tab.view_definition = function(bvr) {
 
     def add_styles(self):
 
-        self.use_default_style = self.kwargs.get("use_default_style")
-        if self.use_default_style not in [False, 'false']:
-            self.use_default_style = True
-        else:
-            self.use_default_style = False
 
         if self.use_default_style:
 
@@ -1291,26 +1306,75 @@ spt.tab.view_definition = function(bvr) {
             }
 
 
-            .spt_tab_content_body {
-            }
-
-
             ''' % data)
 
 
 
-    def get_styles(self):
+    
+    def get_bootstrap_styles(self):
+    
+        styles = HtmlElement.style('''
+            .nav-pills .nav-link, .nav-tabs .nav-link {
+                padding: .5em .8575em;
+                font-size: 12px;
+                height: 40px;
+            }
 
+            .spt_tab_header_top {
+                height: 40px;
+            }
+
+            .spt_tab_header_top .spt_tab_selected {
+                height: 40px;
+                border-bottom: solid .214rem var(--spt_palette_md_secondary);
+            }
+
+            .spt_tab_header_top .spt_tab_selected .nav-link {
+                color: rgba(0,0,0,.87);
+            }
+
+            .spt_tab_remove {
+                position: absolute;
+                top: 2;
+                right: 0;
+                display: none;
+            }
+
+            .spt_tab_header:hover .spt_tab_remove {
+                display: block;
+            }
+
+            .spt_tab_header_label_container {
+                display: flex;
+                align-items: center;
+            }
+
+            .spt_tab_header_label {
+                text-overflow: ellipsis;
+                overflow-x: hidden;
+                white-space: nowrap;
+            }
+        ''')
+
+        return styles
+
+
+    def get_styles(self):
         styles = HtmlElement.style('''
 
             /* NEW */
 
             .spt_tab_header_top {
+                white-space: nowrap;
                 height: auto;
                 float: left;
                 position: relative;
                 z-index: 1;
                 margin-bottom: -1px;
+                width: 100%;
+                overflow: hidden;
+                text-align: left;
+                box-sizing: border-box;
             }
 
             .spt_tab_header {
@@ -1385,17 +1449,42 @@ spt.tab.view_definition = function(bvr) {
                 opacity: 0.3;
             }
 
+            .spt_tab_content_top {
+                border-bottom-left-radius: 5px;
+                color: #000;
+                border-bottom-right-radius: 5px;
+                margin-top: -1px;
+                min-height: 500px;
+                width: 100%;
+                z-index: 1;
+                background: var(--spt_palette_background);
+                border-top-right-radius: 5px;
+                border: 1px solid #BBB;
+            }
+
             ''')
 
         return styles
 
- 
+
+    def get_tab_id(self):
+        return self.unique_id
+
+    def get_header_id(self):
+        return self.header_id
 
     def get_display(self):
 
         top = self.top
         top.add_class("spt_tab_top")
-        top.add(self.get_styles())
+        
+
+        if self._use_bootstrap():
+            top.add(self.get_bootstrap_styles())
+        else:
+            top.add(self.get_styles())
+
+
 
         self.search_type = None
 
@@ -1530,7 +1619,7 @@ spt.tab.view_definition = function(bvr) {
 
 
         #top.add_style("padding: 10px")
-        self.unique_id = top.set_unique_id()
+        top.set_id(self.unique_id)
         top.set_attr("spt_tab_id", self.unique_id)
 
         top.set_attr("spt_tab_mode", self.mode)
@@ -1551,29 +1640,23 @@ spt.tab.view_definition = function(bvr) {
             } )
 
 
-        header_div = DivWdg()
+        header_div = self.header
+        header_id = self.get_header_id()
         inner.add(header_div)
 
         header_div.add_class("spt_tab_header_top")
-        self.header_id = header_div.set_unique_id()
-        # header_div.add_style("height: auto")
-        # header_div.add_style("float: left")
-        # header_div.add_style("position: relative")
-        # header_div.add_style("z-index: 2")
-
-        # header_div.add_style("margin-bottom: -1px")
-
+        header_div.add_class("nav nav-tabs")
 
         subheader_div = DivWdg()
         subheader_div.add_class("spt_tab_subheader_top")
         subheader_div.add_class("SPT_TEMPLATE")
         inner.add(subheader_div)
         self.add_subheader_behaviors(subheader_div)
-        #subheader_div.add_style("display: none")
  
 
 
-        self.add_styles()
+        if not self._use_bootstrap():
+            self.add_styles()
 
 
         # if a search_key has been passed in, add it to the state.
@@ -1596,7 +1679,6 @@ spt.tab.view_definition = function(bvr) {
         if offset:
             header_div.add_style("padding-left: %s" % offset)
 
-
         if self.mode == "hidden":
             header_div.add_style("display: none")
 
@@ -1608,9 +1690,6 @@ spt.tab.view_definition = function(bvr) {
         self.add_context_menu( header_div )
 
 
-        header_div.add_style("width: 100%")
-        header_div.add_style("overflow: hidden")
-
         min_width = self.kwargs.get("min_width")
         if min_width:
             try:
@@ -1621,12 +1700,8 @@ spt.tab.view_definition = function(bvr) {
             header_div.add_style("min-width", min_width)
 
 
-        header_div.add_style("text-align: left")
-        header_div.add_style("box-sizing: border-box")
-
-        resize_headers = True
+        resize_headers = self.kwargs.get("resize_headers")
         if resize_headers:
-            header_div.add_style("white-space", "nowrap")
 
             offset = 120
             header_div.add_behavior( { 
@@ -1813,31 +1888,9 @@ spt.tab.view_definition = function(bvr) {
         if show_add:
             header_div.add( self.get_add_wdg() )
 
-        # should only be seen by admin
-        #security = Environment.get_security()
-        #if security.check_access("builtin", "view_site_admin", "allow"):
-        #    inner.add( self.get_edit_wdg() )
-
-
-        if not self.mode == "hidden":
-            inner.add("<br clear='all'>")
-
-
-
         content_top = DivWdg()
         content_top.add_class("spt_tab_content_top")
-        content_top.add_style("z-index: 1")
-        content_top.add_style("margin-top: -1px")
-
-
-        # add a div so that it breaks correctly
-        if self.mode == 'default':
-            content_top.set_round_corners(5, corners=['TR','BR','BL'])
-            border = self.kwargs.get("border_color")
-            if not border:
-                palette = content_top.get_palette()
-                border = palette.color("border")
-            content_top.add_style("border: 1px solid %s" % border)
+        content_top.add_attr("spt_tab_id", self.get_tab_id())
 
         inner.add(content_top)
 
@@ -1867,11 +1920,6 @@ spt.tab.view_definition = function(bvr) {
                 content_top.add_style("min-height: %s" % height)
 
 
-            else:
-                # TODO: make this configurable
-                content_top.add_style("min-height: 500px")
-
-
         width = self.kwargs.get("width")
         if not width:
             width = self.kwargs.get("min_width")
@@ -1883,8 +1931,7 @@ spt.tab.view_definition = function(bvr) {
             except ValueError:
                 pass
             content_top.add_style("min-width: %s" % width)
-        else:
-            content_top.add_style("width: 100%")
+        
 
  
         content_top.add_class("tab_content_top")
@@ -1895,20 +1942,6 @@ spt.tab.view_definition = function(bvr) {
         else:
             content_top.add_color("color", "color")
             content_top.add_color("background", "background")
-
-
-        """
-        content_top.add_behavior( {
-            'type': 'load',
-            'cbjs_action': '''
-            new Scrollable(bvr.src_el);
-            '''
-        } )
-        content_top.add_style("overflow: hidden")
-        content_top.add_style("height: 300px")
-        content_top.add_style("padding-right: 15px" )
-        """
-
 
 
         # put in a content box for each element
@@ -1929,8 +1962,6 @@ spt.tab.view_definition = function(bvr) {
 
             
             content_div.add_style("width: 100%")
-            # content_div.add_style("height: 100%")
-            #content_div.add_style("box-sizing: border_box")
             content_div.add_style("text-align: left")
             
             is_loaded = loaded_dict.get(element_name)
@@ -2532,8 +2563,10 @@ spt.tab.view_definition = function(bvr) {
 
         web = WebContainer.get_web()
 
-        header = DivWdg()
+        #header = DivWdg()
+        header = HtmlElement.li()
         header.add_class("spt_tab_header")
+        header.add_class("nav-item")
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
 
@@ -2626,34 +2659,21 @@ spt.tab.view_definition = function(bvr) {
         SmartMenu.assign_as_local_activator( header, 'DG_HEADER_CTX' )
 
 
- 
+        title_container = DivWdg(css="spt_tab_header_label_container")
+        title_container.add_class("nav-link")
+        header.add(title_container)
+
         title_div = DivWdg()
-        title_div.add_style("display: flex")
-        title_div.add_style("align-items: center")
-
-
-        #if self.use_default_style:
-        # if True:
-        #     title_div.add_style("text-align: left")
-        #     title_div.add_style("overflow: hidden")
-        #     title_div.add_style("text-overflow: ellipsis")
-        #     title_div.add_style("white-space", "nowrap");
-        #     #title_div.add_style("float: left")
-        #     title_div.add_style("z-index: 1")
-        #     #title_div.add_style("width: auto")
-
-
         title_div.add_class("spt_tab_header_label")
         display_title = title
         title_div.add(display_title)
-        header.add(title_div)
+        title_container.add(title_div)
 
-
-
+        title_div.add_attr("title", "%s" % (title))
 
         count_wdg = SpanWdg()
         count_wdg.add_class("badge badge-secondary spt_tab_header_count")
-        title_div.add(count_wdg)
+        title_container.add(count_wdg)
         #count_wdg.add_style("float: right")
         #count_wdg.add_style("font-size: 0.7em")
         count_wdg.add_style("margin-left: 10px")
@@ -2691,7 +2711,6 @@ spt.tab.view_definition = function(bvr) {
 
 
 
-        title_div.add_attr("title", "%s" % (title))
 
         remove_wdg = DivWdg()
         remove_wdg.add_class("spt_tab_remove")
@@ -2732,7 +2751,7 @@ spt.tab.view_definition = function(bvr) {
             icon.add_styles("padding: 2px; width: 11px")
             remove_wdg.add_style("right: 6px;")
         else:
-            icon = IconWdg("Remove Tab", "FA_REMOVE", size=12)
+            icon = IconWdg("Remove Tab", "FA_TIMES", size=12)
         icon.add_class("spt_icon_active")
         remove_wdg.add(icon)
         
@@ -2750,7 +2769,7 @@ spt.tab.view_definition = function(bvr) {
             "cb_set_prefix": 'spt.tab.header_drag'
             } )
 
-        header.add("&nbsp;")
+        #header.add("&nbsp;")
 
 
         return header
@@ -2784,7 +2803,7 @@ spt.tab.view_definition = function(bvr) {
 
             subheader.add_class("spt_tab_subheader_item")
 
-            icon = IconWdg("Remove Tab", "BS_REMOVE", opacity=0.3)
+            icon = IconWdg("Remove Tab", "FA_TIMES", opacity=0.3)
             subheader.add(icon)
             icon.add_class("spt_icon_inactive")
             icon.add_styles("position: absolute; right: 0; top: 3px;")

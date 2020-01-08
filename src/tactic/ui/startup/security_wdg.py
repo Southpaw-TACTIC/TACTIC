@@ -1461,7 +1461,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
 
  
-        refresh_button = ButtonNewWdg(tip="Refresh", icon="FA_REFRESH")
+        refresh_button = ButtonNewWdg(tip="Refresh", icon="FA_SYNC")
         button_row.add(refresh_button)
         refresh_button.add_behavior( {
             'type': 'click_up',

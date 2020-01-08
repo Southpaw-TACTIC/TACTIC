@@ -1519,7 +1519,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
         else:
             num_milestone = 0
-            icon = IconWdg("Milestones", "BS_PLUS")
+            icon = IconWdg("Milestones", "FA_PLUS")
             line_div.add(icon)
             #line_div.add_style("opacity: 0.85")
             line_div.add("Add milestone")

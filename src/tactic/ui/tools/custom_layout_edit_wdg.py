@@ -11,7 +11,7 @@
 #
 
 __all__ = ['CustomLayoutEditWdg', 'CustomLayoutEditTestWdg','CustomLayoutHelpWdg', 'CustomLayoutEditSaveCmd', 'CustomLayoutActionCbk']
-from pyasm.common import  jsondumps, jsonloads, TacticException, Environment
+from pyasm.common import  jsondumps, jsonloads, TacticException, Environment, Common
 from pyasm.search import Search, SearchType
 from pyasm.biz import Project, ProjectSetting
 from pyasm.web import DivWdg, Table, HtmlElement, SpanWdg, Widget, WebContainer
@@ -843,7 +843,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     #icon.add_style("margin-top: -2px")
                     #icon.add_style("margin-left: -5px")
 
-                    icon = IconWdg(folder, "FA_FOLDER_O", inline=False, size=12)
+                    icon = IconWdg(folder, "FA_FOLDER_OPEN", inline=False, size=12)
                     icon.add_style("margin-top: 0px")
                     icon.add_style("margin-left: -3px")
                     icon.add_style("margin-right: 3px")
@@ -1210,6 +1210,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
+
             hidden = HiddenWdg("selected")
             view_wdg.add(hidden)
             #selected = web.get_form_value("selected")
@@ -1523,7 +1524,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
                     remove_div = DivWdg()
                     header_div.add(remove_div)
-                    remove_div.add("<i class='fa fa-remove'/>")
+                    remove_div.add("<i class='fa fa-times'/>")
                     remove_div.add_style("margin-left: 15px")
                     remove_div.add_class("hand")
                     remove_div.add_class("tactic_hover")
@@ -1570,12 +1571,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                             value = value[1:]
                         if value.endswith('\n'):
                             value = value[:-1]
+         
+                        editor_id = Common.generate_random_key()
                         editor = AceEditorWdg(
                             width="100%", 
                             language="javascript", 
                             code=value, 
                             show_options=False, 
-                            editor_id='custom_layout_behavior',
+                            editor_id=editor_id,
                             dynamic_height=True
                         )
                         content_div.add(editor)
@@ -1931,7 +1934,7 @@ spt.custom_layout_editor.add_recent_item = function(data) {
         button_row = ButtonRowWdg()
         shelf_wdg.add(button_row)
         button_row.add_style("float: left")
-        button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
+        button = ButtonNewWdg(title="Refresh", icon="FA_SYNC")
         button_row.add(button)
 
         button.add_behavior( {
@@ -2059,7 +2062,7 @@ spt.custom_layout_editor.add_recent_item = function(data) {
 
 
         # add new button
-        button = ButtonNewWdg(title="Add Elements", icon="FA_GEAR", show_arrow=True)
+        button = ButtonNewWdg(title="Add Elements", icon="FA_COG", show_arrow=True)
         button_row.add(button)
 
         # add in a context menu

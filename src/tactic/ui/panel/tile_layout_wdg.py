@@ -320,7 +320,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-                icon = IconWdg(name=title, icon="FA_FOLDER_OPEN_O")
+                icon = IconWdg(name=title, icon="FA_FOLDER_OPEN")
                 group_wdg.add(icon)
                 icon.add_style("display: inline-block")
                 icon.add_style("margin-right: 10px")
