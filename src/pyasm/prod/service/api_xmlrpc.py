@@ -5467,7 +5467,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if isinstance(class_name, basestring):
             if class_name.startswith("$"):
-                has_key = True
                 class_name, inputs, ticket = decode_security_key(class_name, "widget")
                 for k, v in args.items():
                     inputs_v = inputs.get(k)
@@ -5479,6 +5478,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                             inputs[k] = v
                         else:
                             raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
+                has_key = True
             
             if Config.get_value("security", "api_widget_restricted") == "true":
                 if not has_key:
