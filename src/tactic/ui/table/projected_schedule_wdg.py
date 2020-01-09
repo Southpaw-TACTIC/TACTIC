@@ -313,7 +313,10 @@ class GetProjectedScheduleCmd(Command):
 
         if pipeline: 
             start_date = self.kwargs.get("start_date")
-            today = self.kwargs.get("today") or datetime.today()
+            today = self.kwargs.get("today") or datetime.datetime.today()
+            
+            if not start_date:
+                start_date = today
             
             if isinstance(start_date, six.string_types):
                 start_date = parser.parse(start_date)

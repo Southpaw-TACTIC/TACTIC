@@ -419,10 +419,7 @@ class ColorSelectorWdg(ColorContainerWdg):
         self.color_wdg.add_behavior({
             'type': 'load',
             'cbjs_action': '''
-
-            console.log(bvr.src_el);
             bvr.src_el.setAttribute("name", "edit|color");
-
         '''
         })
 
