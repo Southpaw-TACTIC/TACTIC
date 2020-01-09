@@ -1555,7 +1555,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
         div.add_style("padding: 3px")
         div.add_class("spt_input_text_result")
 
-        if isinstance(keywords, str):
+        if not Common.IS_Pv3 and isinstance(keywords, str):
             keywords = unicode(keywords, errors='ignore')
 
         if isinstance(keywords, basestring) and  len(keywords) > max:
