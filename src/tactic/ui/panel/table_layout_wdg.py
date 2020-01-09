@@ -1681,6 +1681,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         elif self.order_element and self.order_element.endswith(' desc'):
             reverse = True
 
+
         sobjects = Common.sort_dict(self.group_dict, reverse=reverse)
         for sobject in sobjects:
             sub_group_columns = group_columns[1:]
@@ -1815,11 +1816,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+        resize_cbjs = self.kwargs.get("resize_cbjs") or ""
+
         self.header_table.add_behavior( {
             'type': 'smart_drag',
             'drag_el': '@',
             'bvr_match_class': 'spt_resize_handle',
             'ignore_default_motion': 'true',
+            'resize_cbjs': resize_cbjs,
             "cbjs_setup": 'spt.table.drag_resize_header_setup(evt, bvr, mouse_411);',
             "cbjs_motion": 'spt.table.drag_resize_header_motion(evt, bvr, mouse_411)',
             "cbjs_action": 'spt.table.drag_resize_header_action(evt, bvr, mouse_411)',
@@ -1891,20 +1895,23 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # selection behaviors
         table.add_relay_behavior( {
-        'type': 'click',
-        'bvr_match_class': 'spt_table_select',
-        'cbjs_action': '''
-            if (evt.shift == true) return;
+            'type': 'click',
+            'bvr_match_class': 'spt_table_select',
+            'cbjs_action': '''
+                if (evt.shift == true) return;
 
-            spt.table.set_table(bvr.src_el);
-            var row = bvr.src_el.getParent(".spt_table_row");
+                spt.table.set_table(bvr.src_el);
+                var row = bvr.src_el.getParent(".spt_table_row");
 
-            if (row.hasClass("spt_table_selected")) {
-                spt.table.unselect_row(row);
-            }
-            else {
-                spt.table.select_row(row);
-            }
+                if (row.hasClass("spt_table_selected")) {
+                    spt.table.unselect_row(row);
+                }
+                else {
+                    spt.table.select_row(row);
+                }
+
+
+            
         '''
         } )
 
@@ -2365,6 +2372,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 #header_div.add_style("white-space: nowrap")
 
 
+            reorder_cbjs = self.kwargs.get("reorder_cbjs") or ""
 
             # put reorder directly here
             behavior = {
@@ -2372,6 +2380,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 #"drag_el": 'drag_ghost_copy',
                 "drag_el": '@',
                 "drop_code": 'DgTableColumnReorder',   # can only specify single drop code for each drag behavior
+                "reorder_cbjs": reorder_cbjs,
                 "cb_set_prefix": "spt.table.drag_reorder_header",
             }
 
@@ -2773,7 +2782,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
             # break groups by a "/" delimiter
-            if group_value.find("/"):
+            if isinstance(group_value, six.string_types) and group_value.find("/"):
                 parts = group_value.split("/")
                 if not parts[0].endswith(" "):
                     group_value = parts[0]
@@ -3757,12 +3766,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        th.add_looks( 'dg_row_select_box' )
+        #th.add_looks( 'dg_row_select_box' )
+        th.add_class('look_dg_row_select_box')
         th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
         th.add_style('min-width: 30px')
         th.add_style('max-width: 30px')
+        th.add_style('text-align', 'center')
 
+        th.add(self.get_select_wdg())
         th.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -3773,11 +3785,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             cell.addClass("look_dg_row_select_box_selected");
             cell.removeClass("look_dg_row_select_box");
             spt.table.select_all_rows();
+         
+            //BMD
+            checkbox = cell.getElement("input");
+            if (checkbox) checkbox.checked = true;
         }
         else {
             cell.removeClass("look_dg_row_select_box_selected");
             cell.addClass("look_dg_row_select_box");
             spt.table.unselect_all_rows();
+            
+            //BMD
+            checkbox = cell.getElement("input");
+            if (checkbox) checkbox.checked = false;
         }
 
         '''
@@ -3785,6 +3805,36 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+    def get_select_wdg(self):
+        checkbox_container = DivWdg()
+        checkbox_container.add_style("position", "relative")
+        checkbox_container.add_style("top", "-3px")
+
+        checkbox = DivWdg(css="checkbox spt_table_checkbox")
+        checkbox_container.add(checkbox)
+        label = HtmlElement("label")
+        label.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+            
+            bvr.src_el.addEventListener("click", function(e) {
+                e.preventDefault();
+            })
+            '''
+        })
+
+        checkbox.add(label)
+        check = HtmlElement("input")
+        label.add(check)
+        check.add_attr("type", "checkbox")
+        check.add_behavior({
+            'type': 'load',
+            'cbjs_action': '$(bvr.src_el).bmdCheckbox()'
+        })
+
+        return checkbox_container
+
+        
 
     def handle_select(self, table, sobject):
         # FIXME: this confilicts with another "is_grouped"
@@ -3808,10 +3858,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         td = table.add_cell()
         td.add_class("spt_table_select")
-        td.add_looks( 'dg_row_select_box' )
+        td.add_class('look_dg_row_select_box')
         td.add_class( 'SPT_DTS' )
-        #td.add_color("background-color", "background", -0)
-        td.add_color("opacity", "0.5")
+        
+        td.add_style("text-align", "center")
+        
+        td.add(self.get_select_wdg())
+        
+        
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             td.add_border(direction="right", color="#ecbf7f", size="2px")
 
@@ -4394,8 +4448,10 @@ spt.table.get_all_rows = function(embedded) {
 
 spt.table.get_first_row = function(embedded) {
     var table = spt.table.get_table();
-    var row = table.getElement(".spt_table_row");
-    return row;
+    if (table) {
+        var row = table.getElement(".spt_table_row");
+        return row;
+    }
 }
 
 
@@ -4503,6 +4559,10 @@ spt.table.select_row = function(row) {
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
+        
+        //BMD
+        checkbox = cell.getElement("input");
+        if (checkbox) checkbox.checked=true;
     }
     
     var current_color = row.getAttribute("spt_last_background");
@@ -4529,6 +4589,11 @@ spt.table.unselect_row = function(row) {
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");
+        
+        //BMD
+        checkbox = cell.getElement("input");
+        if(checkbox) checkbox.checked=false;
+
     }
     row.setStyle("background-color", row.getAttribute("spt_last_background"));
     row.setAttribute("spt_background", row.getAttribute("spt_last_background"));
@@ -7642,6 +7707,9 @@ spt.table.set_column_width = function(element_name, width) {
     var header_table = spt.table.get_header_table();
 
     var row = spt.table.get_first_row();
+    if (!row)
+        return;
+
     var cell = spt.table.get_cell(element_name, row);
     if (!cell) {
         //alert("Cell for ["+element_name+"] does not exist");
@@ -7770,6 +7838,9 @@ spt.table.align_column_widths = function() {
     var headers = header_row.getElements(".spt_table_header");
 
     var row = spt.table.get_first_row();
+    if (!row)
+        return;
+
     var cells = row.getElements(".spt_cell_edit");
 
     // set the row widths to that of the header
@@ -8062,6 +8133,9 @@ spt.table.drag_resize_header_action = function(evt, bvr, mouse_411) {
     spt.table.resize_div = null;
 
     spt.table.drag_init();
+
+    var resize_cbjs = bvr.resize_cbjs || "";
+    Function("evt", "bvr", "mouse_411", "'use strict';" + resize_cbjs)(evt, bvr, mouse_411);
 }
 
 
@@ -8214,6 +8288,9 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
     spt.table.drag_init();
 
     spt.table.expand_table("free");
+
+    var reorder_cbjs = bvr.reorder_cbjs || "";
+    Function("evt", "bvr", "mouse_411", "'use strict';" + reorder_cbjs)(evt, bvr, mouse_411);
 }
 
 

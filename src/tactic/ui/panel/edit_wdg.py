@@ -630,12 +630,16 @@ class EditWdg(BaseRefreshWdg):
         #inner doesn't get styled. 
         inner = DivWdg()
         content_div.add(inner)
+
+        # Disable as it was never implemented
+        """
         menu = self.get_header_context_menu()
         menus = [menu.get_data()]
         menus_in = {
             'HEADER_CTX': menus,
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        """
 
         #insert the header before body into inner
         show_header = self.kwargs.get("show_header")
@@ -914,7 +918,7 @@ class EditWdg(BaseRefreshWdg):
                 continue
             else:
 
-                if self.display_mode == "default":
+                if self.display_mode == "horizontal":
                     td = table.add_cell()
                     td.add_style("min-width: 300px")
                     td.add_style("padding: 10px 25px 10px 5px")

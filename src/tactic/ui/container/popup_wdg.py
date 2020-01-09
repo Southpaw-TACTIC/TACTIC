@@ -166,12 +166,12 @@ class PopupWdg(BaseRefreshWdg):
             display: flex;
             align-items: center;
             justify-content: space-between;
+            cursor: move;
         }
     
         @media (min-width: 576px) {
             .spt_popup_top .spt_popup_title {
                 margin: .25rem;
-                cursor: move;
             }
             
             .spt_popup_top.spt_popup {
@@ -384,7 +384,6 @@ class PopupWdg(BaseRefreshWdg):
                 'cbjs_action': self.get_cancel_script()
             })
 
-            button_wdg.add(close_wdg)
 
 
             # create the 'minimize' button ...
@@ -408,7 +407,11 @@ class PopupWdg(BaseRefreshWdg):
                 'cbjs_action': "spt.popup.toggle_minimize( bvr.src_el );"
             }
             minimize_wdg.add_behavior( behavior )
+            
+            
+            
             button_wdg.add(minimize_wdg)
+            button_wdg.add(close_wdg)
 
 
 
@@ -437,7 +440,7 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_behavior( {
             'type':'smart_drag',
             'drag_el': "@.getParent('.spt_popup')",
-            'bvr_match_class': 'spt_popup_title',
+            'bvr_match_class': 'spt_popup_title_top',
             'options': {'z_sort': 'bring_forward'},
             'ignore_default_motion': 'true',
             "cbjs_setup": '''

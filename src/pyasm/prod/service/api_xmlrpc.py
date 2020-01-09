@@ -127,11 +127,31 @@ def get_simple_cmd(self, meth, ticket, args):
                     print("user: %s" % Environment.get_user_name())
                     print("simple method: %s" % meth)
                     print("ticket: %s" % ticket)
-                    
+                   
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
 
+                    if args and args[0].startswith("$"):
+                        class_name = args[0]
+                        key = class_name.lstrip("$")
+                        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                        path = "%s/widget_key_%s.txt" % (tmp_dir,key)
+                        print("command key path: %s" % path)
+                        if not os.path.exists(path):
+                            path = "%s/key_%s.txt" % (tmp_dir,key)
+                            if not os.path.exists(path):
+                                print("ERROR: Command path [%s] not found" % path)
+                                raise ApiException("Command key not valid")
+
+                        f = open(path, 'r')
+                        data = f.read()
+                        f.close()
+                        data = jsonloads(data)
+                        Common.pretty_print(data)
+
+                    print()
+ 
 
                 if self2.print_info:
                     print_primary_info(self2, args)

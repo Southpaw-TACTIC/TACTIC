@@ -1508,7 +1508,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
         
 
     def draw_result(self, top, value):
-        max = self.DISPLAY_LENGTH
         # assuming it's a list
         results = self.kwargs.get('results')
         if not results:
@@ -1558,8 +1557,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
         if not Common.IS_Pv3 and isinstance(keywords, str):
             keywords = unicode(keywords, errors='ignore')
 
-        if isinstance(keywords, basestring) and  len(keywords) > max:
-            display = "%s..." % keywords[:max-3]
+        max_display_length = self.DISPLAY_LENGTH
+        if isinstance(keywords, basestring) and  len(keywords) > max_display_length:
+            display = "%s..." % keywords[:max_display_length-3]
         else:
             display = keywords
         div.add(display)

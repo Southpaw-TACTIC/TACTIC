@@ -23,8 +23,7 @@ from pyasm.security import Sudo
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
-from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg
+from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg, ButtonNewWdg
 
 from .layout_wdg import SwitchLayoutMenu
 
@@ -1198,8 +1197,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 title = "%s %s" % (self.items_found, _("item found"))
             else:
                 title = "%s %s" % (self.items_found, _("items found"))
+           
             
-            num_div = BootstrapButtonWdg(title=title)
+            num_div = ActionButtonWdg(title=title, btn_class='btn dropdown-toggle')
             num_div.add_class("spt_search_limit_activator")
             
             #HACK
@@ -1895,8 +1895,28 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
                 offset.x = offset.x - scroll_left;
+
+                // correct viewport left and top clipping
+                var rect = body.getBoundingClientRect();
+                var pointer = dialog.getElement(".spt_popup_pointer");
+                var left = offset.x + rect.x;
+                if (left < 0) {
+                    offset.x = offset.x - left;
+                    if (pointer) {
+                        pointer.hide();
+                    }
+                }
+
+                var top = offset.y + rect.y;
+                if (top < 0) {
+                    offset.y = offset.y - top;
+                    if (pointer) {
+                        pointer.hide();
+                    }
+                }
+
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
-                
+
                 spt.toggle_show_hide(dialog);
 
                 if (spt.is_shown(dialog))
@@ -2441,8 +2461,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
             kwargs = {
-                'args': {'search_type': self.search_type},
-                'values': {}
+                'search_type': self.search_type,
+                'element_name': '__WIDGET_UNKNOWN__',
+                'view': '__WIDGET_UNKNOWN__'
             }
             div = DivWdg()
             widget_key = div.generate_widget_key('tactic.ui.manager.ElementDefinitionWdg', inputs=kwargs)

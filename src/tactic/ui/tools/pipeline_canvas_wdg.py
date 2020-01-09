@@ -391,13 +391,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         canvas_title = DivWdg()
         canvas_title.add_border()
-        canvas_title.add_style("padding: 3px")
+        canvas_title.add_style("padding: 3px 30px")
         canvas_title.add_style("position: absolute")
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
         canvas_title.add_style("left: 50%")
         canvas_title.add_style('transform: translateX(-50%)')
         canvas_title.add_style("z-index: 150")
+        canvas_title.add_style("box-shadow: 0px 5px 5px rgba(0,0,0,0.05)")
+        canvas_title.add_color("background", "background")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
         canvas_title.add_class("hand")

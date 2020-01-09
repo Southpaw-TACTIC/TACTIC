@@ -23,7 +23,7 @@
 /* Set some standard properties for various elements. */
 
 
-.checkbox label input[type=checkbox], label.checkbox-inline input[type=checkbox] {
+/*.checkbox label input[type=checkbox], label.checkbox-inline input[type=checkbox] {
     position: unset;
     left: unset;
     z-index: unset;
@@ -34,6 +34,7 @@
     pointer-events: unset;
     opacity: unset;
 }
+*/
 
 .radio label input[type=radio], label.radio-inline input[type=radio] {
     position: unset;
@@ -106,29 +107,6 @@ table {
 .look_smenu_title {
     color: #c2c2c2;
     background-color: #434343;
-}
-
-
-
-
-/* dg table look styles */
-
-.look_dg_row_select_box
-{
-    background-image: url('/context/icons/common/checkbox_unchecked.png');
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-color: inherit;
-    cursor: default;
-}
-
-.look_dg_row_select_box_selected
-{
-    background-image: url('/context/icons/common/checkbox_checked.png');
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-color: inherit;
-    cursor: default;
 }
 
 

@@ -6,7 +6,7 @@ from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg, Palette
 from pyasm.widget import WidgetConfig
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg, BootstrapButtonRowWdg
+from tactic.ui.widget import ButtonNewWdg, ActionButtonWdg, BootstrapButtonRowWdg
 from tactic.ui.app import PageHeaderWdg, PageNavContainerWdg, ProjectSelectWdg
 from tactic.ui.container import SmartMenu
 
@@ -321,7 +321,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
     def get_bootstrap_styles(self):
-        style = HtmlElement.style("""
+        style = HtmlElement.style('''
 
 .spt_bs_left_sidebar a, a:hover, a:focus {
     color: inherit;
@@ -476,6 +476,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 
 
+
 @media (max-width: 768px) {
 
 
@@ -547,10 +548,37 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }    
 
 
+        ''')
+
+
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+        is_admin_page = web.is_admin_page()
+        is_admin_page = True
+        if is_admin_page:
+
+            style.add('''
+/* REMKO (for admin site) */
+.spt_bs_left_sidebar.active ul li a {
+    background: var(--spt_palette_md_primary);
+    padding: 10px 0px;
+    padding-left: 50px;
+    font-size: 0.75rem;
+    font-weight: 300;
+    text-align: left;
+}
+
+.spt_bs_left_sidebar .nav-link h6 {
+    margin-left: -35px;
+    margin-top: 15px;
+    padding-left: 10px;
+    border-bottom: solid 1px #999;
+}
+            ''')
 
 
 
-        """)
+
 
 
         return style
@@ -564,6 +592,14 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         div.add_behavior( {
             'type': 'load',
             'cbjs_action': self.get_onload_js()
+        } )
+
+
+        div.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+            spt.named_events.fire_event("side_bar|toggle")
+            '''
         } )
 
         # add the down button
@@ -1255,6 +1291,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             "type": "load",
             "cbjs_action": self.get_onload_js()
         })
+
         
         return top
 
@@ -1403,7 +1440,7 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
     def get_activator(self, menus):
 
         project = Project.get()
-        activator = BootstrapButtonWdg(title=project.get_value("title"))
+        activator = ActionButtonWdg(title=project.get_value("title"), btn_class = "btn")
         activator.add_class("dropdown-toggle")
         activator.button_wdg.add_class("spt_nav_icon")
 

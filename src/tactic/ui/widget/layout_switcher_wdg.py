@@ -18,11 +18,20 @@ from pyasm.web import WidgetSettings, DivWdg, Table, HtmlElement, SpanWdg
 from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import IconButtonWdg
+from tactic.ui.widget import IconButtonWdg, ActionButtonWdg, ButtonNewWdg
 
 from mako import exceptions
 
-class LayoutSwitcherWdg(BaseRefreshWdg):
+
+
+class LayoutSwitcherWdgOld(BaseRefreshWdg):
+
+    def init(self):
+
+        self.outer_wdg = DivWdg()
+        self.menu_wdg = DivWdg()
+        self.outer_wdg.add(self.menu_wdg)
+
 
     def has_config(cls):
         return True
@@ -33,90 +42,53 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
     def get_styles(self):
 
-        styles = HtmlElement.style('''
+        styles = '''
 
             .spt_switcher_top .dropdown-toggle {
                 width: 100%;
             }
+            
+            '''
+            
+        menu = self.menu
+        if not menu:
+            styles += '''
+                .spt_switcher_menu {
+                    padding: 0px 0px;
+                    border: solid 1px #CCC;
+                    width: 200px;
+                    height: auto;
+                    right: 5px;
+                    background: #FFF;
+                    text-align: center;
+                }
 
-            ''')
+                .spt_switcher_menu .spt_switcher_item {
+                    padding: 10px 5px;
+                    cursor: pointer;
+                }
+                .spt_switcher_menu .spt_task_count {
+                    margin-left: 5px;
+                }
+            '''
 
-        return styles
 
+        return HtmlElement.style(styles)
 
-    def get_display(self):
+    def get_activator(self):
+        title = self.title
+        mode = self.mode
+        badge_count = self.badge_count
+        color = self.color 
+        background = self.background 
 
-        top = self.top
-        top.add_class("spt_switcher_top")
-        top.add(self.get_styles())
         
-        '''
-        This supports supports two menu definitions:
-        menu - specifies a view for SideBarWdg which will be ingected as menu 
-        config_xml - specifies menu entries. For example:
-
-        <display class="tactic.ui.widget.LayoutSwitcherWdg">
-          <!-- config_xml -->
-          <config>
-            <!-- Menu item 1 -->
-            <element name="self_tasks_default" title="My Tasks" target=spt_my_tasks_table_top">
-              <display class="tactic.ui.panel.ViewPanelWdg">
-                <search_type>sthpw/task</search_type>
-                <show_shelf>false</show_shelf>
-                <view>my_tasks_default</view>
-              </display>
-            </element>
-            <!-- Menu item 2 -->
-            <element ... >
-              <display ... >
-              </display>
-            </element>
-          </config>
-        </display>
-
-        target - specifies target div to load views when using "menu" kwarg
-        use_href - updates address bar hash (this is TODO)
-        '''
-        
-        menu = self.kwargs.get("menu")
-        config_xml = self.kwargs.get("config_xml")
-        target = self.kwargs.get("target")
-
-        #default
-        default_layout = self.kwargs.get("default_layout")
-
-        # find the save state value, if state is to be saved
-        save_state = self.kwargs.get("save_state")
-
-        if save_state in [False, 'false']:
-            save_state = None
-            show_first = False
-        else:
-            show_first = True
-
-        state_value = None
-        if save_state:
-            state_value = WidgetSettings.get_value_by_key(save_state)
-        elif default_layout:
-            state_value = default_layout
-
-        title = self.kwargs.get("title")
-        if not title and state_value:
-            title = state_value
-        if not title:
-            title = "Switch Layout"
-
-        mode = self.kwargs.get("mode")
-        badge_count = self.kwargs.get("badge_count") or None
         if mode == "button":
-            color = self.kwargs.get("color") or "default"
             if badge_count:
                 activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='spt_task_count badge spt_update'>%s</span> <span class='caret'></span></button>" % (color, title, badge_count))
             else:
                 activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
         elif mode == "div":
-            color = self.kwargs.get("color") or ""
-            background = self.kwargs.get("background") or "transparent"
             if badge_count:
                 activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='spt_task_count badge spt_update'>%s</span> <span class='caret'></span></button>" % (background, color, title, badge_count))
             else:
@@ -124,10 +96,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
 
         else:
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
-
-
-        top.add(activator)
-        activator.add_class("spt_switcher_activator")
+        
         activator.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -159,15 +128,10 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             '''
         } )
 
-
-        outer_wdg = DivWdg()
-        top.add(outer_wdg)
-            
-        # menu_wdg 
-
-
-        menu_wdg = DivWdg()
-        outer_wdg.add(menu_wdg)
+        return activator
+    
+    def get_menu_wdg(self):    
+        menu_wdg = self.menu_wdg
         menu_wdg.add_color("color", "color")
         menu_wdg.add_color("background", "background")
         menu_wdg.add_border()
@@ -230,15 +194,150 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             }
         ''' % border_color)
         pointer_wdg.add(style)
- 
-        if menu:
+
+        return menu_wdg
+
+    def get_menu_item(self):
+        return DivWdg()
+        
+    def get_menu_item_bvr(self):
+        
+        return """
+            var menu_item = bvr.src_el;
+            var top = menu_item.getParent(".spt_switcher_top");
+            var menu = menu_item.getParent(".spt_switcher_menu");
+            
+            // Get target class
+            var target_class = bvr.target;
+            if (target_class.indexOf(".") != -1) {
+                var parts = target_class.split(".");
+                target_class = parts[1]; 
+                target_top_class = parts[0];
+            }
+            else {
+                target_top_class = null;
+            }
+        
+            if (target_top_class) {
+                var target_top = bvr.src_el.getParent("."+target_top_class);
+            }
+            else {
+                var target_top = document.id(document.body);
+            }
+            var target = target_top.getElement("."+target_class);
+            if (target) {
+                var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
+                spt.panel.load(target, widget_key, bvr.display_options);
+            }
+
+            menu.setStyle("display", "none");
+            top.removeClass("spt_selected");
+
+            var title = bvr.src_el.getAttribute("spt_title");
+            var badge_count = bvr.src_el.getAttribute("badge_count");
+
+            var title_el = top.getElement(".spt_title");
+            if (title_el && !bvr.hidden)
+                title_el.innerHTML = title
+            
+            var badge_el = top.getElement(".spt_task_count");
+            if (badge_el && !bvr.hidden){
+                badge_el.innerHTML = badge_count;
+            }
+
+            if (bvr.save_state) {
+                var server = TacticServerStub.get()
+                server.set_widget_setting(bvr.save_state, bvr.element_name);
+            }
+        """
+
+
+    def get_outer_wdg(self):
+        return self.outer_wdg
+
+    def get_display(self):
+
+        top = self.top
+        top.add_class("spt_switcher_top")
+
+        '''
+        This supports supports two menu definitions:
+        menu - specifies a view for SideBarWdg which will be ingected as menu 
+        config_xml - specifies menu entries. For example:
+
+        <display class="tactic.ui.widget.LayoutSwitcherWdg">
+          <!-- config_xml -->
+          <config>
+            <!-- Menu item 1 -->
+            <element name="self_tasks_default" title="My Tasks" target=spt_my_tasks_table_top">
+              <display class="tactic.ui.panel.ViewPanelWdg">
+                <search_type>sthpw/task</search_type>
+                <show_shelf>false</show_shelf>
+                <view>my_tasks_default</view>
+              </display>
+            </element>
+            <!-- Menu item 2 -->
+            <element ... >
+              <display ... >
+              </display>
+            </element>
+          </config>
+        </display>
+
+        target - specifies target div to load views when using "menu" kwarg
+        use_href - updates address bar hash (this is TODO)
+        '''
+        
+        self.menu = self.kwargs.get("menu")
+        config_xml = self.kwargs.get("config_xml")
+        target = self.kwargs.get("target")
+
+        #default
+        default_layout = self.kwargs.get("default_layout")
+
+        # find the save state value, if state is to be saved
+        save_state = self.kwargs.get("save_state")
+
+        if save_state in [False, 'false']:
+            save_state = None
+            show_first = False
+        else:
+            show_first = True
+
+        state_value = None
+        if save_state:
+            state_value = WidgetSettings.get_value_by_key(save_state)
+        elif default_layout:
+            state_value = default_layout
+
+        title = self.kwargs.get("title")
+        if not title and state_value:
+            title = state_value
+        if not title:
+            title = "Switch Layout"
+        self.title = title
+        
+        self.mode = self.kwargs.get("mode")
+        self.badge_count = self.kwargs.get("badge_count") or ""
+        self.color = self.kwargs.get("color") or "default"
+        self.background = self.kwargs.get("background") or "transparent"
+
+        activator = self.get_activator()
+        top.add(activator)
+        activator.add_class("spt_switcher_activator")
+
+        outer_wdg = self.get_outer_wdg()
+        top.add(outer_wdg)
+            
+        # menu_wdg 
+        menu_wdg = self.get_menu_wdg()
+
+        # build menu
+        if self.menu:
             from tactic.ui.panel import SimpleSideBarWdg
-            simple_sidebar = SimpleSideBarWdg(view=menu, search_type="SidebarWdg", target=target) 
+            simple_sidebar = SimpleSideBarWdg(view=self.menu, search_type="SidebarWdg", target=target) 
             menu_wdg.add(simple_sidebar)
         else:
-            style = self.get_style()
-            top.add(style)
-            
             self.view = 'tab'
             config = WidgetConfig.get(view=self.view, xml=config_xml)
             element_names = config.get_element_names()
@@ -258,17 +357,8 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
             for element_name in element_names:
 
                 attrs = config.get_element_attributes(element_name)
-
-                item_div = DivWdg()
-                menu_wdg.add(item_div)
-                item_div.add_class("spt_switcher_item")
-                item_div.add_class("tactic_hover")
-
-                # item_div.add_style("width: 100%")
-
+                css_class = attrs.get("class")
                 hidden = attrs.get("hidden") == "true"
-                if hidden:
-                    item_div.add_style("display: none")
 
                 title = attrs.get("title")
                 if not title:
@@ -277,17 +367,22 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                 if not default_title and not hidden:
                     default_title = title
 
-
+                item_div = self.get_menu_item()
+                menu_wdg.add(item_div)
+                
+                if css_class:
+                    item_div.add_class(css_class)
+                
+                if hidden:
+                    item_div.add_style("display: none")
+                
                 for name, value in attrs.items():
                     if name in ['title', 'class']:
                         continue
                     item_div.add_attr(name, value)
-
-
-
-                css_class = attrs.get("class")
-                if css_class:
-                    item_div.add_class(css_class)
+                
+                item_div.add_class("spt_switcher_item")
+                item_div.add_class("tactic_hover")
 
                 item_div.add(title)
                 item_div.add_attr("spt_title", title)
@@ -312,7 +407,7 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         item_div.add_behavior( {
                             'type': 'load',
                             'cbjs_action': '''
-                            bvr.src_el.click();
+                                bvr.src_el.click();
                             '''
                         } )
 
@@ -325,99 +420,130 @@ class LayoutSwitcherWdg(BaseRefreshWdg):
                         'save_state': save_state,
                         'display_options': display_options,
                         'hidden': hidden,
-                        'cbjs_action': '''
-                        var menu_item = bvr.src_el;
-                        var top = menu_item.getParent(".spt_switcher_top");
-                        var menu = menu_item.getParent(".spt_switcher_menu");
-                        
-                        // Get target class
-                        var target_class = bvr.target;
-                        if (target_class.indexOf(".") != -1) {
-                            var parts = target_class.split(".");
-                            target_class = parts[1]; 
-                            target_top_class = parts[0];
-                        }
-                        else {
-                            target_top_class = null;
-                        }
-                    
-                        if (target_top_class) {
-                            var target_top = bvr.src_el.getParent("."+target_top_class);
-                        }
-                        else {
-                            var target_top = document.id(document.body);
-                        }
-                        var target = target_top.getElement("."+target_class);
-                        if (target) {
-                            var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
-                            spt.panel.load(target, widget_key, bvr.display_options);
-                        }
-
-                        menu.setStyle("display", "none");
-                        top.removeClass("spt_selected");
-
-                        var title = bvr.src_el.getAttribute("spt_title");
-                        var badge_count = bvr.src_el.getAttribute("badge_count");
-
-                        var title_el = top.getElement(".spt_title");
-                        if (title_el && !bvr.hidden)
-                            title_el.innerHTML = title
-                        
-                        var badge_el = top.getElement(".spt_task_count");
-                        if (badge_el && !bvr.hidden){
-                            badge_el.innerHTML = badge_count;
-                        }
-
-                        if (bvr.save_state) {
-                            var server = TacticServerStub.get()
-                            server.set_widget_setting(bvr.save_state, bvr.element_name);
-                        }
-
-                        '''
+                        'cbjs_action': self.get_menu_item_bvr()
                     } )
 
-            if state_value and state_value_hidden:
-                if not default_title:
-                    default_title = "Switch Layout"
-
-                activator.add_behavior( {
-                    'type': 'load',
-                    'title': default_title,
-                    'cbjs_action': '''
-                    var activator = bvr.src_el;
-                    var title = activator.getElement(".spt_title");
-
-                    title.innerText = bvr.title;
-
-                    '''
-                } )
+        top.add(self.get_styles())
             
         return top
 
 
-    def get_style(self):
-        '''Default style used when menu switcher is defined from config_xml'''
 
-        style = HtmlElement.style('''
+#class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
+#    pass
 
-.spt_switcher_menu {
-  padding: 0px 0px;
-  border: solid 1px #CCC;
-  width: 200px;
-  height: auto;
-  right: 5px;
-  background: #FFF;
-  text-align: center;
-}
+class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
+   
+    def get_styles(self):
+        return HtmlElement.style("""
 
-.spt_switcher_menu .spt_switcher_item {
-  padding: 10px 5px;
-  cursor: pointer;
-}
-.spt_switcher_menu .spt_task_count {
-    margin-left: 5px;
-}
+        .spt_switcher_top.dropdown{
+            display: block !important;
+        }
 
-        ''')
+        """)
 
-        return style
+
+    def init(self):
+
+        self.top.add_class("dropdown")
+
+        self.outer_wdg = DivWdg()
+        self.menu_wdg = self.outer_wdg
+
+        self.dropdown_id = Common.generate_random_key()
+
+    def get_activator(self):
+        
+        if self.mode == "icon":
+            activator = ButtonNewWdg(
+                title=self.title, 
+                icon="FA_TABLE",
+                dropdown_id=self.dropdown_id
+            )
+            return activator
+        
+        
+        
+        title = """
+            <span class='spt_title'>%s</span>
+            <span class='badge spt_task_count'>%s</span>
+        """ % (self.title, self.badge_count) 
+        
+        activator = ActionButtonWdg(
+            title=title, 
+            dropdown_id=self.dropdown_id,
+            btn_class="btn btn-primary dropdown-toggle"
+        )
+        return activator 
+   
+    def get_menu_wdg(self):
+        menu_wdg = self.menu_wdg
+
+        menu_wdg.add_class("dropdown-menu")
+        menu_wdg.set_attr("aria-labelledfor", self.dropdown_id)
+        
+        return menu_wdg
+    
+    def get_menu_item(self):
+        item = HtmlElement("a")
+        item.add_class("dropdown-item hand")
+        return item
+    
+    def get_menu_item_bvr(self):
+        
+        return """
+            var menu_item = bvr.src_el;
+            var top = menu_item.getParent(".spt_switcher_top");
+            var menu = menu_item.getParent(".spt_switcher_menu");
+            
+            // Get target class
+            var target_class = bvr.target;
+            if (target_class.indexOf(".") != -1) {
+                var parts = target_class.split(".");
+                target_class = parts[1]; 
+                target_top_class = parts[0];
+            }
+            else {
+                target_top_class = null;
+            }
+        
+            if (target_top_class) {
+                var target_top = bvr.src_el.getParent("."+target_top_class);
+            }
+            else {
+                var target_top = document.id(document.body);
+            }
+            
+            if (!target_top) return;
+
+            var target = target_top.getElement("."+target_class);
+            if (target) {
+                var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
+                spt.panel.load(target, widget_key, bvr.display_options);
+            }
+
+            top.removeClass("spt_selected");
+
+            var title = bvr.src_el.getAttribute("spt_title");
+            var badge_count = bvr.src_el.getAttribute("badge_count");
+
+            var title_el = top.getElement(".spt_title");
+            if (title_el && !bvr.hidden) {
+                title_el.innerHTML = title
+            } 
+            
+            var badge_el = top.getElement(".spt_task_count");
+            if (badge_el && !bvr.hidden){
+                badge_el.innerHTML = badge_count;
+            }
+
+            if (bvr.save_state) {
+                var server = TacticServerStub.get()
+                server.set_widget_setting(bvr.save_state, bvr.element_name);
+            }
+        """
+
+
+
+
