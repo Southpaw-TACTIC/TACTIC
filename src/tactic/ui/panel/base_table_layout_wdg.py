@@ -23,8 +23,7 @@ from pyasm.security import Sudo
 from tactic.ui.common import BaseConfigWdg, BaseRefreshWdg
 from tactic.ui.container import Menu, MenuItem, SmartMenu
 from tactic.ui.container import HorizLayoutWdg
-from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg
-from tactic.ui.widget import ButtonNewWdg, BootstrapButtonWdg
+from tactic.ui.widget import DgTableGearMenuWdg, ActionButtonWdg, ButtonNewWdg
 
 from .layout_wdg import SwitchLayoutMenu
 
@@ -1198,8 +1197,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 title = "%s %s" % (self.items_found, _("item found"))
             else:
                 title = "%s %s" % (self.items_found, _("items found"))
+           
             
-            num_div = BootstrapButtonWdg(title=title)
+            num_div = ActionButtonWdg(title=title, btn_class='btn dropdown-toggle')
             num_div.add_class("spt_search_limit_activator")
             
             #HACK

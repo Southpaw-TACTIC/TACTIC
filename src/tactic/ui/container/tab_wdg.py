@@ -1851,7 +1851,6 @@ spt.tab.view_definition = function(bvr) {
             header_div.add(header)
 
 
-
         # add widgets that have been manually added
         for i, widget in enumerate(self.widgets):
             name = widget.get_name()
@@ -2569,6 +2568,11 @@ spt.tab.view_definition = function(bvr) {
         header.add_class("nav-item")
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
+
+        header.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''$(bvr.src_el).bmdRipples();'''
+        })
 
         # header.add_style("overflow: hidden")
         # header.add_style("box-sizing: border-box")
