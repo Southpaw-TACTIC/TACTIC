@@ -145,7 +145,6 @@
       <title>Task Burndown Chart</title>
       <y_title># Tasks</y_title>
       <interval>weekly</interval>
-      <chart_type>area</chart_type>
       <search_type>sthpw/task</search_type>
       <expression>@SOBJECT(sthpw/task['project_code',$PROJECT])</expression>
       <column>bid_end_date</column>
@@ -153,18 +152,16 @@
       <!--<end_date>{$NEXT_YEAR}</end_date>-->
       <total>@COUNT()</total>
       <running>$running + @COUNT()</running>
-      <chart_data>
-      [
+      <chart_data>[
         {
           "chart_type": "bar",
           "element": "@COUNT()"
-        },
+        }, 
         {
-          "chart_type": "area",
-          "element": "$total - $running"
+          "chart_type": "line",
+          "element": "@COUNT()"
         }
-      ]
-      </chart_data>
+      ]</chart_data>
     </display>
   </element>
 

@@ -419,7 +419,7 @@ class TabWdg(Widget):
         link.set_refresh_mode("page")
         span.add(link)
 
-        popup = PopupMenuWdg("add_tab");
+        popup = PopupMenuWdg("add_tab")
         popup.add("Add New Tab")
         span.add(popup)
 

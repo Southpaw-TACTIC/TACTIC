@@ -114,7 +114,7 @@ class HashPanelWdg(BaseRefreshWdg):
         else:
             use_index = sobject.get_value("index", no_exception=True)
             if not use_index:
-                use_index = xml.get_value("/element/@index");
+                use_index = xml.get_value("/element/@index")
                 if use_index in ['true', True]:
                     use_index = True
                 else:
@@ -122,13 +122,13 @@ class HashPanelWdg(BaseRefreshWdg):
 
             use_admin = sobject.get_value("admin", no_exception=True)
             if not use_admin:
-                use_admin = xml.get_value("/element/@admin");
+                use_admin = xml.get_value("/element/@admin")
                 if use_admin in ['true', True]:
                     use_admin = True
                 else:
                     use_admin = False
 
-                use_sidebar = xml.get_value("/element/@sidebar");
+                use_sidebar = xml.get_value("/element/@sidebar")
                 if use_sidebar in ['false', False]:
                     use_sidebar = False
                 else:

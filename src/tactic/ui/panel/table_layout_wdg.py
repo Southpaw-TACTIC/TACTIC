@@ -4677,7 +4677,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
       }
     }
 
-
     server.async_get_widget(class_name, kwargs);
 }
 
@@ -5767,9 +5766,10 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
 // accepted attributes: view, search_key and expression
 spt.table.open_link = function(bvr) {
 
-    var view = bvr.src_el.getAttribute("view")
-    var search_key = bvr.src_el.getAttribute("search_key")
-    var expression = bvr.src_el.getAttribute("expression")
+    var view = bvr.src_el.getAttribute("view");
+    var search_key = bvr.src_el.getAttribute("search_key");
+    var expression = bvr.src_el.getAttribute("expression");
+    var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
 
     var name = bvr.src_el.getAttribute("name");
     var title = bvr.src_el.getAttribute("title");
@@ -5816,7 +5816,7 @@ spt.table.open_link = function(bvr) {
         }
     }
 
-
+    cls = widget_key;
     try {
         spt.tab.add_new(name, title, cls, kwargs);
     } catch(e) {
@@ -6992,7 +6992,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     if (kw.json)
         kwargs.values['json'] = kw.json;
-    
     server.async_get_widget(class_name, kwargs);
 }
 
