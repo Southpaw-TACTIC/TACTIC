@@ -1845,7 +1845,11 @@ class HiddenWdg(BaseInputWdg):
 
         self.set_attr("type", "hidden")
         self.set_attr("name", self.get_input_name())
-        self.set_attr("value", self.get_value(for_display=True))
+
+        value = self.get_value(for_display=True)
+        if isinstance(value, basestring):
+            value = value.replace('"', '&quot;')
+        self.set_attr("value", value)
 
         self.add_class("spt_input")
 
