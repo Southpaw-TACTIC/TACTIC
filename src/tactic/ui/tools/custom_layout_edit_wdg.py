@@ -593,10 +593,15 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_color("background", "background", -10)
         title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
-        title_wdg.add_style("height: 16px")
-        title_wdg.add_style("height: 16px")
+        title_wdg.add_style("height: 35px")
         #title_wdg.add_border()
         left_div.add_style("width: 100%")
+
+        recent_div = DivWdg()
+        recent_div.add_class("spt_recent_top")
+        title_wdg.add(recent_div)
+        recent_div.add_style("display: none")
+
 
 
         search_wdg = TextInputWdg(name="filter", height="25", placholder="Filter")
@@ -612,14 +617,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             spt.custom_layout_editor.filter(value);
             '''
         } )
-        search_wdg.add_style("background: #E0E0E0")
-        search_wdg.add_style("font-size: 1.0em")
-
-
-        recent_div = DivWdg()
-        recent_div.add_class("spt_recent_top")
-        title_wdg.add(recent_div)
-        recent_div.add_style("display: none")
+        #search_wdg.add_style("background: #E9E9E9")
+        search_wdg.add_attr("placeholder", "Search")
 
 
 
