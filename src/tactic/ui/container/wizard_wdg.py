@@ -115,11 +115,6 @@ class WizardWdg(BaseRefreshWdg):
                     title = widget.get_name()
                     title = title.replace(".", " ")
                     title = Common.get_display_title(title)
-                
-                data = self.kwargs.get("view_%s_data" % str(i+1))
-                if data:
-                    data = jsonloads(data)
-                    extra_data = dict(extra_data, **data)
 
                 widget = CustomLayoutWdg(view=view, **extra_data)
                 self.add(widget, title)
