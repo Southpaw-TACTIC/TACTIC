@@ -2461,8 +2461,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
             kwargs = {
-                'args': {'search_type': self.search_type},
-                'values': {}
+                'search_type': self.search_type,
+                'element_name': '__WIDGET_UNKNOWN__',
+                'view': '__WIDGET_UNKNOWN__'
             }
             div = DivWdg()
             widget_key = div.generate_widget_key('tactic.ui.manager.ElementDefinitionWdg', inputs=kwargs)
