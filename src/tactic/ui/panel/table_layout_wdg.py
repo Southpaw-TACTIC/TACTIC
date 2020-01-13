@@ -1895,20 +1895,23 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # selection behaviors
         table.add_relay_behavior( {
-        'type': 'click',
-        'bvr_match_class': 'spt_table_select',
-        'cbjs_action': '''
-            if (evt.shift == true) return;
+            'type': 'click',
+            'bvr_match_class': 'spt_table_select',
+            'cbjs_action': '''
+                if (evt.shift == true) return;
 
-            spt.table.set_table(bvr.src_el);
-            var row = bvr.src_el.getParent(".spt_table_row");
+                spt.table.set_table(bvr.src_el);
+                var row = bvr.src_el.getParent(".spt_table_row");
 
-            if (row.hasClass("spt_table_selected")) {
-                spt.table.unselect_row(row);
-            }
-            else {
-                spt.table.select_row(row);
-            }
+                if (row.hasClass("spt_table_selected")) {
+                    spt.table.unselect_row(row);
+                }
+                else {
+                    spt.table.select_row(row);
+                }
+
+
+            
         '''
         } )
 
@@ -3763,12 +3766,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-        th.add_looks( 'dg_row_select_box' )
+        #th.add_looks( 'dg_row_select_box' )
+        th.add_class('look_dg_row_select_box')
         th.add_class( 'spt_table_header_select' )
         th.add_style('width: 30px')
         th.add_style('min-width: 30px')
         th.add_style('max-width: 30px')
+        th.add_style('text-align', 'center')
 
+        th.add(self.get_select_wdg())
         th.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
@@ -3779,11 +3785,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             cell.addClass("look_dg_row_select_box_selected");
             cell.removeClass("look_dg_row_select_box");
             spt.table.select_all_rows();
+         
+            //BMD
+            checkbox = cell.getElement("input");
+            if (checkbox) checkbox.checked = true;
         }
         else {
             cell.removeClass("look_dg_row_select_box_selected");
             cell.addClass("look_dg_row_select_box");
             spt.table.unselect_all_rows();
+            
+            //BMD
+            checkbox = cell.getElement("input");
+            if (checkbox) checkbox.checked = false;
         }
 
         '''
@@ -3791,6 +3805,36 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+    def get_select_wdg(self):
+        checkbox_container = DivWdg()
+        checkbox_container.add_style("position", "relative")
+        checkbox_container.add_style("top", "-3px")
+
+        checkbox = DivWdg(css="checkbox spt_table_checkbox")
+        checkbox_container.add(checkbox)
+        label = HtmlElement("label")
+        label.add_behavior({
+            'type': 'load',
+            'cbjs_action': '''
+            
+            bvr.src_el.addEventListener("click", function(e) {
+                e.preventDefault();
+            })
+            '''
+        })
+
+        checkbox.add(label)
+        check = HtmlElement("input")
+        label.add(check)
+        check.add_attr("type", "checkbox")
+        check.add_behavior({
+            'type': 'load',
+            'cbjs_action': '$(bvr.src_el).bmdCheckbox()'
+        })
+
+        return checkbox_container
+
+        
 
     def handle_select(self, table, sobject):
         # FIXME: this confilicts with another "is_grouped"
@@ -3814,10 +3858,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         td = table.add_cell()
         td.add_class("spt_table_select")
-        td.add_looks( 'dg_row_select_box' )
+        td.add_class('look_dg_row_select_box')
         td.add_class( 'SPT_DTS' )
-        #td.add_color("background-color", "background", -0)
-        td.add_color("opacity", "0.5")
+        
+        td.add_style("text-align", "center")
+        
+        td.add(self.get_select_wdg())
+        
+        
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             td.add_border(direction="right", color="#ecbf7f", size="2px")
 
@@ -4511,6 +4559,10 @@ spt.table.select_row = function(row) {
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
+        
+        //BMD
+        checkbox = cell.getElement("input");
+        if (checkbox) checkbox.checked=true;
     }
     
     var current_color = row.getAttribute("spt_last_background");
@@ -4537,6 +4589,11 @@ spt.table.unselect_row = function(row) {
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");
+        
+        //BMD
+        checkbox = cell.getElement("input");
+        if(checkbox) checkbox.checked=false;
+
     }
     row.setStyle("background-color", row.getAttribute("spt_last_background"));
     row.setAttribute("spt_background", row.getAttribute("spt_last_background"));
