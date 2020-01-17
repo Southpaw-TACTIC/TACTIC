@@ -1106,8 +1106,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
             db_resource = Site.get_db_resource(site, "sthpw")
         else:
             db_resource = "sthpw"
-        sql = Sql(db_resource)
-        sql.connect()
+
+        sql = Container.get("ApiXMLRPC::db_message_connection")
+        if sql == None:
+          sql = Sql(db_resource)
+          sql.connect()
+          sql.autocommit = True
+          Container.put("ApiXMLRPC::db_message_connection", sql)
+
         impl = sql.get_database_impl()
         impl_type = impl.get_database_type()
 
@@ -1204,7 +1210,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
             statement = update.get_statement()
             sql.do_update(statement)
 
-            sql.close()
 
         #return last_message
         return "OK"
