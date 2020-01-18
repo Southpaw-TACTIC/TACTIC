@@ -152,7 +152,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border-width: 1px 0px 1px 1px;
                 background: white;
                 overflow-y: auto;
-                z-index: 250;
+                z-index: 150;
             }
 
             .spt_pipeline_tool_top .search-results {

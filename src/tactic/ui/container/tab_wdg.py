@@ -1323,6 +1323,10 @@ spt.tab.view_definition = function(bvr) {
                 height: 40px;
             }
 
+            .spt_tab_header {
+                //background: var(--spt_palette_md_primary_light);
+            }
+
             .spt_tab_header_top .spt_tab_selected {
                 height: 40px;
                 border-bottom: solid .214rem var(--spt_palette_md_secondary);

@@ -1126,6 +1126,7 @@ class PluginEditWdg(BaseRefreshWdg):
         shelf_wdg.add_style("height: 40px")
         shelf_wdg.add_style("padding: 5px 10px")
         shelf_wdg.add_color("background", "background3")
+        shelf_wdg.add_style("display: flex")
 
 
         if self.is_active():
@@ -1154,7 +1155,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title='Export', tip='Export .spt Files')
             shelf_wdg.add(button)
-            button.add_style("float: left")
+            button.add_style("margin: 3px 10px")
             button.add_behavior( {
             'type': 'click_up', 
             'dirname': dirname,
@@ -1241,7 +1242,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title='Publish', tip='Publish new version')
             shelf_wdg.add(button)
-            button.add_style("float: left")
+            button.add_style("margin: 3px 10px")
             button.add_behavior( {
             'type': 'click_up', 
             'from_version': self.version,
@@ -1618,6 +1619,7 @@ class PluginEditWdg(BaseRefreshWdg):
             buttons_div.add(remove_button)
             buttons_div.add(reload_button)
             shelf_div.add(buttons_div)
+            buttons_div.add_style("display: flex")
             remove_button.add_style("margin: 20px 10px")
             remove_button.add_style("display: inline-block")
             reload_button.add_style("margin: 20px 10px")

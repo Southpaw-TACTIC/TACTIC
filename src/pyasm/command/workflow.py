@@ -1149,6 +1149,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # run a nodes complete trigger
         status = self.input.get("status")
+        if not status:
+            status = "Complete"
+
         self.log_message(self.sobject, self.process, status)
         self.set_all_tasks(self.sobject, self.process, status)
 
@@ -3041,7 +3044,12 @@ class CustomProcessConfig(object):
     def get_save_handler(cls, node_type, extra_options={}):
         config = cls.get_config(node_type)
         extra_options['node_type'] = node_type
-        handler = config.get_display_widget("save", extra_options)
+
+        # save handlers are optional
+        try:
+            handler = config.get_display_widget("save", extra_options)
+        except:
+            handler = ""
         return handler
     get_save_handler = classmethod(get_save_handler)
 
