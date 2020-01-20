@@ -380,7 +380,10 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     var title = element.getAttribute("spt_title");
     var view = element.getAttribute("spt_view");
 
-    var widget_class = element.getAttribute("spt_class_name");
+    var widget_class = element.getAttribute("SPT_WIDGET_KEY");
+    if (!widget_class) {
+        var widget_class = element.getAttribute("spt_class_name");
+    }
     if( ! widget_class || widget_class == 'undefined' ) {
         spt.alert("Cannot refresh ["+element_id+"].  No spt_class_name attribute found");
         return;

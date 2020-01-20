@@ -221,6 +221,7 @@ class TaskStatusChangeTrigger(Trigger):
             status = "action"
 
 
+
         # The task may have a hierarchy in it.  This is denoted by a / (or .) delimiter.
         # Both are supported for now, however, it is possible people will use a "/"
         # in the process name.
@@ -237,6 +238,7 @@ class TaskStatusChangeTrigger(Trigger):
             for part in parts[:-1]:
                 process_name = part
                 process = pipeline.get_process(process_name)
+
 
                 if process:
 
@@ -257,12 +259,9 @@ class TaskStatusChangeTrigger(Trigger):
 
                     process = pipeline.get_process(parts[-1])
 
-                    break
 
         else:
             process = pipeline.get_process(process_name)
-
-
 
         if not process:
             # we don't have enough info here
@@ -270,7 +269,6 @@ class TaskStatusChangeTrigger(Trigger):
 
         node_type = process.get_type()
         process_name = process.get_name()
-
 
         # need to clear message entry
         key = "%s|%s|status" % (sobject.get_search_key(), process)
@@ -370,6 +368,7 @@ class BaseWorkflowPackage(object):
 class BaseProcessTrigger(Trigger):
 
     def get_handler(self, node_type):
+
         if node_type == "action":
             handler = WorkflowActionNodeHandler(input=self.input)
         elif node_type == "approval":
@@ -1176,8 +1175,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         #packages = self.get_output_packages()
         #self.store_state()
 
-
-
         # call the process|pending event for all output processes
         # (for not required, call process|not_required)
         output_processes = self.pipeline.get_output_processes(self.process)
@@ -1186,6 +1183,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
             #if self.process_parts:
             #    output_process = "%s.%s" % (self.process_parts[0], output_process)
+
 
             output = {
                 'pipeline': self.pipeline,
@@ -1210,6 +1208,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         if not output_processes and self.parent_processes:
             # send a message up the hierarchy
             parent_pipelines = self.parent_pipelines[:]
+
+
             pipeline = parent_pipelines.pop()
 
             parent_processes = self.parent_processes[:]
@@ -1476,6 +1476,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
     def handle_pending(self):
 
+
         if not self.check_inputs():
             return
 
@@ -1574,6 +1575,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         # store the state so that it can be remembered until the next status change
         self.store_state()
 
+
         if not self.tasks:
             Trigger.call(self, "process|action", output=self.input)
 
@@ -1604,6 +1606,7 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
 
     def handle_action(self):
+
 
         # if tasks was not set yet, then check for the tasks
         if self.tasks == None:
@@ -1967,7 +1970,6 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
         process_code = process_sobj.get_code()
 
 
-
         # use child process
         subpipeline_code = process_sobj.get_value("subpipeline_code")
         if not subpipeline_code:
@@ -1998,12 +2000,20 @@ class WorkflowHierarchyNodeHandler(BaseWorkflowNodeHandler):
             first_name = first_process.get_name()
 
             full_name = "%s/%s" % (self.process, first_name)
+            
+            parent_pipelines = [self.pipeline]
+            parent_processes = [self.process]
+            if self.input.get("parent_pipelines"):
+                parent_pipelines = self.input.get("parent_pipelines") + parent_pipelines
+            if self.input.get("parent_processes"):
+                parent_processes = self.input.get("parent_processes") + parent_processes
+
             input = {
                     'pipeline': subpipeline,
                     'sobject': self.sobject,
                     'process': first_name,
-                    'parent_pipelines': [self.pipeline],
-                    'parent_processes': [self.process],
+                    'parent_pipelines': parent_pipelines,
+                    'parent_processes': parent_processes
             }
 
             event = "process|pending"
@@ -2746,6 +2756,7 @@ class ProcessCompleteTrigger(BaseProcessTrigger):
         process = self.input.get("process")
         sobject = self.input.get("sobject")
         pipeline = self.input.get("pipeline")
+
 
         if not pipeline:
             return

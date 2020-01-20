@@ -76,17 +76,25 @@ class SObjectSummaryElementWdg(SimpleTableElementWdg):
         line_div.add("%s task(s)<br/>" % num_tasks)
 
 
+        kwargs = {
+            "search_type": 'sthpw/task',
+            "view": 'table',
+            "search_key": sobject.get_search_key(),
+            "show_shelf": False
+        }
+        line_div.generate_widget_key('tactic.ui.panel.ViewPanelWdg', inputs=kwargs)
         line_div.add_behavior( {
             'type': 'click_up',
             'search_key': sobject.get_search_key(),
             'cbjs_action': '''
             var row = bvr.src_el.getParent(".spt_table_row");
             var class_name = 'tactic.ui.panel.ViewPanelWdg';
+            var class_name = bvr.src_el.getElement("SPT_WIDGET_KEY");
             var kwargs = {
-                search_type: 'sthpw/task',
-                view: 'table',
-                search_key: bvr.search_key,
-                show_shelf: false
+                 "search_type": 'sthpw/task',
+                "view": 'table',
+                "search_key": bvr.search_key,
+                "show_shelf": false
             }
             spt.table.remove_hidden_row(row);
             spt.table.add_hidden_row(row, class_name, kwargs);

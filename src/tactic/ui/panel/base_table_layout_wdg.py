@@ -1954,8 +1954,28 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var scroll_left = body.scrollLeft;
                 offset.y = offset.y - scroll_top;
                 offset.x = offset.x - scroll_left;
+
+                // correct viewport left and top clipping
+                var rect = body.getBoundingClientRect();
+                var pointer = dialog.getElement(".spt_popup_pointer");
+                var left = offset.x + rect.x;
+                if (left < 0) {
+                    offset.x = offset.x - left;
+                    if (pointer) {
+                        pointer.hide();
+                    }
+                }
+
+                var top = offset.y + rect.y;
+                if (top < 0) {
+                    offset.y = offset.y - top;
+                    if (pointer) {
+                        pointer.hide();
+                    }
+                }
+
                 dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
-                
+
                 spt.toggle_show_hide(dialog);
 
                 if (spt.is_shown(dialog))
@@ -2502,6 +2522,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # Add column-based search ...
+        kwargs = {
+            "args": {'use_last_search': True,  
+                     'display' : True,
+                     'search_type': self.search_type
+                    },
+            "values": {}
+        }
+        div = DivWdg()
+        widget_key = div.generate_widget_key('tactic.ui.app.LocalSearchWdg', inputs=kwargs)
         menu_data.append( {
             "type": "action",
             "enabled_check_setup_key" : "is_searchable",
@@ -2515,13 +2544,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 bvr.args.searchable_search_type =  activator.getProperty("spt_searchable_search_type");
                                 spt.popup.get_widget(evt, bvr);
                                 ''',
-                'options' : {'class_name' : 'tactic.ui.app.LocalSearchWdg' },
-                            
-                'args' : {'use_last_search': True,  
-                          'display' : True,
-                          'search_type': self.search_type
-                          }
-            
+                'options' : {'class_name' : widget_key },
+                'args' : {
+                    'use_last_search': True,
+                    'display' : True,
+                    'search_type': self.search_type
+                }
             }
         } )
        
@@ -2531,15 +2559,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
+            kwargs = {
+                'args': {'search_type': self.search_type},
+                'values': {}
+            }
+            div = DivWdg()
+            widget_key = div.generate_widget_key('tactic.ui.manager.ElementDefinitionWdg', inputs=kwargs)
 
             menu_data.append( {
                 "type": "action",
                 "label": "Edit Column Definition",
                 "bvr_cb": {
-                    #'args' : {'search_type': search_type_obj.get_base_key()},
                     'args' : {'search_type': self.search_type},
                     'options': {
-                        'class_name': 'tactic.ui.manager.ElementDefinitionWdg',
+                        'class_name': widget_key,
                         'popup_id': 'edit_column_defn_wdg',
                         'title': 'Edit Column Definition'
                     },

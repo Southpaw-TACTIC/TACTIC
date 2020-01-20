@@ -356,6 +356,32 @@ API_MODE = {
 } 
 
 
+def decode_security_key(key, security_method="api"):
+    key = key.lstrip("$")
+    tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+    path = "%s/%s_key_%s.txt" % (tmp_dir, security_method, key)
+    if not os.path.exists(path):
+        print("ERROR: %s path [%s] not found" % (security_method, path))
+        raise Exception("%s key not valid" % security_method)
+    
+    f = open(path, 'r')
+    data = f.read()
+    f.close()
+    data = jsonloads(data)
+    method = data.get("method")
+    inputs = data.get("inputs")
+    login = data.get("login")
+    ticket = data.get("ticket")
+    current_login = Environment.get_user_name()
+    if current_login:
+        if login == current_login:
+            return method, inputs, ticket
+        else:
+            raise Exception("Permission Denied: wrong user")
+    else:
+        return method, inputs, ticket
+
+
 
 def xmlrpc_decorator(meth):
     '''initialize the XMLRPC environment and wrap the command in a transaction
@@ -448,7 +474,7 @@ def xmlrpc_decorator(meth):
                         if api_key:
                             if isinstance(api_key, basestring):
                                 if api_key.startswith("$"):
-                                    api_method, api_inputs, api_ticket = decode_api_key(api_key)
+                                    api_method, api_inputs, api_ticket = decode_security_key(api_key)
                                     if api_method == meth.__name__:
                                         for i in range(len(api_inputs)):
                                             if api_inputs[i] == "__API_UNKNOWN__":
@@ -5433,93 +5459,126 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp.setrelheap()
         '''
 
-        try:
-            Ticket.update_session_expiry()
-        except:
-            pass
 
-        try:
+
+        security = Environment.get_security()
+        project_code = Project.get_project_code()
+        has_key = False
+
+        if isinstance(class_name, basestring):
+            if class_name.startswith("$"):
+                has_key = True
+                class_name, inputs, ticket = decode_security_key(class_name, "widget")
+                for k, v in args.items():
+                    inputs_v = inputs.get(k)
+                    if "&amp;" in inputs_v:
+                        inputs_v = inputs_v.replace("&amp;", "&")
+
+                    if v != inputs_v:
+                        if inputs.get(k) == "__WIDGET_UNKNOWN__":
+                            inputs[k] = v
+                        else:
+                            raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
+            
+        if Config.get_value("security", "api_widget_restricted") == "true":
+            if not has_key:
+                key = "widget/%s" % (class_name)
+                access_key = {
+                    'key': key,
+                    'project': project_code
+                }
+                if not security.check_access("builtin", access_key, "allow"):
+                    raise Exception("Trying to access widgets that are not allowed, please use widget key")
+
+            
+
             try:
-                # switch projects code
-                #project_code = args.get("__project__")
-                #if project_code:
-                #    Project.set_project(project_code)
+                Ticket.update_session_expiry()
+            except:
+                pass
+
+            try:
+                try:
+                    # switch projects code
+                    #project_code = args.get("__project__")
+                    #if project_code:
+                    #    Project.set_project(project_code)
 
 
-                self._init_web(ticket, values)
+                    self._init_web(ticket, values)
 
-                args_array = []
-                widget = Common.create_from_class_path(class_name, args_array, args)
-                if not isinstance(widget, Widget):
-                    raise ApiException("Must be derived from Widget")
-
-
-                if 'spt_help' in libraries:
-                    from tactic.ui.app import HelpWdg
-                    HelpWdg()
-
-                Container.put("JSLibraries", libraries)
-                Container.put("request_top_wdg", widget)
-
-                html = widget.get_buffer_display()
-                if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
-                    print("SQL Query Count: ", Container.get('Search:sql_query'))
-                    print("BVR Count: ", Container.get('Widget:bvr_count'))
-                    print("Sending: %s KB" % (len(html)/1024))
-                    print("Num SObjects: %s" % Container.get("NUM_SOBJECTS"))
+                    args_array = []
+                    widget = Common.create_from_class_path(class_name, args_array, args)
+                    if not isinstance(widget, Widget):
+                        raise Exception("Must be derived from Widget")
 
 
-                # add interaction, if any
-                if interaction:
-                    #interaction = SearchType.create("sthpw/interaction")
-                    pass
+                    if 'spt_help' in libraries:
+                        from tactic.ui.app import HelpWdg
+                        HelpWdg()
 
-                return html
+                    Container.put("JSLibraries", libraries)
+                    Container.put("request_top_wdg", widget)
 
-            except LicenseException as e:
-                # make sure all sqls are aborted
-                DbContainer.abort_thread_sql(force=True)
-
-                from pyasm.widget import ExceptionWdg
-                #from pyasm.web import DivWdg
-                #widget = DivWdg()
-
-                from tactic.ui.app import LicenseManagerWdg
-                license_manager = LicenseManagerWdg()
-                widget.add(license_manager)
-                return widget.get_buffer_display()
-            except SecurityException as e:
-                # make sure all sqls are aborted
-                DbContainer.abort_thread_sql(force=True)
-
-                from pyasm.web import DivWdg
-                widget = DivWdg()
-                if isinstance(e, SObjectSecurityException):
-                    from pyasm.web import SpanWdg
-                    widget.add(SpanWdg(e, css='warning'))
-                else:
-                    # Timed out, show login screen
-                    from pyasm.widget import WebLoginWdg
-                    web_login = WebLoginWdg()
-                    widget.add(web_login)
-                return widget.get_buffer_display()
+                    html = widget.get_buffer_display()
+                    if class_name.find('tactic.ui.app.message_wdg.Subscription') == -1:
+                        print("SQL Query Count: ", Container.get('Search:sql_query'))
+                        print("BVR Count: ", Container.get('Widget:bvr_count'))
+                        print("Sending: %s KB" % (len(html)/1024))
+                        print("Num SObjects: %s" % Container.get("NUM_SOBJECTS"))
 
 
-               
-            except Exception as e:
-                # make sure all sqls are aborted
-                DbContainer.abort_thread_sql(force=True)
+                    # add interaction, if any
+                    if interaction:
+                        #interaction = SearchType.create("sthpw/interaction")
+                        pass
 
-                from pyasm.widget import ExceptionWdg
-                widget = ExceptionWdg(e)
-                return widget.get_buffer_display()
+                    return html
 
-        finally:
-            DbContainer.close_all()
-            Environment.set_app_server('xmlrpc')
+                except LicenseException as e:
+                    # make sure all sqls are aborted
+                    DbContainer.abort_thread_sql(force=True)
 
-            WebContainer.clear_buffer()
-            Container.delete()
+                    from pyasm.widget import ExceptionWdg
+                    #from pyasm.web import DivWdg
+                    #widget = DivWdg()
+
+                    from tactic.ui.app import LicenseManagerWdg
+                    license_manager = LicenseManagerWdg()
+                    widget.add(license_manager)
+                    return widget.get_buffer_display()
+                except SecurityException as e:
+                    # make sure all sqls are aborted
+                    DbContainer.abort_thread_sql(force=True)
+
+                    from pyasm.web import DivWdg
+                    widget = DivWdg()
+                    if isinstance(e, SObjectSecurityException):
+                        from pyasm.web import SpanWdg
+                        widget.add(SpanWdg(e, css='warning'))
+                    else:
+                        # Timed out, show login screen
+                        from pyasm.widget import WebLoginWdg
+                        web_login = WebLoginWdg()
+                        widget.add(web_login)
+                    return widget.get_buffer_display()
+
+
+                
+                except Exception as e:
+                    # make sure all sqls are aborted
+                    DbContainer.abort_thread_sql(force=True)
+
+                    from pyasm.widget import ExceptionWdg
+                    widget = ExceptionWdg(e)
+                    return widget.get_buffer_display()
+
+            finally:
+                DbContainer.close_all()
+                Environment.set_app_server('xmlrpc')
+
+                WebContainer.clear_buffer()
+                Container.delete()
 
 
         

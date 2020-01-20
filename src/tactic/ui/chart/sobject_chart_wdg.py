@@ -879,14 +879,11 @@ class CalendarChartWdg(BaseChartWdg):
             chart_data = []
         else:
             # draw back to front
-            chart_data.reverse()
+            if not isinstance(chart_data, list):
+                chart_data = [chart_data]
 
 
 
-        #from tactic.ui.panel import Document
-        #doc = Document()
-        #data = document.generate_document(sobjects)
-        #print("data: ", data)
 
 
         for options in chart_data:
@@ -894,31 +891,45 @@ class CalendarChartWdg(BaseChartWdg):
             column = options.get("column")
             if not column:
                 column = self.column
-
+            
+            accumulate = options.get("accumulate") or False
 
             expression = options.get("expression")
             if expression:
 
                 # extra filters
                 extra = {}
-                #extra['sthpw/task'] = []
-                #if start_date:
+                # extra['sthpw/task'] = []
+                # if start_date:
                 #    extra['sthpw/task'].append([column, '>', start_date])
                 #if end_date:
                 #    extra['sthpw/task'].append([column, '<', end_date])
 
 
                 sobjects = Search.eval(expression, extra_filters=extra)
-                dates_dict = self.get_dates_dict(sobjects, dates, column)
+                dates_dict = self.get_dates_dict(sobjects, dates, column, accumulate)
             else:
                 sobjects = self.sobjects
-                dates_dict = self.dates_dict
+                dates_dict = options.get("dates_dict")
 
-            data = self.get_data_values(dates_dict, dates, options['element'], sobjects)
+                if dates_dict:
+                    dates_dict_new = {}
+                    for k, v in dates_dict.items():
+                        dates_dict_new[k] = Search.get_by_search_keys(v)
+                    dates_dict = dates_dict_new
+                else:
+                    dates_dict = self.dates_dict
 
 
-            options['data'] = data
-            options['x_data'] = x_data
+            data = self.get_data_values(dates_dict, dates, options.get('element') or "", sobjects)
+
+
+            if not options.get("data"):
+                options['data'] = data
+            
+            if not options.get("x_data"):
+                options['x_data'] = x_data
+            
             if not options.get("color"):
                 options['color'] = self.colors[element_count]
 
@@ -960,7 +971,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
 
-    def get_dates_dict(self, sobjects, dates, column):
+    def get_dates_dict(self, sobjects, dates, column, accumulate=False):
 
         dates_dict = {}
         for date in dates:
@@ -980,8 +991,6 @@ class CalendarChartWdg(BaseChartWdg):
 
             elif self.interval == "daily":
 
-                timestamp = list(rrule.rrule(rrule.DAILY, dtstart=timestamp-timedelta(days=1), count=1))
-                timestamp = timestamp[0]
                 timestamp = datetime(timestamp.year,timestamp.month,timestamp.day)
 
             else:
@@ -994,8 +1003,14 @@ class CalendarChartWdg(BaseChartWdg):
 
             interval_sobjects.append(sobject)
 
-        #for key, x in dates_dict.items():
-        #    print key, len(x)
+        if accumulate:
+            for date in dates_dict.keys():
+                for k, v in dates_dict.items():
+                    if datetime.strptime(date, "%Y-%m-%d %H:%M:%S") > datetime.strptime(k, "%Y-%m-%d %H:%M:%S"):
+                        dates_dict[date] += v
+                        dates_dict[date] = list(set(dates_dict[date]))
+                    
+
 
         return dates_dict
 
@@ -1018,7 +1033,7 @@ class CalendarChartWdg(BaseChartWdg):
 
 
         for date in dates:
-            sobjects = dates_dict.get(str(date))
+            sobjects = dates_dict.get(str(date)) or []
 
             if expr:
                 value = Search.eval(expr, sobjects=sobjects, single=True, vars=vars)
