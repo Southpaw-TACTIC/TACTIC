@@ -260,8 +260,8 @@ class ADAuthenticate(Authenticate):
         for name, value in data.items():
             if value == None:
                 continue
-	    if value == 'None':
-	        value = ''
+            if value == 'None':
+                value = ''
 
             # only add values that are actually in the login object
             if name not in columns:
@@ -284,7 +284,7 @@ class ADAuthenticate(Authenticate):
 
         data = {}
         if login_name == 'admin':
-	    return data
+            return data
 
         """
         if login_name.find("\\") != -1:
@@ -408,7 +408,7 @@ class ADAuthenticate(Authenticate):
 
 
     def handle_group(self, value):
-		
+        
         # some values have commas in them.
         value = value.replace("\\,", "|||")
         parts = value.split(",")

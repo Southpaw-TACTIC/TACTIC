@@ -10,5 +10,5 @@
 #
 
 
-from ad_search_wdg import *
-from ad_authenticate import *
+from .ad_search_wdg import *
+from .ad_authenticate import *
