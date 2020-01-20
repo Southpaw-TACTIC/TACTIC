@@ -387,7 +387,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }
 
 .spt_bs_left_sidebar.active ul ul a {
-    padding: 10px !important;
+    //padding: 10px !important;
 }
 
 .spt_bs_left_sidebar.active .dropdown-toggle::after {
@@ -436,7 +436,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 /* Submenu */
 .spt_bs_left_sidebar ul ul a {
     font-size: 0.9em !important;
-    padding-left: 20px !important;
+    //padding-left: 20px !important;
     background: var(--spt_palette_md_primary_dark);
 }
 
@@ -451,7 +451,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 /* Sub-sub-menu style */
 .spt_bs_left_sidebar ul ul ul a {
     font-size: 0.9em !important;
-    padding-left: 40px !important;
+    //padding-left: 40px !important;
     background: var(--spt_palette_md_primary_dark);
 }
 
@@ -566,6 +566,11 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     font-size: 0.75rem;
     font-weight: 300;
     text-align: left;
+}
+
+
+.spt_bs_left_sidebar.active ul ul li a {
+    padding-left: 70px;
 }
 
 .spt_bs_left_sidebar .nav-link h6 {

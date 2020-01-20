@@ -620,17 +620,16 @@ class SecurityWdg(BaseRefreshWdg):
         #section_wdg.add_style("width: 225px")
         #section_wdg.add_style("height: 200px")
         section_wdg.add_style("width: 200px")
-        section_wdg.add_style("height: 140px")
+        section_wdg.add_style("height: 145px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        #section_wdg.set_box_shadow("2px 2px 2px 2px")
+        section_wdg.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
         title_wdg.add(title)
-        title_wdg.add_style("height: 20px")
-        title_wdg.add_style("padding: 3px")
-        title_wdg.add_style("margin-top: 3px")
+        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("padding: 5px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_style("text-align: center")
         title_wdg.add_color("background", "background", -10)
@@ -645,14 +644,21 @@ class SecurityWdg(BaseRefreshWdg):
         section_wdg.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "0px 0px 5px rgba(0,0,0,0.5)");
+        bvr.src_el.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
         '''
         } )
 
         section_wdg.add_behavior( {
-        'type': 'mouseout',
+        'type': 'mouseenter',
         'cbjs_action': '''
-        bvr.src_el.setStyle("box-shadow", "");
+        bvr.src_el.setStyle("box-shadow", "0px 0px 10px rgba(0,0,0,0.3)");
+        ''',
+        } )
+
+        section_wdg.add_behavior( {
+        'type': 'mouseleave',
+        'cbjs_action': '''
+        bvr.src_el.setStyle("box-shadow", "0px 0px 10px rgba(0,0,0,0.1)");
         ''',
         } )
 
@@ -725,7 +731,7 @@ class SecurityWdg(BaseRefreshWdg):
         outer.add(div)
         div.add_class("spt_dashboard_list")
         div.add_style("overflow-x: auto")
-        div.add_style("width: 1200px")
+        div.add_style("width: 100%")
         #div.add_behavior( {
         #    'type': 'load',
         #    'cbjs_action': '''
@@ -804,7 +810,8 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
         title = "Link Security"
-        image = IconWdg('', IconWdg.SECURITY_32_21, width=32)
+        #image = IconWdg('', IconWdg.SECURITY_32_21, width=32)
+        image = IconWdg('Link Security', 'FA_LINK', width=32)
         description = '''Link security determines which side bar links are visible to each group.'''
 
         behavior = {
@@ -832,6 +839,7 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("padding: 3px")
         title = "Gear Menu Security"
         image = IconWdg('', IconWdg.SECURITY_32_21, width=32) # Icon needs to be changed
+        image = IconWdg('', "FA_GEAR", width=32)
         description = '''Gear Menu security determines which gear menu items each group can see.'''
 
         behavior = {
@@ -882,7 +890,8 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         title = "Process Security"
         #image = "<img src='/context/icons/64x64/report_64.png'/>"
-        image = IconWdg('', IconWdg.SECURITY_32_20)
+        #image = IconWdg('', IconWdg.SECURITY_32_20)
+        image = IconWdg('', 'FA_PROJECT_DIAGRAM', width=32)
         description = '''Process security provides low level security for all processes.'''
 
         behavior = {
@@ -906,7 +915,8 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         title = "Task Security"
         #image = "<img src='/context/icons/64x64/report_64.png'/>"
-        image = IconWdg('', IconWdg.SECURITY_32_20)
+        #image = IconWdg('', IconWdg.SECURITY_32_20)
+        image = IconWdg('', 'FA_TASKS', width=32)
         description = '''Task security customizes the visibility of task status.'''
 
         behavior = {
@@ -930,7 +940,9 @@ class SecurityWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         title = "Groups"
         #image = "<img src='/context/icons/64x64/report_64.png'/>"
-        image = IconWdg('', IconWdg.SECURITY_32_17)
+        #image = IconWdg('', IconWdg.SECURITY_32_17)
+        image = IconWdg('', 'FA_USERS', width=32)
+        description = '''Task security customizes the visibility of task status.'''
         description = '''List of user groups.'''
 
         behavior = {

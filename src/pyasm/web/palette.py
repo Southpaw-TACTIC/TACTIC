@@ -257,11 +257,9 @@ class Palette(object):
                 return
         
 
-
-
-
-        value = palette
-        if not value:
+        value = self.COLORS
+        if value:
+            self.set_palette(palette=None, colors=value)
             return
 
 

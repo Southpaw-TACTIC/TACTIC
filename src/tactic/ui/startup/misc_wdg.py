@@ -237,19 +237,20 @@ class MainShelfWdg(BaseRefreshWdg):
         button_div.add_class("spt_buttons_top")
         button_div.add_border()
 
+
         button_div.add_style("margin-bottom: 0px")
-        button_div.add_style("width: 1200px")
-        button_div.add_style("height: 33px")
+        button_div.add_style("width: 100%")
+        button_div.add_style("height: 50px")
         button_div.add_color("background", "background2")
         button_div.add_style("margin-left: auto")
         button_div.add_style("margin-right: auto")
 
+        button_div.add_style("display: flex")
+        button_div.add_style("align-items: center")
 
-        button = SingleButtonWdg(title="Collapse", icon=IconWdg.HOME)
+        button = SingleButtonWdg(title="Collapse", icon="FA_HOME")
         button_div.add(button)
-        button.add_style("float: left")
-        button.add_style("left: 5px")
-        button.add_style("top: 5px")
+        button.add_style("margin-left: 15px")
 
 
         # FIXME: get home for the user
@@ -278,13 +279,11 @@ class MainShelfWdg(BaseRefreshWdg):
         assert(list_class)
         assert(height)
 
-        button = SingleButtonWdg(title="Collapse", icon=IconWdg.ARROW_UP)
+        button = SingleButtonWdg(title="Collapse", icon="FA_ARROW_UP")
         button_div.add(button)
         button.add_class("spt_collapse")
         top.add(button_div)
-        button.add_style("float: left")
-        button.add_style("left: 5px")
-        button.add_style("top: 5px")
+        button.add_style("margin-left: 5px")
 
         button.add_behavior( {
             'type': 'click_up',
@@ -303,14 +302,12 @@ class MainShelfWdg(BaseRefreshWdg):
             '''
         } )
 
-        button = SingleButtonWdg(title="Expand", icon=IconWdg.ARROW_DOWN)
+        button = SingleButtonWdg(title="Expand", icon="FA_ARROW_DOWN")
         button.add_style("display: none")
         button.add_class("spt_expand")
         button_div.add(button)
-        button.add_style("left: 5px")
-        button.add_style("top: 5px")
+        button.add_style("margin-left: 15px")
         top.add(button_div)
-        button.add_style("float: left")
         button.add_behavior( {
             'type': 'click_up',
             'top_class': top_class,

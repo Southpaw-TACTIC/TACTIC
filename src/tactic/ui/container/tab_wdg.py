@@ -1159,7 +1159,7 @@ spt.tab.close = function(src_el) {
         spt.behavior.destroy_element(header);
         spt.behavior.destroy_element(content);
 
-        spt.tab.resize_headers();
+        //spt.tab.resize_headers();
 
 
         var last_element_name = spt.tab.get_last_selected_element_name();
@@ -1760,6 +1760,14 @@ spt.tab.view_definition = function(bvr) {
 
 
         show_remove = self.kwargs.get("show_remove")
+
+        # resize headers on leave
+        header_div.add_behavior( {
+            'type': 'mouseleave',
+            'cbjs_action': '''
+                spt.tab.resize_headers();
+            '''
+            } )
 
         if show_remove == "hover":
 

@@ -36,7 +36,7 @@ class PluginWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_class("spt_plugin_top")
         self.set_as_panel(div)
-        div.add_style("margin-top: 3px")
+        #div.add_style("margin-top: 3px")
 
         div.add_color("background", "background")
 
@@ -83,7 +83,9 @@ class PluginWdg(BaseRefreshWdg):
         left.add_style("min-width: 275px")
         left.add_style("padding: 0px")
         left.add_color("background", "background3")
-        left.add_border()
+        left.add_style("border-color", left.get_color("border"))
+        left.add_style("border-style", "solid")
+        left.add_style("border-width", "1px 0px 1px 1px")
 
 
         table.add_class("spt_window_resize")
@@ -118,6 +120,7 @@ class PluginWdg(BaseRefreshWdg):
         right.add_style("min-width: 400px")
         right.add_style("width: 100%")
         right.add_style("padding: 5px")
+        #right.add_style("margin-left: -1px")
         right.add_border()
 
         plugin_dir = self.kwargs.get("plugin_dir")
@@ -459,6 +462,8 @@ class PluginWdg(BaseRefreshWdg):
             plugin_div = DivWdg()
             #div.add(plugin_div)
             folder_content.add(plugin_div)
+            plugin_div.add_style("display: flex")
+            plugin_div.add_style("align-items: center")
 
             plugin_div.add_style("padding: 5px")
             plugin_div.add_class("hand")
@@ -475,7 +480,6 @@ class PluginWdg(BaseRefreshWdg):
             icon = DivWdg()
             icon.add_style("width: 9px")
             icon.add("&nbsp;")
-            icon.add_style("float: left")
             plugin_div.add(icon)
 
             if is_active:
@@ -495,7 +499,7 @@ class PluginWdg(BaseRefreshWdg):
                     plugin_div.add_style("display: none") 
                     folder_header.add_style("opacity: 0.3") 
 
-            icon.add_style("margin-right: -3px")
+            icon.add_style("margin-right: 3px")
 
             plugin_div.add_attr("title", description)
 

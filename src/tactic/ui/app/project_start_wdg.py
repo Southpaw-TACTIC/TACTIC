@@ -40,14 +40,14 @@ class ProjectStartWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 310px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
+        section_wdg.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
         title_wdg.add(title)
         title_wdg.add_style("height: 20px")
-        title_wdg.add_style("padding: 3px")
-        title_wdg.add_style("margin-top: 3px")
+        title_wdg.add_style("padding: 5px 8px")
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_color("background", "#F2F2F2")
 
@@ -92,7 +92,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        #section_wdg.set_box_shadow("1px 1px 1px 1px")
+        section_wdg.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -197,7 +197,8 @@ class ProjectStartWdg(BaseRefreshWdg):
         content.add(table)
         table.add_color("color", "color")
         table.add_row()
-        table.center()
+        #table.center()
+        table.add_style("margin: 0px auto")
 
 
 
