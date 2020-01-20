@@ -30,7 +30,6 @@ class Palette(object):
     'background2':  '#2F2F2F',      # secondary background color
     'background3':  '#888888',      # tertiary background color
     'border':       '#737b79',      # main border color
-    'shadow':       '#000000',      # main shadow color
     'theme':        'dark',
 
     'table_border': '#494949',

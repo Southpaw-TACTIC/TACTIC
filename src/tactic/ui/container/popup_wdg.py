@@ -376,7 +376,7 @@ class PopupWdg(BaseRefreshWdg):
             close_wdg = DivWdg()
             close_wdg.add_class("spt_popup_close")
 
-            close_btn = ButtonNewWdg(title="Close", icon="FA_WINDOW_CLOSE")
+            close_btn = ButtonNewWdg(title="Close", icon="FAS_WINDOW_CLOSE")
             close_wdg.add(close_btn)
 
             close_wdg.add_behavior({
@@ -390,11 +390,11 @@ class PopupWdg(BaseRefreshWdg):
             minimize_wdg = DivWdg()
             minimize_wdg.add_class("spt_popup_min")
             
-            minimize_btn = ButtonNewWdg(title="Minimize", icon="FA_WINDOW_MINIMIZE")
+            minimize_btn = ButtonNewWdg(title="Minimize", icon="FAS_WINDOW_MINIMIZE")
             minimize_btn.add_class("spt_minimize", redirect=False)
            
             maximum_wdg = DivWdg()
-            maximize_btn = ButtonNewWdg(title="Maximize", icon="FA_WINDOW_MAXIMIZE")
+            maximize_btn = ButtonNewWdg(title="Maximize", icon="FAS_WINDOW_MAXIMIZE")
             maximize_btn.add_class("spt_maximize", redirect=False)
             maximize_btn.add_style("display: none")
 
