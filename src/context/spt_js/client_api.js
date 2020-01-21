@@ -1848,6 +1848,11 @@ TacticServerStub = function() {
     // async functions
 
     this.async_get_widget = function(class_name, kwargs, on_complete, on_error) {
+
+        var api = this;
+        var api_kwargs = {};
+        Object.assign(api_kwargs, kwargs);
+
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
 
@@ -1862,6 +1867,12 @@ TacticServerStub = function() {
             callback = on_complete;
         }
         var err_callback = function(e) {
+            // trye handling the ERROMETHOD error
+            if (e.contains("XERRORMETHOD")) {
+		//alert("ERRORMETHOD!!!!!");
+		//api.async_get_widget(class_name, api_kwargs, on_complete, on_error);
+		return;
+	    }
             if (e == 0) {
                 e = 'Received an error (Error 0)';
                 var error = new Error();

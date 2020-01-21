@@ -30,12 +30,12 @@ from .. import errors
 from .._compat import IS_ABOVE_OPENSSL10
 from ..makefile import StreamReader, StreamWriter
 
-if six.PY3:
-    generic_socket_error = OSError
-else:
+if six.PY2:
     import socket
     generic_socket_error = socket.error
     del socket
+else:
+    generic_socket_error = OSError
 
 
 def _assert_ssl_exc_contains(exc, *msgs):

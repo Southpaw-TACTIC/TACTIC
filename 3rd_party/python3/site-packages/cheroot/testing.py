@@ -50,6 +50,8 @@ def cheroot_server(server_factory):
         else:
             break
 
+    httpserver.shutdown_timeout = 0  # Speed-up tests teardown
+
     threading.Thread(target=httpserver.safe_start).start()  # spawn it
     while not httpserver.ready:  # wait until fully initialized and bound
         time.sleep(0.1)

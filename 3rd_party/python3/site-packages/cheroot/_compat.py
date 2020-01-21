@@ -24,8 +24,11 @@ IS_WINDOWS = SYS_PLATFORM == 'Windows'
 IS_LINUX = SYS_PLATFORM == 'Linux'
 IS_MACOS = SYS_PLATFORM == 'Darwin'
 
+PLATFORM_ARCH = platform.machine()
+IS_PPC = PLATFORM_ARCH.startswith('ppc')
 
-if six.PY3:
+
+if not six.PY2:
     def ntob(n, encoding='ISO-8859-1'):
         """Return the native string as bytes in the given encoding."""
         assert_native(n)
@@ -85,7 +88,7 @@ def assert_native(n):
         raise TypeError('n must be a native str (got %s)' % type(n).__name__)
 
 
-if six.PY3:
+if not six.PY2:
     """Python 3 has memoryview builtin."""
     # Python 2.7 has it backported, but socket.write() does
     # str(memoryview(b'0' * 100)) -> <memory at 0x7fb6913a5588>
@@ -99,7 +102,7 @@ else:
 def extract_bytes(mv):
     """Retrieve bytes out of memoryview/buffer or bytes."""
     if isinstance(mv, memoryview):
-        return mv.tobytes() if six.PY3 else bytes(mv)
+        return bytes(mv) if six.PY2 else mv.tobytes()
 
     if isinstance(mv, bytes):
         return mv

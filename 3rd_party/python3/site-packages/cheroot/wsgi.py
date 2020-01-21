@@ -359,7 +359,7 @@ class Gateway_u0(Gateway_10):
     def _decode_value(item):
         k, v = item
         skip_keys = 'REQUEST_URI', 'wsgi.input'
-        if six.PY3 or not isinstance(v, bytes) or k in skip_keys:
+        if not six.PY2 or not isinstance(v, bytes) or k in skip_keys:
             return k, v
         return k, v.decode('ISO-8859-1')
 
