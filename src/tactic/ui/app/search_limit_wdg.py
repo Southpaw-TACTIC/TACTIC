@@ -359,10 +359,10 @@ class SearchLimitWdg(Widget):
         showing_wdg = DivWdg()
         widget.add(showing_wdg)
         showing_wdg.add_style("padding: 20px")
-        showing_wdg.add_style("margin: 10px")
+        #showing_wdg.add_style("margin: 10px")
+        showing_wdg.add_style("border-top: solid 1px %s" % showing_wdg.get_color("border"))
         showing_wdg.add_color("background", "background", -5)
-        #showing_wdg.add_color("text-align", "center")
-        showing_wdg.add_border()
+        #showing_wdg.add_border()
 
         label_span = SpanWdg("Showing: ")
         showing_wdg.add(label_span)
@@ -401,6 +401,8 @@ class SearchLimitWdg(Widget):
             selector.select.add_style("width: 100px")
             #selector.add_style("display: inline")
             selector.add_style("float: left")
+            selector.add_style("text-align: center")
+            selector.add_style("text-align-last: center")
 
             selector.set_value(current_value)
             selector.set_display_label(False)

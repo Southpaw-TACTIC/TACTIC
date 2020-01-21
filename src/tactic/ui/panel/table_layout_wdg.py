@@ -2246,6 +2246,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             tr.add_color("background", "background", -2)
             border_color = table.get_color("table_border", 0, default="border")
+            tr.add_color("color", "color", 8)
 
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
@@ -2426,6 +2427,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             if self.mode == 'widget':
                 value = widget.get_title()
+                if isinstance(value, six.string_types):
+                    d = DivWdg()
+                    d. add_style("margin-top: 6px")
+                    d.add(value)
+                    value = d
             else:
                 element = widget.get_name()
                 value = Common.get_display_title(element)

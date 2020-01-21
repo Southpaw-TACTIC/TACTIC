@@ -94,17 +94,18 @@ class ProjectConfigWdg(BaseRefreshWdg):
         search_type_panel.add_style("overflow-y: auto")
         search_type_panel.add( SearchTypePanel() )
         search_type_panel.add_style("min-height: 100px")
-        search_type_panel.add_style("height: 300px")
+        search_type_panel.add_style("height: calc(100hv - 100px)")
         search_type_panel.add_class("spt_resizable")
 
 
         panel = {
             'widget': search_type_panel,
-            'title': 'Searchable Type (sType) List',
+            'title': 'Searchable Types',
             'width': '50%'
         }
         panels.append(panel)
 
+        """
         from tactic.ui.container import TabWdg
         config_xml = '''
         <config>
@@ -132,6 +133,8 @@ class ProjectConfigWdg(BaseRefreshWdg):
             'width': '100%',
         }
         panels.append(panel)
+
+        """
 
         return panels
 
@@ -171,15 +174,17 @@ class ProjectConfigWdg(BaseRefreshWdg):
 
         #table = Table()
         from tactic.ui.container import ResizableTableWdg
-        table = ResizableTableWdg()
+        table = Table()
         inner.add(table)
         table.add_style("width: 100%")
+        table.add_style("box-sizing: border-box")
 
         panels = self.get_panels()
 
         for panel in panels:
             tr = table.add_row()
-            td = table.add_cell(resize=False)
+            #td = table.add_cell(resize=False)
+            td = table.add_cell()
             td.add_style("min-height: 100px")
 
             td.add_style("vertical-align: top")
@@ -399,7 +404,8 @@ class SearchTypePanel(BaseRefreshWdg):
         table = Table()
         div.add(table)
         table.add_style("margin-top: 14px")
-        table.set_max_width()
+        table.add_style("width: 100%")
+        table.add_color("color", "color")
 
 
 
@@ -419,6 +425,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
         tr = table.add_row()
+        tr.add_style("height: 30px")
         tr.add_color("color", "color")
         tr.add_color("background", "background", -3)
         tr.add_style("border-bottom: solid 1px %s" % border_color)

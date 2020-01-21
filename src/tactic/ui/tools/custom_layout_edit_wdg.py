@@ -901,7 +901,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             config_div.add_class("spt_custom_layout_item")
             #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
-            icon = IconWdg("Custom Layout View", "FA_FILE_O", inline=False, size=12)
+            icon = IconWdg("Custom Layout View", "FAR_FILE", inline=False, size=12)
             icon.add_style("margin-right: 1px")
             icon.add_style("opacity: 0.8")
             config_div.add(icon)

@@ -23,18 +23,29 @@ class Palette(object):
 
     # default color palette
     DEFAULT = {
-    'color':        '#AAA',         # main font color
+    'color':        '#CCC',         # main font color
     'color2':       '#BBB',         # secondary font color
     'color3':       '#222222',      # tertiary font color
     'background':   '#444444',      # main background color
     'background2':  '#2F2F2F',      # secondary background color
-    'background3':  '#777777',      # tertiary background color
+    'background3':  '#888888',      # tertiary background color
     'border':       '#737b79',      # main border color
     'shadow':       '#000000',      # main shadow color
     'theme':        'dark',
 
     'table_border': '#494949',
     'side_bar_title': '#3C76C2',
+
+    'theme':        'default',
+    'shadow':       'rgba(0,0,0,0.1)',
+    'md_primary_dark': '#c7c7c7', 
+    'md_primary':   '#fafafa',
+    'md_primary_light': '#ffffff',
+    'md_secondary_dark': '#00675b',
+    'md_secondary': '#009688',
+    'md_secondary_light': '#52c7b8'
+ 
+
     
     }
     DARK = DEFAULT
