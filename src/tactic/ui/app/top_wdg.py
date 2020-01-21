@@ -798,6 +798,7 @@ class TopWdg(Widget):
             web = WebContainer.get_web()
             if web.is_admin_page():
                 palette_key = 'AQUA'
+                #palette_key = 'SILVER'
         
         if palette_key:
             from pyasm.web import Palette

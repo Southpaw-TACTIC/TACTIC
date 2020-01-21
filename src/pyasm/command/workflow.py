@@ -2587,6 +2587,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     continue
 
                 event = "process|pending"
+
+
                 output = {
                     'sobject': sobject,
                     'pipeline': pipeline,

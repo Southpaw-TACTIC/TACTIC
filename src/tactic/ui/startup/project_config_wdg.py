@@ -173,7 +173,7 @@ class ProjectConfigWdg(BaseRefreshWdg):
         from tactic.ui.container import ResizableTableWdg
         table = ResizableTableWdg()
         inner.add(table)
-        table.set_max_width()
+        table.add_style("width: 100%")
 
         panels = self.get_panels()
 
