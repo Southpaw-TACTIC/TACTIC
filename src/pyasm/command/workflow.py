@@ -1410,7 +1410,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # if there is a task on this node, then a revise message does not go back
         # because the task is used to notify
-        #markmark
         #if tasks:
         #    return
 
