@@ -1410,8 +1410,9 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # if there is a task on this node, then a revise message does not go back
         # because the task is used to notify
-        if tasks:
-            return
+        #markmark
+        #if tasks:
+        #    return
 
 
         process_obj = self.pipeline.get_process(self.process)
