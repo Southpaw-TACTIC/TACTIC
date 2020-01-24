@@ -54,7 +54,7 @@
 }
 
 .MooDialog .close {
-	background: url(dialog-close.gif) no-repeat;
+	//background: url(dialog-close.gif) no-repeat;
 	width: 16px;
 	height: 16px;
 	display: block;
@@ -63,6 +63,11 @@
 	top: 2px;
 	right: 4px;
 	position: absolute;
+}
+
+.MooDialog .close::before {
+    font-family: "Font Awesome 5 Free";
+    content: "\f410"
 }
 
 .MooDialog .buttons {

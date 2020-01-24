@@ -20,6 +20,9 @@ class BootstrapTabWdg(BaseRefreshWdg):
         view = "tab"
         config = WidgetConfig.get(view=view, xml=config_xml)
 
+
+        tab_mode = self.kwargs.get("tab_mode") or ""
+
         save_state = self.kwargs.get("save_state")
         if not save_state:
             save_state = "main_body_tab_state"
@@ -29,7 +32,9 @@ class BootstrapTabWdg(BaseRefreshWdg):
             view=view, 
             use_default_style=False, 
             save_state=save_state,
-            resize_headers=True
+            resize_headers=True,
+            mode=tab_mode,
+            #show_add=False,
         )
         self.unique_id = self.tab.get_tab_id()
         self.header_id = self.tab.get_header_id()

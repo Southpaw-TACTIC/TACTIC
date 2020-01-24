@@ -28,7 +28,7 @@ from pyasm.widget import ThumbWdg
 
 import dateutil, os
 
-from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
+from tactic.ui.widget import ActionButtonWdg, IconButtonWdg, ButtonNewWdg
 
 import six
 basestring = six.string_types
@@ -409,10 +409,13 @@ class DiscussionWdg(BaseRefreshWdg):
             'hidden': hidden,
             'allow_email': allow_email,
             'show_task_process': show_task_process,
+            'process': '__WIDGET_UNKNOWN__',
+            'context': '__WIDGET_UNKNOWN__',
+            'search_key': '__WIDGET_UNKNOWN__',
         }
         layout.generate_widget_key('tactic.ui.widget.DiscussionAddNoteWdg', inputs=widget_kwargs)
         layout.add_relay_behavior( {
-            'type': 'mouseup',
+            'type': 'click',
             'bvr_match_class': match_class,
             'hidden': hidden,
             'allow_email': allow_email,
@@ -444,9 +447,12 @@ class DiscussionWdg(BaseRefreshWdg):
                         'allow_email': bvr.allow_email,
                         'show_task_process': bvr.show_task_process,
                     }
-                var class_name = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
+                var layout = bvr.src_el.getParent(".spt_discussion_top");
+                var class_name = layout.getAttribute("SPT_WIDGET_KEY");
                 spt.panel.load(container, class_name, kwargs, widget_kwargs,  {fade: false, async: false});
+
                 add_note = top.getElement(".spt_discussion_add_note");
+
                 //var popup = spt.panel.load_popup("Add Note", class_name, kwargs);
                 //add_note = popup.getElement(".spt_discussion_add_note");
             }
@@ -888,7 +894,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 width: 100%;
                 height: auto;
                 box-sizing: border-box;
-                margin: 0px 30px 10px 20px;
                 padding: 0px 10px;
             }
 
@@ -1508,14 +1513,17 @@ class DiscussionWdg(BaseRefreshWdg):
                 shelf_wdg.add_style("height: 36px")
                 #shelf_wdg.add_color("background", "background3")
 
-                add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', opacity=0.7)
+
+                #add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', color="secondary")
+                add_wdg = ButtonNewWdg(title="+", icon="FA_PLUS", tip='Add a new note', size='small', color="secondary")
                 shelf_wdg.add(add_wdg)
                 add_wdg.add_style("float: right")
-                shelf_wdg.add_style("padding-top: 3px")
+                shelf_wdg.add_style("padding: 3px")
 
                 add_wdg.add_attr("spt_process", process)
                 add_wdg.add_attr("spt_context", context)
                 add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
+
                 add_wdg.add_class(add_class)
 
                 sk = self.parent.get_search_key(use_id=True)
@@ -1541,7 +1549,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 thumb_wdg = ThumbWdg2()
                 thumb_wdg.set_sobject(self.sobject)
                 thumb_wdg.add_style("width: 60px")
-                thumb_wdg.add_style("margin: 0px 5px")
+                thumb_wdg.add_style("margin: 3px 5px")
                 shelf_wdg.add(thumb_wdg)
 
 
@@ -1567,6 +1575,8 @@ class DiscussionWdg(BaseRefreshWdg):
                         "note_format": self.note_format,
                         "context": context,
                         "parent_key": self.parent.get_search_key(),
+                        "is_refresh": "__WIDGET_UNKNWON__",
+                        "use_dialog": "__WIDGET_UNKNWON__",
                     }
             process_wdg.generate_widget_key("tactic.ui.widget.NoteCollectionWdg", inputs=widget_kwargs)
             process_wdg.add_behavior( {
@@ -2494,7 +2504,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             return content_div
 
         from tactic.ui.app import HelpButtonWdg
-        help_button = HelpButtonWdg(alias="notes-widget")
+        help_button = HelpButtonWdg(alias="notes-widget", use_icon=True)
         content_div.add(help_button)
         help_button.add_style("float: right")
         help_button.add_style("margin-top: -5px")

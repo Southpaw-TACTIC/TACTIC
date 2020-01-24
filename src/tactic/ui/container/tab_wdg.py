@@ -1687,7 +1687,10 @@ spt.tab.view_definition = function(bvr) {
             header_div.add_style("padding-left: %s" % offset)
 
         if self.mode == "hidden":
+            # TODO: The display is problematic because bmd is using !important
             header_div.add_style("display: none")
+            header_div.add_style("visibility: hidden")
+            header_div.add_style("height: 0px")
 
 
         header_defs = {}
@@ -1762,12 +1765,14 @@ spt.tab.view_definition = function(bvr) {
         show_remove = self.kwargs.get("show_remove")
 
         # resize headers on leave
-        header_div.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-                spt.tab.resize_headers();
-            '''
-            } )
+        resize_headers = self.kwargs.get("resize_headers")
+        if resize_headers:
+            header_div.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                    spt.tab.resize_headers();
+                '''
+                } )
 
         if show_remove == "hover":
 
@@ -2129,14 +2134,12 @@ spt.tab.view_definition = function(bvr) {
         icon_div = DivWdg()
         icon_div.add_class("spt_add_tab_inner")
         
-        from tactic.ui.widget import IconButtonWdg
-        icon = IconButtonWdg(title="New Tab", icon=IconWdg.PLUS)
-        icon = IconWdg("New Tab", IconWdg.PLUS)
+        from tactic.ui.widget import IconButtonWdg, ButtonNewWdg
+        icon = ButtonNewWdg(title="New Tab", icon="FA_PLUS")
+        #icon = IconWdg("New Tab", IconWdg.PLUS)
         #icon.add_style("top: -1px")
         #icon.add_style("left: 0px")
         #icon.add_style("position: absolute")
-        icon.add_style("margin-left: 3px")
-        icon.add_style("margin-top: 5px")
         icon.add_style("display: block")
         icon_div.add_class("hand")
 

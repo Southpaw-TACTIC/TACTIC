@@ -5491,7 +5491,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 class_name, inputs, ticket = decode_security_key(class_name, "widget")
                 for k, v in args.items():
                     inputs_v = inputs.get(k)
-                    if "&amp;" in inputs_v:
+                    if isinstance(inputs_v, six.string_types) and "&amp;" in inputs_v:
                         inputs_v = inputs_v.replace("&amp;", "&")
 
                     if v != inputs_v:

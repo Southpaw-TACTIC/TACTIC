@@ -94,13 +94,13 @@ class ProjectConfigWdg(BaseRefreshWdg):
         search_type_panel.add_style("overflow-y: auto")
         search_type_panel.add( SearchTypePanel() )
         search_type_panel.add_style("min-height: 100px")
-        search_type_panel.add_style("height: calc(100hv - 100px)")
+        search_type_panel.add_style("height: calc(100vh - 180px)")
         search_type_panel.add_class("spt_resizable")
 
 
         panel = {
             'widget': search_type_panel,
-            'title': 'Searchable Types',
+            'title': 'Search Type Manager',
             'width': '50%'
         }
         panels.append(panel)
@@ -861,13 +861,14 @@ class UserPanelWdg(BaseRefreshWdg):
         top.add_style("min-width: 400px")
         
         tool_div = DivWdg()
-        # tool_div.add_style('margin-bottom','8px')
         tool_div.add_style('display','inline-flex')
+        tool_div.add_style("align-items: center")
         tool_div.add_style('width','50%')
         tool_div.add_style('margin-bottom','-4px')
+        tool_div.add_style('margin-top','5px')
      
         if show_add not in ['false', False]:
-            button = ActionButtonWdg(title="Add", tip="Add New User")
+            button = ActionButtonWdg(title="Add", tip="Add New User", color="secondary")
             button.add_style('align-self: flex-end')
             tool_div.add(button)
         
@@ -936,7 +937,7 @@ class UserPanelWdg(BaseRefreshWdg):
 
 
             if show_security not in ['false', False]:
-                button = ActionButtonWdg(title="Security")
+                button = ActionButtonWdg(title="Security", color="secondary")
                 button.add_style('align-self: flex-end')
                 #button.add_styles("position: absolute; right: 10px;")
                 tool_div2.add(button)
@@ -979,6 +980,7 @@ class UserPanelWdg(BaseRefreshWdg):
             div.add("For more information, read the help docs: ")
             from tactic.ui.app import HelpButtonWdg
             help = HelpButtonWdg(alias=self.get_help_alias())
+            help.add_style("margin-top: 3px")
             div.add(help)
             div.add("<br/>")
             div.add("Click on the 'Add' button above to start adding new users.")
@@ -1013,7 +1015,10 @@ class UserPanelWdg(BaseRefreshWdg):
                 show_layout_switcher='false',
                 show_expand='false',
                 show_search_limit=show_search_limit,
-                show_help=show_help
+                show_help=show_help,
+                show_border="horizontal",
+
+
         )
         div.add(panel)
         div.add_style('margin-top', '4px')

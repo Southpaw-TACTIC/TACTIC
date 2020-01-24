@@ -1036,10 +1036,7 @@ spt.popup.get_widget = function( evt, bvr )
     if( ! popup ) {
         // get the common popup, clone it and fill it in
         var popup_template = document.id("popup_template");
-        // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
-        //var popup = spt.behavior.duplicate_element(popup_template);
         var popup = spt.behavior.clone(popup_template);
-
 
         if( popup_id ) {
             popup.set("id", popup_id);
@@ -1154,6 +1151,9 @@ spt.popup.get_widget = function( evt, bvr )
         popup.setStyle("left", xpos);
         popup.setStyle("margin-left", 0);
         popup.setStyle("position", "fixed");
+
+        spt.z_index.bring_forward( spt.z_index.get_z_el(popup) )
+
 
         var content_size = content_wdg.getSize();
         var window_size = document.id(window).getSize();
