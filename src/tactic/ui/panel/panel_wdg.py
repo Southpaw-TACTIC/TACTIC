@@ -250,7 +250,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
     var path = options['path'];
 
     // display a table
-    var widget_class = options['class_name'];
+    var widget_class = options['widget_key'];
     if (widget_class == null) {
         widget_class = "tactic.ui.panel.ViewPanelWdg";
     }
@@ -267,7 +267,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         spt.tab.top = tab_top;
 
 
-        var class_name = options['class_name'];
+        var class_name = options['widget_key'];
 
         // Use path instead for the name
         //var element_name = options['element_name'];
@@ -3132,11 +3132,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             search = self.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
+                sudo = Sudo()
                 search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit, filter_view=simple_search_view)
             except SearchException as e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
                 raise
+            finally:
+                sudo.exit()
 
 
             from tactic.ui.container import DialogWdg
