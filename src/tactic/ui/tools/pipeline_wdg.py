@@ -152,7 +152,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 border-width: 1px 0px 1px 1px;
                 background: white;
                 overflow-y: auto;
-                z-index: 250;
+                z-index: 150;
             }
 
             .spt_pipeline_tool_top .search-results {
@@ -674,7 +674,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             type_search = HtmlElement.text()
             toolbar.add(type_search)
             type_search.add_class("spt_pipeline_type_search spt_toolbar_content")
-            type_search.add_attr("placeholder", "Search for process types...")
+            type_search.add_attr("placeholder", "Search for process nodes...")
 
             type_search.add_behavior({
                 'type': 'keyup',
@@ -1054,11 +1054,7 @@ class PipelineListWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
 
-
-        button = ActionButtonWdg(title="Add", tip="Add a new workflow", size='small')
-        button.add_style("position: absolute")
-        button.add_style("top: 5px")
-        button.add_style("right: 5px")
+        button = ActionButtonWdg(title="+", tip="Add a new workflow", size='small')
 
         button.add_behavior( {
         'type': 'click_up',
@@ -6565,6 +6561,8 @@ class ProcessInfoCmd(Command):
             cmd.execute()
             handled.add(cbk_class)
 
+        settings = process_sobj.get_json_value("workflow") or {}
+        node_type = settings.get("node_type") or "manual"
         if node_type in ['manual', 'approval', 'action', 'condition', 'hierarchy', 'progress', 'dependency']:
             return
 
@@ -7805,6 +7803,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     var node = nodes[i];
                     node.has_changes = false;
                 }
+
+                spt.notify.show_message("Saved");
 
 
 
@@ -10564,11 +10564,12 @@ spt.process_tool.show_side_bar = function(activator) {
             title_div = DivWdg()
             #item_div.add(title_div)
             data_div.add(title_div)
-            title_div.add(Common.get_display_title(view))
+            title_div.add(Common.get_display_title(view).upper())
             title_div.add_style("padding: 3px 10px")
             title_div.add_style("background: #EEE")
             title_div.add_style("text-align: center")
             title_div.add_style("border-bottom: solid 1px #DDD")
+            title_div.add_style("font-weight: 500")
 
 
             data_div.add_style("font-size: 0.8em")

@@ -239,6 +239,7 @@ CREATE TABLE "pipeline" (
     "color" character varying(256),
     "s_status" character varying(30),
     "autocreate_tasks" boolean,
+    "use_workflow" boolean default true,
     CONSTRAINT "pipeline_code_idx" UNIQUE ("code")
 );
 

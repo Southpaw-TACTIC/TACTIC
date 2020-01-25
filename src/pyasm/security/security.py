@@ -627,6 +627,7 @@ class LoginGroup(Login):
             xml.append('''<rule group="process" process="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
             xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
+            xml.append('''<rule group="builtin" key="view_side_bar" access="allow"/>''')
 
 
         elif access_level == LoginGroup.MED:

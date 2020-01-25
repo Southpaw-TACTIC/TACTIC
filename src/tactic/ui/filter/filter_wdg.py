@@ -987,7 +987,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             'type': 'mouseenter',
             'cbjs_action': '''
             var buttons = bvr.src_el.getElement(".spt_buttons_top");
-            buttons.setStyle("display", "");
+            buttons.setStyle("display", "flex");
             '''
         } )
 
@@ -1007,8 +1007,9 @@ class GeneralFilterWdg(BaseFilterWdg):
         button_div.add_class("spt_buttons_top")
         button_div.add_style("display: none")
 
-        from tactic.ui.widget import ActionButtonWdg
-        add_button = ActionButtonWdg(title='+', tip='Add Filter', size='small')
+        from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+        add_button = IconButtonWdg(name='Add', icon='FA_PLUS', tip='Add Filter', size='small')
+        #add_button = ActionButtonWdg(title='+', tip='Add Filter', size='small')
         button_div.add(add_button)
         add_button.add_style("display: inline-block")
         add_button.add_behavior( {
@@ -1105,6 +1106,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         sub_button = ActionButtonWdg(title='-', tip='Remove Filter', size='small')
+        sub_button = IconButtonWdg(name='Remove', icon='FA_REMOVE', tip='Remove Filter', size='small')
         button_div.add(sub_button)
         sub_button.add_style("display: inline-block")
         sub_button.add_behavior( {
@@ -1470,7 +1472,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
             value_text.add_style("float", "left")
-            value_text.add_style("height", "30")
+            #value_text.add_style("height", "30")
             #value_text.add_style("width", "250")
             value_text.add_style("margin", "0px 5px")
             self.set_filter_value(value_text, filter_index)

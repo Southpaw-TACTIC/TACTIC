@@ -263,8 +263,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
             key = "sobject_detail_view"
             custom_view = ProjectSetting.get_value_by_key(key, search_type=self.sobject.get_base_search_type())
 
-        print("hello")
-        print(custom_view)
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
             selected = self.kwargs.get("selected") or ""

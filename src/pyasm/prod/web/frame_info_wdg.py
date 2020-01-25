@@ -179,9 +179,6 @@ class FrameInfoWdg(Widget):
 class FrameRangeWdg(BaseTableElementWdg):
     '''widget that displays a simple frame range'''
 
-    def get_title(self):
-        return "Frame Range"
-        
 
     def get_simple_display(self):
         sobject = self.get_current_sobject()

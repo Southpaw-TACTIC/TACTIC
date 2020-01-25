@@ -327,6 +327,7 @@ class DialogWdg(BaseRefreshWdg):
 
 
         show_pointer = self.kwargs.get("show_pointer")
+        show_pointer = False
         if not show_header:
             show_pointer = False
 

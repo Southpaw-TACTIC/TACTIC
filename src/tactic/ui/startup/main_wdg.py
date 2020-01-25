@@ -403,6 +403,7 @@ class MainWdg(BaseRefreshWdg):
         # create a bunch of panels
         table = Table()
         table.add_color("color", "color")
+        table.add_style("margin: 0px auto")
         table.add_style("margin-bottom: 20px")
         table.center()
         top.add(table)

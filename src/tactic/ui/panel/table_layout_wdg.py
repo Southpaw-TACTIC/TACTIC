@@ -2246,6 +2246,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             tr.add_color("background", "background", -2)
             border_color = table.get_color("table_border", 0, default="border")
+            tr.add_color("color", "color", 8)
 
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
@@ -2426,6 +2427,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             if self.mode == 'widget':
                 value = widget.get_title()
+                if isinstance(value, six.string_types):
+                    d = DivWdg()
+                    d. add_style("margin-top: 6px")
+                    d.add(value)
+                    value = d
             else:
                 element = widget.get_name()
                 value = Common.get_display_title(element)
@@ -5572,6 +5578,8 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
+    clone.setStyle("background-color", "var(--spt_palette_background)");
+    clone.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.1)");
 
     return clone;
 

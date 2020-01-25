@@ -3328,6 +3328,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add_style("margin-left: auto")
         msg_div.add_style("margin-right: auto")
         msg_div.add_style("margin-top: -260px")
+        msg_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
 
         if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
@@ -3342,17 +3343,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 msg.add("<br/>"*2)
                 msg.add(no_results_msg)
 
-            elif self.get_show_insert():
-                msg.add("<br/><br/>Click on the &nbsp;")
-                icon = IconWdg("Add", "FA_PLUS")
-                msg.add(icon)
-                msg.add(" button to add new items")
-                msg.add("<br/>")
-                msg.add("or ")
-                msg.add("alter search criteria for new search.")
             else:
                 msg.add("<br/>"*2)
-                msg.add("Alter search criteria for new search.")
+                msg.add("Alter filters for new search.")
 
         msg_div.add(msg)
 
