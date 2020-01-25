@@ -118,8 +118,6 @@ class TopWdg(Widget):
             var mouse = evt.client;
             var target = evt.target;
 
-
-            
             var targets = [];
             var count = 0;
             while (target) {

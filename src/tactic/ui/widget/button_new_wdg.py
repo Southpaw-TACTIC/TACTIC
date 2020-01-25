@@ -958,7 +958,7 @@ class ActionButtonWdgOldX(DivWdg):
 
 
 __all__.extend(['BootstrapButtonWdg'])
-class BootstrapButtonWdg(DivWdg):
+class BootstrapButtonWdg(BaseRefreshWdg):
     
     ARGS_KEYS = {
         'title': {
@@ -1024,17 +1024,26 @@ class BootstrapButtonWdg(DivWdg):
         title = self.kwargs.get("title")
 
         top = self.top
+        top.add_style("display: inline-block")
         
         top.add(self.button_wdg)
-        btn_class = self.kwargs.get("btn_class") or "btn btn-primary"
+        self.button_wdg.add_class("btn")
+        btn_class = self.kwargs.get("btn_class")
+        if not btn_class:
+            btn_class = self.kwargs.get("color")
+            if btn_class:
+                btn_class = "btn-%s" % btn_class
+        if not btn_class:
+            btn_class = "btn-primary"
+
         self.button_wdg.add_class(btn_class)
         self.button_wdg.add_class("spt_hit_wdg")
         self.button_wdg.add(title)
         self.button_wdg.add_behavior ( {
             "type": "load",
-            "cbjs_action": """
+            "cbjs_action": '''
                 $(bvr.src_el).bmdRipples();
-            """
+            '''
         } )
 
         

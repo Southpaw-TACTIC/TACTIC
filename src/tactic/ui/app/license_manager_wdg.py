@@ -53,9 +53,11 @@ class LicenseManagerWdg(BaseRefreshWdg):
         content.add_style("width: 600px")
         content.add_style("margin-left: auto")
         content.add_style("margin-right: auto")
+
         
         from tactic.ui.container import PopupWdg
         if use_popup:
+            div.add_style("position: absolute")
             popup = PopupWdg(id="LicenseManagerWdg", width="500px", allow_page_activity="false", display='true', zstart=10000, allow_close=self.allow_close)
             popup.add("License Manager", "title")
 

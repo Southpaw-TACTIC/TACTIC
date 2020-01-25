@@ -240,7 +240,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         hint = None
 
         if title == "Behaviors":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
             data = '''<behavior class="custom_css_class">
                     { "type": "click_up", 
                     "cbjs_action": "spt.alert('clicked')"}
@@ -249,7 +249,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     
           
         elif title == "Styles":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
             data = '''
 .frame_container {
             border: 1px solid #000000;
@@ -261,7 +261,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 }
 '''
         elif title == "Options":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
             data = '''
     This is where you can define options for your Custom Layout with Type set to column:
 
@@ -277,7 +277,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
            
             
         elif title == "HTML":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
 
             data = '''<div><div><b>Layout Title</b></div><br/>
 <%
@@ -842,8 +842,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     #icon.add_style("margin-top: -2px")
                     #icon.add_style("margin-left: -5px")
 
-                    icon = IconWdg(folder, "FA_FOLDER_OPEN", inline=False, size=12)
-                    icon.add_style("margin-top: 0px")
+                    icon = IconWdg(folder, "FAR_FOLDER_OPEN", inline=False, size=12)
+                    icon.add_style("margin-top: 1px")
                     icon.add_style("margin-left: -3px")
                     icon.add_style("margin-right: 3px")
 
@@ -899,10 +899,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             else:
                 config_div.add_style("padding-left: 5px")
 
+            config_div.add_style("display: flex")
+            config_div.add_style("align-items: center")
+
             config_div.add_class("spt_custom_layout_item")
-            #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
             icon = IconWdg("Custom Layout View", "FAR_FILE", inline=False, size=12)
-            icon.add_style("margin-right: 1px")
+            icon.add_style("margin-right: 5px")
             icon.add_style("opacity: 0.8")
             config_div.add(icon)
 
@@ -2151,7 +2153,7 @@ spt.custom_layout_editor.add_recent_item = function(data) {
 
 
         #help_button = ButtonNewWdg(title="Help", icon=IconWdg.HELP)
-        help_button = ButtonNewWdg(title="Help", icon="FA_QUESTION_CIRCLE_O")
+        help_button = ButtonNewWdg(title="Help", icon="FAR_QUESTION_CIRCLE")
         button_row.add(help_button)
         help_button.add_behavior( {
             'type': 'click_up',

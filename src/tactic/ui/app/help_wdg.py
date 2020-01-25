@@ -20,7 +20,7 @@ from pyasm.search import Search, SearchType
 from pyasm.command import Command
 
 from tactic.ui.common import BaseRefreshWdg
-from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg
+from tactic.ui.widget import ActionButtonWdg, SingleButtonWdg, IconButtonWdg, ButtonNewWdg
 
 import types, os
 import re
@@ -59,9 +59,9 @@ class HelpButtonWdg(BaseRefreshWdg):
 
         if self.kwargs.get("use_icon"):
             #help_button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
-            help_button = IconButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
+            help_button = ButtonNewWdg(title='Help', icon="FAR_QUESTION_CIRCLE", show_arrow=False)
         else:
-            help_button = ActionButtonWdg(title="?", tip=description, size='small')
+            help_button = ActionButtonWdg(title="Help", tip=description, size='small', color="secondary")
         top.add(help_button)
 
         if not self.cbjs_action:

@@ -3328,6 +3328,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add_style("margin-left: auto")
         msg_div.add_style("margin-right: auto")
         msg_div.add_style("margin-top: -260px")
+        msg_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
 
         if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
