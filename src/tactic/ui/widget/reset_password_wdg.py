@@ -367,11 +367,11 @@ class SendPasswordResetCmd(Command):
             url.set_option("code", auto_password)
             url = url.to_string()
             if reset:
-                email_msg = 'Your TACTIC password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (auto_password, url)
-                subject = 'TACTIC password change'
+                email_msg = 'Hello %s,\nYour ADVANTAQ CompliantCIF password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (self.login, auto_password, url)
+                subject = 'ADVANTAQ CompliantCIF password change'
             else:
-                email_msg = "You've been invited to a TACTIC project. Visit the following URL to set a password: \n\n%s" % (url)
-                subject = 'TACTIC project invitation'
+                email_msg = "Hello %s,\nYou've been invited to ADVANTAQ CompliantCIF. Visit the following URL to set a password: \n\n%s" % (self.login, url)
+                subject = 'ADVANTAQ CompliantCIF Invitation'
             email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject=subject)
 
             data = login.get_json_value("data", default={})
