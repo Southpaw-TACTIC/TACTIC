@@ -2038,7 +2038,8 @@ spt.custom_layout_editor.add_recent_item = function(data) {
             top.setAttribute("spt_view", view);
 
             spt.custom_layout_editor.set_top(top);
-            spt.custom_layout_editor.refresh();
+
+            spt.notify.show_message("View Saved");
 
             '''
         } )

@@ -400,7 +400,7 @@ class DirListWdg(BaseRefreshWdg):
             icon_div = DivWdg()
             dir_title.add(icon_div)
 
-            icon = IconWdg("%s" % base_dir, "FA_FOLDER_O")
+            icon = IconWdg("%s" % base_dir, "FA_FOLDER_OPEN")
             icon_div.add(icon)
             icon_div.add_style("float: left")
 
@@ -408,6 +408,7 @@ class DirListWdg(BaseRefreshWdg):
             display_dir = os.path.basename(display_dir)
 
             title_div = FloatDivWdg("%s" % display_dir)
+            title_div.add_style("margin-left: 5px")
             dir_title.add(title_div)
             title_div.add_style("padding-top: 2px")
             
@@ -655,7 +656,6 @@ class DirListWdg(BaseRefreshWdg):
             item_div.add_attr("spt_basename", item)
 
             item_div.add_style("float: left")
-            item_div.add_style("margin-left: 3px")
             item_div.add_class("spt_dir")
             self.handle_dir_div(item_div, dir, item)
         else:
@@ -805,8 +805,8 @@ class DirListWdg(BaseRefreshWdg):
     def _get_file_item(self, dirname, basename):
 
         item_div = DivWdg()
-        item_div.add_class("spt_item");
-        item_div.add_class("spt_file_item");
+        item_div.add_class("spt_item")
+        item_div.add_class("spt_file_item")
         item_div.add_attr("spt_path", "%s/%s" % (dirname, basename) )
         item_div.add_attr("spt_dirname", dirname)
         item_div.add_attr("spt_basename", basename)
@@ -856,6 +856,7 @@ class DirListWdg(BaseRefreshWdg):
             filename_div.add(basename)
             filename_div.add_style("float: left")
             filename_div.add_style("overflow: hidden")
+            filename_div.add_style("margin-left: 5px")
 
 
             size = self.info.get('size')
@@ -880,6 +881,7 @@ class DirListWdg(BaseRefreshWdg):
         span.add(self.get_dirname(dirname, basename))
         span.add_class("spt_value")
         span.add_class("spt_dir_value")
+        span.add_style("margin-left: 5px")
         dir_div.add(span)
 
 
@@ -903,6 +905,7 @@ class DirListWdg(BaseRefreshWdg):
         icon_div.add(icon)
         icon_div.add_style("float: left")
         icon_div.add_style("margin-top: -1px")
+        icon_div.add_style("margin-right: 5px")
 
         # add the file name
         filename_div = DivWdg()
@@ -910,6 +913,7 @@ class DirListWdg(BaseRefreshWdg):
         filename_div.add(self.get_basename(dirname, basename) )
         filename_div.add_style("float: left")
         filename_div.add_style("overflow: hidden")
+        filename_div.add_style("margin-left: 5px")
         filename_div.add_class("spt_item_value")
 
 
@@ -1094,12 +1098,12 @@ class DirListWdg(BaseRefreshWdg):
 
 
     def get_file_icon(self, dir, item):
-        return "FA_FILE_O"
+        return "FA_FILE"
 
 
 
     def get_dir_icon(self, dir, item):
-        return "FA_FOLDER_O"
+        return "FA_FOLDER_OPEN"
 
 
 
@@ -1653,7 +1657,7 @@ class FileIngestCmd(DatabaseAction):
         # autoname code
         if not self.sobject.get_value("code"):
             basename = os.path.basename(dirs[0])
-            self.sobject.set_value("code", basename);
+            self.sobject.set_value("code", basename)
             self.sobject.commit()
 
 
