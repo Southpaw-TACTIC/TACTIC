@@ -2279,6 +2279,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     attr = None
 
         else:
+            if ret_val == []:
+                return
 
             if isinstance(ret_val, basestring):
                 ret_val = [ret_val]
