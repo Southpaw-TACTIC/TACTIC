@@ -1233,13 +1233,10 @@ class CollectionContentWdg(BaseRefreshWdg):
                     '''
                 } )
                     
-                #title_div.add("/ %s" % collection.get_value("name") )
 
-        #scale_wdg = tile.get_scale_wdg()
-        #top.add(scale_wdg)
-        #scale_wdg.add_style("float: right")
 
         top.add(self.get_header_wdg())
+        top.add("<br clear='all'/>")
 
         top.add(tile)
 
@@ -1567,7 +1564,7 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("position: absolute")
             count_div.add_style("text-align: center")
             count_div.add_style("margin-left: 23px")
-            count_div.add_style("margin-top: -8px")
+            count_div.add_style("margin-top: -6px")
             count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
             
             expression = "@COUNT(%s['parent_code','%s'])" % (collection_type, collection.get_code())

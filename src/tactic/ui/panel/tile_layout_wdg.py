@@ -360,8 +360,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_tile_layout_top")
         if self.top_styles:
             div.add_styles(self.top_styles)
+
+
         inner = DivWdg()
         div.add(inner)
+        inner.add_style("display: flex")
 
 
         
@@ -1812,12 +1815,16 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         css += """
             .spt_tile_tool_top {
-                position: relative;
+                position: absolute;
                 background: #FFF;
                 color: #000;
                 height: 21px;
                 padding: 2px 5px;
-                margin-top: -26px;
+                bottom: 0px;
+                width: 100%;
+                box-sizing: border-box;
+                border-top: solid 1px #DDD;
+                opacity: 0.9;
                 
             }
        
@@ -1863,12 +1870,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                 position: relative;
                 verticial-align: top;
                 overflow: hidden;
-                float: left;
                 display: inline-block;
                 position: relative;
+
+                box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+                border-radius: 5px;
+                overflow: hidden;
+                box-sizing: border-box;
+                border: solid 1px %s
             }
 
-        """ % (self.spacing, self.spacing)
+        """ % (self.spacing, self.spacing, style.get_color("border"))
         
         css += """
             .spt_default_tile_title {
@@ -1998,7 +2010,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         thumb = self.get_template_thumb_wdg()
         thumb_div.add(thumb)
-        thumb_div.add_border()
         thumb.add_style("margin-top: 30%")
         thumb.add_style("transform: translate(0%, -50%)")
 
@@ -2018,7 +2029,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         tool_div.add(href)
         href.add_attr("download", "")
 
-        icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+        icon = IconWdg(name="Download", icon="FA_DOWNLOAD")
         icon.add_class("hand")
         href.add(icon)
 
@@ -2273,7 +2284,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div = DivWdg()
 
-        
         div.add_class("spt_tile_top")
         div.add_class("unselectable")
         div.add_style('margin-bottom', self.spacing)
@@ -2378,8 +2388,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         # FIXME: for some reason, the hidden overflow is not respected here
         thumb.add_style("margin-top: 30%")
         thumb.add_style("transform: translate(0%, -50%)")
-        #thumb.add_style("border: solid 2px blue")
-        #thumb_div.add_style("border: solid 2px red")
 
 
         # add a div on the bottom
@@ -2407,9 +2415,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-            #tool_div.add_style("position: absolute")
             tool_div.add_style("position: relative")
-            #tool_div.add_style("top: 30px")
             tool_div.add_style("background: #FFF")
             tool_div.add_style("color: #000")
             tool_div.add_style("height: 21px")
@@ -2433,19 +2439,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                 href.add_attr("download", basename)
 
 
-                icon = IconWdg(name="Download", icon="BS_DOWNLOAD")
+                icon = IconWdg(name="Download", icon="FA_DOWNLOAD")
                 icon.add_class("hand")
                 href.add(icon)
-                """
-                icon.add_behavior( {
-                    'type': 'clickX',
-                    'path': path,
-                    'cbjs_action': '''
-                    alert(bvr.path); 
-                    '''
-                } )
-                """
-
 
 
 
