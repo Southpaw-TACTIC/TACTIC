@@ -477,7 +477,10 @@ class GlobalSearchTrigger(Trigger):
 
 
         # Existing "collection" keywords in parent's keywords_data
-        parent_keywords_data = parent_sobject.get_json_value("keywords_data", {})
+        if parent_sobject:
+            parent_keywords_data = parent_sobject.get_json_value("keywords_data", {})
+        else:
+            parent_keywords_data = {}
 
         # keywords of parent
         parent_collection_keywords = parent_keywords_data.get('user')

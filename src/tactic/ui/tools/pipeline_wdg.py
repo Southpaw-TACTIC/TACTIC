@@ -8264,9 +8264,16 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
             var pipeline_code = spt.pipeline.get_current_group();
             var pipeline_xml = spt.pipeline.export_group(pipeline_code);
+            var nodes = spt.pipeline.get_all_nodes();
+            var nodes_properties = {};
+            for (var i=0; i<nodes.length; i++) {
+                var node_name = spt.pipeline.get_node_name(nodes[i]);
+                nodes_properties[node_name] = spt.pipeline.get_node_kwargs(nodes[i]);
+            }
             args = {
                 pipeline_code: pipeline_code,
-                pipeline_xml: pipeline_xml
+                pipeline_xml: pipeline_xml,
+                nodes_properties: nodes_properties
             }
             kwargs = {
                 width: 900

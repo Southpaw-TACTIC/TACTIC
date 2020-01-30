@@ -20,6 +20,7 @@ from pyasm.common import Environment
 from PIL import Image, ImageEnhance, ImageChops, ImageFont, ImageDraw
 import types
 import os
+import six
 
 class Watermark(object):
 
@@ -65,10 +66,10 @@ class Watermark(object):
 
 
     def generate(self, texts, font_sizes=15):
-        if isinstance(texts, basestring):
+        if isinstance(texts, six.string_types):
             texts = [texts]
 
-        if type(font_sizes) == types.IntType:
+        if isinstance(font_sizes, int):
             font_sizes = [font_sizes]
 
         font_size = font_sizes[0]
@@ -106,7 +107,7 @@ class Watermark(object):
         s_in = None
         try:
             #s_in = StringIO(filter.read())
-            s_in = open(in_path)
+            s_in = open(in_path, 'rb')
             im_in = Image.open(s_in)
             if im_in.size[0] <= 120 and im_in.size[1] <= 80:
                 return

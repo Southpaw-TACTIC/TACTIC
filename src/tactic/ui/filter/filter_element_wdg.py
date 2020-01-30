@@ -1212,6 +1212,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         value = self.values.get("value")
         if value:
             text.set_value(value)
+            text.set_hidden_value(value)
 
         text.add_behavior( {
         'type': 'keyup',

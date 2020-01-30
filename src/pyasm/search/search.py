@@ -3214,8 +3214,7 @@ class SObject(object):
             return value
 
         if value.startswith("zlib:"):
-            import zlib, binascii
-            value = zlib.decompress( binascii.unhexlify(value[5:]) )
+            value = Common.decompress_transaction(value)
 
         if value.strip():
             try:
@@ -3242,12 +3241,8 @@ class SObject(object):
         length_before = len(data)
         cutoff = 10*1024
         if length_before > cutoff:
-            import zlib, binascii
-            data = Common.process_unicode_string(data)
-            data = binascii.hexlify(zlib.compress(data))
-            data = "zlib:%s" % data
-            length_after = len(data)
-            #print("transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after))
+            data = Common.compress_transaction(data)
+        
         self.set_value(name, data)
 
     
@@ -3284,8 +3279,7 @@ class SObject(object):
             value = ''
 
         if value.startswith("zlib:"):
-            import zlib, binascii
-            value = zlib.decompress( binascii.unhexlify(value[5:]) )
+            value = Common.decompress_transaction(value)
 
         xml = Xml(strip_cdata=strip_cdata)
 

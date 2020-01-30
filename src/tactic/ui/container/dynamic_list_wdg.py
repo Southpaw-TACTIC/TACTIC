@@ -195,7 +195,9 @@ spt.dynamic_list.get_top = function() {
 }
 
 spt.dynamic_list.add_item = function(src_el) {
-    var top = spt.dynamic_list.top;
+
+    var top = src_el.getParent(".spt_list_top");
+
     var template = top.getElement(".spt_list_template_item");
 
     var new_item = spt.behavior.clone(template);

@@ -1024,7 +1024,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
-spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs)
+spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={"extra_data": {}})
 {
     var table = document.id(table_id);
     var definition_view = table.getAttribute("spt_view");
@@ -2347,6 +2347,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var extra_data = target.getAttribute("spt_extra_data") || "";
     var default_data = target.getAttribute("spt_default_data") || "";
 
+    var resize_cbjs = target.getAttribute("spt_resize_cbjs") || "";
+    var reorder_cbjs = target.getAttribute("spt_reorder_cbjs") || "";
+
     var filter_view = target.getAttribute("spt_filter_view") || "";
 
     var height = target.getAttribute("spt_height") || "";
@@ -2445,6 +2448,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'default_data': default_data,
         'window_resize_offset': window_resize_offset,
         'custom_views': custom_views,
+        'resize_cbjs': resize_cbjs,
+        'reorder_cbjs': reorder_cbjs
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;

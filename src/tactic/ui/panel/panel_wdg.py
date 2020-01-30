@@ -3323,6 +3323,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         search = self.kwargs.get("search")
 
+        resize_cbjs = self.kwargs.get("resize_cbjs")
+        reorder_cbjs = self.kwargs.get("reorder_cbjs")
+
         kwargs = {
             "table_id": table_id,
             "search": search,
@@ -3407,7 +3410,9 @@ class ViewPanelWdg(BaseRefreshWdg):
             "layout_switcher_custom_views": layout_switcher_custom_views,
             "default_views": default_views,
             "name": name,
-            "column_widths": column_widths
+            "column_widths": column_widths,
+            "resize_cbjs": resize_cbjs,
+            "reorder_cbjs": reorder_cbjs
         }
 
 
