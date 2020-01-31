@@ -552,6 +552,7 @@ spt.document.item.open_edit = function(top) {
     input.setStyle("display", "");
     top.toggled = true;
     input.value = label.getElement(".spt_group_label").innerText;
+    input.setSelectionRange(0, input.value.length);
 }
 
 spt.document.item.close_edit = function(top) {

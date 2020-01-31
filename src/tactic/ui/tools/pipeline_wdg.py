@@ -148,7 +148,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 top: 33px;
                 bottom: 0px;
                 border: 1px solid #ccc;
-                padding-top: 20px;
+                padding: 20px 0;
                 border-width: 1px 0px 1px 1px;
                 background: white;
                 overflow-y: auto;
@@ -1837,7 +1837,7 @@ class PipelineToolCanvasWdg(PipelineCanvasWdg):
         }
         widget_key = div.generate_widget_key('tactic.ui.tools.NewConnectorInfoWdg', inputs=inputs)
         behavior = {
-        'type': 'click',
+        'type': 'click_up',
         'widget_key': widget_key,
         'cbjs_action': '''
         spt.pipeline.init(bvr);
@@ -7183,6 +7183,10 @@ class PipelineEditorWdg(BaseRefreshWdg):
                 height: calc(100% - 33px);
             }
 
+            .spt_has_changes .spt_hit_wdg.spt_save_button {
+                background: var(--spt_palette_background2);
+            }
+
 
             ''')
 
@@ -7689,7 +7693,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
         
         button = ButtonNewWdg(title="Save Current Workflow", icon="FA_SAVE")
-
+        button.add_class("spt_save_button")
         button.add_behavior( {
         'type': 'click',
         'cbjs_action': '''
@@ -10026,6 +10030,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     open.setStyle("display", "none");
                     input.setStyle("display", "");
                     input.focus();
+                    input.setSelectionRange(0, input.value.length);
                 }
 
                 '''

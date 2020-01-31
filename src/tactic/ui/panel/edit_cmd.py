@@ -210,6 +210,9 @@ class EditCmd(Command):
         action_handlers = []
 
         for element_name in self.element_names:
+            if not SearchType.column_exists(self.search_type, element_name):
+                if element_name not in ["workflow"]:
+                    continue
 
             action_handler_class = \
                     config.get_action_handler(element_name)
@@ -342,6 +345,7 @@ class EditCmd(Command):
                     action_handler.set_option('connect_key', self.connect_key)
                 action_handler.execute()
                 
+        sobject.commit(triggers=self.trigger_mode)
 
         # set the parent, if there is one and it's in insert
         if sobject.is_insert() and self.parent_key:
@@ -357,7 +361,7 @@ class EditCmd(Command):
         update_data = sobject.update_data
         for key, value in update_data.items():
             # don't include None
-            if value != None:
+            if value and SearchType.column_exists(self.search_type, key):
                 self.info[key] = value
 
 
