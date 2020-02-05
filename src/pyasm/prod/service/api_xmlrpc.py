@@ -5479,8 +5479,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp.setrelheap()
         '''
 
-
-
         security = Environment.get_security()
         project_code = Project.get_project_code()
         has_key = False

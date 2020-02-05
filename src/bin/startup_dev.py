@@ -83,7 +83,7 @@ def startup(port, server=""):
         
         startup.set_config('global', 'server.socket_queue_size', 100)
         startup.set_config('global', 'server.thread_pool', 50)
-        #startup.set_config('global', 'server.socket_host', server)
+
 
         startup.set_config('global', 'log.screen', False)
 

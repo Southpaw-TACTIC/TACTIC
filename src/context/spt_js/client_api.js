@@ -1883,6 +1883,8 @@ TacticServerStub = function() {
                 e = 'Timeout Error (Error 502)';
             else if (e == 503)
                 e = 'Service is unavailable (Error 503)';
+            else if (e == 504)
+                e = 'Gateway Timeout error (Error 504)';
 
             if (!on_error) {
                 on_error = kwargs['on_error'];

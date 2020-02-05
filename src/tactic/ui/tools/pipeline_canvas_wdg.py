@@ -1609,7 +1609,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             icon_div = DivWdg()
             node.add(icon_div)
-            icon = IconButtonWdg(name="Expand", icon="BS_ARROW_DOWN")
+            icon = IconButtonWdg(name="Expand", icon="FA_ARROW_DOWN")
             icon_div.add(icon)
             icon_div.add_style("margin: 0px auto")
             icon_div.add_style("top: 40px")
