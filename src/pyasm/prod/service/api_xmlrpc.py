@@ -5481,25 +5481,27 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         security = Environment.get_security()
         project_code = Project.get_project_code()
-        has_key = False
 
         if isinstance(class_name, basestring):
             if class_name.startswith("$"):
-                has_key = True
                 class_name, inputs, ticket = decode_security_key(class_name, "widget")
-                for k, v in args.items():
-                    inputs_v = inputs.get(k)
-                    if isinstance(inputs_v, six.string_types) and "&amp;" in inputs_v:
-                        inputs_v = inputs_v.replace("&amp;", "&")
+                if Config.get_value("security", "api_widget_restricted") == "true":
+                    for k, v in args.items():
+                        inputs_v = inputs.get(k)
+                        if inputs_v:
+                            if isinstance(inputs_v, six.basestring) and "&amp;" in inputs_v:
+                                inputs_v = inputs_v.replace("&amp;", "&")
 
-                    if v != inputs_v:
-                        if inputs.get(k) == "__WIDGET_UNKNOWN__":
-                            inputs[k] = v
+                            if v != inputs_v:
+                                if inputs.get(k) == "__WIDGET_UNKNOWN__":
+                                    inputs[k] = v
+                                else:
+                                    raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
                         else:
                             raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
             
-            if Config.get_value("security", "api_widget_restricted") == "true":
-                if not has_key:
+            else:
+                if Config.get_value("security", "api_widget_restricted") == "true":
                     key = "widget/%s" % (class_name)
                     access_key = {
                         'key': key,

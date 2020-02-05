@@ -238,7 +238,6 @@ class EditWdg(BaseRefreshWdg):
                 self.mode = 'insert'
             else:
                 self.mode = 'edit'
-
         elif self.expression:
             sobject = Search.eval(self.expression, single=True)
             self.search_id = sobject.get_id()
@@ -1174,6 +1173,7 @@ class EditWdg(BaseRefreshWdg):
 
 
         search_key = SearchKey.get_by_sobject(self.sobjects[0], use_id=True)
+        search_key_wo_id = SearchKey.get_by_sobject(self.sobjects[0])
         search_type = self.sobjects[0].get_base_search_type()
 
 
@@ -1251,7 +1251,9 @@ class EditWdg(BaseRefreshWdg):
             cbjs_insert = '''
             spt.edit.edit_form_cbk(evt, bvr);
             spt.notify.show_message("%s item complete.");
-            '''%mode_label
+            var kwargs = {options: {search_keys: "%s"}};
+            spt.named_events.fire_event("delete|workflow/job", kwargs);
+            '''% (mode_label, search_key_wo_id)
 
         save_event = self.kwargs.get('save_event')
         if not save_event:

@@ -1316,7 +1316,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("position: absolute")
         #canvas.add_style("border: solid 1px red")
         canvas.add_style("top: 0px")
-        canvas.add_style("right: 0px")
         canvas.set_attr("width", "600")
         canvas.set_attr("height", "600")
         canvas.set_attr("spt_background_color", self.background_color)
@@ -5841,8 +5840,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    scale = scale * 0.95;
-    //scale = 1.0
+    scale = scale * 0.9;
     if (scale > 1.0) {
         scale = 1.0;
     }
