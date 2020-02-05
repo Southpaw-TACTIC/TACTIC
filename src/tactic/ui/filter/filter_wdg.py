@@ -1178,19 +1178,20 @@ class GeneralFilterWdg(BaseFilterWdg):
             var search_button = table.getElement(".spt_table_search_button");
             var offset = search_button.getPosition();
             var size = search_button.getSize();
-            offset = {x:offset.x-265, y:offset.y+size.y+10};
+            offset = {x:offset.x, y:offset.y};
 
             var body = document.id(document.body);
             var scroll_top = body.scrollTop;
             var scroll_left = body.scrollLeft;
-            offset.y = offset.y - scroll_top;
-            offset.x = offset.x - scroll_left;
-            dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
+            if (scroll_top != 0 && scroll_left != 0) {
+                offset.y = offset.y - scroll_top;
+                offset.x = offset.x - scroll_left;
+                dialog.position({position: 'upperleft', relativeTo: table, offset: offset});
+            }
             
             spt.toggle_show_hide(dialog);
 
-            if (spt.is_shown(dialog))
-                spt.body.add_focus_element(dialog);
+            if (spt.is_shown(dialog)) spt.body.add_focus_element(dialog);
 
             '''
         } )

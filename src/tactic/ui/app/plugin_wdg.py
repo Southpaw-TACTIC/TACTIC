@@ -35,6 +35,7 @@ class PluginWdg(BaseRefreshWdg):
 
         div = DivWdg()
         div.add_class("spt_plugin_top")
+        div.add_attr("clear", "all")
         self.set_as_panel(div)
         #div.add_style("margin-top: 3px")
 
@@ -52,8 +53,6 @@ class PluginWdg(BaseRefreshWdg):
 
         inner.add(table)
         table.add_style("display: flex")
-        table.add_style("align-items: stretch")
-        table.add_style("align-content: stretch")
 
         table.add_behavior( {
             'type': 'load',
@@ -68,28 +67,18 @@ class PluginWdg(BaseRefreshWdg):
         } )
 
         table.add_color("color", "color")
-        table.add_style("margin: 0px -1px")
+        table.add_style("margin: 0px")
         table.add_style("height: 100%")
 
         #table.add_row()
         #left = table.add_cell()
         left = DivWdg()
         table.add(left)
-        left.add_style("display: inline-block")
-        left.add_style("height: 100%")
         left.add_style("overflow: auto")
 
-        left.add_style("vertical-align: top")
-        left.add_style("min-width: 275px")
+        left.add_style("width: 20%")
         left.add_style("padding: 0px")
         left.add_color("background", "background3")
-        left.add_style("border-color", left.get_color("border"))
-        left.add_style("border-style", "solid")
-        left.add_style("border-width", "1px 0px 1px 1px")
-
-
-        table.add_class("spt_window_resize")
-        table.add_attr("spt_window_resize_offset", "73")
 
 
 
@@ -113,15 +102,10 @@ class PluginWdg(BaseRefreshWdg):
         #right = table.add_cell()
         right = DivWdg()
         table.add(right)
-        right.add_style("display: inline-block")
         right.add_style("height: auto")
-
-        right.add_style("vertical-align: top")
-        right.add_style("min-width: 400px")
-        right.add_style("width: 100%")
+        right.add_style("width: 80%")
         right.add_style("padding: 5px")
         #right.add_style("margin-left: -1px")
-        right.add_border()
 
         plugin_dir = self.kwargs.get("plugin_dir")
         edit = PluginEditWdg(plugin_dir=plugin_dir)
@@ -667,14 +651,13 @@ class PluginEditWdg(BaseRefreshWdg):
         top = self.top
         self.set_as_panel(top)
         top.add_class("spt_plugin_edit")
-
-        top.add_style("min-width: 600px")
+        top.add_style("height: 100%")
+        top.add_style("width: calc(100% - 5px)")
 
         title_wdg = DivWdg()
         top.add(title_wdg)
         title_wdg.add_style("font-size: 14px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_style("margin: -5 -5 10px -5")
         title_wdg.add_style("padding: 10px 15px 10px 15px")
         title_wdg.add_color("background", "background", 0, -10)
 
@@ -751,7 +734,6 @@ class PluginEditWdg(BaseRefreshWdg):
         info_div.add_color("background", "background")
         info_div.set_name("info")
         info_div.add_style("height: 50px")
-        info_div.add_style("margin: 0px 20px 10px 20px")
 
         if self.mode == "insert":
             info_div.add("<br/>"*2)
@@ -759,18 +741,20 @@ class PluginEditWdg(BaseRefreshWdg):
             info_div.add("<br/>"*2)
 
 
+        table_div = DivWdg()
+        info_div.add(table_div)
+        table_div.add_style("width: 100%")
+
         table = Table()
-        info_div.add(table)
+        table_div.add(table)
         table.add_color("color", "color")
-        table.add_style("height: 320px")
+        table.add_style("margin: 10px auto")
         table.set_unique_id()
 
-        table.add_smart_style("spt_table_header", "width", "200px")
         table.add_smart_style("spt_table_header", "text-align", "right")
         table.add_smart_style("spt_table_header", "padding-right", "20px")
         table.add_smart_style("spt_table_header", "margin-bottom", "10px")
-        table.add_smart_style("spt_table_header", "vertical-align", "top")
-        table.add_smart_style("spt_table_element", "vertical-align", "top")
+        table.add_smart_style("spt_table_element", "width", "400px")
 
 
         #if self.mode == 'insert':
@@ -964,7 +948,6 @@ class PluginEditWdg(BaseRefreshWdg):
         dir_div = DivWdg()
         tab.add(dir_div)
         dir_div.set_name("files")
-        dir_div.add_style("padding: 5px 15px 15px 15px")
 
 
         if self.mode != 'insert':
@@ -972,10 +955,10 @@ class PluginEditWdg(BaseRefreshWdg):
             title_wdg = DivWdg()
             dir_div.add(title_wdg)
             title_wdg.add_color("background", "background3")
-            title_wdg.add_style("margin: -5 -16 15 -16")
             title_wdg.add_style("padding: 5px")
-            title_wdg.add_style("height: 40px")
-            title_wdg.add_border()
+            title_wdg.add_style("height: 50px")
+            title_wdg.add_style("display: flex")
+            title_wdg.add_style("align-items: center")
 
             button_row = ButtonRowWdg()
             title_wdg.add(button_row)
@@ -1097,6 +1080,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             dir_div.add_color("background", "background")
             dir_list = PluginDirListWdg(base_dir=self.plugin_dir, location="server", plugin_dirname=dirname, ignore=['.svn'])
+            dir_list.add_style("margin: 5px 10px")
             dir_div.add(dir_list)
 
         else:
@@ -1122,15 +1106,23 @@ class PluginEditWdg(BaseRefreshWdg):
 
         dirname = self.dirname
 
+        style = HtmlElement.style('''
+            .spt_hit_wdg {
+                margin: 0px 5px;
+            }
+        ''')
+
 
         manifest_div = DivWdg()
+        manifest_div.add(style)
 
         shelf_wdg = DivWdg()
         manifest_div.add(shelf_wdg)
-        shelf_wdg.add_style("height: 40px")
+        shelf_wdg.add_style("height: 50px")
         shelf_wdg.add_style("padding: 5px 10px")
         shelf_wdg.add_color("background", "background3")
         shelf_wdg.add_style("display: flex")
+        shelf_wdg.add_style("align-items: center")
 
 
         if self.is_active():
@@ -1159,7 +1151,6 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title='Export', tip='Export .spt Files')
             shelf_wdg.add(button)
-            button.add_style("margin: 3px 10px")
             button.add_behavior( {
             'type': 'click_up', 
             'dirname': dirname,
@@ -1246,7 +1237,6 @@ class PluginEditWdg(BaseRefreshWdg):
 
             button = ActionButtonWdg(title='Publish', tip='Publish new version')
             shelf_wdg.add(button)
-            button.add_style("margin: 3px 10px")
             button.add_behavior( {
             'type': 'click_up', 
             'from_version': self.version,
@@ -1565,9 +1555,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
         shelf_div.add_color("background", "background", -10)
         shelf_div.add_color("color", "color")
-        shelf_div.add_border()
-        shelf_div.add_style("padding: 15px 5px 0px 15px")
-        shelf_div.add_style("margin: 0px -21px 20px -21px")
+        shelf_div.add_style("padding: 15px")
 
 
         if not active:
@@ -1616,18 +1604,18 @@ class PluginEditWdg(BaseRefreshWdg):
 
         else:
             shelf_div.add(HtmlElement.b("This plugin is active in this project. Click to Remove or Reload."))
+            shelf_div.add_style("text-align: center")
             buttons_div = DivWdg()
-            buttons_div.add_style("margin-left: 200px")
+            buttons_div.add_style("align-items: center")
+            buttons_div.add_style("justify-content: center")
             remove_button = ActionButtonWdg(title='Remove', tip='Remove Plugin from current project')
+            remove_button.add_style("margin: 10px 0px")
             reload_button = ActionButtonWdg(title='Reload', tip='Reload Plugin from current project')
+            reload_button.add_style("margin: 10px 0px")
             buttons_div.add(remove_button)
             buttons_div.add(reload_button)
             shelf_div.add(buttons_div)
             buttons_div.add_style("display: flex")
-            remove_button.add_style("margin: 20px 10px")
-            remove_button.add_style("display: inline-block")
-            reload_button.add_style("margin: 20px 10px")
-            reload_button.add_style("display: inline-block")
             
             remove_button.add_behavior( {
             'type': 'click_up', 
@@ -1686,7 +1674,6 @@ class PluginEditWdg(BaseRefreshWdg):
 
             server.p_execute_cmd( class_name, kwargs )
             .then( function(ret_val) {
-                var top = bvr.src_el.getParent(".spt_plugin_top");
                 spt.notify.show_message('Plugin "'+bvr.plugin_code+'" successfully reloaded');
                 spt.panel.refresh_element(top);
             } )
@@ -1750,8 +1737,6 @@ class PluginEditWdg(BaseRefreshWdg):
             } )
             """
 
-
-        shelf_div.add("<br clear='all'/>")
         return shelf_div
 
 
@@ -1875,6 +1860,7 @@ class PluginDirListWdg(DirListWdg):
         value_div = DivWdg()
         item_div.add(value_div)
         value_div.add_class("spt_value")
+        value_div.add_style("margin-left: 5px")
         value_div.add(basename)
         SmartMenu.assign_as_local_activator( item_div, 'PLUGIN_ITEM_CTX' )
 
@@ -1905,6 +1891,7 @@ class PluginDirListWdg(DirListWdg):
         filename_div.add_class("spt_value")
         filename_div.add(basename)
         filename_div.add_style("float: left")
+        filename_div.add_style("margin-left: 5px")
         filename_div.add_style("overflow: hidden")
         filename_div.add_class("SPT_DTS")
 
