@@ -253,16 +253,16 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         var input = input_list[i];
         var name = input.name;
         var value = values[name];
-        if (typeof(value) == 'undefined') continue;
+        if (typeOf(value) == 'null') continue;
+        if (typeOf(value) == 'undefined') continue;
 
         // behavior for different input types
         if (input.type == "checkbox") {
             var expected_value = input.value || "on";
-            if (typeOf(value) == "string") {
-                input.checked = value == expected_value ? true : false;
-            } else {
-                console.log(value.contains(expected_value))
+            if (typeOf(value) == "array") {
                 input.checked = value.contains(expected_value);
+            } else {
+                input.checked = value == expected_value ? true : false;
             }
             
         } else if (input.type == "radio") {
