@@ -10612,7 +10612,7 @@ class SessionalProcess:
 
             let node = spt.pipeline.get_info_node();
             
-            top.update_data = function() {
+            top.update_data = function(replace) {
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var version = kwargs.version;
                 if (version != 2)
@@ -10621,14 +10621,19 @@ class SessionalProcess:
                 node.has_changes = true;
                 var inputs = spt.api.get_input_values(top, null, false);
                 // for refreshed panels (shouldn't need this but just in this case)
-                var section_name = top.getAttribute("section_name") || bvr.section_name;
-                var values = kwargs[section_name];
+                if (replace) {
+                    var section_name = top.getAttribute("section_name") || bvr.section_name;
+                    var values = kwargs[section_name];
 
-                for (var key in inputs) {
-                    values[key] = inputs[key];
+                    for (var key in inputs) {
+                        values[key] = inputs[key];
+                    }
+
+                    spt.pipeline.set_node_kwarg(node, section_name, values);
+                } else {
+                    spt.pipeline.set_node_kwarg(node, section_name, inputs);
                 }
-
-                spt.pipeline.set_node_kwarg(node, section_name, values);
+                
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
