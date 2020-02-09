@@ -10620,9 +10620,9 @@ class SessionalProcess:
 
                 node.has_changes = true;
                 var inputs = spt.api.get_input_values(top, null, false);
+                var section_name = top.getAttribute("section_name") || bvr.section_name;
                 // for refreshed panels (shouldn't need this but just in this case)
                 if (replace) {
-                    var section_name = top.getAttribute("section_name") || bvr.section_name;
                     var values = kwargs[section_name];
 
                     for (var key in inputs) {
