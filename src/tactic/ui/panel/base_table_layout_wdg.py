@@ -624,8 +624,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if keyword_values:
                 if self.search_type and self.simple_search_view:
                     search_config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.simple_search_view)
-                    xml = search_config.configs[0].xml
-                    cross_db = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view).text
+                    if search_config:
+                        xml = search_config.configs[0].xml
+                        cross_db = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view).text
                 else:
                     cross_db = None
 
