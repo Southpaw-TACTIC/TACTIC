@@ -649,9 +649,16 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
 
 
             // remap the bvr.src_el
-            bvr.src_el = bvr.src_el.getParent('.spt_table_top');
+            var tableTop = bvr.src_el.getParent('.spt_table_top');
+            var tableSearch = tableTop.getElement(".spt_table_search");
+            var hidden_el = tableSearch.getElement(".spt_text_value");
 
-            spt.dg_table.search_cbk(evt, bvr);
+            bvr.src_el = tableSearch.getElement(".spt_text_input_wdg");
+            bvr.src_el.setAttribute("spt_input_value", bvr.src_el.value);
+            hidden_el.setAttribute("spt_input_value", bvr.src_el.value);
+            hidden_el.value = bvr.src_el.value;
+
+            spt.dg_table.search_cbk({}, {src_el: bvr.src_el});
             return;
 
 

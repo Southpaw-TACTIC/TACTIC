@@ -1372,7 +1372,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 button.add_behavior( {
                 'type': 'click_up',
-                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
+                'cbjs_action':  '''
+                var tableTop = bvr.src_el.getParent('.spt_table_top');
+                var tableSearch = tableTop.getElement(".spt_table_search");
+                var hidden_el = tableSearch.getElement(".spt_text_value");
+
+                var src_el = tableSearch.getElement(".spt_text_input_wdg");
+                src_el.setAttribute("spt_input_value", src_el.value);
+                hidden_el.setAttribute("spt_input_value", src_el.value);
+                hidden_el.value = src_el.value;
+
+                spt.dg_table.search_cbk({}, {src_el: src_el});
+                '''
             } )
 
             button_div.add(button)

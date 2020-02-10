@@ -92,6 +92,9 @@ class BaseFilterElementWdg(BaseRefreshWdg):
     def get_set_js_action(self):
         return r'''
         var top = bvr.src_el.getParent(".spt_filter_top");
+        if (!top) {
+            return
+        }
         var set_icons = top.getElements(".spt_filter_set");
 
         for (var i = 0; i < set_icons.length; i++) {
