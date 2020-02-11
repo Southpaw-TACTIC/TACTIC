@@ -356,7 +356,25 @@ class TileLayoutWdg(ToolLayoutWdg):
    
 
     def get_content_wdg(self):
+
+        style = HtmlElement.style('''
+            .spt_tile_title {
+                top: 0;
+                height: 20px;
+                width: 100%;
+                position: absolute;
+                left: 0;
+                background: #000;
+                opacity: 0.3;
+                z-index: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: rgb(0, 0, 0) 0px 0px 15px;
+            }
+        ''')
         div = DivWdg()
+        div.add(style)
         div.add_class("spt_tile_layout_top")
         if self.top_styles:
             div.add_styles(self.top_styles)
@@ -365,6 +383,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         inner = DivWdg()
         div.add(inner)
         inner.add_style("display: flex")
+        inner.add_style("flex-wrap: wrap")
 
 
         
@@ -1414,7 +1433,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     if (row) {
 
                         var checkbox = row.getElement(".spt_tile_checkbox");
-                        var bg = row.getElement(".spt_tile_bg");
+                        var bg = row.getElement(".spt_tile_title");
 
                         if (select) {
                             checkbox.checked = true;
@@ -1440,7 +1459,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 var row = bvr.src_el.getParent(".spt_table_row");
                 var checkbox = bvr.src_el.getElement(".spt_tile_checkbox");
-                var bg = row.getElement(".spt_tile_bg");
+                var bg = row.getElement(".spt_tile_title");
 
                 if (checkbox.checked == true) {
                     checkbox.checked = false;
@@ -1512,7 +1531,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 if (row) {
 
                     var checkbox = bvr.src_el;
-                    var bg = row.getElement(".spt_tile_bg");
+                    var bg = row.getElement(".spt_tile_title");
 
                     if (select) {
                         checkbox.checked = true;
@@ -1534,7 +1553,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 }
             }
             else {
-                var bg = row.getElement(".spt_tile_bg");
+                var bg = row.getElement(".spt_tile_title");
                 if (bvr.src_el.checked) {
                     spt.table.select_row(row);
                     bg.setStyle("opacity", "0.7");
@@ -1891,6 +1910,22 @@ class TileLayoutWdg(ToolLayoutWdg):
                 left: 0;
             }
 
+            .spt_tile_title {
+                top: 0;
+                height: 20px;
+                padding: 3px;
+                width: 100%;
+                position: absolute;
+                left: 0;
+                background: #000;
+                opacity: 0.3;
+                z-index: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: rgb(0, 0, 0) 0px 0px 15px;
+            }
+
             .spt_tile_bg {
                 position: absolute;
                 top: 0;
@@ -2108,7 +2143,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             expand_div = DivWdg()
             detail_div.add(expand_div)
             expand_div.add_class("spt_tile_detail")
-            detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
+            detail = IconButtonWdg(title="Detail", icon="FA_EXPAND", size=20)
             expand_div.add(detail)
 
 
@@ -2291,6 +2326,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style('background-color','transparent')
         div.add_style('position','relative')
         div.add_style('vertical-align','top')
+        div.add_style("z-index", "0")
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
@@ -2307,14 +2343,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             else:
                 title_wdg = self.get_title(sobject)
                 div.add( title_wdg )
-
-
-            title_wdg.add_style("position: absolute")
-            title_wdg.add_style("top: 0")
-            title_wdg.add_style("left: 0")
-            title_wdg.add_style("width: 100%")
-            #title_wdg.add_style("opacity: 0.5")
-
 
         div.add_attr("spt_search_key", sobject.get_search_key(use_id=True))
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
@@ -2420,7 +2448,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             tool_div.add_style("color: #000")
             tool_div.add_style("height: 21px")
             tool_div.add_style("padding: 2px 5px")
-            tool_div.add_style("margin-top: -26px")
+            tool_div.add_style("margin-top: -21px")
             tool_div.add_border(size="0px 1px 1px 1px")
 
             path = thumb.get_path()
@@ -3082,10 +3110,47 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
         div.add_class("spt_tile_title")
 
-        #div.add_color("background", "background3")
-        div.add_style("padding: 3px")
-        div.add_style("height: 20px")
-        div.add_style("position: relative")
+        header_div = DivWdg()
+        header_div.add_class("spt_tile_select")
+        div.add(header_div)
+        header_div.add_class("SPT_DTS")
+        header_div.add_style("overflow-x: hidden")
+        header_div.add_style("overflow-y: hidden")
+        header_div.add_style("position: relative")
+        header_div.add_style("margin: 2px 3px")
+        header_div.add_style("z-index: 3")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg("select")
+        checkbox.add_class("spt_tile_checkbox")
+        header_div.add(checkbox)
+
+        title_expr = self.kwargs.get("title_expr")
+        if title_expr:
+            title = Search.eval(title_expr, sobject, single=True)
+        elif sobject.get_base_search_type() == "sthpw/snapshot":
+            title = sobject.get_value("context")
+        else:
+            title = sobject.get_value("name", no_exception=True)
+        if not title:
+            title = sobject.get_value("code", no_exception=True)
+
+
+        title_div = DivWdg()
+        div.add(title_div)
+        title_div.add(title)
+        title_div.add_attr("title", title)
+        title_div.add_style("text-overflow: ellipsis")
+        title_div.add_style("white-space: nowrap")
+        title_div.add_style("color: #FFF")
+        title_div.add_class("hand")
+
+        if self.kwargs.get("hide_checkbox") in ['true', True]:
+            checkbox.add_style("visibility: hidden")
+            title_div.add_style("left: 10px")
+
+
+        '''
 
 
         bg_wdg = DivWdg()
@@ -3099,6 +3164,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         #bg_wdg.add_style("background: rgba(0,0,0,0.3)")
         bg_wdg.add_style("background: #000")
         bg_wdg.add_style("opacity: 0.3")
+        '''
 
         '''
         status = sobject.get_value("status", no_exception=True)
@@ -3108,12 +3174,14 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             bg_wdg.add_style("background: #a3d991")
         '''
 
+        '''
         bg_wdg.set_box_shadow(color="#000")
         bg_wdg.add_style("opacity: 0.3")
 
 
         bg_wdg.add_style("z-index: 1")
         bg_wdg.add(" ")
+        '''
 
 
         #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:
@@ -3121,13 +3189,11 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         if show_detail not in [False, 'false']:
             detail_div = DivWdg()
             div.add(detail_div)
-            detail_div.add_style("float: right")
-            detail_div.add_style("margin-top: -2px")
             detail_div.add_style("position: relative")
             detail_div.add_style("z-index: 2")
 
             if sobject.get_value("_is_collection", no_exception=True) == True:
-                detail_div.add_class("spt_tile_collection");
+                detail_div.add_class("spt_tile_collection")
 
                 search_type = sobject.get_base_search_type()
                 parts = search_type.split("/")
@@ -3135,65 +3201,19 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
 
                 num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
                 detail_div.add("<div style='margin-top: 2px; float: right' class='hand badge badge-secondary'>%s</div>" % num_items)
-                detail_div.add_style("margin-right: 5px")
             else:
                 detail_div.add_class("spt_tile_detail")
                 detail_div.add_style("color: #FFF")
 
                 detail = IconButtonWdg(title="Detail", icon="FA_EXPAND")
                 detail_div.add(detail)
-                detail_div.add_style("margin-right: 3px")
 
 
-        header_div = DivWdg()
-        header_div.add_class("spt_tile_select")
-        div.add(header_div)
-        header_div.add_class("SPT_DTS")
-        header_div.add_style("overflow-x: hidden")
-        header_div.add_style("overflow-y: hidden")
-        header_div.add_style("position: relative")
-        header_div.add_style("z-index: 3");
+        
 
-        from pyasm.widget import CheckboxWdg
-        checkbox = CheckboxWdg("select")
-        checkbox.add_class("spt_tile_checkbox")
-        checkbox.add_style("margin-top: 2px")
+        
         # to prevent clicking on the checkbox directly and not turning on the yellow border
         #checkbox.add_attr("disabled","disabled")
-
-        title_expr = self.kwargs.get("title_expr")
-        if title_expr:
-            title = Search.eval(title_expr, sobject, single=True)
-        elif sobject.get_base_search_type() == "sthpw/snapshot":
-            title = sobject.get_value("context")
-        else:
-            title = sobject.get_value("name", no_exception=True)
-        if not title:
-            title = sobject.get_value("code", no_exception=True)
-      
-        table = Table()
-        header_div.add(table)
-        header_div.add_style("position: relative")
-
-        table.add_cell(checkbox)
-
-        title_div = DivWdg()
-        td = table.add_cell(title_div)
-        title_div.add(title)
-        title_div.add_style("height: 15px")
-        title_div.add_style("left: 25px")
-        title_div.add_style("top: 3px")
-        title_div.add_style("position: absolute")
-        title_div.add_attr("title", title)
-        title_div.add_style("text-overflow: ellipsis")
-        title_div.add_style("white-space: nowrap")
-        title_div.add_style("color: #FFF")
-        title_div.add("<br clear='all'/>")
-        title_div.add_class("hand")
-
-        if self.kwargs.get("hide_checkbox") in ['true', True]:
-            checkbox.add_style("visibility: hidden")
-            title_div.add_style("left: 10px")
 
         description = sobject.get_value("description", no_exception=True)
         if description:
