@@ -749,19 +749,26 @@ class Schema(SObject):
                             connect = conn
                             raise ExitLoop
             else:
+                with_path = None
                 for xpath  in xpaths:
                     connects = self.xml.get_nodes(xpath)
                     for conn in connects:
                         # at some odd times, the cached value is None
                         if conn is None:
                             continue
+
                         conn_path = self.xml.get_attribute(conn, "path")
                         if conn_path:
+                            with_path = conn
                             continue
-                        # this check is not really needed
-                        #if conn is not None:
+
                         connect = conn
                         raise ExitLoop
+
+                if with_path is not None:
+                    # just take the first one it found
+                    connect = with_path
+                    raise ExitLoop
         except ExitLoop:
             pass
 

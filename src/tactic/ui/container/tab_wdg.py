@@ -2076,8 +2076,10 @@ spt.tab.view_definition = function(bvr) {
         template_div.add(subheader)
         subheader.add_style("z-index: 3")
 
-        header.add_behavior( {
+        #header.add_behavior( {
+        header.add_relay_behavior( {
             'type': 'click',
+            'bvr_match_class': 'spt_tab_header',
             'cbjs_action': '''
 
             var header_top = bvr.src_el.getParent(".spt_tab_header_top");

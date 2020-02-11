@@ -591,11 +591,17 @@ class ThumbWdg(BaseTableElementWdg):
         if not sobject:
             return ''
 
-        div = self.top
+        div = DivWdg()
+
         div.add_style("position: relative")
         div.add_style("margin: 2px")
         div.add_class("spt_thumb_top")
         div.add_style("box-sizing: border-box")
+
+        div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        div.add_style("border-radius: 5px")
+        div.add_style("overflow: hidden")
+        div.add_style("opacity: 0.4")
 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         icon_size = self.get_icon_size()
@@ -975,9 +981,15 @@ class ThumbWdg(BaseTableElementWdg):
             link_path = ThumbWdg.get_link_path(self.info, image_link_order=self.image_link_order)
             
         # define a div
-        div = self.top
+        div = DivWdg()
         div.add_class("spt_thumb_top")
         div.set_attr('SPT_ACCEPT_DROP', 'DROP_ROW')
+
+
+        div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        div.add_style("border-radius: 5px")
+        div.add_style("overflow: hidden")
+        div.add_style("margin: 0px 3px")
 
       
         # if no link path is found, display the no icon image
