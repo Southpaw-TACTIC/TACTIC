@@ -1865,7 +1865,7 @@ TacticServerStub = function() {
                 on_error(e);
             }
             else {
-                spt.alert(e);
+                spt.alert("async_get_widget: " + e);
             }
         };
         this._delegate("get_widget", arguments, kwargs, "string", callback, err_callback);
@@ -2062,7 +2062,7 @@ TacticServerStub = function() {
                     else if (on_error)
                         on_error(e);
                     else
-                        spt.alert(e_msg);
+                        spt.alert("async_callback: " + e_msg);
                 }
             } else {
                 
