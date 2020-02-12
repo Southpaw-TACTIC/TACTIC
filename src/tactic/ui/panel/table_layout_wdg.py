@@ -6726,9 +6726,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
-    if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
-
     if (table_top) {
+        if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
         var show_select = table_top.getAttribute("spt_show_select");
         var document_mode = table_top.getAttribute("spt_document_mode");
     }
