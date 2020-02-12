@@ -902,8 +902,6 @@ class CalendarInputWdg(BaseInputWdg):
 
 
         width = self.get_option('width')
-        if not width:
-            width = 100
 
         title = self.get_display_title()
         
