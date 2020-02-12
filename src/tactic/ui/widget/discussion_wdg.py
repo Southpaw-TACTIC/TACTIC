@@ -2284,7 +2284,14 @@ class NoteWdg(BaseRefreshWdg):
                 thumb_div = DivWdg()
                 thumb_div.add_style("float: left")
                 thumb_div.add(thumb)
-                thumb_div.add_class("spt_open_thumbnail")
+
+                #thumb_div.add_class("spt_open_thumbnail")
+                # switch to the note attachment behaviour at the moment, instead of
+                # the above open thumbnail link.
+
+                thumb_div.add_class("spt_note_attachment")
+                # get the codes to the attachments
+                thumb_div.add_attr("spt_note_attachment_codes", snapshot.get_code())
                             
                 attached_div.add(thumb_div)
 
