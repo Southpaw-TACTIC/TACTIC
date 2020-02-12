@@ -1892,7 +1892,7 @@ TacticServerStub = function() {
                 on_error(e);
             }
             else {
-                spt.alert(e);
+                spt.alert("async_get_widget: " + e);
             }
         };
         passed_args = [class_name, kwargs];
@@ -2101,7 +2101,7 @@ TacticServerStub = function() {
                     else if (on_error)
                         on_error(e);
                     else
-                        spt.alert(e_msg);
+                        spt.alert("async_callback: " + e_msg);
                 }
             } else {
                 
