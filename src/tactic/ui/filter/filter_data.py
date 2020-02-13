@@ -130,7 +130,7 @@ class FilterData(object):
 
     def get_values_by_prefix(self, prefix):
         '''get data values for a specific prefix'''
-        data = [] 
+        data = []
         for values in self.data:
             if values.get('prefix') == prefix:
                 data.append(values)

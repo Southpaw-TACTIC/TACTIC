@@ -315,6 +315,7 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
     def get_display(self):
 
         div = DivWdg()
+        div.add_style("display: flex")
         #div.add_style("width: 350px")
 
         select = SelectWdg("value")
@@ -441,6 +442,7 @@ class TextFilterElementWdg(SelectFilterElementWdg):
 
     def get_display(self):
         div = DivWdg()
+        div.add_style("display: flex")
 
         text = TextWdg("value")
         if not self.kwargs.get('column'):
@@ -449,7 +451,9 @@ class TextFilterElementWdg(SelectFilterElementWdg):
             text.add_class('disabled')
 
         
-        text.add_style("width: 170px")
+        text.add_style("width: 250px")
+        text.add_style("height: 30px")
+        text.add_class("form-control")
 
         # if there is a link search already, don't use default
         if self.values and self.kwargs.get('default'):
@@ -919,7 +923,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     
                     search_type_obj = SearchType.get(search_type)
                     table = search_type_obj.get_table()
-                    
                     search = Search(overall_search.get_search_type())
                     local_table = True
                     if column.find(".") != -1:
@@ -927,6 +930,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                         search_types = parts[:-1]
                         column = parts[-1]
                         local_table = False
+
                         if self.cross_db:
                             search_types.reverse()
                             top_search_type = search_types[0]
@@ -949,6 +953,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     
                     if partial:
                         if self.cross_db:
+                            if not search2:
+                                search2 = Search(search_type)
                             search2.add_op("begin")
                             search2.add_text_search_filter(column, keywords, table=table, op=op)
                             search2.add_keyword_filter(column, keywords_list, table=table, op=partial_op)
@@ -977,11 +983,8 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                                 sub_search = search2
                         else:
                             if local_table:
-                               
                                 overall_search.add_text_search_filter(column, keywords, table=table, op=op)
-                                
-                            else:    
-                                
+                            else:
                                 search.add_text_search_filter(column, keywords, table=table, op=op)
                                 overall_search.add_relationship_search_filter(search, op="in")
                 else:

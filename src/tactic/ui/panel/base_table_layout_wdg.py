@@ -622,13 +622,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_values = filter_data.get_values_by_prefix("keyword")
 
             if keyword_values:
+                if self.search_type and self.simple_search_view:
+                    search_config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.simple_search_view)
+                    if search_config:
+                        xml = search_config.configs[0].xml
+                        cross_db = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view).text
+                else:
+                    cross_db = None
 
                 keyword_value = keyword_values[0].get('value')
+                if cross_db:
+                    keyword_values[0]['partial'] = "on"
                 if keyword_value:
                     from tactic.ui.filter import KeywordFilterElementWdg
                     keyword_filter = KeywordFilterElementWdg(
                             column=self.keyword_column,
                             mode="keyword",
+                            cross_db=cross_db
                     )
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)

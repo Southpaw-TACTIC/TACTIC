@@ -872,7 +872,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         if filter_data_map.get("handler"):
-
             handler_div = DivWdg()
             div.add(handler_div)
 
@@ -958,7 +957,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 filter_type_wdg = self.get_filter_type_wdg(column_type, filter_index, column=column)
 
 
-     
+            filter_type_wdg.add_style('display', 'flex')
             div.add( filter_type_wdg )
 
 
@@ -999,6 +998,9 @@ class GeneralFilterWdg(BaseFilterWdg):
             var top = bvr.src_el.getParent(".spt_buttons_top");
             var action_el = top.getElement(".spt_action_top");
             action_el.setStyle("display", "");
+            var pos_y = bvr.src_el.getPosition().y;
+            var height = bvr.src_el.getHeight() + pos_y;
+            action_el.setStyle(`top: ${height}`);
             spt.body.add_focus_element(action_el);
         '''
         # 'cbjs_action': '''
@@ -1101,7 +1103,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         action_div = DivWdg()
         button_div.add(action_div)
         action_div.add_class("spt_action_top")
-        action_div.add_style("position: absolute")
+        action_div.add_style("position: fixed")
         action_div.add_style("display: none")
         action_div.add_style("width: 150px")
         action_div.add_style("border: solid 1px #DDD")
