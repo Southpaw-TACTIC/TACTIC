@@ -622,13 +622,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_values = filter_data.get_values_by_prefix("keyword")
 
             if keyword_values:
+                cross_db = None
                 if self.search_type and self.simple_search_view:
                     search_config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.simple_search_view)
                     if search_config:
                         xml = search_config.configs[0].xml
-                        cross_db = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view).text
-                else:
-                    cross_db = None
+                        cross_db_node = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view)
+                        if cross_db_node is not None:
+                            cross_db = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view).text
 
                 keyword_value = keyword_values[0].get('value')
                 if cross_db:
