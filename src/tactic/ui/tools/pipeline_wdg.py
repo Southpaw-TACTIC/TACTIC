@@ -8362,7 +8362,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         from tactic.ui.app import HelpButtonWdg
         help_button = HelpButtonWdg(alias='pipeline-process-options|project-workflow-introduction')
         div.add( help_button )
-        help_button.add_style("margin-top: 7px")
+        help_button.add_style("margin-top: 2px")
         help_button.add_style("float: right")
 
 
@@ -8383,7 +8383,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
         div.add(title_div)
-        title_div.add_style("height: 20px")
         title_div.add_color("background", "background", -13)
         title_div.add_class("spt_property_title")
         if not process:
@@ -8391,8 +8390,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         else:
             title_div.add("Process: %s" % process)
         title_div.add_style("font-weight: bold")
-        title_div.add_style("margin-bottom: 5px")
-        title_div.add_style("padding: 5px")
+        title_div.add_style("padding: 10px 5px")
 
 
         # add a no process message
@@ -10614,16 +10612,28 @@ class SessionalProcess:
 
             let node = spt.pipeline.get_info_node();
             
-            top.update_data = function() {
-                var version = spt.pipeline.get_node_kwarg(node, 'version');
+            top.update_data = function(replace) {
+                var kwargs = spt.pipeline.get_node_kwargs(node);
+                var version = kwargs.version;
                 if (version != 2)
                     return;
 
                 node.has_changes = true;
                 var inputs = spt.api.get_input_values(top, null, false);
-                // for refreshed panels (shouldn't need this but just in this case)
                 var section_name = top.getAttribute("section_name") || bvr.section_name;
-                spt.pipeline.set_node_kwarg(node, section_name, inputs);
+                // for refreshed panels (shouldn't need this but just in this case)
+                if (replace) {
+                    var values = kwargs[section_name];
+
+                    for (var key in inputs) {
+                        values[key] = inputs[key];
+                    }
+
+                    spt.pipeline.set_node_kwarg(node, section_name, values);
+                } else {
+                    spt.pipeline.set_node_kwarg(node, section_name, inputs);
+                }
+                
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
