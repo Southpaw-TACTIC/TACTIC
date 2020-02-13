@@ -723,7 +723,8 @@ class DiscussionWdg(BaseRefreshWdg):
         search = Search("sthpw/note") 
         search.add_relationship_filters(self.filtered_parents, type='hierarchy')
         search.add_order_by("process")
-        search.add_order_by("context")
+        if not self.ignore_context_ordering:
+            search.add_order_by("context")
         search.add_order_by("timestamp desc")
 
         if self.process:
@@ -960,6 +961,12 @@ class DiscussionWdg(BaseRefreshWdg):
             self.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
             self.show_note_status = False
+
+        self.ignore_context_ordering = self.kwargs.get("ignore_context_ordering")
+        if self.ignore_context_ordering in ['true', True]:
+            self.ignore_context_ordering = True
+        else:
+            self.ignore_context_ordering = False
 
         #self.default_contexts_open = self.kwargs.get("default_contexts_open")
         from pyasm.web import WebContainer
@@ -2277,7 +2284,14 @@ class NoteWdg(BaseRefreshWdg):
                 thumb_div = DivWdg()
                 thumb_div.add_style("float: left")
                 thumb_div.add(thumb)
-                thumb_div.add_class("spt_open_thumbnail")
+
+                #thumb_div.add_class("spt_open_thumbnail")
+                # switch to the note attachment behaviour at the moment, instead of
+                # the above open thumbnail link.
+
+                thumb_div.add_class("spt_note_attachment")
+                # get the codes to the attachments
+                thumb_div.add_attr("spt_note_attachment_codes", snapshot.get_code())
                             
                 attached_div.add(thumb_div)
 
