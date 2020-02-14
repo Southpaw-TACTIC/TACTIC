@@ -908,9 +908,7 @@ spt.help.load_html = function(html) {
         html: html
     }
 
-    var server = TacticServerStub.get();
-    var html = server.get_widget(class_name, { args: kwargs } );
-    spt.behavior.replace_inner_html( spt.help.content, html );
+    spt.panel.load_popup("Help", class_name, kwargs, {width: "500px"});
 }
 
 
@@ -920,7 +918,7 @@ spt.help.load_alias = function(alias, history) {
 
 
     var class_name = 'tactic.ui.app.HelpContentWdg'; 
-    var kwargs = {
+    var args = {
         alias: alias
     }
     
@@ -928,23 +926,9 @@ spt.help.load_alias = function(alias, history) {
 
     spt.help.set_view(alias);
 
-    var server = TacticServerStub.get();
-    var html = server.get_widget(class_name, { args: kwargs } );
-    spt.behavior.replace_inner_html( spt.help.content, html );
-
-
-    // resize
-    var size = document.id(window).getSize();
-    var dialog = bvr.src_el.getParent(".spt_dialog_content");
-    if (dialog) {
-        dialog.setStyle("height", size.y - 100);
-        dialog.setStyle("width", 650);
-    }
-
-    if (!spt.help.is_visible() ) {
-        spt.help.show();
-    }
-
+    var popup = spt.panel.load_popup("Help", class_name, args, {width: "500px"});
+    var popup_content = popup.getElement(".spt_help_top");
+    spt.help.content = popup_content;
 
     if (typeof(history) == 'undefined') {
         history = true;
@@ -968,10 +952,6 @@ spt.help.load_alias = function(alias, history) {
 
 spt.help.load_rel_path = function(rel_path, history) {
 
-    if (!spt.help.is_visible() ) {
-        spt.help.show();
-    }
-
     var saved_path = rel_path;
     if (rel_path.indexOf("#") != -1) {
         var parts = rel_path.split("#");
@@ -988,40 +968,7 @@ spt.help.load_rel_path = function(rel_path, history) {
         rel_path: rel_path
     }
 
-    var server = TacticServerStub.get();
-    var html = server.get_widget(class_name, { args: kwargs } );
-    spt.behavior.replace_inner_html( spt.help.content, html );
-
-    // resize
-    var size = document.id(window).getSize();
-    var dialog = bvr.src_el.getParent(".spt_dialog_content");
-    dialog.setStyle("height", size.y - 100);
-    dialog.setStyle("width", 650);
-
-
-    var help_top = bvr.src_el.getElement(".spt_help_content");
-    if (help_top && tag) {
-        help_top = help_top.getChildren()[0];
-        var tag_els = help_top.getElements('a');
-        var tag_el = null;
-        for ( var i = 0; i < tag_els.length; i++) {
-            var id = tag_els[i].getAttribute("id");
-            
-            if (id == tag) {
-                tag_el = tag_els[i];
-                break;
-            }
-        }
-        if (tag_el) {
-            var pos = tag_el.getPosition(help_top);
-            
-            setTimeout( function() {
-                help_top.scrollTo(0, pos.y-30);
-            }, 0 );
-        }
-    }
-
-
+    spt.panel.load_popup("Help", class_name, kwargs, {width: "500px"});
 
     if (typeof(history) == 'undefined') {
         history = true;
@@ -1542,7 +1489,7 @@ class HelpEditWdg(BaseRefreshWdg):
             view = sobject.get_value("view")
             help_div.add(view)
 
-            help_div.add_class("hand");
+            help_div.add_class("hand")
             help_div.add_behavior( {
             'type': 'hover',
             'hover': hover,

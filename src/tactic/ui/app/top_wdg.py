@@ -158,6 +158,10 @@ class TopWdg(Widget):
                 var el = spt.body.focus_elements[i];
                 var hit = false;
 
+                if (spt.has_class(el, 'spt_popup_top')) {
+                    continue;
+                }
+
                 for (var j = 0; j < targets.length; j++) {
                     var target = targets[j];
                     if (target == el) {
