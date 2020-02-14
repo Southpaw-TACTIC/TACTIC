@@ -88,7 +88,7 @@ class ProcessInputWdg(BaseInputWdg):
 
                     return top
                     #raise TacticException('[%s] needs a pipeline_code attribute to insert task.'%parent.get_code())
-                
+
                 pipe_code = parent.get_value('pipeline_code')
                 if pipe_code:
                     self.pipeline_codes  = [pipe_code]
@@ -126,7 +126,7 @@ class ProcessInputWdg(BaseInputWdg):
                 continue
 
 
-            
+
             select = SelectWdg(name)
             select.add_empty_option("-- Select a %s --" % self.get_name() )
 
@@ -136,7 +136,7 @@ class ProcessInputWdg(BaseInputWdg):
                 select.add_behavior( { 'type': 'click',
                    'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );'
                 } )
-            
+
             if not pipeline:
                 continue
             # get the sub-pipeline processes as well
@@ -168,9 +168,9 @@ class ProcessInputWdg(BaseInputWdg):
                         values.append(process_name)
                         labels.append(process_name)
 
-            select.set_option("values", values) 
-            select.set_option("labels", labels) 
-            
+            select.set_option("values", values)
+            select.set_option("labels", labels)
+
             div.add(select)
 
             # there is only 1 select for EditWdg
@@ -200,7 +200,7 @@ class SubContextInputWdg(TextWdg):
         context = ''
         if sobject:
             context = sobject.get_value("context")
-      
+
         from tactic.ui.panel import EditWdg
         if hasattr(self, 'parent_wdg') and isinstance(self.get_parent_wdg(), EditWdg):
             # FIXME: this is added for EditWdg where the KeyboardHandler captures the key and won't let user type
@@ -215,7 +215,7 @@ class SubContextInputWdg(TextWdg):
 
         base, subcontext = context.split("/", 1)
         self.set_value(subcontext)
-               
+
         return super(SubContextInputWdg, self).get_display()
 
 
@@ -228,18 +228,18 @@ class SubContextAction(DatabaseAction):
     def postprocess(self):
 
         sobject = self.sobject
-    
+
 
         subcontext = self.get_value()
         context = sobject.get_value("context")
-        
+
         # if it is a simple context and no subcontext provided, return
         if not subcontext and context.find('/') == -1:
             return
 
-        
+
         # replace the new subcontext
-        
+
         # if existing context is empty, raise UserException
         # avoid value like '/subcontext'
 
@@ -254,14 +254,13 @@ class SubContextAction(DatabaseAction):
         elif subcontext.strip() == '':
             # the case of removing the subcontext
             context = context
-        
+
         self.sobject.set_value("context", context)
         self.sobject.commit()
 
 
 class ReviewProcessInputWdg(SelectWdg):
     '''This widget display a drop down for processes from a pipeline.'''
-
 
     def get_display(self):
 

@@ -968,7 +968,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
                         break
             """
 
-
         if not complete:
             return False
         else:
@@ -989,6 +988,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         search = Search("sthpw/message")
         search.add_filter('code', key)
         message_sobj = search.get_sobject()
+
         if message_sobj:
             message = message_sobj.get_json_value("message")
             if message not in ["complete", "not_required"]:
@@ -1378,8 +1378,6 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
 
 
-
-
     def handle_reject(self):
 
         self.log_message(self.sobject, self.process, "reject")
@@ -1430,8 +1428,8 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
 
         # if there is a task on this node, then a revise message does not go back
         # because the task is used to notify
-        if tasks:
-            return
+        #if tasks:
+        #    return
 
 
         process_obj = self.pipeline.get_process(self.process)
@@ -1687,7 +1685,6 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         if not is_complete:
             return
 
-
         # build a standard output package
         self.packages = self.get_output_packages()
 
@@ -1720,6 +1717,38 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
         if self.get_process_status(self.sobject, process) in ["not_required", "complete"]:
             return
 
+
+        # build a standard output package
+        self.packages = self.get_output_packages()
+
+        # store the state
+        self.store_state()
+
+        return super(WorkflowManualNodeHandler, self).handle_not_required()
+
+
+
+
+
+
+
+    def handle_not_required(self):
+        status = "not_required"
+
+        # restore the state of the node
+        state = self.restore_state()
+
+        pipeline = self.input.get("pipeline")
+        process = self.input.get("process")
+        sobject = self.input.get("sobject")
+
+        # Handle remapped status.
+        process_sobj = self.get_process_sobj(pipeline, process)
+        workflow = process_sobj.get_json_value("workflow", {})
+        version = workflow.get("version") or 1
+        version_2 = version in [2, '2']
+
+        properties = workflow.get("properties") or {}
 
         # build a standard output package
         self.packages = self.get_output_packages()
@@ -2531,6 +2560,8 @@ class WorkflowConditionNodeHandler(BaseWorkflowNodeHandler):
                     attr = None
 
         else:
+            if ret_val == []:
+                return
 
             if isinstance(ret_val, six.string_types):
                 ret_val = [ret_val]
