@@ -5500,15 +5500,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
                         else:
                             raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
             
-            else:
-                if Config.get_value("security", "api_widget_restricted") == "true":
-                    key = "widget/%s" % (class_name)
-                    access_key = {
-                        'key': key,
-                        'project': project_code
-                    }
-                    if not security.check_access("builtin", access_key, "allow"):
-                        raise Exception("Trying to access widgets that are not allowed, please use widget key")
+            elif Config.get_value("security", "api_widget_restricted") == "true":
+                key = "widget/%s" % (class_name)
+                access_key = {
+                    'key': key,
+                    'project': project_code
+                }
+                if not security.check_access("builtin", access_key, "allow"):
+                    raise Exception("Trying to access widgets that are not allowed, please use widget key")
 
             
 
