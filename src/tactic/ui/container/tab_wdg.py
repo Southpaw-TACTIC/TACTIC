@@ -176,8 +176,8 @@ spt.tab.resize_headers = function() {
 
     for (var i = 0; i < els.length; i++) {
         els[i].setStyle("width", width + 'px');
-        var title_el = els[i].getElement(".spt_tab_header_label");
-        title_el.setStyle("width", width + 'px');
+        //var title_el = els[i].getElement(".spt_tab_header_label");
+        els[i].setStyle("width", width + 'px');
     }
 }
 
@@ -1282,6 +1282,7 @@ spt.tab.view_definition = function(bvr) {
             style.add('''
             #%(header_id)s .spt_tab_header {
                 border-style: solid;
+                position: relative;
                 border-color: %(border)s;
                 border-width: 1px 1px 0px 1px;
                 padding: 7px 5px;
@@ -1316,31 +1317,49 @@ spt.tab.view_definition = function(bvr) {
             .nav-pills .nav-link, .nav-tabs .nav-link {
                 padding: .5em .8575em;
                 font-size: 12px;
-                height: 40px;
+                height: 33px;
             }
 
             .spt_tab_header_top {
-                height: 40px;
+                height: 33px;
             }
 
             .spt_tab_header {
-                //background: var(--spt_palette_md_primary_light);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
             }
 
             .spt_tab_header_top .spt_tab_selected {
-                height: 40px;
+                height: 33px;
+                background: var(--spt_palette_background);
+                color: #000;
+            }
+
+            .spt_tab_content_top .spt_tab_header_top .spt_tab_selected {
                 border-bottom: solid .214rem var(--spt_palette_md_secondary);
+                background: inherit;
+                color: inherit;
+            }
+
+            .spt_tab_header .nav-link {
+                width: 85%;
             }
 
             .spt_tab_header_top .spt_tab_selected .nav-link {
-                color: rgba(0,0,0,.87);
+                color: #fff;
+            }
+
+            .nav-tabs .nav-link:hover {
+                border-color: transparent;
             }
 
             .spt_tab_remove {
-                position: absolute;
-                top: 2;
-                right: 0;
                 display: none;
+            }
+
+            .spt_tab_selected .spt_tab_remove {
+                display: block;
             }
 
             .spt_tab_header:hover .spt_tab_remove {
@@ -1353,9 +1372,14 @@ spt.tab.view_definition = function(bvr) {
             }
 
             .spt_tab_header_label {
+                color: #000;
                 text-overflow: ellipsis;
                 overflow-x: hidden;
                 white-space: nowrap;
+            }
+
+            .spt_tab_selected .spt_tab_header_label {
+                color: #000 !important;
             }
 
             .spt_tab_header_count {
@@ -2129,15 +2153,23 @@ spt.tab.view_definition = function(bvr) {
 
 
     def get_add_wdg(self):
+        style = HtmlElement.style('''
+            .spt_add_tab {
+                display: flex;
+                align-items: center;
+                padding-left: 10px;
+            }
+        ''')
 
         div = DivWdg()
+        div.add(style)
         div.add_class("spt_add_tab")
 
         icon_div = DivWdg()
         icon_div.add_class("spt_add_tab_inner")
         
         from tactic.ui.widget import IconButtonWdg, ButtonNewWdg
-        icon = ButtonNewWdg(title="New Tab", icon="FA_PLUS")
+        icon = ButtonNewWdg(title="New Tab", icon="FA_PLUS", width=20)
         #icon = IconWdg("New Tab", IconWdg.PLUS)
         #icon.add_style("top: -1px")
         #icon.add_style("left: 0px")
@@ -2727,10 +2759,16 @@ spt.tab.view_definition = function(bvr) {
             icon.add_styles("padding: 2px; width: 11px")
             remove_wdg.add_style("right: 6px;")
         else:
-            icon = IconWdg("Remove Tab", "FA_TIMES", size=12)
+            from tactic.ui.widget import ButtonNewWdg
+            icon = ButtonNewWdg(icon="FA_TIMES", size=12, width=20)
         icon.add_class("spt_icon_active")
         remove_wdg.add(icon)
-        icon.add_style("margin: 3px")
+
+        divider_div = DivWdg()
+        divider_div.add_style("width: 0.5px")
+        divider_div.add_style("background: #fff")
+        divider_div.add_style("height: 20px")
+        header.add(divider_div)
         
 
        

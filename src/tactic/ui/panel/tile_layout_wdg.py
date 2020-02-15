@@ -2045,8 +2045,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         
         thumb = self.get_template_thumb_wdg()
         thumb_div.add(thumb)
-        thumb.add_style("margin-top: 30%")
-        thumb.add_style("transform: translate(0%, -50%)")
+        # thumb.add_style("margin-top: 30%")
+        # thumb.add_style("transform: translate(0%, -50%)")
 
         tool_div = DivWdg()
         div.add(tool_div)
@@ -2414,8 +2414,8 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         # FIXME: for some reason, the hidden overflow is not respected here
-        thumb.add_style("margin-top: 30%")
-        thumb.add_style("transform: translate(0%, -50%)")
+        # thumb.add_style("margin-top: 30%")
+        # thumb.add_style("transform: translate(0%, -50%)")
 
 
         # add a div on the bottom
