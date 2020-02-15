@@ -1317,11 +1317,11 @@ spt.tab.view_definition = function(bvr) {
             .nav-pills .nav-link, .nav-tabs .nav-link {
                 padding: .5em .8575em;
                 font-size: 12px;
-                height: 33px;
+                height: 31px;
             }
 
             .spt_tab_header_top {
-                height: 33px;
+                height: 31px;
             }
 
             .spt_tab_header {
@@ -1331,7 +1331,7 @@ spt.tab.view_definition = function(bvr) {
             }
 
             .spt_tab_header_top .spt_tab_selected {
-                height: 33px;
+                height: 31px;
                 background: var(--spt_palette_background);
                 color: #000;
             }
@@ -1342,20 +1342,28 @@ spt.tab.view_definition = function(bvr) {
                 color: inherit;
             }
 
-            .spt_tab_header .nav-link {
-                width: 85%;
+            .spt_popup_content .spt_tab_header_top .spt_tab_selected {
+                border-bottom: solid .214rem var(--spt_palette_md_secondary);
+                background: inherit;
+                color: inherit;
             }
 
             .spt_tab_header_top .spt_tab_selected .nav-link {
                 color: #fff;
             }
 
+            .nav-tabs .nav-link {
+                border-bottom: 0px solid transparent;
+            }
+
             .nav-tabs .nav-link:hover {
-                border-color: transparent;
+                border-bottom: 0px solid transparent;
             }
 
             .spt_tab_remove {
                 display: none;
+                position: absolute;
+                right: 5px;
             }
 
             .spt_tab_selected .spt_tab_remove {
@@ -2677,6 +2685,10 @@ spt.tab.view_definition = function(bvr) {
 
         title_container = DivWdg(css="spt_tab_header_label_container")
         title_container.add_class("nav-link")
+
+        show_remove = self.kwargs.get("show_remove")
+        if show_remove not in [False, "false"]:
+            title_container.add_style("width: 95%")
         header.add(title_container)
 
         title_div = DivWdg()
@@ -2765,7 +2777,7 @@ spt.tab.view_definition = function(bvr) {
         remove_wdg.add(icon)
 
         divider_div = DivWdg()
-        divider_div.add_style("width: 0.5px")
+        divider_div.add_style("width: 1px")
         divider_div.add_style("background: #fff")
         divider_div.add_style("height: 20px")
         header.add(divider_div)
