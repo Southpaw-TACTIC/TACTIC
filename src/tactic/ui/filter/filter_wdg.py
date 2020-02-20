@@ -890,7 +890,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         if filter_data_map.get("handler"):
-
             handler_div = DivWdg()
             div.add(handler_div)
 
@@ -978,7 +977,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 filter_type_wdg = self.get_filter_type_wdg(column_type, filter_index, column=column)
 
 
-
+            filter_type_wdg.add_style('display', 'flex')
             div.add( filter_type_wdg )
 
 
@@ -1030,6 +1029,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             body.appendChild(action_el);
             action_el.position({position: 'upperleft', relativeTo: body, offset: offset});
             action_el.setStyle("display", "");
+
             action_el.src = top;
             action_el.on_complete = function() {
                 var src = action_el.src;
@@ -1040,6 +1040,11 @@ class GeneralFilterWdg(BaseFilterWdg):
 
                 action_el.setStyle("display", "none");
             }
+
+
+            var pos_y = bvr.src_el.getPosition().y;
+            var height = bvr.src_el.getHeight() + pos_y;
+            action_el.setStyle(`top: ${height}`);
 
             spt.body.add_focus_element(action_el);
         '''
@@ -1143,7 +1148,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         action_div = DivWdg()
         button_div.add(action_div)
         action_div.add_class("spt_action_top")
-        action_div.add_style("position: absolute")
+        action_div.add_style("position: fixed")
         action_div.add_style("display: none")
         action_div.add_style("width: 150px")
         action_div.add_style("border: solid 1px #DDD")

@@ -2242,6 +2242,9 @@ class TaskDetailPipelineWdg(PipelineCanvasWdg):
 
     def get_node_context_menu(self):
 
+        return None
+
+        """
         menu = Menu(width=180)
         menu.set_allow_icons(False)
         menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
@@ -2280,6 +2283,7 @@ class TaskDetailPipelineWdg(PipelineCanvasWdg):
 
 
         return menu
+        """
 
 
 

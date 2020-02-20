@@ -561,6 +561,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
     def get_display(self):
 
+
         # fast table should use 0 chunk size
         self.chunk_size = 0
 
@@ -879,7 +880,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
 
             width = self.attributes[i].get("width")
-            
 
             if i >= len(column_widths):
                 # default width
@@ -890,7 +890,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             elif not column_widths[i]:
                 column_widths[i] = default_width
-            
+
+
         # resize the widths so that the last one is free
         expand_full_width = True
         default_width = 120
@@ -3531,6 +3532,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = self.value
 
+                ## add timezone conversion
+                ##if not SObject.is_day_column(element_name):
+                ##    element_type = SearchType.get_tactic_type(self.search_type, element_name)
+
+                ##    if element_type in ['time', 'datetime']:
+                ##        value = widget.get_timezone_value(value)
+
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
@@ -5054,7 +5062,6 @@ spt.table.add_new_item = function(kwargs) {
 
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
-
 
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
@@ -6845,9 +6852,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
-    if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
-
     if (table_top) {
+        if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
         var show_select = table_top.getAttribute("spt_show_select");
         var document_mode = table_top.getAttribute("spt_document_mode");
     }
