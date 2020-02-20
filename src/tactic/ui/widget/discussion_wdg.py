@@ -574,7 +574,9 @@ class DiscussionWdg(BaseRefreshWdg):
             attach_top.files = [];
             var attach_list = attach_top.getElement(".spt_attachment_list");
             attach_list.innerHTML = "";
-            spt.discussion.refresh(top);
+            if (bvr.refresh) {
+              spt.discussion.refresh(top);
+            }
 
             spt.app_busy.hide();
 
