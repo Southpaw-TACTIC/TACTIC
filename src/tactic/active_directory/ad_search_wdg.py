@@ -186,8 +186,8 @@ class ADSearchWdg(BaseRefreshWdg):
 
 
         python = Config.get_value('services', 'python')
-	if not python:
-	    python = 'python'
+        if not python:
+            python = 'python'
 
         has_ad = True
         if has_ad:
@@ -350,7 +350,7 @@ class ADInputWdg(BaseInputWdg):
         groups_str = self.get_option("groups_allowed_to_search")
         if groups_str:
             stmt = 'groups_list = %s' % groups_str
-            exec stmt
+            exec(stmt)
         else:
             groups_list = None
 

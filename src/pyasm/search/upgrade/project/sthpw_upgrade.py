@@ -20,6 +20,23 @@ class SthpwUpgrade(BaseUpgrade):
 
 
     #
+    # 4.8.0.a01
+    #
+
+
+    def upgrade_v4_8_0_a01_001(self):
+
+        from pyasm.search import Search
+        code = Search.eval("@GET(sthpw/search_object['code','config/authenticate'].code)")
+
+        if not code:
+            self.run_sql('''
+            INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/authenticate','config/authenticate','config','Authenticate','{project}','spt_authenticate','pyasm.security.ExternalService','Authenticate','public');
+            ''')
+
+
+
+    #
     # 4.7.0.a08
     #
 

@@ -15,8 +15,6 @@ __all__ = ["ServiceException", "BaseXMLRPC", "CreateSetAssetsCmd"]
 import shutil, os
 
 from pyasm.common import System, TacticException
-from pyasm.security import *
-from pyasm.search import *
 from pyasm.command import Command
 
 from pyasm.checkin import FileGroupCheckin

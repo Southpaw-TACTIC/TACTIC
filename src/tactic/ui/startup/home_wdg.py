@@ -313,7 +313,6 @@ class HomeWdg(BaseRefreshWdg):
             title = report.get("title")
             description = report.get("description")
 
-            #image = "<img src='/context/images/getting_started_schema.png'/>"
             image = "<img src='/context/images/getting_started_pipeline.png'/>"
 
 
