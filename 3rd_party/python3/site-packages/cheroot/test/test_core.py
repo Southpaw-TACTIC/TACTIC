@@ -52,9 +52,9 @@ class HelloController(helper.Controller):
         WSGI 1.0 is a mess around unicode. Create endpoints
         that match the PATH_INFO that it produces.
         """
-        if six.PY3:
-            return string.encode('utf-8').decode('latin-1')
-        return string
+        if six.PY2:
+            return string
+        return string.encode('utf-8').decode('latin-1')
 
     handlers = {
         '/hello': hello,
@@ -160,7 +160,7 @@ def test_parse_uri_unsafe_uri(test_client):
     response = _get_http_response(c, method='GET')
     response.begin()
     assert response.status == HTTP_OK
-    assert response.fp.read(12) == b'Hello world!'
+    assert response.read(12) == b'Hello world!'
     c.close()
 
 
@@ -175,7 +175,7 @@ def test_parse_uri_invalid_uri(test_client):
     response = _get_http_response(c, method='GET')
     response.begin()
     assert response.status == HTTP_BAD_REQUEST
-    assert response.fp.read(21) == b'Malformed Request-URI'
+    assert response.read(21) == b'Malformed Request-URI'
     c.close()
 
 
@@ -241,7 +241,7 @@ def test_no_content_length(test_client):
     c = test_client.get_connection()
     c.request('POST', '/no_body')
     response = c.getresponse()
-    actual_resp_body = response.fp.read()
+    actual_resp_body = response.read()
     actual_status = response.status
     assert actual_status == HTTP_OK
     assert actual_resp_body == b'Hello world!'
@@ -256,7 +256,7 @@ def test_content_length_required(test_client):
     c = test_client.get_connection()
     c.request('POST', '/body_required')
     response = c.getresponse()
-    response.fp.read()
+    response.read()
 
     actual_status = response.status
     assert actual_status == HTTP_LENGTH_REQUIRED
@@ -272,6 +272,10 @@ def test_content_length_required(test_client):
         (
             b'GET / HTTPS/1.1',  # invalid proto
             HTTP_BAD_REQUEST, b'Malformed Request-Line: bad protocol',
+        ),
+        (
+            b'GET / HTTP/1',  # invalid version
+            HTTP_BAD_REQUEST, b'Malformed Request-Line: bad version',
         ),
         (
             b'GET / HTTP/2.15',  # invalid ver
@@ -290,7 +294,7 @@ def test_malformed_request_line(
     response = _get_http_response(c, method='GET')
     response.begin()
     assert response.status == status_code
-    assert response.fp.read(len(expected_body)) == expected_body
+    assert response.read(len(expected_body)) == expected_body
     c.close()
 
 
@@ -304,7 +308,7 @@ def test_malformed_http_method(test_client):
     response = c.getresponse()
     actual_status = response.status
     assert actual_status == HTTP_BAD_REQUEST
-    actual_resp_body = response.fp.read(21)
+    actual_resp_body = response.read(21)
     assert actual_resp_body == b'Malformed method name'
 
 
@@ -320,7 +324,7 @@ def test_malformed_header(test_client):
     response = c.getresponse()
     actual_status = response.status
     assert actual_status == HTTP_BAD_REQUEST
-    actual_resp_body = response.fp.read(20)
+    actual_resp_body = response.read(20)
     assert actual_resp_body == b'Illegal header line.'
 
 
@@ -353,7 +357,7 @@ def test_garbage_in(test_client):
         response.begin()
         actual_status = response.status
         assert actual_status == HTTP_BAD_REQUEST
-        actual_resp_body = response.fp.read(22)
+        actual_resp_body = response.read(22)
         assert actual_resp_body == b'Malformed Request-Line'
         c.close()
     except socket.error as ex:
