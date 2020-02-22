@@ -413,13 +413,15 @@ class DiscussionWdg(BaseRefreshWdg):
             'context': '__WIDGET_UNKNOWN__',
             'search_key': '__WIDGET_UNKNOWN__',
         }
-        layout.generate_widget_key('tactic.ui.widget.DiscussionAddNoteWdg', inputs=widget_kwargs)
+        widget_key = layout.generate_widget_key('tactic.ui.widget.DiscussionAddNoteWdg', inputs=widget_kwargs)
+
         layout.add_relay_behavior( {
-            'type': 'click',
+            'type': 'mouseup',
             'bvr_match_class': match_class,
             'hidden': hidden,
             'allow_email': allow_email,
             'show_task_process': show_task_process,
+            'widget_key': widget_key,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
@@ -442,17 +444,16 @@ class DiscussionWdg(BaseRefreshWdg):
                     kwargs.upload_id = upload_id; 
                 }
 
+
                 var widget_kwargs = {
                         'hidden': bvr.hidden,
                         'allow_email': bvr.allow_email,
                         'show_task_process': bvr.show_task_process,
                     }
-                var layout = bvr.src_el.getParent(".spt_discussion_top");
-                var class_name = layout.getAttribute("SPT_WIDGET_KEY");
+                var class_name = bvr.widget_key;
                 spt.panel.load(container, class_name, kwargs, widget_kwargs,  {fade: false, async: false});
 
                 add_note = top.getElement(".spt_discussion_add_note");
-
                 //var popup = spt.panel.load_popup("Add Note", class_name, kwargs);
                 //add_note = popup.getElement(".spt_discussion_add_note");
             }
@@ -1513,9 +1514,10 @@ class DiscussionWdg(BaseRefreshWdg):
                 shelf_wdg.add_style("height: 36px")
                 #shelf_wdg.add_color("background", "background3")
 
-
                 #add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', color="secondary")
                 add_wdg = ButtonNewWdg(title="+", icon="FA_PLUS", tip='Add a new note', size='small', color="secondary")
+
+
                 shelf_wdg.add(add_wdg)
                 add_wdg.add_style("float: right")
                 shelf_wdg.add_style("padding: 3px")
@@ -1523,7 +1525,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 add_wdg.add_attr("spt_process", process)
                 add_wdg.add_attr("spt_context", context)
                 add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
-
                 add_wdg.add_class(add_class)
 
                 sk = self.parent.get_search_key(use_id=True)
@@ -1578,7 +1579,8 @@ class DiscussionWdg(BaseRefreshWdg):
                         "is_refresh": "__WIDGET_UNKNWON__",
                         "use_dialog": "__WIDGET_UNKNWON__",
                     }
-            process_wdg.generate_widget_key("tactic.ui.widget.NoteCollectionWdg", inputs=widget_kwargs)
+            widget_key = process_wdg.generate_widget_key("tactic.ui.widget.NoteCollectionWdg", inputs=widget_kwargs)
+
             process_wdg.add_behavior( {
                 'type': 'load',
                 'note_keys': note_keys,
@@ -1587,8 +1589,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 'note_format': self.note_format,
                 'context': context,
                 'parent_key': self.parent.get_search_key(),
+                'widget_key': widget_key,
                 'cbjs_action': '''
-                var widget_key = bvr.src_el.getAttribute("SPT_WIDGET_KEY");
 
                 bvr.src_el.open_notes = function() {
 
@@ -1597,14 +1599,14 @@ class DiscussionWdg(BaseRefreshWdg):
                         return;
                     }
 
-                    var class_name = widget_key;
+                    var class-name = bvr.widget_key;
                     var kwargs = {
-                        "note_keys": bvr.note_keys,
-                        "default_num_notes": bvr.default_num_notes,
-                        "note_expandable": bvr.note_expandable,
-                        "note_format": bvr.note_format,
-                        "context": bvr.context,
-                        "parent_key": bvr.parent_key,
+                        note_keys: bvr.note_keys,
+                        default_num_notes: bvr.default_num_notes,
+                        note_expandable: bvr.note_expandable,
+                        note_format: bvr.note_format,
+                        context: bvr.context,
+                        parent_key: bvr.parent_key,
                     }
 
                     var el = top.getElement(".spt_discussion_content");
