@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate', 'LdapADAuthenticate']
+__all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate']
 
 import hashlib
 
@@ -162,7 +162,7 @@ class LdapAuthenticate(Authenticate):
             raise SecurityException("Login/Password combination incorrect")
 
 
-
+"""
 class LdapADAuthenticate(Authenticate):
     '''Authenticate using LDAP Active Directory logins'''
 
@@ -203,6 +203,6 @@ class LdapADAuthenticate(Authenticate):
         except Exception as e:
             raise SecurityException("Login/Password combination incorrect: 203")
 
-
+"""
 
 
