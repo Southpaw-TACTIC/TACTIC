@@ -989,7 +989,6 @@ class ThumbWdg(BaseTableElementWdg):
         div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
         div.add_style("border-radius: 5px")
         div.add_style("overflow: hidden")
-        div.add_style("margin: 0px 3px")
 
       
         # if no link path is found, display the no icon image
@@ -1062,7 +1061,6 @@ class ThumbWdg(BaseTableElementWdg):
 
         div.set_id( "thumb_%s" %  sobject.get_search_key() )
         div.add_style( "display: block" )
-        div.add_style("margin: 5px")
         div.add_style("%s: %s" % (self.aspect, icon_size) )
         div.add_style("min-%s: %s" % (self.aspect, min_size) )
         #div.set_box_shadow("0px 0px 5px")

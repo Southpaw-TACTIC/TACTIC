@@ -682,6 +682,11 @@ class ButtonNewWdg(ButtonWdg):
         self.collapsible_btn.add(self.title)
 
         top.add(self.hit_wdg)
+        width = self.kwargs.get("width")
+        if width:
+            self.hit_wdg.add_style("width: %spx" % width)
+            self.hit_wdg.add_style("height: %spx" % width)
+            self.hit_wdg.add_style("min-width: %spx" % width)
         self.hit_wdg.add_class(self.btn_class)
         self.hit_wdg.add_class("spt_hit_wdg")
         self.hit_wdg.add(self.icon)

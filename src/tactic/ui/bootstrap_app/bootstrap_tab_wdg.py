@@ -53,6 +53,7 @@ class BootstrapTabWdg(BaseRefreshWdg):
             #%(header_id)s {
                 display: none !important;
                 background: var(--spt_palette_md_primary_light);
+                color: var(--spt_palette_side_bar_title_color);
             }
 
 
@@ -69,11 +70,11 @@ class BootstrapTabWdg(BaseRefreshWdg):
 
             #%(header_id)s .nav-link {
                 //border-right: solid 1px #666;
-                box-shadow: 0px 0px 3px rgba(0,0,0,0.2);
+                //box-shadow: 0px 0px 3px rgba(0,0,0,0.2);
             }
 
             #%(header_id)s .spt_is_selected .nav-link {
-                box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
+                //box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
                 //border-right: none;
             }
 
@@ -86,7 +87,7 @@ class BootstrapTabWdg(BaseRefreshWdg):
         style += """
             .spt_tab_content_top[spt_tab_id="%(tab_id)s"] {
                 overflow-y: auto;
-                height: calc(100vh - 80px);
+                height: calc(100vh - 73px);
             }
             
             @media (max-width: 575.98px) {
