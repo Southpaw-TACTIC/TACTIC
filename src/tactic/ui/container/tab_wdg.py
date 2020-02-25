@@ -1324,6 +1324,10 @@ spt.tab.view_definition = function(bvr) {
                 height: 31px;
             }
 
+            .spt_tab_header_top {
+                height: 33px;
+            }
+
             .spt_tab_header {
                 display: flex;
                 align-items: center;
@@ -1341,7 +1345,7 @@ spt.tab.view_definition = function(bvr) {
                 background: inherit;
                 color: inherit;
             }
-
+            
             .spt_popup_content .spt_tab_header_top .spt_tab_selected {
                 border-bottom: solid .214rem var(--spt_palette_md_secondary);
                 background: inherit;
@@ -1351,7 +1355,7 @@ spt.tab.view_definition = function(bvr) {
             .spt_tab_header_top .spt_tab_selected .nav-link {
                 color: #fff;
             }
-
+            
             .nav-tabs .nav-link {
                 border-bottom: 0px solid transparent;
             }
@@ -1364,6 +1368,10 @@ spt.tab.view_definition = function(bvr) {
                 display: none;
                 position: absolute;
                 right: 5px;
+            }
+
+            .spt_tab_selected .spt_tab_remove {
+                display: block;
             }
 
             .spt_tab_selected .spt_tab_remove {
