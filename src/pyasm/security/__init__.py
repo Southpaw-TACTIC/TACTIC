@@ -18,4 +18,4 @@ from .batch import *
 from .access_rule import *
 from .drupal_password_hasher import *
 #from .ldap_ad_authenticate import *
-from .external_service import *
+# from .external_service import *
