@@ -87,7 +87,7 @@ class BootstrapTabWdg(BaseRefreshWdg):
         style += """
             .spt_tab_content_top[spt_tab_id="%(tab_id)s"] {
                 overflow-y: auto;
-                height: calc(100vh - 73px);
+                height: calc(100vh - 71px);
             }
             
             @media (max-width: 575.98px) {
