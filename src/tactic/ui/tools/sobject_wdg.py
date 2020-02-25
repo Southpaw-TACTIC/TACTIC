@@ -430,6 +430,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #show_remove = True
 
         tab_kwargs['state'] = state
+        tab_kwargs['show_add'] = "false"
+        tab_kwargs['show_remove'] = "false"
         tab_kwargs['config'] = config
         tab_kwargs['selected'] = selected
         tab_kwargs['tab_offset'] = 10

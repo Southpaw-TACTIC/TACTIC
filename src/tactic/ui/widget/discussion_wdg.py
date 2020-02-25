@@ -379,8 +379,8 @@ class DiscussionWdg(BaseRefreshWdg):
             } else {
                 spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
             }
-
-        }'''
+        }
+        '''
 
 
 
@@ -1599,7 +1599,7 @@ class DiscussionWdg(BaseRefreshWdg):
                         return;
                     }
 
-                    var class-name = bvr.widget_key;
+                    var class_name = bvr.widget_key;
                     var kwargs = {
                         note_keys: bvr.note_keys,
                         default_num_notes: bvr.default_num_notes,

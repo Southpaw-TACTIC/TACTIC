@@ -3038,9 +3038,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-        title_wdg = self.get_title_wdg()
-        if title_wdg:
-            inner.add(title_wdg)
+        #title_wdg = self.get_title_wdg()
+        #if title_wdg:
+        #    inner.add(title_wdg)
 
 
         # set up a search
@@ -3620,21 +3620,23 @@ class ViewPanelWdg(BaseRefreshWdg):
 
     def get_title_wdg(self):
 
-        # FIXME: just a test
 
         title = self.kwargs.get("title")
-        title = ""
+        #title = ""
         description = self.kwargs.get("description")
         title_view = self.kwargs.get("title_view")
         if not title and not description and not title_view:
             return
 
 
+        title = title.upper()
+
         title_box_wdg = DivWdg()
-        title_box_wdg.add_border()
-        title_box_wdg.add_style("padding: 10px")
-        title_box_wdg.add_color("background", "background", -5)
-        title_box_wdg.add_style("margin-bottom: -1px")
+        title_box_wdg.add_style("padding: 14px 20px 10px 10px")
+        title_box_wdg.add_style("box-sizing: border-box")
+        title_box_wdg.add_style("height: 48px")
+        title_box_wdg.add_color("background", "background", -10)
+        title_box_wdg.add_style("float: left")
 
 
         if title_view:
@@ -3647,8 +3649,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             title_wdg = DivWdg()
             title_box_wdg.add(title_wdg)
             title_wdg.add(title)
-            title_wdg.add_style("font-size: 16px")
-            title_wdg.add_style("font-weight: bold")
+            title_wdg.add_style("font-size: 1.2em")
+            title_wdg.add_style("font-weight: 500")
 
         if description:
             title_box_wdg.add("<br/>")
