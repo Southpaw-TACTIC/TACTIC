@@ -10633,23 +10633,21 @@ class SessionalProcess:
                 var inputs = spt.api.get_input_values(top, null, false);
                 var section_name = top.getAttribute("section_name") || bvr.section_name;
                 // for refreshed panels (shouldn't need this but just in this case)
-                if (replace) {
-                    var values = kwargs[section_name];
 
-                    for (var key in inputs) {
+                if (replace) {
+                    var values = kwargs[section_name] || {};
+
+                    Object.keys(inputs).forEach(function(key) {
                         values[key] = inputs[key];
-                    }
+                    })
 
                     spt.pipeline.set_node_kwarg(node, section_name, values);
                 } else {
                     spt.pipeline.set_node_kwarg(node, section_name, inputs);
                 }
-                
 
                 spt.named_events.fire_event('pipeline|change', {});
             }
-
-
         '''})
 
         # data loading and processing
@@ -10698,7 +10696,13 @@ class SessionalProcess:
 
                 var top = bvr.src_el.getParent(".spt_section_top");
                 if (top) {
-                    top.update_data();
+                    var section = top.getAttribute("section_name");
+                    if (section != "task_detail") {
+                        top.update_data();
+                    } else {
+                        top.update_data(true);
+                    }
+                    
                 }
 
         '''})
@@ -10709,8 +10713,15 @@ class SessionalProcess:
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_section_top");
-            if (top)
-                top.update_data();
+            if (top) {
+                var section = top.getAttribute("section_name");
+                if (section != "task_detail") {
+                    top.update_data();
+                } else {
+                    top.update_data(true);
+                }
+                
+            }
 
         '''})
 
@@ -10720,9 +10731,14 @@ class SessionalProcess:
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_section_top");
-            if (top)
-                top.update_data();
-
+            if (top) {
+                var section = top.getAttribute("section_name");
+                if (section != "task_detail") {
+                    top.update_data();
+                } else {
+                    top.update_data(true);
+                }
+            }
         '''})
 
     add_relay_session_behavior = staticmethod(add_relay_session_behavior)
