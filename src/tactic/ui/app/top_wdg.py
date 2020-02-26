@@ -226,6 +226,10 @@ class TopWdg(Widget):
 
             var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
 
+            var kwargs = {};
+
+            var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
+
             var attributes = bvr.src_el.attributes;
             for (var i = 0; i < attributes.length; i++) {
                 var name = attributes[i].name;
@@ -238,7 +242,6 @@ class TopWdg(Widget):
                 if (popup_args_keys.indexOf(name) > -1) kwargs[name] = value;
                 else args[name] = value;
             }
-
 
             var popup = spt.panel.load_popup(title, class_name, args, kwargs);
             popup.activator = bvr.src_el;

@@ -384,7 +384,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 
-    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True, show_task_process=False):
+    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True, show_task_process=False, refresh=True, on_submit_js=""):
         '''hidden means it's a hidden row table'''
         
         layout.add_relay_behavior( {
@@ -560,10 +560,11 @@ class DiscussionWdg(BaseRefreshWdg):
             delete values.add_context;
 
             var cmd = 'tactic.ui.widget.DiscussionAddNoteCmd';
-            
+            var success = false;
             try{
                 server.execute_cmd(cmd, values);
                 server.finish();
+                success = true;
             }
             catch (e) {
                 spt.alert(spt.exception.handler(e));
@@ -573,11 +574,15 @@ class DiscussionWdg(BaseRefreshWdg):
             attach_top.files = [];
             var attach_list = attach_top.getElement(".spt_attachment_list");
             attach_list.innerHTML = "";
-            spt.discussion.refresh(top);
+            if (bvr.refresh) {
+              spt.discussion.refresh(top);
+            }
 
             spt.app_busy.hide();
+
+            %s
         }
-        '''
+        ''' % (on_submit_js)
         })
 
 
@@ -738,7 +743,8 @@ class DiscussionWdg(BaseRefreshWdg):
         search = Search("sthpw/note") 
         search.add_relationship_filters(self.filtered_parents, type='hierarchy')
         search.add_order_by("process")
-        search.add_order_by("context")
+        if not self.ignore_context_ordering:
+            search.add_order_by("context")
         search.add_order_by("timestamp desc")
 
         if self.process:
@@ -974,6 +980,12 @@ class DiscussionWdg(BaseRefreshWdg):
             self.note_status_dict = ProjectSetting.get_dict_by_key('note_status')
         else:
             self.show_note_status = False
+
+        self.ignore_context_ordering = self.kwargs.get("ignore_context_ordering")
+        if self.ignore_context_ordering in ['true', True]:
+            self.ignore_context_ordering = True
+        else:
+            self.ignore_context_ordering = False
 
         #self.default_contexts_open = self.kwargs.get("default_contexts_open")
         from pyasm.web import WebContainer
@@ -2332,7 +2344,14 @@ class NoteWdg(BaseRefreshWdg):
                 thumb_div = DivWdg()
                 thumb_div.add_style("float: left")
                 thumb_div.add(thumb)
-                thumb_div.add_class("spt_open_thumbnail")
+
+                #thumb_div.add_class("spt_open_thumbnail")
+                # switch to the note attachment behaviour at the moment, instead of
+                # the above open thumbnail link.
+
+                thumb_div.add_class("spt_note_attachment")
+                # get the codes to the attachments
+                thumb_div.add_attr("spt_note_attachment_codes", snapshot.get_code())
                             
                 attached_div.add(thumb_div)
 
@@ -2413,9 +2432,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add_style("min-width: 300px")
 
         is_standalone = self.kwargs.get("is_standalone")
+        on_submit_js = self.kwargs.get("on_submit_js") or ""
         if is_standalone in [True, 'true']:
             content_div.add_class("spt_discussion_top")
-            DiscussionWdg.add_layout_behaviors(self.top, allow_email=False, show_task_process=False)
+            DiscussionWdg.add_layout_behaviors(self.top, allow_email=False, show_task_process=False, on_submit_js=on_submit_js)
 
         self.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")

@@ -561,6 +561,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
     def get_display(self):
 
+
         # fast table should use 0 chunk size
         self.chunk_size = 0
 
@@ -876,7 +877,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
 
             width = self.attributes[i].get("width")
-            
 
             if i >= len(column_widths):
                 # default width
@@ -1395,7 +1395,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
 
 
-        
 
         if not self.sobjects:
             self.handle_no_results(table)
@@ -1682,7 +1681,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             reverse = True
         elif self.order_element and self.order_element.endswith(' desc'):
             reverse = True
-
 
         sobjects = Common.sort_dict(self.group_dict, reverse=reverse)
         for sobject in sobjects:
@@ -2065,6 +2063,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             is_editable = False
             self.view_editable = False
+
 
         if is_editable:
             table.add_relay_behavior( {
@@ -5161,7 +5160,6 @@ spt.table.add_new_item = function(kwargs) {
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
 
-
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
 
@@ -6187,6 +6185,7 @@ spt.table.set_display = function( el, value, input_type ) {
 }
 
 spt.table.set_changed_color = function(row, cell) {
+
     cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
     row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
 
@@ -6952,7 +6951,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
     var table_top = layout_el.getParent('.spt_table_top');
-
     //note: sometimes table_top is null
     if (table_top) {
         if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
@@ -7024,7 +7022,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             
             // HACK for tile layout 
             dummy = spt.behavior.clone(dummy);
-
 
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
