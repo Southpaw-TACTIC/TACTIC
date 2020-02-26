@@ -2143,7 +2143,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     // get all of the search input values
     var new_values = [];
     if (search_top) {
-        var search_containers = search_top.getElements('.spt_search_filter')
+        var search_containers = search_top.getElements('.spt_search_filter');
         for (var i = 0; i < search_containers.length; i++) {
             var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
             new_values.push(values);
@@ -2378,7 +2378,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
     if (extra_keys) {
         args['extra_keys'] = extra_keys;
         extra_keys = extra_keys.split(",");
-        console.log(extra_keys);
         for (var k = 0; k < extra_keys.length; k++) {
             var key = extra_keys[k];
             args[key] = target.getAttribute("spt_"+key) || "";
@@ -4220,9 +4219,6 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
-
-        console.log(search_key);
-
 
         var server = TacticServerStub.get();
         var show_retired = spt.dg_table.get_show_retired_flag( row );
