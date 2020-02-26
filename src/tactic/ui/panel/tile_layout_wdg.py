@@ -632,7 +632,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
     def init(self):
-        
+
         self.scale_called = False
         self.scale = None
         top_view = self.kwargs.get("top_view")

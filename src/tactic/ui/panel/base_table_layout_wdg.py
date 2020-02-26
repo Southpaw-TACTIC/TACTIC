@@ -1101,6 +1101,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         column = "keywords"
         simple_search_mode = self.kwargs.get("simple_search_mode")
 
+
+
+
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
+
+
+
+        title_wdg = self.get_title_wdg()
+        if title_wdg:
+            div.add(title_wdg)
+
+
+
         # default to true
         show_keyword_search = self.get_setting("keyword_search")
         if show_keyword_search:
@@ -1361,7 +1375,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
        
         if self.get_setting("show_refresh"):
             if self.get_setting("show_keyword_search"):
-                button_div = ButtonNewWdg(title='Search', icon="FA_ARROW-CIRCLE-RIGHT")
+                button_div = ButtonNewWdg(title='Search', icon="FA_REFRESH")
             else:
                 button_div = ButtonNewWdg(title='Refresh', icon="FA_SYNC")
                
@@ -1467,7 +1481,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add_class("navbar") 
         xx.add_class("spt_base_table_action_wdg")
 
+        xx.add_style("flex-wrap: nowrap")
         xx.add_style("box-shadow: none")
+        xx.add_style("width: 100%")
+        xx.add_style("box-sizing: border-box")
 
         left_div = DivWdg()
         left_div.add_class("d-flex")
@@ -1522,6 +1539,49 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         outer.add_style("white-space: nowrap")
         
         return outer
+
+
+
+
+    def get_title_wdg(self):
+
+        title = self.kwargs.get("title")
+        description = self.kwargs.get("description")
+        title_view = self.kwargs.get("title_view")
+        if not title and not description and not title_view:
+            return
+
+
+        title = title.upper()
+
+        title_box_wdg = DivWdg()
+        title_box_wdg.add_style("padding: 14px 20px 10px 10px")
+        title_box_wdg.add_style("box-sizing: border-box")
+        title_box_wdg.add_style("height: 48px")
+        title_box_wdg.add_color("background", "background", -10)
+
+        title_box_wdg.add_style("float: left")
+
+
+        if title_view:
+            from .custom_layout_wdg import CustomLayoutWdg
+            title_wdg = CustomLayoutWdg(view=title_view)
+            title_box_wdg.add(title_wdg)
+
+
+        if title:
+            title_wdg = DivWdg()
+            title_box_wdg.add(title_wdg)
+            title_wdg.add(title)
+            title_wdg.add_style("font-size: 1.2em")
+            title_wdg.add_style("font-weight: 500")
+
+        if description:
+            title_box_wdg.add("<br/>")
+            title_box_wdg.add(description)
+            title_box_wdg.add("<br/>"*2)
+
+        return title_box_wdg
 
 
 
@@ -1964,7 +2024,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 
         button_wdg = layout.get_button_wdg()
         collapsible_wdg = layout.get_collapsible_wdg()
+
         SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=button_wdg)
+
         SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=collapsible_wdg)
         return layout
 

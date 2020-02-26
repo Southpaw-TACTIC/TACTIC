@@ -1879,12 +1879,14 @@ TacticServerStub = function() {
 
 
         var err_callback = function(e) {
-            // trye handling the ERROMETHOD error
+            // try handling the ERROMETHOD error
+            /*
             if (e.contains("XERRORMETHOD")) {
-		//alert("ERRORMETHOD!!!!!");
-		//api.async_get_widget(class_name, api_kwargs, on_complete, on_error);
-		return;
-	    }
+                //alert("ERRORMETHOD!!!!!");
+                //api.async_get_widget(class_name, api_kwargs, on_complete, on_error);
+                return;
+            }
+            */
             if (e == 0) {
                 e = 'Received an error (Error 0)';
                 var error = new Error();

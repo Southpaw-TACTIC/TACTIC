@@ -2002,26 +2002,22 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
 
             if (value == '__class__') {
                 spt.show(wdg);
-                //spt.hide(view_el);
             }
-            else if (value == 'custom_layoutX') {
+            else if (value == 'custom_layout') {
                 spt.hide(wdg);
-                //spt.show(view_el);
             }
  
             else if (value == '') {
                 spt.hide(wdg);
-                //spt.hide(view_el);
             }
             else {
                 spt.hide(wdg);
-                //spt.hide(view_el);
             }
 
             var values = spt.api.Utility.get_input_values(top, null, false);
             var wdg = top.getElement(".spt_widget_options_top");
             spt.show(wdg);
-            spt.panel.refresh(wdg, values);
+            spt.panel.refresh_element(wdg, values);
 
             // there could be 2
             var edits = ui_top.getElements('input[name=attr|editable]');
@@ -2426,10 +2422,14 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
 
 
 
+        web = WebContainer.get_web()
 
         # introspect the widget
-        web = WebContainer.get_web()
-        widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
+        widget_key = self.kwargs.get("xxx_%s|widget_key" % prefix)
+        if not widget_key:
+            widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
+
+
         display_class = ''
         #if widget_key and widget_key not in ['__class__', 'custom_layout']:
 
