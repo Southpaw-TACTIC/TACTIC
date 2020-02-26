@@ -853,17 +853,18 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         process_menu = self.get_node_context_menu()
-        menus = [process_menu.get_data()]
+        if process_menu:
+            menus = [process_menu.get_data()]
 
-        # Simple context menu is for renaming and
-        # deleting approval, action and condition nodes..
-        simple_menu = self.get_simple_node_context_menu()
-        simple_menus = [simple_menu.get_data()]
+            # Simple context menu is for renaming and
+            # deleting approval, action and condition nodes..
+            simple_menu = self.get_simple_node_context_menu()
+            simple_menus = [simple_menu.get_data()]
 
-        menus_in = {
-            'NODE_CTX': menus,
-            'SIMPLE_NODE_CTX': simple_menus
-        }
+            menus_in = {
+                'NODE_CTX': menus,
+                'SIMPLE_NODE_CTX': simple_menus
+            }
 
         if self.is_editable == True:
             from tactic.ui.container.smart_menu_wdg import SmartMenu
