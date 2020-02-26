@@ -127,11 +127,31 @@ def get_simple_cmd(self, meth, ticket, args):
                     print("user: %s" % Environment.get_user_name())
                     print("simple method: %s" % meth)
                     print("ticket: %s" % ticket)
-                    
+                   
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
 
+                    if args and args[0].startswith("$"):
+                        class_name = args[0]
+                        key = class_name.lstrip("$")
+                        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                        path = "%s/widget_key_%s.txt" % (tmp_dir,key)
+                        print("command key path: %s" % path)
+                        if not os.path.exists(path):
+                            path = "%s/key_%s.txt" % (tmp_dir,key)
+                            if not os.path.exists(path):
+                                print("ERROR: Command path [%s] not found" % path)
+                                raise ApiException("Command key not valid")
+
+                        f = open(path, 'r')
+                        data = f.read()
+                        f.close()
+                        data = jsonloads(data)
+                        Common.pretty_print(data)
+
+                    print()
+ 
 
                 if self2.print_info:
                     print_primary_info(self2, args)
@@ -5459,23 +5479,24 @@ class ApiXMLRPC(BaseApiXMLRPC):
         hp.setrelheap()
         '''
 
-
-
         security = Environment.get_security()
         project_code = Project.get_project_code()
-        has_key = False
 
         if isinstance(class_name, basestring):
             if class_name.startswith("$"):
                 class_name, inputs, ticket = decode_security_key(class_name, "widget")
-                for k, v in args.items():
-                    inputs_v = inputs.get(k)
-                    if "&amp;" in inputs_v:
-                        inputs_v = inputs_v.replace("&amp;", "&")
+                if Config.get_value("security", "api_widget_restricted") == "true":
+                    for k, v in args.items():
+                        inputs_v = inputs.get(k)
+                        if inputs_v:
+                            if isinstance(inputs_v, six.basestring) and "&amp;" in inputs_v:
+                                inputs_v = inputs_v.replace("&amp;", "&")
 
-                    if v != inputs_v:
-                        if inputs.get(k) == "__WIDGET_UNKNOWN__":
-                            inputs[k] = v
+                            if v != inputs_v:
+                                if inputs.get(k) == "__WIDGET_UNKNOWN__":
+                                    inputs[k] = v
+                                else:
+                                    raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
                         else:
                             raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
             
@@ -5628,14 +5649,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
         dictionary - returned data structure
 
         '''
-        
+
         class_name = "tactic.command.PythonCmd"
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
                raise ApiException("Access denied") 
-        
+
+
         ret_val = {}
         try:
             from tactic.command import PythonCmd
@@ -5704,6 +5726,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # Do a security check
         if Config.get_value("security", "api_cmd_restricted") == "true":
             security = Environment.get_security()
+            #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
                raise ApiException("Access denied") 
@@ -6610,7 +6633,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         ticket = self.init(ticket)
         if key == "top_layout":
-            class_name = "tactic.ui.app.PageNavContainerWdg"
+            from pyasm.web import WebEnvironment
+            class_name = WebEnvironment.get_top_class_name()
         else:
             raise ApiException("layout [%s] not supported" % key)
 
