@@ -3182,7 +3182,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 "search_type": search_type,
                 "search_view": custom_simple_search_view,
                 "mode": simple_search_mode,
-                "show_saved_search": self.kwargs.get("show_shaved_search"),
+                "show_saved_search": self.kwargs.get("show_saved_search"),
             }
             if run_search_bvr:
                 kwargs['run_search_bvr'] = run_search_bvr
