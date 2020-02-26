@@ -726,7 +726,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
+        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="secondary")
         #button.add_style("float: right")
         button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
@@ -771,10 +771,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Clear")
+        button = ActionButtonWdg(title="Clear", color="secondary")
         #button.add_style("float: right")
         button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
+        button.add_style("margin-left: 5px")
         shelf_div.add(button)
         button.add_behavior( {
             'type': 'click_up',

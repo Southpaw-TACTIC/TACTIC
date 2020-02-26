@@ -1373,7 +1373,7 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
         group_names = []
         groups = []
-        from tactic.ui.panel import FastTableLayoutWdg
+        from tactic.ui.panel import TableLayoutWdg
 
 
         groups = self.get_groups()
@@ -1540,21 +1540,19 @@ class ProjectSecurityWdg(BaseRefreshWdg):
 
         group_elements = self.get_group_elements()
 
-        layout = FastTableLayoutWdg(
-            search_type='sthpw/virtual', view='table',
+        layout = TableLayoutWdg(
+            search_type='sthpw/virtual',
+            view='table',
             show_shelf=False,
             show_search_limit="false",
-            #show_select=False,
             config_xml=config_xml,
             save_class_name=self.get_save_cbk(),
             init_load_num = -1,
             expand_on_load=True,
             show_context_menu=False,
-            group_elements=group_elements,
-            #show_border=False,
-            #height="auto",
-
+            # group_elements=group_elements,
         )
+        layout.add_style("height: calc(100% - 42px)")
         layout.set_sobjects(sobjects)
         top.add(layout)
 

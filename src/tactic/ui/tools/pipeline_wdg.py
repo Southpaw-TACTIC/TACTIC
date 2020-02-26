@@ -10332,15 +10332,18 @@ spt.process_tool.item_drag_motion = function(evt, bvr, mouse_411) {
     var dx = mouse_411.curr_x - orig_pos.x;
     var dy = mouse_411.curr_y - orig_pos.y;
 
+    var width = spt.process_tool.item_clone.getWidth();
+    var height = spt.process_tool.item_clone.getHeight();
+
     var scroll_el = top.getParent(".spt_popup_content");
     if (scroll_el) {
         var scroll = {x: 0, y: scroll_el.scrollTop};
-        var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-2*scroll.y};
+        var new_pos = {x: item_pos.x+dx-scroll.x+0.5*width, y: item_pos.y+dy-2*scroll.y+0.5*height};
     }
     else {
         scroll_el = top;
         var scroll = {x: 0, y: scroll_el.scrollTop};
-        var new_pos = {x: item_pos.x+dx-scroll.x, y: item_pos.y+dy-scroll.y};
+        var new_pos = {x: Math.abs(item_pos.x)+dx-scroll.x+0.5*width, y: item_pos.y+dy-scroll.y+0.5*height};
     }
 
     spt.process_tool.item_clone.position( new_pos, {relativeTo: top} );
@@ -10350,6 +10353,7 @@ spt.process_tool.item_drag_motion = function(evt, bvr, mouse_411) {
 
 spt.process_tool.item_drag_action = function(evt, bvr, mouse_411) {
 
+    var clone_pos = spt.process_tool.item_clone.getPosition();
     spt.behavior.destroy( spt.process_tool.item_clone );
     spt.process_tool.item_top = null;
 

@@ -935,6 +935,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
+            h_scroll.add_style("height: 100%")
             h_scroll.add_style("flex-direction: column")
  
             scroll = DivWdg()
@@ -965,6 +966,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             scroll.add_class("spt_table_scroll")
+            scroll.add_style("height: 100%")
             h_scroll.add(scroll)
             
             """
@@ -3813,7 +3815,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_select_wdg(self):
         checkbox_container = DivWdg()
         checkbox_container.add_style("position", "relative")
-        checkbox_container.add_style("top", "-3px")
+        checkbox_container.add_style("top", "-6px")
 
         checkbox = DivWdg(css="checkbox spt_table_checkbox")
         checkbox_container.add(checkbox)

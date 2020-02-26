@@ -32,7 +32,7 @@ def test_compat_functions_positive(func, inp, out):
 )
 def test_compat_functions_negative_nonnative(func):
     """Check that compat functions fail loudly for incorrect input."""
-    non_native_test_str = b'bar' if six.PY3 else u'bar'
+    non_native_test_str = u'bar' if six.PY2 else b'bar'
     with pytest.raises(TypeError):
         func(non_native_test_str, encoding='utf-8')
 

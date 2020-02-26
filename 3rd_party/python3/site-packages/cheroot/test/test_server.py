@@ -9,13 +9,15 @@ import os
 import socket
 import tempfile
 import threading
+import uuid
 
 import pytest
 import requests
 import requests_unixsocket
+import six
 
 from .._compat import bton, ntob
-from .._compat import IS_MACOS
+from .._compat import IS_LINUX, IS_MACOS, SYS_PLATFORM
 from ..server import IS_UID_GID_RESOLVABLE, Gateway, HTTPServer
 from ..testing import (
     ANY_INTERFACE_IPV4,
@@ -37,15 +39,32 @@ non_macos_sock_test = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
-def unix_sock_file():
+@pytest.fixture(params=('abstract', 'file'))
+def unix_sock_file(request):
     """Check that bound UNIX socket address is stored in server."""
+    if request.param == 'abstract':
+        yield request.getfixturevalue('unix_abstract_sock')
+        return
     tmp_sock_fh, tmp_sock_fname = tempfile.mkstemp()
 
     yield tmp_sock_fname
 
     os.close(tmp_sock_fh)
     os.unlink(tmp_sock_fname)
+
+
+@pytest.fixture
+def unix_abstract_sock():
+    """Return an abstract UNIX socket address."""
+    if not IS_LINUX:
+        pytest.skip(
+            '{os} does not support an abstract '
+            'socket namespace'.format(os=SYS_PLATFORM),
+        )
+    return b''.join((
+        b'\x00cheroot-test-socket',
+        ntob(str(uuid.uuid4())),
+    )).decode()
 
 
 def test_prepare_makes_server_ready():
@@ -114,11 +133,9 @@ def test_bind_addr_unix(http_server, unix_sock_file):
     assert httpserver.bind_addr == unix_sock_file
 
 
-@pytest.mark.skip(reason="Abstract sockets don't work currently")
 @unix_only_sock_test
-def test_bind_addr_unix_abstract(http_server):
-    """Check that bound UNIX socket address is stored in server."""
-    unix_abstract_sock = b'\x00cheroot/test/socket/here.sock'
+def test_bind_addr_unix_abstract(http_server, unix_abstract_sock):
+    """Check that bound UNIX abstract sockaddr is stored in server."""
     httpserver = http_server.send(unix_abstract_sock)
 
     assert httpserver.bind_addr == unix_abstract_sock
@@ -163,9 +180,13 @@ def peercreds_enabled_server_and_client(http_server, unix_sock_file):
 def test_peercreds_unix_sock(peercreds_enabled_server_and_client):
     """Check that peercred lookup works when enabled."""
     httpserver, testclient = peercreds_enabled_server_and_client
+    bind_addr = httpserver.bind_addr
+
+    if isinstance(bind_addr, six.binary_type):
+        bind_addr = bind_addr.decode()
 
     unix_base_uri = 'http+unix://{}'.format(
-        httpserver.bind_addr.replace('/', '%2F'),
+        bind_addr.replace('\0', '%00').replace('/', '%2F'),
     )
 
     expected_peercreds = os.getpid(), os.getuid(), os.getgid()
@@ -192,8 +213,13 @@ def test_peercreds_unix_sock_with_lookup(peercreds_enabled_server_and_client):
     httpserver, testclient = peercreds_enabled_server_and_client
     httpserver.peercreds_resolve_enabled = True
 
+    bind_addr = httpserver.bind_addr
+
+    if isinstance(bind_addr, six.binary_type):
+        bind_addr = bind_addr.decode()
+
     unix_base_uri = 'http+unix://{}'.format(
-        httpserver.bind_addr.replace('/', '%2F'),
+        bind_addr.replace('\0', '%00').replace('/', '%2F'),
     )
 
     import grp
