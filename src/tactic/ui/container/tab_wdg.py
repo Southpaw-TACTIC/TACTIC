@@ -1332,7 +1332,6 @@ spt.tab.view_definition = function(bvr) {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                min-width: 120px;
             }
 
             .spt_tab_header_top .spt_tab_selected {
@@ -1817,6 +1816,7 @@ spt.tab.view_definition = function(bvr) {
 
         # resize headers on leave
         resize_headers = self.kwargs.get("resize_headers")
+        resize_headers = True
         if resize_headers:
             header_div.add_behavior( {
                 'type': 'mouseleave',
