@@ -2443,7 +2443,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-            tool_div.add_style("position: relative")
+            tool_div.add_style("position: absolute")
+            tool_div.add_style("bottom: 0px")
+            tool_div.add_style("width: 100%")
             tool_div.add_style("background: #FFF")
             tool_div.add_style("color: #000")
             tool_div.add_style("height: 21px")

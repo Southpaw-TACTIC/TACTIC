@@ -10700,7 +10700,9 @@ class SessionalProcess:
                     if (section != "task_detail") {
                         top.update_data();
                     } else {
-                        top.update_data(true);
+                        var content = top.getElement(".spt_app_content_top");
+                        var index = content.getAttribute("index");
+                        spt.task_detail.update_data(content, index);
                     }
                     
                 }
@@ -10718,7 +10720,9 @@ class SessionalProcess:
                 if (section != "task_detail") {
                     top.update_data();
                 } else {
-                    top.update_data(true);
+                    var content = top.getElement(".spt_app_content_top");
+                    var index = content.getAttribute("index");
+                    spt.task_detail.update_data(content, index);
                 }
                 
             }
@@ -10736,7 +10740,9 @@ class SessionalProcess:
                 if (section != "task_detail") {
                     top.update_data();
                 } else {
-                    top.update_data(true);
+                    var content = top.getElement(".spt_app_content_top");
+                    var index = content.getAttribute("index");
+                    spt.task_detail.update_data(content, index);
                 }
             }
         '''})
