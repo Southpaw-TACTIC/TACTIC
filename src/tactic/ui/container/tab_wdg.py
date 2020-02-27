@@ -1325,19 +1325,30 @@ spt.tab.view_definition = function(bvr) {
             }
 
             .spt_tab_header_top {
-                height: 33px;
+                height: 31px;
             }
 
             .spt_tab_header {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                min-width: 120px;
             }
 
             .spt_tab_header_top .spt_tab_selected {
                 height: 31px;
                 background: var(--spt_palette_background);
                 color: #000;
+            }
+
+            .spt_tab_content_top .spt_tab_header {
+                border-bottom: solid .214rem transparent;
+            }
+
+            .spt_popup_content .spt_tab_header {
+                border-bottom: solid .214rem transparent;
+                background: inherit;
+                color: inherit;
             }
 
             .spt_tab_content_top .spt_tab_header_top .spt_tab_selected {
@@ -1367,7 +1378,7 @@ spt.tab.view_definition = function(bvr) {
             .spt_tab_remove {
                 display: none;
                 position: absolute;
-                right: 5px;
+                right: 3px;
             }
 
             .spt_tab_selected .spt_tab_remove {
