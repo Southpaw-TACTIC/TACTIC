@@ -948,7 +948,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     value = True
 
 
-
         return value
 
 
@@ -1373,8 +1372,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
        
-        if self.get_setting("show_refresh"):
-            if self.get_setting("show_keyword_search"):
+        if self.get_setting("refresh"):
+            if self.get_setting("keyword_search"):
                 button_div = ButtonNewWdg(title='Search', icon="FA_REFRESH")
             else:
                 button_div = ButtonNewWdg(title='Refresh', icon="FA_SYNC")
@@ -1920,7 +1919,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # Search button
         search_dialog_id = self.kwargs.get("search_dialog_id")
         
-        show_search = self.get_setting("show_search")
+        show_search = self.get_setting("show_search") # backwards compatibility
+        if show_search == None:
+            show_search = self.get_setting("search")
+
         if show_search is None:
             # advanced_search is deprecated as of 4.7
             show_search = self.get_setting("advanced_search")

@@ -1332,6 +1332,13 @@ spt.tab.view_definition = function(bvr) {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+
+                user-select: none;
+                -webkit-touch-callout: none; /* iOS Safari */
+                -webkit-user-select: none; /* Safari */
+                -khtml-user-select: none; /* Konqueror HTML */
+                -moz-user-select: none; /* Old versions of Firefox */
+                -ms-user-select: none; /* Internet Explorer/Edge */
             }
 
             .spt_tab_header_top .spt_tab_selected {
