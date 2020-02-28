@@ -789,7 +789,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
 
-            var button = top.getElement(".spt_upload_file_button");
+            var button = top.getElement(".spt_upload_files_top");
             button.setStyle("display", "none");
 
 
@@ -1206,8 +1206,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     
         ingest_btn_top = top.getElement(".spt_ingest_btn");
-        ingest_btn = ingest_btn_top.getElement(".spt_action_button");
-        ingest_btn.in_progress = false;
+        ingest_btn_top.in_progress = false;
         
          
         '''
@@ -1442,13 +1441,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         button.add_class("spt_ingest_btn")
-
         upload_div.add("<br clear='all'/>")
 
 
         action_handler = self.kwargs.get("action_handler")
         if not action_handler:
-            action_handler = 'tactic.ui.tools.IngestUploadCmd';
+            action_handler = 'tactic.ui.tools.IngestUploadCmd'
 
         context = self.kwargs.get("context")
         context_mode = self.kwargs.get("context_mode")
@@ -1496,7 +1494,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var file_els = top.getElements(".spt_upload_file");
             var num_files = file_els.length;
-            var files_top = top.getElement(".spt_to_ingest_files")
+            var files_top = top.getElement(".spt_to_ingest_files");
 
             spt.notify.show_message("Ingesting "+num_files+" Files");
 

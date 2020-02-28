@@ -906,7 +906,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 elif item_width.endswith("%"):
                     continue
                 else:
-                    item_width = int(float(item_width))
+                    try:
+                        item_width = int(float(item_width))
+                    except:
+                        item_width = -1
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
