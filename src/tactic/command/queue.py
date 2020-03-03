@@ -212,7 +212,7 @@ class JobTask(SchedulerTask):
                 os.utime(pid_path, None)
 
             self.check_existing_jobs()
-            self.check_new_job()
+            self.check_new_job(self.queue_type)
             time.sleep(self.check_interval)
             DbContainer.close_thread_sql()
 
