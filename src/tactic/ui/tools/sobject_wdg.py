@@ -86,8 +86,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
     def get_title_wdg(self):
 
-
-
         title_view = self.kwargs.get("title_view")
         if title_view:
             from tactic.ui.panel import CustomLayoutWdg
@@ -157,12 +155,12 @@ class SObjectDetailWdg(BaseRefreshWdg):
         stype_title = search_type_obj.get_value("title")
         if stype_title:
             stype_title = _(stype_title)
-            title.add("%s: " % stype_title)
+            title.add("<div style='font-size: 0.5em'>%s:</div> " % stype_title.upper())
 
         if name:
             title.add("%s" % name)
             if code:
-                title.add(" <i style='font-size: 0.8em; opacity: 0.7'>(code: %s)</i>" % code)
+                title.add("<br/><i style='font-size: 0.6em; opacity: 0.7'>(code: %s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
@@ -300,16 +298,19 @@ class SObjectDetailWdg(BaseRefreshWdg):
             thumb_div = DivWdg()
             panel_wdg.add(thumb_div)
 
-            thumb = ThumbWdg2()
+            thumb = ThumbWdg2(width="auto", height="100%")
             thumb_div.add(thumb)
-            thumb_div.add_style("width: 200px")
-            thumb_div.add_style("height: 125px")
-            thumb_div.add_style("padding: 5px")
+            thumb_div.add_style("box-sizing: border-box")
+            thumb_div.add_style("height: 175px")
             thumb_div.add_style("margin-left: 20px")
             thumb_div.add_style("margin-top: 20px")
             thumb_div.add_style("display: inline-block")
             thumb_div.add_style("vertical-align: top")
             thumb_div.add_style("overflow-y: hidden")
+            border = thumb_div.get_color("border")
+            thumb_div.add_style("border: solid 1px %s" % border)
+            thumb_div.add_style("border-radius: 5px")
+            thumb_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
             # use a larger version for clearer display
             #thumb.set_icon_type('web')
 

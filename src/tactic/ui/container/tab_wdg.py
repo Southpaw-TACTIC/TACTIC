@@ -408,12 +408,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         // set the new label
         var label = header.getElement(".spt_tab_header_label");
         var display_title = title;
-        if (display_title.length > 20) {
-            display_title = title.substr(0,18) + "...";
-        }
 
         label.setAttribute("title", title);
-        label.innerHTML = display_title + label.innerHTML;
+        label.innerHTML = display_title;
 
         header.setAttribute("spt_class_name", class_name);
         var kwargs_str = JSON.stringify(kwargs);
@@ -2715,6 +2712,8 @@ spt.tab.view_definition = function(bvr) {
         show_remove = self.kwargs.get("show_remove")
         if show_remove not in [False, "false"]:
             title_container.add_style("width: 95%")
+        else:
+            title_container.add_style("width: 100%")
         header.add(title_container)
 
         title_div = DivWdg()
