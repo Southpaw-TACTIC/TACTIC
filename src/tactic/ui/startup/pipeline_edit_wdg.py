@@ -23,6 +23,9 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import SingleButtonWdg, ActionButtonWdg, IconButtonWdg
 from tactic.ui.input import TextInputWdg
 
+import six
+basestring = six.string_types
+
 
 class PipelineEditWdg(BaseRefreshWdg):
 
@@ -235,7 +238,7 @@ class PipelineEditWdg(BaseRefreshWdg):
                         process_name = process_sobj.get_value("process")
                         description = process_sobj.get_value("description")
                     else:
-                        if isinstance(process,basestring):
+                        if isinstance(process, basestring):
                             process_name = process
                         else:
                             process_name = process.get_name()
