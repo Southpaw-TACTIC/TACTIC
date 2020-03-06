@@ -2654,6 +2654,8 @@ spt.tab.view_definition = function(bvr) {
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
 
+        header.add_style("width: 120px")
+
         header.add_behavior({
             'type': 'load',
             'cbjs_action': '''$(bvr.src_el).bmdRipples();'''

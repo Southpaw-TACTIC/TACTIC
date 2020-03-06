@@ -62,9 +62,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-
-
-
     def __init__(self, **kwargs):
 
         # get the them from cgi
@@ -548,7 +545,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # alter the search
             self.search_limit.set_search(search)
             self.search_limit.alter_search(search)
-
 
 
     def handle_search(self):
@@ -1655,7 +1651,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         show_insert = self.get_show_insert()
         if show_insert:
             insert_view = self.kwargs.get("insert_view")
-            
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
@@ -1677,6 +1672,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var table = top.getElement(".spt_table");
                 var search_type = top.getAttribute("spt_search_type");
 
+                // NOTE: not sure if this condition is good enough to
+                // separate a custom view from an insert view
+                if (bvr.view && bvr.view.contains(".")) {
+                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                }
+                else {
+                    var class_name = 'tactic.ui.panel.EditWdg';
+                }
+
                 var kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
@@ -1686,7 +1690,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   save_event: 'search_table_' + bvr.table_id,
                   show_header: false,
                 };
-                spt.panel.load_popup('Add new ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add new ' + bvr.title, class_name, kwargs);
                 '''
 
             } )
@@ -3403,7 +3407,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add_style("margin-left: auto")
         msg_div.add_style("margin-right: auto")
         msg_div.add_style("margin-top: -260px")
+        msg_div.add_style("margin-bottom: 20px")
         msg_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        msg_div.add_style("width: 400px")
+        msg_div.add_style("height: 100px")
 
 
         if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
@@ -3425,10 +3432,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add(msg)
 
         msg.add_style("padding-top: 20px")
-        msg.add_style("height: 100px")
-        msg.add_style("width: 400px")
-        msg.add_style("margin-left: auto")
-        msg.add_style("margin-right: auto")
+        msg.add_style("padding-bottom: 20px")
+        msg.add_style("height: 100%")
         msg.add_color("background", "background3")
         msg.add_color("color", "color3")
         msg.add_border()

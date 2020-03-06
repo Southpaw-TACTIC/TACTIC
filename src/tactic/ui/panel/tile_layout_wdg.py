@@ -2067,36 +2067,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         icon.add_class("hand")
         href.add(icon)
 
-        """
         # TODO: Dynamically preprocess bottom wdg
         if self.bottom:
-            self.bottom.set_sobject(sobject)
             div.add(self.bottom.get_buffer_display())
-        elif self.bottom_expr:
-            bottom_value = Search.eval(self.bottom_expr, sobject, single=True)
-            bottom_value = bottom_value.replace("\n", "<br/>")
-            bottom = DivWdg()
-            bottom.add(bottom_value)
-            bottom.add_class("spt_tile_bottom")
-            bottom.add_style("padding: 10px")
-            bottom.add_style("height: 50px")
-            bottom.add_style("overflow-y: auto")
-            div.add(bottom)
-            #bottom.add_style("width: %s" % (self.aspect_ratio[0]-20))
-        else:
-            table = Table()
-            #div.add(table)
 
-            table.add_style("width: 100%")
-            table.add_style("margin: 5px 10px")
-            table.add_row()
-            table.add_cell("Name:")
-            table.add_cell("Whatever")
-            table.add_row()
-            table.add_cell("File Type:")
-            table.add_cell("Image.jpg")
-        """
-         
+
         div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
         div.add_attr("ondragleave", "spt.thumb.noop_leave(event, this)")
         div.add_attr("ondragover", "return false")

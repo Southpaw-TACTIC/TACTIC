@@ -416,8 +416,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         save_state = self.kwargs.get("tab_save_state") or ""
 
-        #menu = self.get_extra_menu()
-        #tab = TabWdg(config=config, state=state, extra_menu=menu)
         tab_kwargs = self.kwargs.get("tab_kwargs") or {}
         if isinstance(tab_kwargs, basestring):
             tab_kwargs = jsonloads(tab_kwargs)      
@@ -431,8 +429,8 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #show_remove = True
 
         tab_kwargs['state'] = state
-        tab_kwargs['show_add'] = "false"
-        tab_kwargs['show_remove'] = "false"
+        tab_kwargs['show_add'] = "true"
+        tab_kwargs['show_remove'] = "true"
         tab_kwargs['config'] = config
         tab_kwargs['selected'] = selected
         tab_kwargs['tab_offset'] = 10
