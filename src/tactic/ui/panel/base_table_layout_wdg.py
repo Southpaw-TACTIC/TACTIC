@@ -2121,7 +2121,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
-        button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="FA_COLUMNS", show_arrow=False)
 
         search_type_obj = SearchType.get(self.search_type)
 

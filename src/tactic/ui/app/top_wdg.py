@@ -292,7 +292,7 @@ class TopWdg(Widget):
                 var value = attributes[i].value;
                 kwargs[name] = value;
             }
- 
+
             spt.panel.load(target, class_name, kwargs);
 
             var scroll = bvr.src_el.getAttribute("scroll");
@@ -1227,7 +1227,9 @@ class TitleTopWdg(TopWdg):
         self.body.add_style("background-attachment: fixed !important")
         #self.body.add_style("min-height: 1200px")
         self.body.add_style("height: 100%")
+        self.body.add_style("width: 100%")
         self.body.add_style("margin: 0px")
+        self.body.add_style("overflow: auto")
 
 
     def get_display(self):
@@ -1290,7 +1292,7 @@ class TitleTopWdg(TopWdg):
         body = self.body
         html.add( body )
 
-        body.add("<form id='form' name='form' method='post' enctype='multipart/form-data'>\n")
+        body.add("<form id='form' style='margin-bottom: 0px' name='form' method='post' enctype='multipart/form-data'>\n")
 
         for content in self.widgets:
             body.add(content)

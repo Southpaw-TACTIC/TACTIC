@@ -2017,7 +2017,7 @@ spt.tab.view_definition = function(bvr) {
             pass
         else:
             content_top.add_color("color", "color")
-            content_top.add_color("background", "background")
+            # content_top.add_color("background", "background")
 
 
         # put in a content box for each element

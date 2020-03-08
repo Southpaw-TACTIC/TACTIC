@@ -2050,8 +2050,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             options = config.get_display_options(element_name)
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
-                div = self.get_separator_wdg(element_name, config, options)
-                subsection_div.add(div)
+                # div = self.get_separator_wdg(element_name, config, options)
+                # subsection_div.add(div)
                 continue
 
             elif display_class == "TitleWdg":
