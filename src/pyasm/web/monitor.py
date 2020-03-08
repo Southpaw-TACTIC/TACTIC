@@ -274,6 +274,7 @@ class JobQueueThread(BaseProcessThread):
         self.idx = idx
         self.pid = 0
         self.process_timeout = Config.get_value("services", "queue_process_timeout")
+        self.queue_type = Config.get_value("services", "queue_type")
         if not self.process_timeout:
             self.process_timeout = -1
         else:
@@ -337,6 +338,8 @@ class JobQueueThread(BaseProcessThread):
             "-m",
             "monitor"
         ]
+        if self.queue_type:
+            executable.extend(["-q", self.queue_type])
         self.process = subprocess.Popen(executable)
         self.pid = self.process.pid
 

@@ -37,11 +37,11 @@ def main(options, site=None):
     if options.get("mode"):
         os.environ['TACTIC_QUEUE_MODE'] = options.get("mode")
 
-
     JobTask.start(
-            check_interval=0.1,
-            max_jobs_completed=50,
-            pid_path=pid_path,
+        check_interval=0.1,
+        max_jobs_completed=50,
+        pid_path=pid_path,
+        queue=options.get("queue")
     )
 
     try:
