@@ -2170,18 +2170,19 @@ class CheckboxFilterElementWdg(BaseFilterElementWdg):
         else:
 
             for i, title in enumerate(titles):
-                td = table.add_cell()
 
                 if i != 0:
+                    td = table.add_cell()
                     div = DivWdg()
-                    div.add_style("float: left")
                     td.add(div)
-                    div.add_style("height: 30px")
-                    #div.add("&nbsp;")
+                    div.add_style("height: 2em")
                     div.add_style("border-style: solid")
-                    div.add_style("border-width: 0 1 0 0")
-                    div.add_style("margin-right: 15px")
+                    div.add_style("border-width: 0em 0.1em 0em 0em")
+                    div.add_style("margin-right: 1em")
+                    div.add_style("margin-left: 1em")
                     div.add_style("border-color: %s" % div.get_color("border"))
+
+                td = table.add_cell()
 
 
 
