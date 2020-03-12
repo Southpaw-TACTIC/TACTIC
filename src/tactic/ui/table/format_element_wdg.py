@@ -548,7 +548,11 @@ class FormatElementWdg(SimpleTableElementWdg):
                 value = parser.parse(value)
                 setting = ProdSetting.get_value_by_key('DATETIME')
                 if not setting:
-                    setting = "%Y-%m-%d %H:%M"
+                    #setting = "%Y-%m-%d (%I:%M %p)"
+                    if value.hour == 0 and value.minute == 0 and value.second == 0:
+                        setting = "%b %m, %Y"
+                    else:
+                        setting = "%b %m, %Y (%I:%M %p)"
                 
                 value = value.strftime(setting)
                 

@@ -357,7 +357,7 @@ TRANS_OPTIONAL_METHODS = {
 API_MODE = {
     "closed": {
         "execute_cmd",
-        "execute_python_script", # should this be allowed?
+        #"execute_python_script", # should this be allowed?
         "get_widget",
         "get_ticket",
         "ping",

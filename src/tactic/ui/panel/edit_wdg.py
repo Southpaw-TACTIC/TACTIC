@@ -663,7 +663,9 @@ class EditWdg(BaseRefreshWdg):
 
 
         if self.color_mode == "default":
-            table.add_color("background", "background")
+            #table.add_color("background", "background")
+            pass
+
         elif self.color_mode == "transparent":
             table.add_style("background", "transparent")
         table.add_color("color", "color")
@@ -845,11 +847,11 @@ class EditWdg(BaseRefreshWdg):
                 tr = table.add_row()
 
 
-                if self.color_mode == "default":
-                    if index % 2 == 0:
-                        tr.add_color("background", "background")
-                    else:
-                        tr.add_color("background", "background", -1 )
+                #if self.color_mode == "default":
+                #    if index % 2 == 0:
+                #        tr.add_color("background", "background")
+                #    else:
+                #        tr.add_color("background", "background", -1 )
 
 
             index += 1
@@ -876,6 +878,9 @@ class EditWdg(BaseRefreshWdg):
                 title_div.add(title)
                 title_div.add_style("display: inline-block")
                 title_div.add_class("spt_edit_title")
+                title_div.add_style("font-size: 0.9em")
+                title_div.add_style("text-transform: uppercase")
+                title_div.add_style("opacity: 0.5")
 
 
                 td = table.add_cell(title_div)
@@ -928,6 +933,8 @@ class EditWdg(BaseRefreshWdg):
 
                 if (title in self.disables):
                     widget.add_attr("disabled", "disabled")
+
+                widget.add_style("font-size: 1.2em")
                 td.add(widget)
 
 

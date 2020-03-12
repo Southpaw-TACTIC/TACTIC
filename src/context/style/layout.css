@@ -49,6 +49,11 @@
 }
 
 
+body {
+    font-size: 0.75rem;
+}
+
+
 table {
     font-size: .75rem;
 }
