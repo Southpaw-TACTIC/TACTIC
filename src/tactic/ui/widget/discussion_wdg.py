@@ -501,6 +501,7 @@ class DiscussionWdg(BaseRefreshWdg):
         layout.add_relay_behavior( {
         'type': 'mouseup',
         'bvr_match_class': submit_class,
+        'refresh': refresh,
         'cbjs_action': '''
 
         var note_top = bvr.src_el.getParent(".spt_add_note_top");
