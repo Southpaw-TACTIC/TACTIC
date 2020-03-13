@@ -597,8 +597,8 @@ class TextWdg(BaseTextWdg):
     }
  
 
-    def __init__(self,name=None, label=None):
-        super(TextWdg,self).__init__(name,"input", label=label)
+    def __init__(self,name=None, label=None, **kwargs):
+        super(TextWdg,self).__init__(name,"input", label=label, **kwargs)
         self.css = "inputfield"
         self.add_class("spt_input")
     
