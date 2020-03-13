@@ -443,18 +443,18 @@ class ProdSettingLinkWdg(EditLinkWdg):
 
 class SubmissionLinkWdg(EditLinkWdg):
     def __init__(self, search_type, search_id, text="Submit", long=False, \
-            config_base='submit', widget='pyasm.prod.web.SubmissionWdg'):
+            config_base='submit', widget='pyasm.prod.web.SubmissionWdg', **kwargs):
            
         self.long = long
 
         self.parent_search_type = search_type
         self.parent_search_id = search_id
 
-        search_type = "prod/submission"
+        search_type = "vfx/submission"
         search_id = "-1"
         config_base = "insert"
 
-        super(SubmissionLinkWdg,self).__init__(search_type,search_id,text,config_base, widget)
+        super(SubmissionLinkWdg,self).__init__(search_type,search_id,text,config_base, widget, **kwargs)
 
     def modify_behavior(self, bvr):
         '''values is for web form values'''
