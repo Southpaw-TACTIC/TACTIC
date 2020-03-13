@@ -365,7 +365,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 position: absolute;
                 left: 0;
                 background: #000;
-                opacity: 0.3;
+                opacity: 0.6;
                 z-index: 1;
                 display: flex;
                 justify-content: space-between;
@@ -403,6 +403,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         
         inner.add_style("margin-left: 20px")
+        inner.add_style("margin-top: 15px")
        
 
         inner.add_attr("ondragenter", "spt.thumb.background_enter(event, this) ")
@@ -431,13 +432,13 @@ class TileLayoutWdg(ToolLayoutWdg):
             
 
             if js_load:
-                import time
-                start = time.time()
+                #import time
+                #start = time.time()
                 self.sobject_data = self.get_sobject_data(self.sobjects)
-                end = time.time()
-                print("\n")
-                print("TILE LAYOUT PREPROCESSING TOOK [%s] SECONDS" % (end-start))
-                print("\n")
+                #end = time.time()
+                #print("\n")
+                #print("TILE LAYOUT PREPROCESSING TOOK [%s] SECONDS" % (end-start))
+                #print("\n")
                 style = self.get_styles()
                 inner.add(style)
             
@@ -600,7 +601,12 @@ class TileLayoutWdg(ToolLayoutWdg):
                         download_el.setAttribute("download", data.basename);
 
                         // Size
-                        if (data.size) tile.getElement(".spt_tile_size").innerHTML = data.size;
+                        if (data.size) {
+                            tile.getElement(".spt_tile_size").innerHTML = data.size;
+                        }
+                        else {
+                            download_el.setStyle("display", "none");
+                        }
 		    }
 
 
@@ -930,6 +936,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent(".spt_tile_top");
                 var search_key = top.getAttribute("spt_search_key");
+                var name = top.getAttribute("spt_name");
 
                 spt.tab.set_main_body_tab();
                 var class_name = 'tactic.ui.tools.SObjectDetailWdg';
@@ -937,7 +944,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     search_key: search_key,
                     tab_element_names: bvr.tab_element_names,
                 };
-                spt.tab.add_new(search_key, "Detail", class_name, kwargs);
+                spt.tab.add_new(search_key, name, class_name, kwargs);
                 '''
             } )
 
@@ -1448,7 +1455,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                             row.addClass("spt_table_selected");
                             spt.table.unselect_row(row);
 
-                            bg.setStyle("opacity", "0.3");
+                            bg.setStyle("opacity", "0.6");
 
                         }
                     }
@@ -1465,7 +1472,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                     checkbox.checked = false;
                    
                     spt.table.unselect_row(row);
-                    bg.setStyle("opacity", "0.3");
+                    bg.setStyle("opacity", "0.6");
 
                 }
                 else {
@@ -1547,7 +1554,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                         row.addClass("spt_table_selected");
                         spt.table.unselect_row(row);
 
-                        bg.setStyle("opacity", "0.3");
+                        bg.setStyle("opacity", "0.6");
 
                     }
                 }
@@ -1560,7 +1567,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 }
                 else {
                     spt.table.unselect_row(row);
-                    bg.setStyle("opacity", "0.3");
+                    bg.setStyle("opacity", "0.6");
                 }
             }
             evt.stopPropagation();
@@ -1918,7 +1925,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 position: absolute;
                 left: 0;
                 background: #000;
-                opacity: 0.3;
+                opacity: 0.6;
                 z-index: 1;
                 display: flex;
                 justify-content: space-between;
@@ -1933,7 +1940,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 height: 100%;
                 width: 100%;
                 background: #000;
-                opacity: 0.3;
+                opacity: 0.6;
                 z-index: 1;
             }
             
@@ -1949,10 +1956,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             }
         
             .spt_tile_title_text {
-                height: 15px;
-                left: 25px;
-                top: 3px;
-                position: absolute;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 color: #FFF;
@@ -1961,8 +1964,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         """
         css += """
             .spt_tile_detail {
-                float: right;
-                margin-top: -2px;
                 position: relative;
                 z-index: 2;
                 margin-right: 3px;
@@ -1971,8 +1972,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
             .spt_tile_collection {
                 margin-right: 5px;
-                float: right;
-                margin-top: -2px;
                 position: relative;
                 z-index: 2;
             }
@@ -2068,36 +2067,11 @@ class TileLayoutWdg(ToolLayoutWdg):
         icon.add_class("hand")
         href.add(icon)
 
-        """
         # TODO: Dynamically preprocess bottom wdg
         if self.bottom:
-            self.bottom.set_sobject(sobject)
             div.add(self.bottom.get_buffer_display())
-        elif self.bottom_expr:
-            bottom_value = Search.eval(self.bottom_expr, sobject, single=True)
-            bottom_value = bottom_value.replace("\n", "<br/>")
-            bottom = DivWdg()
-            bottom.add(bottom_value)
-            bottom.add_class("spt_tile_bottom")
-            bottom.add_style("padding: 10px")
-            bottom.add_style("height: 50px")
-            bottom.add_style("overflow-y: auto")
-            div.add(bottom)
-            #bottom.add_style("width: %s" % (self.aspect_ratio[0]-20))
-        else:
-            table = Table()
-            #div.add(table)
 
-            table.add_style("width: 100%")
-            table.add_style("margin: 5px 10px")
-            table.add_row()
-            table.add_cell("Name:")
-            table.add_cell("Whatever")
-            table.add_row()
-            table.add_cell("File Type:")
-            table.add_cell("Image.jpg")
-        """
-         
+
         div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
         div.add_attr("ondragleave", "spt.thumb.noop_leave(event, this)")
         div.add_attr("ondragover", "return false")
@@ -2117,6 +2091,8 @@ class TileLayoutWdg(ToolLayoutWdg):
     def get_template_title(self):
         
         div = DivWdg()
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
 
         div.add_class("spt_tile_title")
         div.add_class("spt_default_tile_title")
@@ -2128,11 +2104,46 @@ class TileLayoutWdg(ToolLayoutWdg):
         bg_wdg.set_box_shadow(color="#000")
         bg_wdg.add(" ")
 
+        header_div = DivWdg()
+        header_div.add_class("spt_tile_select")
+        div.add(header_div)
+        header_div.add_style("display: flex")
+        header_div.add_style("align-items: center")
+        header_div.add_style("justify-content: space-between")
+        header_div.add_style("width: 100%")
+
+        
+        header_div.add_class("SPT_DTS")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg("select")
+        checkbox.add_class("spt_tile_checkbox")
+        header_div.add(checkbox)
+        checkbox.add_style("width: 18px")
+        checkbox.add_style("height: 18px")
+
+
+        title_div = DivWdg()
+        title_div.add_class("spt_tile_title_text")
+        title_div.add_style("max-width: 70%")
+        title_div.add_style("overflow: hidden")
+        title_div.add_style("text-overflow: ellipsis")
+
+        header_div.add(title_div)
+        
+        title_div.add("<br clear='all'/>")
+        title_div.add_class("hand")
+        
+        if self.kwargs.get("hide_checkbox") in ['true', True]:
+            checkbox.add_style("visibility: hidden")
+            title_div.add_style("left: 10px")
+
+
 
         show_detail = self.kwargs.get("show_detail")
         if show_detail not in [False, 'false']:
             detail_div = DivWdg()
-            div.add(detail_div)
+            header_div.add(detail_div)
 
             count_div = DivWdg()
             detail_div.add(count_div)
@@ -2148,33 +2159,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-        header_div = DivWdg()
-        header_div.add_class("spt_tile_select")
-        div.add(header_div)
-        
-        header_div.add_class("SPT_DTS")
 
-        from pyasm.widget import CheckboxWdg
-        checkbox = CheckboxWdg("select")
-        checkbox.add_class("spt_tile_checkbox")
-
-
-        table = Table()
-        header_div.add(table)
-
-        table.add_cell(checkbox)
-
-        title_div = DivWdg()
-        title_div.add_class("spt_tile_title_text")
-
-        td = table.add_cell(title_div)
-        
-        title_div.add("<br clear='all'/>")
-        title_div.add_class("hand")
-        
-        if self.kwargs.get("hide_checkbox") in ['true', True]:
-            checkbox.add_style("visibility: hidden")
-            title_div.add_style("left: 10px")
 
         return div
 
@@ -2333,7 +2318,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         div.add(" ")
 
- 
+
         if self.kwargs.get("show_title") not in ['false', False]:
 
             if self.title_wdg:
@@ -2443,7 +2428,9 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
 
-            tool_div.add_style("position: relative")
+            tool_div.add_style("position: absolute")
+            tool_div.add_style("bottom: 0px")
+            tool_div.add_style("width: 100%")
             tool_div.add_style("background: #FFF")
             tool_div.add_style("color: #000")
             tool_div.add_style("height: 21px")
@@ -3150,38 +3137,6 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
             title_div.add_style("left: 10px")
 
 
-        '''
-
-
-        bg_wdg = DivWdg()
-        div.add(bg_wdg)
-        bg_wdg.add_class("spt_tile_bg")
-        bg_wdg.add_style("position: absolute")
-        bg_wdg.add_style("top: 0")
-        bg_wdg.add_style("left: 0")
-        bg_wdg.add_style("height: 100%")
-        bg_wdg.add_style("width: 100%")
-        #bg_wdg.add_style("background: rgba(0,0,0,0.3)")
-        bg_wdg.add_style("background: #000")
-        bg_wdg.add_style("opacity: 0.3")
-        '''
-
-        '''
-        status = sobject.get_value("status", no_exception=True)
-        if status == "Reject":
-            bg_wdg.add_style("background: #e84a4d")
-        elif status == "Final":
-            bg_wdg.add_style("background: #a3d991")
-        '''
-
-        '''
-        bg_wdg.set_box_shadow(color="#000")
-        bg_wdg.add_style("opacity: 0.3")
-
-
-        bg_wdg.add_style("z-index: 1")
-        bg_wdg.add(" ")
-        '''
 
 
         #if sobject.get_base_search_type() not in ["sthpw/snapshot"]:

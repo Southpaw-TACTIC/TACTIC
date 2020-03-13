@@ -85,12 +85,12 @@ class LayoutSwitcherWdgOld(BaseRefreshWdg):
         
         if mode == "button":
             if badge_count:
-                activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='spt_task_count badge spt_update'>%s</span> <span class='caret'></span></button>" % (color, title, badge_count))
+                activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='spt_task_count badge badge-dark spt_update'>%s</span> <span class='caret'></span></button>" % (color, title, badge_count))
             else:
                 activator = DivWdg("<button class='btn btn-%s dropdown-toggle'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (color, title))
         elif mode == "div":
             if badge_count:
-                activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='spt_task_count badge spt_update'>%s</span> <span class='caret'></span></button>" % (background, color, title, badge_count))
+                activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='spt_task_count badge badge-dark spt_update'>%s</span> <span class='caret'></span></button>" % (background, color, title, badge_count))
             else:
                 activator = DivWdg("<button class='btn dropdown-toggle' style='background: %s; color: %s; font-weight: bold'><span class='spt_title'>%s</span> <span class='caret'></span></button>" % (background, color, title))
 
@@ -369,6 +369,12 @@ class LayoutSwitcherWdgOld(BaseRefreshWdg):
 
                 item_div = self.get_menu_item()
                 menu_wdg.add(item_div)
+
+                item_div.add_style("display: flex")
+                item_div.add_style("justify-content: space-between")
+                item_div.add_style("align-items: center")
+                item_div.add_style("flex-wrap: nowrap")
+
                 
                 if css_class:
                     item_div.add_class(css_class)
@@ -384,13 +390,13 @@ class LayoutSwitcherWdgOld(BaseRefreshWdg):
                 item_div.add_class("spt_switcher_item")
                 item_div.add_class("tactic_hover")
 
-                item_div.add(title)
+                item_div.add("<div>%s</div>" % title)
                 item_div.add_attr("spt_title", title)
 
                 badge_count = attrs.get("badge_count")
                 if badge_count:
-                    badge = SpanWdg(badge_count)
-                    badge.add_class("badge")
+                    badge = DivWdg(badge_count)
+                    badge.add_class("badge badge-dark")
                     badge.add_class("spt_task_count")
                     item_div.add(badge)
 
@@ -467,13 +473,13 @@ class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
         
         title = """
             <span class='spt_title'>%s</span>
-            <span class='badge spt_task_count'>%s</span>
+            <span class='badge badge-dark spt_task_count'>%s</span>
         """ % (self.title, self.badge_count) 
         
         activator = ActionButtonWdg(
             title=title, 
             dropdown_id=self.dropdown_id,
-            btn_class="btn btn-primary dropdown-toggle"
+            btn_class="btn btn-secondary dropdown-toggle"
         )
         return activator 
    

@@ -408,6 +408,7 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <search_type name='config/trigger'/>
    <search_type name='config/client_trigger'/>
    <search_type name='config/process'/>
+   <search_type name='config/process_state'/>
    <search_type name='prod/custom_property'/>
    <search_type name='sthpw/pref_setting'/>
    <search_type name='config/url'/>

@@ -906,7 +906,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 elif item_width.endswith("%"):
                     continue
                 else:
-                    item_width = int(float(item_width))
+                    try:
+                        item_width = int(float(item_width))
+                    except:
+                        item_width = -1
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -5901,7 +5904,12 @@ spt.table.open_link = function(bvr) {
         search_key = sss.__search_key__;
         server.clear_api_key();
 
-        title = sss.code;
+        if (sss.name) {
+            title = sss.name;
+        }
+        else {
+            title = sss.code;
+        }
         name = sss.code;
     }
 
