@@ -5757,12 +5757,14 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.setStyle("height", "auto");
-        input.setStyle("min-width", "100px");
+        input.setStyle("min-width", "150px");
         input.setStyle("width", "auto");
+        input.setStyle("overflow", "auto");
+        input.setStyle("border", "solid 1px #DDD");
 
         edit_wdg.setStyle("position", "absolute");
         edit_wdg.setStyle("margin-right", "-3px");
-        edit_wdg.setStyle("min-width", "100px");
+        edit_wdg.setStyle("min-width", "140px");
 
         set_focus = true;
         accept_event = 'change';
@@ -5776,16 +5778,6 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        // FIXME: check if this is stil needed
-        if( spt.browser.is_IE() ) {
-            mult = 15;
-            if (size.y < (input.size * mult)) {
-                edit_wdg.setStyle( "height", (input.size * mult) + 'px');
-            }
-            else {
-                edit_wdg.setStyle( "height", size.y+'px');
-            }
-        }
         // to avoid overlapping select in UI
         edit_wdg.setStyle('z-index', '100' );
     }
@@ -5808,7 +5800,6 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
 
 
 
-
     if (accept_event == 'blur') {
         input.addEvent("blur", function() {
             // to make checkbox aware of its checked state
@@ -5822,6 +5813,13 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             spt.table.accept_edit(edit_wdg, input.value, true, {input: input});
         });
     }
+
+
+    var els = input.getElements("option");
+    els.forEach( function(el) {
+        el.addEvent("mouseover", function(e) { el.setStyle("background", "var(--spt_palette_background3)") } );
+        el.addEvent("mouseout", function(e) { el.setStyle("background", "") } );
+    } );
 
 
     input.addEvent("keydown", function(e) {

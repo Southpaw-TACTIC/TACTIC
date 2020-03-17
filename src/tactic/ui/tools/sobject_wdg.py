@@ -158,9 +158,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
             title.add("<div style='font-size: 0.5em'>%s:</div> " % stype_title.upper())
 
         if name:
+            name = Common.pluralize(name)
             title.add("%s" % name)
             if code:
-                title.add("<br/><i style='font-size: 0.6em; opacity: 0.7'>(code: %s)</i>" % code)
+                title.add("<br/><i style='margin-top: -3px; font-size: 0.4em; opacity: 0.5'>(code: %s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
