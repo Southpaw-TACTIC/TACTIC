@@ -1875,8 +1875,9 @@ class MethodMode(ExpressionParser):
         # format the results
         for result in results:
             if result_type == 'datetime':
-                result = result.strftime(format)
-                result = dateutil.parser.parse(result)
+                if result:
+                    result = result.strftime(format)
+                #result = dateutil.parser.parse(result)
 
             formated_results.append(result)
 

@@ -426,7 +426,8 @@ class WidgetDbConfig(SObject):
             if element is None:
                 element = self.get_element_node("name")
             if element is not None:
-                xml.insert_before(new_root_node, element)
+                #xml.insert_before(new_root_node, element)
+                xml.insert_before(element, new_root_node)   #markmark
             else:
                 xml.append_child(view_node, new_root_node)
         #print(self.xml.to_string())

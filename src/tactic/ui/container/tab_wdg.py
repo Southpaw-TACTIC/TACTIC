@@ -408,12 +408,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         // set the new label
         var label = header.getElement(".spt_tab_header_label");
         var display_title = title;
-        if (display_title.length > 20) {
-            display_title = title.substr(0,18) + "...";
-        }
 
         label.setAttribute("title", title);
-        label.innerHTML = display_title + label.innerHTML;
+        label.innerHTML = display_title;
 
         header.setAttribute("spt_class_name", class_name);
         var kwargs_str = JSON.stringify(kwargs);
@@ -1332,7 +1329,7 @@ spt.tab.view_definition = function(bvr) {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                min-width: 120px;
+
                 user-select: none;
                 -webkit-touch-callout: none; /* iOS Safari */
                 -webkit-user-select: none; /* Safari */
@@ -1823,6 +1820,7 @@ spt.tab.view_definition = function(bvr) {
 
         # resize headers on leave
         resize_headers = self.kwargs.get("resize_headers")
+        resize_headers = True
         if resize_headers:
             header_div.add_behavior( {
                 'type': 'mouseleave',
@@ -2656,6 +2654,8 @@ spt.tab.view_definition = function(bvr) {
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
 
+        header.add_style("width: 120px")
+
         header.add_behavior({
             'type': 'load',
             'cbjs_action': '''$(bvr.src_el).bmdRipples();'''
@@ -2714,6 +2714,8 @@ spt.tab.view_definition = function(bvr) {
         show_remove = self.kwargs.get("show_remove")
         if show_remove not in [False, "false"]:
             title_container.add_style("width: 95%")
+        else:
+            title_container.add_style("width: 100%")
         header.add(title_container)
 
         title_div = DivWdg()

@@ -320,8 +320,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         self.background_color = self.kwargs.get("background_color")
         if not self.background_color:
-            self.background_color = "white"
-
+            self.background_color = self.top.get_color("background", 10)
 
         self.top.add_style("height", "100%")
         self.top.add_style("width", "100%")
@@ -1573,6 +1572,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         if node_type == "hierarchy":
@@ -2239,6 +2239,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label_width = custom_wdg.get_label_width()
         if label_width == None:
@@ -2341,6 +2342,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
@@ -2429,6 +2431,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
@@ -2509,6 +2512,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_style("text-align: center")
         label.add_style("padding-left: 2px")
         label.add_style("padding-top: 1px")
+        label.add_color("color", "color")
 
         label = DivWdg()
         node.add(label)
@@ -4210,7 +4214,7 @@ spt.pipeline.set_color = function(node, color) {
 
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
-    var color2 = spt.css.modify_color_value(color, -10);
+    var color2 = spt.css.modify_color_value(color, -5);
 
     if (spt.pipeline.get_node_type(node) == "condition") {
         angle = 225;
@@ -6798,7 +6802,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         color = pipeline.color;
     }
     if (color == '' || color == null || typeof(color) == 'undefined') {
-        color = "#999";
+        color = "#AAAAB0";
     }
     group.set_color(color);
     group.set_group_type("pipeline");

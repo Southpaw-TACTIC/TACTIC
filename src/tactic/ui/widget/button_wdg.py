@@ -219,7 +219,7 @@ class TextBtnSetWdg(BaseRefreshWdg):
                                   size = self.size,
                                   width = width,
                                   side_padding = self.side_padding )
-            if bvr in btn_map:
+            if "bvr" in btn_map:
                 bvr = {}
                 if 'type' not in bvr:
                     bvr = {'type':'click_up'}

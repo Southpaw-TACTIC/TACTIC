@@ -331,7 +331,10 @@ class TopWdg(Widget):
             'bvr_match_class': 'tactic_refresh',
             'cbjs_action': '''
             var target_class = bvr.src_el.getAttribute("target");
-            if (target_class.indexOf(".") != "-1") {
+            if (!target_class) {
+                var target = bvr.src_el;
+            }
+            else if (target_class.indexOf(".") != "-1") {
                 var parts = target_class.split(".");
                 var top = bvr.src_el.getParent("."+parts[0]);
                 var target = top.getElement("."+parts[1]);  
@@ -340,7 +343,19 @@ class TopWdg(Widget):
                 var target = document.id(document.body).getElement("."+target_class);
             }
 
-            spt.panel.refresh(target);
+            var kwargs = {};
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var attr_name = attributes[i].name;
+                if (attr_name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[attr_name] = value;
+            }
+
+
+            spt.panel.refresh_element(target, kwargs);
             '''
             } )
 
@@ -1000,9 +1015,13 @@ class TopWdg(Widget):
     def get_copyright_wdg(self):
         widget = Widget()
 
+        from datetime import datetime
+        today = datetime.today()
+        year = datetime.year
+
         # add the copyright information
         widget.add( "<!--   -->\n")
-        widget.add( "<!-- Copyright (c) 2005-2014, Southpaw Technology - All Rights Reserved -->\n")
+        widget.add( "<!-- Copyright (c) %s, Southpaw Technology - All Rights Reserved -->\n" % year)
         widget.add( "<!--   -->\n")
 
         return widget

@@ -5904,7 +5904,12 @@ spt.table.open_link = function(bvr) {
         search_key = sss.__search_key__;
         server.clear_api_key();
 
-        title = sss.code;
+        if (sss.name) {
+            title = sss.name;
+        }
+        else {
+            title = sss.code;
+        }
         name = sss.code;
     }
 
