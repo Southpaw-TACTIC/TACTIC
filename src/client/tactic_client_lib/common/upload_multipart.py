@@ -200,6 +200,12 @@ class UploadMultipart(object):
 
         M = []
         for l in L:
+            try:
+                l = l.decode()
+            except UnicodeDecodeError as e:
+                pass
+            except AttributeError as e:
+                pass
             M.append(l)
             M.append(CRLF)
 
