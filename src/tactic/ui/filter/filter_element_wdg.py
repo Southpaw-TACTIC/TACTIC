@@ -693,7 +693,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             else:
                 overall_search.add_keyword_filter(column, keywords)
-               
+
 
         # this is the default when the xml is just <element name='keywords'/>
         elif self.mode == 'global':
@@ -918,7 +918,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     op = '&'
 
 
-           
             for column in self.columns:
                 if self.cross_db:
                     search2 = None
@@ -1071,6 +1070,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             else:
                 overall_search.add_op(multi_col_op)
+
+
+
 
         else:
             raise TacticException('Mode [%s] in keyword search not support' % self.mode)

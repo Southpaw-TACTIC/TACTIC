@@ -421,23 +421,28 @@ class SObjectDetailWdg(BaseRefreshWdg):
         if isinstance(tab_kwargs, basestring):
             tab_kwargs = jsonloads(tab_kwargs)      
 
-        show_remove = tab_kwargs.get("show_remove") or False
-        show_add = tab_kwargs.get("show_add") or False
+        show_remove = tab_kwargs.get("show_remove")
+        if show_remove == None:
+            tab_kwargs['show_remove'] = 'false'
+
+        show_add = tab_kwargs.get("show_add")
+        if show_add == None:
+            tab_kwargs['show_add'] = 'false'
+
+
         add_bvr = tab_kwargs.get("add_bvr") or ""
         use_default_style = tab_kwargs.get("use_default_style")
         height = tab_kwargs.get("height")
-        #show_add = True
-        #show_remove = True
 
         tab_kwargs['state'] = state
-        tab_kwargs['show_add'] = "true"
-        tab_kwargs['show_remove'] = "true"
+        #tab_kwargs['show_add'] = "true"
+        #tab_kwargs['show_remove'] = "true"
         tab_kwargs['config'] = config
         tab_kwargs['selected'] = selected
         tab_kwargs['tab_offset'] = 10
         tab_kwargs['save_state'] = save_state
         tab_kwargs['use_header_back'] = True
-        
+
  
         tab = TabWdg(**tab_kwargs)
         tab.add_style("margin: 0px -1px -1px -1px")

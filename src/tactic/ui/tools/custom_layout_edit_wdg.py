@@ -223,12 +223,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     def get_title_wdg(self, title, content_id=None, is_on=True):
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: 0 -1 -1 0")
-        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("height: 30px")
 
         title_wdg.add_color("background", "background", -10)
-        title_wdg.add_styles("padding: 5px")
-        title_wdg.add_border()
+        title_wdg.add_style("padding: 5px")
+        title_wdg.add_style("margin: 0 -1 -1 0")
 
 
         table = DivWdg()
@@ -338,7 +337,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("margin: -1px")
         inner.add_class("spt_custom_layout_inner")
             
         
@@ -758,6 +756,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         content_div.add_style("padding-top: 5px")
 
+        offset = 120
+        content_div.add_style("height: calc(100vh - %spx)" % offset)
+        content_div.add_style("overflow: auto")
+
 
         plugin_code = self.kwargs.get("plugin_code")
         #plugin_code = "SPT/sample_form"
@@ -931,13 +933,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         right.add_style("vertical-align: top")
         right.add_color("background", "background", -3)
         right.add_style("width: 100%")
-        right.add_style("height: 100%")
+        right.add_style("height: calc(100vh - 130px)")
 
 
         right_div = DivWdg()
         right.add(right_div)
         right_div.add_color("color", "color")
         right_div.add_style("min-width: 800px")
+        right_div.add_style("width: 100%")
         right_div.add_style("min-height: 500px")
         right_div.add_class("spt_custom_layout_content")
 
@@ -1101,7 +1104,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             html_div = DivWdg()
             
             html_div.set_name("HTML")
-            html_div.add_style("height: 600px")
             html_div.add_class("spt_html_tab")
 
             text = TextAreaWdg("html")
@@ -1116,8 +1118,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             html_div.add(button)
             """
 
-            text.add_style("width: 100%")
-            text.add_style("height: 600px")
+            text.add_style("width: calc(100hw - 200px)")
+            #text.add_style("height: 600px")
+            text.add_style("height: inherit")
+            text.add_style("box-sizing: border-box")
             text.add_style("min-height: 400px")
             text.add_style("font-size: 12px")
             text.add_style("font-family: courier")
@@ -1220,12 +1224,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             if not selected:
                 selected = "HTML"
 
+            tab_height = "calc(100vh - 150px)"
+
             # start tab here
             from tactic.ui.container import TabWdg
-            tab = TabWdg(selected=selected, show_add=False, show_remove=False, tab_offset="10px", show_context_menu=False, allow_drag=False)
+            tab = TabWdg(selected=selected, show_add=False, show_remove=False, tab_offset="10px", show_context_menu=False, allow_drag=False, height=tab_height)
             #tab.add_style("margin: 5px -2px 0px -2px")
-            tab.add_style("margin: 10px -1px 0px -1px")
             tab.add_style("overflow: hidden")
+
             right_div.add(tab)
 
             right_div.add_behavior( {
