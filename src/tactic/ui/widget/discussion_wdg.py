@@ -1207,13 +1207,13 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             if mode == "icon":
-                add_wdg = IconWdg("Add Note", "BS_PENCIL")
+                add_wdg = IconWdg("Add Note", "FAS_PENCIL_ALT", size=8)
                 no_notes_msg.add(add_wdg)
                 if len(notes):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
 
             else:
-                add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
+                add_wdg = IconWdg("Add Note", "FAR_PLUS_SQUARE", size=8)
                 no_notes_msg.add(add_wdg)
                 add_wdg.add_style("display: inline-block")
                 msg = "No notes."
@@ -1441,12 +1441,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
             if mode == "icon":
                 if last_context.endswith("/review") or last_context.endswith("/error"):
-                    process_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+                    process_wdg = IconWdg("View '%s' notes" % context, "FAR_FLAG", size=8)
                     process_wdg.add_style("color: rgb(232, 74, 77)")
                     process_wdg.add_style("margin-top: 2px")
                     process_top.add("<div style='height: 3px'></div>")
                 else:
-                    process_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL")
+                    process_wdg = IconWdg("View '%s' notes" % context, "FAR_EDIT", size=8)
 
                 process_top.add(process_wdg)
                 if count:
@@ -1456,7 +1456,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             else:
-                process_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL", size="12")
+                process_wdg = IconWdg("View '%s' notes" % context, "FAS_PENCIL_ALT", size=8)
                 process_top.add(process_wdg)
                 process_wdg.add_style("float: left")
 
@@ -2112,7 +2112,7 @@ class NoteWdg(BaseRefreshWdg):
         tr = content.add_row()
 
         if context.endswith("/review") or context.endswith("/error"):
-            context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+            context_wdg = IconWdg("View '%s' notes" % context, "FAR_FLAG", size=8)
             #tr.add_style("background: rgba(232, 74, 77, 0.8)")
             tr.add_style("border-bottom: solid 1px rgba(232, 74, 77, 0.8)")
 
@@ -2124,7 +2124,7 @@ class NoteWdg(BaseRefreshWdg):
 
 
 
-        icon = IconWdg("Note", "BS_PENCIL")
+        icon = IconWdg("Note", "FAR_EDIT", size=8)
         icon.add_style("float: left")
         icon.add_style("margin: 0px 5px")
 
@@ -2147,7 +2147,7 @@ class NoteWdg(BaseRefreshWdg):
         security = Environment.get_security()
         if security.is_admin() or current_login == login:
 
-            icon = IconButtonWdg(title="Options", icon="BS_PENCIL")
+            icon = IconButtonWdg(title="Options", icon="FAR_EDIT", size=8)
             title.add(icon)
             icon.add_style("float: right")
             icon.add_style("margin-top: -5px")
@@ -2228,7 +2228,7 @@ class NoteWdg(BaseRefreshWdg):
             bubble = 'View Attachments'
             if len(attachments) > 1:
                 bubble = '%s (%s)'%(bubble, len(attachments))
-            btn = IconButtonWdg(title=bubble, icon="BS_PAPERCLIP")
+            btn = IconButtonWdg(title=bubble, icon="FAS_PAPERCLIP", size=8)
             title.add("&nbsp;");
             btn.add_style("float: right");
             btn.add_style("margin-top: -3px");
@@ -2346,6 +2346,7 @@ class NoteWdg(BaseRefreshWdg):
 
                 thumb_div = DivWdg()
                 thumb_div.add_style("float: left")
+                thumb_div.add_style("margin: 0px 5px")
                 thumb_div.add(thumb)
 
                 #thumb_div.add_class("spt_open_thumbnail")
@@ -2629,6 +2630,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         var top = bvr.src_el.getParent(".spt_attachment_top")
         var list = top.getElement(".spt_attachment_list");
+        list.setStyle("border", "solid 1px transparent");
 
         if (!top.files) {
             top.files = [];

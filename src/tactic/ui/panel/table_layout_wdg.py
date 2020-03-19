@@ -8042,7 +8042,6 @@ spt.table.expand_table = function(mode) {
 
     // adjust for windows scrollbar
     if (spt.browser.os_is_Windows() && table) {
-        return;
         var div = layout.getElement(".spt_header_padding");
         if (div) {
             spt.behavior.destroy_element(div);
