@@ -642,7 +642,7 @@ class EditWdg(BaseRefreshWdg):
 
         #insert the header before body into inner
         show_header = self.kwargs.get("show_header")
-        if show_header not in ['false', False]:
+        if show_header and show_header not in ['false', False]:
             self.add_header(inner, sobj_title)
 
         body_container = DivWdg()
