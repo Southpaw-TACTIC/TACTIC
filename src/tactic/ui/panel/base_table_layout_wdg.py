@@ -992,7 +992,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                  background: var(--spt_palette_background2);
             }
             
-        """)        
+        """)
 
 
     def get_action_wdg(self):
@@ -1480,6 +1480,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add_style("box-shadow: none")
         xx.add_style("width: 100%")
         xx.add_style("box-sizing: border-box")
+        xx.add_style("z-index: 10")
 
         left_div = DivWdg()
         left_div.add_class("d-flex")
@@ -1550,10 +1551,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         title = title.upper()
 
         title_box_wdg = DivWdg()
-        title_box_wdg.add_style("padding: 14px 20px 10px 10px")
+        title_box_wdg.add_style("padding: 0px 6px 0px 10px")
         title_box_wdg.add_style("box-sizing: border-box")
-        title_box_wdg.add_style("height: 48px")
-        title_box_wdg.add_color("background", "background", -10)
 
         title_box_wdg.add_style("float: left")
 
@@ -1569,12 +1568,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             title_box_wdg.add(title_wdg)
             title_wdg.add(title)
             title_wdg.add_style("font-size: 1.2em")
-            title_wdg.add_style("font-weight: 500")
+            title_wdg.add_style("font-weight: bold")
 
         if description:
             title_box_wdg.add("<br/>")
             title_box_wdg.add(description)
-            title_box_wdg.add("<br/>"*2)
+            title_box_wdg.add("<br/>")
 
         return title_box_wdg
 
@@ -2127,7 +2126,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
-        button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="FA_COLUMNS", show_arrow=False)
 
         search_type_obj = SearchType.get(self.search_type)
 

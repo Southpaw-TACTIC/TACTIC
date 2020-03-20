@@ -191,6 +191,10 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         s_link_div.add_attr("aria-expanded", "false")
         s_link_div.add_class("dropdown-toggle")
         s_link_div.add_class("nav-link")
+
+        icon = attributes.get("sb_icon")
+        if icon:
+            s_link_div.add('<i class="%s"></i>' % icon)
         
         
         s_content_div = HtmlElement.ul()
@@ -292,6 +296,10 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         span.add_class("spt_side_bar_title")
         span.add_class("nav-link")
 
+        icon = attributes.get("sb_icon")
+        if icon:
+            span.add('<i class="%s"></i>' % icon)
+
         span.add(title)
         link_wdg.add(span)
 
@@ -373,14 +381,12 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }
 
 .spt_bs_left_sidebar.active ul li a i {
-    margin-right: 0;
-    display: block;
-    font-size: 1.8em;
-    margin-bottom: 5px;
+    margin-right: 15px;
+    font-size: 1.5em;
 }
 
-.spt_bs_left_sidebar.active ul ul a {
-    //padding: 10px !important;
+.spt_bs_left_sidebar.active ul ul ul a {
+    padding-left: 90px !important;
 }
 
 .spt_bs_left_sidebar.active .dropdown-toggle::after {
@@ -410,7 +416,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     margin-right: 10px;
 }
 
-.spt_bs_left_sidebar ul li.active>a, a[aria-expanded="true"] {
+.spt_bs_left_sidebar ul li .nav-link[aria-expanded="true"] {
     background: var(--spt_palette_md_primary_dark);
 }
 
@@ -428,7 +434,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 /* Submenu */
 .spt_bs_left_sidebar ul ul a {
-    font-size: 0.9em !important;
+    font-size: 0.9rem !important;
     //padding-left: 20px !important;
     background: var(--spt_palette_md_primary_dark);
 }
@@ -437,13 +443,12 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 .spt_bs_left_sidebar ul ul .dropdown-divider {
     margin: 0rem 0rem;
     padding: .5rem 0rem;
-    background: var(--spt_palette_md_primary_dark);
 }
 
 
 /* Sub-sub-menu style */
 .spt_bs_left_sidebar ul ul ul a {
-    font-size: 0.9em !important;
+    font-size: 0.9rem !important;
     //padding-left: 40px !important;
     background: var(--spt_palette_md_primary_dark);
 }
@@ -467,7 +472,14 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     background: var(--spt_palette_md_primary_dark);
 }
 
+.spt_side_bar_element .nav-link {
+    text-transform: none;
+}
 
+.spt_side_bar_element .spt_side_bar_title {
+    display: flex;
+    align-items: center;
+}
 
 
 @media (max-width: 768px) {
@@ -556,7 +568,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     background: var(--spt_palette_md_primary);
     padding: 10px 0px;
     padding-left: 50px;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 300;
     text-align: left;
 }
@@ -570,7 +582,9 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     margin-left: -35px;
     margin-top: 15px;
     padding-left: 10px;
-    border-bottom: solid 1px #999;
+    border-bottom: solid 1px #e9ecef;
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
 
@@ -1386,7 +1400,7 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
         menu_option1 = DivWdg("Dashboard")
         menu_option1.add_class("hand tactic_load spt_drop_down_cell tactic_load")
         menu_option1.add_attr("target", "spt_header_top.spt_home_content")
-        menu_option1.add_attr("view", "user.home.welcome")
+        menu_option1.add_attr("view", "user.home.dashboard")
         user_menu.add(menu_option1)
 
         menu_option2 = DivWdg("My Profile")
@@ -1607,7 +1621,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             @media (max-width: 575.98px) {
 
                 .spt_bs_content {
-                    padding-top: 56px;
+                    padding-top: 49px;
                 }
                 
             }

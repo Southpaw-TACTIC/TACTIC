@@ -2050,8 +2050,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             options = config.get_display_options(element_name)
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
-                div = self.get_separator_wdg(element_name, config, options)
-                subsection_div.add(div)
+                # div = self.get_separator_wdg(element_name, config, options)
+                # subsection_div.add(div)
                 continue
 
             elif display_class == "TitleWdg":
@@ -3037,12 +3037,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             return top
 
 
-
-        #title_wdg = self.get_title_wdg()
-        #if title_wdg:
-        #    inner.add(title_wdg)
-
-
         # set up a search
         try:
             search_type_obj = SearchType.get(search_type)
@@ -3328,8 +3322,12 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         resize_cbjs = self.kwargs.get("resize_cbjs")
         reorder_cbjs = self.kwargs.get("reorder_cbjs")
+        title = self.kwargs.get("title")
+        description = self.kwargs.get("description")
 
         kwargs = {
+            "title": title,
+            "description": description,
             "table_id": table_id,
             "search": search,
             "search_type": search_type,
@@ -3622,7 +3620,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         title = self.kwargs.get("title")
-        #title = ""
+
         description = self.kwargs.get("description")
         title_view = self.kwargs.get("title_view")
         if not title and not description and not title_view:

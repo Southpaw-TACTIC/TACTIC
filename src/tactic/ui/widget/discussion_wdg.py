@@ -902,7 +902,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 width: 100%;
                 height: auto;
                 box-sizing: border-box;
-                padding: 0px 10px;
+                border-radius: 5px;
             }
 
 
@@ -1192,17 +1192,18 @@ class DiscussionWdg(BaseRefreshWdg):
 
             top.add(no_notes_div)
             if self.show_border:
-                no_notes_div.add_color("background", "background")
+                no_notes_div.add_color("background", "transparent")
                 no_notes_div.add_color("color", "color")
             no_notes_div.add_style("padding", "0px 5px")
 
   
-            add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
+            add_class = self.get_note_class(self.hidden, 'spt_discussion_add')
 
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
             no_notes_msg.add_style("display: flex")
+            no_notes_msg.add_style("align-items: center")
             no_notes_div.add(no_notes_msg)
 
 
@@ -1214,8 +1215,9 @@ class DiscussionWdg(BaseRefreshWdg):
 
             else:
                 add_wdg = IconWdg("Add Note", "FAR_PLUS_SQUARE", size=8)
+                add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
+                add_wdg.add_style("margin: 0px 10px")
                 no_notes_msg.add(add_wdg)
-                add_wdg.add_style("display: inline-block")
                 msg = "No notes."
                 no_notes_msg.add("<div style='display: inline-block'><i> %s </i></div>" % _(msg))
                 no_notes_div.add_style("font-size: 0.9em")
@@ -1537,7 +1539,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
                 add_wdg.add_attr("spt_process", process)
                 add_wdg.add_attr("spt_context", context)
-                add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
+                add_class = self.get_note_class(self.hidden, 'spt_discussion_add')
                 add_wdg.add_class(add_class)
 
                 sk = self.parent.get_search_key(use_id=True)
@@ -2431,9 +2433,22 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         # need the process to predict the notification to and cc
         self.process = self.kwargs.get('process')
 
+        style = HtmlElement.style('''
+            .spt_discussion_add_note textarea {
+                width: 100%;
+                height: 100px;
+                border: 2px solid #ccc;
+                outline: none;
+                border-radius: 5px;
+                background-image: none !important;
+                padding: 5px;
+            }
+        ''')
+
       
         content_div = self.top
         content_div.add_style("min-width: 300px")
+        content_div.add(style)
 
         is_standalone = self.kwargs.get("is_standalone")
         on_submit_js = self.kwargs.get("on_submit_js") or ""
@@ -2458,9 +2473,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         search_key_hidden = HiddenWdg("search_key")
         search_key_hidden.set_value(parent.get_search_key())
         content_div.add(search_key_hidden)
-
-        content_div.add('''<div style="margin-top: 10px; font-size: 16px">Add New Note</div>''')
-        content_div.add('''<hr/>''')
 
 
 
@@ -2594,8 +2606,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         text = TextAreaWdg("note")
         text.add_class("form-control")
-        text.add_style("width: 100%")
-        text.add_style("height: 100px")
+        text.add_attr("placeholder", "Add new notes...")
         content_div.add(text)
 
         #content_div.add_style("padding: 20px 10px")

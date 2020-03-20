@@ -3818,7 +3818,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_select_wdg(self):
         checkbox_container = DivWdg()
         checkbox_container.add_style("position", "relative")
-        checkbox_container.add_style("top", "-6px")
+        checkbox_container.add_style("top", "-4px")
 
         checkbox = DivWdg(css="checkbox spt_table_checkbox")
         checkbox_container.add(checkbox)
@@ -4587,6 +4587,7 @@ spt.table.select_row = function(row) {
 
         row.setAttribute("spt_last_background", current_color);
         row.setStyle("background-color", spt.table.select_color);
+        row.setStyle("font-weight", "700");
         row.setAttribute("spt_background", spt.table.select_color);
         row.addClass("spt_table_selected");
     }
@@ -4606,6 +4607,7 @@ spt.table.unselect_row = function(row) {
 
     }
     row.setStyle("background-color", row.getAttribute("spt_last_background"));
+    row.setStyle("font-weight", "normal");
     row.setAttribute("spt_background", row.getAttribute("spt_last_background"));
     row.removeClass("spt_table_selected");
     spt.table.last_selected_row = null;

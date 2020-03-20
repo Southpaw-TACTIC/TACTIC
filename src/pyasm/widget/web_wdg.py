@@ -3590,17 +3590,19 @@ class ExceptionWdg(Widget):
         table.add_style("margin: 0px 20px 0px 20px")
         table.add_style("min-width: 200px")
 
+        from spt.modules.workflow import Workflow
+        if Workflow.is_tactic_admin() or Workflow.is_admin():
+            # show stack trace
+            button = ActionButtonWdg(title="Stack Trace")
+            button.add_style("white-space: nowrap")
+            table.add_row()
+            table.add_cell("Show the Stack Trace for the Error: ")
+            table.add_cell(button)
 
-        # show stack trace
-        button = ActionButtonWdg(title="Stack Trace")
-        table.add_row()
-        table.add_cell("Show the Stack Trace for the Error: ")
-        table.add_cell(button)
-
-        dialog = DialogWdg(show_pointer=False)
-        widget.add(dialog)
-        dialog.set_as_activator(button)
-        dialog.add_title("Stack Trace")
+            dialog = DialogWdg(show_pointer=False)
+            widget.add(dialog)
+            dialog.set_as_activator(button)
+            dialog.add_title("Stack Trace")
 
         div = DivWdg()
         dialog.add(div)
@@ -3613,21 +3615,23 @@ class ExceptionWdg(Widget):
         div.add(pre)
 
 
-        # show system info
-        button = ActionButtonWdg(title="System Info")
-        table.add_row()
-        table.add_cell("Show the System Info: ")
-        table.add_cell(button)
+        if Workflow.is_tactic_admin():
+            # show system info
+            button = ActionButtonWdg(title="System Info")
+            button.add_style("white-space: nowrap")
+            table.add_row()
+            table.add_cell("Show the System Info: ")
+            table.add_cell(button)
 
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.app.SystemInfoWdg';
-            var kwargs = {
-            };
-            spt.panel.load_popup("System Info", class_name, kwargs);
-            '''
-        } )
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.SystemInfoWdg';
+                var kwargs = {
+                };
+                spt.panel.load_popup("System Info", class_name, kwargs);
+                '''
+            } )
 
 
         # ignore
@@ -3637,6 +3641,7 @@ class ExceptionWdg(Widget):
         td.add(div)
 
         button = ActionButtonWdg(title="Ignore >>")
+        button.add_style("white-space: nowrap")
         table.add_cell(button)
 
         # click the top layout and jump to default page
