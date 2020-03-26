@@ -22,7 +22,7 @@ from pyasm.common import *
 from pyasm.search import ExceptionLog, SearchKey
 from pyasm.security import Site
 
-from command import Command, HandlerCmd
+from command import Command, HandlerCmd, CommandExitException
 
 class TriggerException(Exception):
     pass
@@ -600,14 +600,15 @@ class Trigger(Command):
                 reported = Container.get("Trigger:error_reported")
                 if not reported:
 
-                    # print the stacktrace
-                    tb = sys.exc_info()[2]
-                    stacktrace = traceback.format_tb(tb)
-                    stacktrace_str = "".join(stacktrace)
-                    print("-"*50)
-                    print(stacktrace_str)
-                    print(str(e))
-                    print("-"*50)
+                    if not isinstance(e, CommandExitException):
+                        # print the stacktrace
+                        tb = sys.exc_info()[2]
+                        stacktrace = traceback.format_tb(tb)
+                        stacktrace_str = "".join(stacktrace)
+                        print("-"*50)
+                        print(stacktrace_str)
+                        print(str(e))
+                        print("-"*50)
 
                     caller.errors.append("Trigger [%s] failed: %s" \
                             %(trigger.get_title(), str(e)))
