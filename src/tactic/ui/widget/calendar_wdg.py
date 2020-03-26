@@ -12,17 +12,17 @@
 
 # This module contains a collection of generalized utility widgets
 
-__all__ = ['CalendarWdg', 'CalendarMonthWdg', 'CalendarTimeWdg', 'CalendarInputWdg', 'TimeInputWdg']
+__all__ = ['CalendarWdg', 'CalendarMonthWdg', 'CalendarTimeWdg', 'CalendarInputWdg', 'TimeInputWdg', 'CalendarIntervalInputWdg']
 
 import locale
 from pyasm.common import Date, Common, Config, Container, SPTDate
 from pyasm.biz import NamingUtil, ProdSetting
-from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg
+from pyasm.web import Widget, Table, DivWdg, SpanWdg, WebContainer, FloatDivWdg, HtmlElement
 from pyasm.widget import IconWdg, IconButtonWdg, TextWdg, HiddenWdg, BaseInputWdg, SelectWdg, ProdIconButtonWdg
 from pyasm.search import SObject
 from tactic.ui.common import BaseRefreshWdg
 
-from .button_new_wdg import IconButtonWdg
+from .button_new_wdg import IconButtonWdg, ButtonNewWdg
 
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -78,6 +78,9 @@ class CalendarWdg(BaseRefreshWdg):
         if not css_class:
             css_class = "spt_calendar_top"
         self.top_wdg.add_class(css_class)
+        self.top_wdg.add_style("border-radius: 10px")
+        self.top_wdg.add_style("padding: 5px;")
+        self.top_wdg.add_style("box-shadow: 0px 10px 15px #aaa")
         self.top_wdg.add_style("-moz-user-select: none")
 
         #self.top_wdg.add_style("background: #444")
@@ -86,10 +89,6 @@ class CalendarWdg(BaseRefreshWdg):
         #self.top_wdg.add_style("padding: 3px")
         self.top_wdg.set_id('calendar')
         self.set_as_panel(self.top_wdg)
-
-        if self.kwargs.get("show_border") not in ['false', False]:
-            self.top_wdg.add_border()
-            self.top_wdg.set_box_shadow()
 
         self.day_cbks = []
         day_cbk = self.kwargs.get("day_cbk")
@@ -185,6 +184,16 @@ class CalendarWdg(BaseRefreshWdg):
         if self.is_refresh:
             return calendar
 
+        style = HtmlElement.style('''
+        .spt_calendar_day:hover {
+            background: #eee;
+        }
+
+        .spt_month_wdg:hover {
+            background: #eee;
+        }
+        ''')
+        self.top_wdg.add(style)
         inner = DivWdg()
         self.top_wdg.add(inner)
       
@@ -392,7 +401,6 @@ class CalendarWdg(BaseRefreshWdg):
         for day in week:
             td = table.add_cell()
             td.add(self.get_day_header_wdg(day) )
-            td.add_border()
 
         if has_right_wdgs:
             table.add_cell("&nbsp;")
@@ -420,7 +428,7 @@ class CalendarWdg(BaseRefreshWdg):
                 left_wdg = left_wdgs[i]
                 if left_wdg:
                     td = table.add_cell(left_wdg)
-                    td.add_style('vertical-align: top')
+                    td.add_style('vertical-align: middle')
                     td.add_style("width: 1px")
                 else:
                     td.add_cell("&nbsp;")
@@ -429,15 +437,12 @@ class CalendarWdg(BaseRefreshWdg):
                 td = table.add_cell()
                 td.add_style("padding: 0px")
                 td.add(self.get_day_wdg(month, day))
-                td.add_style("vertical-align: top")
+                td.add_style("vertical-align: middle")
+                td.add_style("width: 28px")
+                td.add_style("height: 28px")
+                #td.add_style("display: block")
+                # td.add_style("float: left")
                 #td.add_style("overflow: hidden")
-
-                if border_type == 'all':
-                    td.add_border()
-                else:
-                    td.add_color("border-color", "border")
-                    td.add_style("border-style", "solid")
-                    td.add_style("border-width", "0px 0px 1px 0px")
 
             if has_right_wdgs:
                 right_wdg = right_wdgs[i]
@@ -459,10 +464,13 @@ class CalendarWdg(BaseRefreshWdg):
         month = self.month
         year = self.year
 
-        header = Table()
-        header.add_style("width: 100%")
+        header = DivWdg()
+        header.add_style("display: flex")
         header.add_color("color", "color")
-        header.add_style("margin: 5px 3px")
+        header.add_style("margin: 5px 0px")
+        header.add_style("align-items: center")
+        header.add_style("justify-content: space-between")
+
 
 
         # add the month navigators
@@ -471,14 +479,14 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         # add the today icon
-        header.add_row()
         today_icon = self.get_today_icon()
-        td = header.add_cell( today_icon )
+        header.add( today_icon )
 
 
 
-        date_str = "%s, %s" % (self.MONTHS[month-1], self.year)
+        date_str = "%s %s" % (self.MONTHS[month-1], self.year)
         month_wdg = DivWdg()
+        month_wdg.add_class("btn spt_month_wdg hand")
         month_wdg.add_color("color", "color")
         month_wdg.add(date_str)
 
@@ -502,28 +510,29 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         # add the navigator
-        td = header.add_cell()
+        td = DivWdg()
+        header.add(td)
  
-        month_nav = Table()
-        month_nav.add_style("margin-left: auto")
-        month_nav.add_style("margin-right: auto")
+        month_nav = DivWdg()
+        month_nav.add_style("margin: auto")
+        month_nav.add_style("display: flex")
+        month_nav.add_style("justify-content: space-between")
+        month_nav.add_style("align-items: center")
         td.add(month_nav)
-        month_nav.add_row()
-        month_nav.add_cell( prev_month_wdg )
-        td = month_nav.add_cell(month_wdg)
-        td.add_style("text-align: center")
-        td.add_style("width: 100px")
-        month_nav.add_cell( next_month_wdg)
-
-        prev_month_wdg.add_style("float: left")
-        next_month_wdg.add_style("float: right")
+        month_nav.add(prev_month_wdg)
+        month_nav.add(month_wdg)
+        month_wdg.add_style("text-align: center")
+        month_wdg.add_style("width: 100px")
+        month_wdg.add_style("font-weight: bold")
+        month_wdg.add_style("border-radius: 5px")
+        month_nav.add( next_month_wdg)
 
 
 
         # add the close icon
         close_icon = self.get_close_icon()
-        td = header.add_cell( close_icon )
-        td.add_style("padding-right: 3px")
+        header.add( close_icon )
+        close_icon.add_style("padding-right: 0px")
 
         return header
 
@@ -537,7 +546,7 @@ class CalendarWdg(BaseRefreshWdg):
             prev_year -= 1
 
 
-        prev_month_wdg = IconButtonWdg( title="Prev Month", icon=IconWdg.G_LEFT_BLACK )
+        prev_month_wdg = ButtonNewWdg( title="Prev Month", icon="FAS_CHEVRON_LEFT", width=25 )
 
         prev_month_wdg.add_behavior( {
             'type': "click_up",
@@ -560,7 +569,7 @@ class CalendarWdg(BaseRefreshWdg):
             next_year += 1
 
 
-        next_month_wdg = IconButtonWdg( title="Next Month", icon=IconWdg.G_RIGHT_BLACK )
+        next_month_wdg = ButtonNewWdg( icon="FAS_CHEVRON_RIGHT", title="Next Month", width=25 )
 
         next_month_wdg.add_behavior( {
             'type': "click_up",
@@ -623,7 +632,7 @@ class CalendarWdg(BaseRefreshWdg):
 
     def get_close_icon(self):
 
-        close_icon = IconWdg("Close", IconWdg.G_CLOSE_BLACK, right_margin='0px', width=16)
+        close_icon = ButtonNewWdg(title="Close", icon="FA_TIMES", size=16, width=25)
         close_icon.add_class('hand')
 
         # button to close calendar popup ...
@@ -683,8 +692,12 @@ class CalendarWdg(BaseRefreshWdg):
         div.add( day.day )
         div.add_style("text-align: center")
         div.add_class("spt_calendar_day hand")
-
-        div.add_style("padding: 9px 12px 6px 12px")
+        div.add_style("margin: auto")
+        div.add_style("height: 28px")
+        div.add_style("line-height: 28px")
+        div.add_style("white-space: nowrap")
+        div.add_style("border-radius: 28px")
+        div.add_style("width: 28px")
 
         # NOTE: The bvr below is now added thru relay behavior
 
@@ -702,27 +715,20 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         today = datetime.today()
+        no_selection = self.kwargs.get("no_selection")
         if today.year == day.year and today.month == day.month and today.day == day.day:
-            div.add_color("background", "background", [-10, -10, 20])
+            if not no_selection:
+                div.add_color("background", "background", [-10, -10, 20])
 
 
         # put a different color for days that are not in the current month
         if day.month != month: 
-            div.add_style("color: #0f0")
+            div.add_style("color: #bbb")
 
         # store date like the database does YYYY-MM-DD
         date_str = "%04d-%02d-%02d" % (day.year, day.month, day.day)
         div.add_attr('spt_date', date_str)
         div.add_class('spt_date_day')
-
-
-
-        # TODO: use addClass mootools!
-        color1 = div.get_color("background")
-        color2 = div.get_color("background", -20)
-
-        div.add_event("onmouseover", "document.id(this).setStyle('background','%s')" % color2)
-        div.add_event("onmouseout", "document.id(this).setStyle('background','%s')" % color1)
 
         return div
         
@@ -1330,6 +1336,12 @@ class CalendarMonthWdg(BaseRefreshWdg):
 
     def get_display(self):
 
+        style = HtmlElement.style('''
+        .spt_month_top .spt_date:hover {
+            background: #eee;
+        }
+        ''')
+
         cur_year = self.kwargs.get("year")
         cur_month = self.kwargs.get("month")
         name = self.kwargs.get('name')
@@ -1341,18 +1353,22 @@ class CalendarMonthWdg(BaseRefreshWdg):
             cur_month = now.month
 
         top = self.top
+        top.add(style)
         top.add_style("width: 180px")
         top.add_style("height: 150px")
+        top.add_style("margin: auto")
         top.add_class("spt_month_top")
 
 
-        table = Table()
-        top.add(table)
-        table.add_style("width: 100%")
-        table.add_border()
-        table.add_row()
-        prev_year_wdg = IconButtonWdg( title="Prev Year", icon=IconWdg.LEFT )
-        table.add_cell(prev_year_wdg)
+        header = DivWdg()
+        top.add(header)
+        header.add_style("width: 100%")
+        header.add_style("justify-content: space-between")
+        header.add_style("align-items: center")
+        header.add_style("display: flex")
+
+        prev_year_wdg = ButtonNewWdg( title="Prev Year", icon="FAS_CHEVRON_LEFT" )
+        header.add(prev_year_wdg)
         prev_year_wdg.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -1364,11 +1380,11 @@ class CalendarMonthWdg(BaseRefreshWdg):
 
         year_div = DivWdg()
         year_div.add_class("spt_year")
-        table.add_cell(year_div)
+        header.add(year_div)
 
-        next_year_wdg = IconButtonWdg( title="Prev Year", icon=IconWdg.RIGHT )
-        td = table.add_cell(next_year_wdg)
-        td.add_style("text-align: right")
+        next_year_wdg = ButtonNewWdg( title="Next Year", icon="FAS_CHEVRON_RIGHT" )
+        header.add(next_year_wdg)
+        next_year_wdg.add_style("text-align: right")
         next_year_wdg.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -1385,21 +1401,6 @@ class CalendarMonthWdg(BaseRefreshWdg):
         year_div.add_style("padding: 3px")
         year_div.add_style("font-weight: bold")
 
-
-        top.add_relay_behavior( {
-            'type': 'mouseover',
-            'bvr_match_class': 'spt_date',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("border", "solid 1px blue");
-            '''
-        } )
-        top.add_relay_behavior( {
-            'type': 'mouseleave',
-            'bvr_match_class': 'spt_date',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("border", "solid 1px white");
-            '''
-        } )
         top.add_relay_behavior( {
             'type': 'click',
             'name': name,
@@ -1425,16 +1426,24 @@ class CalendarMonthWdg(BaseRefreshWdg):
 
 
 
-
+        month_top = DivWdg()
+        month_top.add_class("hand")
+        month_top.add_style("display: grid")
+        month_top.add_style("grid-template-columns: 1fr 1fr 1fr 1fr")
+        month_top.add_style("margin: auto")
+        top.add(month_top)
         for i, month in enumerate(self.MONTHS):
             month_div = DivWdg()
+            month_top.add(month_div)
             month_div.add(month[:3])
             month_div.add_class("spt_date")
             month_div.add_attr("spt_month", i+1)
             month_div.add_style("float: left")
-            month_div.add_style("padding: 9px 11px")
-            month_div.add_style("border: solid 1px white")
-            top.add(month_div)
+            month_div.add_style("width: 40px")
+            month_div.add_style("height: 40px")
+            month_div.add_style("text-align: center")
+            month_div.add_style("line-height: 40px")
+            month_div.add_style("border-radius: 40px")
 
             if i+1 == cur_month:
                 month_div.add_color("background", "background3")
@@ -1988,3 +1997,146 @@ class TimeInputWdg(BaseInputWdg):
         div.add(time_input)
  
         return top
+
+
+
+
+class CalendarIntervalInputWdg(BaseRefreshWdg):
+
+    def add_class(self, class_name):
+        self.top.add_class(class_name)
+    
+    def add_style(self, style):
+        self.top.add_style(style)
+    
+    def get_display(self):
+
+        top = DivWdg()
+        self.top = top
+        top.add_class("spt_calendar_interval_top")
+        top.add_style("z-index", "4")
+
+        start_date = self.kwargs.get("start_date") or ""
+        end_date = self.kwargs.get("end_date") or ""
+
+        calendar = CalendarWdg(no_selection=True)
+        top.add(calendar)
+        calendar.add_behavior({
+            'type': 'load',
+            'start_date': start_date,
+            'end_date': end_date,
+            'cbjs_action': '''
+            spt.calendar = {}
+            spt.calendar.interval = {}
+            spt.calendar.interval.selection_start = false;
+            spt.calendar.interval.start_date = bvr.start_date || "";
+            spt.calendar.interval.end_date = bvr.end_date || "";
+
+            '''
+        })
+        calendar.add_relay_behavior({
+            'type': 'click',
+            'bvr_match_class': 'spt_calendar_day',
+            'cbjs_action':'''
+            var selected_date = bvr.src_el.getAttribute("spt_date");
+            
+            if (spt.calendar.interval.selection_start) {
+                if (selected_date < spt.calendar.interval.start_date) {
+                    return;
+                } else if (selected_date == spt.calendar.interval.start_date) {
+                    spt.calendar.interval.end_date = selected_date;
+                    return;
+                }
+                bvr.src_el.setStyle("background", "#dbdbFF");
+                spt.calendar.interval.end_date = selected_date;
+                var el_td = bvr.src_el.getParent("td")
+                el_td.setStyle("background", "#eaeafd");
+
+                var el = spt.calendar.interval.start_element;
+                el.setStyle("border-radius", "28px 0px 0px 28px");
+                el.setStyle("background", "#eaeafd");
+                while (el != el_td) {
+                    var prev_el = el;
+                    var el = el.getNext();
+                    if (!el) {
+                        var tr = prev_el.getParent("tr");
+                        var next_tr = tr.getNext();
+                        if (!next_tr) {
+                            var next_tr = spt.calendar.interval.next_tr;
+                        }
+                        el = next_tr.getFirst();
+                    }
+                    if (el == el_td) {
+                        el.setStyle("border-radius", "0px 28px 28px 0px");
+                    } else {
+                        el.setStyle("border-radius", "");
+                        el.getElement(".spt_calendar_day").setStyle("background", "");
+                    }
+                    el.setStyle("background", "#eaeafd");
+                }
+                spt.calendar.interval.selection_start = false;
+                spt.named_events.fire_event('interval_input|finish', {});
+            } else {
+                bvr.src_el.setStyle("background", "#dbdbFF");
+                spt.calendar.interval.selection_start = true;
+                spt.calendar.interval.start_date = selected_date;
+                spt.calendar.interval.start_element = bvr.src_el.getParent("td");
+            }
+            '''
+        })
+
+        calendar.add_relay_behavior({
+            'type': 'click',
+            'bvr_match_class': 'btn',
+            'cbjs_action':'''
+            var cancel = bvr.src_el.getElement(".fa-times");
+            if (cancel) {
+                return;
+            }
+
+            var top = bvr.src_el.getParent(".spt_calendar_top");
+            var els = top.getElements(".spt_calendar_day");
+            els.forEach(function(el) {
+                if (el.innerHTML == 1) {
+                    spt.calendar.interval.next_tr = el;
+                    break;
+                }
+            })
+            '''
+        })
+
+        calendar.add_relay_behavior({
+            'type': 'mouseenter',
+            'bvr_match_class': 'spt_calendar_day',
+            'cbjs_action':'''
+            if (!spt.calendar.interval.selection_start) {
+                return;
+            }
+
+            var hover_date = bvr.src_el.getAttribute("spt_date");
+            if (hover_date <= spt.calendar.interval.start_date) {
+                return;
+            }
+
+            var top = bvr.src_el.getParent(".spt_calendar_top");
+            var els = top.getElements(".spt_calendar_day");
+
+            els.forEach( function(el) {
+                var date = el.getAttribute("spt_date");
+                var td = el.getParent("td");
+                if ((date >= spt.calendar.interval.start_date) && (date < bvr.src_el.getAttribute("spt_date"))) {
+                    td.setStyle("background", "#eaeafd");
+                } else if (date == bvr.src_el.getAttribute("spt_date")) {
+                    td.setStyle("border-radius", "0px 28px 28px 0px");
+                    td.setStyle("background", "#eaeafd");
+                } else {
+                    td.setStyle("background", "");
+                    td.setStyle("border-radius", "");
+                    el.setStyle("background", "");
+                }
+            })
+            '''
+        })
+
+        return top
+

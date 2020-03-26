@@ -223,12 +223,11 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     def get_title_wdg(self, title, content_id=None, is_on=True):
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: 0 -1 -1 0")
-        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("display: flex")
+        title_wdg.add_style("align-items: center")
 
         title_wdg.add_color("background", "background", -10)
         title_wdg.add_styles("padding: 5px")
-        title_wdg.add_border()
 
 
         table = DivWdg()
@@ -338,7 +337,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("margin: -1px")
+        # inner.add_style("margin: -1px")
         inner.add_class("spt_custom_layout_inner")
             
         
@@ -467,15 +466,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view = ""
             cur_config = None
 
-
-
-        table.add_border()
-        #table.add_style("height: 500px")
-
-
-        #table.add_row()
-        #left = table.add_cell()
-        #right = table.add_cell()
         left = DivWdg()
         table.add(left)
         right = DivWdg()
@@ -594,7 +584,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
         title_wdg.add_style("height: 35px")
-        #title_wdg.add_border()
         left_div.add_style("width: 100%")
 
         recent_div = DivWdg()
@@ -1385,7 +1374,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     '''
                 })
 
-                add_button = ButtonNewWdg(title="", icon="FA_PLUS")
+                add_button = ButtonNewWdg(title="Add New Behavior", icon="FA_PLUS")
                 behavior_div.add(add_button)
                 add_button.add_behavior( {
                     'type': 'click',

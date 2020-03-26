@@ -1621,7 +1621,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             @media (max-width: 575.98px) {
 
                 .spt_bs_content {
-                    padding-top: 56px;
+                    padding-top: 49px;
                 }
                 
             }

@@ -2205,7 +2205,7 @@ INSERT INTO "search_object" ("search_type", "namespace", "description", "databas
     # 3.7.0.rc01
     #
     def upgrade_v3_7_0_rc01_002(self):
-        self.run_sql('''UPDATE "search_object" SET code = search_type''');
+        self.run_sql('''UPDATE "search_object" SET code = search_type''')
 
 
     def upgrade_v3_7_0_rc01_001(self):

@@ -1368,14 +1368,20 @@ spt.tab.view_definition = function(bvr) {
 
             .spt_tab_header_top .spt_tab_selected .nav-link {
                 color: #fff;
-            }
-            
-            .nav-tabs .nav-link {
                 border-bottom: 0px solid transparent;
             }
 
-            .nav-tabs .nav-link:hover {
+            .spt_tab_header_top .spt_tab_selected .nav-link:hover {
+                color: #fff;
                 border-bottom: 0px solid transparent;
+            }
+            
+            .nav-tabs .nav-link {
+                border-bottom: .214rem solid transparent;
+            }
+
+            .nav-tabs .nav-link:hover {
+                border-bottom: .214rem solid transparent;
             }
 
             .spt_tab_remove {
