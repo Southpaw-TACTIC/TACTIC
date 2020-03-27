@@ -1828,7 +1828,7 @@ class TacticServerStub(object):
         path - the name of the file that will be uploaded
         
         '''
-        from common import UploadMultipart
+        from .common import UploadMultipart
         upload = UploadMultipart()
         upload.set_ticket(self.transaction_ticket)
        

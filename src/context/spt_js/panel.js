@@ -259,8 +259,10 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         bvr2.options.allow_close = kwargs.allow_close;
     if (kwargs.top_class) 
         bvr2.options.top_class = kwargs.top_class;
-
-    return spt.popup.get_widget({}, bvr2);
+    
+    var popup = spt.popup.get_widget({}, bvr2);
+    popup.setStyle("display", "block");
+    return popup;
 
 }
 
@@ -380,9 +382,9 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     var title = element.getAttribute("spt_title");
     var view = element.getAttribute("spt_view");
 
-    var widget_class = element.getAttribute("SPT_WIDGET_KEY");
+    var widget_class = element.getAttribute("spt_class_name");
     if (!widget_class) {
-        var widget_class = element.getAttribute("spt_class_name");
+        var widget_class = element.getAttribute("SPT_WIDGET_KEY");
     }
     if( ! widget_class || widget_class == 'undefined' ) {
         spt.alert("Cannot refresh ["+element_id+"].  No spt_class_name attribute found");
