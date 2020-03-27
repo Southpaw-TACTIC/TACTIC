@@ -381,25 +381,27 @@ def xmlrpc_decorator(meth):
 
 
                 #print "Error: ", e.message
-                import traceback
-                tb = sys.exc_info()[2]
-                stacktrace = traceback.format_tb(tb)
-                stacktrace_str = "".join(stacktrace)
-                print "-"*50
-                print stacktrace_str
-                message = e.message
-           
-                if not message:
-                    message = e.__str__()
 
-                if isinstance(message, unicode):
-                    error_msg = message.encode('utf-8')
-                elif isinstance(message, str):
-                    error_msg = unicode(message, errors='ignore').encode('utf-8')
-                else:
-                    error_msg = message
-                print "Error: ", error_msg  
-                print "-"*50
+                if not isinstance(e, CommandExitException):
+                    import traceback
+                    tb = sys.exc_info()[2]
+                    stacktrace = traceback.format_tb(tb)
+                    stacktrace_str = "".join(stacktrace)
+                    print "-"*50
+                    print stacktrace_str
+                    message = e.message
+
+                    if not message:
+                        message = e.__str__()
+
+                    if isinstance(message, unicode):
+                        error_msg = message.encode('utf-8')
+                    elif isinstance(message, str):
+                        error_msg = unicode(message, errors='ignore').encode('utf-8')
+                    else:
+                        error_msg = message
+                    print "Error: ", error_msg
+                    print "-"*50
                 raise
 
         finally:
