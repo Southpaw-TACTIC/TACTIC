@@ -2697,7 +2697,7 @@ class RepoBrowserDirListWdg(DirListWdg):
                     break
 
         if not search_type and search_types:
-            search_type = search_types[search_types.keys()[0]]
+            search_type = search_types[list(search_types.keys())[0]]
 
         if not search_type and self.search_types:
             search_type = self.search_types[0]
