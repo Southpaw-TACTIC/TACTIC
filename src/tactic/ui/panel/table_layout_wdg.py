@@ -3201,8 +3201,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-
-
         min_height = 25
 
         # add extra data if it exists
@@ -3222,11 +3220,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         tr.add_style("min-height: %spx" % min_height)
         tr.add_style("height: %spx" % min_height)
 
-
-
-
-
-
+        tr.add_attr("spt_group_level", level)
 
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
