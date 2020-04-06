@@ -148,7 +148,7 @@ class TransactionLog(SObject):
             ztransaction_data = binascii.hexlify(zlib.compress(transaction_data))
             ztransaction_data = "zlib:%s" % ztransaction_data
             length_after = len(ztransaction_data)
-            print "transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
+            #print "transaction log compress: ", "%s%%" % int(float(length_after)/float(length_before)*100), "[%s] to [%s]" % (length_before, length_after)
         else:
             ztransaction_data = transaction_data
 
