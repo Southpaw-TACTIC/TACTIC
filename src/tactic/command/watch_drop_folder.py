@@ -431,7 +431,7 @@ class TestCmd(Command):
 
 
 
-
+__all__.append("CheckinCmd")
 class CheckinCmd(object):
 
     def __init__(self, **kwargs):
@@ -472,8 +472,40 @@ class CheckinCmd(object):
             f.write(title)
             f.close()
 
+    def get_sobject(self, search_type, relative_dir, file_name):
+        '''Given file_name, get existing sobject or create new one.'''
 
+        search = Search(search_type)
+        search.add_filter("name", file_name)
+        sobj = search.get_sobject()
+        if not sobj:
+            # create sobject if it does not yet exist
+            sobj = SearchType.create(search_type)
+            if SearchType.column_exists(search_type, "name"):
+                sobj.set_value("name", file_name)
+        
+            asset_type = self.get_asset_type(file_name)
+            if SearchType.column_exists(search_type, "media_type"):
+                sobj.set_value("media_type", asset_type)
 
+            # find the relative_dir and relative_path
+            if SearchType.column_exists(search_type, "relative_dir"):
+                sobj.set_value("relative_dir", relative_dir)
+            
+            relative_path = "%s/%s" % (relative_dir, file_name)
+            keywords = Common.extract_keywords_from_path(relative_path)
+            keywords = " ".join( keywords )
+            if SearchType.column_exists(search_type, "keywords_data"):
+                data = {}
+                data['path'] = keywords
+                sobj.set_json_value("keywords_data", data)
+            elif SearchType.column_exists(search_type, "keywords"):
+                sobj.set_value("keywords", keywords)
+
+            sobj.commit()
+        
+        return sobj
+    
 
     def execute(self):
 
@@ -487,64 +519,35 @@ class CheckinCmd(object):
         if not process:
             process = "publish"
 
-        basename = os.path.basename(file_path)
+        file_name = os.path.basename(file_path)
 
         context = self.kwargs.get("context")
         if not context:
-            context = '%s/%s'  % (process, basename)
-
-
-        # find the relative_dir and relative_path
+            context = '%s/%s'  % (process, file_name)
+           
         relative_path = file_path.replace("%s/" % base_dir, "")
+        relative_path = relative_path.replace(".tactic/process", "")
         relative_dir = os.path.dirname(relative_path)
 
-        file_name = os.path.basename(file_path)
         log_path = '%s/TACTIC_log.txt' %(base_dir)
         self.create_checkin_log()
 
         # Define asset type of the file
-        asset_type = self.get_asset_type(file_path)
-        description = "drop folder check-in of %s" %file_name
+        description = "drop folder check-in of [%s]" % file_name
 
         from client.tactic_client_lib import TacticServerStub
         server = TacticServerStub.get(protocol='local')
         server.set_project(project_code)
 
         transaction = Transaction.get(create=True)
-        server.start(title='Check-in of media', description='Check-in of media')
+        server.start(title='Drop Folder Check-in', description=description)
 
         server_return_value = {}
 
         try:
-            filters = [
-                    [ 'name', '=', file_name ],
-                    #[ 'relative_dir', '=', relative_dir ]
-                ]
-            sobj = server.query(search_type, filters=filters, single=True)
 
-            if not sobj:
-                # create sobject if it does not yet exist
-                sobj = SearchType.create(search_type)
-                if SearchType.column_exists(search_type, "name"):
-                    sobj.set_value("name", basename)
-                if SearchType.column_exists(search_type, "media_type"):
-                    sobj.set_value("media_type", asset_type)
-
-
-                if SearchType.column_exists(search_type, "relative_dir"):
-                    sobj.set_value("relative_dir", relative_dir)
-
-                if SearchType.column_exists(search_type, "keywords"):
-                    relative_path = relative_path
-                    keywords = Common.extract_keywords_from_path(relative_path)
-                    keywords = " ".join( keywords )
-                    sobj.set_value("keywords", keywords)
-
-                sobj.commit()
-                search_key = sobj.get_search_key()
-            else:
-                search_key = sobj.get("__search_key__")
-
+            sobj = self.get_sobject(search_type, relative_dir, file_name)
+            search_key = sobj.get_search_key()
 
             #task = server.create_task(sobj.get('__search_key__'),process='publish')
             #server.update(task, {'status': 'New'})
