@@ -606,13 +606,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-
-
         if tabs:
             tabs = [x.strip() for x in tabs.split(',')] 
         elif element_names:
             tabs = element_names
-        elif config:
+        elif config and config.get_element_names():
             tabs = config.get_element_names()
         else:
             tabs = self.get_default_tabs()
