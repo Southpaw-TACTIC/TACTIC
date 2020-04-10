@@ -129,6 +129,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("padding: 10px 15px")
 
+        border_color = div.get_color("border")
+        div.add_style("border: solid 1px %s" % border_color)
+        div.add_style("border-radius: 5px")
+        div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        div.add_style("margin: 20px")
+
+
+
+
         title = DivWdg()
         div.add(title)
         title.add_style("text-overflow: ellipsis")
@@ -151,14 +160,19 @@ class SObjectDetailWdg(BaseRefreshWdg):
         title.add_style("font-size: 25px")
         title.add_style("margin-bottom: 5px")
 
+        parent = self.sobject.get_parent()
+        if parent:
+            parent_name = parent.get_value("name", no_exception=True)
+            title.add("<div style='font-size: 0.5em'>%s:</div> " % parent_name.upper())
 
-        stype_title = search_type_obj.get_value("title")
-        if stype_title:
-            stype_title = _(stype_title)
-            title.add("<div style='font-size: 0.5em'>%s:</div> " % stype_title.upper())
+        else:
+            stype_title = search_type_obj.get_value("title")
+            if stype_title:
+                stype_title = _(stype_title)
+                title.add("<div style='font-size: 0.5em'>%s:</div> " % stype_title.upper())
 
         if name:
-            name = Common.pluralize(name)
+            #name = Common.pluralize(name)
             title.add("%s" % name)
             if code:
                 title.add("<br/><i style='margin-top: -3px; font-size: 0.4em; opacity: 0.5'>(code: %s)</i>" % code)
@@ -170,7 +184,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         if desc:
             desc_div = DivWdg()
-            desc_div.add(desc)
+            desc_div.add(desc.replace("\n", "<br/>"))
             desc_div.add_color("color", "color", 30)
             desc_div.add_style("font-size: 1.2em")
             div.add(desc_div)

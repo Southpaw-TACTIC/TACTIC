@@ -41,7 +41,7 @@ basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
-    SCROLLBAR_WIDTH = 17
+    SCROLLBAR_WIDTH = 8 
 
     #CATEGORY_KEYS = {
     #    '_order': ['Required', 'Misc']
@@ -949,11 +949,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             padding = DivWdg()
             #scroll.add(padding)
             padding.add_class("spt_header_padding")
-            padding.add_style("width", "17px")
+            padding.add_style("width", "8px")
             padding.add_style("display", "none")
 
             padding.add_style("background", "#F5F5F5")
-            padding.add_style("float", "right")
+            #padding.add_style("float", "right")
+            padding.add_style("position: absolute")
+            padding.add_style("right: 0px")
 
 
 
@@ -8049,17 +8051,19 @@ spt.table.expand_table = function(mode) {
 
         if (header_size.x > table_size.x) {
             header_parent = header_table.getParent();
-            header_parent.setStyle("margin-right", "17px");
+            header_parent.setStyle("margin-right", "8px");
 
             var div = document.createElement("div");
-            div.setStyle("width", "17px");
+            div.setStyle("width", "8px");
             div.innerHTML = "&nbsp;";
             div.addClass("spt_header_padding");
 
             var height = header_parent.getStyle("height");
             div.setStyle("height", height);
             div.setStyle("background", "#F5F5F5");
-            div.setStyle("float", "right");
+            div.setStyle("position", "absolute")
+            div.setStyle("right", "0px")
+
 
             div.setStyle("box-sizing", "border-box");
             div.setStyle("border-right", "solid 1px #DDD")

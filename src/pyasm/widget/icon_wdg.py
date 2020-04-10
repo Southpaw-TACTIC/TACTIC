@@ -577,6 +577,8 @@ class IconButtonWdg(HtmlElement):
             icon = IconWdg(self.name, self.icon_path, size=size)
         elif self.icon_path.startswith("FAR_"):
             icon = IconWdg(self.name, self.icon_path, size=size)
+        elif self.icon_path.startswith("FAS_"):
+            icon = IconWdg(self.name, self.icon_path, size=size)
         else:
             icon_path = IconWdg.get_icon_path(self.icon_path)
             if not icon_path:

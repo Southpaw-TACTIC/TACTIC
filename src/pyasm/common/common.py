@@ -1347,6 +1347,8 @@ class Common(Base):
                     suffix = 'es'
             elif singular[-2:] in ('ch', 'sh'):
                 suffix = 'es'
+            elif singular[-1] in ('x','z'):
+                suffix = 'es'
             else:
                 suffix = 's'
         except IndexError:
