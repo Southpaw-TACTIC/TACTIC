@@ -24,3 +24,5 @@ from .textarea_input_wdg import *
 
 from .html5_upload_wdg import *
 
+from .multitext_input_wdg import *
+
