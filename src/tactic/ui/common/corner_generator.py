@@ -16,6 +16,8 @@ from pyasm.common import Environment
 
 import sys, os
 
+# DEPRECATED
+
 
 class CornerGenerator(object):
     def __init__(self, **kwargs):

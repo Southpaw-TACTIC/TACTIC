@@ -434,7 +434,8 @@ class SimpleElementDefinitionWdg(BaseRefreshWdg):
 
         # introspect the widget
         if not display_class:
-            display_class = "pyasm.widget.SimpleTableElementWdg"
+            #display_class = "pyasm.widget.SimpleTableElementWdg"
+            display_class = "tactic.ui.common.SimpleTableElementWdg"
         #display_class = "tactic.ui.panel.ViewPanelWdg"
 
         from pyasm.common import Common

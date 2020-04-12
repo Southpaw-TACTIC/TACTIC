@@ -222,6 +222,7 @@ class SchedulerTask(object):
         self.user = user
         self.project = project
 
+
     def get_name(self):
         return self.kwargs.get("name")
 
