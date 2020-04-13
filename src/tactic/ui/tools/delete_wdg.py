@@ -362,8 +362,11 @@ class DeleteCmd(Command):
 
         # always delete notes and task and snapshot
         if not related_types:
-            related_types = ['sthpw/note', 'sthpw/task', 'sthpw/snapshot']
+            related_types = []
         #related_types = self.schema.get_related_search_types(search_type)
+
+        related_types.extend(['sthpw/note', 'sthpw/task', 'sthpw/snapshot'])
+        related_types = list(set(related_types))
 
         if related_types:
             for related_type in related_types:
