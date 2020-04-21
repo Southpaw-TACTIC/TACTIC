@@ -1641,6 +1641,7 @@ class ThumbCmd(Command):
             if not snapshot:
                 return
 
+
             #To check if it is a sequence checkin
             all_snapshots=snapshot.get_all_file_objects()
             for single_snapshot in all_snapshots:

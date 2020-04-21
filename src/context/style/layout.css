@@ -58,6 +58,13 @@ table {
     font-size: .75rem;
 }
 
+
+select option {
+    padding: 3px 5px;
+}
+
+
+
 .hand
 {
     cursor: pointer;

@@ -41,7 +41,7 @@ basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
-    SCROLLBAR_WIDTH = 17
+    SCROLLBAR_WIDTH = 8 
 
     #CATEGORY_KEYS = {
     #    '_order': ['Required', 'Misc']
@@ -949,11 +949,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             padding = DivWdg()
             #scroll.add(padding)
             padding.add_class("spt_header_padding")
-            padding.add_style("width", "17px")
+            padding.add_style("width", "8px")
             padding.add_style("display", "none")
 
             padding.add_style("background", "#F5F5F5")
-            padding.add_style("float", "right")
+            #padding.add_style("float", "right")
+            padding.add_style("position: absolute")
+            padding.add_style("right: 0px")
 
 
 
@@ -3201,8 +3203,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-
-
         min_height = 25
 
         # add extra data if it exists
@@ -3222,11 +3222,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         tr.add_style("min-height: %spx" % min_height)
         tr.add_style("height: %spx" % min_height)
 
-
-
-
-
-
+        tr.add_attr("spt_group_level", level)
 
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
@@ -5759,12 +5755,14 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.setStyle("height", "auto");
-        input.setStyle("min-width", "100px");
+        input.setStyle("min-width", "150px");
         input.setStyle("width", "auto");
+        input.setStyle("overflow", "auto");
+        input.setStyle("border", "solid 1px #DDD");
 
         edit_wdg.setStyle("position", "absolute");
         edit_wdg.setStyle("margin-right", "-3px");
-        edit_wdg.setStyle("min-width", "100px");
+        edit_wdg.setStyle("min-width", "140px");
 
         set_focus = true;
         accept_event = 'change';
@@ -5778,16 +5776,6 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        // FIXME: check if this is stil needed
-        if( spt.browser.is_IE() ) {
-            mult = 15;
-            if (size.y < (input.size * mult)) {
-                edit_wdg.setStyle( "height", (input.size * mult) + 'px');
-            }
-            else {
-                edit_wdg.setStyle( "height", size.y+'px');
-            }
-        }
         // to avoid overlapping select in UI
         edit_wdg.setStyle('z-index', '100' );
     }
@@ -5810,7 +5798,6 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
 
 
 
-
     if (accept_event == 'blur') {
         input.addEvent("blur", function() {
             // to make checkbox aware of its checked state
@@ -5824,6 +5811,13 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             spt.table.accept_edit(edit_wdg, input.value, true, {input: input});
         });
     }
+
+
+    var els = input.getElements("option");
+    els.forEach( function(el) {
+        el.addEvent("mouseover", function(e) { el.setStyle("background", "var(--spt_palette_background3)") } );
+        el.addEvent("mouseout", function(e) { el.setStyle("background", "") } );
+    } );
 
 
     input.addEvent("keydown", function(e) {
@@ -8046,7 +8040,6 @@ spt.table.expand_table = function(mode) {
 
     // adjust for windows scrollbar
     if (spt.browser.os_is_Windows() && table) {
-        return;
         var div = layout.getElement(".spt_header_padding");
         if (div) {
             spt.behavior.destroy_element(div);
@@ -8058,17 +8051,19 @@ spt.table.expand_table = function(mode) {
 
         if (header_size.x > table_size.x) {
             header_parent = header_table.getParent();
-            header_parent.setStyle("margin-right", "17px");
+            header_parent.setStyle("margin-right", "8px");
 
             var div = document.createElement("div");
-            div.setStyle("width", "17px");
+            div.setStyle("width", "8px");
             div.innerHTML = "&nbsp;";
             div.addClass("spt_header_padding");
 
             var height = header_parent.getStyle("height");
             div.setStyle("height", height);
             div.setStyle("background", "#F5F5F5");
-            div.setStyle("float", "right");
+            div.setStyle("position", "absolute")
+            div.setStyle("right", "0px")
+
 
             div.setStyle("box-sizing", "border-box");
             div.setStyle("border-right", "solid 1px #DDD")

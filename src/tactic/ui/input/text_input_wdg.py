@@ -148,6 +148,10 @@ class TextInputWdg(BaseInputWdg):
 
         self.text.set_attr('autocomplete','off')
 
+        align = kwargs.get("align")
+        if align:
+            self.text.add_style("text-align", align)
+
         ignore = self.kwargs.get("ignore")
         if ignore in [True, 'true']:
             self.text.remove_class("spt_input")
@@ -940,7 +944,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     //TODO: support other kinds of eval for validation
     var server = TacticServerStub.get();
     try {
-        server.async_eval(expr, kw);
+        server.eval(expr, kw);
     } catch(e) {
         log.critical(spt.exception.handler(e));
         return;

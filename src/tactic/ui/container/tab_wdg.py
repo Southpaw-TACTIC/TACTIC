@@ -2960,6 +2960,7 @@ class TabRenameWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_style("margin: 20px")
+        top.add_style("min-width: 250px")
 
         top.add_class("spt_tab_rename_top")
 
@@ -2981,7 +2982,7 @@ class TabRenameWdg(BaseRefreshWdg):
 
         top.add("<br/>")
 
-        button = ActionButtonWdg(title="Rename", color="basic")
+        button = ActionButtonWdg(title="Rename", color="primary")
         top.add(button)
         button.add_style("float: right")
 

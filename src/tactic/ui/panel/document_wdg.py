@@ -45,6 +45,9 @@ class Document(object):
         if self.kwargs.get("document"):
             self.document = jsonloads(self.kwargs.get("document") )
 
+    def get_document(self):
+        return self.document
+
 
     def get_sobjects_from_document(self, document):
 

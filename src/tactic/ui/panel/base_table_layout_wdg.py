@@ -1480,6 +1480,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add_style("box-shadow: none")
         xx.add_style("width: 100%")
         xx.add_style("box-sizing: border-box")
+        xx.add_style("z-index: 10")
 
         left_div = DivWdg()
         left_div.add_class("d-flex")
@@ -1920,13 +1921,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.filter_num_div = None
         # Search button
         search_dialog_id = self.kwargs.get("search_dialog_id")
-        
-        show_search = self.get_setting("show_search") # backwards compatibility
-        if show_search == None:
-            show_search = self.get_setting("search")
+
+        show_search = None
+        show_search1 = self.get_setting("search")
+        show_search2 = self.get_setting("show_search")
+        if show_search1 or show_search2:
+            show_search = True
 
         if show_search is None:
-            # advanced_search is deprecated as of 4.7
+            # advanced_search is deprecated as of 4.7 (use "search")
             show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:

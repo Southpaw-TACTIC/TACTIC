@@ -438,7 +438,7 @@ class PluginWdg(BaseRefreshWdg):
 
 
             title = data.get("title") or ""
-            description = data.get("description") or "N/A"
+            description = data.get("description") or title
             code = data.get("code") or ""
             version = data.get("version") or ""
 

@@ -63,10 +63,6 @@ display class, it will adopt the one defined here-->
     </element>
 
 
-    <element name="info">
-        <display class="FlashAssetInfoWdg"/>
-    </element>
-
     <element name="notes" edit="false">
         <display class="tactic.ui.widget.DiscussionWdg"/>
     </element>
@@ -151,6 +147,12 @@ display class, it will adopt the one defined here-->
     <element name="code"/>
     <element name="name"/>
     <element name="description"/>
+
+    <element name="data">
+        <display class="TextAreaWdg">
+            <rows>10</rows>
+        </display>
+    </element>
 
     <element name="rules">
         <display class="TextAreaWdg">
