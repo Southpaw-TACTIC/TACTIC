@@ -101,24 +101,29 @@ class TextInputWdg(BaseInputWdg):
 
 
     def get_input_group_wdg(self):
+        
         input_group = DivWdg()
+        
         width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
+        if width:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+                input_group.add_style("width: %s" % width)
+            except ValueError:
+                pass
+        
         height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-        input_group.add_style("width: %s" % width)
-        input_group.add_style("height: %s" % height)
-        input_group.add_style("margin-right: 5px")
-
+        if height:
+            try:
+                height = int(height)
+                height = str(height) + "px"
+                input_group.add_style("height: %s" % height)
+            except ValueError:
+                pass
+        
         return input_group
+
  
 
     def __init__(self, **kwargs):
@@ -143,6 +148,10 @@ class TextInputWdg(BaseInputWdg):
 
         self.text.set_attr('autocomplete','off')
 
+        align = kwargs.get("align")
+        if align:
+            self.text.add_style("text-align", align)
+
         ignore = self.kwargs.get("ignore")
         if ignore in [True, 'true']:
             self.text.remove_class("spt_input")
@@ -159,7 +168,7 @@ class TextInputWdg(BaseInputWdg):
         else:
             self.readonly = False
             bgcolor = self.kwargs.get("background") or self.text.get_color("background")
-            self.text.add_style("background", bgcolor)
+            #self.text.add_style("background", bgcolor)
 
         self.icon_wdg = SpanWdg()
 
@@ -185,15 +194,6 @@ class TextInputWdg(BaseInputWdg):
 
                 var value = bvr.src_el.value;
                 var last_value = bvr.src_el.getAttribute("spt_last_value");
-                if (value == "") {
-                    bvr.src_el.setStyle("background", bvr.bgcolor);
-                }
-                else if (!last_value && last_value != value) {
-                    //bvr.src_el.setStyle("background", bvr.bgcolor2);
-                }
-                else {
-                    bvr.src_el.setStyle("background", bvr.bgcolor);
-                }
 
                 bvr.src_el.setAttribute("spt_last_value", value);
 
@@ -265,21 +265,24 @@ class TextInputWdg(BaseInputWdg):
 
         self.width = self.kwargs.get("width")
         if not self.width:
-            self.width = 230
+            self.width = None
         else:
             self.width = str(self.width).replace("px", "")
             if not self.width.endswith("%"):
                 self.width = int(self.width)
         width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
-        self.text.add_style("width: %s" % width)
+        
+        if width:
+            try:
+                width = int(width)
+                width = str(width) + "px"
+            except ValueError:
+                pass
+            self.text.add_style("width: %s" % width)
 
 
     def add_style(self, name, value=None):
+        
         if not name:
             return
 
@@ -654,9 +657,6 @@ class TextInputWdg(BaseInputWdg):
                     ''' % (new_color,new_color,new_color,new_color))
 
                 self.text.add_attr('placeholder', hint_text)
-                self.text.add_style("text-overflow: ellipsis")
-                self.text.add_style("overflow: hidden")
-                self.text.add_style("white-space: nowrap")
 
         if not self.readonly:
             # DISABLE for now
@@ -670,12 +670,12 @@ class TextInputWdg(BaseInputWdg):
 
 
 
-            icon = IconWdg("Clear", "BS_REMOVE", opacity=0.3)
+            icon = IconWdg("Clear", "FA_TIMES", opacity=0.3)
             icon.add_class("spt_icon_inactive")
             icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
             icon_wdg.add(icon)
             #icon = IconButtonWdg("Remove Tab", IconWdg.CLOSE_ACTIVE)
-            icon = IconWdg("Clear", "BS_REMOVE")
+            icon = IconWdg("Clear", "FA_TIMES")
             icon.add_class("spt_icon_active")
             icon.add_style("display: none")
             icon.add_styles("margin: auto; position: absolute;top: 0;bottom: 8; right: 0; max-height: 100%")
@@ -944,7 +944,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
     //TODO: support other kinds of eval for validation
     var server = TacticServerStub.get();
     try {
-        server.async_eval(expr, kw);
+        server.eval(expr, kw);
     } catch(e) {
         log.critical(spt.exception.handler(e));
         return;

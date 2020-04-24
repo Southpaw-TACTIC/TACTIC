@@ -44,7 +44,7 @@ class QuickBoxWdg(BaseRefreshWdg):
         title_wdg.add_style("font-weight: bold")
         title_wdg.add_color("background", "background", -10)
 
-        section_wdg.add_color("background", "background")
+        section_wdg.add_color("background", "background", 10)
         #section_wdg.add_gradient("background", "background", 0, -3)
         section_wdg.add_behavior( {
         'type': 'hover',
@@ -60,7 +60,8 @@ class QuickBoxWdg(BaseRefreshWdg):
 
         div = DivWdg()
         section_wdg.add(div)
-        div.add_style("margin-top: 20px")
+        #div.add_style("margin-top: 20px")
+        div.add_style("margin: 20px auto")
         div.center()
         div.add_style("width: 32px")
         div.add(image)
@@ -118,29 +119,28 @@ class QuickBoxWdg(BaseRefreshWdg):
         div.add_style("width: 630px")
         div.add_style("height: 400px")
         div.add_style("opacity: 1.0")
-        div.add_gradient("background", "background", 10)
+        #div.add_gradient("background", "background", 10)
+        div.add_color("background", "background", -5)
         div.add_style("position: fixed")
         div.add_style("z-index: 1000")
         #div.set_box_shadow("2px 2px 4px 4px")
-        div.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
+        div.add_style("box-shadow: 0px 0px 50px rgba(0,0,0,0.3)")
+        div.add_border()
         div.set_round_corners(5)
-        div.add_style("border: solid 1px #DDD")
 
         content_top_wdg = DivWdg()
         content_top_wdg.add_style("position: fixed")
         top.add(content_top_wdg)
         content_top_wdg.add_style("padding: 20px 50px 50px 50px")
         content_top_wdg.add_style("z-index: 1001")
-        content_top_wdg.add_style("width: 550px")
+        #content_top_wdg.add_style("width: 550px")
         content_top_wdg.add_style("height: 400px")
 
 
         close_wdg = DivWdg()
         content_top_wdg.add(close_wdg)
-        icon = IconWdg('Close Quick Links', "BS_REMOVE")
+        icon = IconWdg('Close Quick Links', "FA_TIMES")
         close_wdg.add(icon)
-        #close_wdg.add_style("position: fixed")
-        #close_wdg.add_style("float: right")
         close_wdg.add_style("position: absolute")
         close_wdg.add_style("top: 10px")
         close_wdg.add_style("right: 30px")
@@ -183,7 +183,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = IconWdg('Configuration', 'FA_GEARS', size=32)
+        image = IconWdg('Configuration', 'FA_COGS', size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
@@ -236,7 +236,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 	#image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
-        image = IconWdg("Users", "FA_ADDRESS_CARD_O", size=32)
+        image = IconWdg("Users", "FA_ADDRESS_CARD", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''

@@ -99,7 +99,7 @@ spt.update.add = function(el, update) {
 spt.update.display = function(el, column, value) {
     var div = document.id(document.createElement("div"));
     document.id(document.body).appendChild(div);
-    div.addClass("glyphicon glyphicon-refresh");
+    div.addClass("fa fa-sync");
     //div.innerHTML = "Update...";
 
     var pos = el.getPosition();

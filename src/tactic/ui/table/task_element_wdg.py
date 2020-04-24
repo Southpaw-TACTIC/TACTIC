@@ -1472,7 +1472,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if security.check_access("search_type", {"code":"sthpw/task"}, "insert", default="insert"):
                 label.add_class("spt_task_element_add_task")
                 label.add_attr("spt_search_key", sobject.get_search_key() )
-                icon = IconWdg("Add Tasks", icon="BS_PLUS")
+                icon = IconWdg("Add Tasks", icon="FA_PLUS")
                 label.add_cell(icon)
             
                 if show_current_pipeline_only:
@@ -2642,7 +2642,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if self.show_task_edit != 'false':
             #edit_div.add_style('float: right')
-            icon = IconButtonWdg(tip='Edit Task', icon="BS_EDIT")
+            icon = IconButtonWdg(tip='Edit Task', icon="FA_EDIT")
             icon.add_class('hand')
             icon.add_behavior({
                 'type': 'click_up',

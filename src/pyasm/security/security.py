@@ -89,7 +89,9 @@ class Login(SObject):
         return self.get_value("login")
 
     def get_full_name(self):
-        return "%s %s" % (self.get_value("first_name"), self.get_value("last_name"))
+        full_name = "%s %s" % (self.get_value("first_name"), self.get_value("last_name"))
+        full_name = full_name.strip()
+        return full_name
 
     def get_full_email(self):
         email = self.get_value("email")
@@ -625,6 +627,7 @@ class LoginGroup(Login):
             xml.append('''<rule group="process" process="*" access="allow"/>''')
             xml.append('''<rule group="process" process="*" pipeline="*" access="allow"/>''')
             xml.append('''<rule group="builtin" key="edit" access="allow"/>''')
+            xml.append('''<rule group="builtin" key="view_side_bar" access="allow"/>''')
 
 
         elif access_level == LoginGroup.MED:

@@ -278,7 +278,6 @@ class SearchLimitWdg(Widget):
 
         widget = DivWdg()
         widget.add_class("spt_search_limit_top")
-        #widget.add_style("border", "solid 1px blue")
         widget.add_color("background", "background")
         widget.add_color("color", "color")
 
@@ -312,7 +311,7 @@ class SearchLimitWdg(Widget):
 
     
         if self.refresh: 
-            prev = SpanWdg( IconButtonWdg(title="Prev", icon="BS_CHEVRON_LEFT") )
+            prev = SpanWdg( IconButtonWdg(title="Prev", icon="FA_CHEVRON_LEFT") )
             prev.add_style("margin-left: 8px")
             prev.add_style("margin-right: 6px")
             prev.add_style("margin-top: 5px")
@@ -326,7 +325,7 @@ class SearchLimitWdg(Widget):
                     % (hidden_name, self.refresh_script)
             } )
 
-            next = SpanWdg( IconButtonWdg(title="Next", icon="BS_CHEVRON_RIGHT" ) )
+            next = SpanWdg( IconButtonWdg(title="Next", icon="FA_CHEVRON_RIGHT" ) )
             next.add_style("margin-left: 6px")
             next.add_style("margin-top: 5px")
             hidden_name = self.next_hidden_name
@@ -343,13 +342,13 @@ class SearchLimitWdg(Widget):
             next.add_style("float: left")
 
         else: # the old code pre 2.5
-            prev = IconButtonWdg(title="Prev", icon="BS_CHEVRON_LEFT" )
+            prev = IconButtonWdg(title="Prev", icon="FA_CHEVRON_LEFT" )
             hidden_name = self.prev_hidden_name
             hidden = HiddenWdg(hidden_name,"")
             prev.add(hidden)
             prev.add_event('onclick'," spt.api.Utility.get_input(document,'%s').value ='Prev';%s"\
                     %(hidden_name, self.refresh_script))
-            next = IconButtonWdg(title="Next", icon="BS_CHEVRON_RIGHT" )
+            next = IconButtonWdg(title="Next", icon="FA_CHEVRON_RIGHT" )
             hidden_name = self.next_hidden_name
             hidden = HiddenWdg(hidden_name,"")
             next.add(hidden)
@@ -360,10 +359,10 @@ class SearchLimitWdg(Widget):
         showing_wdg = DivWdg()
         widget.add(showing_wdg)
         showing_wdg.add_style("padding: 20px")
-        showing_wdg.add_style("margin: 10px")
+        #showing_wdg.add_style("margin: 10px")
+        showing_wdg.add_style("border-top: solid 1px %s" % showing_wdg.get_color("border"))
         showing_wdg.add_color("background", "background", -5)
-        #showing_wdg.add_color("text-align", "center")
-        showing_wdg.add_border()
+        #showing_wdg.add_border()
 
         label_span = SpanWdg("Showing: ")
         showing_wdg.add(label_span)
@@ -402,6 +401,8 @@ class SearchLimitWdg(Widget):
             selector.select.add_style("width: 100px")
             #selector.add_style("display: inline")
             selector.add_style("float: left")
+            selector.add_style("text-align: center")
+            selector.add_style("text-align-last: center")
 
             selector.set_value(current_value)
             selector.set_display_label(False)

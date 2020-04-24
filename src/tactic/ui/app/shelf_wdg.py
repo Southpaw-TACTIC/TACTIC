@@ -761,17 +761,27 @@ class AceEditorWdg(BaseRefreshWdg):
         from pyasm.web import HtmlElement
         self.text_area = HtmlElement.div()
         self.text_area.add_class("spt_ace_editor")
-        self.unique_id = self.text_area.set_unique_id("ace_editor")
+
+        self.editor_id = self.kwargs.get("editor_id")
+        if self.editor_id:
+            self.unique_id = self.text_area.set_id(self.editor_id)
+        else:
+            self.unique_id = self.text_area.set_unique_id()
+            self.editor_id = self.unique_id
 
 
     def get_editor_id(self):
-        return self.unique_id
+        return self.editor_id
 
     def get_display(self):
         web = WebContainer.get_web()
 
         top = self.top
         top.add_class("spt_ace_editor_top")
+        
+        form_element_name = self.kwargs.get("form_element_name")
+        if form_element_name:
+            top.add_attr("spt_ace_element_name", form_element_name)
 
         script = self.kwargs.get("custom_script")
         if script:
@@ -963,13 +973,8 @@ class AceEditorWdg(BaseRefreshWdg):
 
 
 
-        self.text_area.add_style("margin-top: -1px")
-        self.text_area.add_style("margin-bottom: 0px")
-        self.text_area.add_style("font-family: courier new")
-        self.text_area.add_border()
+        # self.text_area.add_border()
         editor_div.add(self.text_area)
-        self.text_area.add_style("position: relative")
-        #text_area.add_style("margin: 20px")
 
 
         size = web.get_form_value("size")
@@ -986,37 +991,39 @@ class AceEditorWdg(BaseRefreshWdg):
         self.text_area.add_style("height: %s" % height)
 
 
+        show_bottom = self.kwargs.get("show_bottom")
+        if show_bottom == None:
+            show_bottom = True
+        if show_bottom in [True, "true"]:
+            bottom_div = DivWdg()
+            top.add(bottom_div)
+            bottom_div.add_color("background", "background3")
+            bottom_div.add_style("position", "relative")
+            # bottom_div.add_border()
+            bottom_div.add_style("text-align: center")
+            bottom_div.add_style("padding: 2px")
+            # bottom_div.add_style("height: 20px")
 
-        bottom_div = DivWdg()
-        top.add(bottom_div)
-        bottom_div.add_color("background", "background3")
-        bottom_div.add_border()
-        bottom_div.add_style("text-align: center")
-        bottom_div.add_style("padding: 2px")
-        bottom_div.add_style("height: 20px")
+            bottom_title = "Script Editor"
+            bottom_div.add(bottom_title)
 
-        bottom_title = "Script Editor"
-        bottom_div.add(bottom_title)
+            hidden = TextWdg("size")
+            bottom_div.add(hidden)
+            hidden.add_style("width: 85px")
+            hidden.add_style("text-align: center")
+            hidden.add_class("spt_size")
+            hidden.set_value("%s,%s" % (width, height))
 
-        icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
-        bottom_div.add(icon)
-        icon.add_style("float: right")
-        icon.add_style("margin-right: -4px")
-        icon.add_style("cursor: se-resize")
-        icon.add_behavior( {
-            'type': 'drag',
-            "cb_set_prefix": 'spt.ace_editor.drag_resize',
-        } )
-
-
-        #hidden = HiddenWdg("size")
-        hidden = TextWdg("size")
-        bottom_div.add(hidden)
-        hidden.add_style("width: 85px")
-        hidden.add_style("text-align: center")
-        hidden.add_style("float: right")
-        hidden.add_class("spt_size")
-        hidden.set_value("%s,%s" % (width, height))
+            icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
+            icon.add_style("position", "absolute")
+            icon.add_style("right", "3px")
+            icon.add_style("bottom", "3px")
+            bottom_div.add(icon)
+            icon.add_style("cursor: se-resize")
+            icon.add_behavior( {
+                'type': 'drag',
+                "cb_set_prefix": 'spt.ace_editor.drag_resize',
+            } )
 
         theme = top.get_theme()
         if theme == 'dark':
@@ -1026,7 +1033,7 @@ class AceEditorWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
-            'unique_id': self.unique_id,
+            'unique_id': self.get_editor_id(),
             'theme': theme,
             'cbjs_action': '''
 
@@ -1238,7 +1245,7 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
    
 
     var ace_setup =  function() {
-        var editor = ace.edit(bvr.unique_id);
+        var editor = ace.edit(bvr.unique_id, {'minLines': 10});
         spt.ace_editor.editor = editor;
 
         // put the editor into the dom
@@ -1259,8 +1266,8 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
 
      var js_files = [
-        "/context/spt_js/ace/ace-1.2.3/src/ace.js",
-        //"ace/ace-1.2.3/src/ace-uncompressed.js",
+        "/context/spt_js/ace/ace-1.4.7/src/ace.js",
+        //"ace/ace-1.4.7/src/ace-uncompressed.js",
     ];
 
    
@@ -1271,17 +1278,17 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         ace; require; define; 
 
         var core_js_files = [
-            "/context/spt_js/ace/ace-1.2.3/src/mode-javascript.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-xml.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-python.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-html.js",
-            "/context/spt_js/ace/ace-1.2.3/src/mode-css.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-twilight.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-textmate.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-vibrant_ink.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-merbivore.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-clouds.js",
-            "/context/spt_js/ace/ace-1.2.3/src/theme-eclipse.js"
+            "/context/spt_js/ace/ace-1.4.7/src/mode-javascript.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-xml.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-python.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-html.js",
+            "/context/spt_js/ace/ace-1.4.7/src/mode-css.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-twilight.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-textmate.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-vibrant_ink.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-merbivore.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-clouds.js",
+            "/context/spt_js/ace/ace-1.4.7/src/theme-eclipse.js"
         ];
         
         //require(core_js_files, ace_setup);
@@ -1299,7 +1306,7 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
 }
 else {
-    var editor = ace.edit(bvr.unique_id);
+    var editor = ace.edit(bvr.unique_id, {'minLines': 10});
     editor.setTheme("ace/theme/" +  bvr.theme);
     var JavaScriptMode = require("ace/mode/javascript").Mode;
    

@@ -184,6 +184,25 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
         }
 
     }
+    
+    // Get ace editor scripts
+    if (typeof spt.ace_editor != "undefined") {
+        var ace_inputs;
+        var ace_filter = ".spt_ace_editor_top";
+        if (element) {
+            ace_inputs = document.id(element_id).getElements(ace_filter);
+            ace_inputs.forEach(function(ace_top) {
+                editor_top = ace_top.getElement(".spt_ace_editor");
+                spt.ace_editor.set_editor_top(editor_top); 
+                editor = spt.ace_editor.get_editor();
+                value = editor.getValue();
+                element_name = ace_top.getAttribute("spt_ace_element_name");
+                if (element_name) values[element_name] = [value] 
+            });
+        }
+    }
+
+
 
     // if return_array flag is false, return the first element, unless
     // it is specifically marked as an array
@@ -234,15 +253,21 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         var input = input_list[i];
         var name = input.name;
         var value = values[name];
-        if (typeof(value) == 'undefined') {
-            continue;
-        }
+        if (typeOf(value) == 'null') continue;
+        if (typeOf(value) == 'undefined') continue;
 
         // behavior for different input types
-        if (input.type == "checkbox")
-            input.checked = value == "on" ? true : false;
-        else if (input.type == "radio")
+        if (input.type == "checkbox") {
+            var expected_value = input.value || "on";
+            if (typeOf(value) == "array") {
+                input.checked = value.contains(expected_value);
+            } else {
+                input.checked = value == expected_value ? true : false;
+            }
+            
+        } else if (input.type == "radio") {
             input.checked = value == input.value ? true : false;
+        }
 
 
         // if array assign values one by one
@@ -262,14 +287,44 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         }
     }
 
-    /*
-    var input = input_list[0];
-    if (input == null) {
-        //alert('No input widgets found');
-        return;
-    }
-    input.value = values;
-    */
+    /* FIXME Ace editor takes time to load.
+    if (typeof spt.ace_editor != "undefined") {
+        var ace_inputs = element.getElements(".spt_ace_editor_top");
+        for (var i=0; i<ace_inputs.length; i++) {
+            ace_top = ace_inputs[i];
+            element_name = ace_top.getAttribute("spt_ace_element_name");
+            if (!element_name) continue;
+            
+            editor_top = ace_top.getElement(".spt_ace_editor");
+            spt.ace_editor.set_editor_top(editor_top);
+            editor = spt.ace_editor.get_editor();
+            if (!editor) {
+                setTimeout(function() {
+                    editor = spt.ace_editor.get_editor();
+                    fill_data(editor);
+                }, 250);
+
+            } else {
+                fill_data(editor);
+            }
+                
+            fill_data = function (editor) {
+                var value = values[element_name];
+                if (typeof(value) == 'undefined') {
+                    return;
+                } else if (Array.isArray(value)) {
+                    value = value[0];
+                }
+
+                editor.setValue(value);
+            }
+
+               
+        } 
+
+    }*/
+    
+    
     return input
    
 }

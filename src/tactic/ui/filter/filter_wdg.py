@@ -986,7 +986,6 @@ class GeneralFilterWdg(BaseFilterWdg):
             'type': 'mouseenter',
             'cbjs_action': '''
             var buttons = bvr.src_el.getElement(".spt_buttons_top");
-            buttons.setStyle("display", "");
 
             var addBtn = bvr.src_el.getElement(".spt_button_top[title='Add Filter']");
             var action_el = bvr.src_el.getElement(".spt_action_top");
@@ -994,6 +993,9 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             action_el.setStyle("top", pos.y + addBtn.getHeight());
             action_el.setStyle("left", pos.x);
+
+            buttons.setStyle("display", "flex");
+
             '''
         } )
 
@@ -1013,8 +1015,9 @@ class GeneralFilterWdg(BaseFilterWdg):
         button_div.add_class("spt_buttons_top")
         button_div.add_style("display: none")
 
-        from tactic.ui.widget import ActionButtonWdg
-        add_button = ActionButtonWdg(title='+', tip='Add Filter', size='small')
+        from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
+        add_button = IconButtonWdg(name='Add', icon='FA_PLUS', tip='Add Filter', size='small')
+        #add_button = ActionButtonWdg(title='+', tip='Add Filter', size='small')
         button_div.add(add_button)
         add_button.add_style("display: inline-block")
         add_button.add_behavior( {
@@ -1048,11 +1051,9 @@ class GeneralFilterWdg(BaseFilterWdg):
                 action_el.setStyle("display", "none");
             }
 
-
-            var pos = bvr.src_el.getPosition();
-            var height = bvr.src_el.getHeight() + pos.y;
-            action_el.setStyle("top", height);
-            action_el.setStyle("left", pos.x);
+            var pos_y = bvr.src_el.getPosition().y;
+            var height = bvr.src_el.getHeight() + pos_y;
+            action_el.setStyle(`top: ${height}`);
 
             spt.body.add_focus_element(action_el);
         '''
@@ -1118,6 +1119,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         sub_button = ActionButtonWdg(title='-', tip='Remove Filter', size='small')
+        sub_button = IconButtonWdg(name='Remove', icon='FA_REMOVE', tip='Remove Filter', size='small')
         button_div.add(sub_button)
         sub_button.add_style("display: inline-block")
         sub_button.add_behavior( {
@@ -1189,19 +1191,20 @@ class GeneralFilterWdg(BaseFilterWdg):
             var search_button = table.getElement(".spt_table_search_button");
             var offset = search_button.getPosition();
             var size = search_button.getSize();
-            offset = {x:offset.x-265, y:offset.y+size.y+10};
+            offset = {x:offset.x, y:offset.y};
 
             var body = document.id(document.body);
             var scroll_top = body.scrollTop;
             var scroll_left = body.scrollLeft;
-            offset.y = offset.y - scroll_top;
-            offset.x = offset.x - scroll_left;
-            dialog.position({position: 'upperleft', relativeTo: body, offset: offset});
+            if (scroll_top != 0 && scroll_left != 0) {
+                offset.y = offset.y - scroll_top;
+                offset.x = offset.x - scroll_left;
+                dialog.position({position: 'upperleft', relativeTo: table, offset: offset});
+            }
             
             spt.toggle_show_hide(dialog);
 
-            if (spt.is_shown(dialog))
-                spt.body.add_focus_element(dialog);
+            if (spt.is_shown(dialog)) spt.body.add_focus_element(dialog);
 
             '''
         } )
@@ -1483,7 +1486,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             value_text.set_persist_on_submit()
             value_text.add_class('spt_filter_text')
             value_text.add_style("float", "left")
-            value_text.add_style("height", "30")
+            #value_text.add_style("height", "30")
             #value_text.add_style("width", "250")
             value_text.add_style("margin", "0px 5px")
             self.set_filter_value(value_text, filter_index)

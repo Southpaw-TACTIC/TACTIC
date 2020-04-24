@@ -53,6 +53,18 @@ class ProjectSetting(SObject):
         return value
     get_value_by_key = classmethod(get_value_by_key)
 
+ 
+    def get_json_value_by_key(cls, key, search_type=None):
+        if Project.get_project_name() in ['sthpw', 'admin']:
+            return ''
+
+        prod_setting = cls.get_by_key(key, search_type)
+        value = '' 
+        if prod_setting:
+            value = prod_setting.get_json_value("value")
+
+        return value
+    get_json_value_by_key = classmethod(get_json_value_by_key)
 
 
     def get_by_key(cls, key, search_type=None):
@@ -79,7 +91,7 @@ class ProjectSetting(SObject):
 
     get_by_key = classmethod(get_by_key)
 
-
+     
     def get_seq_by_key(cls, key, search_type=None):
         seq = []
         value = cls.get_value_by_key(key, search_type)

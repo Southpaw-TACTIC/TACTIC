@@ -693,7 +693,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
             else:
                 overall_search.add_keyword_filter(column, keywords)
-               
+
 
         # this is the default when the xml is just <element name='keywords'/>
         elif self.mode == 'global':
@@ -918,7 +918,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
                     op = '&'
 
 
-           
             for column in self.columns:
                 if self.cross_db:
                     search2 = None
@@ -1072,6 +1071,9 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             else:
                 overall_search.add_op(multi_col_op)
 
+
+
+
         else:
             raise TacticException('Mode [%s] in keyword search not support' % self.mode)
 
@@ -1175,7 +1177,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         # search_type is a list matching the column for potential join
         width = self.kwargs.get("width")
         if not width:
-            width = "230px"
+            width = None
 
 
         show_toggle = self.get_option("show_toggle")
@@ -1269,17 +1271,6 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
             if icon_wdg:
                 icon_wdg.add_class("spt_search_toggle")
                 icon_wdg.add_class("hand")
-            """
-            from pyasm.widget import IconWdg
-            icon_div = DivWdg()
-            icon = IconWdg("toggle", "BS_CHEVRON_DOWN")
-            icon_div.add(icon)
-            icon_div.add_class("hand spt_search_toggle")
-            icon_div.add_style("position: absolute")
-            icon_div.add_style("top: 6px")
-            icon_div.add_style("right: 4px")
-            div.add(icon_div)
-            """
         
         
         show_partial = self.get_option("show_partial")

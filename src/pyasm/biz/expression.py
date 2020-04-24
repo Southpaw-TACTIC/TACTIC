@@ -1584,8 +1584,10 @@ class MethodMode(ExpressionParser):
             if len(values_list) == 1:
                 pass
             else:
+                for i, value in enumerate(values_list):
+                    if not isinstance( values_list[i], list):
+                        values_list[i] = [values_list[i]]
                 values_list = zip(*values_list)
-            results = []
             for values in values_list:
                 result = args[0] % values
                 results.append(result)
@@ -1875,8 +1877,9 @@ class MethodMode(ExpressionParser):
         # format the results
         for result in results:
             if result_type == 'datetime':
-                result = result.strftime(format)
-                result = dateutil.parser.parse(result)
+                if result:
+                    result = result.strftime(format)
+                #result = dateutil.parser.parse(result)
 
             formated_results.append(result)
 

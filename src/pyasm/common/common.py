@@ -684,7 +684,11 @@ class Common(Base):
         ''' sort a dictionary based on its keys, 
             a list of sorted values is returned '''
         keys = list(dct.keys())
-        keys.sort(reverse=reverse)
+        try:
+            keys.sort(reverse=reverse)
+        except Exception as e:
+            print("WARNING: sorting error: ", str(e))
+            pass
         return list(map(dct.get, keys))
     sort_dict = staticmethod(sort_dict)
 
@@ -1342,6 +1346,8 @@ class Common(Base):
                 else:
                     suffix = 'es'
             elif singular[-2:] in ('ch', 'sh'):
+                suffix = 'es'
+            elif singular[-1] in ('x','z'):
                 suffix = 'es'
             else:
                 suffix = 's'

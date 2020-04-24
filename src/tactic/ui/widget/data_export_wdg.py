@@ -1185,7 +1185,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         div.add(column_option_message)
         column_option_message.add_class("spt_column_option_message")
         column_option_message.add_style("padding: 10px")
-        column_option_message.add("Select <div class='glyphicon glyphicon-cog'></div> to edit column definition.")
+        column_option_message.add("Select <div class='fa fa-cog'></div> to edit column definition.")
          
         csv_column_data = self.csv_column_data
         
@@ -1301,7 +1301,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             td.add_style("padding: 3px")
 
             # Secondary column options - column type or note process
-            column_option_div = IconWdg(icon="BS_COG")
+            column_option_div = IconWdg(icon="FA_COG")
             td = table.add_cell( column_option_div )
             td.add_style("padding: 3px 3px 3px 10px")
             if sel_val == '(note)' or sel_val == '':

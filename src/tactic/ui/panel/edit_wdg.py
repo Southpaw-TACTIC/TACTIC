@@ -238,7 +238,6 @@ class EditWdg(BaseRefreshWdg):
                 self.mode = 'insert'
             else:
                 self.mode = 'edit'
-
         elif self.expression:
             sobject = Search.eval(self.expression, single=True)
             self.search_id = sobject.get_id()
@@ -630,12 +629,16 @@ class EditWdg(BaseRefreshWdg):
         #inner doesn't get styled. 
         inner = DivWdg()
         content_div.add(inner)
+
+        # Disable as it was never implemented
+        """
         menu = self.get_header_context_menu()
         menus = [menu.get_data()]
         menus_in = {
             'HEADER_CTX': menus,
         }
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
+        """
 
         #insert the header before body into inner
         show_header = self.kwargs.get("show_header")
@@ -660,7 +663,9 @@ class EditWdg(BaseRefreshWdg):
 
 
         if self.color_mode == "default":
-            table.add_color("background", "background")
+            #table.add_color("background", "background")
+            pass
+
         elif self.color_mode == "transparent":
             table.add_style("background", "transparent")
         table.add_color("color", "color")
@@ -842,11 +847,11 @@ class EditWdg(BaseRefreshWdg):
                 tr = table.add_row()
 
 
-                if self.color_mode == "default":
-                    if index % 2 == 0:
-                        tr.add_color("background", "background")
-                    else:
-                        tr.add_color("background", "background", -1 )
+                #if self.color_mode == "default":
+                #    if index % 2 == 0:
+                #        tr.add_color("background", "background")
+                #    else:
+                #        tr.add_color("background", "background", -1 )
 
 
             index += 1
@@ -873,6 +878,9 @@ class EditWdg(BaseRefreshWdg):
                 title_div.add(title)
                 title_div.add_style("display: inline-block")
                 title_div.add_class("spt_edit_title")
+                title_div.add_style("font-size: 0.9em")
+                title_div.add_style("text-transform: uppercase")
+                title_div.add_style("opacity: 0.5")
 
 
                 td = table.add_cell(title_div)
@@ -914,7 +922,7 @@ class EditWdg(BaseRefreshWdg):
                 continue
             else:
 
-                if self.display_mode == "default":
+                if self.display_mode == "horizontal":
                     td = table.add_cell()
                     td.add_style("min-width: 300px")
                     td.add_style("padding: 10px 25px 10px 5px")
@@ -925,6 +933,8 @@ class EditWdg(BaseRefreshWdg):
 
                 if (title in self.disables):
                     widget.add_attr("disabled", "disabled")
+
+                widget.add_style("font-size: 1.2em")
                 td.add(widget)
 
 
@@ -1170,14 +1180,11 @@ class EditWdg(BaseRefreshWdg):
 
 
         search_key = SearchKey.get_by_sobject(self.sobjects[0], use_id=True)
+        search_key_wo_id = SearchKey.get_by_sobject(self.sobjects[0])
         search_type = self.sobjects[0].get_base_search_type()
 
 
         div = DivWdg(css='centered')
-        div.add_color("background", "background", -8)
-        div.add_style("padding-top: 5px")
-        div.add_style("padding-bottom: 30px")
-
 
         # construct the bvr
         element_names = self.element_names[:]
@@ -1217,7 +1224,6 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-        div.add_style('height: 35px')
         div.add_named_listener('close_EditWdg', '''
             var popup = spt.popup.get_popup( document.id('edit_popup') );
             if (popup != null) {
@@ -1252,7 +1258,9 @@ class EditWdg(BaseRefreshWdg):
             cbjs_insert = '''
             spt.edit.edit_form_cbk(evt, bvr);
             spt.notify.show_message("%s item complete.");
-            '''%mode_label
+            var kwargs = {options: {search_keys: "%s"}};
+            spt.named_events.fire_event("delete|workflow/job", kwargs);
+            '''% (mode_label, search_key_wo_id)
 
         save_event = self.kwargs.get('save_event')
         if not save_event:

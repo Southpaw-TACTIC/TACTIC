@@ -118,8 +118,6 @@ class TopWdg(Widget):
             var mouse = evt.client;
             var target = evt.target;
 
-
-            
             var targets = [];
             var count = 0;
             while (target) {
@@ -160,6 +158,10 @@ class TopWdg(Widget):
                 var el = spt.body.focus_elements[i];
                 var hit = false;
 
+                if (spt.has_class(el, 'spt_popup_top')) {
+                    continue;
+                }
+
                 for (var j = 0; j < targets.length; j++) {
                     var target = targets[j];
                     if (target == el) {
@@ -194,18 +196,6 @@ class TopWdg(Widget):
         } )
 
         web = WebContainer.get_web()
-        self.body.add_color("color", "color")
-
-        #if web.is_title_page():
-        #    self.body.add_gradient("background", "background", 0, -20)
-        #else:
-        #    self.body.add_gradient("background", "background", 0, -15)
-        self.body.add_color("background", "background")
-
-        self.body.add_style("background-attachment: fixed !important")
-        self.body.add_style("margin: 0px")
-        self.body.add_style("padding: 0px")
-
 
         # ensure that any elements that force the default menu over any TACTIC right-click context menus has the
         # 'force_default_context_menu' flag reset for the next right click that occurs ...
@@ -232,6 +222,13 @@ class TopWdg(Widget):
             var args = {
                 view: view,  
             }
+            var kwargs = {};
+
+            var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
+
+            var kwargs = {};
+
+            var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
 
             var kwargs = {};
 
@@ -299,7 +296,7 @@ class TopWdg(Widget):
                 var value = attributes[i].value;
                 kwargs[name] = value;
             }
- 
+
             spt.panel.load(target, class_name, kwargs);
 
             var scroll = bvr.src_el.getAttribute("scroll");
@@ -338,7 +335,10 @@ class TopWdg(Widget):
             'bvr_match_class': 'tactic_refresh',
             'cbjs_action': '''
             var target_class = bvr.src_el.getAttribute("target");
-            if (target_class.indexOf(".") != "-1") {
+            if (!target_class) {
+                var target = bvr.src_el;
+            }
+            else if (target_class.indexOf(".") != "-1") {
                 var parts = target_class.split(".");
                 var top = bvr.src_el.getParent("."+parts[0]);
                 var target = top.getElement("."+parts[1]);  
@@ -347,7 +347,19 @@ class TopWdg(Widget):
                 var target = document.id(document.body).getElement("."+target_class);
             }
 
-            spt.panel.refresh(target);
+            var kwargs = {};
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var attr_name = attributes[i].name;
+                if (attr_name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[attr_name] = value;
+            }
+
+
+            spt.panel.refresh_element(target, kwargs);
             '''
             } )
 
@@ -554,9 +566,10 @@ class TopWdg(Widget):
         head = HtmlElement("head")
         html.add(head)
 
+
         head.add('<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>\n')
         head.add('<meta http-equiv="X-UA-Compatible" content="IE=edge"/>\n')
-
+ 
         # Add the tactic favicon
         head.add('<link rel="shortcut icon" href="/context/favicon.ico" type="image/x-icon"/>')
 
@@ -591,9 +604,6 @@ class TopWdg(Widget):
         html.add( body )
 
  
-        body.add_style('overflow', 'hidden')
-
-
         top = self.top
 
         # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
@@ -651,21 +661,44 @@ class TopWdg(Widget):
         security = Environment.get_security()
         if not web.is_admin_page() and security.check_access("builtin", "view_site_admin", "allow"):
 
-            div = DivWdg()
-            top.add(div)
-            top.add_style("padding-top: 21px")
+            admin_bar = DivWdg()
+            top.add(admin_bar)
+            admin_bar.add_class("spt_admin_bar")
+            admin_bar.add(HtmlElement.style('''
+            .spt_admin_bar { 
+                display: flex;
+                justify-content: space-between;
+                padding: 3px 0px 3px 15px;
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                opacity: 0.7;
+                width: 100%;
+                background-color: rgb(0, 0, 0);
+                color: rgb(255, 255, 255);
+                z-index: 1000;
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 5px 5px;
+            }
+            
+            .spt_admin_bar:hover {
+                opacity: 1.0;
+            }
 
-            div.add_class("spt_admin_bar")
+            .spt_admin_bar_left {display: flex;}
+            .spt_admin_bar_right {display: flex;}
 
+            '''))
 
+            admin_bar_left = DivWdg(css="spt_admin_bar_left")
+            admin_bar.add(admin_bar_left)
+            admin_bar_right = DivWdg(css="spt_admin_bar_right")
+            admin_bar.add(admin_bar_right)
 
+            
             # home
             icon_div = DivWdg()
-            div.add(icon_div)
-            icon_div.add_style("float: left")
-            icon_div.add_style("margin-right: 10px")
-            icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Home", icon="BS_HOME")
+            admin_bar_left.add(icon_div)
+            icon_button = IconButtonWdg(icon="FA_HOME", title="Go to index")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -674,47 +707,23 @@ class TopWdg(Widget):
                 '''
             } )
 
-
-
-            div.add_style("height: 15px")
-            div.add_style("padding: 3px 0px 3px 15px")
-            #div.add_style("margin-bottom: -5px")
-            div.add_style("position: fixed")
-            div.add_style("top: 0px")
-            div.add_style("left: 0px")
-            div.add_style("opacity: 0.7")
-            div.add_style("width: 100%")
-            #div.add_gradient("background", "background2", 20, 10)
-            div.add_style("background-color", "#000")
-            div.add_style("color", "#FFF")
-            div.add_style("z-index", "1000")
-            div.add_class("hand")
-            div.set_box_shadow("0px 5px 5px")
-
             # remove
             icon_div = DivWdg()
-            div.add(icon_div)
-            icon_div.add_style("float: right")
-            icon_div.add_style("margin-right: 10px")
-            icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="BS_REMOVE")
+            admin_bar_right.add(icon_div)
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="FA_TIMES")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
                 var parent = bvr.src_el.getParent(".spt_admin_bar");
-                bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(parent);
                 '''
             } )
 
             # sign-out
             icon_div = DivWdg()
-            div.add(icon_div)
-            icon_div.add_style("float: right")
-            icon_div.add_style("margin-right: 5px")
-            icon_div.add_style("margin-top: -3px")
-            icon_button = IconButtonWdg(title="Sign Out", icon="BS_LOG_OUT")
+            admin_bar_right.add(icon_div)
+            icon_button = IconButtonWdg(title="Sign Out", icon="FA_SIGN_OUT_ALT")
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -729,37 +738,19 @@ class TopWdg(Widget):
                 '''
             } )
 
+            admin_bar_left.add("<b>ADMIN >></b>")
 
-
-            div.add("<b>ADMIN >></b>")
-
-
-            div.add_behavior( {
+            admin_bar.add_behavior( {
                 'type': 'listen',
                 'event_name': 'close_admin_bar',
                 'cbjs_action': '''
-                bvr.src_el.getParent(".spt_top").setStyle("padding-top", "0px");
                 spt.behavior.destroy_element(bvr.src_el);
                 '''
             } )
 
-            div.add_behavior( {
-                'type': 'mouseover',
-                'cbjs_action': '''
-                bvr.src_el.setStyle("opacity", 0.85)
-                //new Fx.Tween(bvr.src_el).start('height', "30px");
-                '''
-            } )
-            div.add_behavior( {
-                'type': 'mouseout',
-                'cbjs_action': '''
-                bvr.src_el.setStyle("opacity", 0.7)
-                //new Fx.Tween(bvr.src_el).start('height', "15px");
-                '''
-            } )
             project_code = Project.get_project_code()
             site_root = web.get_site_root()
-            div.add_behavior( {
+            admin_bar.add_behavior( {
                 'type': 'click_up',
                 'site_root': site_root,
                 'project_code': project_code,
@@ -795,6 +786,7 @@ class TopWdg(Widget):
 
         # tactic_kbd is only true for standard TACTIC index
         tactic_kbd = True
+        palette_key = None
 
         hash = self.kwargs.get("hash")
         if isinstance(hash, tuple) and len(hash) > 0:
@@ -814,6 +806,7 @@ class TopWdg(Widget):
             search.add_where("or")
             url = search.get_sobject()
             
+        
         if url:
             xml = url.get_xml_value("widget")
 
@@ -824,7 +817,14 @@ class TopWdg(Widget):
             if xml.get_value("element/@tactic_kbd") in [True, "true"]:
                 tactic_kbd = True
 
-            # look up palette the expression for index
+         
+        if not palette_key:
+            web = WebContainer.get_web()
+            if web.is_admin_page():
+                palette_key = 'AQUA'
+                #palette_key = 'SILVER'
+        
+        if palette_key:
             from pyasm.web import Palette
             palette = Palette.get()
 
@@ -864,6 +864,7 @@ class TopWdg(Widget):
 
         site = Site.get_site()
 
+
         master_enabled = Config.get_value("master", "enabled")
         forwarding_type = Config.get_value("master", "forwarding_type")
         if forwarding_type == "xmlrpc_only":
@@ -887,28 +888,37 @@ class TopWdg(Widget):
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
             kiosk_mode = 'false'
-        # add environment information
-        script = HtmlElement.script('''
+        
+        script = '''
         var env = spt.Environment.get();
-        env.set_site('%s');
-        env.set_project('%s');
-        env.set_user('%s');
-        env.set_user_id('%s');
+        '''
+        
+        script += '''env.set_site('%s');''' % site
+        script += '''env.set_project('%s');''' % Project.get_project_code()
+        script += '''env.set_user('%s');''' % user_name
+        script += '''env.set_user_id('%s');''' % user_id
+        script += '''
         var login_groups = '%s'.split('|');
         env.set_login_groups(login_groups);
-        env.set_client_handoff_dir('%s');
-        env.set_client_repo_dir('%s');
-        env.set_kiosk_mode('%s');
-        env.set_master_enabled('%s');
-        env.set_master_url('%s');
-        env.set_master_login_ticket('%s');
-        env.set_master_project_code('%s');
-        env.set_master_site('%s');
-        env.set_user_timezone('%s');
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
-		master_enabled, master_url, login_ticket, master_project_code, master_site, user_timezone))
+        ''' % '|'.join(login_groups)
+        script += '''env.set_client_handoff_dir('%s');''' % client_handoff_dir
+        script += '''env.set_client_repo_dir('%s');''' % client_asset_dir
+        script += '''env.set_kiosk_mode('%s'); ''' % kiosk_mode
+
+        if master_enabled in ['true', True]:
+            script += '''
+            env.set_master_enabled('%s');
+            env.set_master_url('%s');
+            env.set_master_login_ticket('%s');
+            env.set_master_project_code('%s');
+            env.set_master_site('%s');
+            ''' % (master_enabled, master_url, login_ticket, master_project_code, master_site)
+
+        script += '''env.set_user_timezone('%s');''' % user_timezone
         
-        
+
+       
+        script = HtmlElement.script(script)
         top.add(script)
 
 
@@ -1009,9 +1019,13 @@ class TopWdg(Widget):
     def get_copyright_wdg(self):
         widget = Widget()
 
+        from datetime import datetime
+        today = datetime.today()
+        year = datetime.year
+
         # add the copyright information
         widget.add( "<!--   -->\n")
-        widget.add( "<!-- Copyright (c) 2005-2014, Southpaw Technology - All Rights Reserved -->\n")
+        widget.add( "<!-- Copyright (c) %s, Southpaw Technology - All Rights Reserved -->\n" % year)
         widget.add( "<!--   -->\n")
 
         return widget
@@ -1028,107 +1042,65 @@ class TopWdg(Widget):
 
         version = Environment.get_release_version()
 
-        #ui_library = "bootstrap_material"
-        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "default"
-        if ui_library == "default":
-            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
+        ui_library = ProjectSetting.get_value_by_key("feature/ui_library") or "bootstrap_material"
+        
+        css_library = ProjectSetting.get_value_by_key("feature/css_library") or "bootstrap_material"
 
-        elif ui_library == "bootstrap":
-
-            # TEST: new version of bootstrap
-            widget.add('''
+        widget.add('''
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        ''')
-
-            widget.add('''
-
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-
-            ''')
-
-        elif ui_library == "form_builder":
-            widget.add('''
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 
-<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
+<!-- Form builder -->
 <link rel='stylesheet' href='https://unpkg.com/formiojs@latest/dist/formio.full.min.css'>
-<!--
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
--->
-<script src='https://unpkg.com/formiojs@4.8.0-rc.10/dist/formio.full.min.js'></script>
-        ''')
 
+''')
 
-
-        elif ui_library == "form_builder":
-
+        if ui_library == "bootstrap":
             widget.add('''
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-<script src="https://formbuilder.online/assets/js/form-builder.min.js"></script>
-<script src="https://formbuilder.online/assets/js/form-render.min.js"></script>
-            ''')
-
-
-            # TEST: new version of bootstrap
-            widget.add('''
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        ''')
-
-            widget.add('''
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+''')
 
-            ''')
+        else:
 
-
-
-        elif ui_library == "bootstrap_material":
-            # TEST bootstrap material design
             widget.add('''
-
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
 <!-- Material Design for Bootstrap fonts and icons -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
 
-<!-- Material Design for Bootstrap CSS -->
-<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
-
-<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
-            ''')
-            widget.add('''
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+<!-- Material Design for Bootstrap JS -->
 <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 
-<script src="/plugins/arrive.min.js"></script>
 
-            ''')
+
+           ''')
 
 
             self.body.add('''
 <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
             ''')
 
-
-        Container.append_seq("Page:css", "%s/spt_js/font-awesome-4.7.0/css/font-awesome.css?ver=%s" % (context_url, version))
+            
+        if css_library == "default":
+            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
+            
+        elif css_library == "bootstrap":
+            widget.add("""
+<!-- Bootstrap CSS -->
+<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
+""")
+        
+        elif css_library == "bootstrap_material":
+            widget.add("""
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+""")
+        
+        else:
+            Container.append_seq("Page:css", css_library)
+            
+        Container.append_seq("Page:css", "%s/spt_js/font-awesome-5.12.0/css/all.css?ver=%s" % (context_url, version))
 
 
 
@@ -1278,7 +1250,9 @@ class TitleTopWdg(TopWdg):
         self.body.add_style("background-attachment: fixed !important")
         #self.body.add_style("min-height: 1200px")
         self.body.add_style("height: 100%")
+        self.body.add_style("width: 100%")
         self.body.add_style("margin: 0px")
+        self.body.add_style("overflow: auto")
 
 
     def get_display(self):
@@ -1341,7 +1315,7 @@ class TitleTopWdg(TopWdg):
         body = self.body
         html.add( body )
 
-        body.add("<form id='form' name='form' method='post' enctype='multipart/form-data'>\n")
+        body.add("<form id='form' style='margin-bottom: 0px' name='form' method='post' enctype='multipart/form-data'>\n")
 
         for content in self.widgets:
             body.add(content)
@@ -1378,10 +1352,6 @@ class IndexWdg(Widget):
 
         top = self.top
         top.set_id('top_of_application')
-        top.add_style("height: 100%")
-        top.add_style("width: 100%")
-        top.add_style("overflow-x: auto")
-        top.add_style("overflow-y: auto")
 
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
@@ -1540,9 +1510,6 @@ class SitePage(AppServer):
             bootstrap = xml.get_value("element/@bootstrap")
             if index == 'true' or admin == 'true':
                 pass
-            elif bootstrap == 'true':
-                widget = BootstrapIndexWdg()
-                return widget
             elif widget == 'true':
                 hash = "/".join(self.hash)
                 hash = "/%s" % hash

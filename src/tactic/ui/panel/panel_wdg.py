@@ -80,17 +80,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
     def get_display(self):
         views = self.get_views()
 
-        top = self.top
-
-
-        # TEST: NEW LAYOUT
-        if Config.get_value("install", "layout") == "fixed":
-            top.add_style("position: fixed")
-            top.add_style("top: 34px")
-            top.add_style("z-index: -1")
-            top.add_style("width: 185")
-
-        top.add( self.get_subdisplay(views) )
+        top = self.get_subdisplay(views)
         return top
 
 
@@ -103,9 +93,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         div.add_class("spt_window_resize")
         div.add_attr("spt_window_resize_offset", "35")
-        div.add_color("background", "background3")
-
-
+        
         # remove the default round corners by making this div the same color
         div.add_color("background", "background3")
 
@@ -175,7 +163,6 @@ class SideBarPanelWdg(BaseRefreshWdg):
         section_div = DivWdg()
         section_div.add_style("display: block")
 
-        
         section_wdg = SideBarBookmarkMenuWdg(**kwargs)
         section_div.add(section_wdg)
         return section_div
@@ -263,7 +250,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
     var path = options['path'];
 
     // display a table
-    var widget_class = options['class_name'];
+    var widget_class = options['widget_key'];
     if (widget_class == null) {
         widget_class = "tactic.ui.panel.ViewPanelWdg";
     }
@@ -280,7 +267,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         spt.tab.top = tab_top;
 
 
-        var class_name = options['class_name'];
+        var class_name = options['widget_key'];
 
         // Use path instead for the name
         //var element_name = options['element_name'];
@@ -1383,7 +1370,13 @@ spt.side_bar.save_definition_cbk = function( bvr )
 }
 
 
+spt.side_bar.toggle = function() {
+    sidebar = document.id("side_bar");
+    sidebar.toggleClass("active");
 
+    overlay = document.id("side_bar_overlay");
+    overlay.toggleClass("active");
+}
 
 
 
@@ -1419,6 +1412,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
     def get_target_id(self):
         '''get the target to which this side bar loads to'''
         return "main_body"
+
 
 
     def get_display(self):
@@ -1980,10 +1974,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     def generate_section( self, config, subsection_div, info, base_path="", personal=False, use_same_config=False ):
 
+
         title = self.kwargs.get('title')
         view = self.kwargs.get('view')
         parent_view = self.kwargs.get('parent_view')
         sortable = self.kwargs.get('sortable')
+
 
         base_path_flag = True
         if not base_path:
@@ -2051,11 +2047,11 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 #    continue
 
 
-
+            options = config.get_display_options(element_name)
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
-                div = self.get_separator_wdg(element_name, config, options)
-                subsection_div.add(div)
+                # div = self.get_separator_wdg(element_name, config, options)
+                # subsection_div.add(div)
                 continue
 
             elif display_class == "TitleWdg":
@@ -3041,12 +3037,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             return top
 
 
-
-        title_wdg = self.get_title_wdg()
-        if title_wdg:
-            inner.add(title_wdg)
-
-
         # set up a search
         try:
             search_type_obj = SearchType.get(search_type)
@@ -3136,11 +3126,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             search = self.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
+                sudo = Sudo()
                 search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit, filter_view=simple_search_view)
             except SearchException as e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
                 raise
+            finally:
+                sudo.exit()
 
 
             from tactic.ui.container import DialogWdg
@@ -3183,7 +3176,7 @@ class ViewPanelWdg(BaseRefreshWdg):
                 "search_type": search_type,
                 "search_view": custom_simple_search_view,
                 "mode": simple_search_mode,
-                "show_saved_search": self.kwargs.get("show_shaved_search"),
+                "show_saved_search": self.kwargs.get("show_saved_search"),
             }
             if run_search_bvr:
                 kwargs['run_search_bvr'] = run_search_bvr
@@ -3329,8 +3322,12 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         resize_cbjs = self.kwargs.get("resize_cbjs")
         reorder_cbjs = self.kwargs.get("reorder_cbjs")
+        title = self.kwargs.get("title")
+        description = self.kwargs.get("description")
 
         kwargs = {
+            "title": title,
+            "description": description,
             "table_id": table_id,
             "search": search,
             "search_type": search_type,
@@ -3444,7 +3441,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             for key in extra_keys:
                 kwargs[key] = self.kwargs.get(key)
             kwargs['extra_keys'] = ",".join(extra_keys)
-
 
 
         if layout == 'tile':
@@ -3622,21 +3618,23 @@ class ViewPanelWdg(BaseRefreshWdg):
 
     def get_title_wdg(self):
 
-        # FIXME: just a test
 
         title = self.kwargs.get("title")
-        title = ""
+
         description = self.kwargs.get("description")
         title_view = self.kwargs.get("title_view")
         if not title and not description and not title_view:
             return
 
 
+        title = title.upper()
+
         title_box_wdg = DivWdg()
-        title_box_wdg.add_border()
-        title_box_wdg.add_style("padding: 10px")
-        title_box_wdg.add_color("background", "background", -5)
-        title_box_wdg.add_style("margin-bottom: -1px")
+        title_box_wdg.add_style("padding: 14px 20px 10px 10px")
+        title_box_wdg.add_style("box-sizing: border-box")
+        title_box_wdg.add_style("height: 48px")
+        title_box_wdg.add_color("background", "background", -10)
+        title_box_wdg.add_style("float: left")
 
 
         if title_view:
@@ -3649,8 +3647,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             title_wdg = DivWdg()
             title_box_wdg.add(title_wdg)
             title_wdg.add(title)
-            title_wdg.add_style("font-size: 16px")
-            title_wdg.add_style("font-weight: bold")
+            title_wdg.add_style("font-size: 1.2em")
+            title_wdg.add_style("font-weight: 500")
 
         if description:
             title_box_wdg.add("<br/>")

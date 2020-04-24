@@ -149,7 +149,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
     
         # action button
-        action_button = ButtonNewWdg(title="Extra Options", icon=IconWdg.GEAR, show_arrow=True)
+        action_button = ButtonNewWdg(title="Extra Options", icon="FA_COG", show_arrow=True)
         button_row.add(action_button)
 
         from tactic.ui.container import SmartMenu

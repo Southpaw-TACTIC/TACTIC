@@ -26,6 +26,8 @@ from .calendar_wdg import CalendarWdg
 from dateutil import parser, rrule
 from datetime import datetime, timedelta
 
+import six
+
 
 
 class BaseCalendarDayWdg(BaseRefreshWdg):
@@ -602,7 +604,7 @@ class SObjectCalendarWdg(CalendarWdg):
         default_views = self.kwargs.get("default_views") or None
 
 
-        if isinstance(custom_views, basestring):
+        if isinstance(custom_views, six.string_types):
             custom_views = custom_views.replace("'", '"')
             custom_views = jsonloads(custom_views)
 
@@ -632,7 +634,7 @@ class SObjectCalendarWdg(CalendarWdg):
         else:
             self.op_filters = self.kwargs.get("filters")
             if self.op_filters:
-                if isinstance(self.op_filters, basestring):
+                if isinstance(self.op_filters, six.string_types):
                     self.op_filters = eval(self.op_filters)
             search = Search(self.search_type)
             if self.op_filters:
@@ -716,7 +718,7 @@ class SObjectCalendarWdg(CalendarWdg):
             custom_kwargs = self.kwargs.get("kwargs")
             if not custom_kwargs:
                 custom_kwargs = {}
-            elif isinstance(custom_kwargs, basestring):
+            elif isinstance(custom_kwargs, six.string_types):
                 custom_kwargs = eval(custom_kwargs)
             custom_kwargs['view'] = custom_view
             self.custom_layout = CustomLayoutWdg(**custom_kwargs)
@@ -1519,7 +1521,7 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
         else:
             num_milestone = 0
-            icon = IconWdg("Milestones", "BS_PLUS")
+            icon = IconWdg("Milestones", "FA_PLUS")
             line_div.add(icon)
             #line_div.add_style("opacity: 0.85")
             line_div.add("Add milestone")

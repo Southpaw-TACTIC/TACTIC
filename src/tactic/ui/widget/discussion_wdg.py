@@ -903,6 +903,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 height: auto;
                 box-sizing: border-box;
                 padding: 0px 10px;
+                border-radius: 5px;
             }
 
 
@@ -1192,30 +1193,33 @@ class DiscussionWdg(BaseRefreshWdg):
 
             top.add(no_notes_div)
             if self.show_border:
-                no_notes_div.add_color("background", "background")
+                no_notes_div.add_color("background", "transparent")
                 no_notes_div.add_color("color", "color")
             no_notes_div.add_style("padding", "0px 5px")
 
   
-            add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
+            add_class = self.get_note_class(self.hidden, 'spt_discussion_add')
 
             no_notes_msg = DivWdg()
             no_notes_msg.add_style("opacity: 0.5")
             no_notes_msg.add_style("min-height: 18px")
             no_notes_msg.add_style("display: flex")
+            no_notes_msg.add_style("align-items: center")
             no_notes_div.add(no_notes_msg)
 
 
             if mode == "icon":
-                add_wdg = IconWdg("Add Note", "BS_PENCIL")
+                add_wdg = IconWdg("Add Note", "FAS_PENCIL_ALT", size=8)
                 no_notes_msg.add(add_wdg)
                 if len(notes):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
 
             else:
+                add_wdg = IconWdg("Add Note", "FAR_PLUS_SQUARE", size=8)
                 add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
+                add_wdg.add_style("margin: 0px 10px")
+
                 no_notes_msg.add(add_wdg)
-                add_wdg.add_style("display: inline-block")
                 msg = "No notes."
                 no_notes_msg.add("<div style='display: inline-block'><i> %s </i></div>" % _(msg))
                 no_notes_div.add_style("font-size: 0.9em")
@@ -1441,12 +1445,12 @@ class DiscussionWdg(BaseRefreshWdg):
 
             if mode == "icon":
                 if last_context.endswith("/review") or last_context.endswith("/error"):
-                    process_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+                    process_wdg = IconWdg("View '%s' notes" % context, "FAR_FLAG", size=8)
                     process_wdg.add_style("color: rgb(232, 74, 77)")
                     process_wdg.add_style("margin-top: 2px")
                     process_top.add("<div style='height: 3px'></div>")
                 else:
-                    process_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL")
+                    process_wdg = IconWdg("View '%s' notes" % context, "FAR_EDIT", size=8)
 
                 process_top.add(process_wdg)
                 if count:
@@ -1456,7 +1460,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             else:
-                process_wdg = IconWdg("View '%s' notes" % context, "BS_PENCIL", size="12")
+                process_wdg = IconWdg("View '%s' notes" % context, "FAS_PENCIL_ALT", size=8)
                 process_top.add(process_wdg)
                 process_wdg.add_style("float: left")
 
@@ -1537,7 +1541,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
                 add_wdg.add_attr("spt_process", process)
                 add_wdg.add_attr("spt_context", context)
-                add_class = self.get_note_class(self.hidden, 'spt_discussion_add') 
+                add_class = self.get_note_class(self.hidden, 'spt_discussion_add')
                 add_wdg.add_class(add_class)
 
                 sk = self.parent.get_search_key(use_id=True)
@@ -2112,7 +2116,7 @@ class NoteWdg(BaseRefreshWdg):
         tr = content.add_row()
 
         if context.endswith("/review") or context.endswith("/error"):
-            context_wdg = IconWdg("View '%s' notes" % context, "BS_FLAG")
+            context_wdg = IconWdg("View '%s' notes" % context, "FAR_FLAG", size=8)
             #tr.add_style("background: rgba(232, 74, 77, 0.8)")
             tr.add_style("border-bottom: solid 1px rgba(232, 74, 77, 0.8)")
 
@@ -2124,7 +2128,7 @@ class NoteWdg(BaseRefreshWdg):
 
 
 
-        icon = IconWdg("Note", "BS_PENCIL")
+        icon = IconWdg("Note", "FAR_EDIT", size=8)
         icon.add_style("float: left")
         icon.add_style("margin: 0px 5px")
 
@@ -2147,7 +2151,7 @@ class NoteWdg(BaseRefreshWdg):
         security = Environment.get_security()
         if security.is_admin() or current_login == login:
 
-            icon = IconButtonWdg(title="Options", icon="BS_PENCIL")
+            icon = IconButtonWdg(title="Options", icon="FAR_EDIT", size=8)
             title.add(icon)
             icon.add_style("float: right")
             icon.add_style("margin-top: -5px")
@@ -2228,7 +2232,7 @@ class NoteWdg(BaseRefreshWdg):
             bubble = 'View Attachments'
             if len(attachments) > 1:
                 bubble = '%s (%s)'%(bubble, len(attachments))
-            btn = IconButtonWdg(title=bubble, icon="BS_PAPERCLIP")
+            btn = IconButtonWdg(title=bubble, icon="FAS_PAPERCLIP", size=8)
             title.add("&nbsp;");
             btn.add_style("float: right");
             btn.add_style("margin-top: -3px");
@@ -2346,6 +2350,7 @@ class NoteWdg(BaseRefreshWdg):
 
                 thumb_div = DivWdg()
                 thumb_div.add_style("float: left")
+                thumb_div.add_style("margin: 0px 5px")
                 thumb_div.add(thumb)
 
                 #thumb_div.add_class("spt_open_thumbnail")
@@ -2430,9 +2435,22 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         # need the process to predict the notification to and cc
         self.process = self.kwargs.get('process')
 
+        style = HtmlElement.style('''
+            .spt_discussion_add_note textarea {
+                width: 100%;
+                height: 100px;
+                border: 2px solid #ccc;
+                outline: none;
+                border-radius: 5px;
+                background-image: none !important;
+                padding: 5px;
+            }
+        ''')
+
       
         content_div = self.top
         content_div.add_style("min-width: 300px")
+        content_div.add(style)
 
         is_standalone = self.kwargs.get("is_standalone")
         on_submit_js = self.kwargs.get("on_submit_js") or ""
@@ -2457,9 +2475,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         search_key_hidden = HiddenWdg("search_key")
         search_key_hidden.set_value(parent.get_search_key())
         content_div.add(search_key_hidden)
-
-        content_div.add('''<div style="margin-top: 10px; font-size: 16px">Add New Note</div>''')
-        content_div.add('''<hr/>''')
 
 
 
@@ -2593,8 +2608,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         text = TextAreaWdg("note")
         text.add_class("form-control")
-        text.add_style("width: 100%")
-        text.add_style("height: 100px")
+        text.add_attr("placeholder", "Add new notes...")
         content_div.add(text)
 
         #content_div.add_style("padding: 20px 10px")
@@ -2629,6 +2643,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         var top = bvr.src_el.getParent(".spt_attachment_top")
         var list = top.getElement(".spt_attachment_list");
+        list.setStyle("border", "solid 1px transparent");
 
         if (!top.files) {
             top.files = [];

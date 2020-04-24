@@ -142,7 +142,7 @@ class DynamicListWdg(BaseRefreshWdg):
         remove_wdg.add_class("SPT_DTS")
         #remove_wdg.add("(-)")
         remove_wdg.add_class("spt_remove")
-        button = IconButtonWdg(title="Remove Entry", icon="FA_REMOVE", size=8)
+        button = IconButtonWdg(title="Remove Entry", icon="FA_TIMES", size=8)
         remove_wdg.add(button)
         remove_wdg.add_style("float: left")
         remove_wdg.add_style("opacity: 0.5")
@@ -196,7 +196,18 @@ spt.dynamic_list.get_top = function() {
 
 spt.dynamic_list.add_item = function(src_el) {
 
-    var top = src_el.getParent(".spt_list_top");
+    if (src_el) {
+        var top = src_el.getParent(".spt_list_top");
+    }
+    else {
+        var top = spt.dynamic_list.top;
+    }
+
+    if (!top) {
+        spt.alert("No top in dynamic list found");
+        return;
+    }
+
 
     var template = top.getElement(".spt_list_template_item");
 

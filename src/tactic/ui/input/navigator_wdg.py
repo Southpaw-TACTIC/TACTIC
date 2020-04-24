@@ -21,6 +21,9 @@ from tactic.ui.common import BaseRefreshWdg
 
 __all__ = ['ShotNavigatorWdg']
 
+
+# DEPRECATED?
+
 class ShotNavigatorWdg(BaseRefreshWdg):
     
     def init(self):

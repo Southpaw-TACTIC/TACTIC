@@ -127,7 +127,6 @@ class BaseNodeWdg(BaseRefreshWdg):
 
         top.add_style("width", width)
         top.add_style("height", str(height)+"px")
-        top.add_style("box-sizing", "border-box")
 
         top.add_attr("spt_border_color", border_color)
         top.add_attr("spt_box_shadow", box_shadow)
@@ -264,23 +263,67 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             self.is_editable = True
         #self.is_editable = False
 
+        self.top.add_behavior( {
+        'type': 'load',
+        'cbjs_action': '''
+
+            // This resizes pipeline canvas
+            let container = bvr.src_el;
+            container.last_size = {};
+            var canvas = container.getElement("canvas");
+            var resize = function() {
+                let container = spt.pipeline.top;
+                if (!container || !container.isVisible() ) {
+                    return;
+                }
+                
+                let size = container.getSize();
+                spt.pipeline.set_size(size.x, size.y);
+                container.last_size = size;
+            }
+            var interval_id = setInterval( resize, 250);
+            container = interval_id;
+        '''
+        } )
+
+        
+
+        self.top.add_behavior( {
+        'type': 'unload',
+        'cbjs_action': '''
+            let container = bvr.src_el;
+            clearInterval( container.interval_id );
+        '''
+        } )
+
+        self.top.add_behavior( { 
+            'type': 'listen',
+            'event_name': 'window_resize',
+            'cbjs_action': '''
+                let container = bvr.src_el;
+                
+                if (!container.isVisible()) return;
+                
+                if (!spt.pipeline) return;
+
+                spt.pipeline.set_top(container);
+                
+                let size = container.getSize();
+                spt.pipeline.set_size(size.x, size.y);
+                container.last_size = size;
+            '''
+        } )
 
         default_node_type = self.kwargs.get("default_node_type") or ""
         self.top.add_attr("spt_default_node_type", default_node_type)
 
 
-        self.width = self.kwargs.get("width")
-        if not self.width:
-            self.width = "auto"
-        self.height = self.kwargs.get("height")
-        if not self.height:
-            self.height = 600
         self.background_color = self.kwargs.get("background_color")
         if not self.background_color:
-            self.background_color = "white"
+            self.background_color = self.top.get_color("background", 10)
 
-
-
+        self.top.add_style("height", "100%")
+        self.top.add_style("width", "100%")
 
         # create an inner and outer divs
         self.nob_mode = self.kwargs.get('nob_mode')
@@ -347,13 +390,15 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         canvas_title = DivWdg()
         canvas_title.add_border()
-        canvas_title.add_style("padding: 3px")
+        canvas_title.add_style("padding: 3px 30px")
         canvas_title.add_style("position: absolute")
         canvas_title.add_style("font-weight: bold")
         canvas_title.add_style("top: 0px")
         canvas_title.add_style("left: 50%")
         canvas_title.add_style('transform: translateX(-50%)')
         canvas_title.add_style("z-index: 150")
+        canvas_title.add_style("box-shadow: 0px 5px 5px rgba(0,0,0,0.05)")
+        canvas_title.add_color("background", "background")
 
         canvas_title.add_class("spt_pipeline_editor_current2")
         canvas_title.add_class("hand")
@@ -467,11 +512,28 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
 
+    def get_styles(self):
+
+        style = HtmlElement.style("""
+
+            .spt_pipeline_canvas {
+                z-index: 200;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                pointer-events: auto;
+            }
+
+        """)
+
+        return style
 
     def get_display(self):
 
         top = self.top
         top.add_style("position: relative")
+
+        top.add(self.get_styles())
 
         version_2_enabled = ProjectSetting.get_value_by_key("version_2_enabled")
         top.add_attr("version_2_enabled", version_2_enabled)
@@ -492,36 +554,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         outer.add_class("spt_resizable")
         outer.add_style("position: relative")
 
-        window_resize_offset = self.kwargs.get("window_resize_offset") or None
-        if window_resize_offset:
-            outer.add_class("spt_window_resize")
-            outer.add_attr("spt_window_resize_offset", window_resize_offset)
-
-
         outer.add_style("overflow: hidden")
-        outer.add_style("box-sizing: border-box")
 
         if self.kwargs.get("show_border") not in [False, 'false']:
             outer.add_border()
-
-
-
-        # set the size limit
-        width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
-        height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-        outer.add_style("width: %s" % width)
-        outer.add_style("height: %s" % height)
-
 
 
         from tactic.ui.input import TextInputWdg
@@ -866,9 +902,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 'SIMPLE_NODE_CTX': simple_menus
             }
 
-        if self.is_editable == True:
-            from tactic.ui.container.smart_menu_wdg import SmartMenu
-            SmartMenu.attach_smart_context_menu( outer, menus_in, False )
+            if self.is_editable == True:
+                from tactic.ui.container.smart_menu_wdg import SmartMenu
+                SmartMenu.attach_smart_context_menu( outer, menus_in, False )
 
         # inner is used to scale
         inner = DivWdg()
@@ -876,7 +912,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         inner.add_class("spt_pipeline_scale")
         inner.add_style("z-index: 100")
-        inner.add_style("box-sizing: border-box")
         inner.add_style("position: absolute")
         inner.add_style("top: 0px")
         inner.add_style("left: 0px")
@@ -922,8 +957,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas_size_wdg = DivWdg()
         inner.add(canvas_size_wdg)
         canvas_size_wdg.add_class("spt_pipeline_canvas_size")
-        canvas_size_wdg.add_style("width: %s" % width)
-        canvas_size_wdg.add_style("height: %s" % height)
 
         #canvas_size_wdg.add_style("border: solid 1px green")
         canvas_size_wdg.add_style("pointer-events: none")
@@ -935,50 +968,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas = DivWdg()
         inner.add(canvas)
 
-        width = self.width
-        try:
-            width = int(width)
-            width = str(width) + "px"
-        except ValueError:
-            pass
-        height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-
         canvas.add_class("spt_pipeline_canvas")
-        canvas.add_style("width: %s" % width)
-        canvas.add_style("height: %s" % height)
-
-        canvas.add_style("width: 0px")
-        canvas.add_style("height: 0px")
-        canvas.add_style("box-sizing: border-box")
-        #canvas.add_style("border: solid 1px red")
-
-        canvas.add_style("z-index: 200")
+        canvas.add_style("width: 600")
+        canvas.add_style("height: 600")
         canvas.set_attr("spt_background_color", self.background_color)
-        canvas.add_style("position: absolute")
-        canvas.add_style("top: 0px")
-        canvas.add_style("left: 0px")
-
-        canvas.add_style("pointer-events: auto")
-
-
-        window_resize_offset = self.kwargs.get("window_resize_offset")
-        if window_resize_offset:
-            #canvas.add_class("spt_window_resize")
-            #canvas.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
-            canvas_size_wdg.add_class("spt_window_resize")
-            canvas_size_wdg.add_attr("spt_window_resize_offset", int(window_resize_offset)+2)
-
-
-        window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
-        if window_resize_xoffset:
-            canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
-            #canvas.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
-            canvas_size_wdg.add_attr("spt_window_resize_xoffset", window_resize_xoffset)
 
         if self.is_editable:
             is_editable = "true"
@@ -986,22 +979,21 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             is_editable = 'false'
 
         # add custom canvas behaviors on the canvas div instead
-
         canvas.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "is_editable": is_editable,
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.canvas_drag'
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "is_editable": is_editable,
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.canvas_drag'
         } )
 
 
         canvas.add_behavior( {
-        "type": 'drag',
-        "mouse_btn": 'LMB',
-        "modkeys": 'CTRL',
-        "drag_el": '@',
-        "cb_set_prefix": 'spt.pipeline.zoom_drag'
+            "type": 'drag',
+            "mouse_btn": 'LMB',
+            "modkeys": 'CTRL',
+            "drag_el": '@',
+            "cb_set_prefix": 'spt.pipeline.zoom_drag'
         } )
 
 
@@ -1322,26 +1314,10 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_class("spt_pipeline_paint")
         #canvas.add_style("position: relative")
         canvas.add_style("position: absolute")
-        canvas.add_style("box-sizing: border-box")
-        canvas.add_style("border: solid 1px red")
+        #canvas.add_style("border: solid 1px red")
         canvas.add_style("top: 0px")
-        canvas.add_style("right: 0px")
-
-        height = self.height
-        try:
-            height = int(height)
-            height = str(height) + "px"
-        except ValueError:
-            pass
-
-        #canvas.add_style("margin-top: -%s" % height)
-
-
-        canvas.set_style("height: 100%")
-        canvas.set_style("width: 100%")
-
-        canvas.set_attr("width", self.width)
-        canvas.set_attr("height", self.height)
+        canvas.set_attr("width", "600")
+        canvas.set_attr("height", "600")
         canvas.set_attr("spt_background_color", self.background_color)
 
         canvas.add_style("z-index: 1")
@@ -1596,6 +1572,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         if node_type == "hierarchy":
@@ -1632,7 +1609,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             icon_div = DivWdg()
             node.add(icon_div)
-            icon = IconButtonWdg(name="Expand", icon="BS_ARROW_DOWN")
+            icon = IconButtonWdg(name="Expand", icon="FA_ARROW_DOWN")
             icon_div.add(icon)
             icon_div.add_style("margin: 0px auto")
             icon_div.add_style("top: 40px")
@@ -2262,6 +2239,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label_width = custom_wdg.get_label_width()
         if label_width == None:
@@ -2364,6 +2342,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
@@ -2452,6 +2431,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
@@ -2532,6 +2512,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_style("text-align: center")
         label.add_style("padding-left: 2px")
         label.add_style("padding-top: 1px")
+        label.add_color("color", "color")
 
         label = DivWdg()
         node.add(label)
@@ -2768,6 +2749,15 @@ spt.pipeline.background_color = "#fff";
 spt.pipeline.allow_cycle = true;
 
 // External method to initialize callback
+spt.pipeline.hide_start = function(start) {
+    start.setStyle("display", "none");
+
+    right = start.getParent(".spt_pipeline_tool_right");
+    editor = right.getElement(".spt_pipeline_editor_top");
+    editor.setStyle("display", "flex");
+
+}
+
 spt.pipeline.init_cbk = function(common_top) {
     spt.pipeline.top = common_top.getElement(".spt_pipeline_top");
     spt.pipeline._init();
@@ -2838,15 +2828,6 @@ spt.pipeline._init = function() {
     }
     data.connector_panel_data = connector_panel_data;
 
-    // FIXME: need this delay because the table seems to resize itself somewhere
-    setTimeout( function() {
-        //var size = canvas_size.getSize();
-        var size = top.getSize();
-        if (size.x == 0 || size.y == 0) {
-            return;
-        }
-        spt.pipeline.set_size(size.x, size.y);
-    }, 500);
 }
 
 
@@ -4233,7 +4214,7 @@ spt.pipeline.set_color = function(node, color) {
 
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
-    var color2 = spt.css.modify_color_value(color, -10);
+    var color2 = spt.css.modify_color_value(color, -5);
 
     if (spt.pipeline.get_node_type(node) == "condition") {
         angle = 225;
@@ -5786,40 +5767,27 @@ spt.pipeline.center_node = function(node) {
 /* Set the canvas size */
 spt.pipeline.set_size = function(width, height) {
     var top = spt.pipeline.top;
+
+    var canvas_paint = spt.pipeline.get_paint();
+    var pipeline_resize = top.getElement(".spt_pipeline_resize")
+    var canvas_size = pipeline_resize.getElement(".spt_pipeline_canvas_size");
     var canvas = spt.pipeline.get_canvas();
-
-
-    var paint = spt.pipeline.get_paint();
-    outer = top.getElement(".spt_pipeline_resize")
-
-    var canvas = outer.getElement(".spt_pipeline_canvas_size");
-
-    outer.setStyle("width", ""+width);
-    if (height) {
-        outer.setStyle("height", ""+height);
+    
+    if (width) {
+        canvas_paint.setAttribute("width", ""+width);
+        pipeline_resize.setStyle("width", ""+width);
+        canvas_size.setStyle("width", ""+width);
+        canvas.setStyle("width", ""+width);
     }
-
-    paint.setAttribute("width", ""+width);
     if (height) {
-        paint.setAttribute("height", ""+height);
-        //paint.setStyle("margin-top", "" + (-height));
-    }
-    canvas.setStyle("width", ""+width);
-    if (height) {
+        canvas_paint.setAttribute("height", ""+height);
+        pipeline_resize.setStyle("height", ""+height);
+        canvas_size.setStyle("height", ""+height);
         canvas.setStyle("height", ""+height);
     }
+
     spt.pipeline.redraw_canvas();
 
-/*
-    var cookie = new Cookie('pipeline_canvas');
-    var state = JSON.parse( cookie.read() );
-    if (state == null) {
-        state = {};
-    }
-    state.height = height;
-    state.width = width;
-    cookie.write(JSON.stringify(state))
-*/
 }
 
 
@@ -5877,8 +5845,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    scale = scale * 0.95;
-    //scale = 1.0
+    scale = scale * 0.9;
     if (scale > 1.0) {
         scale = 1.0;
     }
@@ -6835,7 +6802,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         color = pipeline.color;
     }
     if (color == '' || color == null || typeof(color) == 'undefined') {
-        color = "#999";
+        color = "#AAAAB0";
     }
     group.set_color(color);
     group.set_group_type("pipeline");
@@ -6909,7 +6876,11 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         spt.pipeline.load_connects(pipeline_code, xml_connects);
     }
 
-    //spt.pipeline.fit_to_canvas(pipeline_code);
+    container = spt.pipeline.top;
+    let size = container.getSize();
+    spt.pipeline.set_size(size.x, size.y);
+    container.last_size = size;
+    spt.pipeline.fit_to_canvas(pipeline_code);
 
     if (pipeline_stype == "sthpw/task") {
         spt.pipeline.set_task_color();

@@ -148,10 +148,15 @@ class EditCmd(Command):
             else:
                 name = None
             last_sobject = self._execute_single(code, name=name)
+
             last_code = last_sobject.get_value("code", no_exception=True)
             last_name = last_sobject.get_value("name", no_exception=True)
 
-
+            if index == 0 and self.multiplier > 1:
+                name = Common.get_next_code(last_name)
+                last_sobject.set_value("name", name)
+                last_sobject.commit()
+                last_name = last_sobject.get_value("name", no_exception=True)
 
 
 
@@ -173,7 +178,6 @@ class EditCmd(Command):
 
             if action_handler == 'DefaultValueDatabaseAction':
                 default_elements.append(element_name)
-
 
 
 
@@ -214,6 +218,10 @@ class EditCmd(Command):
 
             action_handler_class = \
                     config.get_action_handler(element_name)
+
+            if not action_handler_class and not SearchType.column_exists(self.search_type, element_name):
+                if element_name not in ["workflow"]:
+                    continue
 
             # Try to get it from the display view
             if not action_handler_class:
@@ -269,8 +277,6 @@ class EditCmd(Command):
                 action_handler.set_option(key, value)
 
             action_handlers.append(action_handler)
-
-
 
 
 
@@ -332,6 +338,7 @@ class EditCmd(Command):
 
         action_handlers = self._get_action_handlers()
 
+
         # set the sobject for each action handler
         for action_handler in action_handlers:
 
@@ -342,24 +349,13 @@ class EditCmd(Command):
                 if self.connect_key:
                     action_handler.set_option('connect_key', self.connect_key)
                 action_handler.execute()
-                
+               
+
+        #sobject.commit(triggers=self.trigger_mode)
 
         # set the parent, if there is one and it's in insert
         if sobject.is_insert() and self.parent_key:
             sobject.add_relationship(self.parent_key)
-
-
-        if sobject.is_insert():
-            action = "Inserted"
-        else:
-            action = "Updated"
-
-        # before we commit, we set what got changed in the info
-        update_data = sobject.update_data
-        for key, value in update_data.items():
-            # don't include None
-            if value != None:
-                self.info[key] = value
 
 
         if code:
@@ -376,6 +372,19 @@ class EditCmd(Command):
                 continue
             sobject.set_value(key, value)
 
+
+
+        if sobject.is_insert():
+            action = "Inserted"
+        else:
+            action = "Updated"
+
+        # before we commit, we set what got changed in the info
+        update_data = sobject.update_data
+        for key, value in update_data.items():
+            # don't include None
+            if value and SearchType.column_exists(self.search_type, key):
+                self.info[key] = value
 
         # commit the changes unless told not to.
         # NOTE: this prevents any connections to be made

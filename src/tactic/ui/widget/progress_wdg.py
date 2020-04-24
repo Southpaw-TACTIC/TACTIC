@@ -841,6 +841,11 @@ class TestProgressWdg3(BaseRefreshWdg):
 
 class RadialProgressWdg(BaseRefreshWdg):
 
+    def init(self):
+        top = self.top
+        top.add_style("position: relative")
+        self.set_as_panel(top)
+
     def get_display(self):
 
         top = self.top
@@ -874,7 +879,6 @@ class RadialProgressWdg(BaseRefreshWdg):
         size_str = str(size) + "px"
         top.add_style("width", size_str)
         top.add_style("height", size_str)
-        top.add_style("position: relative")
 
         canvas = Canvas()
         top.add(canvas)

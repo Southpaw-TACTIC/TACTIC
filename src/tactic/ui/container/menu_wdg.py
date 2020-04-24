@@ -448,8 +448,8 @@ class GearMenuWdg(BaseRefreshWdg):
         """
 
         from pyasm.widget import IconWdg
-        from tactic.ui.widget import IconButtonWdg
-        icon = IconButtonWdg(name="Settings", icon="BS_COG", show_arrow="true")
+        from tactic.ui.widget import IconButtonWdg, ActionButtonWdg
+        icon = IconButtonWdg(title="Settings", icon="FA_COG", show_arrow="true")
         btn_dd.add(icon)
 
 

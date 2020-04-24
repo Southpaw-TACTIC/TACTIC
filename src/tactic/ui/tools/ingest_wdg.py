@@ -260,7 +260,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         remove_div = DivWdg()
         remove_div.add_class("spt_remove")
         file_template.add(remove_div)
-        icon = IconButtonWdg(title="Remove", icon="BS_REMOVE")
+        icon = IconButtonWdg(title="Remove", icon="FA_TIMES")
         icon.add_style("float: right")
         remove_div.add(icon)
         #remove_div.add_style("text-align: right")
@@ -726,7 +726,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
+        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="secondary")
         #button.add_style("float: right")
         button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
@@ -771,10 +771,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Clear")
+        button = ActionButtonWdg(title="Clear", color="secondary")
         #button.add_style("float: right")
         button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
+        button.add_style("margin-left: 5px")
         shelf_div.add(button)
         button.add_behavior( {
             'type': 'click_up',
@@ -788,7 +789,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var background = top.getElement(".spt_files_background");
             background.setStyle("display", "");
 
-            var button = top.getElement(".spt_upload_file_button");
+            var button = top.getElement(".spt_upload_files_top");
             button.setStyle("display", "none");
 
 
@@ -857,7 +858,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background.add_color("color", "color", 70)
 
 
-        icon = "<i class='fa fa-cloud-upload' style='font-size: 150px'> </i>"
+        icon = "<i class='fa fa-cloud-upload-alt' style='font-size: 150px'> </i>"
         background.add(icon)
 
         background_text = DivWdg("<p>Drag Files Here</p>")
@@ -1205,8 +1206,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
     
         ingest_btn_top = top.getElement(".spt_ingest_btn");
-        ingest_btn = ingest_btn_top.getElement(".spt_action_button");
-        ingest_btn.in_progress = false;
+        ingest_btn_top.in_progress = false;
         
          
         '''
@@ -1441,13 +1441,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         button.add_class("spt_ingest_btn")
-
         upload_div.add("<br clear='all'/>")
 
 
         action_handler = self.kwargs.get("action_handler")
         if not action_handler:
-            action_handler = 'tactic.ui.tools.IngestUploadCmd';
+            action_handler = 'tactic.ui.tools.IngestUploadCmd'
 
         context = self.kwargs.get("context")
         context_mode = self.kwargs.get("context_mode")
@@ -1495,7 +1494,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var file_els = top.getElements(".spt_upload_file");
             var num_files = file_els.length;
-            var files_top = top.getElement(".spt_to_ingest_files")
+            var files_top = top.getElement(".spt_to_ingest_files");
 
             spt.notify.show_message("Ingesting "+num_files+" Files");
 
