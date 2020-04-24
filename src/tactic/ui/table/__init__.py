@@ -45,4 +45,3 @@ from .metadata_element_wdg import *
 
 from .custom_layout_element_wdg import *
 
-
