@@ -53,7 +53,7 @@ def main(args):
         print('The VERSION_API file contains:                             ', version_client_prev)
 
         prompt_str = 'The file will be changed to (%s): '%version_client_prev
-        version_client_new = raw_input(prompt_str)
+        version_client_new = input(prompt_str)
         print(" ")
         if version_client_new in [ version_client_prev, '']:
             print('--')
@@ -71,7 +71,10 @@ def main(args):
         print('Error in set_version.py->update_version_file_server() or update_version_file_client(): ', e.__str__())
         print('Updating version files failed.  Process terminated.')
         exit()
-        
+    
+
+    # DEPRECATED
+    """
     try:
         run_create_zip()
 
@@ -79,6 +82,7 @@ def main(args):
         print('Error in set_version.py->run_create_zip(): ', e.__str__())
         print('Creating zip file failed.  Process terminated.')
         exit()
+    """
 
     print('  ------------------------ set_version completed ------------------------')
     print_file_location_msg()
