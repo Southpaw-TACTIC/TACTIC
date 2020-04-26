@@ -1309,8 +1309,9 @@ spt.tab.view_definition = function(bvr) {
 
     
     def get_bootstrap_styles(self):
-    
-        styles = HtmlElement.style('''
+        styles = HtmlElement.style()
+        color = styles.get_color("color")
+        styles.add('''
             .nav-pills .nav-link, .nav-tabs .nav-link {
                 padding: .5em .8575em;
                 font-size: 12px;
@@ -1408,20 +1409,20 @@ spt.tab.view_definition = function(bvr) {
             }
 
             .spt_tab_header_label {
-                color: #000;
+                color: %s;
                 text-overflow: ellipsis;
                 overflow-x: hidden;
                 white-space: nowrap;
             }
 
             .spt_tab_selected .spt_tab_header_label {
-                color: #000 !important;
+                color: %s !important;
             }
 
             .spt_tab_header_count {
                 margin-left: 10px;
             }
-        ''')
+        ''' % (color, color))
 
         return styles
 

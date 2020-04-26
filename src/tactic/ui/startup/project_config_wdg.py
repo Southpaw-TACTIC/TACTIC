@@ -864,15 +864,12 @@ class UserPanelWdg(BaseRefreshWdg):
         tool_div.add_style('display','inline-flex')
         tool_div.add_style("align-items: center")
         tool_div.add_style('width','50%')
-        tool_div.add_style('margin-bottom','-4px')
         tool_div.add_style('margin-top','5px')
      
         if show_add not in ['false', False]:
             button = ActionButtonWdg(title="Add", tip="Add New User", color="secondary")
-            button.add_style('align-self: flex-end')
             tool_div.add(button)
         
-            button.add_style("float: left")
             button.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
@@ -908,26 +905,23 @@ class UserPanelWdg(BaseRefreshWdg):
             #max_users = license.get_max_users()
 
 
-            div = DivWdg('Users')
-            div.add_style('align-self: flex-end')
-            div.add_styles("margin: 0 0 6px 20px")
-            badge_span = SpanWdg(css='badge')
-            badge_span.add_style('margin-left','6px')
-            badge_span.add(current_users)
-            div.add(badge_span)
-            tool_div.add(div)
+            if current_users:
+                div = DivWdg('Users')
+                badge_span = SpanWdg(css='badge')
+                badge_span.add_style('margin-left','6px')
+                badge_span.add(current_users)
+                div.add(badge_span)
+                tool_div.add(div)
 
             tool_div2 = DivWdg()
             # tool_div.add_style('margin-bottom','8px')
             tool_div2.add_style('display','inline-flex')
-            tool_div2.add_style('justify-content','flex-end')
             tool_div2.add_style('width','50%')
 
 
         
             if num_left < 1000:
                 div = DivWdg('Users Left')
-                div.add_style('align-self: flex-end')
                 div.add_styles("margin: 0 0 6px 20px")
                 badge_span = SpanWdg(css='badge')
                 badge_span.add_style('margin-left','6px')
@@ -970,12 +964,15 @@ class UserPanelWdg(BaseRefreshWdg):
             div.add_style("text-align: center")
             div.add_border()
             div.add_style("min-height: 150px")
-            div.add_style("margin: 15px 30px 30px 30px")
-            div.add_style("padding: 30px 20px 0px 20px")
+            div.add_style("margin: 30px auto")
+            div.add_style("padding: 30px 20px 30px 20px")
+            div.add_style("width: 60%")
+            div.add_style("max-width: 800px")
+            div.add_color("color", "color3")
             div.add_color("background", "background3")
-            icon = IconWdg( "WARNING", IconWdg.WARNING )
+            icon = IconWdg( "WARNING", "FA_WARNING" )
             div.add(icon)
-            div.add("<b>No users have been added</b>")
+            div.add("<b> No users have been added</b>")
             div.add("<br/><br/>")
             div.add("For more information, read the help docs: ")
             from tactic.ui.app import HelpButtonWdg

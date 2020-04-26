@@ -33,16 +33,25 @@ class Palette(object):
     'theme':        'dark',
 
     'table_border': '#494949',
-    'side_bar_title': '#3C76C2',
+    'side_bar_title_color': '#EEEEEE',
 
-    'theme':        'default',
     'shadow':       'rgba(0,0,0,0.1)',
-    'md_primary_dark': '#c7c7c7', 
-    'md_primary':   '#fafafa',
-    'md_primary_light': '#ffffff',
-    'md_secondary_dark': '#00675b',
-    'md_secondary': '#009688',
-    'md_secondary_light': '#52c7b8'
+
+    #'md_primary_dark': '#c7c7c7', 
+    #'md_primary':   '#fafafa',
+    #'md_primary_light': '#ffffff',
+    #'md_secondary_dark': '#00675b',
+    #'md_secondary': '#009688',
+    #'md_secondary_light': '#52c7b8'
+
+ 
+    "md_primary_dark": "#000a12",
+    "md_primary": "#263238",
+    "md_primary_light": "#4f5b62",
+    "md_secondary_dark": "#00628b",
+    "md_secondary": "#1d90bb",
+    "md_secondary_light": "#61c0ee"
+
  
 
     
@@ -295,7 +304,7 @@ class Palette(object):
                 if not self.colors.get(name):
                     self.colors[name] = value
 
-        except:
+        except Exception as e:
             try:
                 value = value.upper()
                 value = value.replace(" ", "_")
@@ -303,7 +312,6 @@ class Palette(object):
             except:
                 print("WARNING: palette [%s] does not exist.  Using default" % value)
 
-               
 
     def get_theme(self):
         theme = self.colors.get("theme")

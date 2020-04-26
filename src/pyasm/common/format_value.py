@@ -69,8 +69,10 @@ class FormatValue(object):
             return value
 
         if isinstance(value, datetime.datetime):
+            real_value = value
             value = str(value)
         elif not isinstance(value, basestring):
+            real_value = value
             value = str(value)
 
         if value.startswith("{") and value.endswith("}"):
@@ -395,6 +397,20 @@ class FormatValue(object):
                 value = parser.parse(value)
                 from pyasm.common import SPTDate
                 value = SPTDate.get_time_ago(value)
+
+
+        elif format == 'DAYS':
+            if not real_value:
+                value = 0
+            else:
+                value = real_value.days
+
+        elif format == 'SECONDS':
+            if not real_value:
+                value = 0
+            else:
+                value = real_value.days*24*3600 + real_value.seconds
+
 
 
         # ------------------------------------------------

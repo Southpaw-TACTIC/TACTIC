@@ -114,6 +114,8 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
+        top.add_color("color", "color")
+
         div = DivWdg()
         top.add(div)
         div.add_style("width: 630px")

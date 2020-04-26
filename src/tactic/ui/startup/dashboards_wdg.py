@@ -103,7 +103,7 @@ class DashboardsWdg(ReportsWdg):
         top.add(title)
 
         from tactic.ui.widget import TitleWdg
-        subtitle = TitleWdg(name_of_title='List of Dashboards',help_alias='project-startup-dashboards')
+        subtitle = TitleWdg(name_of_title='List of Dashboards', help_alias='project-startup-dashboards')
         top.add(subtitle)
 
         top.add("<br/>")

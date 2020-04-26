@@ -579,6 +579,19 @@ class FormatElementWdg(SimpleTableElementWdg):
                 value = SPTDate.get_time_ago(value)
 
 
+        elif format == 'DAYS':
+            if not real_value:
+                value = 0
+            else:
+                value = real_value.days
+
+        elif format == 'SECONDS':
+            if not real_value:
+                value = 0
+            else:
+                value = real_value.days*24*3600 + real_value.seconds
+
+
 
         # ------------------------------------------------
         # Scientific

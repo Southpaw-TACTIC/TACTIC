@@ -1074,9 +1074,9 @@ class ExpressionMode(ExpressionParser):
             try:
                 result = eval(expression)
 
-                # convert result to  seconds if it is a timedelta
-                if isinstance(result, datetime.timedelta):
-                    result = result.seconds
+                # convert result to seconds if it is a timedelta
+                #if isinstance(result, datetime.timedelta):
+                #    result = result.days*24*3600 + result.seconds
 
             except ZeroDivisionError:
                 result = None

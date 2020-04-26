@@ -568,6 +568,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         sobject_config = None
         element_names = None
 
+
         if sobject_settings:
             wdg_settings = sobject_settings.get("SObjectDetailWdg") or {}
             config_xml = wdg_settings.get("config")
@@ -615,7 +616,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             tabs = config.get_element_names()
         else:
             tabs = self.get_default_tabs()
-        
+
         if len(tabs) == 0:
             tabs.insert(0, "info")
 
@@ -638,7 +639,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config_xml.append('''
         <config>
         <tab>''')
-
 
         for tab in tabs:
 
