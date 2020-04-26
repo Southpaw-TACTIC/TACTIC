@@ -26,7 +26,7 @@ from tactic.ui.container import MenuItem, Menu, ResizableTableWdg, TabWdg, Dialo
 # FIXME: remove this dependency (move class to tactic.ui.app)
 from tactic.ui.app import SearchTypeCreatorWdg
 
-from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 from .pipeline_canvas_wdg import *
 from .pipeline_wdg import *
@@ -55,7 +55,7 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
 
 
         self.properties_dialog = DialogWdg(display=False, offset={'x': 0,'y':0}, show_pointer=False)
-        #inner.add( self.properties_dialog )
+        inner.add( self.properties_dialog )
         self.properties_dialog_id = self.properties_dialog.get_id()
         self.properties_dialog.add_title("Edit Properties")
 
@@ -1119,7 +1119,7 @@ class SchemaConnectorWdg(BaseRefreshWdg):
         div.add("<br clear='all'/><br/>")
 
         from tactic.ui.widget import SingleButtonWdg
-        switch = SingleButtonWdg(title="Switch", icon=IconWdg.UNDO)
+        switch = IconButtonWdg(title="Switch", icon="FA_UNDO")
         switch.add_behavior( {
             'type': 'click_up',
             'left_search_type': self.left_search_type,
