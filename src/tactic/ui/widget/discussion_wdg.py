@@ -902,6 +902,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 width: 100%;
                 height: auto;
                 box-sizing: border-box;
+                padding: 0px 10px;
                 border-radius: 5px;
             }
 
@@ -1217,6 +1218,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 add_wdg = IconWdg("Add Note", "FAR_PLUS_SQUARE", size=8)
                 add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
                 add_wdg.add_style("margin: 0px 10px")
+
                 no_notes_msg.add(add_wdg)
                 msg = "No notes."
                 no_notes_msg.add("<div style='display: inline-block'><i> %s </i></div>" % _(msg))

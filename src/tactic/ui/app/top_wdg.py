@@ -230,6 +230,10 @@ class TopWdg(Widget):
 
             var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
 
+            var kwargs = {};
+
+            var popup_args_keys = ["width", "height", "resize", "on_close", "allow_close", "top_class"];
+
             var attributes = bvr.src_el.attributes;
             for (var i = 0; i < attributes.length; i++) {
                 var name = attributes[i].name;

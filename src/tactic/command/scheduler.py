@@ -222,6 +222,11 @@ class SchedulerTask(object):
         self.user = user
         self.project = project
 
+        # reuse the login ticket
+        security = Environment.get_security()
+        self.login_ticket = security.get_ticket()
+
+
 
     def get_name(self):
         return self.kwargs.get("name")
@@ -229,7 +234,7 @@ class SchedulerTask(object):
     def _do_execute(self):
 
         from pyasm.security import Batch
-        Batch(site=self.site, login_code=self.user, project_code=self.project)
+        Batch(site=self.site, login_code=self.user, project_code=self.project,ticket=self.login_ticket)
         self.security = Environment.get_security()
 
         # reestablish the site

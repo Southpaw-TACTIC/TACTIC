@@ -540,7 +540,7 @@ class SimpleTableElementWdg(BaseTableElementWdg):
 
 
 class FunctionalTableElement(BaseTableElementWdg):
-    
+
     def __init__(self, name=None, value=None, **kwargs):
         super(FunctionalTableElement, self).__init__(name, value, **kwargs)
         self.functional = True

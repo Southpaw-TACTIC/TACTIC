@@ -986,7 +986,16 @@ class GeneralFilterWdg(BaseFilterWdg):
             'type': 'mouseenter',
             'cbjs_action': '''
             var buttons = bvr.src_el.getElement(".spt_buttons_top");
+
+            var addBtn = bvr.src_el.getElement(".spt_button_top[title='Add Filter']");
+            var action_el = bvr.src_el.getElement(".spt_action_top");
+            var pos = addBtn.getPosition();
+
+            action_el.setStyle("top", pos.y + addBtn.getHeight());
+            action_el.setStyle("left", pos.x);
+
             buttons.setStyle("display", "flex");
+
             '''
         } )
 
@@ -1042,10 +1051,10 @@ class GeneralFilterWdg(BaseFilterWdg):
                 action_el.setStyle("display", "none");
             }
 
-
             var pos_y = bvr.src_el.getPosition().y;
             var height = bvr.src_el.getHeight() + pos_y;
             action_el.setStyle(`top: ${height}`);
+
             spt.body.add_focus_element(action_el);
         '''
         # 'cbjs_action': '''

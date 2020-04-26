@@ -1190,6 +1190,7 @@ class Ticket(SObject):
             offset, type = interval.split(" ")
             expiry = impl.get_timestamp_now(offset=offset, type=type)
 
+
         ticket = SearchType.create("sthpw/ticket")
         ticket.set_auto_code()
         ticket.set_value("ticket", key)
@@ -1441,7 +1442,7 @@ class Security(Base):
         self._is_logged_in = 1
 
 
-    def login_as_batch(self, login_name=None):
+    def login_as_batch(self, login_name=None, ticket=None):
         '''function that logs in through a batch command'''
 
         # default to admin.  Generally batch is run as admin.
@@ -1456,7 +1457,13 @@ class Security(Base):
         # create a new ticket for the user
         sudo = Sudo()
         try:
-            self._ticket = self._generate_ticket(login_name)
+            if ticket:
+                if isinstance(ticket, six.string_types):
+                    self._ticket = Ticket.get_by_valid_key(ticket)
+                else:
+                    self._ticket = ticket
+            else:
+                self._ticket = self._generate_ticket(login_name)
         except:
             sudo.exit()
 
