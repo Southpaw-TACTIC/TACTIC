@@ -21,8 +21,8 @@ class SimpleUpgrade(BaseUpgrade):
     #
     # 2.5.0.a01
     #
-    def upgrade_v2_5_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE custom_script (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -42,8 +42,8 @@ class SimpleUpgrade(BaseUpgrade):
     #
     # 1.9.0.a01
     #
-    def upgrade_v1_9_0_a1_001(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_001(self):
+        self.run_sql('''
         CREATE TABLE custom_property (
             id serial NOT NULL,
             search_type varchar(256),
@@ -55,8 +55,8 @@ class SimpleUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_v1_6_0_b2_002(my):
-        my.run_sql('''
+    def upgrade_v1_6_0_b2_002(self):
+        self.run_sql('''
         CREATE TABLE naming (
             id serial NOT NULL,
             search_type character varying(100),
@@ -65,8 +65,8 @@ class SimpleUpgrade(BaseUpgrade):
         );
         ''')
 
-    def upgrade_v1_6_0_b2_001(my):
-        my.run_sql('''
+    def upgrade_v1_6_0_b2_001(self):
+        self.run_sql('''
         CREATE TABLE prod_setting (
             id serial NOT NULL,
             "key" character varying(100),

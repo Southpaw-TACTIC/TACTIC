@@ -33,14 +33,14 @@ class Asset(SObject):
         return []
     get_required_columns = staticmethod(get_required_columns)
 
-    def get_defaults(my):
+    def get_defaults(self):
         '''specifies the defaults for this sobject'''
         # use the naming the generate the next code
         from naming import AssetCodeNaming
         naming = AssetCodeNaming()
-        asset_code = naming.get_next_code(my)
+        asset_code = naming.get_next_code(self)
 
-        defaults = super(Asset, my).get_defaults()
+        defaults = super(Asset, self).get_defaults()
         defaults.update({
             "asset_type": "asset",
             'code': asset_code
@@ -49,16 +49,16 @@ class Asset(SObject):
         return defaults
 
 
-    def get_asset_type(my):
-        return my.get_value("asset_type")
+    def get_asset_type(self):
+        return self.get_value("asset_type")
 
 
-    def get_asset_library(my):
-        return my.get_value("asset_library")
+    def get_asset_library(self):
+        return self.get_value("asset_library")
 
-    def get_asset_library_obj(my):
+    def get_asset_library_obj(self):
         search = Search("prod/asset_library")
-        search.add_filter("code", my.get_asset_library() )
+        search.add_filter("code", self.get_asset_library() )
         return search.get_sobject()
 
     def get_icon_context(cls, context=None):
@@ -69,39 +69,39 @@ class Asset(SObject):
     get_icon_context = classmethod(get_icon_context)
 
     
-    def get_full_name(my):
-        return "%s|%s" %(my.get_value('name'), my.get_code())
+    def get_full_name(self):
+        return "%s|%s" %(self.get_value('name'), self.get_code())
 
 
-    def has_auto_current(my):
+    def has_auto_current(self):
         #return False
         return True
 
 
 
-    def delete(my, log=True):
+    def delete(self, log=True):
 
         '''This is for undo'''
         # TODO: the should probably be clearer!!!!
         if log == False:
-            super(Asset,my).delete(log)
+            super(Asset,self).delete(log)
             return
             
 
         # An asset can only be deleted if only icon snapshots exist
-        snapshots = Snapshot.get_by_sobject(my)
+        snapshots = Snapshot.get_by_sobject(self)
 
         only_icons = True
         for snapshot in snapshots:
             context = snapshot.get_value("context")
-            if context != my.get_icon_context():
+            if context != self.get_icon_context():
                 only_icons = False
 
         if not only_icons:
             raise TacticException("Cannot delete because snapshots exist")
 
         # only delete if not tasks have been assigned
-        tasks = Task.get_by_sobject(my)
+        tasks = Task.get_by_sobject(self)
         has_assigned = False
         for task in tasks:
             assigned = task.get_value("assigned")
@@ -117,9 +117,9 @@ class Asset(SObject):
         for task in tasks:
             task.delete()
 
-        my.description = "Deleted '%s', search_type '%s'" % (my.get_code(), my.get_search_type)
+        self.description = "Deleted '%s', search_type '%s'" % (self.get_code(), self.get_search_type)
 
-        super(Asset,my).delete(log)
+        super(Asset,self).delete(log)
 
 
     # Static methods
@@ -197,7 +197,7 @@ class AssetLibrary(SObject):
 
     SEARCH_TYPE = "prod/asset_library"
 
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         return "asset_library"
 
     def get_required_columns():
@@ -205,7 +205,7 @@ class AssetLibrary(SObject):
         return ['code', 'title', 'padding']
     get_required_columns = staticmethod(get_required_columns)
 
-    def get_defaults(my):
+    def get_defaults(self):
         '''specifies the defaults for this sobject'''
         # use the naming the generate the next code
 
@@ -221,24 +221,24 @@ class ShotInstance(SObject):
     SEARCH_TYPE = "prod/shot_instance"
 
    
-    def get_code(my):
+    def get_code(self):
         '''This is kept for backward-compatibility. code is auto-gen now'''
-        return my.get_value("name")
+        return self.get_value("name")
 
-    def get_asset(my, search_type='prod/asset'):
-        asset_code = my.get_value("asset_code")
+    def get_asset(self, search_type='prod/asset'):
+        asset_code = self.get_value("asset_code")
         asset = Search.get_by_code(search_type, asset_code)
         return asset
 
 
-    def get_shot(my, search_type='prod/shot'):
-        shot_code = my.get_value("shot_code")
+    def get_shot(self, search_type='prod/shot'):
+        shot_code = self.get_value("shot_code")
         shot = Search.get_by_code(search_type, shot_code)
         return shot
 
-    def get_title(my):
-        shot_code = my.get_value("shot_code")
-        name = my.get_value("name")
+    def get_title(self):
+        shot_code = self.get_value("shot_code")
+        name = self.get_value("name")
         return "%s in %s" % (name, shot_code)
 
 
@@ -339,22 +339,22 @@ class ShotInstance(SObject):
         return instance
     create = classmethod(create)
 
-    def add_related_connection(my, src_sobject, dst_sobject, src_path=None):
+    def add_related_connection(self, src_sobject, dst_sobject, src_path=None):
         '''adding the related sobject code to this current sobject''' 
-        my.add_related_sobject(src_sobject)
-        my.add_related_sobject(dst_sobject)
+        self.add_related_sobject(src_sobject)
+        self.add_related_sobject(dst_sobject)
 
 
         #shot_col =  dst_sobject.get_foreign_key()
-        schema = my.get_schema()
-        st1 = my.get_base_search_type()
+        schema = self.get_schema()
+        st1 = self.get_base_search_type()
         st2 =  dst_sobject.get_base_search_type()
         relationship = schema.get_relationship(st1, st2)
         attrs = schema.get_relationship_attrs(st1, st2)
         
         from_col = attrs.get("from_col")
 
-        search = Search( my.SEARCH_TYPE )
+        search = Search( self.SEARCH_TYPE )
         search.add_filter(from_col,  dst_sobject.get_code())
         search.add_filter("type", "asset")
         search.add_filter("asset_code",  src_sobject.get_code())
@@ -363,13 +363,13 @@ class ShotInstance(SObject):
         """
         # if it allows order by, I can switch to this
         filters = [('asset_code', src_sobject.get_code())]
-        instances = dst_sobject.get_related_sobjects(my.SEARCH_TYPE, filters=filters)
+        instances = dst_sobject.get_related_sobjects(self.SEARCH_TYPE, filters=filters)
         """
         naming = Project.get_naming("node")
         instance_name = naming.get_shot_instance_name(dst_sobject, src_sobject, instances)
-        my.set_value('name', instance_name)
-        my.set_value('type', 'asset')
-        #my.commit()
+        self.set_value('name', instance_name)
+        self.set_value('type', 'asset')
+        #self.commit()
 
 
     def get_instance_name(sobjs, instance_name):
@@ -417,12 +417,12 @@ class LayerInstance(ShotInstance):
     SEARCH_TYPE = "prod/layer_instance"
    
 
-    def get_shot(my):
+    def get_shot(self):
         pass
 
 
-    def get_code(my):
-        return my.get_value("name")
+    def get_code(self):
+        return self.get_value("name")
 
     # Static methods
     def get(layer, instance_name):
@@ -473,8 +473,8 @@ class SequenceInstance(ShotInstance):
 
     SEARCH_TYPE = "prod/sequence_instance"
 
-    def get_code(my):
-        return my.get_value("id")
+    def get_code(self):
+        return self.get_value("id")
 
 
 

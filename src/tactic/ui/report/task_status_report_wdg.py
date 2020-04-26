@@ -25,46 +25,46 @@ from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
 class TaskStatusCountReportWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        my.search_type = my.kwargs.get("search_type")
-        if not my.search_type:
-            my.search_type = 'sthpw/task'
+        self.search_type = self.kwargs.get("search_type")
+        if not self.search_type:
+            self.search_type = 'sthpw/task'
 
-        my.column = my.kwargs.get("column")
-        if not my.column:
-            my.column = 'status'
-
-
-        my.project_code = my.kwargs.get("project_code")
-        if not my.project_code:
-            my.project_code = Project.get_project_code()
-
-        my.bar_width = my.kwargs.get("bar_width")
-        if not my.bar_width:
-            my.bar_width = 200
+        self.column = self.kwargs.get("column")
+        if not self.column:
+            self.column = 'status'
 
 
-        values = my.kwargs.get("values")
+        self.project_code = self.kwargs.get("project_code")
+        if not self.project_code:
+            self.project_code = Project.get_project_code()
+
+        self.bar_width = self.kwargs.get("bar_width")
+        if not self.bar_width:
+            self.bar_width = 200
+
+
+        values = self.kwargs.get("values")
         if values:
             values = values.split("|")
 
         else:
-            pipeline_code = my.kwargs.get("pipeline_code")
+            pipeline_code = self.kwargs.get("pipeline_code")
             if pipeline_code:
                 pipeline = Pipeline.get_by_code(pipeline_code)
                 values = pipeline.get_process_names()
             else:    
-                search = Search(my.search_type)
-                search.add_filter("project_code", my.project_code)
-                search.add_column(my.column, distinct=True)
+                search = Search(self.search_type)
+                search.add_filter("project_code", self.project_code)
+                search.add_column(self.column, distinct=True)
                 xx = search.get_sobjects()
-                values = [x.get_value(my.column) for x in xx]
+                values = [x.get_value(self.column) for x in xx]
 
 
-        search = Search(my.search_type)
-        search.add_filter("project_code", my.project_code)
-        search.add_filters(my.column, values)
+        search = Search(self.search_type)
+        search.add_filter("project_code", self.project_code)
+        search.add_filters(self.column, values)
         total = search.get_count()
 
 
@@ -105,14 +105,14 @@ class TaskStatusCountReportWdg(BaseRefreshWdg):
             if not status:
                 continue
 
-            count = my.get_count(status)
-            div = my.get_div(status, count, total, colors[i])
+            count = self.get_count(status)
+            div = self.get_div(status, count, total, colors[i])
             inner.add( div.get_buffer_display() )
             inner.add( "<br clear='all'/>")
 
         inner.add("<hr/>")
 
-        div = my.get_div("Total", total, total, "gray")
+        div = self.get_div("Total", total, total, "gray")
         inner.add( div.get_buffer_display() )
         inner.add("<br clear='all'/>")
 
@@ -120,17 +120,17 @@ class TaskStatusCountReportWdg(BaseRefreshWdg):
         return top
 
 
-    def get_count(my, status):
-        search = Search(my.search_type)
-        search.add_filter("project_code", my.project_code)
-        search.add_filter(my.column, status)
+    def get_count(self, status):
+        search = Search(self.search_type)
+        search.add_filter("project_code", self.project_code)
+        search.add_filter(self.column, status)
         count = search.get_count()
         return count
 
 
-    def get_div(my, name, value, total, color):
+    def get_div(self, name, value, total, color):
         if total:
-            width = int(my.bar_width) * float(value) / float(total)
+            width = int(self.bar_width) * float(value) / float(total)
         else:
             width = 0
 
@@ -172,41 +172,41 @@ class ValueBarReportWdg(BaseTableElementWdg):
     }
 
 
-    def preprocess(my):
-        my.elements = my.kwargs.get("elements")
-        if my.elements:
-            my.elements = my.elements.split('|')
+    def preprocess(self):
+        self.elements = self.kwargs.get("elements")
+        if self.elements:
+            self.elements = self.elements.split('|')
         else:
-            my.elements = []
+            self.elements = []
 
         # get the definition
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         if sobjects:
             sobject = sobjects[0]
             search_type = sobject.get_search_type()
             view = 'definition'
 
             from pyasm.widget import WidgetConfigView
-            my.config = WidgetConfigView.get_by_search_type(search_type, view)
+            self.config = WidgetConfigView.get_by_search_type(search_type, view)
         else:
-            my.config = None
+            self.config = None
 
 
 
 
-    def get_data(my, sobject):
+    def get_data(self, sobject):
 
         values = []
         labels = []
 
-        if not my.config:
+        if not self.config:
             return values, labels
 
 
 
-        for element in my.elements:
-            options = my.config.get_display_options(element)
-            attrs = my.config.get_element_attributes(element)
+        for element in self.elements:
+            options = self.config.get_display_options(element)
+            attrs = self.config.get_element_attributes(element)
 
 
             label = attrs.get('title')
@@ -229,11 +229,11 @@ class ValueBarReportWdg(BaseTableElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         
-        sobject = my.get_current_sobject()
-        values, labels = my.get_data(sobject)
+        sobject = self.get_current_sobject()
+        values, labels = self.get_data(sobject)
 
 
 

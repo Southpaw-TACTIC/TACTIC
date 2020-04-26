@@ -19,9 +19,9 @@ from pyasm.web import DivWdg
 
 class TestScrollbarWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("width: 600px")
         top.add_style("height: 400px")
 
@@ -33,13 +33,13 @@ class TestScrollbarWdg(BaseRefreshWdg):
 
 class ScrollbarWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_scrollbar_top")
 
-        content = my.kwargs.get("content")
-        content_class = my.kwargs.get("content_class")
+        content = self.kwargs.get("content")
+        content_class = self.kwargs.get("content_class")
         if not content_class:
             content_class = "spt_content"
 
@@ -56,7 +56,7 @@ class ScrollbarWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
 
@@ -132,7 +132,7 @@ class ScrollbarWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
         return r'''
 
@@ -149,7 +149,7 @@ spt.scrollbar.drag_setup = function(evt, bvr, mouse_411) {
     var pos_y = parseInt(src_el.getStyle("top").replace("px", ""));
     spt.scrollbar.el_start_y = pos_y;
 
-    spt.scrollbar.content = $("spt_SCROLL");
+    spt.scrollbar.content = document.id("spt_SCROLL");
     spt.scrollbar.top = src_el.getParent(".spt_scrollbar_top")
 
 
@@ -179,7 +179,7 @@ spt.scrollbar.drag_motion = function(evt, bvr, mouse_411) {
 
 
 spt.scrollbar.scroll = function(dy) {
-    spt.scrollbar.content = $("spt_SCROLL");
+    spt.scrollbar.content = document.id("spt_SCROLL");
     var content = spt.scrollbar.content;
     var pos_y = parseInt(content.getStyle("margin-top").replace("px", ""));
     content.setStyle("margin-top", pos_y + dy);

@@ -21,8 +21,8 @@ import os
 
 
 class SidebarTrigger(Trigger):
-    def execute(my):
-        sobject = my.get_caller()
+    def execute(self):
+        sobject = self.get_caller()
         search_type = sobject.get_base_search_type()
         
         all_logins = False
@@ -85,8 +85,8 @@ class SidebarTrigger(Trigger):
                 os.unlink(path)
 
 class StatusLogTrigger(Trigger):
-    def execute(my):
-        sobject = my.get_caller()
+    def execute(self):
+        sobject = self.get_caller()
         prev_value = sobject.get_prev_value('status')
 
         value = sobject.get_value('status')
@@ -105,8 +105,8 @@ class StatusLogTrigger(Trigger):
 
 class DisplayNameTrigger(Trigger):
 
-    def execute(my):
-        sobject = my.get_caller()
+    def execute(self):
+        sobject = self.get_caller()
         first = sobject.get_value('first_name')
         last = sobject.get_value('last_name')
         display = sobject.get_value('display_name')
@@ -134,7 +134,7 @@ class DisplayNameTrigger(Trigger):
 
 class WebInit(Common):
 
-    def execute(my):
+    def execute(self):
 
         Trigger.clear_db_cache()
 

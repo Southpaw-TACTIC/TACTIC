@@ -37,28 +37,28 @@ class ShotInstanceAdderWdg(Widget):
     CONTAINER_NAME = 'Shots'
     ADD_BUTTON = "Add Assets to Shots"
     
-    def __init__(my, name="", view_select=""):
-        my.view_select = view_select
-        super(ShotInstanceAdderWdg, my).__init__(name)
+    def __init__(self, name="", view_select=""):
+        self.view_select = view_select
+        super(ShotInstanceAdderWdg, self).__init__(name)
     
-    def get_search_type(my):
+    def get_search_type(self):
         return "prod/shot_instance"
     
-    def get_left_search_type(my):
+    def get_left_search_type(self):
         return "prod/asset"
 
-    def get_right_search_type(my):
+    def get_right_search_type(self):
         return "prod/shot"
 
 
-    def get_left_view(my):
+    def get_left_view(self):
         return "layout"
 
-    def get_right_view(my):
+    def get_right_view(self):
         return "layout"
 
 
-    def get_left_filter(my, search=None):
+    def get_left_filter(self, search=None):
         widget = Widget()
         asset_filter = AssetFilterWdg()
         asset_filter.alter_search(search)
@@ -73,44 +73,44 @@ class ShotInstanceAdderWdg(Widget):
         return widget
 
 
-    def get_right_filter(my, search=None):
+    def get_right_filter(self, search=None):
         filter = SequenceFilterWdg('sequence_filter')
         filter.add_none_option()
         return filter
 
-    def get_action_cbk(my):
+    def get_action_cbk(self):
         return ["pyasm.prod.web.ShotInstanceAdderCbk", \
                 "pyasm.prod.web.ShotInstanceRemoverCbk" ]
 
-    def get_view_select(my):
-        div = FloatDivWdg(my.view_select)
+    def get_view_select(self):
+        div = FloatDivWdg(self.view_select)
         return div
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
        
         main_div = DivWdg(css="filter_box center_content")
         div = DivWdg()
-        main_div.add(my.get_view_select())
+        main_div.add(self.get_view_select())
         main_div.add(div)
         div.add_style('height', '16px')
         div.add_style('margin', '3px 0 3px 0')
          
         div.add(HtmlElement.b("Action: "))
-        add_button = IconSubmitWdg(my.ADD_BUTTON, IconWdg.ADD, long=True)
+        add_button = IconSubmitWdg(self.ADD_BUTTON, IconWdg.ADD, long=True)
         div.add(add_button)
-        remove_button = IconSubmitWdg("Remove from %s" % my.CONTAINER_NAME,\
+        remove_button = IconSubmitWdg("Remove from %s" % self.CONTAINER_NAME,\
             IconWdg.DELETE, long=True)
         div.add(remove_button)
-        for cbk in my.get_action_cbk():
+        for cbk in self.get_action_cbk():
             WebContainer.register_cmd(cbk)
 
         return main_div
 
 
 
-    def get_left_wdg(my, view="layout"):
+    def get_left_wdg(self, view="layout"):
 
-        search_type = my.get_left_search_type()
+        search_type = self.get_left_search_type()
         search = Search(search_type)
         
         left_div = DivWdg()
@@ -120,7 +120,7 @@ class ShotInstanceAdderWdg(Widget):
         title.add(search.get_search_type_obj().get_title())
         left_div.add(title)
 
-        asset_filter = my.get_left_filter(search)
+        asset_filter = self.get_left_filter(search)
         if asset_filter:
             filter_box = DivWdg(asset_filter, css='filter_box')
             left_div.add(filter_box)
@@ -136,8 +136,8 @@ class ShotInstanceAdderWdg(Widget):
         return left_div
         
 
-    def get_right_wdg(my, view="layout"):
-        search_type = my.get_right_search_type()
+    def get_right_wdg(self, view="layout"):
+        search_type = self.get_right_search_type()
         search = Search(search_type)
         
         right_div = DivWdg()
@@ -148,7 +148,7 @@ class ShotInstanceAdderWdg(Widget):
         title.add(search.get_search_type_obj().get_title())
         right_div.add(title)
 
-        shot_filter = my.get_right_filter(search)
+        shot_filter = self.get_right_filter(search)
         if shot_filter:
             shot_filter.alter_search(search) 
         filter_wdg = DivWdg(css="filter_box")
@@ -159,7 +159,7 @@ class ShotInstanceAdderWdg(Widget):
 
         from tactic.ui.panel import TableLayoutWdg
         shots_table = TableLayoutWdg(table_id='table_right', search_type=search_type, view=view)
-        #shots_table = TableWdg(my.get_right_search_type(), view)
+        #shots_table = TableWdg(self.get_right_search_type(), view)
         shots_table.set_sobjects(search.get_sobjects(), search)
 
         right_div.add(shots_table)
@@ -169,54 +169,54 @@ class ShotInstanceAdderWdg(Widget):
     
 
 
-    def init(my):
+    def init(self):
 
         #info_div = DivWdg()
         #info_div.add_attr("spt_class_name", "pyasm.prod.web.SObjectPlannerWdg")
-        #my.add(info_div)
+        #self.add(info_div)
 
 
         help = HelpItemWdg('Shot Planner tab', 'The Shot Planner tab lets you search through your asset library and assign them to one or more shots. On assignment, asset instances are created which can be accessed in the 3D App area. The blue arrows lets you drill down to the assigned instances and shot details information respectively.')
-        my.add(help)
-        my.add( my.get_action_wdg() )
+        self.add(help)
+        self.add( self.get_action_wdg() )
 
         table = Table()
         table.add_style("width: 100%")
         table.add_row()
 
-        hidden = HiddenWdg("search_type", my.get_search_type() )
-        my.add(hidden)
-        WebState.get().add_state("planner_search_type", my.get_search_type() )
+        hidden = HiddenWdg("search_type", self.get_search_type() )
+        self.add(hidden)
+        WebState.get().add_state("planner_search_type", self.get_search_type() )
 
 
         # add the left widget
-        left_view = my.get_left_view()
-        left_wdg = my.get_left_wdg(left_view)
+        left_view = self.get_left_view()
+        left_wdg = self.get_left_wdg(left_view)
         td = table.add_cell(left_wdg)
         td.add_style("vertical-align: top")
         td.add_style("width: 50%")
 
 
         # add the right widget
-        right_view = my.get_right_view()
-        right_wdg = my.get_right_wdg(right_view)
+        right_view = self.get_right_view()
+        right_wdg = self.get_right_wdg(right_view)
         td = table.add_cell(right_wdg)
         td.add_style("width: 50%")
         td.add_style("vertical-align: top")
 
-        my.add(table)
+        self.add(table)
 
-        #return super(ShotInstanceAdderWdg,my).get_display()
+        #return super(ShotInstanceAdderWdg,self).get_display()
 
 
 
 class ShotInstanceListWdg(Widget):
 
-    def get_search_type(my):
+    def get_search_type(self):
         return "prod/shot_instance"
   
     
-    def get_display(my):
+    def get_display(self):
 
         args = WebContainer.get_web().get_form_args()
 
@@ -237,7 +237,7 @@ class ShotInstanceListWdg(Widget):
         if parent_code != "":
             parent = sobject.get_by_code(parent_code)
 
-            search = Search(my.get_search_type())
+            search = Search(self.get_search_type())
             search.add_filter(sobject.get_foreign_key(), parent.get_code())
             search.add_filter("type", "asset")
             instances = search.get_sobjects()
@@ -245,7 +245,7 @@ class ShotInstanceListWdg(Widget):
             all_instances.extend(instances)
 
 
-        search = Search(my.get_search_type())
+        search = Search(self.get_search_type())
         search.add_filter(sobject.get_foreign_key(), sobject.get_code())
         search.add_filter("type", "asset")
         instances = search.get_sobjects()
@@ -256,7 +256,7 @@ class ShotInstanceListWdg(Widget):
         widget.add_style("width: 95%")
         
         widget.add_style("float: right")
-        table = TableWdg(my.get_search_type(),"layout", css='simple')
+        table = TableWdg(self.get_search_type(),"layout", css='simple')
         table.set_sobjects(all_instances)
         table.set_show_property(False)
 
@@ -272,24 +272,24 @@ class ShotInstanceListWdg(Widget):
 class ShotInstanceAdderCbk(Command):
 
     
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(ShotInstanceAdderWdg.ADD_BUTTON) != "":
             return True
 
-    def get_title(my):
+    def get_title(self):
         return "Add Instance"
 
-    def get_checkbox_cols(my):
+    def get_checkbox_cols(self):
         ''' returns the class of the left and right CheckboxColWdg'''
         return AssetCheckboxWdg, ShotCheckboxWdg
 
-    def get_instance_cls(my):
+    def get_instance_cls(self):
         return ShotInstance
         
-    def execute(my):
+    def execute(self):
 
-        left_cb , right_cb = my.get_checkbox_cols()
+        left_cb , right_cb = self.get_checkbox_cols()
         
         web = WebContainer.get_web()
 
@@ -310,23 +310,23 @@ class ShotInstanceAdderCbk(Command):
             sobject = Search.get_by_search_key( select_asset )
             for shot in shots:
                 instance_name = "%s" % sobject.get_value("name")
-                eval('my.get_instance_cls().create(shot, sobject, instance_name)')
-        my.add_description('Add asset to shots [%s]'% ', '.join(SObject.get_values(shots,'code')))
+                eval('self.get_instance_cls().create(shot, sobject, instance_name)')
+        self.add_description('Add asset to shots [%s]'% ', '.join(SObject.get_values(shots,'code')))
  
 class ShotInstanceRemoverCbk(Command):
 
     CONTAINER_NAME = 'Shots'
     
-    def get_title(my):
+    def get_title(self):
         return "Remove Shot Instance"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
-        if web.get_form_value("Remove from %s" % my.CONTAINER_NAME) != "":
+        if web.get_form_value("Remove from %s" % self.CONTAINER_NAME) != "":
             return True
 
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -337,20 +337,20 @@ class ShotInstanceRemoverCbk(Command):
             # deleting
             sobject.delete()
 
-            my.add_description("Removed %s" % sobject.get_code() )
+            self.add_description("Removed %s" % sobject.get_code() )
 
 
 class LayerInstanceListWdg(ShotInstanceListWdg):
     
-    def get_search_type(my):
+    def get_search_type(self):
         return "prod/layer_instance"
     
 class LayerInstanceAdderCbk(ShotInstanceAdderCbk):
    
-    def get_checkbox_cols(my):
+    def get_checkbox_cols(self):
         return AssetCheckboxWdg, LayerCheckboxWdg
 
-    def get_instance_cls(my):
+    def get_instance_cls(self):
         return LayerInstance
 
 class LayerInstanceRemoverCbk(ShotInstanceRemoverCbk):
@@ -360,26 +360,26 @@ class LayerInstanceRemoverCbk(ShotInstanceRemoverCbk):
 
 class ShotParentWdg(ShotInstanceAdderWdg):
 
-    def get_left_search_type(my):
+    def get_left_search_type(self):
         return "prod/shot"
 
-    def get_left_filter(my, search=None):
+    def get_left_filter(self, search=None):
         filter = ShotFilterWdg()
         return filter
 
-    def get_left_wdg(my, view="layout_left"):
-        return super(ShotParentWdg,my).get_left_wdg(view=view)
+    def get_left_wdg(self, view="layout_left"):
+        return super(ShotParentWdg,self).get_left_wdg(view=view)
 
-    def get_right_wdg(my, view="layout_right"):
-        return super(ShotParentWdg,my).get_left_wdg(view=view)
+    def get_right_wdg(self, view="layout_right"):
+        return super(ShotParentWdg,self).get_left_wdg(view=view)
 
-    #def get_right_filter(my, search=None):
+    #def get_right_filter(self, search=None):
     #    filter = ShotFilterWdg()
     #    return filter
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
 
         main_div = DivWdg(css="filter_box center_content")
         div = DivWdg()
@@ -399,10 +399,10 @@ class ShotParentWdg(ShotInstanceAdderWdg):
 
 class ShotParentCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Shot parent"
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -432,7 +432,7 @@ class ShotParentCbk(Command):
                 sobject.set_value("parent_code", parent_code)
                 sobject.commit()
 
-                my.description = "Parented '%s' to '%s'" % (code, parent_code)
+                self.description = "Parented '%s' to '%s'" % (code, parent_code)
 
         elif web.get_form_value("Remove Parent") != "":
     
@@ -447,7 +447,7 @@ class ShotParentCbk(Command):
                 code = sobject.get_code()
                 parent_code = sobject.get_value("parent_code")
 
-                my.description = "Removed parent '%s' from '%s'" % \
+                self.description = "Removed parent '%s' from '%s'" % \
                     (parent_code, code)
 
                 sobject.set_value("parent_code", "")
@@ -458,7 +458,7 @@ class ShotParentDependencyWdg(Widget):
     '''Widget which displays a shots relationship with parent and children.
     Used in shot parenting tab'''
 
-    def get_display(my):
+    def get_display(self):
 
         args = WebContainer.get_web().get_form_args()
 
@@ -491,19 +491,19 @@ class ShotParentDependencyWdg(Widget):
         # diplay parents
         level = 0
         for current in all_shots:
-            my.display_shot(current, widget, level)
+            self.display_shot(current, widget, level)
             level += 1
 
         # display current
-        my.display_shot(shot, widget, level, True)
+        self.display_shot(shot, widget, level, True)
 
         # display children
-        my.handle_children(shot, widget, level+1)
+        self.handle_children(shot, widget, level+1)
 
         return widget
 
 
-    def handle_children(my, shot, widget, count):
+    def handle_children(self, shot, widget, count):
 
         code = shot.get_code()
         search = Search("prod/shot")
@@ -515,12 +515,12 @@ class ShotParentDependencyWdg(Widget):
 
         # display all of the children
         for child in children:
-            my.display_shot(child, widget, count)
-            my.handle_children(child, widget, count+1)
+            self.display_shot(child, widget, count)
+            self.handle_children(child, widget, count+1)
 
 
 
-    def display_shot(my, shot, widget, count, is_current=False):
+    def display_shot(self, shot, widget, count, is_current=False):
         thumb = ThumbWdg()
         thumb.set_sobject(shot)
         thumb.set_icon_size(45)
@@ -544,13 +544,13 @@ class ShotParentDependencyWdg(Widget):
 class NumShotInstancesWdg(FunctionalTableElement):
     '''Lists the number of instances in a shot'''
 
-    def get_title(my):
+    def get_title(self):
         return "#"
 
-    def preprocess(my):
+    def preprocess(self):
 
         # TODO: this does not take shot parenting into account
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         if not sobjects:
             return
 
@@ -573,23 +573,23 @@ class NumShotInstancesWdg(FunctionalTableElement):
         children = search.get_sobjects()
 
         # convert to a dictionary
-        my.numbers = {}
+        self.numbers = {}
         for child in children:
             code = child.get_value(foreign_key)
-            number = my.numbers.get(code)
+            number = self.numbers.get(code)
             if not number:
                 number = 0
            
             number += 1
-            my.numbers[code] = number
+            self.numbers[code] = number
 
-        #print my.numbers
+        #print self.numbers
  
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        number = my.numbers.get(sobject.get_code())
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        number = self.numbers.get(sobject.get_code())
         if not number:
             return "&nbsp;"
         return "(%d)" % number
@@ -600,35 +600,35 @@ class NumShotInstancesWdg(FunctionalTableElement):
 
 class TaskPlannerWdg(ShotInstanceAdderWdg):
 
-    def get_left_search_type(my):
+    def get_left_search_type(self):
         return "sthpw/task"
 
-    def get_left_view(my):
+    def get_left_view(self):
         return "layout_left"
 
-    def get_right_view(my):
+    def get_right_view(self):
         return "task_planner"
 
-    def get_left_filter(my, search=None):
+    def get_left_filter(self, search=None):
         return Widget()
 
-    def get_right_wdg(my,view="task_planner"):
-        return super(TaskPlannerWdg,my).get_right_wdg(view=view)
+    def get_right_wdg(self,view="task_planner"):
+        return super(TaskPlannerWdg,self).get_right_wdg(view=view)
 
-    #def get_right_filter(my, search=None):
+    #def get_right_filter(self, search=None):
     #    filter = ShotFilterWdg()
     #    return filter
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
 
         main_div = DivWdg(css="filter_box center_content")
         div = DivWdg()
         div.add_style('height', '16px')
         div.add_style('margin', '3px 0 3px 0')
        
-        main_div.add(my.get_view_select())
+        main_div.add(self.get_view_select())
 
         main_div.add(div)
         div.add(HtmlElement.b("Action: "))
@@ -647,16 +647,16 @@ class TaskPlannerWdg(ShotInstanceAdderWdg):
 
 
 
-    def get_left_wdg(my, view="layout_left"):
+    def get_left_wdg(self, view="layout_left"):
 
-        search_type = my.get_left_search_type()
+        search_type = self.get_left_search_type()
         search = Search(search_type)
 
         # filter by project
         #project_code = Project.get_project_code()
         #search.add_filter("project_code", project_code )
         # use a holding place for these "special"
-        #parent_search_type = my.get_right_search_type()
+        #parent_search_type = self.get_right_search_type()
         #search.add_filter("search_type", "%s?project=%s" % \
         #    (parent_search_type, project_code) )
 
@@ -667,7 +667,7 @@ class TaskPlannerWdg(ShotInstanceAdderWdg):
         left_div.add(HtmlElement.h3("Template Task") )
 
 
-        asset_filter = my.get_left_filter(search)
+        asset_filter = self.get_left_filter(search)
         filter_box = DivWdg(asset_filter, css='filter_box')
         left_div.add(filter_box)
         asset_filter.alter_search(search)
@@ -680,22 +680,22 @@ class TaskPlannerWdg(ShotInstanceAdderWdg):
  
 class TaskPlannerCbk(Command):
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value("Add to Shot") != "":
             return True
         return False
 
-    def get_title(my):
+    def get_title(self):
         return "Task Planner"
 
-    def get_checkbox_cols(my):
+    def get_checkbox_cols(self):
         ''' returns the class of the left and right CheckboxColWdg'''
         return CheckboxColWdg, ShotCheckboxWdg
 
-    def execute(my):
+    def execute(self):
 
-        left_cb , right_cb = my.get_checkbox_cols()
+        left_cb , right_cb = self.get_checkbox_cols()
         
         web = WebContainer.get_web()
 
@@ -733,23 +733,23 @@ class TaskPlannerCbk(Command):
                 # create a new tasks
                 new_task = Task.create(shot, process, description, assigned=assigned,\
                         supervisor=supe)
-                my.sobjects.append(new_task)
-        my.add_description("Added template tasks to shot(s)")
+                self.sobjects.append(new_task)
+        self.add_description("Added template tasks to shot(s)")
 
 class TaskRetireCbk(Command):
     ''' retire all the selected tasks'''
     CONTAINER_NAME = 'Shots'
     
-    def get_title(my):
+    def get_title(self):
         return "Retire tasks"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
-        if web.get_form_value("Retire from %s" % my.CONTAINER_NAME) != "":
+        if web.get_form_value("Retire from %s" % self.CONTAINER_NAME) != "":
             return True
 
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
 
         select_keys = web.get_form_values("select_instance")
@@ -759,16 +759,16 @@ class TaskRetireCbk(Command):
             # deleting
             sobject.retire()
 
-            my.add_description("Retired %s" % sobject.get_code() )
+            self.add_description("Retired %s" % sobject.get_code() )
 
 class NumTasksWdg(FunctionalTableElement):
     '''Lists the number of tasks in a sobject'''
 
-    def get_title(my):
+    def get_title(self):
         return "#"
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         search = Search("sthpw/task")
         search.add_sobject_filter(sobject)
         count = search.get_count()
@@ -779,7 +779,7 @@ class NumTasksWdg(FunctionalTableElement):
 
 class TaskListWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         args = WebContainer.get_web().get_form_args()
 
@@ -806,13 +806,13 @@ class TaskListWdg(Widget):
 class SequencePlannerWdg(ShotInstanceAdderWdg):
  
     ADD_BUTTON = "Add Assets to Sequence"
-    def get_right_search_type(my):
+    def get_right_search_type(self):
         return "prod/sequence"
 
-    def get_right_filter(my, search=None):
+    def get_right_filter(self, search=None):
         return Widget()
 
-    def get_left_filter(my, search=None):
+    def get_left_filter(self, search=None):
         widget = Widget()
         asset_filter = AssetFilterWdg()
         asset_filter.alter_search(search)
@@ -821,18 +821,18 @@ class SequencePlannerWdg(ShotInstanceAdderWdg):
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
 
         main_div = DivWdg(css="filter_box center_content")
         div = DivWdg()
         div.add_style('height', '16px')
         div.add_style('margin', '3px 0 3px 0')
         
-        main_div.add(my.get_view_select())
+        main_div.add(self.get_view_select())
         main_div.add(div)
 
         div.add(HtmlElement.b("Action: "))
-        add_button = IconSubmitWdg(my.ADD_BUTTON, IconWdg.ADD, long=True)
+        add_button = IconSubmitWdg(self.ADD_BUTTON, IconWdg.ADD, long=True)
         div.add(add_button)
         #remove_button = IconSubmitWdg("Remove from Sequence", IconWdg.DELETE, long=True)
         #div.add(remove_button)
@@ -845,7 +845,7 @@ class SequencePlannerWdg(ShotInstanceAdderWdg):
 
 class SequenceInstanceListWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         args = WebContainer.get_web().get_form_args()
 
@@ -874,26 +874,26 @@ class SequenceInstanceListWdg(Widget):
 
 class SequencePlannerCbk(Command):
     
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(SequencePlannerWdg.ADD_BUTTON) != "":
             return True
         
         return False
     
-    def get_title(my):
+    def get_title(self):
         return "Sequence Planner"
 
 
-    def get_checkbox_cols(my):
+    def get_checkbox_cols(self):
         ''' returns the class of the left and right CheckboxColWdg'''
         return AssetCheckboxWdg, ShotCheckboxWdg
 
 
 
-    def execute(my):
+    def execute(self):
 
-        left_cb , right_cb = my.get_checkbox_cols()
+        left_cb , right_cb = self.get_checkbox_cols()
         
         web = WebContainer.get_web()
 
@@ -917,10 +917,10 @@ class SequencePlannerCbk(Command):
             right_sobject = Search.get_by_search_key(right_search_key)
             right_sobjects.append(right_sobject)
 
-        my.handle_sobjects(left_sobjects, right_sobjects)
+        self.handle_sobjects(left_sobjects, right_sobjects)
 
 
-    def handle_sobjects(my, left_sobjects, right_sobjects):
+    def handle_sobjects(self, left_sobjects, right_sobjects):
         
         for left_sobject in left_sobjects:
             for right_sobject in right_sobjects:
@@ -934,11 +934,11 @@ class SequencePlannerCbk(Command):
 class NumSequenceInstanceWdg(FunctionalTableElement):
     '''Lists the number of tasks in a sobject'''
 
-    def get_title(my):
+    def get_title(self):
         return "#"
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         search = Search("prod/sequence_instance")
         search.add_filter(sobject.get_foreign_key(), sobject.get_code() )
         count = search.get_count()
@@ -948,7 +948,7 @@ class NumSequenceInstanceWdg(FunctionalTableElement):
 class MultiPlannerWdg(Widget):
 
     ''' A collection of Planners '''
-    def get_display(my):
+    def get_display(self):
         select = FilterSelectWdg('planner_type', label='Planner: ', css='med')
         select.set_option('values', ['shot', 'task', 'sequence'])
 

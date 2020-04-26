@@ -19,7 +19,7 @@ from pyasm.biz import Folder
 
 class FolderWdg(AjaxWdg):
 
-    def get_display(my):
+    def get_display(self):
         return "wowowo"
 
 

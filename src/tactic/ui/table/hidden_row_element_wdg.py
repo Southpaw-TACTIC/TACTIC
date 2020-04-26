@@ -47,32 +47,32 @@ class HiddenRowElementWdg(BaseTableElementWdg):
 
 
 
-    def init(my):
-        my.layout = None
+    def init(self):
+        self.layout = None
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def get_width(my):
+    def get_width(self):
         return 30
 
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
 
-        my.layout = layout
+        self.layout = layout
 
         # FIXME: not needed ... but need a way to make calling this twice safe
-        #SwapDisplayWdg.handle_top(my.layout)
+        #SwapDisplayWdg.handle_top(self.layout)
 
-        class_name = my.get_option("dynamic_class")
+        class_name = self.get_option("dynamic_class")
         if not class_name:
             class_name = "tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg"
 
-        kwargs = jsondumps(my.kwargs)
+        kwargs = jsondumps(self.kwargs)
 
-        name = my.get_name()
+        name = self.get_name()
 
-        my.layout.add_relay_behavior( {
+        self.layout.add_relay_behavior( {
         'type': 'click',
         'col_name': name,
         'bvr_match_class': 'spt_hidden_row_%s' % name,
@@ -107,11 +107,11 @@ class HiddenRowElementWdg(BaseTableElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        name = my.get_name()
+        name = self.get_name()
 
         top = DivWdg()
 
@@ -123,15 +123,15 @@ class HiddenRowElementWdg(BaseTableElementWdg):
             top.add_class("spt_hidden_row_%s" % name)
 
 
-        label = my.get_option("label")
+        label = self.get_option("label")
         if label:
             label = Search.eval(label, sobject)
         else:
             label = None
-        icon = my.get_option("icon")
+        icon = self.get_option("icon")
 
         swap = SwapDisplayWdg(title=label, icon=icon, show_border=True)
-        swap.set_behavior_top(my.layout)
+        swap.set_behavior_top(self.layout)
 
         top.add(swap)
 
@@ -149,12 +149,12 @@ class RowAddElementWdg(HiddenRowElementWdg):
     }
  
 
-    def handle_layout_behaviors(my, layout):
+    def handle_layout_behaviors(self, layout):
 
-        name = my.get_name()
-        my.layout = layout
+        name = self.get_name()
+        self.layout = layout
 
-        my.layout.add_relay_behavior( {
+        self.layout.add_relay_behavior( {
         'type': 'click',
         'bvr_match_class': 'spt_hidden_row_%s' % name,
         'cbjs_action': '''
@@ -227,21 +227,27 @@ class RowAddElementWdg(HiddenRowElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         sobj_name = sobject.get_name()
         search_type = sobject.get_search_type_obj()
         stype_title = search_type.get_title()
 
+        # get related types
+        related_types = self.get_option("related_types")
+        if not related_types:
+            from pyasm.biz import Schema
+            schema = Schema.get()
+            related_types = schema.get_related_search_types(search_type.get_base_key())
 
-        from pyasm.biz import Schema
-        schema = Schema.get()
-        related_types = schema.get_related_search_types(search_type.get_base_key())
-        related_types = ",".join(related_types)
+        if isinstance(related_types, list):
+            related_types = ",".join(related_types)
 
-        name = my.get_name()
+        related_types = "sthpw/task"
+
+        name = self.get_name()
 
         top = DivWdg()
         top.add_attr("spt_related_types", related_types)
@@ -255,8 +261,8 @@ class RowAddElementWdg(HiddenRowElementWdg):
             top.add_class("spt_hidden_row_%s" % name)
 
 
-        my.set_option("label", "{}%s" % (sobj_name))
-        label = my.get_option("label")
+        self.set_option("label", "{}%s" % (sobj_name))
+        label = self.get_option("label")
         if label:
             label = Search.eval(label, sobject)
         else:
@@ -264,7 +270,7 @@ class RowAddElementWdg(HiddenRowElementWdg):
         if not label:
             label = sobject.get_code()
 
-        icon = my.get_option("icon")
+        icon = self.get_option("icon")
         icon = "DETAILS"
 
         #from pyasm.widget import ThumbWdg
@@ -285,24 +291,32 @@ class RowAddElementWdg(HiddenRowElementWdg):
         stype_div.add_style("font-syle: italic")
         stype_div.add_style("font-size: 9px")
 
-        #swap = SwapDisplayWdg(title=label, icon=icon)
-        swap = SwapDisplayWdg(title=title, icon=icon)
-        swap.set_behavior_top(my.layout)
-        swap.add_style("float: left")
-        swap.add_class("spt_level_listen")
 
-        top.add(swap)
+        max_level = 1
+        level = self.kwargs.get("level") or 0
+        if level >= max_level:
+            top.add(title)
+
+        else:
+
+            #swap = SwapDisplayWdg(title=label, icon=icon)
+            swap = SwapDisplayWdg(title=title, icon=icon)
+            swap.set_behavior_top(self.layout)
+            swap.add_style("float: left")
+            swap.add_class("spt_level_listen")
+
+            top.add(swap)
 
         return top
 
 
 # TEST
 class HiddenRowContainerWdg(BaseRefreshWdg):
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
-        class_name = my.kwargs.get("display_class_name")
-        kwargs = my.kwargs.get("display_kwargs")
+        class_name = self.kwargs.get("display_class_name")
+        kwargs = self.kwargs.get("display_kwargs")
 
         top.add_style("border: solid 1px #777")
         top.add_style("position: absolute")
@@ -318,15 +332,15 @@ class HiddenRowContainerWdg(BaseRefreshWdg):
         widget = Common.create_from_class_path(class_name, kwargs)
         top.add(widget)
 
-        show_pointer = my.kwargs.get("show_pointer")
+        show_pointer = self.kwargs.get("show_pointer")
         if show_pointer not in [False, 'false']:
-            my.get_arrow_wdg()
+            self.get_arrow_wdg()
 
 
         return top
 
 
-    def get_arrow_wdg(my):
+    def get_arrow_wdg(self):
 
         pointer_wdg = DivWdg()
         pointer_wdg.add_class("spt_popup_pointer")

@@ -23,7 +23,7 @@ exec( get_site_import(__file__) )
 
 class CsvDownload(AppServer):
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         #import cherrypy
         #print "heaaders: ", cherrypy.response.headers
         return "wowowo"

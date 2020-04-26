@@ -27,40 +27,40 @@ from custom_project_tab_wdg import CustomProjectTabWdg
 
 class AdminTabWdg(BaseTabWdg):
     
-    def __init__(my, database="sthpw", schema="public"):
-        my.database = database
-        my.schema = schema
-        super(AdminTabWdg,my).__init__()
+    def __init__(self, database="sthpw", schema="public"):
+        self.database = database
+        self.schema = schema
+        super(AdminTabWdg,self).__init__()
     
 
-    def init(my):
+    def init(self):
         # FIXME: hack this in for now to handle "public"
-        if my.schema == "public":
-            my.namespace = my.database
+        if self.schema == "public":
+            self.namespace = self.database
         else:
-            my.namespace = "%s/%s" % (my.database,my.schema)
+            self.namespace = "%s/%s" % (self.database,self.schema)
 
-        my.setup_tab("admin_tab", css=TabWdg.SMALL)
+        self.setup_tab("admin_tab", css=TabWdg.SMALL)
        
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         # Hide this for now
-        #tab.add( my.get_create_wdg, "Create")
-        #tab.add( my.get_edit_wdg, "Edit" )
+        #tab.add( self.get_create_wdg, "Create")
+        #tab.add( self.get_edit_wdg, "Edit" )
         tab.add( LoginWdg, _("Users") )
         tab.add( LoginGroupWdg, _("Groups") )
-        tab.add( my.get_user_group_wdg, _("Users -> Groups")) 
-        tab.add( my.get_group_user_wdg, _("Groups -> Users") )
+        tab.add( self.get_user_group_wdg, _("Users -> Groups")) 
+        tab.add( self.get_group_user_wdg, _("Groups -> Users") )
         tab.add( QueueWdg, _("Queue") )
-        tab.add( my.get_render_policy_wdg, _("Render Policy") )
+        tab.add( self.get_render_policy_wdg, _("Render Policy") )
         #tab.add( PipelineEditorWdg, _("Pipelines") )
-        tab.add( my.get_pipeline_wdg, _("Pipelines") )
-        tab.add( my.get_group_notification_wdg, _("Notification -> Group") )
-        tab.add( my.get_notification_group_wdg, _("Group -> Notification" ) )
+        tab.add( self.get_pipeline_wdg, _("Pipelines") )
+        tab.add( self.get_group_notification_wdg, _("Notification -> Group") )
+        tab.add( self.get_notification_group_wdg, _("Group -> Notification" ) )
 
 
-        tab.add( my.get_milestone_wdg, _("Project Milestones") )
-        tab.add( my.get_project_settings_wdg, _("Project Settings") )
+        tab.add( self.get_milestone_wdg, _("Project Milestones") )
+        tab.add( self.get_project_settings_wdg, _("Project Settings") )
         
         tab.add( CustomProjectTabWdg, _("Customize Project") )
 
@@ -69,12 +69,12 @@ class AdminTabWdg(BaseTabWdg):
         tab.add( SetupTabWdg, _("Setup Wizard")) 
 
 
-        tab.add(my.get_import_wdg, _("Import Data") )
+        tab.add(self.get_import_wdg, _("Import Data") )
         WebContainer.add_js('wz_dragdrop.js')
 
 
 
-    def get_pipeline_wdg(my):
+    def get_pipeline_wdg(self):
         search = Search("sthpw/pipeline")
         widget = Widget()
         widget.set_search(search)
@@ -82,33 +82,33 @@ class AdminTabWdg(BaseTabWdg):
         widget.add(table)
         return widget
 
-    def get_user_group_wdg(my):
+    def get_user_group_wdg(self):
         return SObjectGroupWdg(Login, LoginGroup, LoginInGroup)
 
-    def get_group_user_wdg(my):
+    def get_group_user_wdg(self):
         return SObjectGroupWdg(LoginGroup, Login, LoginInGroup)
 
 
-    def get_create_wdg(my):
-        asset = SObjectCreatorWdg(my.database, my.schema)
+    def get_create_wdg(self):
+        asset = SObjectCreatorWdg(self.database, self.schema)
         return asset
 
 
-    def get_edit_wdg(my):
-        edit = SObjectEditorWdg(my.database, my.schema)
+    def get_edit_wdg(self):
+        edit = SObjectEditorWdg(self.database, self.schema)
         return edit
 
 
-    def get_group_notification_wdg(my):
+    def get_group_notification_wdg(self):
         # TODO: should filter out for this project only
         return SObjectGroupWdg(Notification, LoginGroup, GroupNotification)
 
-    def get_notification_group_wdg(my):
+    def get_notification_group_wdg(self):
         # TODO: should filter out for this project only
         return SObjectGroupWdg(LoginGroup, Notification, GroupNotification)
 
 
-    def get_milestone_wdg(my):
+    def get_milestone_wdg(self):
         widget = Widget()
 
         search = Search("sthpw/milestone")
@@ -121,7 +121,7 @@ class AdminTabWdg(BaseTabWdg):
 
 
 
-    def get_project_settings_wdg(my):
+    def get_project_settings_wdg(self):
         widget = Widget()
 
         search = Search("prod/prod_setting")
@@ -134,7 +134,7 @@ class AdminTabWdg(BaseTabWdg):
 
 
 
-    def get_render_policy_wdg(my):
+    def get_render_policy_wdg(self):
         widget = Widget()
         #div = DivWdg(css="filter_box")
         #widget.add(div)
@@ -147,7 +147,7 @@ class AdminTabWdg(BaseTabWdg):
     
         return widget
 
-    def get_import_wdg(my):
+    def get_import_wdg(self):
         return CsvImportWdg()
 
 

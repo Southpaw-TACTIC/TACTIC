@@ -19,16 +19,16 @@ from tactic.ui.common import BaseRefreshWdg
 
 class PlanWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         inner = DivWdg()
         top.add(inner)
 
         inner.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         width = "100%"
@@ -70,7 +70,7 @@ class PlanWdg(BaseRefreshWdg):
         } )
 
 
-        src = my.kwargs.get("src")
+        src = self.kwargs.get("src")
         if not src:
             src = DivWdg()
             src.add("No Content")
@@ -85,7 +85,7 @@ class PlanWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
         return r'''
 

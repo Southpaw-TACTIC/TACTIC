@@ -21,7 +21,7 @@ from pyasm.common import Container
 
 
 class MayaTabWdgImpl(TabWdg):
-    def add_event_to_header(my, tab_name, link):
+    def add_event_to_header(self, tab_name, link):
         # disable this for performance reasons
         check_in_tabs = ["Checkin", "Custom", "Anim Checkin", "Layer Checkin", "Shot"]
         if tab_name in check_in_tabs:
@@ -30,34 +30,34 @@ class MayaTabWdgImpl(TabWdg):
 
 class MayaTabWdg(BaseTabWdg):
 
-    def init(my):
+    def init(self):
 
         help = HelpItemWdg('Loader', 'The Loader lets you load 3D assets into your 3D applications. Among many options, you can choose to either reference, import, or open the asset through http or the internal file system.')
-        my.add(help)
+        self.add(help)
 
         pref = PrefSetting.get_value_by_key("use_java_maya")
         app = WebContainer.get_web().get_app_name_by_uri()
         
         if app == "Maya":
             if not Container.get('GeneralAppletWdg'):
-                my.add( GeneralAppletWdg() )
+                self.add( GeneralAppletWdg() )
                 Container.put('GeneralAppletWdg', True)
         site_menu = SiteMenuWdg()
         site_menu.add_style("float", "right")
         site_menu.add_style("margin-top", "-2px")
-        my.add(site_menu)
+        self.add(site_menu)
         
         WebContainer.add_js('MayaWebTools.js')
         WebContainer.add_js('PyMaya.js')
         
         tab = MayaTabWdgImpl()
         tab_value = tab.set_tab_key("maya_tab")
-        #my.handle_tab(tab)
-        #my.add(tab,"tab")
-        my.setup_tab("maya_tab", tab=tab)
-        my.add( ProgressWdg() )
+        #self.handle_tab(tab)
+        #self.add(tab,"tab")
+        self.setup_tab("maya_tab", tab=tab)
+        self.add( ProgressWdg() )
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         tab.add(MayaLoadWdg, _("Loader") )
         #tab.add(MayaNamespaceWdg, "Namespace")
         tab.add(MayaAssetCheckinWdg, _("Checkin") )
@@ -70,11 +70,11 @@ class MayaTabWdg(BaseTabWdg):
         tab.add(MayaShotCheckinWdg, _("Shot") )
         tab.add(SessionWdg, _("Session") )
         tab.add(PublishLogWdg, _("Log") )
-        tab.add(my.get_undo_wdg, _("Undo") )
+        tab.add(self.get_undo_wdg, _("Undo") )
         #tab.add(AppSetupWizardWdg, _("Setup") )
 
 
-    def get_undo_wdg(my):
+    def get_undo_wdg(self):
         widget = UndoLogWdg()
         return widget
 
@@ -84,7 +84,7 @@ from pyasm.prod.web import ProdIconButtonWdg
 
 class AppSetupWizardWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
         widget = Widget()
 
         app = "Maya"

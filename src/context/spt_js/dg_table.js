@@ -62,9 +62,6 @@ Command.add_to_undo = function(cmd) {
 }
 
 
-
-
-
 Command.undo_last = function() {
     if (Command.command_index == -1) {
         alert("Nothing to undo");
@@ -74,9 +71,9 @@ Command.undo_last = function() {
     var cmd = Command.commands[Command.command_index];
     cmd.undo();
     Command.command_index -= 1;
+    return cmd
     
 }
-
 
 
 Command.redo_last = function() {
@@ -89,10 +86,9 @@ Command.redo_last = function() {
     var cmd = Command.commands[Command.command_index+1];
     cmd.redo();
     Command.command_index += 1;
+    return cmd
     
 }
-
-
 
 
 
@@ -147,7 +143,7 @@ spt.dg_table.FIRST_ROW = 3;
 
 spt.dg_table.get_all_column_element_tds = function( table, spt_element_name )
 {
-    var table = $(table);
+    var table = document.id(table);
     var tbodies = spt.ctags.find_elements( table, "spt_table_tbody", "spt_table" );
 
     var col_el_td_list = [];
@@ -157,7 +153,7 @@ spt.dg_table.get_all_column_element_tds = function( table, spt_element_name )
         var td_list = spt.ctags.find_elements( tbodies[0], "spt_table_td", "spt_table" );
         var td_idx = -1;
         for( var c=0; c < td_list.length; c ++ ) {
-            var td = $(td_list[c]);
+            var td = document.id(td_list[c]);
             if( td.getProperty("spt_element_name") == spt_element_name ) {
                 td_idx = c;
                 break;
@@ -186,7 +182,7 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 
     // check for option to get all selected row-select-tds, even embedded ones ...
     if( kwargs && spt.is_TRUE( kwargs.include_embedded_tables ) ) {
-        var tmp_list = $(el).getElements(".SPT_ROW_SELECT_TD");
+        var tmp_list = document.id(el).getElements(".SPT_ROW_SELECT_TD");
         for( var c=0; c < tmp_list.length; c++ ) {
             if (tmp_list[c].hasClass("SPT_ROW_NO_SELECT"))
                 continue
@@ -196,7 +192,7 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
     }
 
     var unique_id = ".SPT_ROW_SELECT_TD_" + el.getAttribute("unique_id");
-    var tmp_list = $(el).getElements(unique_id);
+    var tmp_list = document.id(el).getElements(unique_id);
     for( var c=0; c < tmp_list.length; c++ ) {
         if (tmp_list[c].hasClass("SPT_ROW_NO_SELECT"))
             continue
@@ -206,31 +202,6 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 
     return
 
-
-
-    // DEPRECATED: leaving until it is determined that the above implementation
-    // is correct (and much much faster)
-    /*
-    // now filter out subtables ### FIXME: need a mechanism to do this.
-    // get the children ...
-    var children = el.getChildren();
-
-    // check the children and recurse ...
-    for( var c=0; c < children.length; c++ ) {
-        var child = children[c];
-        // check the child ...
-        if( child.get('tag') == 'table' && child.hasClass("spt_table") ) {
-            // STOP here ... skip this element ... don't recurse to it's children!
-            continue;
-        }
-        if( child.get('tag') == 'td' && child.hasClass( "SPT_ROW_SELECT_TD" ) ) {
-            row_select_tds.push(child);
-        }
-
-        // now recurse to children ...
-        spt.dg_table.gather_row_select_tds( child, row_select_tds );
-    }
-    */
 }
 
 
@@ -239,7 +210,7 @@ spt.dg_table.gather_row_select_tds = function( el, row_select_tds, kwargs )
 //
 spt.dg_table.get_selected = function( table_id, kwargs )
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
     if (! table)
         return [];
 
@@ -265,7 +236,7 @@ spt.dg_table.get_selected = function( table_id, kwargs )
 
 spt.dg_table.get_selected_tbodies = function( table_id, kwargs )
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
     if (! table)
         return [];
 
@@ -288,7 +259,7 @@ spt.dg_table.get_selected_tbodies = function( table_id, kwargs )
 
 spt.dg_table.get_all_tbodies = function( table_id, kwargs )
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
     if (! table)
         return [];
 
@@ -330,7 +301,7 @@ spt.dg_table.get_selected_search_keys = function( table_id, kwargs )
 
 // Get all of the element_names as a list
 spt.dg_table.get_element_names = function(table_id) {
-    var table = $(table_id);
+    var table = document.id(table_id);
 
 
     // Return nothing is table.rows can't be found.  This is for tile
@@ -340,7 +311,7 @@ spt.dg_table.get_element_names = function(table_id) {
     }
 
     var header_row = table.rows[spt.dg_table.HEADER_ROW];
-    var elements = $(header_row).getChildren();
+    var elements = document.id(header_row).getChildren();
     var element_names = [];
 
     for (var i=0; i<elements.length; i++) {
@@ -435,7 +406,7 @@ spt.dg_table.get_bottom_cell = function(src_element, element_name) {
 //
 spt.dg_table.get_element_cells = function(table_id, element_name) {
     
-    var table = $(table_id);
+    var table = document.id(table_id);
 
     var found = false;
     var element_names = spt.dg_table.get_element_names(table);
@@ -504,7 +475,7 @@ spt.dg_table.add_item_cbk = function(evt, bvr) {
     var search_key = new_tbody.getAttribute('spt_search_key');
     new_tbody.setAttribute("id", table_id+"|"+search_key);
 
-    var new_row = $(new_tbody).getElement('.spt_insert_row' );
+    var new_row = document.id(new_tbody).getElement('.spt_insert_row' );
 
     new_tbody.style.display = '';
     new_row.style.display = '';
@@ -604,10 +575,10 @@ spt.dg_table.retire_selected = function(table)
                 } else {
                     if (refresh == 'table') {
                         // do nothing
-                        //spt.panel.refresh($(table_id), {}, fade);
+                        //spt.panel.refresh(document.id(table_id), {}, fade);
                     }
                     else {
-                        on_complete = "$(id).setStyle('display', 'none')";
+                        on_complete = "document.id(id).setStyle('display', 'none')";
                         Effects.fade_out(tbody, 500, on_complete);
                         spt.behavior.destroy_element(tbody);
                     }
@@ -748,7 +719,7 @@ spt.dg_table._delete_selected = function( table, kwargs, num, selected_rows, sea
             /*
             var tr = selected_rows[i];
             var tbody = tr.getParent(".spt_table_tbody");
-            on_complete = "$(id).setStyle('display', 'none')";
+            on_complete = "document.id(id).setStyle('display', 'none')";
             Effects.fade_out(tbody, 500, on_complete);
             */
         }
@@ -770,10 +741,10 @@ spt.dg_table._delete_selected = function( table, kwargs, num, selected_rows, sea
             var refresh = tbody.getAttribute("refresh");
 
             if (refresh == 'table') {
-                spt.panel.refresh($(table_id), {}, fade);
+                spt.panel.refresh(document.id(table_id), {}, fade);
             }
             else {
-                on_complete = "$(id).setStyle('display', 'none')";
+                on_complete = "document.id(id).setStyle('display', 'none')";
                 Effects.fade_out(tbody, 300, on_complete);
                 spt.behavior.destroy_element(tbody);
             }
@@ -862,7 +833,7 @@ spt.dg_table.gear_smenu_add_task_matched_cbk = function( evt, bvr )
     
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
-    var search_class = table.get("spt_search_class");
+    var search_class = table.get("spt_search_class") || "";
 
 
     var search_view;
@@ -1023,7 +994,7 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
     var table_top = el.getParent(".spt_table_top");
 
     if( ! table_top ) {
-        log.warning('Table top not found! Cannot toggle display of commit button');
+        spt.js_log.warning('Table top not found! Cannot toggle display of commit button');
         return;
     }
 
@@ -1038,703 +1009,6 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 // Data-Grid Table callbcks ...
 
 //
-// resize column callbacks
-//
-spt.dg_table.width = 0;
-spt.dg_table.table_width = 0;
-spt.dg_table.xpos_start = 0;
-
-spt.dg_table._resize_cmd = null;
-
-
-spt.dg_table._get_resize_th = function( src_el )
-{
-    var col_idx = parseInt( src_el.getProperty("col_idx") );
-    var resize_th = null;
-
-    // Be sure to only ever resize the header cells (TH elements), all other TDs in table will just  fall in line
-    // ... resizing a mix of THs and TDs leads to whacky behavior ...
-    //
-    if( src_el.get("tag").toLowerCase() == "th" ) {
-        resize_th = src_el.getPrevious();
-    }
-    else {
-        // NOTE: This assumes that .getElements() returns things in the order that they exist in the DOM
-        // ... seems to work, so it seesm to be the case!
-        var headers = spt.get_cousins( src_el, ".spt_table", "th" );
-        resize_th = headers[ col_idx - 1 ];
-    }
-
-    return $(resize_th);
-}
-
-
-spt.dg_table.resize_div = null;
-
-spt.dg_table.resize_start_x = null;
-spt.dg_table.resize_th_width = null;
-spt.dg_table.resize_table_width = null;
-spt.dg_table.resize_table = null;
-spt.dg_table.resize_th = null;
-
-
-spt.dg_table.resize_column_setup = function( evt, bvr, mouse_411 )
-{
-    var src_el = spt.behavior.get_bvr_src( bvr );
-
-    // get the header
-    var resize_th = spt.dg_table._get_resize_th( src_el );
-    spt.dg_table.resize_th = resize_th;
-
-    // get the table
-    var resize_table = src_el.getParent(".spt_table");
-    spt.dg_table.resize_table = resize_table;
-
-    var element_name = resize_th.getAttribute("spt_element_name");
-
-    // store the start mouse pos
-    spt.dg_table.resize_start_x = mouse_411.last_x;
-
-    // store the start width
-    var size = resize_th.getSize();
-    spt.dg_table.resize_th_width = size.x;
-
-    //table_width = table.getStyle('width');
-    var size = resize_table.getSize();
-    spt.dg_table.resize_table_width = size.x;
-
-    spt.dg_table.resize_div = []
-    if (!resize_th.hasClass("spt_table_scale") ) {
-        return;
-    }
-
-    spt.dg_table.resize_div.push( resize_th.getElement(".spt_table_scale") );
-
-    var column_cells = spt.dg_table.get_element_cells(resize_table, element_name);
-    for ( var i = 0; i < column_cells.length; i++) {
-        var el = column_cells[i].getElement(".spt_table_scale");
-        if (el == null) { continue; }
-        spt.dg_table.resize_div.push( el );
-    }
-}
-
-
-spt.dg_table.resize_column_motion = function( evt, bvr, mouse_411 )
-{
-    var resize_th = spt.dg_table.resize_th;
-    var resize_table = spt.dg_table.resize_table;
-
-    var xpos = mouse_411.curr_x;
-    var offset = xpos - spt.dg_table.resize_start_x;
-    
-    var start_width = spt.dg_table.resize_th_width;
-
-    // IE errors when width is smaller than zero
-    var new_width = start_width + offset;
-    if (new_width < 0) {
-        return;
-    }
-    resize_th.setStyle('width', start_width + offset );
-
-    var end_width = resize_th.getStyle('width');
-    end_width = parseInt( end_width );
-
-    // stop the table from resizing when the column is no longer resizing
-    var real_offset = Math.abs(end_width - start_width);
-    if (real_offset != 0) {
-        resize_table.setStyle('width', spt.dg_table.resize_table_width + offset );
-    }
-
-    var resize_div = spt.dg_table.resize_div;
-    for (var i=0; i < resize_div.length; i++ ) {
-        resize_div[i].setStyle('width', end_width );
-    }
-}
-
-
-
-// Command to resize a column in the data grid table
-//
-spt.dg_table.ResizeColumnCmd = function(el, mouse_411) {
-    this.description = "";
-
-    this.el = el;
-
-    this.mouse_411 = mouse_411;
-
-    this.get_description = function(){
-        return this.description;
-    }
-
-
-    this.execute = function() {
-        this.description = "Resize command";
-        this.redo();
-    }
-
-    this.redo = function() {
-    }
-
-
-    this.undo = function() {
-    }
-
-}
-
-
-spt.dg_table._create_col_reorder_indicator = function( height_px )
-{
-    if( ! height_px ) {
-        height_px = '4px';
-    } else {
-        if( spt.get_typeof( height_px ) != 'string' ) {
-            height_px = height_px + "px";
-        }
-    }
-
-    var reorder_indicator = new Element( "div", {
-            'styles': {
-                'width': '4px',
-                'height': height_px,
-                'background-color': '#ff8202',
-                'opacity': '.6',
-                'filter': 'alpha(opacity=70)',
-                'position': 'absolute',
-                'display': 'none',
-                'z-index': '1000'
-            }
-    } );
-    reorder_indicator.set('id','col_reorder_pos_indicator');
-    reorder_indicator.inject( $("global_container"), "bottom" );
-    return reorder_indicator;
-}
-
-
-spt.dg_table.get_col_reorder_indicator = function( show_or_hide, height_px )
-{
-    var reorder_indicator = $('col_reorder_pos_indicator');
-    if( ! reorder_indicator ) {
-        reorder_indicator = spt.dg_table._create_col_reorder_indicator( height_px );
-    }
-    if( show_or_hide ) {
-        if( show_or_hide == 'show' ) {
-            if( spt.is_hidden( reorder_indicator ) ) {
-                spt.show( reorder_indicator );
-            }
-        } else if( show_or_hide == 'hide' ) {
-            if( ! spt.is_hidden( reorder_indicator ) ) {
-                spt.hide( reorder_indicator );
-            }
-        }
-    }
-    return reorder_indicator;
-}
-
-
-// cb_set_prefix: 'spt.dg_table.drag_header_for_reorder'
-//
-// _motion and _action functions defined ...
-
-spt.dg_table.drag_header_for_reorder_motion = function( evt, bvr, mouse_411 )
-{
-    var ghost_el = bvr.drag_el;
-    if( ghost_el )
-    {
-        // SETUP part ...
-        // Make copy, if not already made ...
-        if( ghost_el.getAttribute("element_copied") == "_NONE_" )
-        {
-            var w = bvr.src_el.clientWidth;     // clientWidth/Height work due to no padding used!
-            var h = bvr.src_el.clientHeight;
-
-            ghost_el.style.width = String(w) + "px";
-            ghost_el.style.minWidth = String(w) + "px";
-
-            ghost_el.style.height = String(h) + "px";
-            ghost_el.style.minHeight = String(h) + "px";
-
-            ghost_el.style.textAlign = "center";
-            ghost_el.style.verticalAlign = "middle";
-
-            ghost_el.setAttribute("element_copied", bvr.src_el.id);
-            ghost_el.innerHTML = bvr.src_el.innerHTML;
-        }
-
-        // Position the ghost div & compensate for scrolled page ...
-        if( evt.pageX ) {
-            ghost_el.style.left = evt.clientX + (evt.pageX - evt.clientX) + 10 + "px";
-            ghost_el.style.top = evt.clientY + (evt.pageY - evt.clientY) + 10 + "px";
-        } else {
-            if( spt.browser.is_IE() ) {
-                ghost_el.style.left = evt.clientX + 10 + document.body.scrollLeft + "px";
-                ghost_el.style.top = evt.clientY + 10 + document.body.scrollTop + "px";
-            } else {
-                ghost_el.style.left = evt.clientX + 10 + "px";
-                ghost_el.style.top = evt.clientY + 10 + "px";
-            }
-        }
-
-        if( ghost_el.style.display == "none" ) {
-            ghost_el.style.display = "block";
-        }
-    }
-
-    if( ! bvr._drag_reorder_active ) {
-        // do setup!
-        var src_th = bvr.src_el;
-        var tbody = src_th.getParent("tbody");
-        var th_list = tbody.getElements(".header_cell_main");
-        var th_resize_list = tbody.getElements(".header_cell_resize");
-
-        bvr._cached_abs_bbs = [];
-
-        var height = spt.get_el_real_cheight( th_list[0] );
-        var abs_off = null;
-
-        for( var c=1; c < th_list.length; c++ ) {
-            var th = th_list[c];
-            abs_off = spt.get_absolute_offset( th );
-            bvr._cached_abs_bbs.push( {
-                    'x0': abs_off.x,
-                    'y0': abs_off.y,
-                    'y1': abs_off.y + height,
-                    'th': th
-            } );
-        }
-
-        var bbs_len =  bvr._cached_abs_bbs.length;
-        for( var c=0; c < bbs_len - 1; c++ ) {
-            var bbs0 = bvr._cached_abs_bbs[c];
-            var bbs1 = bvr._cached_abs_bbs[c+1];
-            bbs0.x1 = bbs1.x0 - 1;
-            bbs0.half_width = parseInt( (bbs0.x1 - bbs0.x0 + 1) / 2 );
-        }
-        abs_off = spt.get_absolute_offset( th );
-        var resize_abs_off = spt.get_absolute_offset( th_resize_list[ th_resize_list.length-1 ] );
-        var resize_w = spt.get_el_real_cwidth( th_resize_list[ th_resize_list.length-1 ] );
-
-        bvr._cached_abs_bbs[bbs_len-1].x1 = resize_abs_off.x + resize_w;
-        bvr._cached_abs_bbs[bbs_len-1].half_width =
-                parseInt( (bvr._cached_abs_bbs[bbs_len-1].x1 - bvr._cached_abs_bbs[bbs_len-1].x0 + 1) / 2 );
-
-        var print_for_debug = false;
-        if( print_for_debug ) {
-            for( var c=0; c < bbs_len; c++ ) {
-                var bbs = bvr._cached_abs_bbs[c];
-                log.debug( "(x0,y0,x1,y1) = (" + bbs.x0 + "," + bbs.y0 + "," + bbs.x1 + "," + bbs.y1 + ")" );
-                log.debug( " (half_width) = (" + bbs.half_width + ")" );
-            }
-        }
-
-        bvr._outer_bounds = {
-            'x0': bvr._cached_abs_bbs[0].x0,
-            'y0': bvr._cached_abs_bbs[0].y0,
-            'x1': bvr._cached_abs_bbs[bvr._cached_abs_bbs.length - 1].x1,
-            'y1': bvr._cached_abs_bbs[bvr._cached_abs_bbs.length - 1].y1
-        };
-
-        bvr._drag_reorder_active = true;
-    }
-
-    var reorder_indicator = spt.dg_table.get_col_reorder_indicator('hide');
-    var matched_bounds = false;
-
-    // Test against overall header row bounding box ...
-    if(  spt.in_bounds( mouse_411.curr_x, mouse_411.curr_y, bvr._outer_bounds ) ) {
-        for( var c=0; c < bvr._cached_abs_bbs.length; c++ )
-        {
-            var bb_info = bvr._cached_abs_bbs[c];
-
-            // Overall bounding box test puts us in the correct y range, so only need to test
-            // against x bounds for each header cell ...
-            if( mouse_411.curr_x >= bb_info.x0 && mouse_411.curr_x < bb_info.x1 ) {
-                var x_off = mouse_411.curr_x - bb_info.x0;
-                var left_val = bb_info.x0;
-                bvr._reorder_th = bb_info.th;
-                bvr._reorder_direction = "LEFT";
-                if( x_off > bb_info.half_width ) {
-                    // go right
-                    bvr._reorder_direction = "RIGHT";
-                    left_val = bb_info.x1;
-                    if( c < bvr._cached_abs_bbs.length - 1 ) {
-                        left_val = left_val + 1;
-                    } else {
-                        left_val = left_val - 4;
-                    }
-                }
-                var top_val = bb_info.y0;
-                if( spt.browser.is_Firefox() ) {
-                    top_val = top_val - 1;
-                }
-                var height = bb_info.y1 - bb_info.y0;
-                reorder_indicator.setStyle( "top", (top_val + "px") );
-                reorder_indicator.setStyle( "left", (left_val + "px") );
-                reorder_indicator.setStyle( "height", (height + "px") );
-
-                if( spt.is_hidden( reorder_indicator ) ) { spt.show( reorder_indicator ); }
-                matched_bounds = true;
-                break;
-            }
-        }
-    }
-
-    if( ! matched_bounds ) {
-        if( ! spt.is_hidden( reorder_indicator ) ) { spt.hide( reorder_indicator ); }
-    }
-}
-
-
-spt.dg_table.drag_header_for_reorder_action = function( evt, bvr, mouse_411 )
-{
-    var drop_on_el = spt.get_event_target(evt);
-    var ghost_el = bvr.drag_el;
-
-    if( ghost_el ) {
-        ghost_el.style.display = "none";
-        ghost_el.setAttribute("element_copied", "_NONE_");
-    }
-
-    if( spt.behavior.drop_accepted( bvr, drop_on_el ) )
-    {
-        var th = bvr.src_el;
-        var drop_on_th = bvr._reorder_th;
-        
-        // IE: drop_on_th is sometimes undefined for IE??
-        if (typeof(drop_on_th) == 'undefined') {
-            spt.js_log.debug("WARNING: drop_on_th is undefined");
-            return;
-        }
-
-        var parent_tr = th.getParent("tr");
-
-        // Only do the reorder operation if the source column is not the same as the drop-on column
-        if( th !== drop_on_th ) {
-            src_idx = th.getAttribute("col_idx");
-            drop_idx = drop_on_th.getAttribute("col_idx");
-
-            var table_el = parent_tr.getParent('table');
-            if( table_el ) {
-                if( bvr._reorder_direction == "LEFT" ) {
-                    //spt.dg_table.move_column_insert_before( table_el, Number(src_idx), Number(drop_idx) );
-                    cmd = new spt.dg_table.MoveColumnInsertBeforeCmd( table_el, src_idx, drop_idx );
-                    Command.execute_cmd(cmd);
-                }
-                else {
-                    //spt.dg_table.move_column_insert_after( table_el, Number(src_idx), Number(drop_idx) );
-                    cmd = new spt.dg_table.MoveColumnInsertAfterCmd( table_el, src_idx, drop_idx );
-                    Command.execute_cmd(cmd);
-                }
-            }
-        }
-    }
-
-    bvr._drag_reorder_active = false;
-    var reorder_indicator = spt.dg_table.get_col_reorder_indicator();
-    if( ! spt.is_hidden( reorder_indicator ) ) { spt.hide( reorder_indicator ); }
-}
-
-
-spt.dg_table.MoveColumnInsertBeforeCmd = function(table_el, src_idx, drop_idx)
-{
-    this.table_el = table_el;
-    this.src_idx = Number(src_idx);
-    this.drop_idx = Number(drop_idx);
-
-    this.execute = function() {
-        this.redo();
-    }
-
-    this.redo = function() {
-        spt.dg_table.move_column_insert_before( table_el, Number(src_idx), Number(drop_idx) );
-    }
-
-
-    this.undo = function() {
-        if (this.drop_idx > this.src_idx) {
-            spt.dg_table.move_column_insert_before( table_el, this.drop_idx-2, this.src_idx );
-        }
-        else if (this.drop_idx < this.src_idx) {
-            spt.dg_table.move_column_insert_before( table_el, this.drop_idx, this.src_idx+2 );
-        }
-    }
-
-}
-
-
-spt.dg_table.MoveColumnInsertAfterCmd = function(table_el, src_idx, drop_idx)
-{
-    this.table_el = table_el;
-    this.src_idx = Number(src_idx);
-    this.drop_idx = Number(drop_idx);
-
-    this.execute = function() {
-        this.redo();
-    }
-
-    this.redo = function() {
-        spt.dg_table.move_column_insert_after( table_el, Number(src_idx), Number(drop_idx) );
-    }
-
-
-    this.undo = function() {
-        if (this.drop_idx > this.src_idx) {
-            spt.dg_table.move_column_insert_after( table_el, this.drop_idx, this.src_idx-1 );
-        }
-        else if (this.drop_idx < this.src_idx) {
-            spt.dg_table.move_column_insert_after( table_el, this.drop_idx+1, this.src_idx );
-        }
-    }
-
-}
-
-
-spt.dg_table.select_deselect_all_rows = function( evt, bvr )
-{
-    var el = $(bvr.src_el);
-    if( el ) {
-        var prev_selected_state = el.selected;
-
-        // Toggle selected state ...
-        if( prev_selected_state == 'yes' ) {
-            el.selected = 'no';
-            spt.css.deselect( el );
-        } else {
-            el.selected = 'yes';
-            spt.css.select( el );
-        }
-
-        var curr_table = el.getParent(".spt_table");
-        var td_el_list = [];
-        spt.dg_table.gather_row_select_tds( curr_table, td_el_list );
-
-        if( td_el_list ) {
-            for( var c=0; c < td_el_list.length; c++ ) {
-                var td_el = td_el_list[c];
-                var tr_el = td_el.getParent("tr");
-                if( el.selected == 'yes' ) {   // match to new selected state of header select
-                    td_el.selected = 'yes';
-                    spt.css.select( tr_el );  // select the row
-                    spt.css.select( td_el );  // select the row select box td
-                }
-                else {
-                    td_el.selected = 'no';
-                    spt.css.deselect( tr_el );  // deselect the row
-                    spt.css.deselect( td_el );  // deselect the row select box td
-                }
-            }
-        }
-    }
-}
-
-
-spt.dg_table.select_row = function( row_select_td, mode )
-{
-    var td_el = $(row_select_td);
-    if( td_el )
-    {
-        var row_selected = td_el.selected;
-        var tr_el = td_el.getParent("tr");
-        // Need to toggle ...
-        if( row_selected == "yes" ) {
-
-            if (mode == "on") {
-                return;
-            }
-
-            spt.css.deselect( tr_el );
-            td_el.selected = "no";
-            spt.css.deselect( td_el );
-
-            var el = $('maq_select_header');
-            if( el )
-            {
-                el.selected = 'no';
-                spt.css.deselect( el );
-            }
-        }
-        // select the row
-        else {
-
-            if (mode == "off") {
-                return;
-            }
-
-            spt.css.select( tr_el );
-            td_el.selected = "yes";
-            spt.css.select( td_el );
-
-            //td_el.setStyle("background-color", "yellow");
-        }
-    }
-}
-
-
-spt.dg_table.select_single_row_cbk = function( evt, bvr )
-{
-    var click_td = $(bvr.src_el);
-
-    // NOTE: HERE IS THE FIX for bug introduced by the adding draggability of the select column for use in
-    //       planning tools. The TD was not being selected after the bug was introduced, even though
-    //       the user saw the check-box checked in the cell.
-    if( click_td.get('tag') != 'td' ) {
-        click_td = click_td.getParent('td');
-    }
-
-    if( click_td.selected != "yes" ) {
-        // deselect all currently selected rows ...
-        var curr_table = click_td.getParent(".spt_table");
-        var sel_td_list = [];
-        spt.dg_table.gather_row_select_tds( curr_table, sel_td_list );
-
-        for( var c=0; c < sel_td_list.length; c++ ) {
-            spt.dg_table.select_row( sel_td_list[c], "off" );
-        }
-
-        // then select this one row ...
-        spt.dg_table.select_row( click_td, "on" );
-    }
-}
-
-
-spt.dg_table.select_rows_cbk = function( evt, bvr )
-{
-    var click_td = $(bvr.src_el);
-
-    var curr_table = click_td.getParent(".spt_table");
-    var sel_td_list = [];
-    spt.dg_table.gather_row_select_tds( curr_table, sel_td_list );
-
-    var sel_idx_list = [];
-    var click_td_idx = -1;
-    for( var c=0; c < sel_td_list.length; c++ ) {
-        var sel_td = sel_td_list[c];
-        if( sel_td.selected == "yes" ) {
-            sel_idx_list.push( c );
-        }
-        if( sel_td === click_td ) {
-            click_td_idx = c;
-        }
-    }
-
-    var low_idx = -1;
-    var high_idx = -1;
-
-    if( sel_idx_list.length ) {
-        low_idx = sel_idx_list[0];
-        if( click_td_idx > low_idx ) {
-            high_idx = click_td_idx;
-        } else {
-            low_idx = click_td_idx;
-            high_idx = sel_idx_list[ sel_idx_list.length - 1 ];
-        }
-
-        for( var c = 0; c < sel_td_list.length; c++ ) {
-
-            var sel_td = sel_td_list[c];
-            if( c >= low_idx && c <= high_idx ) {
-                spt.dg_table.select_row( sel_td_list[c], "on" );
-            }
-            else {
-                spt.dg_table.select_row( sel_td_list[c], "off" );
-            }
-        }
-    }
-    else {
-        if( click_td.selected != "yes" ) {
-            spt.dg_table.select_row( click_td );
-        }
-    }
-}
-
-
-spt.dg_table.drop_reorder_columns = function( evt, bvr, mouse_411 )
-{
-    var drag_el = bvr.src_el;
-    var drop_el = bvr.drop_el;
-
-    var parent_tr = drop_el.parentNode;
-
-    drag_idx = drag_el.getAttribute("col_idx");
-    if( ! drag_idx ) { drag_idx = drag_el.parentNode.getAttribute("col_idx"); }
-    drop_idx = drop_el.getAttribute("col_idx");
-    if( ! drop_idx ) { drop_idx = drop_el.parentNode.getAttribute("col_idx"); }
-
-    var table_el = parent_tr.getParent('table');
-    if( table_el ) {
-        spt.dg_table.move_column_insert_before( table_el, Number(drag_idx), Number(drop_idx) );
-    }
-}
-
-
-spt.dg_table.move_column_insert_before = function(table, drag_idx, drop_idx)
-{
-    spt.dg_table._move_column( table, drag_idx, drop_idx, false );
-}
-
-
-spt.dg_table.move_column_insert_after = function(table, drag_idx, drop_idx)
-{
-    spt.dg_table._move_column( table, drag_idx, drop_idx, true );
-}
-
-
-spt.dg_table._move_column = function(table, drag_idx, drop_idx, insert_after)
-{
-    if( drag_idx == drop_idx ) {
-        // No need to re-order if we've dropped the column onto itself!
-        return;
-    }
-
-    // Note: have to move the main cell and its corresponding resize td ...
-
-    if( drag_idx < drop_idx && ! insert_after ) {
-        drop_idx = drop_idx - 2;
-    }
-    if( drag_idx > drop_idx && insert_after ) {
-        drop_idx = drop_idx + 2;
-    }
-
-    var height = "";
-    for( var r_idx=0; r_idx < table.rows.length; r_idx++ )
-    {
-        var row = table.rows[ r_idx ];
-
-        // Skip invisible rows
-        // FIXME: should key on invisible row tags
-        if (row.cells.length == 1) {
-            continue;
-        }
-
-        //FIXME: browser exception prone
-        var cell_node = row.removeChild( row.cells[drag_idx] );
-        height = cell_node.style.height;
-        var cell_resize = null;
-        if( drag_idx+1 == row.cells.length ) {
-            cell_resize = row.removeChild( row.cells[drag_idx-1] );  // this works as resize is always on right-side
-        } else {
-            cell_resize = row.removeChild( row.cells[drag_idx] );  // this works as resize is always on right-side
-        }
-
-        if( drop_idx < row.cells.length ) {
-            row.insertBefore( cell_node, row.cells[drop_idx] );
-            row.insertBefore( cell_resize, row.cells[drop_idx+1] );
-        } else {
-            row.appendChild( cell_node );
-            row.appendChild( cell_resize );
-        }
-
-        // Renumber the column index attributes ...
-        for( var c=0; c < row.cells.length; c++ ) {
-            row.cells[c].setAttribute( "col_idx", ("" + c) );
-            row.cells[c].style.height = height;     // needed for Safari!
-            row.cells[c].height = height;     // needed for Safari!
-            row.cells[c].style.minHeight = height;     // needed for Safari!
-        }
-    }
-}
-
-
-//
 // Extract the size and order of the table columns
 // 
 // Description: creates xml document of the widget config format
@@ -1747,12 +1021,12 @@ spt.dg_table._move_column = function(table, drag_idx, drop_idx, insert_after)
 // </config>
 //
 //
-// FIXME: this method is poorly named ... it does a *LOT* more than
+// NOTE: this method is poorly named ... it does a *LOT* more than
 // just get size info.  It also builds the config xml
 //
 spt.dg_table.get_size_info = function(table_id, view, login, first_idx)
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
 
     if (view == undefined) {
         view = table.getAttribute("spt_view");
@@ -1932,7 +1206,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
     }
     else {
         // get information from the table
-        table = $(table_id);
+        table = document.id(table_id);
     }
 
 
@@ -2079,10 +1353,12 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
 }
 
 
+
 // Callback that gets executed when "Save My/Project View As" is selected
+// DEPRECATED: this has been moved inline
 spt.dg_table.save_view_cbk = function(table_id, login) {
 
-    var table = $(table_id);
+    var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
     if (!top) top = table.getParent(".spt_table_top");
@@ -2191,7 +1467,7 @@ spt.dg_table.is_embedded = function(table){
 spt.dg_table.save_view = function(table_id, new_view, kwargs)
 {
     try {
-        var table = $(table_id);
+        var table = document.id(table_id);
         var top = table.getParent(".spt_view_panel");
         var search_wdg = top ? top.getElement(".spt_search"): null;
 
@@ -2205,8 +1481,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         }
         
         var table_search_type = table.getAttribute("spt_search_type");
-        
-        // TODO: extract the appropriate display class name
+
 
         var dis_options = {};
 
@@ -2234,7 +1509,6 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             element_name = kwargs.element_name;
         }
         var new_title = kwargs.new_title;
-        //var save_a_link = kwargs.save_a_link;
 
 
         var last_element_name = kwargs.last_element_name;
@@ -2289,6 +1563,9 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         kwargs['display_options'] = dis_options;
         
         kwargs['unique'] = unique;
+
+
+        // these are the server oprations
 
 
         // Copy the value of the "icon" attribute from the previous XML widget
@@ -2361,7 +1638,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
 
 spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index, popup_id)
 {
-    var table = $(table_id);
+    var table = document.id(table_id);
    
     var layout = table.getParent(".spt_layout");
     if (table.hasClass("spt_layout")) {
@@ -2393,7 +1670,11 @@ spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index,
                 spt.app_busy.show( 'Column Manager', 'Adding Column');
                 setTimeout(function() { 
                     spt.table.add_column(element_name);
-                    spt.dg_table.search_cbk( {}, {'src_el': layout} ), 50}); 
+                    //spt.dg_table.search_cbk( {}, {'src_el': layout} )
+                    // need to do this twice
+                    spt.table.expand_table();
+                    spt.table.expand_table();
+                }, 50);
             }
             spt.app_busy.hide();
         } catch(e) {
@@ -2453,7 +1734,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
     }
 
     this.redo = function() {
-        var table = $(this.table_id);
+        var table = document.id(this.table_id);
         //WHAT IS THIS?
         var column_index = element_index*2;
         var args = {};
@@ -2481,9 +1762,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
         
 
-        //for (var i = 0; i < table.rows.length; i++) {
         for (var i = 0; i < 1; i++) {
-        //for (var i = 0; i < widgets_html.length; i++) {
             var row = table.rows[i];
             // skip empty rows
             var search_key = row.getAttribute("spt_search_key");
@@ -2554,7 +1833,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
     this.undo = function() {
 
-        var table = $(this.table_id);
+        var table = document.id(this.table_id);
         var column_index = this.element_index*2;
 
         for (var i = 0; i < table.rows.length; i++) {
@@ -2593,7 +1872,7 @@ spt.dg_table.remove_column_cbk = function(evt, bvr)
 
     var table = null;
     if (bvr.options && bvr.options.table_id) {
-        table = $(bvr.options.table_id);
+        table = document.id(bvr.options.table_id);
     }
     else {
         var activator = spt.smenu.get_activator(bvr);
@@ -2638,7 +1917,7 @@ spt.dg_table.RemoveColumnCmd = new Class({
     
     redo: function() {
         var column_index = this.element_index*2;
-        var table = $(this.table_id);
+        var table = document.id(this.table_id);
 
         // find the index
         var header_row = table.rows[0];
@@ -2693,7 +1972,6 @@ spt.dg_table.RemoveColumnCmd = new Class({
 // @param: 
 // bvr.search_el - child element of the search_top. If unspecified, it equals bvr.src_el
 // bvr.src_el - child element of the table_top
-
 spt.dg_table.search_cbk = function(evt, bvr){
    
     var panel = null;
@@ -2734,13 +2012,13 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var panel = bvr.panel;
     // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an embedded table
     if( panel ) {
-        var pnode = $(element.parentNode);
+        var pnode = document.id(element.parentNode);
         var table_top_count = 0;
         while( pnode && pnode.hasClass && !pnode.hasClass("spt_view_panel") ) {
             if( pnode.hasClass("spt_table_top") ) {
                 table_top_count ++;
             }
-            pnode = $(pnode.parentNode);
+            pnode = document.id(pnode.parentNode);
         }
         if( table_top_count > 1 ) {
             panel = null;
@@ -2938,7 +2216,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var search_limit = target.getAttribute("spt_search_limit");
     var parent_key = target.getAttribute("spt_parent_key");
     var search_key = target.getAttribute("spt_search_key");
-    var search_class = target.getAttribute("spt_search_class");
+    var search_class = target.getAttribute("spt_search_class") || "";
     var search_view = target.getAttribute('spt_search_view');
     var show_search = target.getAttribute("spt_show_search");
     var show_keyword_search = target.getAttribute("spt_show_keyword_search");
@@ -2958,6 +2236,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var checkin_context = target.getAttribute("spt_checkin_context");
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
+    var group_label_expr = target.getAttribute("spt_group_label_expr");
     var class_name = target.getAttribute("spt_class_name");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
@@ -2975,10 +2254,18 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
     var order_by = target.getAttribute("spt_order_by");
     
-    var file_system_edit = target.getAttribute("spt_file_system_edit")
-    var parent_mode = target.getAttribute("spt_parent_mode")
+    var file_system_edit = target.getAttribute("spt_file_system_edit") || "";
+    var base_dir = target.getAttribute("spt_base_dir") || "";
+    var parent_mode = target.getAttribute("spt_parent_mode") || "";
 
-    var height = target.getAttribute("spt_height");
+    var settings = target.getAttribute("spt_settings") || "";
+    var gear_settings = target.getAttribute("spt_gear_settings") || "";
+
+    var shelf_view = target.getAttribute("spt_shelf_view") || "";
+    var badge_view = target.getAttribute("spt_badge_view") || "";
+    var extra_data = target.getAttribute("spt_extra_data") || "";
+
+    var height = target.getAttribute("spt_height") || "";
     var element_names;
     var column_widths = [];
     var search_keys = [];
@@ -3061,7 +2348,13 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_collection_tool': show_collection_tool,
         'order_by': order_by,
         'file_system_edit': file_system_edit,
-        'parent_mode': parent_mode
+        'base_dir': base_dir,
+        'parent_mode': parent_mode,
+        'settings': settings,
+        'gear_settings': gear_settings,
+        'shelf_view': shelf_view,
+        'badge_view': badge_view,
+        'extra_data': extra_data,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
@@ -3077,6 +2370,18 @@ spt.dg_table._search_cbk = function(evt, bvr)
         for (k in bvr.extra_args)
             args[k] = bvr.extra_args[k];
     }
+
+    var extra_keys = target.getAttribute("spt_extra_keys") || "";
+    if (extra_keys) {
+        args['extra_keys'] = extra_keys;
+        extra_keys = extra_keys.split(",");
+        console.log(extra_keys);
+        for (var k = 0; k < extra_keys.length; k++) {
+            var key = extra_keys[k];
+            args[key] = target.getAttribute("spt_"+key) || "";
+        }
+    }
+
 
     var fade = true;
 
@@ -3161,7 +2466,7 @@ spt.dg_table.local_search_cbk = function(evt, bvr)
     }
    
     // have to hard-code main_body_search for now
-    var src_el = $('main_body_search');
+    var src_el = document.id('main_body_search');
     var bvr2 = {}
     bvr2.src_el = src_el;
     bvr2.search_values = new_values;
@@ -3265,33 +2570,25 @@ spt.dg_table.get_search_values = function(search_top) {
 
 
 spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
-    //var panel_id = 'main_body';
-    //var search_id = panel_id + "_search";
 
     var json_values = spt.dg_table.get_search_values(search_wdg);
-
-  
-    // convert to json
-    //spt.js_log.info("json_values");
-    //spt.js_log.info(json_values);
-
-
 
     // build the search view
     var search_type = search_wdg.getAttribute("spt_search_type");
 
-    var view_text = $('save_search_text');
+    /*
+    var view_text = document.id('save_search_text');
     if (search_view == undefined) {
         search_view = view_text.value;
     }
+    */
     if (search_view == "") {
         search_view = search_wdg.getAttribute("spt_search_view");
     }
+
     if (search_view == "") {
-        // Not sure about leaving this empty
         spt.alert("No name specified for saved search");
         return;
-        //view = "saved_search:admin"
     }
 
 
@@ -3309,14 +2606,18 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
     var class_name = "tactic.ui.app.SaveSearchCbk";
     server.execute_cmd(class_name, options, json_values);
 
-    if ($('save_search_wdg'))
-        $('save_search_wdg').style.display = 'none';
+    /*
+    if (document.id('save_search_wdg'))
+        document.id('save_search_wdg').style.display = 'none';
+    */
 
  
 }
 
 
 // retrieve the parameters of the search
+// DEPRECATD: use spt.table.load_search
+/*
 spt.dg_table.retrieve_search_cbk = function() {
 
     var panel_id = 'main_body';
@@ -3353,14 +2654,15 @@ spt.dg_table.retrieve_search_cbk = function() {
     element.setAttribute("spt_search_view", view);
 
 
-    $('retrieve_search_wdg').style.display = 'none';
+    document.id('retrieve_search_wdg').style.display = 'none';
 
 }
+*/
 
 
 spt.dg_table.add_filter = function(element) {
 
-    var element = $(element);
+    var element = document.id(element);
     var container = element.getParent(".spt_filter_container");
     var filter = element.getParent(".spt_filter_container_with_op");
     var op = filter.getElement(".spt_op");
@@ -3420,7 +2722,7 @@ spt.dg_table.add_filter = function(element) {
 
 spt.dg_table.remove_filter = function(element) {
 
-    var element = $(element);
+    var element = document.id(element);
     var container = element.getParent(".spt_filter_container");
     //var search_filter = element.getParent(".spt_search_filter")
     var search_filter = element.getParent(".spt_filter_container_with_op")
@@ -3471,8 +2773,8 @@ spt.dg_table.set_filter = function(selector, prefix) {
     var value = selector.value;
 
     // get the target and the column index
-    //var filter = $(selector.parentNode.parentNode);
-    var filter = $(selector).getParent(".spt_filter_wdg")
+    //var filter = document.id(selector.parentNode.parentNode);
+    var filter = document.id(selector).getParent(".spt_filter_wdg")
     var column_index = column_indexes[value];
     if (typeof(column_index) == "undefined") {
         column_index = 0;
@@ -3495,12 +2797,12 @@ spt.dg_table.set_filter2 = function(evt, bvr) {
     var selector = bvr.src_el;
 
     // get the column type mapping
-    //var value = $(prefix+"_search_type_indexes").value;
+    //var value = document.id(prefix+"_search_type_indexes").value;
     //value = value.replace(/'/g, '"')
     //var column_indexes = JSON.parse(value);
     var column_indexes = bvr.search_type_indexes;
     
-    //var filter_types = $(prefix + '_filter_columns');
+    //var filter_types = document.id(prefix + '_filter_columns');
     var filter_types = spt.get_cousin(selector, '.spt_filter_top', '.' + prefix + '_filter_columns');
 
     // get a handle on all of the alternative filters
@@ -3536,9 +2838,9 @@ spt.dg_table.disable_filter_cbk = function(element, filter_id) {
     var panel_id = 'main_body';
     var is_checked = element.checked;
 
-    $(filter_id).style.color = '#333';
-    $(filter_id).setAttribute('disabled', true)
-    var input_list = $(panel_id+'_filter_container').getElements('.spt_input' );
+    document.id(filter_id).style.color = '#333';
+    document.id(filter_id).setAttribute('disabled', true)
+    var input_list = document.id(panel_id+'_filter_container').getElements('.spt_input' );
 
     for (var i=1; i<input_list.length; i++) {
         var input = input_list[i];
@@ -3685,7 +2987,7 @@ spt.dg_table.return_last_edit_wdg = function()
 
     spt.dg_table.edit.widget.parentNode.removeChild( spt.dg_table.edit.widget );
 
-    var children = $(spt.dg_table.edit.wdg_home_cell).getChildren();
+    var children = document.id(spt.dg_table.edit.wdg_home_cell).getChildren();
     var child = children[spt.dg_table.edit.wdg_home_index];
     if (child != null) {
         spt.dg_table.edit.wdg_home_cell.insertBefore( spt.dg_table.edit.widget, child );
@@ -3716,7 +3018,7 @@ spt.dg_table.preview_last_clone = null;
 spt.dg_table.adopt_preview_edit_wdg = function( table_id, cell_to_edit )
 {
     var element_name = cell_to_edit.getAttribute( 'spt_element_name' );
-    var table = $(table_id);
+    var table = document.id(table_id);
     var tbody = cell_to_edit.getParent( '.spt_table_tbody' );
     var search_key = tbody.getAttribute("spt_search_key");
 
@@ -3799,7 +3101,7 @@ spt.dg_table.adopt_preview_edit_wdg = function( table_id, cell_to_edit )
 
     }
 
-    var size = $(cell_to_edit).getSize();
+    var size = document.id(cell_to_edit).getSize();
     clone.setStyle( "height", size.y+'px');
     clone.setStyle( "width", size.x+'px');
  
@@ -3840,8 +3142,10 @@ spt.dg_table.set_process = function(bvr) {
 }
 
 
-// TEST!!! for a more complex key callback
+// DEPRECATED
 spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
+
+    alert("spt_dg_table.set_status_key() is deprecated");
 
     var task_pipeline = null;
 
@@ -3902,12 +3206,15 @@ spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
 }
 
 
-
+// DEPRPECATED
 spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
 {
+
+    alert("spt.dg_table.adopt_edit_wdg is DEPRECATED")
+
     var element_name = cell_to_edit.getAttribute( 'spt_element_name' );
     // get the second row
-    var table = $(table_id);
+    var table = document.id(table_id);
     var EDIT_ROW = 2;       // NOTE, the index is 2 because of the header
     var edit_row = table.getChildren()[EDIT_ROW];
     var edit_cells = edit_row.firstChild.getChildren();
@@ -4012,7 +3319,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
     edit_wdg.setStyle( 'z-index', '100' );
 
     // get the size of the cell elemnt and make the edit_wdg the same size
-    var size = $(cell_to_edit).getSize();
+    var size = document.id(cell_to_edit).getSize();
 
     var set_focus = false;
     //var type = cell_to_edit.getAttribute("spt_input_type");
@@ -4041,7 +3348,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
         if( select_opt_value == "[]" ) {
             select_opt_value = "";
         }
-        var option_list = $(input).getElements("option");
+        var option_list = document.id(input).getElements("option");
         for( var opt_c=0; opt_c < option_list.length; opt_c++ ) {
             var opt_el = option_list[opt_c];
             var opt_value = opt_el.getProperty("value");
@@ -4056,7 +3363,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
 
         // However, if the configuration specified a certain size for the SELECT in configuration
         // then use the size specified ...
-        var spt_size = $(input).getProperty("spt_select_size");
+        var spt_size = document.id(input).getProperty("spt_select_size");
         if( spt_size ) {
             select_size_to_set = parseInt( spt_size );
         }
@@ -4182,7 +3489,7 @@ spt.dg_table.select_wdg_clicked = function( evt, select_el )
 //
 spt.dg_table.edit_cell_cbk = function( element, key_code )
 {
-    element = $(element);
+    element = document.id(element);
     // ESC key
     if (key_code == spt.kbd.special_keys_map.ESC) {
         if( spt.browser.is_Safari() || spt.browser.is_Chrome() ) { spt.dg_table.safari_skip_on_blur_as_enter = true; }
@@ -4682,6 +3989,8 @@ spt.dg_table.get_show_retired_flag = function( table_child_el )
     var el = spt.get_cousin( table_child_el, ".spt_view_panel", ".spt_search_show_retired" );
     if (!el) 
         el = spt.get_cousin( table_child_el, ".spt_layout", ".spt_search_show_retired" );
+    if (!el) return false;
+
     return spt.is_TRUE(el.value);
 }
 
@@ -4764,7 +4073,7 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
         spt.alert('You are viewing an old table layout. If you want to benefit from better features of the Fast Table Layout, please switch it in Manage Side Bar.');
     }
     var element_names = version == 2 ? spt.table.get_element_names() : [];
-    var search_class = table.get("spt_search_class");
+    var search_class = table.get("spt_search_class") || "";
 
     var tmp_bvr = {};
    
@@ -4820,6 +4129,8 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
                 continue;
             }
             var sk = tbodies[k].getAttribute('spt_search_key');
+  
+            
             sel_search_keys.push(sk);
         }
         if( sel_search_keys.length == 0 ) {
@@ -4918,7 +4229,7 @@ spt.dg_table.drow_smenu_setup_cbk = function( menu_el, activator_el )
     if (tbody) {
         display_label = tbody.get("spt_display_value");
         if( ! display_label ) {
-            log.warning( "WARNING: [spt.dg_table.drow_smenu_setup_cbk] could not find 'spt_display_value' for item to " +
+            spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_setup_cbk] could not find 'spt_display_value' for item to " +
                             "delete ... using 'search_key' as display_label." );
             display_label = tbody.get("spt_search_key");
         }
@@ -4949,6 +4260,9 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
     if (layout.getAttribute("spt_version") == "2") {
         var row = activator;
         var search_key = row.get("spt_search_key");
+
+        console.log(search_key);
+
 
         var server = TacticServerStub.get();
         var show_retired = spt.dg_table.get_show_retired_flag( row );
@@ -4990,7 +4304,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
                 var fade = false;
                 spt.panel.refresh(tbody, {}, fade);
             } else {
-                on_complete = "$(id).setStyle('display', 'none')";
+                on_complete = "document.id(id).setStyle('display', 'none')";
                 Effects.fade_out(tbody, 500, on_complete);
                 server.retire_sobject(search_key);
             }
@@ -5082,7 +4396,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
     var popup = spt.panel.load_popup("Delete Item", class_name, kwargs);
 
     var on_post_delete = function() {
-        var on_complete = "$(id).setStyle('display', 'none')";
+        var on_complete = "document.id(id).setStyle('display', 'none')";
         if (layout.getAttribute("spt_version") == "2") {
             spt.table.remove_hidden_row(activator);
         }
@@ -5098,7 +4412,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
  
     var display_label = tbody.get("spt_display_value");
     if( ! display_label ) {
-        log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
+        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_delete_cbk] could not find 'spt_display_value' for item to " +
                         "delete ... using 'search_key' as display_label." );
         display_label = search_key;
     }
@@ -5130,7 +4444,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
             spt.panel.refresh(table, {}, false);
         }
         else {
-            on_complete = "$(id).setStyle('display', 'none')";
+            on_complete = "document.id(id).setStyle('display', 'none')";
             Effects.fade_out(tbody, 500, on_complete);
         }
         spt.app_busy.hide();
@@ -5155,7 +4469,7 @@ spt.dg_table.drow_smenu_item_audit_log_cbk = function(evt, bvr)
 
     var display_label = row.get("spt_display_value");
     if( ! display_label ) {
-        log.warning( "WARNING: [spt.dg_table.drow_smenu_item_audit_log_cbk] could not find 'spt_display_value' for " +
+        spt.js_log.warning( "WARNING: [spt.dg_table.drow_smenu_item_audit_log_cbk] could not find 'spt_display_value' for " +
                         "item to delete ... using 'search_key' as display_label." );
         display_label = search_key;
     }
@@ -5239,7 +4553,7 @@ spt.dg_table._toggle_commit_btn = function(el, hide)
         if (panel) break;
     }
     if (!panel) {
-        log.warning('panel not found! Cannot display commit button');
+        spt.js_log.warning('panel not found! Cannot display commit button');
         return;
     } 
     var table = panel.getElement('.spt_table_content');
@@ -5298,7 +4612,7 @@ spt.dg_table.update_row = function(evt, bvr)
     
     var tr = null;
 
-    var server = TacticServerStub.get();
+    var server = TacticServerStub.get_master();
     server.start({title:"Inserting/Updating entries"});
     var is_insert = false;
     
@@ -5684,7 +4998,7 @@ spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
     if( direction == 'left' || direction == 'right' )
     {
         var match_fn = function( node ) {
-            if( $(node).hasClass("cell_left") && $(node).hasAttribute("spt_element_name") ) {
+            if( document.id(node).hasClass("cell_left") && document.id(node).hasAttribute("spt_element_name") ) {
                 return true;
             }
             return false;
@@ -5707,13 +5021,13 @@ spt.dg_table.find_adjacent_cell = function( start_cell_el, direction )
 
 spt.dg_table.order_table = function(element_name, order) {
     var panel_id = "main_body";
-    var table = $(panel_id+"_table");
+    var table = document.id(panel_id+"_table");
 
     var children = table.getChildren();
 
     // figure out which column represents this element
     var cell_index = 4;
-    var first_row = $(table.rows[0]);
+    var first_row = document.id(table.rows[0]);
     for (var i = 0; i < first_row.cells.length; i++ ) {
         var spt_element_name = first_row.cells[i].getAttribute('spt_element_name');
         if (spt_element_name == element_name) {

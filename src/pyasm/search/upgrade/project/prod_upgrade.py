@@ -22,13 +22,13 @@ from pyasm.search.upgrade.project import *
 
 class ProdUpgrade(BaseUpgrade):
 
-    def upgrade_v3_8_0_v01_001(my):
-        my.run_sql('''
+    def upgrade_v3_8_0_v01_001(self):
+        self.run_sql('''
         alter table submission add column "code" varchar(256);
         ''')
 
-    def upgrade_v2_6_0_v01_001(my):
-        my.run_sql('''
+    def upgrade_v2_6_0_v01_001(self):
+        self.run_sql('''
         alter table instance drop constraint shot_code_fkey;
         ''')
 
@@ -37,13 +37,13 @@ class ProdUpgrade(BaseUpgrade):
     # 2.6.0.rc02 again
     #
 
-    def upgrade_v2_6_0_rc02_002(my):
-        my.run_sql('''
+    def upgrade_v2_6_0_rc02_002(self):
+        self.run_sql('''
         ALTER TABLE asset ALTER COLUMN asset_type DROP NOT NULL;
         ''')
 
-    def upgrade_v2_6_0_rc02_001(my):
-        my.run_sql('''
+    def upgrade_v2_6_0_rc02_001(self):
+        self.run_sql('''
         ALTER TABLE asset ALTER COLUMN name DROP NOT NULL;
         ''')
 
@@ -51,60 +51,60 @@ class ProdUpgrade(BaseUpgrade):
     #
     # 2.5.0.v01 again
     #
-    def upgrade_v2_5_0_v01_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_v01_001(self):
+        self.run_sql('''
         ALTER TABLE shot_texture add constraint shot_texture_code_unique UNIQUE
         (code);
         ''')
 
 
-    def upgrade_v2_5_0_rc09_002(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_rc09_002(self):
+        self.run_sql('''
         CREATE INDEX texture_asset_code_idx ON texture(asset_code);
         ''')
 
-    def upgrade_v2_5_0_rc09_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_rc09_001(self):
+        self.run_sql('''
         CREATE INDEX texture_code_idx ON texture(code);
         
         ''')
     #
     # 2.5.0.b07 again
     #
-    def upgrade_v2_5_0_b07_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_b07_001(self):
+        self.run_sql('''
         ALTER TABLE layer ADD COLUMN sort_order integer;
         ''')
     #
     # 2.5.0.b04
     # 
-    def upgrade_v2_5_0_b04_002(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_b04_002(self):
+        self.run_sql('''
         ALTER TABLE texture alter column code type varchar(256);
         ''')
 
-    def upgrade_v2_5_0_b04_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_b04_001(self):
+        self.run_sql('''
         ALTER TABLE shot_texture alter column code type varchar(256);
         ''')
 
     #
     # 2.5.0.b03
     # 
-    def upgrade_v2_5_0_b03_003(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_b03_003(self):
+        self.run_sql('''
         ALTER TABLE asset DROP COLUMN images
         ''')
 
 
-    def upgrade_v2_5_0_b03_002(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_b03_002(self):
+        self.run_sql('''
         ALTER TABLE asset DROP COLUMN snapshot
         ''')
 
 
-    def upgrade_v2_5_0_b03_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_b03_001(self):
+        self.run_sql('''
         ALTER TABLE asset DROP COLUMN retire_status
         ''')
 
@@ -115,46 +115,46 @@ class ProdUpgrade(BaseUpgrade):
     # 2.5.0.a01
     # 
 
-    def upgrade_v2_5_0_a01_006(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_006(self):
+        self.run_sql('''
         ALTER TABLE asset ALTER COLUMN code DROP NOT NULL;
         ''')
 
 
-    def upgrade_v2_5_0_a01_005(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_005(self):
+        self.run_sql('''
         alter table asset add primary key (id);
         ''')
 
 
 
-    def upgrade_v2_5_0_a01_004(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_004(self):
+        self.run_sql('''
         alter table asset drop constraint asset_pkey;
         ''')
 
 
 
-    def upgrade_v2_5_0_a01_003(my):
+    def upgrade_v2_5_0_a01_003(self):
         #"$2" FOREIGN KEY (asset_code) REFERENCES asset(code) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-        my.run_sql('''
+        self.run_sql('''
         alter table layer_instance drop constraint "$2";
         ''')
 
 
 
 
-    def upgrade_v2_5_0_a01_002(my):
+    def upgrade_v2_5_0_a01_002(self):
          #"asset_code_fkey" FOREIGN KEY (asset_code) REFERENCES asset(code) ON UPDATE CASCADE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
-        my.run_sql('''
+        self.run_sql('''
         alter table instance drop constraint asset_code_fkey;
         ''')
 
 
 
 
-    def upgrade_v2_5_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_5_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE custom_script (
             id serial PRIMARY KEY,
             code varchar(256),
@@ -172,45 +172,45 @@ class ProdUpgrade(BaseUpgrade):
     #
     # 2.4.0.a01
     #
-    def upgrade_v2_4_0_a01_009(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_009(self):
+        self.run_sql('''
         alter table shot alter column code drop not null;
         ''')
 
 
 
-    def upgrade_v2_4_0_a01_008(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_008(self):
+        self.run_sql('''
         alter table shot add primary key (id);
         ''')
 
-    def upgrade_v2_4_0_a01_007(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_007(self):
+        self.run_sql('''
         alter table shot drop constraint shot_pkey;
         ''')
 
 
-    def upgrade_v2_4_0_a01_006(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_006(self):
+        self.run_sql('''
         create unique index naming_code_idx on naming (code);
         ''')
 
-    def upgrade_v2_4_0_a01_005(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_005(self):
+        self.run_sql('''
         alter table naming add column code varchar(256);
         ''')
 
 
-    def upgrade_v2_4_0_a01_004(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_004(self):
+        self.run_sql('''
         create unique index pipeline_code_idx on pipeline (code);
         ''')
 
-    def check_v2_4_0_a01_003(my):
-        my.table_exists("pipeline") 
+    def check_v2_4_0_a01_003(self):
+        self.table_exists("pipeline") 
 
-    def upgrade_v2_4_0_a01_003(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_003(self):
+        self.run_sql('''
         CREATE TABLE pipeline (
             id serial,
             code varchar(256),
@@ -224,14 +224,14 @@ class ProdUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_v2_4_0_a01_002(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_002(self):
+        self.run_sql('''
         create unique index widget_config_code_idx on widget_config (code);
         ''')
 
 
-    def upgrade_v2_4_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_4_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE widget_config (
             id serial,
             code character varying(256),
@@ -250,19 +250,19 @@ class ProdUpgrade(BaseUpgrade):
     #
     # 2.2.0.rc03
     #
-    def upgrade_v2_2_0_rc03_003(my):
-        my.run_sql('''
+    def upgrade_v2_2_0_rc03_003(self):
+        self.run_sql('''
         CREATE INDEX texture_asset_code_idx ON texture(asset_code);
         ''')
 
-    def upgrade_v2_2_0_rc03_002(my):
-        my.run_sql('''
+    def upgrade_v2_2_0_rc03_002(self):
+        self.run_sql('''
         CREATE INDEX texture_code_idx ON texture(code);
         
         ''')
 
-    def upgrade_v2_2_0_rc03_001(my):
-        my.run_sql('''
+    def upgrade_v2_2_0_rc03_001(self):
+        self.run_sql('''
         ALTER TABLE layer ADD COLUMN sort_order integer;
         ''')
     
@@ -270,55 +270,55 @@ class ProdUpgrade(BaseUpgrade):
     # 2.1.0.b01
     #
 
-    def upgrade_v2_1_0_b01_009(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_009(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN file_range text;
         ''')
 
 
-    def upgrade_v2_1_0_b01_008(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_008(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN client_name varchar(256);
         ''')
 
 
-    def upgrade_v2_1_0_b01_007(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_007(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN link text;
         ''')
 
 
 
-    def upgrade_v2_1_0_b01_006(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_006(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN login varchar(256);
         ''')
 
 
-    def upgrade_v2_1_0_b01_005(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_005(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN name varchar(256);
         ''')
 
 
-    def upgrade_v2_1_0_b01_004(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_004(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN search_id int4;
         ''')
 
-    def upgrade_v2_1_0_b01_003(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_003(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN search_type varchar(256);
         ''')
 
 
-    def upgrade_v2_1_0_b01_002(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_002(self):
+        self.run_sql('''
         ALTER TABLE render ADD COLUMN pipeline_code varchar(256);
         ''')
 
-    def upgrade_v2_1_0_b01_001(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_b01_001(self):
+        self.run_sql('''
         ALTER TABLE render ADD COLUMN link text;
         ''')
 
@@ -327,8 +327,8 @@ class ProdUpgrade(BaseUpgrade):
     # 2.1.0.a01
     #
     """
-    def upgrade_v2_1_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_a01_001(self):
+        self.run_sql('''
         CREATE TABLE snapshot_type (
             id integer NOT NULL,
             code character varying(256),
@@ -349,13 +349,13 @@ class ProdUpgrade(BaseUpgrade):
     #
     # 2.1.0.a01
     #
-    def upgrade_v2_1_0_a01_001(my):
-        my.run_sql('''
+    def upgrade_v2_1_0_a01_001(self):
+        self.run_sql('''
         ALTER TABLE session_contents ADD COLUMN session text;
         ''')
 
-    def upgrade_v2_0_0_b03_001(my):
-        my.run_sql('''
+    def upgrade_v2_0_0_b03_001(self):
+        self.run_sql('''
         ALTER TABLE asset alter column code TYPE varchar(256); 
         ''')
 
@@ -363,107 +363,107 @@ class ProdUpgrade(BaseUpgrade):
     #
     # 2.0.0.b01
     #
-    def upgrade_v2_0_0_b01_001(my):
-        my.run_sql('''
+    def upgrade_v2_0_0_b01_001(self):
+        self.run_sql('''
         ALTER TABLE instance ADD COLUMN code VARCHAR(256);
         ''')
 
     #
     # 1.9.1.a07
     #
-    def upgrade_v1_9_1_a06_016(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a06_016(self):
+        self.run_sql('''
         ALTER TABLE render ADD COLUMN name varchar(256);
         ''')
 
 
-    def upgrade_v1_9_1_a06_015(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a06_015(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN context to type;
         ''')
 
-    def upgrade_v1_9_1_a07_014(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_014(self):
+        self.run_sql('''
         ALTER TABLE render ALTER COLUMN login DROP NOT NULL;
         ''')
 
 
-    def upgrade_v1_9_1_a07_013(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_013(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN context varchar(256);
         ''')
 
 
-    def upgrade_v1_9_1_a07_012(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_012(self):
+        self.run_sql('''
         ALTER TABLE naming ADD COLUMN snapshot_type varchar(256);
         ''')
 
 
 
 
-    def upgrade_v1_9_1_a07_011(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_011(self):
+        self.run_sql('''
         CREATE UNIQUE INDEX render_code_idx on render (code);
         ''')
 
 
 
 
-    def upgrade_v1_9_1_a07_010(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_010(self):
+        self.run_sql('''
         ALTER TABLE render ADD COLUMN type varchar(256);
         ''')
 
 
 
-    def upgrade_v1_9_1_a07_009(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_009(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN snapshot_code to _snapshot_code;
         ''')
 
 
 
-    def upgrade_v1_9_1_a07_008(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_008(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN snapshot to _snapshot;
         ''')
 
 
 
-    def upgrade_v1_9_1_a07_007(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_007(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN file_range to _file_range;
         ''')
 
 
 
-    def upgrade_v1_9_1_a07_006(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_006(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN session to _session;
         ''')
 
-    def upgrade_v1_9_1_a07_005(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_005(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN version to _version;
         ''')
 
 
-    def upgrade_v1_9_1_a07_003(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_003(self):
+        self.run_sql('''
         ALTER TABLE render RENAME COLUMN images to _images;
         ''')
 
 
 
 
-    def upgrade_v1_9_1_a07_002(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_002(self):
+        self.run_sql('''
         ALTER TABLE plate ADD COLUMN pipeline_code varchar(256);
         ''')
 
-    def upgrade_v1_9_1_a07_001(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a07_001(self):
+        self.run_sql('''
         CREATE UNIQUE INDEX plate_code_idx on plate (code);
         ''')
 
@@ -471,51 +471,51 @@ class ProdUpgrade(BaseUpgrade):
     # 1.9.1.a06
     #
 
-    def upgrade_v1_9_1_a06_002(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a06_002(self):
+        self.run_sql('''
         ALTER TABLE render add column context varchar(256);
         ''')
 
-    def upgrade_v1_9_1_a06_001(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a06_001(self):
+        self.run_sql('''
         ALTER TABLE render add column code varchar(256);
         ''')
 
 
-    def upgrade_v1_9_1_a04_002(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a04_002(self):
+        self.run_sql('''
         ALTER TABLE asset add column short_code varchar(256);
         ''')
 
-    def upgrade_v1_9_1_a04_001(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a04_001(self):
+        self.run_sql('''
         ALTER TABLE shot add column short_code varchar(256);
         ''')
 
 
-    def upgrade_v1_9_1_a02_003(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a02_003(self):
+        self.run_sql('''
         ALTER TABLE texture alter column code TYPE varchar(256);
         ''')
 
-    def upgrade_v1_9_1_a02_002(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a02_002(self):
+        self.run_sql('''
         ALTER TABLE shot_texture alter column code TYPE varchar(256);
         ''')
 
-    def upgrade_v1_9_1_a02_001(my):
-        my.run_sql('''
+    def upgrade_v1_9_1_a02_001(self):
+        self.run_sql('''
         alter table plate add column code varchar(256);
         ''')
 
 
-    def upgrade_v1_9_0_a1_005(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_005(self):
+        self.run_sql('''
         insert into prod_setting (key, value, description, type, category) values ('render_job_type', 'tacticsample', 'Sample Job Type', 'sequence', 'Render');
         ''')
 
-    def upgrade_v1_9_0_a1_005(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_005(self):
+        self.run_sql('''
         CREATE TABLE custom_property (
             id serial NOT NULL,
             search_type varchar(256),
@@ -527,37 +527,37 @@ class ProdUpgrade(BaseUpgrade):
         ''') 
 
 
-    def upgrade_v1_9_0_a1_004(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_004(self):
+        self.run_sql('''
         INSERT INTO prod_setting ("category", "key", value, description, "type", search_type) VALUES ('Naming', 'use_name_as_asset_code', 'false', 'Use name as the asset code', 'sequence', 'prod/asset');
         ''')
 
 
-    def upgrade_v1_9_0_a1_003(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_003(self):
+        self.run_sql('''
         update prod_setting set category = 'General' where category is NULL;
         ''')
 
-    def upgrade_v1_9_0_a1_002(my):
-        my.run_sql('''
+    def upgrade_v1_9_0_a1_002(self):
+        self.run_sql('''
         ALTER TABLE prod_setting ADD COLUMN category varchar(256);
         ''')
 
 
    
 
-    def upgrade_v1_7_0_rc1_003(my):
-        my.run_sql('''
+    def upgrade_v1_7_0_rc1_003(self):
+        self.run_sql('''
         ALTER TABLE sequence ADD CONSTRAINT episode_code_fkey FOREIGN KEY (episode_code) REFERENCES episode(code) ON UPDATE CASCADE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
         ''')
 
-    def upgrade_v1_7_0_rc1_002(my):
-        my.run_sql('''
+    def upgrade_v1_7_0_rc1_002(self):
+        self.run_sql('''
         ALTER TABLE sequence add column episode_code varchar(256);
         ''')
 
-    def upgrade_v1_7_0_rc1_001(my):
-        my.run_sql('''
+    def upgrade_v1_7_0_rc1_001(self):
+        self.run_sql('''
         CREATE TABLE episode (
         id serial NOT NULL,
         code character varying(256) NOT NULL,
@@ -569,8 +569,8 @@ class ProdUpgrade(BaseUpgrade):
 );
         ''')
 
-    def upgrade_v1_6_0_rc1_001(my):
-        my.run_sql('''
+    def upgrade_v1_6_0_rc1_001(self):
+        self.run_sql('''
         INSERT INTO prod_setting ("key", value, description, "type", search_type) VALUES ('notes_asset_prod_context', 'model|uv_layout|shader|texture|rig', 'notes context for Asset Pipeline', 'sequence', 'sthpw/note');
         ''')
    
@@ -579,8 +579,8 @@ class ProdUpgrade(BaseUpgrade):
 
     
 
-    def upgrade_v1_6_0_b2_001(my):
-        my.run_sql('''
+    def upgrade_v1_6_0_b2_001(self):
+        self.run_sql('''
         CREATE TABLE sequence_instance (
             id serial NOT NULL,
             sequence_code character varying(30) NOT NULL,
@@ -592,38 +592,38 @@ class ProdUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_20080110(my):
-        my.run_sql('''
+    def upgrade_20080110(self):
+        self.run_sql('''
         ALTER TABLE render ADD COLUMN s_status varchar(30);
         ''')
 
-    def upgrade_20080103(my):
-        my.run_sql('''
+    def upgrade_20080103(self):
+        self.run_sql('''
         ALTER TABLE texture ALTER COLUMN code TYPE varchar(256);
         ''')
 
 
-    def upgrade_20071121(my):
+    def upgrade_20071121(self):
         # adding a priority column for Omnilab
         # This should be handled by custom properties
-        my.run_sql('''
+        self.run_sql('''
         ALTER TABLE shot ADD COLUMN priority varchar(30);
         ''')
 
-        my.run_sql('''
+        self.run_sql('''
         INSERT INTO prod_setting (description, key, value, type) values ('Shot Priority', 'shot_priority', 'high|med|low', 'sequence');
         ''')
     
 
-    def upgrade_20071116(my):
-        my.run_sql('''
+    def upgrade_20071116(self):
+        self.run_sql('''
         -- take milestone_code out from invisible elements
         UPDATE prod_setting set value='priority' where key='invisible_elements' and search_type='sthpw/task';
         ''')
 
 
-    def upgrade_20071112(my):
-        my.run_sql('''
+    def upgrade_20071112(self):
+        self.run_sql('''
         CREATE TABLE custom_property (
             id serial NOT NULL,
             search_type varchar(256),
@@ -636,19 +636,19 @@ class ProdUpgrade(BaseUpgrade):
 
 
     
-    def upgrade_20071007(my):
-        my.run_sql('''
+    def upgrade_20071007(self):
+        self.run_sql('''
         ALTER TABLE layer ADD COLUMN s_status varchar(30);
         ''')
 
    
-    def upgrade_20071002(my):
-        my.run_sql('''
+    def upgrade_20071002(self):
+        self.run_sql('''
         ALTER TABLE shot rename column pipeline to pipeline_code;
         ''')
 
-    def upgrade_20070922(my):
-        my.run_sql('''
+    def upgrade_20070922(self):
+        self.run_sql('''
         CREATE TABLE render_policy (
             id serial NOT NULL,
             code character varying(30),
@@ -663,8 +663,8 @@ class ProdUpgrade(BaseUpgrade):
 
 
 
-    def upgrade_20070912(my):
-        my.run_sql('''
+    def upgrade_20070912(self):
+        self.run_sql('''
         CREATE TABLE shot_audio (
             id serial NOT NULL,
             title character varying(30),
@@ -676,45 +676,45 @@ class ProdUpgrade(BaseUpgrade):
         );
         ''')
 
-    def upgrade_20070903(my):
-        my.run_sql('''
+    def upgrade_20070903(self):
+        self.run_sql('''
             ALTER TABLE ONLY storyboard
             ADD CONSTRAINT storyboard_pkey PRIMARY KEY (id);
         ''')
 
-    def upgrade_20070817(my):
-        my.run_sql('''
+    def upgrade_20070817(self):
+        self.run_sql('''
         ALTER TABLE script ADD PRIMARY KEY (id);
         ''')
 
-    def upgrade_20070719(my):
-        my.run_sql('''
+    def upgrade_20070719(self):
+        self.run_sql('''
         ALTER TABLE cut_sequence add column sequence_code character varying(100);
         ALTER TABLE cut_sequence ADD CONSTRAINT sequence_code_fkey FOREIGN KEY (sequence_code) REFERENCES sequence(code) ON UPDATE CASCADE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
         ''')
 
-    def upgrade_20070706(my):
-        my.run_sql('''
+    def upgrade_20070706(self):
+        self.run_sql('''
         ALTER TABLE script ADD COLUMN sequence_code varchar(30);
         ''')
-        my.run_sql('''
+        self.run_sql('''
         ALTER TABLE script ADD COLUMN stage varchar(256);
         ''')
-        my.run_sql('''
+        self.run_sql('''
         ALTER TABLE script ADD COLUMN title text;
         ''')
-        my.run_sql('''
+        self.run_sql('''
         ALTER TABLE script ADD COLUMN author varchar(256);
         ''')
-        my.run_sql('''
+        self.run_sql('''
         ALTER TABLE script DROP COLUMN shot_code;
         ''')
 
 
 
 
-    def upgrade_20070628(my):
-        my.run_sql('''
+    def upgrade_20070628(self):
+        self.run_sql('''
         CREATE TABLE cut_sequence
         (
           id serial NOT NULL,
@@ -730,8 +730,8 @@ class ProdUpgrade(BaseUpgrade):
         ) 
         ''')
 
-    def upgrade_20070622(my):
-        my.run_sql('''
+    def upgrade_20070622(self):
+        self.run_sql('''
         CREATE TABLE naming (
             id serial PRIMARY KEY,
             search_type varchar(100),
@@ -741,35 +741,35 @@ class ProdUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_20070621(my):
-        my.run_sql('''
+    def upgrade_20070621(self):
+        self.run_sql('''
         alter table shot add column scan_status varchar(256); 
         ''')
-        my.run_sql('''
+        self.run_sql('''
         alter table shot add column type varchar(256); 
         ''')
 
-    def upgrade_20070605(my):
-        my.run_sql('''
+    def upgrade_20070605(self):
+        self.run_sql('''
         ALTER TABLE submission ADD COLUMN status varchar(100);
         ''')
 
 
-    def upgrade_20070526(my):
-        my.run_sql('''
+    def upgrade_20070526(self):
+        self.run_sql('''
         ALTER TABLE plate add column description text;
         ''')
 
-    def upgrade_20070522(my):
-        my.run_sql('''
+    def upgrade_20070522(self):
+        self.run_sql('''
         ALTER TABLE shot_texture add column search_type varchar(256);
         ALTER TABLE shot_texture add column search_id int4;
         ''')
 
 
 
-    def upgrade_20070522(my):
-        my.run_sql('''
+    def upgrade_20070522(self):
+        self.run_sql('''
         CREATE TABLE shot_texture (
             id serial NOT NULL,
             description text,
@@ -785,38 +785,38 @@ class ProdUpgrade(BaseUpgrade):
         ''')
 
 
-    def upgrade_20070516(my):
-        my.run_sql('''
+    def upgrade_20070516(self):
+        self.run_sql('''
         ALTER TABLE shot ADD COLUMN frame_in int2;
         ALTER TABLE shot ADD COLUMN frame_out int2;
         ALTER TABLE shot ADD COLUMN frame_note text;
         ''')
 
 
-    def upgrade_20070430(my):
-        my.run_sql('''
+    def upgrade_20070430(self):
+        self.run_sql('''
         ALTER TABLE art_reference ADD COLUMN "timestamp" timestamp DEFAULT now();
         ''')
 
 
-    def upgrade_20070413(my):
-        my.run_sql('''
+    def upgrade_20070413(self):
+        self.run_sql('''
         alter table prod_setting add constraint key_search_type_unique UNIQUE
         (key, search_type);
         ''')
 
-    def upgrade_20070316(my):
-        my.run_sql('''
+    def upgrade_20070316(self):
+        self.run_sql('''
         alter table submission add column artist varchar(256);
         ''')
 
-    def upgrade_20070210(my):
-        my.run_sql('''
+    def upgrade_20070210(self):
+        self.run_sql('''
         alter table texture add column asset_context varchar(30);
         ''')
 
-    def upgrade_20070206(my):
-        my.run_sql('''
+    def upgrade_20070206(self):
+        self.run_sql('''
 insert into prod_setting (key, value, description, type, search_type) values ('bin_label', 'client|review', 'Types of bins', 'sequence', 'prod/bin');
 
 insert into prod_setting (key, value, description, type, search_type) values ('notes_preprod_context', 'client kick off|internal kick off', 'Types of reproduction notes', 'sequence', 'prod/shot');
@@ -824,8 +824,8 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         ''')
 
 
-    def upgrade_20070203(my):
-        my.run_sql('''
+    def upgrade_20070203(self):
+        self.run_sql('''
         CREATE TABLE camera (
             id serial PRIMARY KEY,
             shot_code varchar(30),
@@ -836,7 +836,7 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         ''')
 
         """
-        my.run_sql('''
+        self.run_sql('''
         CREATE TABLE camera (
             id serial PRIMARY KEY,
             shot_code varchar(30),
@@ -863,8 +863,8 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         """
 
 
-    def upgrade_20070129(my):
-        my.run_sql('''
+    def upgrade_20070129(self):
+        self.run_sql('''
         ALTER TABLE storyboard ADD CONSTRAINT shot_code_fkey FOREIGN KEY (shot_code) REFERENCES shot(code) ON UPDATE CASCADE  ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
 
         ALTER TABLE instance DROP constraint "$1";
@@ -876,26 +876,26 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         ''')
 
 
-    def upgrade_20070126(my):
-        my.run_sql('''
+    def upgrade_20070126(self):
+        self.run_sql('''
         alter table bin add column label varchar(100);
         ''')
 
-    def upgrade_20070123(my):
-        my.run_sql('''
+    def upgrade_20070123(self):
+        self.run_sql('''
         INSERT INTO prod_setting (key,value,type,search_type, description) values ('texture/category','texture|mattepainting|concept', 'sequence', 'prod/texture', 'Various Types of 2D Assets')
         ''')
 
-    def upgrade_20070117(my):
-        my.run_sql('''
+    def upgrade_20070117(self):
+        self.run_sql('''
         ALTER TABLE shot ADD COLUMN complexity int2;
 
         INSERT INTO prod_setting (key, value, description, type, search_type)
         VALUES ('bin_type', 'anim|tech|review|final|client', 'The different type of bins', 'sequence', 'prod/bin');
         ''')
 
-    def upgrade_20070114(my):
-        my.run_sql('''
+    def upgrade_20070114(self):
+        self.run_sql('''
 
         CREATE TABLE plate (
             id serial PRIMARY KEY,
@@ -910,8 +910,8 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
 
 
 
-    def upgrade_20070112(my):
-        my.run_sql('''
+    def upgrade_20070112(self):
+        self.run_sql('''
         ALTER TABLE script DROP COLUMN episode_code;
         ALTER TABLE script DROP COLUMN artist;
 
@@ -920,8 +920,8 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         ''')
 
 
-    def upgrade_20061222(my):
-        my.run_sql('''
+    def upgrade_20061222(self):
+        self.run_sql('''
         -- add some columns to the prod_setting table
         ALTER TABLE prod_setting ADD COLUMN description text;
         ALTER TABLE prod_setting ADD COLUMN type varchar(30);
@@ -929,15 +929,15 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
          ''')
 
 
-    def upgrade_20061219(my):
-        my.run_sql('''
+    def upgrade_20061219(self):
+        self.run_sql('''
          -- add a sort order to shot
          ALTER TABLE shot ADD COLUMN sort_order int2;
          ''')
 
 
-    def upgrade_20061207(my):
-        my.run_sql('''
+    def upgrade_20061207(self):
+        self.run_sql('''
          -- add a submission table for editorial purpose
         CREATE TABLE submission (
             id serial PRIMARY KEY,
@@ -976,9 +976,9 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
             UNIQUE (submission_id, bin_id);   
         ''')
 
-    def upgrade_20061123(my):
+    def upgrade_20061123(self):
 
-        my.run_sql('''
+        self.run_sql('''
         -- add a sort order to sequences
         alter table sequence add column sort_order int2;
 
@@ -992,8 +992,8 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         '''
          )
 
-    def upgrade_20061122(my):
-        my.run_sql('''
+    def upgrade_20061122(self):
+        self.run_sql('''
         -- now centralised in sthpw database
         drop table timecard;
 
@@ -1002,32 +1002,32 @@ insert into prod_setting (key, value, description, type, search_type) values ('n
         ''')   
 
 
-    def upgrade_20061110(my):
-        my.run_sql('''
+    def upgrade_20061110(self):
+        self.run_sql('''
         alter table asset rename column pipeline to pipeline_code;
         ''')   
 
-    def upgrade_20061109(my):
-        my.run_sql('''
+    def upgrade_20061109(self):
+        self.run_sql('''
         alter table shot add column sequence_code varchar(30);
         ''')
 
-    def upgrade_20061102(my):
-        my.run_sql('''
+    def upgrade_20061102(self):
+        self.run_sql('''
         -- add a keywords column to the art_reference table --
         alter table art_reference add column keywords text;
         ''')
 
-    def upgrade_20061025(my):
-        my.run_sql('''
+    def upgrade_20061025(self):
+        self.run_sql('''
         -- add a must-have entry set_item to asset_type
         INSERT INTO asset_type (code, description) VALUES('set_item', 
         'an item in a set');
         ''')
 
 
-    def upgrade_20060907(my):
-        my.run_sql('''
+    def upgrade_20060907(self):
+        self.run_sql('''
         ALTER TABLE texture ADD COLUMN pipeline varchar(30);
         ''')
 

@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = [ 'EditTitleWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
+__all__ = [ 'EditTitleWdg', 'EditCustomWdg', 'EditWdg', 'PublishWdg','FileAppendWdg']
 
 from pyasm.biz import CustomScript, Project
 from pyasm.common import Environment, Common, TacticException, jsonloads, Container, jsondumps
@@ -30,16 +30,93 @@ class EditException(Exception):
 
 
 class EditTitleWdg(BaseInputWdg):
-    def get_display(my):
-        div = DivWdg()
-        title = my.get_title()
+    def get_display(self):
+
+        #mode = self.kwargs.get("mode")
+
+        title = self.get_title()
         if not title:
-            title = my.get_name()
-            title = title.replace("_", " ")
-            title = title.title()
+            title = self.get_name()
+            title = Common.get_display_title(title)
+
+
+        #description = self.get_description()
+        #print("description: ", description)
+
+
+        """
+        div = DivWdg()
         div.add(title)
         div.add_style("font-weight: bold")
+        div.add_style("margin", "20px -10px")
+        div.add_color("background", "background", -5)
+        div.add_style("height", "20px")
+        div.add_style("padding", "10px 10px")
+        """
+
+
+
+        div = DivWdg()
+        div.add_style("margin-top: 20px")
+        div.add_style("font-size: 16px")
+        div.add_style("font-weight: bold")
+        div.add(title)
+        div.add("<hr/>")
+
         return div
+
+
+    def get_default_action(self):
+        return "pyasm.command.NullAction"
+
+
+
+class EditCustomWdg(BaseInputWdg):
+
+    ARGS_KEYS = {
+        "view": {
+            'description': "The custom view to be displayed here",
+            'type': 'TextWdg',
+            'category': 'Options'
+        },
+    }
+
+
+    def get_display(self):
+
+        view = self.kwargs.get("view")
+        if not view:
+            return
+
+        sobject = self.get_current_sobject()
+        if sobject:
+            search_key = sobject.get_search_key()
+            self.kwargs['search_key'] = search_key
+
+        from tactic.ui.panel import CustomLayoutWdg
+        layout = CustomLayoutWdg(**self.kwargs)
+
+
+        try:
+            display = layout.get_buffer_display()
+        except Exception as e:
+            display = str(e)
+
+
+        div = DivWdg()
+        div.add(display)
+        return div
+
+
+
+
+    def get_default_action(self):
+        return "pyasm.command.NullAction"
+
+
+
+
+
 
 
 class EditWdg(BaseRefreshWdg):
@@ -47,7 +124,7 @@ class EditWdg(BaseRefreshWdg):
     CLOSE_WDG = "close_wdg"
 
     ARGS_KEYS = {
-            "mode": {
+        "mode": {
             'description': "The mode of this widget",
             'type': 'SelectWdg',
             'values': 'insert|edit|view',
@@ -110,93 +187,95 @@ class EditWdg(BaseRefreshWdg):
 
         "default": "default data in a JSON or dictionary form to be used for new entry",
         "single": "when in insert mode, determine if only one entry can be inserted",
-        "ignore": "A list of element names to ignore"
+        "ignore": "A list of element names to ignore",
+        "source": "Source element"
         }
 
 
-    def init(my):
-        my.is_refresh = my.kwargs.get("refresh")
-        my.search_key = my.kwargs.get("search_key")
-        my.ticket_key = my.kwargs.get("ticket")
-        my.parent_key = my.kwargs.get("parent_key")
-        my.expression = my.kwargs.get("expression")
+    def init(self):
+        self.is_refresh = self.kwargs.get("refresh")
+        self.search_key = self.kwargs.get("search_key")
+        self.ticket_key = self.kwargs.get("ticket")
+        self.parent_key = self.kwargs.get("parent_key")
+        self.expression = self.kwargs.get("expression")
+        
+        self.disables = self.kwargs.get("disables")
+        if not self.disables:
+            self.disables = {}
 
-        # This assumed parent can cause errors as it tries to find a
-        # relationship between to stypes that don't exist ... or worse,
-        # try to bind them when one stype does not have the sufficent columns
-        # ie: pipeline_code
-        #if not my.parent_key:
-        #    project = Project.get()
-        #    my.parent_key = project.get_search_key()
-
-
-        my.code = my.kwargs.get("code")
+        self.code = self.kwargs.get("code")
         sobject = None
-        if my.search_key:
-            sobject = Search.get_by_search_key(my.search_key)
+        if self.search_key:
+            sobject = Search.get_by_search_key(self.search_key)
             if not sobject:
-                raise Exception("No sobject found for search_key [%s]" % my.search_key)
-            my.search_id = sobject.get_id()
-            my.search_type = sobject.get_base_search_type()
+                raise Exception("No sobject found for search_key [%s]" % self.search_key)
+            self.search_id = sobject.get_id()
+            self.search_type = sobject.get_base_search_type()
             if sobject.is_insert():
-                my.mode = 'insert'
+                self.mode = 'insert'
             else:
-                my.mode = 'edit'
+                self.mode = 'edit'
 
-        elif my.expression:
-            sobject = Search.eval(my.expression, single=True)
-            my.search_id = sobject.get_id()
-            my.search_type = sobject.get_base_search_type()
-            my.mode = 'edit'
+        elif self.expression:
+            sobject = Search.eval(self.expression, single=True)
+            self.search_id = sobject.get_id()
+            self.search_type = sobject.get_base_search_type()
+            self.mode = 'edit'
 
 
-        elif my.ticket_key:
+        elif self.ticket_key:
             from pyasm.security import Ticket, Login
-            ticket = Ticket.get_by_valid_key(my.ticket_key)
+            ticket = Ticket.get_by_valid_key(self.ticket_key)
             if not ticket:
                 raise TacticException("No valid ticket")
             login_code = ticket.get_value("login")
             login = Login.get_by_code(login_code)
-            my.search_type = "sthpw/login"
-            my.search_id = login.get_id()
-            my.mode = 'edit'
+            self.search_type = "sthpw/login"
+            self.search_id = login.get_id()
+            self.mode = 'edit'
 
-        elif my.code:
-            my.search_type = my.kwargs.get("search_type")
-            search = Search(my.search_type)
-            search.add_filter("code", my.code)
+        elif self.code:
+            self.search_type = self.kwargs.get("search_type")
+            search = Search(self.search_type)
+            search.add_filter("code", self.code)
             sobject = search.get_sobject()
             
-            my.search_id = sobject.get_id()
-            my.search_type = sobject.get_base_search_type()
-            my.mode = 'edit'
+            self.search_id = sobject.get_id()
+            self.search_type = sobject.get_base_search_type()
+            self.mode = 'edit'
 
 
         else:
-            my.search_type = my.kwargs.get("search_type")
-            my.search_id = my.kwargs.get("search_id")
-            if not my.search_id:
-                my.search_id = -1
-            my.search_id = int(my.search_id)
-            if my.search_id != -1:
-                my.mode = "edit"
+            self.search_type = self.kwargs.get("search_type")
+            self.search_id = self.kwargs.get("search_id")
+            if not self.search_id:
+                self.search_id = -1
+            self.search_id = int(self.search_id)
+            if self.search_id != -1:
+                self.mode = "edit"
             else:
-                my.mode = "insert"
-                
+                self.mode = "insert"
+        
+        assert(self.search_type)
 
         # explicit override
-        if my.kwargs.get("mode"):
-            my.mode = my.kwargs.get("mode")
+        if self.kwargs.get("mode"):
+            self.mode = self.kwargs.get("mode")
 
 
-        my.view = my.kwargs.get("view")
-        if not my.view:
-            my.view = my.kwargs.get("config_base")
-        if not my.view:
-            my.view = "edit"
+        self.view = self.kwargs.get("view")
+        if not self.view:
+            self.view = self.kwargs.get("config_base")
+        if not self.view:
+            self.view = "edit"
 
 
-        default_data = my.kwargs.get('default')
+        self.display_mode = self.kwargs.get("display_mode")
+        if not self.display_mode:
+            self.display_mode = "default"
+
+
+        default_data = self.kwargs.get('default')
         
         if not default_data:
             default_data = {}
@@ -208,43 +287,43 @@ class EditWdg(BaseRefreshWdg):
                 try:
                     default_data = eval(default_data)
                 except:
-                    print "Warning: Cannot evaluate [%s]" %default_data
+                    print("Warning: Cannot evaluate [%s]" %default_data)
                     default_data = {}
 
         if sobject:
-            my.set_sobjects([sobject], None)
+            self.set_sobjects([sobject], None)
         else:
-            my.do_search()
+            self.do_search()
 
         # TODO: get_config() is going the right direction (less features) but the more complicated method is biased 
         # towards edit and insert view.. and so it needs improvement as well
 
-        if my.view not in ["insert", "edit"]:
+        if self.view not in ["insert", "edit"]:
             # try a new smaller way to get config only when an explicit view
             # is set
-            my.config = my.get_config()
+            self.config = self.get_config()
         else:
-            my.config = WidgetConfigView.get_by_search_type(my.search_type, my.view, use_cache=False)
+            self.config = WidgetConfigView.get_by_search_type(self.search_type, self.view, use_cache=False)
 
         # for inline config definitions
-        config_xml = my.kwargs.get("config_xml")
+        config_xml = self.kwargs.get("config_xml")
         if config_xml:
             #from pyasm.common import Xml
             #xml = Xml()
             #xml.read_string(config_xml)
-            #node = xml.get_node("config/%s" % my.view)
+            #node = xml.get_node("config/%s" % self.view)
             #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
-            #config = WidgetConfig.get(view=my.view, xml=xml)
+            #config = WidgetConfig.get(view=self.view, xml=xml)
             config_xml = config_xml.replace("&", "&amp;")
 
             config = WidgetConfig.get(view="tab", xml=config_xml)
-            my.config.insert_config(0, config)
+            self.config.insert_config(0, config)
 
         
-        my.skipped_element_names = []
+        self.skipped_element_names = []
 
         # if there is a layout view, then find the element names using that
-        layout_view = my.kwargs.get("layout_view")
+        layout_view = self.kwargs.get("layout_view")
         if layout_view:
             layout_view = layout_view.replace("/", ".")
             search = Search("config/widget_config")
@@ -252,80 +331,83 @@ class EditWdg(BaseRefreshWdg):
             layout_config = search.get_sobject()
              
             xml = layout_config.get_xml_value("config")
-            my.element_names = xml.get_values("config//html//element/@name")
+            self.element_names = xml.get_values("config//html//element/@name")
         else:
-            my.element_names = my.config.get_element_names()
+            self.element_names = self.config.get_element_names()
 
 
-        override_element_names = my.kwargs.get("element_names")
+        override_element_names = self.kwargs.get("element_names")
         if override_element_names:
-            element_names = override_element_names
+            self.element_names = override_element_names
+            self.element_names = self.element_names.split(",")
 
-
-
-        ignore = my.kwargs.get("ignore")
+        ignore = self.kwargs.get("ignore")
         if isinstance(ignore, basestring):
             ignore = ignore.split("|")
         if not ignore:
             ignore = []
 
-        my.element_titles = []
-        my.element_descriptions = []
-        for element_name in my.element_names:
-            my.element_titles.append( my.config.get_element_title(element_name) )
-            my.element_descriptions.append( my.config.get_element_description(element_name) )
+        self.element_titles = []
+        self.element_descriptions = []
+        for element_name in self.element_names:
+            self.element_titles.append( self.config.get_element_title(element_name) )
+            self.element_descriptions.append( self.config.get_element_description(element_name) )
 
-        #my.element_titles = my.config.get_element_titles()  
-        #my.element_descriptions = my.config.get_element_descriptions()  
+        #self.element_titles = self.config.get_element_titles()  
+        #self.element_descriptions = self.config.get_element_descriptions()  
 
 
         # MongoDb
         # Default columns
-        if not my.element_names:
-            impl = SearchType.get_database_impl_by_search_type(my.search_type)
+        if not self.element_names:
+            impl = SearchType.get_database_impl_by_search_type(self.search_type)
             if impl.get_database_type() == "MongoDb":
-                my.element_names = impl.get_default_columns()
-                my.element_titles = ['Code', 'Name', 'Description']
-                my.element_descriptions = ['Code', 'Name', 'Description']
+                self.element_names = impl.get_default_columns()
+                self.element_titles = ['Code', 'Name', 'Description']
+                self.element_descriptions = ['Code', 'Name', 'Description']
 
 
 
 
-        my.input_prefix = my.kwargs.get('input_prefix')
-        if not my.input_prefix:
-            my.input_prefix = 'edit'
+        self.input_prefix = self.kwargs.get('input_prefix')
+        if not self.input_prefix:
+            self.input_prefix = 'edit'
         
         security = Environment.get_security()
         default_access = "edit"
         project_code = Project.get_project_code()
 
 
-        if my.parent_key:
+        if self.parent_key:
             from pyasm.biz import Schema
             schema = Schema.get()
-            parent_stype = SearchKey.extract_base_search_type(my.parent_key)
-            relationship = schema.get_relationship_attrs(parent_stype, my.search_type, type="hierarchy")
-            for element_name in my.element_names:
+            parent_stype = SearchKey.extract_base_search_type(self.parent_key)
+            #relationship = schema.get_relationship_attrs(parent_stype, self.search_type, type="hierarchy")
+            relationship = schema.get_relationship_attrs(parent_stype, self.search_type)
+            for element_name in self.element_names:
+
                 # If parent_key is available, data associated with the parent table does not need
                 # to be specified by the user, and their widgets can be excluded from the edit widget
                 if element_name == relationship.get("from_col"):
                     ignore.append(element_name)
 
 
-        for i, element_name in enumerate(my.element_names):
+        #extra_data = self.kwargs.get("extra_data") or {}
+
+        for i, element_name in enumerate(self.element_names):
 
             if element_name in ignore:
-                my.skipped_element_names.append(element_name)
+                self.skipped_element_names.append(element_name)
                 continue
 
 
             # check security access
             access_key2 = {
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'project': project_code
             }
             access_key1 = {
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'key': element_name, 
                 'project': project_code
 
@@ -335,124 +417,135 @@ class EditWdg(BaseRefreshWdg):
 
             
             if not is_editable:
-                my.skipped_element_names.append(element_name)
+                self.skipped_element_names.append(element_name)
                 continue
-            widget = my.config.get_display_widget(element_name, kbd_handler=False)
+
+            widget = self.config.get_display_widget(element_name, kbd_handler=False)
+
+
             # some element could be disabled due to its data_type e.g. sql_timestamp
             if not widget:
-                my.skipped_element_names.append(element_name)
+                self.skipped_element_names.append(element_name)
                 continue
 
 
-            widget.set_sobject(my.sobjects[0])
+
+            widget.set_sobject(self.sobjects[0])
 
             default_value = default_data.get(element_name)
             if default_value:
                 widget.set_value(default_value)
            
-            attrs = my.config.get_element_attributes(element_name)
+            attrs = self.config.get_element_attributes(element_name)
             editable = widget.is_editable()
             if editable:
                 editable = attrs.get("edit")
                 editable = editable != "false"
             
             if not editable:
-                my.skipped_element_names.append(element_name)
+                self.skipped_element_names.append(element_name)
                 continue
 
             # set parent
-            widget.set_parent_wdg(my)
+            widget.set_parent_wdg(self)
             
             # set parent_key in insert mode for now
-            if my.mode =='insert' and my.parent_key:
-                widget.set_option('parent_key', my.parent_key)
+            if self.mode =='insert' and self.parent_key:
+                widget.set_option('parent_key', self.parent_key)
             
             
-            title = my.element_titles[i]
+            title = self.element_titles[i]
             if title:
                 widget.set_title(title)
 
-            my.widgets.append(widget)
+            description = attrs.get("description")
+            if description:
+                widget.add_attr("description", description)
 
-            description = my.element_descriptions[i]
+            self.widgets.append(widget)
+
+            description = self.element_descriptions[i]
             widget.add_attr("title", description)
 
 
 
 
-    def get_config(my):
+    def get_config(self):
         # look in the db first
         configs = []
-        config = WidgetDbConfig.get_by_search_type(my.search_type, my.view)
+        config = WidgetDbConfig.get_by_search_type(self.search_type, self.view)
         get_edit_def = False
         if config:
             configs.append(config)
             get_edit_def = True
-            config = WidgetDbConfig.get_by_search_type(my.search_type, "edit_definition")
+            config = WidgetDbConfig.get_by_search_type(self.search_type, "edit_definition")
             if config:
                 configs.append(config)
 
-        #if my.mode == 'insert':
-        #    config = WidgetDbConfig.get_by_search_type(my.search_type, "insert")
-        #    if config:
-        #        configs.append(config)
-        # look for a definition
-        #config = WidgetDbConfig.get_by_search_type(my.search_type, "edit")
-        #if config:
-        #    configs.append(config)
+        else:
+            if self.mode == 'insert':
+                config = WidgetDbConfig.get_by_search_type(self.search_type, "insert")
+                if config:
+                    configs.append(config)
+            # look for the edit
+            config = WidgetDbConfig.get_by_search_type(self.search_type, "edit")
+            if config:
+                configs.append(config)
 
-        file_configs = WidgetConfigView.get_configs_from_file(my.search_type, my.view)
+
+        file_configs = WidgetConfigView.get_configs_from_file(self.search_type, self.view)
         configs.extend(file_configs)
 
-        file_configs = WidgetConfigView.get_configs_from_file(my.search_type, "edit")
+        file_configs = WidgetConfigView.get_configs_from_file(self.search_type, "edit")
         configs.extend(file_configs)
 
         #TODO: add edit_definition    
-        #file_configs = WidgetConfigView.get_configs_from_file(my.search_type, "edit_definition")
+        #file_configs = WidgetConfigView.get_configs_from_file(self.search_type, "edit_definition")
         #configs.extend(file_configs)
         if not get_edit_def:
-            config = WidgetDbConfig.get_by_search_type(my.search_type, "edit_definition")
+            config = WidgetDbConfig.get_by_search_type(self.search_type, "edit_definition")
             if config:
                 configs.append(config)
-    
-        config = WidgetConfigView(my.search_type, my.view, configs)
+   
+        config = WidgetConfigView(self.search_type, self.view, configs, layout="EditWdg")
         return config
 
 
  
 
 
-    def get_display(my):
+    def get_display(self):
 
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         sobj_title = search_type_obj.get_title()
+        sobj_title = Common.pluralize(sobj_title)
 
-        my.color_mode = my.kwargs.get("color_mode")
-        if not my.color_mode:
-            my.color_mode = "default"
+        self.color_mode = self.kwargs.get("color_mode")
+        if not self.color_mode:
+            self.color_mode = "default"
 
 
-        top_div = my.top
+        top_div = self.top
         top_div.add_class("spt_edit_top")
 
-        if not my.is_refresh:
-            my.set_as_panel(top_div)
+        if not self.is_refresh:
+            self.set_as_panel(top_div)
         content_div = DivWdg()
         content_div.add_class("spt_edit_top")
         content_div.add_class("spt_edit_form_top")
-        content_div.set_attr("spt_search_key", my.search_key)
+        content_div.set_attr("spt_search_key", self.search_key)
 
         if not Container.get_dict("JSLibraries", "spt_edit"):
             content_div.add_behavior( {
                 'type': 'load',
-                'cbjs_action': my.get_onload_js()
+                'cbjs_action': self.get_onload_js()
             } )
 
 
 
-        layout_view = my.kwargs.get("layout_view")
+        layout_view = self.kwargs.get("layout_view")
         if layout_view:
-            layout_wdg = my.get_custom_layout_wdg(layout_view)
+            layout_wdg = self.get_custom_layout_wdg(layout_view)
             content_div.add(layout_wdg)
 
             return content_div
@@ -469,7 +562,7 @@ class EditWdg(BaseRefreshWdg):
         ''')
 
 
-        attrs = my.config.get_view_attributes()
+        attrs = self.config.get_view_attributes()
         default_access = attrs.get("access")
 
         if not default_access:
@@ -485,12 +578,12 @@ class EditWdg(BaseRefreshWdg):
         }
         access = security.check_access("sobject", key, "edit", default=default_access)
         if not access:
-            my.is_disabled = True
+            self.is_disabled = True
         else:
-            my.is_disabled = False
+            self.is_disabled = False
 
         disable_wdg = None
-        if my.is_disabled:
+        if self.is_disabled:
             # TODO: This overlay doesn't work in IE, size, position, 
             # and transparency all fail. 
             disable_wdg = DivWdg(id='edit_wdg')
@@ -509,12 +602,12 @@ class EditWdg(BaseRefreshWdg):
             content_div.add(disable_wdg)
 
 
-        attrs = my.config.get_view_attributes()
+        attrs = self.config.get_view_attributes()
 
         #inner doesn't get styled. 
         inner = DivWdg()
         content_div.add(inner)
-        menu = my.get_header_context_menu()
+        menu = self.get_header_context_menu()
         menus = [menu.get_data()]
         menus_in = {
             'HEADER_CTX': menus,
@@ -522,22 +615,30 @@ class EditWdg(BaseRefreshWdg):
         SmartMenu.attach_smart_context_menu( inner, menus_in, False )
 
         #insert the header before body into inner
-        show_header = my.kwargs.get("show_header")
+        show_header = self.kwargs.get("show_header")
         if show_header not in ['false', False]:
-            my.add_header(inner, sobj_title)
+            self.add_header(inner, sobj_title)
 
-
-        #insert table into a body container so styling gets applied
-        table = Table()
         body_container = DivWdg()
-        body_container.add_class("spt_popup_body")
-        body_container.add(table)
         inner.add(body_container)
+        body_container.add_class("spt_popup_body")
+
+        table_div = DivWdg()
+        body_container.add(table_div)
+        table_div.add_style("margin: 0px 20px")
+
+        table = Table()
+        table_div.add(table)
 
 
-        if my.color_mode == "default":
+
+        table.add_style("margin-left: auto")
+        table.add_style("margin-right: auto")
+
+
+        if self.color_mode == "default":
             table.add_color("background", "background")
-        elif my.color_mode == "transparent":
+        elif self.color_mode == "transparent":
             table.add_style("background", "transparent")
         table.add_color("color", "color")
 
@@ -545,7 +646,7 @@ class EditWdg(BaseRefreshWdg):
 
         width = attrs.get('width')
         if not width:
-            width = my.kwargs.get("width")
+            width = self.kwargs.get("width")
         if not width:
             width = 600
 
@@ -557,7 +658,7 @@ class EditWdg(BaseRefreshWdg):
         tr = table.add_row()
 
         stype_type = search_type_obj.get_value("type", no_exception=True)
-        if my.mode != 'insert' and stype_type in ['media'] and my.sobjects:
+        if self.mode != 'insert' and stype_type in ['media'] and self.sobjects:
 
             td = table.add_cell()
 
@@ -565,13 +666,13 @@ class EditWdg(BaseRefreshWdg):
 
             from tactic.ui.panel import ThumbWdg2
             thumb = ThumbWdg2()
-            thumb.set_sobject(my.sobjects[0])
+            thumb.set_sobject(self.sobjects[0])
             td.add(thumb)
             thumb.add_style("margin: 0px 10px")
             path = thumb.get_lib_path()
 
             td.add_style("padding: 10px")
-            td.add_attr("rowspan", len(my.widgets)+2)
+            td.add_attr("rowspan", len(self.widgets)+2)
             td.add_style("min-width: 250px")
             td.add_style("vertical-align: top")
             td.add_border(direction="right")
@@ -604,11 +705,13 @@ class EditWdg(BaseRefreshWdg):
 
         # set the width
         table.add_style("width: %s" % width)
+        table.add_style("margin-top: 20px")
+        table.add_style("margin-bottom: 20px")
 
 
 
-        single = my.kwargs.get("single")
-        if single in ['false', False] and my.mode == 'insert':
+        single = self.kwargs.get("single")
+        if single in ['false', False] and self.mode == 'insert':
             multi_div = DivWdg()
             multi_div.add_style("text-align: left")
             multi_div.add_style("padding: 5px 10px")
@@ -626,24 +729,24 @@ class EditWdg(BaseRefreshWdg):
 
             tr, td = table.add_row_cell( multi_div )
 
-            if my.color_mode == "defaultX":
+            if self.color_mode == "defaultX":
                 td.add_color("border-color", "table_border", default="border")
                 td.add_style("border-width: 1px")
                 td.add_style("border-style: solid")
 
-            td.add_style("padding: 8 3 8 3")
-            td.add_color("background", "background3")
-            td.add_color("color", "color3")
+            td.add_style("padding: 8px 3px 8px 3px")
+            td.add_color("background", "background", -3)
+            td.add_color("color", "color")
         
         security = Environment.get_security()
 
         # break the widgets up in columns
         num_columns = attrs.get('num_columns')
         if not num_columns:
-            num_columns = my.kwargs.get('num_columns')
+            num_columns = self.kwargs.get('num_columns')
 
         if not num_columns:
-            if len(my.widgets) > 8:
+            if len(self.widgets) > 8:
                 num_columns = 2
             else:
                 num_columns = 1
@@ -652,7 +755,7 @@ class EditWdg(BaseRefreshWdg):
 
         # go through each widget and draw it
         index =  0
-        for i, widget in enumerate(my.widgets):
+        for i, widget in enumerate(self.widgets):
 
             # since a widget name called code doesn't necessariy write to code column, it is commented out for now
             """
@@ -662,7 +765,7 @@ class EditWdg(BaseRefreshWdg):
             # check security on widget
             if not security.check_access( "sobject_column",\
                 key, "edit"):
-                my.skipped_element_names.append(widget.get_name())
+                self.skipped_element_names.append(widget.get_name())
                 continue
             """
 
@@ -672,8 +775,8 @@ class EditWdg(BaseRefreshWdg):
                 content_div.add(msg)
                 content_div.add(HtmlElement.br())
                 continue
-            if my.input_prefix:
-                widget.set_input_prefix(my.input_prefix)
+            if self.input_prefix:
+                widget.set_input_prefix(self.input_prefix)
 
             # Bootstrap
             widget.add_class("form-control")
@@ -684,9 +787,6 @@ class EditWdg(BaseRefreshWdg):
 
             if isinstance(widget, EditTitleWdg):
                 tr, td = table.add_row_cell()
-                tr.add_color("background", "background", -5)
-                td.add_style("height", "30px")
-                td.add_style("padding", "0px 10px")
 
                 td.add(widget)
 
@@ -719,7 +819,7 @@ class EditWdg(BaseRefreshWdg):
                 tr = table.add_row()
 
 
-                if my.color_mode == "default":
+                if self.color_mode == "default":
                     if index % 2 == 0:
                         tr.add_color("background", "background")
                     else:
@@ -731,7 +831,7 @@ class EditWdg(BaseRefreshWdg):
            
             show_title = widget.get_option("show_title")
             if not show_title:
-                show_title = my.kwargs.get("show_title")
+                show_title = self.kwargs.get("show_title")
 
             if show_title in ['false', False]:
                 show_title = False
@@ -739,16 +839,25 @@ class EditWdg(BaseRefreshWdg):
                 show_title = True
 
 
-
             if show_title:
                 title = widget.get_title()
+                if isinstance(title, basestring) and title.find("->") != -1:
+                    parts = title.split("->")
+                    title = parts[1]
 
-                td = table.add_cell(title)
+
+                title_div = DivWdg()
+                title_div.add(title)
+                title_div.add_style("display: inline-block")
+                title_div.add_class("spt_edit_title")
+
+
+                td = table.add_cell(title_div)
                 td.add_style("padding: 15px 15px 10px 5px")
                 td.add_style("vertical-align: top")
 
  
-                title_width = my.kwargs.get("title_width")
+                title_width = self.kwargs.get("title_width")
                 if title_width:
                     td.add_style("width: %s" % title_width)
                 else:
@@ -758,12 +867,12 @@ class EditWdg(BaseRefreshWdg):
                 if security.check_access("builtin", "view_site_admin", "allow"):
                     SmartMenu.assign_as_local_activator( td, 'HEADER_CTX' )
 
-                if my.color_mode == "defaultX":
+                if self.color_mode == "defaultX":
                     td.add_color("border-color", "table_border", default="border")
                     td.add_style("border-width: 1" )
                     td.add_style("border-style: solid" )
 
-                td.add_style("text-align: right" )
+                #td.add_style("text-align: right" )
 
                 hint = widget.get_option("hint")
                 if hint:
@@ -773,28 +882,49 @@ class EditWdg(BaseRefreshWdg):
                     td.add_attr("title", hint)
 
 
+            element_name = widget.get_name()
+
             if not show_title:
                 th, td = table.add_row_cell( widget )
+                td.add_class("spt_edit_cell")
+                td.add_attr("spt_element_name", element_name)
                 continue
             else:
-                td = table.add_cell( widget )
-                #td = table.add_cell( widget.get_value() )
-                td.add_style("min-width: 300px")
-                td.add_style("padding: 10px 25px 10px 5px")
-                td.add_style("vertical-align: top")
 
-                if my.color_mode == "defaultX":
-                    td.add_color("border-color", "table_border", default="border")
-                    td.add_style("border-width: 1" )
-                    td.add_style("border-style: solid" )
+                if self.display_mode == "default":
+                    td = table.add_cell()
+                    td.add_style("min-width: 300px")
+                    td.add_style("padding: 10px 25px 10px 5px")
+                    td.add_style("vertical-align: top")
+
+                td.add_class("spt_edit_cell")
+                td.add_attr("spt_element_name", element_name)
+
+                if (title in self.disables):
+                    widget.add_attr("disabled", "disabled")
+                td.add(widget)
+
+
+                # description
+                description = widget.get_attr("description") or ""
+                if description and description != "No description":
+                    color = td.get_color("color", 40)
+
+                    description_div = DivWdg()
+                    td.add(description_div)
+                    description_div.add_style("margin-top: 5px")
+                    description_div.add_style("color: %s" % color)
+                    description_div.add_style("font-style: italic")
+                    description_div.add(description)
 
 
 
-        if not my.is_disabled and not my.mode == 'view':
-            inner.add( my.get_action_html() )
 
-        if my.input_prefix:
-            prefix = HiddenWdg("input_prefix", my.input_prefix)
+        if not self.is_disabled and not self.mode == 'view':
+            inner.add( self.get_action_html() )
+
+        if self.input_prefix:
+            prefix = HiddenWdg("input_prefix", self.input_prefix)
             tr, td = table.add_row_cell()
             td.add(prefix)
 
@@ -802,48 +932,58 @@ class EditWdg(BaseRefreshWdg):
         return top_div
 
 
-    def get_custom_layout_wdg(my, layout_view):
+    def get_custom_layout_wdg(self, layout_view):
 
         content_div = DivWdg()
 
         from tactic.ui.panel import CustomLayoutWdg
-        layout = CustomLayoutWdg(view=layout_view, search_key=my.search_key)
+        # build the kwargs, including custom ones
+        kwargs2 = {}
+        for key, value in self.kwargs.items():
+            if key in ['search_key','view','config_xml']:
+                continue
+            kwargs2[key] = value
+        kwargs2['search_key'] = self.search_key
+        kwargs2['view'] = layout_view
+
+        layout = CustomLayoutWdg(**kwargs2)
+        #layout = CustomLayoutWdg(view=layout_view, search_key=self.search_key)
         content_div.add(layout)
 
-        for widget in my.widgets:
+        for widget in self.widgets:
             name = widget.get_name()
-            if my.input_prefix:
-                widget.set_input_prefix(my.input_prefix)
+            if self.input_prefix:
+                widget.set_input_prefix(self.input_prefix)
 
             layout.add_widget(widget, name)
 
 
 
-        search_key = SearchKey.get_by_sobject(my.sobjects[0], use_id=True)
-        search_type = my.sobjects[0].get_base_search_type()
+        search_key = SearchKey.get_by_sobject(self.sobjects[0], use_id=True)
+        search_type = self.sobjects[0].get_base_search_type()
 
 
-        element_names = my.element_names[:]
-        for element_name in my.skipped_element_names:
+        element_names = self.element_names[:]
+        for element_name in self.skipped_element_names:
             element_names.remove(element_name)
 
 
-        config_xml = my.kwargs.get("config_xml")
+        config_xml = self.kwargs.get("config_xml")
         bvr =  {
             'type': 'click_up',
-            'mode': my.mode,
+            'mode': self.mode,
             'element_names': element_names,
             'search_key': search_key,
-            'input_prefix': my.input_prefix,
-            'view': my.view,
+            'input_prefix': self.input_prefix,
+            'view': self.view,
             'config_xml': config_xml
         }
 
-        if my.mode == 'insert':
+        if self.mode == 'insert':
             bvr['refresh'] = 'true'
             # for adding parent relationship in EditCmd
-            if my.parent_key:
-                bvr['parent_key'] = my.parent_key
+            if self.parent_key:
+                bvr['parent_key'] = self.parent_key
 
 
         hidden_div = DivWdg()
@@ -854,15 +994,15 @@ class EditWdg(BaseRefreshWdg):
         hidden_div.add(hidden)
         hidden.set_value( jsondumps(bvr) )
 
-        show_action = my.kwargs.get("show_action")
+        show_action = self.kwargs.get("show_action")
         if show_action in [True, 'true']:
-            content_div.add( my.get_action_html() )
+            content_div.add( self.get_action_html() )
 
         return content_div
 
 
    
-    def get_header_context_menu(my):
+    def get_header_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -875,7 +1015,7 @@ class EditWdg(BaseRefreshWdg):
         menu_item = MenuItem(type='action', label='Edit Column Definition')
         menu_item.add_behavior( {
             'args' : {
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'options': {
                     'class_name': 'tactic.ui.manager.ElementDefinitionWdg',
                     'popup_id': 'edit_column_defn_wdg',
@@ -883,7 +1023,6 @@ class EditWdg(BaseRefreshWdg):
                 }
             },
             'cbjs_action': '''
-            spt.alert("Not yet implemented");
             return
 
 
@@ -901,22 +1040,22 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-    def add_header(my, inner, sobj_title):
+    def add_header(self, inner, sobj_title):
         header_div = DivWdg()
 
-        title_str = my.kwargs.get("title")
+        title_str = self.kwargs.get("title")
 
         if not title_str:
-            if my.mode == 'insert':
-                action = 'Add New Item'
-            elif my.mode == 'edit':
-                action = 'Save Changes'
+            if self.mode == 'insert':
+                action = 'Add New Item to'
+            elif self.mode == 'edit':
+                action = 'Update'
             else:
-                action = my.mode
+                action = self.mode
             
-            title_str =  action.capitalize() + " to " + sobj_title
-            if my.mode == 'edit':
-                title_str = '%s (%s)' %(title_str, my.sobjects[0].get_code())
+            title_str =  action.capitalize() + " " + sobj_title
+            if self.mode == 'edit':
+                title_str = '%s (%s)' %(title_str, self.sobjects[0].get_code())
             
 
         #header div text
@@ -924,15 +1063,15 @@ class EditWdg(BaseRefreshWdg):
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 7px")
         title_div.add_style("text-align: center")
-        title_div.set_attr('title', my.view)
+        title_div.set_attr('title', self.view)
         title_div.add(title_str)
 
         #actual header div
         header_div.add(title_div)
         header_div.add_class("spt_popup_header")
-        header_div.add_color("background", "background3", 10)
+        header_div.add_color("background", "background", -8)
 
-        if my.color_mode == "default":
+        if self.color_mode == "default":
             header_div.add_color("border-color", "table_border", default="border")
             header_div.add_style("border-width: 1px")
             header_div.add_style("border-style: solid")
@@ -940,29 +1079,31 @@ class EditWdg(BaseRefreshWdg):
         header_div.add_style("height: 30px")
         header_div.add_style("padding: 3px 10px")
 
+        header_div.add_style("margin: -1px -1px 10px -1px")
+
         inner.add(header_div)
 
 
-    def add_hidden_inputs(my, div):
+    def add_hidden_inputs(self, div):
         '''TODO: docs ... what is this for???'''
         pass
 
 
-    def do_search(my):
+    def do_search(self):
         '''this widget has its own search mechanism'''
 
         web = WebContainer.get_web()
         
         # get the sobject that is to be edited
-        id = my.search_id
+        id = self.search_id
 
         # if no id is given, then create a new one for insert
         search = None
         sobject = None
-        search_type_base = SearchType.get(my.search_type).get_base_key()
-        if my.mode == "insert":
-            sobject = SearchType.create(my.search_type)
-            my.current_id = -1
+        search_type_base = SearchType.get(self.search_type).get_base_key()
+        if self.mode == "insert":
+            sobject = SearchType.create(self.search_type)
+            self.current_id = -1
             # prefilling default values if available
             value_keys = web.get_form_keys()
             if value_keys:
@@ -971,69 +1112,69 @@ class EditWdg(BaseRefreshWdg):
                     value = web.get_form_value(key)
                     sobject.set_value(key, value)
         else:
-            search = Search(my.search_type)
+            search = Search(self.search_type)
 
             # figure out which id to search for
             if web.get_form_value("do_edit") == "Edit/Next":
                 search_ids = web.get_form_value("%s_search_ids" %search_type_base)
                 if search_ids == "":
-                    my.current_id = id
+                    self.current_id = id
                 else:
                     search_ids = search_ids.split("|")
                     next = search_ids.index(str(id)) + 1
                     if next == len(search_ids):
                         next = 0
-                    my.current_id = search_ids[next]
+                    self.current_id = search_ids[next]
 
-                    last_search = Search(my.search_type)
+                    last_search = Search(self.search_type)
                     last_search.add_id_filter( id )
-                    my.last_sobject = last_search.get_sobject()
+                    self.last_sobject = last_search.get_sobject()
 
             else:
-                my.current_id = id
+                self.current_id = id
 
-            search.add_id_filter( my.current_id )
+            search.add_id_filter( self.current_id )
             sobject = search.get_sobject()
 
-        if not sobject and my.current_id != -1:
+        if not sobject and self.current_id != -1:
             raise EditException("No SObject found")
 
         # set all of the widgets to contain this sobject
-        my.set_sobjects( [sobject], search )
+        self.set_sobjects( [sobject], search )
 
 
-    def get_action_html(my):
+    def get_action_html(self):
 
 
-        search_key = SearchKey.get_by_sobject(my.sobjects[0], use_id=True)
-        search_type = my.sobjects[0].get_base_search_type()
+        search_key = SearchKey.get_by_sobject(self.sobjects[0], use_id=True)
+        search_type = self.sobjects[0].get_base_search_type()
 
 
         div = DivWdg(css='centered')
-        div.add_color("background", "background3", 10)
+        div.add_color("background", "background", -8)
         div.add_style("padding-top: 5px")
         div.add_style("padding-bottom: 30px")
 
 
         # construct the bvr
-        element_names = my.element_names[:]
-        for element_name in my.skipped_element_names:
+        element_names = self.element_names[:]
+        for element_name in self.skipped_element_names:
             element_names.remove(element_name)
 
         bvr =  {
             'type': 'click_up',
-            'mode': my.mode,
+            'mode': self.mode,
             'element_names': element_names,
             'search_key': search_key,
-            'input_prefix': my.input_prefix,
-            'view': my.view
+            'input_prefix': self.input_prefix,
+            'view': self.view
         }
 
-        if my.mode == 'insert':
+        if self.mode == 'insert':
             bvr['refresh'] = 'true'
             # for adding parent relationship in EditCmd
-            if my.parent_key:
-                bvr['parent_key'] = my.parent_key
+            if self.parent_key:
+                bvr['parent_key'] = self.parent_key
 
 
 
@@ -1046,15 +1187,16 @@ class EditWdg(BaseRefreshWdg):
         hidden_div.add(hidden)
         hidden.set_value( jsondumps(bvr) )
 
-        show_action = my.kwargs.get("show_action")
+        show_action = self.kwargs.get("show_action")
         if show_action in [False, 'false']:
+            div.add_style("display: none")
             return div
 
 
 
         div.add_style('height: 35px')
         div.add_named_listener('close_EditWdg', '''
-            var popup = spt.popup.get_popup( $('edit_popup') );
+            var popup = spt.popup.get_popup( document.id('edit_popup') );
             if (popup != null) {
                 spt.popup.destroy(popup);
             }
@@ -1062,7 +1204,7 @@ class EditWdg(BaseRefreshWdg):
 
      
         # custom callbacks
-        cbjs_cancel = my.kwargs.get('cbjs_cancel')
+        cbjs_cancel = self.kwargs.get('cbjs_cancel')
         if not cbjs_cancel:
             cbjs_cancel = '''
             spt.named_events.fire_event('preclose_edit_popup', {});
@@ -1070,7 +1212,7 @@ class EditWdg(BaseRefreshWdg):
             '''
 
         # custom callbacks
-        cbjs_insert_path = my.kwargs.get('cbjs_%s_path' % my.mode)
+        cbjs_insert_path = self.kwargs.get('cbjs_%s_path' % self.mode)
         cbjs_insert = None
         if cbjs_insert_path:
             script_obj = CustomScript.get_by_path(cbjs_insert_path)
@@ -1079,47 +1221,58 @@ class EditWdg(BaseRefreshWdg):
 
         # get it inline
         if not cbjs_insert:
-            cbjs_insert = my.kwargs.get('cbjs_%s' % my.mode)
+            cbjs_insert = self.kwargs.get('cbjs_%s' % self.mode)
 
         # use a default
         if not cbjs_insert:
-            mode_label = my.mode.capitalize()
+            mode_label = self.mode.capitalize()
             cbjs_insert = '''
-            spt.app_busy.show("%sing items", "");
             spt.edit.edit_form_cbk(evt, bvr);
-            spt.app_busy.hide();
+            spt.notify.show_message("%s item complete.");
             '''%mode_label
 
-        save_event = my.kwargs.get('save_event')
+        save_event = self.kwargs.get('save_event')
         if not save_event:
             save_event = div.get_unique_event("save")
         bvr['save_event'] = save_event
+
+        edit_event = self.kwargs.get('edit_event')
+        if not edit_event:
+            edit_event = div.get_unique_event("edit")
+        bvr['edit_event'] = edit_event
+
+
+
         bvr['named_event'] = 'edit_pressed'
 
-        bvr['cbjs_action'] = cbjs_insert
+        bvr['source'] = self.kwargs.get("source")
 
-        
-        ok_btn_label = my.mode.capitalize()
+        bvr['cbjs_action'] = cbjs_insert
+        bvr['extra_data'] = self.kwargs.get("extra_data")
+
+        self.top.add_attr("spt_save_event", save_event)
+
+        ok_btn_label = self.mode.capitalize()
         if ok_btn_label == 'Edit':
             ok_btn_label = 'Save'
         if ok_btn_label == 'Insert':
             ok_btn_label = 'Add'
 
-        if my.kwargs.get('ok_btn_label'):
-            ok_btn_label = my.kwargs.get('ok_btn_label')
+        if self.kwargs.get('ok_btn_label'):
+            ok_btn_label = self.kwargs.get('ok_btn_label')
 
         ok_btn_tip = ok_btn_label
-        if my.kwargs.get('ok_btn_tip'):
-            ok_btn_tip = my.kwargs.get('ok_btn_tip')
+        if self.kwargs.get('ok_btn_tip'):
+            ok_btn_tip = self.kwargs.get('ok_btn_tip')
 
 
         cancel_btn_label = 'Cancel'
-        if my.kwargs.get('cancel_btn_label'):
-            cancel_btn_label = my.kwargs.get('cancel_btn_label')
+        if self.kwargs.get('cancel_btn_label'):
+            cancel_btn_label = self.kwargs.get('cancel_btn_label')
 
         cancel_btn_tip = cancel_btn_label
-        if my.kwargs.get('cancel_btn_tip'):
-            cancel_btn_tip = my.kwargs.get('cancel_btn_tip')
+        if self.kwargs.get('cancel_btn_tip'):
+            cancel_btn_tip = self.kwargs.get('cancel_btn_tip')
 
 
         # create the buttons
@@ -1245,7 +1398,7 @@ class EditWdg(BaseRefreshWdg):
             input = None
         else:
             # else try to instantiate it as a class
-            print "WARNING: EditWdg handles type [%s] as default TextWdg" %element_type
+            print("WARNING: EditWdg handles type [%s] as default TextWdg" %element_type)
             input = TextWdg()
             input.add("No input defined")
 
@@ -1254,7 +1407,7 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 spt.Environment.get().add_library("spt_edit");
@@ -1262,8 +1415,11 @@ spt.Environment.get().add_library("spt_edit");
 spt.edit = {}
 
 
-spt.edit.save_changes = function(content, search_key) {
-    var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
+spt.edit.save_changes = function(content, search_key, extra_data, values, trigger_mode) {
+
+    if (!values) {
+        values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
+    }
 
     bvr = JSON.parse(values.__data__);
 
@@ -1282,13 +1438,19 @@ spt.edit.save_changes = function(content, search_key) {
         kwargs['parent_key'] = bvr.parent_key;
     kwargs['input_prefix'] = bvr.input_prefix;
     kwargs['view'] = bvr.view;
+    if (extra_data) {
+        kwargs['extra_data'] = extra_data;
+    }
+    if (trigger_mode) {
+        kwargs['trigger_mode'] = trigger_mode;
+    }
 
     var server = TacticServerStub.get();
 
     values['search_type'] = bvr.search_type;
 
-    var info = server.execute_cmd(class_name, kwargs, values);
-    return info.info.sobject;
+    var ret_val = server.execute_cmd(class_name, kwargs, values);
+    return ret_val.info.sobject;
 }
 
 
@@ -1317,12 +1479,14 @@ spt.edit.edit_form_cbk = function( evt, bvr )
         args['parent_key'] = bvr.parent_key;
     args['input_prefix'] = bvr.input_prefix;
     args['view'] = bvr.view;
+    args['extra_data'] = bvr.extra_data;
 
     // this is needed as bvr turns null on error
     var src_el = bvr.src_el;
     try {
 
-        var info = server.execute_cmd(class_name, args, values);
+        var ret_val = server.execute_cmd(class_name, args, values);
+        var info = ret_val.info;
 
         // add a callback after save
         var popup = bvr.src_el.getParent(".spt_popup");
@@ -1349,20 +1513,37 @@ spt.edit.edit_form_cbk = function( evt, bvr )
             var tmps2 = tmps[0].split('?');
             var update_row_event = "update_row|" + tmps2[0];
             var update_st_event = "update|" + tmps2[0];
+
             var bvr_fire = {};
-            var kwargs = {'update_data': values};
-            var input = {'search_key': bvr.search_key, 'kwargs': kwargs};
+            bvr_fire.src_el = bvr.src_el;
+
+            var kwargs = {update_data: values};
+            var input = {
+                search_key: info.search_key,
+                sobject: info.sobject,
+                kwargs: kwargs
+            };
             bvr_fire.options = input;
             spt.named_events.fire_event(update_st_event, bvr_fire);
             spt.named_events.fire_event(update_row_event, bvr_fire);
 
+            if (bvr.edit_event) {
+                spt.named_events.fire_event(bvr.edit_event, bvr_fire);
+            }
 
         }
         else {
             // update the table
+
+            // FIXME: this search key is just LOST!!!
+            bvr.options = {
+                search_key: info.search_key,
+                sobject: info.sobject,
+            }
             if (bvr.save_event) {
                 spt.named_events.fire_event(bvr.save_event, bvr);
             }
+
         }
     }
     catch(e) {
@@ -1377,7 +1558,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
 
         var options = {}
         options.cancel_args = bvr;
-           
+
         spt.confirm( "Error: " + spt.exception.handler(e) + "<br/>Try again?", ok, cancel, options);
     }
     return info;
@@ -1391,16 +1572,16 @@ spt.edit.edit_form_cbk = function( evt, bvr )
 
 class FileAppendWdg(EditWdg):
 
-    def init(my):
-        super(FileAppendWdg, my).init()
-        my.mode = 'Append'
+    def init(self):
+        super(FileAppendWdg, self).init()
+        self.mode = 'Append'
 
 
-    def add_header(my, table, title):
+    def add_header(self, table, title):
         table.add_style('width', '50em')
         
-        parent_st = my.kwargs.get('search_type')
-        parent_sid =  my.kwargs.get('search_id')
+        parent_st = self.kwargs.get('search_type')
+        parent_sid =  self.kwargs.get('search_id')
 
         sobj = Search.get_by_id(parent_st, parent_sid)
         sobj_code = 'New'
@@ -1416,22 +1597,22 @@ class FileAppendWdg(EditWdg):
             hidden = HiddenWdg('parent_search_key', SearchKey.get_by_sobject(sobj) )
             th.add(hidden)
         
-    def get_action_html(my):
-        search_key = SearchKey.get_by_sobject(my.sobjects[0])
+    def get_action_html(self):
+        search_key = SearchKey.get_by_sobject(self.sobjects[0])
         behavior_submit = {
             'type': 'click_up',
             'cb_fire_named_event': 'append_pressed',
-            'element_names': my.element_names,
+            'element_names': self.element_names,
             'search_key': search_key,
-            'input_prefix': my.input_prefix
+            'input_prefix': self.input_prefix
 
         }
         behavior_cancel = {
             'type': 'click_up',
             'cb_fire_named_event': 'preclose_edit_popup',
-            'cbjs_postaction': "spt.popup.destroy( spt.popup.get_popup( $('edit_popup') ) );"
+            'cbjs_postaction': "spt.popup.destroy( spt.popup.get_popup( document.id('edit_popup') ) );"
         }
-        button_list = [{'label':  "%s/Close" % my.mode.capitalize(),
+        button_list = [{'label':  "%s/Close" % self.mode.capitalize(),
             'bvr': behavior_submit},
             {'label':  "Cancel", 'bvr': behavior_cancel}]        
         edit_close = TextBtnSetWdg( buttons=button_list, spacing =6, size='large', \
@@ -1452,20 +1633,20 @@ class FileAppendWdg(EditWdg):
 
 class PublishWdg(EditWdg):
 
-    def init(my):
-        super(PublishWdg, my).init()
-        my.mode = 'publish'
+    def init(self):
+        super(PublishWdg, self).init()
+        self.mode = 'publish'
 
-    def get_action_html(my):
+    def get_action_html(self):
       
-        search_key = SearchKey.get_by_sobject(my.sobjects[0])
-        search_type = my.sobjects[0].get_base_search_type()
+        search_key = SearchKey.get_by_sobject(self.sobjects[0])
+        search_type = self.sobjects[0].get_base_search_type()
 
 
         div = DivWdg(css='centered')
         div.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
         
         div.add_styles('height: 35px; margin-top: 10px;')
@@ -1478,7 +1659,7 @@ class PublishWdg(EditWdg):
 
      
         # custom callbacks
-        cbjs_cancel = my.kwargs.get('cbjs_cancel')
+        cbjs_cancel = self.kwargs.get('cbjs_cancel')
         if not cbjs_cancel:
             cbjs_cancel = '''
             spt.named_events.fire_event('preclose_edit_popup', {});
@@ -1486,7 +1667,7 @@ class PublishWdg(EditWdg):
             '''
 
         # custom callbacks
-        cbjs_insert_path = my.kwargs.get('cbjs_%s_path' % my.mode)
+        cbjs_insert_path = self.kwargs.get('cbjs_%s_path' % self.mode)
         cbjs_insert = None
         if cbjs_insert_path:
             script_obj = CustomScript.get_by_path(cbjs_insert_path)
@@ -1495,7 +1676,7 @@ class PublishWdg(EditWdg):
 
         # get it inline
         if not cbjs_insert:
-            cbjs_insert = my.kwargs.get('cbjs_%s' % my.mode)
+            cbjs_insert = self.kwargs.get('cbjs_%s' % self.mode)
 
         # use a default
         if not cbjs_insert:
@@ -1503,8 +1684,8 @@ class PublishWdg(EditWdg):
             spt.edit.edit_form_cbk(evt, bvr);
             '''
 
-        element_names = my.element_names[:]
-        for element_name in my.skipped_element_names:
+        element_names = self.element_names[:]
+        for element_name in self.skipped_element_names:
             element_names.remove(element_name)
         # Must not have postaction which closes the EditWdg before upload finishes
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
@@ -1513,14 +1694,14 @@ class PublishWdg(EditWdg):
                     'named_event': 'close_EditWdg',
                     'element_names': element_names,
                     'search_key': search_key,
-                    'input_prefix': my.input_prefix,
-                    'view': my.view
+                    'input_prefix': self.input_prefix,
+                    'view': self.view
                 }
         keys = WebContainer.get_web().get_form_keys()
         for key in keys:
             bvr[key] = WebContainer.get_web().get_form_value(key)
 
-        label = my.mode
+        label = self.mode
         if label == 'edit':
             label = 'save'
 

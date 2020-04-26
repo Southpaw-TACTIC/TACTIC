@@ -22,9 +22,9 @@ from text_input_wdg import TextInputWdg
 
 class IconSelectWdg(BaseInputWdg):
 
-    def get_display(my):
-        my.icon_string = my.get_value("icon")
-        my.icon_label = my.get_value("label")
+    def get_display(self):
+        self.icon_string = self.get_value("icon")
+        self.icon_label = self.get_value("label")
 
         top = DivWdg()
         top.add_class("spt_icon_chooser_top")
@@ -33,9 +33,19 @@ class IconSelectWdg(BaseInputWdg):
         icon_chooser = IconChooserWdg( is_popup=True )
         top.add( icon_chooser )
 
-        icon_entry_text = TextInputWdg(name=my.get_input_name())
+        icon_entry_text = TextInputWdg(name=self.get_input_name())
         #icon_entry_text.set_attr("disabled", "disabled")
         icon_entry_text.add_class( "SPT_ICON_ENTRY_TEXT" )
+
+        value = self.get_value()
+        if value:
+            #icon_entry_text.set_option("default", value)
+            icon_entry_text.set_value(value)
+
+
+        return icon_entry_text
+
+
 
 
         button = ActionButtonWdg(title='Choose', tip='Click to select an icon')
@@ -43,16 +53,16 @@ class IconSelectWdg(BaseInputWdg):
         icon_img = HtmlElement.img()
         icon_img.add_class( "SPT_ICON_IMG" )
 
-        if my.icon_string:
-            # icon_path = IconWdg.icons.get(my.icon_string)
-            icon_path = IconWdg.get_icon_path(my.icon_string)
+        if self.icon_string:
+            # icon_path = IconWdg.icons.get(self.icon_string)
+            icon_path = IconWdg.get_icon_path(self.icon_string)
             if icon_path:
-                # icon = IconWdg( my.icon_string, icon_path, right_margin='0px' )
+                # icon = IconWdg( self.icon_string, icon_path, right_margin='0px' )
                 icon_img.set_attr("src", icon_path)
             else:
                 icon_img.set_attr("src", IconWdg.get_icon_path("TRANSPARENT"))
 
-            icon_entry_text.set_value( my.icon_string )
+            icon_entry_text.set_value( self.icon_string )
         else:
             icon_entry_text.set_value( "" )
             icon_img.set_attr("src", IconWdg.get_icon_path("TRANSPARENT"))
@@ -61,7 +71,7 @@ class IconSelectWdg(BaseInputWdg):
         named_event_name = "ICON_CHOOSER_SELECTION_MADE"
         icon_entry_text.add_behavior( {'type': 'listen', 'event_name': named_event_name,
            'cbjs_action': '''
-                var top = $("IconChooserPopup");
+                var top = document.id("IconChooserPopup");
                 var chooser = spt.get_element(top, ".SPT_ICON_CHOOSER_WRAPPER_DIV");
                 //var chooser = spt.get_cousin( bvr.src_el,
                 //    ".spt_icon_chooser_top", ".SPT_ICON_CHOOSER_WRAPPER_DIV" );
@@ -82,13 +92,9 @@ class IconSelectWdg(BaseInputWdg):
 
         top.add_behavior( {'type': 'click_up', 'cbjs_action': 'spt.popup.open( "IconChooserPopup", false);' } )
 
-        #top.add( my.icon_label )
+        #top.add( self.icon_label )
         spacing = "<img src='%s' style='width: %spx;' />" % (IconWdg.get_icon_path("TRANSPARENT"), 3)
 
-        #button.add_behavior( {'type': 'click_up', 'cbjs_action': 'spt.popup.open( "IconChooserPopup", false);' } )
-        #top.add( button )
-        #button.add_style("float: right")
-        #button.add_style("margin-top: -3px")
 
         top.add( icon_img )
         top.add( spacing )

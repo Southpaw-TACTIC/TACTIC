@@ -19,16 +19,16 @@ from base_example_wdg import BaseExampleWdg
 
 class DevSandbox01Wdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         # UI prototype sandbox for Remko
         return "::: Developer UI Sandbox 01 - Remko :::"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "This is a prototyping and testing sandbox widget container (#1) for Remko."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 

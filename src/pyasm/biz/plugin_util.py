@@ -19,15 +19,15 @@ import os
 class PluginUtil(object):
     '''A series of methods concerning plugins'''
 
-    def __init__(my, **kwargs):
-        my.base_dir = kwargs.get("base_dir")
-        if not my.base_dir:
-            my.base_dir = Environment.get_plugin_dir()
+    def __init__(self, **kwargs):
+        self.base_dir = kwargs.get("base_dir")
+        if not self.base_dir:
+            self.base_dir = Environment.get_plugin_dir()
 
 
-    def get_plugin_data(my, reldir):
+    def get_plugin_data(self, reldir):
 
-        manifest_path = "%s/%s/manifest.xml" % (my.base_dir, reldir)
+        manifest_path = "%s/%s/manifest.xml" % (self.base_dir, reldir)
         xml = Xml()
         xml.read_file(manifest_path)
         node = xml.get_node("manifest/data")
@@ -38,13 +38,13 @@ class PluginUtil(object):
 
 
 
-    def get_plugins_data(my, plugin_type=None):
+    def get_plugins_data(self, plugin_type=None):
 
         plugins_data = {}
-        for root, dirnames, basenames in os.walk(my.base_dir):
+        for root, dirnames, basenames in os.walk(self.base_dir):
             # for windows
             root = root.replace("\\", "/")
-            reldir = root.replace(my.base_dir + "/", "")
+            reldir = root.replace(self.base_dir + "/", "")
             if "manifest.xml" in basenames:
 
                 manifest_path = "%s/manifest.xml" % root

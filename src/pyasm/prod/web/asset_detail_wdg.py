@@ -24,16 +24,16 @@ from tactic.ui.common import BaseRefreshWdg
 
 class SObjectDetailWrapperWdg(Widget):
     '''wrapper widget that determines which detail widget to use'''
-    def init(my):
+    def init(self):
         # get the args in the URL
-        if not my.sobjects:
+        if not self.sobjects:
             args = WebContainer.get_web().get_form_args()
             search_type = args['search_type']
             search_id = args['search_id']
 
             sobject = Search.get_by_id(search_type, search_id)
         else:
-            sobject = my.sobjects[0]
+            sobject = self.sobjects[0]
             search_type = sobject.get_search_type()
             search_id = sobject.get_id()
 
@@ -42,78 +42,78 @@ class SObjectDetailWrapperWdg(Widget):
         elif search_type.startswith("prod/shot?"):
             detail = ShotDetailWdg()
 
-        my.add(detail)
+        self.add(detail)
 
 
 
 class SObjectDetailWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         sobject = None
-        if not my.sobjects:
+        if not self.sobjects:
             """
             args = WebContainer.get_web().get_form_args()
             search_type = args['search_type']
             search_id = args['search_id']
             """
-            search_key = my.kwargs.get('search_key')
+            search_key = self.kwargs.get('search_key')
             if search_key:
                 sobject = SearchKey.get_by_search_key(search_key)
         else:
-            sobject = my.sobjects[0]
+            sobject = self.sobjects[0]
             search_type = sobject.get_search_type()
             search_id = sobject.get_id()
-        my.parent = sobject
+        self.parent = sobject
 
-    def get_display(my):
+    def get_display(self):
         # get the args in the URL
-        sobject = my.parent
+        sobject = self.parent
         main_div = DivWdg()
         main_div.add_style("width: 99%")
         main_div.add_style("float: right")
-        #my.add(main_div)
+        #self.add(main_div)
 
 
         # add notes
-        notes_head, notes_div = my.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
+        notes_head, notes_div = self.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
         main_div.add(notes_head)
         main_div.add(notes_div)
 
 
 
         # add references
-        ref_head, ref_div = my.get_sobject_wdg(sobject, "sthpw/connection", view="detail", title="References")
+        ref_head, ref_div = self.get_sobject_wdg(sobject, "sthpw/connection", view="detail", title="References")
         main_div.add(ref_head)
         main_div.add(ref_div)
 
 
-        task_head, task_div = my.get_sobject_wdg(sobject, "sthpw/task", view="summary")
+        task_head, task_div = self.get_sobject_wdg(sobject, "sthpw/task", view="summary")
         main_div.add(task_head)
         main_div.add(task_div)
 
 
         # add dailies: need a special function for this
-        #dailies_head, dailies_div = my.get_dailies_wdg(sobject)
+        #dailies_head, dailies_div = self.get_dailies_wdg(sobject)
         #main_div.add(dailies_head)
         #main_div.add(dailies_div)
 
         # add sobject history div
-        hist_head, hist_div = my.get_sobject_history_wdg(sobject)
+        hist_head, hist_div = self.get_sobject_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
         # queue
-        queue_head, queue_div = my.get_sobject_wdg(sobject, "sthpw/queue","summary")
+        queue_head, queue_div = self.get_sobject_wdg(sobject, "sthpw/queue","summary")
         main_div.add(queue_head)
         main_div.add(queue_div)
 
         # renders
-        #render_head, render_div = my.get_sobject_wdg(sobject, "prod/render")
+        #render_head, render_div = self.get_sobject_wdg(sobject, "prod/render")
         #main_div.add(render_head)
         #main_div.add(render_div)
 
         # add history div
-        hist_head, hist_div = my.get_history_wdg(sobject)
+        hist_head, hist_div = self.get_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
@@ -122,7 +122,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_sobject_wdg(my, sobject, search_type, view="table", title="", show_count=True):
+    def get_sobject_wdg(self, sobject, search_type, view="table", title="", show_count=True):
 
         key = search_type
 
@@ -139,7 +139,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         head = DivWdg()
         head.add_style('height','1.8em')
-        title_span = my._get_title_span(title) 
+        title_span = self._get_title_span(title) 
 
         dyn_load = AjaxLoader(display_id=content_id)
 
@@ -150,25 +150,25 @@ class SObjectDetailWdg(BaseRefreshWdg):
         
         
         dyn_load.set_load_method('_get_sobject_wdg')
-        dyn_load.set_load_class(Common.get_full_class_name(my), load_args=args_dict)
+        dyn_load.set_load_class(Common.get_full_class_name(self), load_args=args_dict)
         on_script = dyn_load.get_on_script(load_once=True)
 
-        swap_wdg = my._get_swap_wdg(title_id)
+        swap_wdg = self._get_swap_wdg(title_id)
         swap_wdg.add_action_script(on_script, "toggle_display('%s')" %content_id)
 
         head.add(swap_wdg)
         head.add(title_span)
-        my.add_title_style(title_span, title_id, swap_wdg)
+        self.add_title_style(title_span, title_id, swap_wdg)
 
         if show_count:
-            search = my._get_sobject_search(sobject, search_type)
+            search = self._get_sobject_search(sobject, search_type)
             title_span.add(" ( %s )" % search.get_count() )
         
 
         return head, div
 
 
-    def _get_sobject_wdg(my):
+    def _get_sobject_wdg(self):
         ''' this method is called thru ajax '''
         args = WebContainer.get_web().get_form_args()
         
@@ -185,7 +185,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         content.add(table)
         content.add(HtmlElement.br(2))
 
-        search = my._get_sobject_search(sobject, search_type)
+        search = self._get_sobject_search(sobject, search_type)
            
         sobjects = search.get_sobjects()
         if search_type.startswith("sthpw/note"):
@@ -207,7 +207,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         table.set_sobjects(sobjects)
         return content
 
-    def _get_sobject_search(my, sobject, search_type):
+    def _get_sobject_search(self, sobject, search_type):
         ''' get the search for this sobject and search_type '''
         if search_type.startswith("sthpw/connection"):
             search = Search(search_type)
@@ -228,7 +228,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             search.add_filter( sobject.get_foreign_key(), sobject.get_code() )
         return search
 
-    def add_title_style(my, title, title_id, swap_wdg):
+    def add_title_style(self, title, title_id, swap_wdg):
         '''add style and toggle effect to different sections of the summary'''
         title.add_class('hand')
         title.set_id(title_id)
@@ -251,7 +251,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         """
 
  
-    def _get_swap_wdg(my, event_id=''):
+    def _get_swap_wdg(self, event_id=''):
         swap_wdg = SwapDisplayWdg(on_event_name='on_%s'%event_id, off_event_name='off_%s'%event_id)
         icon1 = IconWdg('open', IconWdg.INFO_CLOSED_SMALL)
         icon2 = IconWdg('close', IconWdg.INFO_OPEN_SMALL)
@@ -259,7 +259,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         
         return swap_wdg
 
-    def _get_title_span(my, content=None):
+    def _get_title_span(self, content=None):
         span = SpanWdg(content, css='small')
         span.add_style('-moz-border-radius: 4px')
         return span
@@ -267,7 +267,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_sobject_history_wdg(my, sobject):
+    def get_sobject_history_wdg(self, sobject):
         
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
@@ -276,7 +276,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         head = DivWdg()
         head.add_style('height','1.8em')
-        title = my._get_title_span()
+        title = self._get_title_span()
 
         dyn_load = AjaxLoader(display_id=content_id)
 
@@ -287,7 +287,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         dyn_load.set_load_class('pyasm.prod.web.AssetDetailWdg', load_args=args_dict)
         on_script = dyn_load.get_on_script(load_once=True)
 
-        swap_wdg = my._get_swap_wdg(title_id)
+        swap_wdg = self._get_swap_wdg(title_id)
         swap_wdg.add_action_script(on_script, "toggle_display('%s')" %content_id)
 
         head.add(swap_wdg)
@@ -299,7 +299,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         count = search.get_count()
         title.add( " ( %s )" % count )
 
-        my.add_title_style(title, title_id, swap_wdg)
+        self.add_title_style(title, title_id, swap_wdg)
 
         div = DivWdg(id=content_id)
         div.add_style("width: 100%")
@@ -310,7 +310,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         return head, div
 
 
-    def _get_sobject_history_wdg(my):
+    def _get_sobject_history_wdg(self):
         ''' this method is called thru ajax '''
         args = WebContainer.get_web().get_form_args()
         
@@ -347,13 +347,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_dailies_wdg(my, sobject):
+    def get_dailies_wdg(self, sobject):
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
 
         dailies_head = DivWdg()
         dailies_head.add_style('height','1.8em')
-        dailies_title = my._get_title_span()
+        dailies_title = self._get_title_span()
         content_id ='summary_dailies_%s' %sobject.get_id()
         title_id = 'dailies_head_%s' %sobject.get_id()
 
@@ -365,7 +365,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         dyn_load.set_load_class('pyasm.prod.web.AssetDetailWdg', load_args=args_dict)
         on_script = dyn_load.get_on_script(load_once=True)
 
-        swap_wdg = my._get_swap_wdg(title_id)
+        swap_wdg = self._get_swap_wdg(title_id)
         swap_wdg.add_action_script(on_script, "toggle_display('%s')" %content_id)
         
         dailies_head.add(swap_wdg)
@@ -380,7 +380,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         
 
 
-        my.add_title_style(dailies_title, title_id, swap_wdg)
+        self.add_title_style(dailies_title, title_id, swap_wdg)
 
         dailies_div = DivWdg(id=content_id)
         dailies_div.add_style("width: 98%")
@@ -390,7 +390,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         return dailies_head, dailies_div
 
 
-    def _get_dailies_wdg(my):
+    def _get_dailies_wdg(self):
         ''' this method is called thru ajax '''
         from pyasm.prod.web import SubmissionTableWdg
         widget = SubmissionTableWdg()
@@ -399,16 +399,16 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_history_wdg(my, sobject):
+    def get_history_wdg(self, sobject):
 
         # special for snapshots as well
         content_id ='summary_hist_%s' %sobject.get_id()
         title_id = 'hist_head_%s' %sobject.get_id()
         hist_head = DivWdg()
         hist_head.add_style('height','1.8em')
-        hist_title = my._get_title_span("Checkin History")
+        hist_title = self._get_title_span("Checkin History")
         
-        swap_wdg = my._get_swap_wdg(title_id)
+        swap_wdg = self._get_swap_wdg(title_id)
 
         """
         dyn_load = AjaxLoader(display_id=content_id)
@@ -442,7 +442,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         hist_head.add(swap_wdg)
         hist_head.add(hist_title)
 
-        my.add_title_style(hist_title, title_id, swap_wdg)
+        self.add_title_style(hist_title, title_id, swap_wdg)
         
         hist_div = DivWdg(id=content_id)
         hist_div.add_style('display','none')
@@ -455,57 +455,57 @@ class SObjectDetailWdg(BaseRefreshWdg):
 class AssetDetailWdg(SObjectDetailWdg):
 
 
-    def get_display(my):
+    def get_display(self):
         
         main_div = DivWdg()
         main_div.add_style("width: 98%")
         main_div.add_style("float: right")
-        #my.add(main_div)
+        #self.add(main_div)
 
-        sobject = my.parent
-        planned_head, planned_div = my.get_planned_wdg(sobject)
+        sobject = self.parent
+        planned_head, planned_div = self.get_planned_wdg(sobject)
         main_div.add(planned_head)
         main_div.add(planned_div)
 
         # add notes
-        notes_head, notes_div = my.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
+        notes_head, notes_div = self.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
         main_div.add(notes_head)
         main_div.add(notes_div)
 
 
 
         # add references
-        ref_head, ref_div = my.get_sobject_wdg(sobject, "sthpw/connection", view="detail", title="References")
+        ref_head, ref_div = self.get_sobject_wdg(sobject, "sthpw/connection", view="detail", title="References")
         main_div.add(ref_head)
         main_div.add(ref_div)
 
         
-        task_head, task_div = my.get_sobject_wdg(sobject, "sthpw/task", view="summary")
+        task_head, task_div = self.get_sobject_wdg(sobject, "sthpw/task", view="summary")
         main_div.add(task_head)
         main_div.add(task_div)
 
         
         # add dailies: need a special function for this
-        dailies_head, dailies_div = my.get_dailies_wdg(sobject)
+        dailies_head, dailies_div = self.get_dailies_wdg(sobject)
         main_div.add(dailies_head)
         main_div.add(dailies_div)
         # add sobject history div
-        hist_head, hist_div = my.get_sobject_history_wdg(sobject)
+        hist_head, hist_div = self.get_sobject_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
         # queue
-        queue_head, queue_div = my.get_sobject_wdg(sobject, "sthpw/queue","summary")
+        queue_head, queue_div = self.get_sobject_wdg(sobject, "sthpw/queue","summary")
         main_div.add(queue_head)
         main_div.add(queue_div)
 
         # renders
-        render_head, render_div = my.get_sobject_wdg(sobject, "prod/render")
+        render_head, render_div = self.get_sobject_wdg(sobject, "prod/render")
         main_div.add(render_head)
         main_div.add(render_div)
 
         # add history div
-        hist_head, hist_div = my.get_history_wdg(sobject)
+        hist_head, hist_div = self.get_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
@@ -515,7 +515,7 @@ class AssetDetailWdg(SObjectDetailWdg):
 
      
 
-    def get_planned_wdg(my, sobject):
+    def get_planned_wdg(self, sobject):
         
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
@@ -524,7 +524,7 @@ class AssetDetailWdg(SObjectDetailWdg):
 
         head = DivWdg()
         head.add_style('height','1.8em')
-        title = my._get_title_span()
+        title = self._get_title_span()
 
         dyn_load = AjaxLoader(display_id=content_id)
 
@@ -534,14 +534,14 @@ class AssetDetailWdg(SObjectDetailWdg):
         dyn_load.set_load_class('pyasm.prod.web.AssetDetailWdg', load_args=args_dict)
         on_script = dyn_load.get_on_script(load_once=True)
 
-        swap_wdg = my._get_swap_wdg(title_id)
+        swap_wdg = self._get_swap_wdg(title_id)
         swap_wdg.add_action_script(on_script, "toggle_display('%s')" %content_id)
 
 
         head.add(swap_wdg)
         head.add(title)
         title.add("Assigned Shots")
-        my.add_title_style(title, title_id, swap_wdg)
+        self.add_title_style(title, title_id, swap_wdg)
         
         div = DivWdg(id=content_id)
         div.add_style("width: 98%")
@@ -550,7 +550,7 @@ class AssetDetailWdg(SObjectDetailWdg):
 
         return head, div
 
-    def _get_planned_wdg(my):
+    def _get_planned_wdg(self):
         ''' this method is called thru ajax '''
         args = WebContainer.get_web().get_form_args()
         
@@ -569,35 +569,35 @@ class AssetDetailWdg(SObjectDetailWdg):
         return div
 
 
-    def get_planned_shots(my, sobject):
+    def get_planned_shots(self, sobject):
         pass
 
 
 
 class ShotDetailWdg(AssetDetailWdg):
 
-    def get_display(my):
+    def get_display(self):
       
 
-        sobject = my.parent
+        sobject = self.parent
 
         main_div = DivWdg()
         main_div.add_style("width: 99%")
         main_div.add_style("float: right")
-        my.add(main_div)
+        self.add(main_div)
 
         # get planned assets
-        planned_head, planned_div = my.get_planned_wdg(sobject)
+        planned_head, planned_div = self.get_planned_wdg(sobject)
         main_div.add(planned_head)
         main_div.add(planned_div)
 
         # add layers
-        layers_head, layers_div = my.get_sobject_wdg(sobject, "prod/layer", "table", show_count=True)
+        layers_head, layers_div = self.get_sobject_wdg(sobject, "prod/layer", "table", show_count=True)
         main_div.add(layers_head)
         main_div.add(layers_div)
  
         # add notes
-        notes_head, notes_div = my.get_sobject_wdg(sobject, "sthpw/note", "summary", show_count=False)
+        notes_head, notes_div = self.get_sobject_wdg(sobject, "sthpw/note", "summary", show_count=False)
         main_div.add(notes_head)
         main_div.add(notes_div)
     
@@ -606,67 +606,67 @@ class ShotDetailWdg(AssetDetailWdg):
 
 
         # add storyboards
-        story_head, story_div = my.get_sobject_wdg(sobject, "prod/storyboard", "summary")
+        story_head, story_div = self.get_sobject_wdg(sobject, "prod/storyboard", "summary")
         main_div.add(story_head)
         main_div.add(story_div)
 
         # add camera
-        camera_head, camera_div = my.get_sobject_wdg(sobject, "prod/camera",)
+        camera_head, camera_div = self.get_sobject_wdg(sobject, "prod/camera",)
         main_div.add(camera_head)
         main_div.add(camera_div)
        
         # add plates
-        plate_head, plate_div = my.get_sobject_wdg(sobject, "effects/plate",)
+        plate_head, plate_div = self.get_sobject_wdg(sobject, "effects/plate",)
         main_div.add(plate_head)
         main_div.add(plate_div)
 
 
         # add references
        
-        ref_head, ref_div = my.get_sobject_wdg(sobject, "sthpw/connection","detail", title="References")
+        ref_head, ref_div = self.get_sobject_wdg(sobject, "sthpw/connection","detail", title="References")
         main_div.add(ref_head)
         main_div.add(ref_div)
 
 
 
         
-        task_head, task_div = my.get_sobject_wdg(sobject, "sthpw/task", "summary")
+        task_head, task_div = self.get_sobject_wdg(sobject, "sthpw/task", "summary")
         main_div.add(task_head)
         main_div.add(task_div)
 
 
 
         # add dailies: need a special function for this
-        dailies_head, dailies_div = my.get_dailies_wdg(sobject)
+        dailies_head, dailies_div = self.get_dailies_wdg(sobject)
         main_div.add(dailies_head)
         main_div.add(dailies_div)
 
         # add sobject history div
-        hist_head, hist_div = my.get_sobject_history_wdg(sobject)
+        hist_head, hist_div = self.get_sobject_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
 
 
         # add history div
-        hist_head, hist_div = my.get_history_wdg(sobject)
+        hist_head, hist_div = self.get_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
         # queue
-        queue_head, queue_div = my.get_sobject_wdg(sobject, "sthpw/queue","summary")
+        queue_head, queue_div = self.get_sobject_wdg(sobject, "sthpw/queue","summary")
         main_div.add(queue_head)
         main_div.add(queue_div)
 
 
 
         # renders
-        render_head, render_div = my.get_sobject_wdg(sobject, "prod/render")
+        render_head, render_div = self.get_sobject_wdg(sobject, "prod/render")
         main_div.add(render_head)
         main_div.add(render_div)
 
         # add composites
-        layers_head, layers_div = my.get_sobject_wdg(sobject, "prod/composite", "table", show_count=True)
+        layers_head, layers_div = self.get_sobject_wdg(sobject, "prod/composite", "table", show_count=True)
         main_div.add(layers_head)
         main_div.add(layers_div)
  
@@ -688,7 +688,7 @@ class ShotDetailWdg(AssetDetailWdg):
             search = Search(conn_search_type)
             search.add_id_filter( connection.get_value("dst_search_id") )
 
-            aref_head, aref_div = my.get_sobject_wdg(sobject,search_type,"table", title="Shot Migration", search=search)
+            aref_head, aref_div = self.get_sobject_wdg(sobject,search_type,"table", title="Shot Migration", search=search)
             main_div.add(aref_head)
             main_div.add(aref_div)
         """
@@ -699,7 +699,7 @@ class ShotDetailWdg(AssetDetailWdg):
 
 
 
-    def get_planned_wdg(my, sobject):
+    def get_planned_wdg(self, sobject):
         
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
@@ -708,7 +708,7 @@ class ShotDetailWdg(AssetDetailWdg):
 
         head = DivWdg()
         head.add_style('height','1.8em')
-        title = my._get_title_span()
+        title = self._get_title_span()
 
         dyn_load = AjaxLoader(display_id=content_id)
 
@@ -718,14 +718,14 @@ class ShotDetailWdg(AssetDetailWdg):
         dyn_load.set_load_class('pyasm.prod.web.ShotDetailWdg', load_args=args_dict)
         on_script = dyn_load.get_on_script(load_once=True)
 
-        swap_wdg = my._get_swap_wdg(title_id)
+        swap_wdg = self._get_swap_wdg(title_id)
         swap_wdg.add_action_script(on_script, "toggle_display('%s')" %content_id)
 
 
         head.add(swap_wdg)
         head.add(title)
         title.add("Assigned Asset Instances")
-        my.add_title_style(title, title_id, swap_wdg)
+        self.add_title_style(title, title_id, swap_wdg)
         
         div = DivWdg(id=content_id)
         div.add_style("width: 98%")
@@ -734,7 +734,7 @@ class ShotDetailWdg(AssetDetailWdg):
 
         return head, div
 
-    def _get_planned_wdg(my):
+    def _get_planned_wdg(self):
         ''' this method is called thru ajax '''
         args = WebContainer.get_web().get_form_args()
         
@@ -757,7 +757,7 @@ class ShotDetailWdg(AssetDetailWdg):
 
 class LayerDetailWdg(AssetDetailWdg):
 
-    def get_display(my):
+    def get_display(self):
 	'''
         # get the args in the URL
         args = WebContainer.get_web().get_form_args()
@@ -765,19 +765,19 @@ class LayerDetailWdg(AssetDetailWdg):
         search_id = args['search_id']
 
 	'''
-        sobject = my.parent
+        sobject = self.parent
         main_div = DivWdg()
         main_div.add_style("width: 98%")
         main_div.add_style("float: right")
-        my.add(main_div)
+        self.add(main_div)
 
         # get planned assets
-        #planned_head, planned_div = my.get_planned_wdg(sobject)
+        #planned_head, planned_div = self.get_planned_wdg(sobject)
         #main_div.add(planned_head)
         #main_div.add(planned_div)
 
         # add notes
-        notes_head, notes_div = my.get_sobject_wdg(sobject, "sthpw/note", "summary", show_count=False)
+        notes_head, notes_div = self.get_sobject_wdg(sobject, "sthpw/note", "summary", show_count=False)
         main_div.add(notes_head)
         main_div.add(notes_div)
     
@@ -785,43 +785,43 @@ class LayerDetailWdg(AssetDetailWdg):
         notes = Submission.get_all_notes(sobject)
 
         # add references
-        #ref_head, ref_div = my.get_sobject_wdg(sobject, "sthpw/connection","detail", title="References")
+        #ref_head, ref_div = self.get_sobject_wdg(sobject, "sthpw/connection","detail", title="References")
         #main_div.add(ref_head)
         #main_div.add(ref_div)
 
         
-        #task_head, task_div = my.get_sobject_wdg(sobject, "sthpw/task", "summary")
+        #task_head, task_div = self.get_sobject_wdg(sobject, "sthpw/task", "summary")
         #main_div.add(task_head)
         #main_div.add(task_div)
 
 
         # add dailies: need a special function for this
-        dailies_head, dailies_div = my.get_dailies_wdg(sobject)
+        dailies_head, dailies_div = self.get_dailies_wdg(sobject)
         main_div.add(dailies_head)
         main_div.add(dailies_div)
 
 
         # add sobject history div
-        hist_head, hist_div = my.get_sobject_history_wdg(sobject)
+        hist_head, hist_div = self.get_sobject_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
 
 
         # add checkin history div
-        hist_head, hist_div = my.get_history_wdg(sobject)
+        hist_head, hist_div = self.get_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
         # queue
-        queue_head, queue_div = my.get_sobject_wdg(sobject, "sthpw/queue","summary")
+        queue_head, queue_div = self.get_sobject_wdg(sobject, "sthpw/queue","summary")
         main_div.add(queue_head)
         main_div.add(queue_div)
 
 
 
         # renders
-        render_head, render_div = my.get_sobject_wdg(sobject, "prod/render")
+        render_head, render_div = self.get_sobject_wdg(sobject, "prod/render")
         main_div.add(render_head)
         main_div.add(render_div)
 
@@ -834,21 +834,21 @@ class LayerDetailWdg(AssetDetailWdg):
 class TaskDetailWdg(AssetDetailWdg):
 
     '''Details for Tasks in My Tactic tab'''
-    def get_display(my):
+    def get_display(self):
  
-        sobject = my.parent
+        sobject = self.parent
         main_div = DivWdg()
         main_div.add_style("width: 98%")
         main_div.add_style("float: right")
        
         # add notes
-        notes_head, notes_div = my.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
+        notes_head, notes_div = self.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
         main_div.add(notes_head)
         main_div.add(notes_div)
 
         return main_div
 
-    def _get_sobject_search(my, sobject, search_type):
+    def _get_sobject_search(self, sobject, search_type):
         ''' get the search for this sobject and search_type '''
         if search_type.startswith("sthpw/note"):
             search = Search(search_type)
@@ -861,8 +861,8 @@ class TaskDetailWdg(AssetDetailWdg):
 class SimpleDetailWdg(AssetDetailWdg):
     '''Used for Simple type project'''
 
-    def get_display(my):
-        sobject = my.parent
+    def get_display(self):
+        sobject = self.parent
 
         main_div = DivWdg()
         main_div.add_style("width: 98%")
@@ -870,28 +870,28 @@ class SimpleDetailWdg(AssetDetailWdg):
 
        
         # add notes
-        notes_head, notes_div = my.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
+        notes_head, notes_div = self.get_sobject_wdg(sobject, "sthpw/note", view="summary", show_count=False)
         main_div.add(notes_head)
         main_div.add(notes_div)
 
          # add references
-        ref_head, ref_div = my.get_sobject_wdg(sobject, "sthpw/connection", view="detail", title="References")
+        ref_head, ref_div = self.get_sobject_wdg(sobject, "sthpw/connection", view="detail", title="References")
         main_div.add(ref_head)
         main_div.add(ref_div)
 
 
-        task_head, task_div = my.get_sobject_wdg(sobject, "sthpw/task", view="summary")
+        task_head, task_div = self.get_sobject_wdg(sobject, "sthpw/task", view="summary")
         main_div.add(task_head)
         main_div.add(task_div)
 
 
         # add sobject history div
-        hist_head, hist_div = my.get_sobject_history_wdg(sobject)
+        hist_head, hist_div = self.get_sobject_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 
         # add checkin history div
-        hist_head, hist_div = my.get_history_wdg(sobject)
+        hist_head, hist_div = self.get_history_wdg(sobject)
         main_div.add(hist_head)
         main_div.add(hist_div)
 

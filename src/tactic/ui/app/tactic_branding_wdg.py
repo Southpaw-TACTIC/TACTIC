@@ -26,14 +26,14 @@ from tactic.ui.common import BaseRefreshWdg
 
 class TacticCopyrightNoticeWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'show_license_info': 'Boolean indicating whether or not to show the license information along with ' \
                                  'the Copyright notice'
         }
 
 
-    def get_display(my):
+    def get_display(self):
         top_div = DivWdg()
         top_div.add_styles("text-align: center")
         top_div.add_style("margin-top: 10px")
@@ -49,7 +49,7 @@ class TacticCopyrightNoticeWdg(BaseRefreshWdg):
 
         top_div.add( "&nbsp;&nbsp; &copy; 2005-2015, Southpaw Technology Inc. &nbsp; All Rights Reserved.&nbsp; " )
 
-        show_license_info = my.kwargs.get("show_license_info")
+        show_license_info = self.kwargs.get("show_license_info")
         if show_license_info:
             security = Environment.get_security()
             if security:

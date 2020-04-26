@@ -35,47 +35,47 @@ except ImportError, e:
 
 class ADLookup(object):
 
-    def __init__(my):
-        my.debug_flag= False
-        my.domain=""
-        my.filter=""
-        my.object=""
+    def __init__(self):
+        self.debug_flag= False
+        self.domain=""
+        self.filter=""
+        self.object=""
 
         if ERROR:
             raise ADException(ERROR)
 
 
-    def set_domain(my, domain):
-        my.domain = domain
-        my.debug("Setting domain to %s" % my.domain)
+    def set_domain(self, domain):
+        self.domain = domain
+        self.debug("Setting domain to %s" % self.domain)
 
-    def set_debug(my, bool):
-        my.debug_flag=True
+    def set_debug(self, bool):
+        self.debug_flag=True
 
-    def set_ldap_string(my, ldapstring):
-        my.ldap_string=ldapstring
+    def set_ldap_string(self, ldapstring):
+        self.ldap_string=ldapstring
     
-    def get_root(my):
+    def get_root(self):
         return active_directory.root()
     
-    def set_object(my, object):
-        my.object=object
+    def set_object(self, object):
+        self.object=object
     
-    def set_filter(my, filter):
-        my.filter=filter
+    def set_filter(self, filter):
+        self.filter=filter
     
-    def debug(my, message):
-        if my.debug_flag:
+    def debug(self, message):
+        if self.debug_flag:
             print message
 
 
-    def lookup_attr(my, username, attr):
+    def lookup_attr(self, username, attr):
         user=active_directory.find_user(username)
         print user.attr
         return user.attr
 
 
-    def lookup_name(my, username):
+    def lookup_name(self, username):
         user=active_directory.find_user(username)
         #print user.dump
         #x=user.properties
@@ -84,7 +84,7 @@ class ADLookup(object):
         return user.cn
 
 
-    def lookup_user(my, username):
+    def lookup_user(self, username):
         user=active_directory.find_user(username)
         return user
 

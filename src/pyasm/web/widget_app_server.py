@@ -26,11 +26,11 @@ class AppServerException(Exception):
 
 class WidgetAppServer(BaseAppServer):
     '''A simple application server without security restrictions.'''
-    def _get_display(my):
+    def _get_display(self):
         web = WebContainer.get_web()
         web.set_form_value("ajax", "true")
 
-        return super(WidgetAppServer, my)._get_display()
+        return super(WidgetAppServer, self)._get_display()
 
 
 

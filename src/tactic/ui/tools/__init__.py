@@ -17,7 +17,6 @@ from schema_wdg import *
 from trigger_wdg import *
 from sobject_wdg import *
 from freeform_layout_wdg import *
-from ingestion_wdg import *
 from delete_wdg import *
 from schedule_wdg import *
 from dependency_wdg import *

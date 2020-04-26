@@ -21,10 +21,10 @@ class CustomProperty(SObject):
 
     SEARCH_TYPE = "prod/custom_property"
     
-    def delete(my,log=False):
-        column = my.get_value("name")
+    def delete(self,log=False):
+        column = self.get_value("name")
 
-        search_type = my.get_value("search_type")
+        search_type = self.get_value("search_type")
         search_type_obj = SearchType.get(search_type)
 
         table = search_type_obj.get_table()
@@ -48,7 +48,7 @@ class CustomProperty(SObject):
                 print("WARNING: %s" % e )
             
 
-        super(CustomProperty, my).delete(log)
+        super(CustomProperty, self).delete(log)
 
 
 

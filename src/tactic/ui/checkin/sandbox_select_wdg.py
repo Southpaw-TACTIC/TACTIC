@@ -25,9 +25,9 @@ from pyasm.search import Search, SearchType
 class SandboxSelectWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_sandbox_select_top")
 
         sandbox_options = [
@@ -45,9 +45,9 @@ class SandboxSelectWdg(BaseRefreshWdg):
                 }
         ]
 
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         sobject = Search.get_by_search_key(search_key)
 
 

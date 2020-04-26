@@ -154,7 +154,7 @@ spt.behavior.get_bvr_element = function( curr_el, el_ref )
         if( el_ref.match( /\@/ ) ) {
             // This handles previous '@' and '@.parentNode' spec and also new ones where you can use MooTools search
             // methods like '@.getElement(".SPT_CLASS_TAG")' ...
-            curr_el = $(curr_el);
+            curr_el = document.id(curr_el);
             var stmt = "el = " + el_ref.replace( /\@/g, "curr_el" );
             eval(stmt)
         }
@@ -164,7 +164,7 @@ spt.behavior.get_bvr_element = function( curr_el, el_ref )
         }
         else {
             // if we get here, then we assume that it is an element ID string
-            el = $(el_ref);
+            el = document.id(el_ref);
         }
     }
     else {
@@ -252,23 +252,25 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
-    
-    if (spt.behavior.mode == "dev") {        
+   
+    // basically disable js_logger for this because we loose the origin
+    // of the error and chrome handles it really well now
+    if (true || spt.behavior.mode == "dev") {        
         run_bvr();
     }
     else {
         try {
             run_bvr();
         } catch(e) {
-            log.error( "___________________________________________________________________________________________" );
-            log.error( "Caught javascript ERROR: " + e );
-            log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
-            log.error( "..........................................................................................." );
-            log.error( " " );
-            log.error( cbjs_str );
-            log.error( " " );
-            log.error( "___________________________________________________________________________________________" );
-            //throw(e)
+            spt.js_log.error( "___________________________________________________________________________________________" );
+            spt.js_log.error( "Caught javascript ERROR: " + e );
+            spt.js_log.error( "  -- error occurred while running call-back javascript in spt.behavior.run_cbjs()" );
+            spt.js_log.error( "..........................................................................................." );
+            spt.js_log.error( " " );
+            spt.js_log.error( cbjs_str );
+            spt.js_log.error( " " );
+            spt.js_log.error( "___________________________________________________________________________________________" );
+            throw(e);
         }
     }
 }
@@ -385,12 +387,26 @@ spt.behavior.construct_behaviors_on_startup = function()
 
 // Clone an element with full copying of behaviors
 spt.behavior.clone = function( element ) {
-    var clone = $(element).clone();
+    var element = document.id(element)
+    var clone = element.clone();
+
     var clone_el_list = clone.getElements( ".SPT_BVR" );
     spt.behavior._construct_behaviors( [clone] );
     spt.behavior._construct_behaviors( clone_el_list );
     return clone;
 }
+
+
+spt.behavior.init_behaviors = function(element) {
+    var element = document.id(element)
+
+    var el_list = element.getElements( ".SPT_BVR" );
+    spt.behavior._construct_behaviors( [element] );
+    spt.behavior._construct_behaviors( el_list );
+    return element;
+}
+
+
 
 
 // Duplicate an element, including all behaviors ...
@@ -400,7 +416,7 @@ spt.behavior.clone = function( element ) {
 //
 spt.behavior.duplicate_element = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     var tag = el.get("tag");
     var dup_el = new Element( tag );
     var inner_html_to_copy = el.get("html");
@@ -438,8 +454,8 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     var parent_node = el.parentNode;
 
     if( ! parent_node ) {
-        log.error( "ERROR: NO parent_node found in 'spt.behavior.replace_table_child_element()' ... here is element:" );
-        log.error( el );
+        spt.js_log.error( "ERROR: NO parent_node found in 'spt.behavior.replace_table_child_element()' ... here is element:" );
+        spt.js_log.error( el );
         return null;
     }
 
@@ -460,7 +476,7 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     }
 
 
-    var children = $(tmp_table).getChildren()
+    var children = document.id(tmp_table).getChildren()
     var first_child = null;
 
     for( var c=0; c < children.length; c++ ) {
@@ -471,15 +487,15 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
     }
 
     if( ! first_child ) {
-        log.error( "ERROR: NO first child found in temporary table element in " +
+        spt.js_log.error( "ERROR: NO first child found in temporary table element in " +
                    "'spt.behavior.replace_table_child_element()'" );
         // FIXME: previously the check was comparing against node type 3 and so it was always going into
         //        this block, but the code below didn't seem to do anything. This error stuff should
         //        be generalized ...
         var error = first_child.getAttribute("spt_error")
         if (error == "true") {
-            el = $("error_container")
-            $("error_popup").setStyle("display", "block")
+            el = document.id("error_container")
+            document.id("error_popup").setStyle("display", "block")
         }
         return null;
     }
@@ -499,8 +515,26 @@ spt.behavior.replace_table_child_element = function(el, new_inner_html)
 }
 
 
+
+
+// Provide a destroy function which cleans up the behaviors before destroying
+spt.behavior.destroy = function( el ) {
+    return spt.behavior.destroy_element(el)
+}
+
+
 spt.behavior.destroy_element = function( el )
 {
+    // call any unload behaviors
+    try {
+        spt.behavior.process_unload_behaviors( el );
+    }
+    catch(e) {
+        // if an exception is thrown
+        spt.js_log.warning(e);
+    }
+
+
     // First do any behavior clean up needed in the DOM under the given element ...
     spt.behavior.deactivate_children( el );
 
@@ -531,7 +565,7 @@ spt.behavior.destroy_element = function( el )
 
 spt.behavior.deactivate_children = function( el )
 {
-    el = $(el);
+    el = document.id(el);
     if( ! el ) { return; }
 
     // Go through and remove events, listeners and stored data for any behaviors previously created on descendant
@@ -585,23 +619,6 @@ spt.behavior.deactivate = function( bvr_el )
     }
 }
 
-
-// Provide a destroy function which cleans up the behaviors before destroying
-spt.behavior.destroy = function( el ) {
-    // call any unload behaviors
-    try {
-        spt.behavior.process_unload_behaviors( el );
-    }
-    catch(e) {
-        // if an exception is thrown
-        spt.js_log.warning(e);
-    }
-
-    // deactivate the behaviors and cleanup
-    spt.behavior.deactivate_children( el );
-
-    el.destroy();
-}
 
 
 
@@ -761,6 +778,26 @@ spt.behavior._CB_focus = function( evt )
 
 
 
+spt.behavior._CB_scroll = function( evt )
+{
+    if( ! evt ) { evt = window.event; }
+
+    var scroll_el = spt.behavior.find_bvr_target( "scroll", spt.get_event_target(evt) );
+    if( 'scroll' in scroll_el.spt_bvrs ) {
+        var oc_bvrs = scroll_el.spt_bvrs['scroll'];
+        for( var c=0; c < oc_bvrs.length; c++ ) {
+            var bvr = oc_bvrs[c];
+            if( bvr ) {
+                spt.behavior.run_preaction_action_postaction( bvr, evt, null );
+            }
+        }
+    }
+}
+
+
+
+
+
 spt.behavior._mark_bvr_event_registered = function( el, bvr_type )
 {
     // NOTE: cannot use 'hasOwnProperty' on an HTML element object as it is not supported in IE, that same
@@ -883,6 +920,13 @@ spt.behavior._register_bvr_event = function( el, bvr )
                 spt.behavior._mark_bvr_event_registered( el, bvr.type );
             }
         }
+        else if( bvr.type == 'scroll' ) {
+            if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
+                el.addEvent( "scroll", spt.behavior._CB_scroll );
+                spt.behavior._mark_bvr_event_registered( el, bvr.type );
+            }
+        }
+ 
         else if( ['mouseleave','mouseenter','mouseover','mouseout'].contains(bvr.type) ) {
             if( ! spt.behavior._bvr_event_is_registered( el, bvr.type ) ) {
                 el.addEvent( bvr.type, function(e, name) {
@@ -1133,17 +1177,6 @@ spt.behavior._construct_bvr = function( el, bvr_spec )
 
     el.spt_bvrs[ type ].push( bvr );
 
-    /*
-    var count = spt.count[type];
-    if (!count) count = 1
-    else (count += 1);
-    spt.count[type] = count;
-
-    if ( type == 'click_up' ) {
-        console.log(bvr);
-    }
-    */
-    
 
 }
 
@@ -1162,11 +1195,24 @@ spt.behavior._construct_behaviors = function( el_list )
     spt.count = {};
     for( var i=0; i < el_list.length; i++ )
     {
-        var el = $(el_list[i]);
+        var el = document.id(el_list[i]);
 
-        var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
-        stmt = stmt.replace(/\&quot\;/g, '"');
-        eval(stmt);
+        if (el.bvr_spec_list) {
+            var bvr_spec_list = el.bvr_spec_list;
+        }
+        else {
+            var stmt = 'var bvr_spec_list = ' + el.getAttribute("SPT_BVR_LIST") + ';';
+            stmt = stmt.replace(/\&quot\;/g, '"');
+            eval(stmt);
+
+            // FIXME: this doesn't work with clones
+            /*
+            el.bvr_spec_list = bvr_spec_list;
+            el.removeAttribute("SPT_BVR_LIST");
+            el.removeAttribute("SPT_BVR_TYPE_LIST");
+            */
+        }
+
         if (bvr_spec_list == null) {
             continue;
         }
@@ -1176,6 +1222,7 @@ spt.behavior._construct_behaviors = function( el_list )
             var bvr_spec = bvr_spec_list[j];
             spt.behavior._construct_bvr( el, bvr_spec )
         }
+
     }
 
     //console.log(spt.count);
@@ -1241,10 +1288,7 @@ spt.behavior.process_load_behaviors = function( el_list )
                 var bvr = load_bvrs[i];
 
                 if( bvr.cbjs_action ) {
-                    cbjs_action = bvr.cbjs_action
-                    //cbjs_action = cbjs_action.replace(/&lt;/g, "<");
-                    //cbjs_action = cbjs_action.replace(/&gt;/g, ">");
-                    //spt.behavior.run_cbjs( cbjs_action, bvr, null, null );
+                    cbjs_action = bvr.cbjs_action;
                     spt.behavior.run_cbjs( bvr.cbjs_action, bvr, null, null );
                 }
                 else if( 'cbfn_action' in bvr ) {

@@ -26,7 +26,7 @@ class SObjectPanelWdg(BaseRefreshWdg):
     '''Panel to view an individual sobject and all the information related
     to it'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_key': 'search key of the sobject to be displayed',
         # or
@@ -35,10 +35,10 @@ class SObjectPanelWdg(BaseRefreshWdg):
         'id': 'id of the sobject to be displayed'
         }
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
-        sobject = my.get_sobject_from_kwargs()
+        sobject = self.get_sobject_from_kwargs()
         if not sobject:
             div.add("SObject not found")
             return div
@@ -169,7 +169,7 @@ class SObjectPanelWdg(BaseRefreshWdg):
         nav_td = table.add_cell()
         nav_td.add_style("width: 100px")
         nav_td.add_style("vertical-align: top")
-        section_wdg = my.get_section_wdg(sobject)
+        section_wdg = self.get_section_wdg(sobject)
         nav_td.add( section_wdg )
 
         parent_key = SearchKey.get_by_sobject(sobject)
@@ -189,7 +189,7 @@ class SObjectPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_section_wdg(my, sobject):
+    def get_section_wdg(self, sobject):
 
         parent_key = SearchKey.get_by_sobject(sobject)
 
@@ -223,9 +223,9 @@ class SObjectPanelWdg(BaseRefreshWdg):
 
 class SObjectChildrenMenuWdg(SideBarBookmarkMenuWdg):
 
-    #def get_config(my):
+    #def get_config(self):
     #    pass
 
-    def get_target_id(my):
+    def get_target_id(self):
         return "sobject_relation"
 

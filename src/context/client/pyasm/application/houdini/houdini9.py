@@ -28,62 +28,62 @@ class HoudiniException(Exception):
 
 
 class Houdini9NodeNaming(object):
-    def __init__(my, node_name=None):
+    def __init__(self, node_name=None):
         # chr001_joe_black
-        my.node_name = node_name
-        my.namespace = ''
+        self.node_name = node_name
+        self.namespace = ''
 
         if node_name:
-            if my.node_name.find("_") != -1:
-                my.has_namespace_flag = True
-                my.asset_code, my.namespace = node_name.split("_",1)
+            if self.node_name.find("_") != -1:
+                self.has_namespace_flag = True
+                self.asset_code, self.namespace = node_name.split("_",1)
             else:
-                my.has_namespace_flag = False
-                my.asset_code = my.namespace = node_name
+                self.has_namespace_flag = False
+                self.asset_code = self.namespace = node_name
 
-    def get_asset_code(my):
-        return my.asset_code
+    def get_asset_code(self):
+        return self.asset_code
 
-    def set_asset_code(my, asset_code):
-        my.asset_code = asset_code
-
-    # DEPRECATED
-    def get_instance(my):
-        return my.namespace
+    def set_asset_code(self, asset_code):
+        self.asset_code = asset_code
 
     # DEPRECATED
-    def set_instance(my, namespace):
-        my.has_namespace_flag = True
-        my.namespace = namespace
+    def get_instance(self):
+        return self.namespace
+
+    # DEPRECATED
+    def set_instance(self, namespace):
+        self.has_namespace_flag = True
+        self.namespace = namespace
 
 
-    def get_namespace(my):
-        return my.namespace
+    def get_namespace(self):
+        return self.namespace
 
-    def set_namespace(my, namespace):
-        my.has_namespace_flag = True
-        my.namespace = namespace
+    def set_namespace(self, namespace):
+        self.has_namespace_flag = True
+        self.namespace = namespace
 
-    def set_node_name(my):
-        my.node_name = node_name
-
-
-    def get_node_name(my):
-        return my.build_node_name()
+    def set_node_name(self):
+        self.node_name = node_name
 
 
-    def build_node_name(my):
-        if my.asset_code == my.namespace:
-            return my.asset_code
+    def get_node_name(self):
+        return self.build_node_name()
+
+
+    def build_node_name(self):
+        if self.asset_code == self.namespace:
+            return self.asset_code
         else:
-            return "%s_%s" % (my.asset_code, my.namespace)
+            return "%s_%s" % (self.asset_code, self.namespace)
 
 
-    def has_instance(my):
-        return my.has_namespace_flag
+    def has_instance(self):
+        return self.has_namespace_flag
         
-    def has_namespace(my):
-        return my.has_namespace_flag
+    def has_namespace(self):
+        return self.has_namespace_flag
 
 
 
@@ -92,70 +92,70 @@ class Houdini9(Application):
 
     APPNAME = "houdini"
 
-    def __init__(my, port=None):
-        my.name = "houdini"
+    def __init__(self, port=None):
+        self.name = "houdini"
 
-        my.socket = HoudiniSocket()
-        my.socket.connect(port)
+        self.socket = HoudiniSocket()
+        self.socket.connect(port)
 
         # FIXME: this is probably a bad assumption
         # for now, all commands occur at /obj
-        my.hscript("opcf /obj")
+        self.hscript("opcf /obj")
 
 
-    def get_socket(my):
-        return my.socket
+    def get_socket(self):
+        return self.socket
 
 
-    def get_node_naming(my, node_name=None):
+    def get_node_naming(self, node_name=None):
         return HoudiniNodeNaming(node_name)
 
 
-    def hscript(my, cmd):
-        return my.socket.hscript(cmd)
+    def hscript(self, cmd):
+        return self.socket.hscript(cmd)
 
 
 
     # Common houdini operations
-    def is_tactic_node(my, node_name):
+    def is_tactic_node(self, node_name):
         # FIXME: why are all nodes TACTIC nodes?
         return True
 
-    def set_project(my, project_dir):
+    def set_project(self, project_dir):
         # not implemented
         return
 
-    def get_project(my):
+    def get_project(self):
         # not implemented
         return ""
 
 
-    def get_var(my, name):
-        return my.hscript("echo $%s" % name)
+    def get_var(self, name):
+        return self.hscript("echo $%s" % name)
 
-    def get_node_type(my, node_name):
-        return my.hscript('optype -t "%s"' % node_name)
+    def get_node_type(self, node_name):
+        return self.hscript('optype -t "%s"' % node_name)
 
 
-    def set_attr(my, node, attr, value, attr_type=""):
+    def set_attr(self, node, attr, value, attr_type=""):
         '''attr_type has no meaning in Houdini.  Everything is a string'''
         if attr == "tacticNodeData":
             return hscript('opcomment -c "%s" %s' % (value,node) )
         else:
             return hscript('opparm %s %s "%s"' % (node, attr, value) )
 
-    def select(my, node):
+    def select(self, node):
         return hscript('opset -p on %s' % node)
 
 
     # interaction with files
-    def import_file(my, path, namespace=":"):
+    def import_file(self, path, namespace=":"):
         # In houdini, since we using OTL's this is meaningless.  Just
         # access import reference
-        return my.import_reference(path,namespace)
+        return self.import_reference(path,namespace)
 
 
-    def import_reference(my, path, namespace=":"):
+    def import_reference(self, path, namespace=":"):
         # load the otl
 
         if path.endswith(".dae"):
@@ -193,7 +193,7 @@ class Houdini9(Application):
 
 
 
-    def is_reference(my, node_name):
+    def is_reference(self, node_name):
         # if it is an subnet, then this is not a reference
         is_subnet = hscript("optype -o %s" % node_name) == "Object/subnet"
         if is_subnet:
@@ -207,7 +207,7 @@ class Houdini9(Application):
 
 
 
-    def import_anim(my, path, namespace=""):
+    def import_anim(self, path, namespace=""):
         if namespace == "":
             basename = os.path.basename(path)
             namespace, ext = os.path.splitext(basename)
@@ -215,33 +215,33 @@ class Houdini9(Application):
         hscript('cmd "%s" /obj/%s' % (path,namespace) )
 
 
-    def export_anim(my, path, namespace):
+    def export_anim(self, path, namespace):
         hscript('opscript -g -b %s > "%s"' % (namespace, path) )
 
 
     ##
-    def save(my, path):
+    def save(self, path):
         if not path.endswith(".hip"):
             path = "%s.hip" % path
         hou.hipFile.save(path)
         return path
 
     ##
-    def load(my, path):
+    def load(self, path):
         hou.hipFile.load(path)
         return path
 
 
-    def export_node(my, node_name, dir=None, filename="", preserve_ref=None):
+    def export_node(self, node_name, dir=None, filename="", preserve_ref=None):
 
-        if not my.node_exists(node_name):
+        if not self.node_exists(node_name):
             raise HoudiniException("Node '%s' does not exist" % node_name)
 
         # TODO: put this here for now ... not sure why it can be none?
         if not dir:
             raise HoudiniException("dir is none")
 
-        naming = my.get_node_naming(node_name)
+        naming = self.get_node_naming(node_name)
         asset_code = naming.get_asset_code()
         instance = naming.get_instance()
         path = "%s/%s.otl" % (dir, asset_code)
@@ -272,7 +272,7 @@ class Houdini9(Application):
         return path
 
 
-    def get_file_path(my):
+    def get_file_path(self):
         return "untitled.hip"
 
 
@@ -281,7 +281,7 @@ class Houdini9(Application):
 
 
     # information retrieval functions.  Requires an open Houdini session
-    def node_exists(my,node):
+    def node_exists(self,node):
         node = hscript('opls "/obj/%s"' % node)
         if node == None or node.startswith("\nError"):
             return False
@@ -289,7 +289,7 @@ class Houdini9(Application):
             return True
 
 
-    def get_nodes_by_type(my, type):
+    def get_nodes_by_type(self, type):
         ret_val = hscript("opfind -t %s" % type)
 
         # this gives a really weird output
@@ -302,52 +302,52 @@ class Houdini9(Application):
 
 
 
-    def get_selected_nodes(my):
+    def get_selected_nodes(self):
         nodes = hscript('echo `opselect(".")`')
         nodes = nodes.split(" ")
         return nodes
 
 
 
-    def get_selected_top_nodes(my):
+    def get_selected_top_nodes(self):
         '''top node are node that are at the /obj level'''
         nodes = hscript('echo `opselect("/obj")`')
         nodes = nodes.split(" ")
         return nodes
 
 
-    def get_top_nodes(my):
+    def get_top_nodes(self):
         nodes = hscript("opls /obj")
         nodes = nodes.split("\n")
         return nodes
 
 
 
-    def get_reference_nodes(my, top_node):
+    def get_reference_nodes(self, top_node):
         '''gets all of the references under a single dag node'''
-        my.hscript("/obj/%s" % top_node)
+        self.hscript("/obj/%s" % top_node)
         nodes = []
-        my.hscript("/obj")
+        self.hscript("/obj")
         return nodes
 
 
 
-    def get_reference_path(my, node):
+    def get_reference_path(self, node):
         raise HoudiniException()
 
 
-    def add_node(my, type, node_name, unique=False):
+    def add_node(self, type, node_name, unique=False):
         ret_value = hscript('opadd -v %s %s' % (type, node_name) )
         return ret_value
 
 
     # attributes
-    def add_attr(my, node, attribute, type="long"):
+    def add_attr(self, node, attribute, type="long"):
         print "WARNING: add_attr: ", node, attribute
 
 
 
-    def attr_exists(my, node, attribute):
+    def attr_exists(self, node, attribute):
         ret_val = hscript("opparm -d %s %s" % (node, attribute) )
         if ret_val.startswith("Operator %s has no" % node):
             return False
@@ -355,7 +355,7 @@ class Houdini9(Application):
             return True
 
 
-    def get_attr(my, node, attribute):
+    def get_attr(self, node, attribute):
         assert node != None and node != ""
         if attribute == "tacticNodeData":
             ret_val = hscript("opcomment %s" % node)
@@ -381,12 +381,12 @@ class Houdini9(Application):
         else:
             return float(value)
 
-    def get_attr_type(my, node, attribute):
+    def get_attr_type(self, node, attribute):
         '''TODO: identify differernt attribute types'''
         return "string"
 
-    def get_all_attrs(my, node_name):
-        ret_val = my.hscript("opparm -d %s *" % node_name)
+    def get_all_attrs(self, node_name):
+        ret_val = self.hscript("opparm -d %s *" % node_name)
 
         # value = 'opparm chr001 attr ( 0 0 0 )'
         p = re.compile( r'(\w+) \( \'?([\w\ \/:\.]+)\'? \)')
@@ -396,19 +396,19 @@ class Houdini9(Application):
 
 
 
-    def get_attr_default(my, node, attr):
+    def get_attr_default(self, node, attr):
         raise HoudiniException("Must override this function")
 
 
-    def get_workspace_dir(my):
-        return my.get_var("HOME")
+    def get_workspace_dir(self):
+        return self.get_var("HOME")
 
 
     # Houdini Specific functions
-    def get_file_references(my, top_node=None):
+    def get_file_references(self, top_node=None):
         # returns [node, attr, path]
 
-        values = my.hscript("fdependls -l")
+        values = self.hscript("fdependls -l")
         values = values.split("\n")
 
         paths = []
@@ -437,7 +437,7 @@ class Houdini9(Application):
                 print "WARNING: path '%s' does not exist" % path
                 continue
 
-            pairs = my.get_all_attrs(node)
+            pairs = self.get_all_attrs(node)
             for pair in pairs:
                 if pair[1] == path:
                     paths.append( [node, pair[0], path] )
@@ -448,7 +448,7 @@ class Houdini9(Application):
 
 
 
-    def set_user_environment(my, sandbox_dir, basename):
+    def set_user_environment(self, sandbox_dir, basename):
         pass
 
 

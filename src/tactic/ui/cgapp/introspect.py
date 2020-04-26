@@ -38,25 +38,25 @@ class IntrospectWdg(BaseRefreshWdg):
     '''a widget that does introspection to analyze/update what 
         assets(versions) are loaded in the session of the app'''
 
-    def init(my):
-        my.top = DivWdg()
+    def init(self):
+        self.top = DivWdg()
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
-    def get_display(my):
+    def get_display(self):
 
         button = ProdIconSubmitWdg("Introspect", long=True)
         button.add_style("height: 14px")
         button.add_style("font-size: 0.8em")
-        #my.add_style("padding: 3px 10px 2px 10px")
+        #self.add_style("padding: 3px 10px 2px 10px")
         button.add_behavior({
             'type': "click",
             'cbjs_action': "introspect(bvr)"
         })
 
-        my.top.add(button)
-        return my.top
+        self.top.add(button)
+        return self.top
 
 
 
@@ -65,13 +65,13 @@ class IntrospectFilterWdg(BaseRefreshWdg):
     '''a widget that filters based on the snapshots that exist in the session
     from introspection'''
 
-    def init(my):
-        my.top = DivWdg()
+    def init(self):
+        self.top = DivWdg()
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
-    def get_display(my):
+    def get_display(self):
 
         search_wdg = DivWdg()
         search_wdg.add_class("spt_table_search")
@@ -88,12 +88,12 @@ class IntrospectFilterWdg(BaseRefreshWdg):
         search_wdg.add("Session Filter: ")
         search_wdg.add(checkbox)
 
-        my.top.add(search_wdg)
+        self.top.add(search_wdg)
 
-        return my.top
+        return self.top
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         print "Introspect alter_search"
 
         # see if any of the filters have a class handler defined
@@ -118,7 +118,7 @@ class IntrospectFilterWdg(BaseRefreshWdg):
         snapshot_search.add_filters("code", snapshot_codes)
         snapshots = snapshot_search.get_sobjects()
 
-        state_search_type = my.kwargs.get("search_type")
+        state_search_type = self.kwargs.get("search_type")
 
 
         # get ids
@@ -146,11 +146,11 @@ class IntrospectSelectWdg(ProdIconSubmitWdg):
     '''a widget that does selected introspection to analyze/update 
         what assets(versions) are loaded in the session of the app'''
 
-    def __init__(my):
-        super(IntrospectSelectWdg, my).__init__("Introspect Select", long=True)
-        my.add_style("height: 14px")
-        my.add_style("font-size: 0.8em")
-        my.add_event("onclick", "introspect_select()")
+    def __init__(self):
+        super(IntrospectSelectWdg, self).__init__("Introspect Select", long=True)
+        self.add_style("height: 14px")
+        self.add_style("font-size: 0.8em")
+        self.add_event("onclick", "introspect_select()")
 
  
 

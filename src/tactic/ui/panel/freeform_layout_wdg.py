@@ -50,8 +50,8 @@ class FreeFormLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_input_value(my, name):
-        value = my.kwargs.get(name)
+    def get_input_value(self, name):
+        value = self.kwargs.get(name)
         if value == None:
             web = WebContainer.get_web()
             value = web.get_form_value(name)
@@ -60,19 +60,19 @@ class FreeFormLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_default_background(my):
+    def get_default_background(self):
         return DivWdg().get_color("background")
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         category = "FreeformWdg"
-        view = my.get_input_value("view")
+        view = self.get_input_value("view")
 
-        sobject = my.get_input_value("sobject")
-        if not sobject and my.sobjects:
-            sobject = my.sobjects[0]
+        sobject = self.get_input_value("sobject")
+        if not sobject and self.sobjects:
+            sobject = self.sobjects[0]
         if not view:
             view = 'freeform'
 
@@ -81,8 +81,8 @@ class FreeFormLayoutWdg(BaseRefreshWdg):
             search_type = sobject.get_base_search_type()
 
         else:
-            search_key = my.get_input_value("search_key")
-            search_type = my.get_input_value("search_type")
+            search_key = self.get_input_value("search_key")
+            search_type = self.get_input_value("search_type")
 
         if sobject:
             pass
@@ -119,24 +119,24 @@ class FreeFormLayoutWdg(BaseRefreshWdg):
 
         bgcolor = view_attrs.get("bgcolor")
         if not bgcolor:
-            bgcolor = my.get_default_background()
+            bgcolor = self.get_default_background()
 
         if bgcolor:
             top.add_style("background", bgcolor)
 
 
         # draw the layout
-        freeform_layout = my.get_canvas_display(search_type, view, config, sobject) 
+        freeform_layout = self.get_canvas_display(search_type, view, config, sobject) 
         top.add(freeform_layout)
 
         return top
 
 
-    def get_canvas_display(my, search_type, view, config, sobject):
+    def get_canvas_display(self, search_type, view, config, sobject):
 
         top = DivWdg()
         top.add_class("spt_freeform_layout_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         #top.add_color("background", "background")
         #top.add_color("color", "color")
         #top.add_style("height: 100%")
@@ -144,7 +144,7 @@ class FreeFormLayoutWdg(BaseRefreshWdg):
         #border_color = top.get_color("border")
         #top.add_border()
 
-        css = my.kwargs.get("css")
+        css = self.kwargs.get("css")
         if css:
             css = jsonloads(css)
             for name, value in css.items():
@@ -157,7 +157,7 @@ class FreeFormLayoutWdg(BaseRefreshWdg):
         canvas.add_style("position: relative")
         canvas.add_style("overflow: hidden")
 
-        my.kwargs['view'] = view
+        self.kwargs['view'] = view
 
 
         element_names = config.get_element_names()
@@ -250,19 +250,19 @@ class FreeFormElementWdg(BaseTableElementWdg):
     }
  
 
-    def preprocess(my):
-        my.layout = FreeFormLayoutWdg(**my.kwargs)
+    def preprocess(self):
+        self.layout = FreeFormLayoutWdg(**self.kwargs)
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
-        my.layout.set_sobject(sobject)
+        sobject = self.get_current_sobject()
+        self.layout.set_sobject(sobject)
 
-        top = my.top
-        top.add(my.layout.get_buffer_display())
+        top = self.top
+        top.add(self.layout.get_buffer_display())
 
         return top
 

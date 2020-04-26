@@ -25,78 +25,78 @@ from pyasm.prod.biz import *
 
 class MayaCheckin(FileCheckin):
 
-    def __init__(my, sobject):
-        BaseCheckin.__init__(my, sobject)
-        my.process = ''
-        my.context = "publish"
-        my.column = "snapshot"
-        my.instance = sobject.get_code()
+    def __init__(self, sobject):
+        BaseCheckin.__init__(self, sobject)
+        self.process = ''
+        self.context = "publish"
+        self.column = "snapshot"
+        self.instance = sobject.get_code()
         # default is asset
-        my.snapshot_type = "asset"
+        self.snapshot_type = "asset"
 
-        my.file_types = []
+        self.file_types = []
         
-        my.options = {}
+        self.options = {}
 
         # extras
-        my.checkin_type = 'strict' 
+        self.checkin_type = 'strict' 
         
-        my.level_type = None
-        my.level_id = None
-        my.source_paths = []
-        my.mode = None
-        my.use_handoff_dir = False
-        my.server_dir = ''
+        self.level_type = None
+        self.level_id = None
+        self.source_paths = []
+        self.mode = None
+        self.use_handoff_dir = False
+        self.server_dir = ''
         # TODO: super FileCheckin above and avoid redefining FileCheckin instance variables
-        my.md5s = []
+        self.md5s = []
 
-        my.dir_naming = None
-        my.file_naming = None
+        self.dir_naming = None
+        self.file_naming = None
  
 
-    def set_option(my, key, value):
-        my.options[key] = value
+    def set_option(self, key, value):
+        self.options[key] = value
 
-    def get_option(my, key):
-        value = my.options.get(key)
+    def get_option(self, key):
+        value = self.options.get(key)
         if not value:
             return ""
         else:
             return value
 
-    def set_instance(my, instance):
-        my.instance = instance
+    def set_instance(self, instance):
+        self.instance = instance
 
 
-    def set_description(my, description):
-        my.description = description
+    def set_description(self, description):
+        self.description = description
 
-    def set_process(my, process):
-        my.process = process
+    def set_process(self, process):
+        self.process = process
         # FIXME: need to add this for now.  At present, dependency process
         # notifying uses process_name.
-        my.process_name = process
+        self.process_name = process
 
-    def set_context(my, context):
-        my.context = context
+    def set_context(self, context):
+        self.context = context
 
-    def set_use_handoff(my, use_handoff):
-        my.use_handoff_dir = use_handoff
+    def set_use_handoff(self, use_handoff):
+        self.use_handoff_dir = use_handoff
 
-    def set_snapshot_type(my, snapshot_type):
-        my.snapshot_type = snapshot_type
+    def set_snapshot_type(self, snapshot_type):
+        self.snapshot_type = snapshot_type
         
 
-    def get_snapshot_type(my):
+    def get_snapshot_type(self):
         '''this sets the snapshot type that will be put into the snapshot'''
-        return my.snapshot_type
+        return self.snapshot_type
 
 
-    def execute(my):
+    def execute(self):
         
         # look for the presence of an error file.  If it is there,
         # then bail.  This means that the client side failed for some reason
-        error_path = "%s/error.txt" % my.get_upload_dir()
+        error_path = "%s/error.txt" % self.get_upload_dir()
         if os.path.exists(error_path):
             file = open(error_path,"r")
             lines = file.read()
@@ -108,31 +108,31 @@ class MayaCheckin(FileCheckin):
             raise ClientTacticException(lines)
 
         else:
-            super(MayaCheckin,my).execute()
+            super(MayaCheckin,self).execute()
 
-    def get_description(my):
+    def get_description(self):
         return "Checked in %s, context: %s" % \
-            (my.sobject.get_code(), my.context)
+            (self.sobject.get_code(), self.context)
 
 
 
-    def _read_ref_file(my):
+    def _read_ref_file(self):
         '''read the reference file containing extra node information'''
       
-        server_dir = my.get_upload_dir() 
+        server_dir = self.get_upload_dir() 
         xml = Xml()
 
-        filename = File.get_filesystem_name( my.instance )
+        filename = File.get_filesystem_name( self.instance )
 
         xml.read_file( "%s/%s-ref.xml" % (server_dir,filename) )
         return xml
 
-    def get_handoff_dir(my):
+    def get_handoff_dir(self):
         '''get handoff dir through the ref file attr'''
-        xml = my._read_ref_file()
+        xml = self._read_ref_file()
         handoff_dir = xml.get_value("session/ref/@handoff_dir")
         if not handoff_dir:
-            raise CheckinException("Handoff dir not recorded at the [code]-ref.xml [%s]"%my.get_upload_dir())
+            raise CheckinException("Handoff dir not recorded at the [code]-ref.xml [%s]"%self.get_upload_dir())
         from pyasm.web import WebContainer 
         web = WebContainer.get_web()
         handoff_dir = handoff_dir.replace('\\','/')
@@ -141,19 +141,19 @@ class MayaCheckin(FileCheckin):
         server_dir = web.get_server_handoff_dir(ticket)
         return server_dir
 
-    def get_server_dir(my):
-        if my.server_dir:
-            return my.server_dir
-        if my.use_handoff_dir:
-            server_dir = my.get_handoff_dir()
+    def get_server_dir(self):
+        if self.server_dir:
+            return self.server_dir
+        if self.use_handoff_dir:
+            server_dir = self.get_handoff_dir()
         else:
-            server_dir = my.get_upload_dir()
-        my.server_dir = server_dir
+            server_dir = self.get_upload_dir()
+        self.server_dir = server_dir
         return server_dir
 
-    def _add_file_info(my, xml, paths):
-        '''get the file path info from ref.xml and add to my.file_info'''
-        my.file_info = {}
+    def _add_file_info(self, xml, paths):
+        '''get the file path info from ref.xml and add to self.file_info'''
+        self.file_info = {}
 
         # get the uploaded file (assume there is only one file)
         orig_path = xml.get_value("session/ref/@path")
@@ -167,8 +167,8 @@ class MayaCheckin(FileCheckin):
         basename = os.path.basename(orig_path)
         basename = File.get_filesystem_name(basename)
         action = "upload"
-        server_dir = my.get_server_dir()
-        if my.use_handoff_dir:
+        server_dir = self.get_server_dir()
+        if self.use_handoff_dir:
             action = "hand off"
         
         path = "%s/%s" % (server_dir, basename)
@@ -179,24 +179,24 @@ class MayaCheckin(FileCheckin):
         base, ext = os.path.splitext(path)
         filename = os.path.basename(path)
         paths.append(path)
-        my.file_info[filename] = {}
+        self.file_info[filename] = {}
 
         # FIXME: hard coded relationships
         if ext == ".ma" or ext == ".mb":
-            my.file_info[filename]["type"] = "maya"
+            self.file_info[filename]["type"] = "maya"
         elif ext == ".hip" or ext == ".otl":
-            my.file_info[filename]["type"] = "houdini"
+            self.file_info[filename]["type"] = "houdini"
         elif ext == ".dae":
-            my.file_info[filename]["type"] = "collada"
+            self.file_info[filename]["type"] = "collada"
         elif ext == ".scn" or ext == ".xsi" or ext == '.emdl':
-            my.file_info[filename]["type"] = "xsi"
+            self.file_info[filename]["type"] = "xsi"
         elif ext == ".obj":
-            my.file_info[filename]["type"] = "obj"
+            self.file_info[filename]["type"] = "obj"
         else:
             raise CheckinException("File '%s' has unsupported extension" % \
                 filename )
 
-        my.file_info[filename]["node_name"] = node_name
+        self.file_info[filename]["node_name"] = node_name
 
 
 
@@ -205,54 +205,54 @@ class MayaCheckin(FileCheckin):
 
 class MayaAssetCheckin(MayaCheckin):
     '''checks in a maya asset_node.'''
-    def __init__(my, sobject):
-        super(MayaAssetCheckin,my).__init__(sobject)
+    def __init__(self, sobject):
+        super(MayaAssetCheckin,self).__init__(sobject)
 
-        my.file_paths = []
+        self.file_paths = []
 
         # a number of texrure variables that must be used throughout the
         # process
-        my.texture_mode = "reference"
-        my.texture_codes = []
-        my.texture_nodes = []
-        my.texture_names = []
-        my.texture_snapshots = []
-        my.textures = []
+        self.texture_mode = "reference"
+        self.texture_codes = []
+        self.texture_nodes = []
+        self.texture_names = []
+        self.texture_snapshots = []
+        self.textures = []
 
-        my.snapshot_type = "asset"
+        self.snapshot_type = "asset"
  
-    def get_title(my):
+    def get_title(self):
         return "Asset Checkin"
 
-    def set_texture_mode(my, mode):
+    def set_texture_mode(self, mode):
         assert mode in ['reference','embed','ignore']
-        my.texture_mode = mode
+        self.texture_mode = mode
 
     
-    def create_files(my):
+    def create_files(self):
 
         paths = []
    
         # look in the info file
-        xml = my._read_ref_file()
-        my._add_file_info(xml, paths)
-        my.source_paths = paths[:]
+        xml = self._read_ref_file()
+        self._add_file_info(xml, paths)
+        self.source_paths = paths[:]
 
         # set md5 if found
         main_md5 = xml.get_value("session/ref/@md5")
         if not main_md5:
             main_md5 = None
-        my.md5s = [main_md5]
+        self.md5s = [main_md5]
         return paths
 
-    def count_duplicates(my, input_list):
+    def count_duplicates(self, input_list):
         unique_set = set(item for item in input_list)
         return [(item, input_list.count(item)) for item in unique_set]
 
 
-    def handle_geo_files(my, builder):
+    def handle_geo_files(self, builder):
         # read reference file and get all of the geo nodes
-        xml = my._read_ref_file()
+        xml = self._read_ref_file()
         geo_nodes = xml.get_nodes("session/*/file[@type='geo']")
 
         # if there are no geo nodes get out
@@ -260,11 +260,11 @@ class MayaAssetCheckin(MayaCheckin):
             return
 
        
-        upload_dir = my.get_server_dir()
+        upload_dir = self.get_server_dir()
 
-        #my.geo_cache_paths = []
-        #my.orig_geo_cache_paths = []
-        #my.all_geo_cache_paths = []
+        #self.geo_cache_paths = []
+        #self.orig_geo_cache_paths = []
+        #self.all_geo_cache_paths = []
         types = []
 
 	    # these dicts organize cache path and prevents duplicated check-ins
@@ -285,8 +285,8 @@ class MayaAssetCheckin(MayaCheckin):
             validate_paths.append(path)
             validate_file_names.append(filename)
 
-        path_output = my.count_duplicates(validate_paths)
-        filename_output = my.count_duplicates(validate_file_names)
+        path_output = self.count_duplicates(validate_paths)
+        filename_output = self.count_duplicates(validate_file_names)
 
         for idx, output in enumerate(filename_output):
             name, count = output
@@ -350,7 +350,7 @@ class MayaAssetCheckin(MayaCheckin):
             dup_node = node_dup_dict.get(node_name)
             if not dup_node:
                 
-                checkin = FileCheckin(my.sobject, path_list, types, context=cache_context)
+                checkin = FileCheckin(self.sobject, path_list, types, context=cache_context)
                 checkin.execute()
                 geo_snapshot = checkin.get_snapshot()
                 geo_snapshot_dict[node_name] = geo_snapshot
@@ -361,13 +361,13 @@ class MayaAssetCheckin(MayaCheckin):
             #dir = geo_snapshot.get_lib_dir(file_type="geo")
             #filenames = geo_snapshot.get_names_by_type("geo")
             #for filename in filenames:
-            #    my.geo_cache_paths.append("%s/%s" % (dir, filename))
+            #    self.geo_cache_paths.append("%s/%s" % (dir, filename))
 
             geo_node = builder.add_ref_by_snapshot(geo_snapshot)
             Xml.set_attribute(geo_node, "type", "cache")
             Xml.set_attribute(geo_node, "node", node_name)
 
-    def _get_file_info_dict(my, parent_code, nodes):
+    def _get_file_info_dict(self, parent_code, nodes):
         '''NEW UPDATED METHOD: get a dictionary of file_path : (texture_code, node_name) list'''
         info = {}
            
@@ -414,7 +414,7 @@ class MayaAssetCheckin(MayaCheckin):
             texture_code = texture_code.replace("/", "-")
 
             # keep this in sequence for use in add_dependecies
-            my.texture_codes.append(texture_code)
+            self.texture_codes.append(texture_code)
            
             #local_path = "%s/%s" % (server_dir,filename)
             #sub_info = info.get(local_path)
@@ -429,7 +429,7 @@ class MayaAssetCheckin(MayaCheckin):
         return info
 
 
-    def add_dependencies(my, snapshot_xml):
+    def add_dependencies(self, snapshot_xml):
         '''look into maya session and create the files'''
         # build the snapshot
         tt = Xml()
@@ -437,29 +437,29 @@ class MayaAssetCheckin(MayaCheckin):
         builder = SnapshotBuilder(tt)
       
         # read reference file
-        xml = my._read_ref_file()
+        xml = self._read_ref_file()
 
         # handle the geo files
-        my.handle_geo_files(builder)
+        self.handle_geo_files(builder)
 
 
         # get the sobject_code and the context
-        sobject_code = my.sobject.get_code()
-        context = my.context
-        base_search_type = my.sobject.get_base_search_type()
+        sobject_code = self.sobject.get_code()
+        context = self.context
+        base_search_type = self.sobject.get_base_search_type()
 
-        # my.server_dir has been obtained earlier
-        server_dir = my.get_server_dir()
+        # self.server_dir has been obtained earlier
+        server_dir = self.get_server_dir()
 
 
         #--------------------------
         # handle layers
-        #my.layer_nodes = xml.get_nodes("session/*/layer[@type='render']")
+        #self.layer_nodes = xml.get_nodes("session/*/layer[@type='render']")
         if base_search_type == "prod/shot":
             layer_nodes = xml.get_nodes("session/*/layer")
 
             # get all of the layers for this sobject
-            cur_layers = my.sobject.get_all_layers()
+            cur_layers = self.sobject.get_all_layers()
             cur_layer_names = [x.get_value("name") for x in cur_layers]
 
             for layer_node in layer_nodes:
@@ -480,13 +480,13 @@ class MayaAssetCheckin(MayaCheckin):
         checked_textures = {}
 
         # get the dependent textures and process
-        if my.texture_mode == 'ignore':
-            my.texture_nodes = []
+        if self.texture_mode == 'ignore':
+            self.texture_nodes = []
         else:
-            my.texture_nodes = xml.get_nodes("session/*/file[@type='texture']")
+            self.texture_nodes = xml.get_nodes("session/*/file[@type='texture']")
 
-        if my.get_option('texture_search_type'):
-            texture_search_type = my.get_option('texture_search_type')
+        if self.get_option('texture_search_type'):
+            texture_search_type = self.get_option('texture_search_type')
             texture_search_type_obj = SearchType.create(texture_search_type)
             texture_cls = texture_search_type_obj.__class__
             # have to set the SEARCH_TYPE for hte custom class
@@ -501,9 +501,9 @@ class MayaAssetCheckin(MayaCheckin):
 
 
         # get a dict of filename.lower() : texture code , node_name list
-        tex_dict = my._get_file_info_dict(sobject_code, my.texture_nodes)
+        tex_dict = self._get_file_info_dict(sobject_code, self.texture_nodes)
       
-        for i, node in enumerate(my.texture_nodes):
+        for i, node in enumerate(self.texture_nodes):
             # initialize file_code
             file_code = ''
             path = Xml.get_attribute(node, "path")
@@ -511,7 +511,7 @@ class MayaAssetCheckin(MayaCheckin):
             filename = os.path.basename(path)
             filename = File.get_filesystem_name( filename )
 
-            texture_code = my.texture_codes[i]
+            texture_code = self.texture_codes[i]
             
             # this "code" is applicable for new checkin_asset
             file_code = Xml.get_attribute(node, "code")
@@ -558,7 +558,7 @@ class MayaAssetCheckin(MayaCheckin):
                     else:
                         parent_code_column = 'asset_code'
 
-                    if texture.get_value(parent_code_column, no_exception=True) != my.sobject.get_code():
+                    if texture.get_value(parent_code_column, no_exception=True) != self.sobject.get_code():
                         raise CheckinException("Cannot locate the texture sobject for this texture [%s]" %local_path)
             
 
@@ -586,9 +586,9 @@ class MayaAssetCheckin(MayaCheckin):
                 texture_name = file_object.get_full_file_name()
 
                 # store the necessary info about this texture
-                my.texture_names.append(texture_name)
-                my.textures.append(texture)
-                my.texture_snapshots.append(texture_snapshot)
+                self.texture_names.append(texture_name)
+                self.textures.append(texture)
+                self.texture_snapshots.append(texture_snapshot)
 
                 continue
 
@@ -601,7 +601,7 @@ class MayaAssetCheckin(MayaCheckin):
                 category = "texture"
                 (texture_basename, ext) = os.path.splitext( os.path.basename(filename) )
                 description = '%s-%s' % ( texture_basename, node_name )
-                texture = texture_cls.create(my.sobject, texture_code, 
+                texture = texture_cls.create(self.sobject, texture_code, 
                     category, description, sobject_context=context )
             
             # check in a new version of the texture file
@@ -654,18 +654,18 @@ class MayaAssetCheckin(MayaCheckin):
             checked_textures[local_path.lower()] = file_code
 
             # store the texture snapshots
-            my.texture_names.append(file_name)
-            my.textures.append(texture)
-            my.texture_snapshots.append(texture_snapshot)
+            self.texture_names.append(file_name)
+            self.textures.append(texture)
+            self.texture_snapshots.append(texture_snapshot)
 
 
  
         # handle all of the textures
-        for i in range(0, len(my.texture_nodes) ):
+        for i in range(0, len(self.texture_nodes) ):
 
-            texture_node = my.texture_nodes[i]
-            texture = my.textures[i]
-            texture_snapshot = my.texture_snapshots[i]
+            texture_node = self.texture_nodes[i]
+            texture = self.textures[i]
+            texture_snapshot = self.texture_snapshots[i]
 
             path = Xml.get_attribute(texture_node, "path")
             node = Xml.get_attribute(texture_node, "node")
@@ -694,28 +694,28 @@ class MayaAssetCheckin(MayaCheckin):
 
 
         # commit it to the snapshot
-        my.snapshot.set_value("snapshot", builder.to_string())       
-        my.snapshot.commit()
+        self.snapshot.set_value("snapshot", builder.to_string())       
+        self.snapshot.commit()
 
 
 
-    def create_snapshot(my, file_objects):
+    def create_snapshot(self, file_objects):
 
         # build the snapshot
         builder = SnapshotBuilder()
-        if my.process:
-            builder.add_root_attr('process', my.process)
+        if self.process:
+            builder.add_root_attr('process', self.process)
 
         # add in all of the file references
         for i in range(0, len(file_objects)):
             file_object = file_objects[i]
 
             file_name = file_object.get_file_name()
-            if my.file_info.has_key(file_name):
-                file_info = my.file_info[file_name]
+            if self.file_info.has_key(file_name):
+                file_info = self.file_info[file_name]
             else:
                 full_file_name = file_object.get_full_file_name()
-                file_info = my.file_info[full_file_name]
+                file_info = self.file_info[full_file_name]
 
             node = builder.add_file( file_object, file_info )
 
@@ -726,7 +726,7 @@ class MayaAssetCheckin(MayaCheckin):
 
 
             # handle embedded references
-            xml = my._read_ref_file()
+            xml = self._read_ref_file()
 
             # FIXME: handle input references (use asset_snapshot_code for now)
             snapshot_code = xml.get_value("session/ref/@asset_snapshot_code")
@@ -749,7 +749,7 @@ class MayaAssetCheckin(MayaCheckin):
 
                 if file_obj:
                     pass
-                elif my.get_option("unknown_ref") == "ignore":
+                elif self.get_option("unknown_ref") == "ignore":
                     continue
                 else:
                     raise CheckinException("File '%s' not recognized by Tactic. You can check the Ignore Unknown references option to suppress this error." % path)
@@ -782,13 +782,13 @@ class MayaAssetCheckin(MayaCheckin):
 
 
 
-    def preprocess_files(my, paths):
+    def preprocess_files(self, paths):
         '''Process the maya file so that all of the files exist.
         This makes the files self-consistent and usable without the
         asset management system'''
 
         # find all of the textures and their replacements
-        xml = my._read_ref_file()
+        xml = self._read_ref_file()
         tmp_path = xml.get_value("session/ref/@path")
 
         # only process maya files
@@ -799,7 +799,7 @@ class MayaAssetCheckin(MayaCheckin):
         old_texture_paths = \
             xml.get_values("session/*/file[@type='texture']/@path")
 
-        new_texture_paths = my.texture_names
+        new_texture_paths = self.texture_names
 
         # find the instance to be replaced
         instance = xml.get_value("session/ref/@instance")
@@ -812,26 +812,26 @@ class MayaAssetCheckin(MayaCheckin):
             parser = MayaParser(path)
             parser.read_only_flag = False
 
-            reference_filter = MayaReferenceReplaceFilter(my.snapshot)
-            if my.get_option("unknown_ref") == "ignore":
+            reference_filter = MayaReferenceReplaceFilter(self.snapshot)
+            if self.get_option("unknown_ref") == "ignore":
                 reference_filter.set_ignore_unknown_ref(True)
             parser.add_filter(reference_filter)
 
-            remove_namespace = my.get_option("remove_namespace")
+            remove_namespace = self.get_option("remove_namespace")
             if remove_namespace != "false" and instance != "":
                 namespace_filter = MayaRemoveNamespaceFilter(instance)
                 parser.add_filter(namespace_filter)
 
             
         
-            texture_filter = MayaTextureReplaceFilter(my.snapshot, my.texture_snapshots, old_texture_paths, new_texture_paths)
+            texture_filter = MayaTextureReplaceFilter(self.snapshot, self.texture_snapshots, old_texture_paths, new_texture_paths)
             parser.add_filter(texture_filter)
 
         elif path.endswith(".xsi"):
             parser = XSIParser(path)
             parser.read_only_flag = False
 
-            texture_filter = XSITextureReplaceFilter(my.snapshot, my.texture_snapshots, old_texture_paths, new_texture_paths)
+            texture_filter = XSITextureReplaceFilter(self.snapshot, self.texture_snapshots, old_texture_paths, new_texture_paths)
             parser.add_filter(texture_filter)
 
 
@@ -846,38 +846,38 @@ class MayaAssetCheckin(MayaCheckin):
 
 class MayaTextureReplaceFilter(MayaParserFilter):
 
-    def __init__(my, snapshot, texture_snapshots, old_texture_paths, new_texture_paths):
-        my.parser = None
-        my.cache_file_node = False
+    def __init__(self, snapshot, texture_snapshots, old_texture_paths, new_texture_paths):
+        self.parser = None
+        self.cache_file_node = False
 
-        my.snapshot = snapshot
-        my.texture_snapshots = texture_snapshots
-        my.old_texture_paths = old_texture_paths
-        my.new_texture_paths = new_texture_paths
+        self.snapshot = snapshot
+        self.texture_snapshots = texture_snapshots
+        self.old_texture_paths = old_texture_paths
+        self.new_texture_paths = new_texture_paths
 
 
-    def process(my, line):
+    def process(self, line):
         # replace any paths with the new paths of the checked in textures
         if line.find('setAttr ".ftn"') != -1 or line.find('setAttr ".imn"') != -1:
-            for i in range(0, len(my.old_texture_paths) ):
+            for i in range(0, len(self.old_texture_paths) ):
 
-                if line.find(my.old_texture_paths[i]) == -1:
+                if line.find(self.old_texture_paths[i]) == -1:
                     continue
 
-                if len(my.new_texture_paths) < i+1:
-                    Environment.add_warning("missing texture paths", "%s" % my.new_texture_paths)
+                if len(self.new_texture_paths) < i+1:
+                    Environment.add_warning("missing texture paths", "%s" % self.new_texture_paths)
                     continue
 
                 # find the relative directory between the maya file
                 # and textures
-                maya_dir = my.snapshot.get_lib_dir()
-                if my.texture_snapshots:
-                    textures_dir = my.texture_snapshots[i].get_lib_dir()
+                maya_dir = self.snapshot.get_lib_dir()
+                if self.texture_snapshots:
+                    textures_dir = self.texture_snapshots[i].get_lib_dir()
                     relative_dir = Common.relative_dir(maya_dir,textures_dir)
                 else:
                     relative_dir = "."
 
-                line = line.replace(my.old_texture_paths[i],"%s/%s" % ( relative_dir, my.new_texture_paths[i]) )
+                line = line.replace(self.old_texture_paths[i],"%s/%s" % ( relative_dir, self.new_texture_paths[i]) )
                 break
 
             return line
@@ -886,47 +886,47 @@ class MayaTextureReplaceFilter(MayaParserFilter):
 
 class XSITextureReplaceFilter(XSIParserFilter):
 
-    def __init__(my, snapshot, texture_snapshots, old_texture_paths, new_texture_paths):
-        my.parser = None
-        my.cache_file_node = False
+    def __init__(self, snapshot, texture_snapshots, old_texture_paths, new_texture_paths):
+        self.parser = None
+        self.cache_file_node = False
 
-        my.snapshot = snapshot
-        my.texture_snapshots = texture_snapshots
-        my.old_texture_paths = old_texture_paths
-        my.new_texture_paths = new_texture_paths
+        self.snapshot = snapshot
+        self.texture_snapshots = texture_snapshots
+        self.old_texture_paths = old_texture_paths
+        self.new_texture_paths = new_texture_paths
 
 
-    def process(my, line):
+    def process(self, line):
 
-        current_node = my.parser.current_node
+        current_node = self.parser.current_node
         if not current_node:
             return
 
-        current_node_type = my.parser.current_node_type
+        current_node_type = self.parser.current_node_type
         if current_node_type not in ['XSI_Image']:
             return
 
 
         # replace any paths with the new paths of the checked in textures
-        for i in range(0, len(my.old_texture_paths) ):
+        for i in range(0, len(self.old_texture_paths) ):
 
-            if line.find(my.old_texture_paths[i]) == -1:
+            if line.find(self.old_texture_paths[i]) == -1:
                 continue
 
-            if len(my.new_texture_paths) < i+1:
-                Environment.add_warning("missing texture paths", "%s" % my.new_texture_paths)
+            if len(self.new_texture_paths) < i+1:
+                Environment.add_warning("missing texture paths", "%s" % self.new_texture_paths)
                 continue
 
             # find the relative directory between the xsi file
             # and textures
-            xsi_dir = my.snapshot.get_lib_dir()
-            if my.texture_snapshots:
-                textures_dir = my.texture_snapshots[i].get_lib_dir()
+            xsi_dir = self.snapshot.get_lib_dir()
+            if self.texture_snapshots:
+                textures_dir = self.texture_snapshots[i].get_lib_dir()
                 relative_dir = Common.relative_dir(xsi_dir,textures_dir)
             else:
                 relative_dir = "."
 
-            line = line.replace(my.old_texture_paths[i],"%s/%s" % ( relative_dir, my.new_texture_paths[i]) )
+            line = line.replace(self.old_texture_paths[i],"%s/%s" % ( relative_dir, self.new_texture_paths[i]) )
             break
 
         return line
@@ -938,16 +938,16 @@ class XSITextureReplaceFilter(XSIParserFilter):
 
 class MayaRemoveNamespaceFilter(MayaParserFilter):
 
-    def __init__(my, instance):
-        my.parser = None
-        my.cache_file_node = False
+    def __init__(self, instance):
+        self.parser = None
+        self.cache_file_node = False
 
-        my.instance = instance
+        self.instance = instance
 
-    def process(my, line):
+    def process(self, line):
         try:
-            line = line.replace('"%s:' % my.instance, '"')
-            line = line.replace('|%s:' % my.instance, '|')
+            line = line.replace('"%s:' % self.instance, '"')
+            line = line.replace('|%s:' % self.instance, '|')
             return line
         except Exception, e:
             raise TacticException(line + " - " + e.__str__())
@@ -962,36 +962,36 @@ class MayaGroupCheckin(MayaCheckin):
     '''checkin for groups.  This assumes all necessary files are in the
     upload dir'''
 
-    def get_title(my):
+    def get_title(self):
         return "Set Checkin Command"
 
-    def get_snapshot_type(my):
+    def get_snapshot_type(self):
         return "set"
 
 
-    def create_files(my):
+    def create_files(self):
         paths = []
 
         # look in the info file
-        xml = my._read_ref_file()
+        xml = self._read_ref_file()
         
-        my._add_file_info(xml, paths)
-        dir = my.get_server_dir()
-        path = "%s/%s.anim" % (dir,my.sobject.get_code())
+        self._add_file_info(xml, paths)
+        dir = self.get_server_dir()
+        path = "%s/%s.anim" % (dir,self.sobject.get_code())
         paths.append(path)
 
         return paths
 
 
 
-    def create_snapshot(my, file_objects):
+    def create_snapshot(self, file_objects):
 
         builder = SnapshotBuilder()
-        if my.process:
-            builder.add_root_attr('process', my.process)
+        if self.process:
+            builder.add_root_attr('process', self.process)
 
         # add in the reference to the sobject
-        xml = my._read_ref_file()
+        xml = self._read_ref_file()
 
         for node in xml.get_nodes("session/ref"):
 
@@ -1075,26 +1075,26 @@ class MayaAnimCheckin(MayaGroupCheckin):
     '''checks in a maya interface (animation).  This is functionally identical
     to the group checkin except that the sobject is an instance instead
     of an asset'''
-    def __init__(my, set):
-        super(MayaAnimCheckin,my).__init__(set)
+    def __init__(self, set):
+        super(MayaAnimCheckin,self).__init__(set)
         
         # set some default values
-        my.context = "layout"
+        self.context = "layout"
 
 
-    def get_title(my):
+    def get_title(self):
         return "Anim Checkin Command"
     
-    def get_snapshot_type(my):
+    def get_snapshot_type(self):
         return "anim"
 
 
-    def create_files(my):
+    def create_files(self):
         '''look into maya session and create the files'''
         paths = []
-        dir = my.get_upload_dir()
+        dir = self.get_upload_dir()
 
-        instance_name = my.sobject.get_value("name")
+        instance_name = self.sobject.get_value("name")
 
         filename = File.get_filesystem_name( instance_name )
         paths.append("%s/%s.anim" % (dir, filename))
@@ -1109,27 +1109,27 @@ class MayaAnimExportCheckin(MayaAssetCheckin):
     '''checks in a maya interface (animation).  This is functionally identical
     to the group checkin except that the sobject is an instance instead
     of an asset'''
-    def __init__(my, set):
-        super(MayaAnimExportCheckin,my).__init__(set)
+    def __init__(self, set):
+        super(MayaAnimExportCheckin,self).__init__(set)
 
         # set some default values
-        my.context = "layout"
+        self.context = "layout"
 
 
-    def get_title(my):
+    def get_title(self):
         return "Anim Export Checkin Command"
 
-    def get_snapshot_type(my):
+    def get_snapshot_type(self):
         return "anim_export"
 
 
-    def create_files(my):
+    def create_files(self):
         '''look into maya session and create the files'''
         paths = []
 
         # look in the info file
-        xml = my._read_ref_file()
-        my._add_file_info(xml, paths)
+        xml = self._read_ref_file()
+        self._add_file_info(xml, paths)
 
         return paths
 
@@ -1142,24 +1142,24 @@ class MayaSObjectCheckin(MayaGroupCheckin):
     '''checks in a maya interface (animation).  This is functionally identical
     to the group checkin except that the sobject is an instance instead
     of an asset'''
-    def __init__(my, set):
-        super(MayaSObjectCheckin,my).__init__(set)
+    def __init__(self, set):
+        super(MayaSObjectCheckin,self).__init__(set)
         
         # set some default values
-        my.context = "lighting"
+        self.context = "lighting"
 
-    def get_title(my):
+    def get_title(self):
         return "Sobject Checkin Command"
 
-    def get_snapshot_type(my):
+    def get_snapshot_type(self):
         return "set"
 
 
-    def _read_ref_file(my):
+    def _read_ref_file(self):
         '''read the reference file containing extra node information'''
-        dir = my.get_upload_dir()
+        dir = self.get_upload_dir()
         xml = Xml()
-        key = my.sobject.get_search_key()
+        key = self.sobject.get_search_key()
 
         # make this filename good for the file system
         filename = File.get_filesystem_name(key)
@@ -1168,7 +1168,7 @@ class MayaSObjectCheckin(MayaGroupCheckin):
 
 
 
-    def create_files(my):
+    def create_files(self):
         '''layers have no files associated with them'''
         paths = []
         return paths
@@ -1177,78 +1177,78 @@ class MayaSObjectCheckin(MayaGroupCheckin):
 
 class MayaSetCreateCmd(Command):
     ''' Creates a set asset in the asset table '''
-    def __init__(my):
-        super(MayaSetCreateCmd, my).__init__()
-        my.code = None
+    def __init__(self):
+        super(MayaSetCreateCmd, self).__init__()
+        self.code = None
    
-    def get_title(my):
+    def get_title(self):
         return "Set Creation"
     
-    def set_set_name(my, set_name):
-        my.set_name = set_name
+    def set_set_name(self, set_name):
+        self.set_name = set_name
         
-    def set_cat_name(my, cat_name):
-        my.cat_name = cat_name
+    def set_cat_name(self, cat_name):
+        self.cat_name = cat_name
         
-    def check(my):
+    def check(self):
 
-        if not my.cat_name:
+        if not self.cat_name:
             raise UserException("You need to select a Category first! They are defined\
                     in the Asset Libraries Tab")
         
-        if re.compile('^\d+.*|.*\s+.*').match(my.set_name):
+        if re.compile('^\d+.*|.*\s+.*').match(self.set_name):
             raise UserException("Section name cannot start with a numeric or contain spaces!")
             return False
 
-        if Asset.get_by_name(my.set_name):
-            raise UserException("Section name [%s] has been taken" % my.set_name)
+        if Asset.get_by_name(self.set_name):
+            raise UserException("Section name [%s] has been taken" % self.set_name)
             return False
 
-        if not my.cat_name:
+        if not self.cat_name:
             return False
 
         return True
        
-    def get_asset_code(my):
-        return my.code
+    def get_asset_code(self):
+        return self.code
     
-    def execute(my):
+    def execute(self):
       
-        my.description = "Created set section"
+        self.description = "Created set section"
 
-        asset = Asset.create_with_autocode(my.set_name, my.cat_name,\
-                my.description, asset_type="section")
+        asset = Asset.create_with_autocode(self.set_name, self.cat_name,\
+                self.description, asset_type="section")
 
-        my.code = asset.get_code()
-        my.description = "%s [%s]" % (my.description, my.code)
+        self.code = asset.get_code()
+        self.description = "%s [%s]" % (self.description, self.code)
 
-        return my.code, my.set_name    
+        return self.code, self.set_name    
     
 
 class ShotCheckin(MayaAssetCheckin):
 
 
-    def __init__(my, sobject):
-        super(ShotCheckin,my).__init__(sobject)
+    def __init__(self, sobject):
+        super(ShotCheckin,self).__init__(sobject)
 
-    def check(my):
+    def check(self):
         return True
 
 
-    def _read_ref_file(my):
+    def _read_ref_file(self):
         '''read the reference file containing extra node information'''
-        dir = my.get_upload_dir()
+        dir = self.get_upload_dir()
         xml = Xml()
-        filename = "shot_%s" % my.sobject.get_code()
+        filename = "shot_%s" % self.sobject.get_code()
         xml.read_file( "%s/%s-ref.xml" % (dir,filename) )
         return xml
 
-    def get_snapshot_type(my):
+    def get_snapshot_type(self):
         return "shot"
 
 
 
-    def preprocess_files(my, paths):
+    def preprocess_files(self, paths):
         '''Warning: copied from maya_checkin.py'''
 
         path = paths[0]
@@ -1259,8 +1259,8 @@ class ShotCheckin(MayaAssetCheckin):
         parser = MayaParser(path)
         parser.read_only_flag = False
 
-        reference_filter = MayaReferenceReplaceFilter(my.snapshot)
-        if my.get_option("unknown_ref") == "ignore":
+        reference_filter = MayaReferenceReplaceFilter(self.snapshot)
+        if self.get_option("unknown_ref") == "ignore":
             reference_filter.set_ignore_unknown_ref(True)
         parser.add_filter(reference_filter)
 
@@ -1274,20 +1274,20 @@ class ShotCheckin(MayaAssetCheckin):
 
 class MayaReferenceReplaceFilter(MayaParserFilter):
 
-    def __init__(my, snapshot):
-        my.parser = None
-        my.snapshot = snapshot
-        my.cache_file_node = False
-        my.ignore_unknown_ref = False
+    def __init__(self, snapshot):
+        self.parser = None
+        self.snapshot = snapshot
+        self.cache_file_node = False
+        self.ignore_unknown_ref = False
 
         # 3 modes: environment, absolute and relative
-        my.reference_mode = "environment"
+        self.reference_mode = "environment"
 
 
-    def set_ignore_unknown_ref(my, flag):
-        my.ignore_unknown_ref = flag
+    def set_ignore_unknown_ref(self, flag):
+        self.ignore_unknown_ref = flag
 
-    def process(my, line):
+    def process(self, line):
 
         # change reference paths to relative paths
         if line.startswith("file") and line.find("-rfn") != -1:
@@ -1318,8 +1318,8 @@ class MayaReferenceReplaceFilter(MayaParserFilter):
 
                 # get the ref snapshot directory and find the relative path
                 # to this directory
-                if my.reference_mode == "relative":
-                    this_lib_dir = my.snapshot.get_lib_dir()
+                if self.reference_mode == "relative":
+                    this_lib_dir = self.snapshot.get_lib_dir()
                     filename = os.path.basename(ref_lib_path)
                     ref_dir = os.path.dirname(ref_lib_path)
                     relative_path = Common.relative_dir(this_lib_dir, ref_dir)
@@ -1327,14 +1327,14 @@ class MayaReferenceReplaceFilter(MayaParserFilter):
                     line = line.replace(orig_path, \
                         "%s/%s" % (relative_path,filename))
 
-                elif my.reference_mode == "absolute":
+                elif self.reference_mode == "absolute":
                     pass
 
                 # TEST: try it relatative to a base directory
                 # Since there is no way to save unresolved reference paths, we
                 # may not be able to use relative paths. In its place, we use
                 # an envrionment variable.
-                elif my.reference_mode == "environment":
+                elif self.reference_mode == "environment":
                     asset_dir = Environment.get_asset_dir()
 
                     # check if app_base_asset_dir exists
@@ -1349,7 +1349,7 @@ class MayaReferenceReplaceFilter(MayaParserFilter):
 
             else:
                 msg = "Reference file [%s] does not exist in the database" % orig_path
-                if my.ignore_unknown_ref:
+                if self.ignore_unknown_ref:
                     Environment.add_warning("Unknown References", msg)
                 else:
                     raise CommandException(msg)
@@ -1359,37 +1359,37 @@ class MayaReferenceReplaceFilter(MayaParserFilter):
 
 class MayaFileGeoCacheFilter(MayaParserFilter):
 
-    def __init__(my):
-        my.parser = None
-        my.cache_file_node = False
+    def __init__(self):
+        self.parser = None
+        self.cache_file_node = False
 
-    def process(my, line):
+    def process(self, line):
         if line.startswith('createNode cacheFile'):
-            my.cache_file_node = True
+            self.cache_file_node = True
             return
         elif line.startswith('createNode'):
-            my.cache_file_node = False
+            self.cache_file_node = False
             return
 
-        elif my.cache_file_node and line.startswith('setAttr ".cp"'):
+        elif self.cache_file_node and line.startswith('setAttr ".cp"'):
             p = re.compile(r'"([\w|/|:|\\]*)";$')
             groups = p.findall(line)
             if groups:
-                geo_cache_paths = my.parser.geo_cache_paths
+                geo_cache_paths = self.parser.geo_cache_paths
                 geo_cache_dir = os.path.dirname(geo_cache_paths[0])
                     
-                this_lib_dir = my.parser.snapshot.get_lib_dir()
+                this_lib_dir = self.parser.snapshot.get_lib_dir()
                 relative_dir = Common.relative_dir(this_lib_dir, geo_cache_dir)
 
                 line = line.replace(groups[0], relative_dir)
                 return line
 
-        elif my.cache_file_node and line.startswith('setAttr ".cn"'):
+        elif self.cache_file_node and line.startswith('setAttr ".cn"'):
             p = re.compile(r'"([\w|/|:|\\]*)";$')
             groups = p.findall(line)
             if groups:
-                geo_cache_paths = my.parser.geo_cache_paths
-                orig_geo_cache_paths = my.parser.orig_geo_cache_paths
+                geo_cache_paths = self.parser.geo_cache_paths
+                orig_geo_cache_paths = self.parser.orig_geo_cache_paths
 
                 assert len(geo_cache_paths) == len(orig_geo_cache_paths)
 
@@ -1415,48 +1415,48 @@ class MayaFileGeoCacheFilter(MayaParserFilter):
 class TextureCheckin(Command):
     '''handles all of the texture checkins'''
 
-    def __init__(my, parent, context="publish", paths=[], file_ranges=[], node_names=[], attrs=[], use_handoff_dir=False, md5s=[]):
+    def __init__(self, parent, context="publish", paths=[], file_ranges=[], node_names=[], attrs=[], use_handoff_dir=False, md5s=[]):
         
-        my.parent = parent
+        self.parent = parent
 
         # the various parameters that are needed to do a proper checkin
-        my.node_names = node_names
+        self.node_names = node_names
         # filter the paths for \
-        my.paths = []
+        self.paths = []
         for path in paths:
             path = path.replace("\\", "/")
-            my.paths.append(path)
+            self.paths.append(path)
 
-        my.file_ranges = file_ranges
-        my.attrs = attrs
+        self.file_ranges = file_ranges
+        self.attrs = attrs
 
-        my.context = context
+        self.context = context
 
-        my.options = {}
+        self.options = {}
         # stored texture information
-        my.texture_names = []
-        my.textures = []
-        my.texture_snapshots = []
+        self.texture_names = []
+        self.textures = []
+        self.texture_snapshots = []
         # TODO assert number of texture_names, nodes_names, path are the same
-        my.use_handoff_dir = use_handoff_dir
+        self.use_handoff_dir = use_handoff_dir
         if md5s:
             assert len(md5s) == len(paths)
         else:
             # Checkin may not provide md5s, make a None list
             md5s = [ None for x in xrange(len(paths))]
-        my.md5s = md5s
-        super(TextureCheckin, my).__init__()
+        self.md5s = md5s
+        super(TextureCheckin, self).__init__()
 
 
-    def get_title(my):
+    def get_title(self):
         return "Texture Checkin"
 
-    def check(my):
+    def check(self):
         return True
 
-    def get_texture_paths(my):
+    def get_texture_paths(self):
         paths = []
-        for snapshot in my.texture_snapshots:
+        for snapshot in self.texture_snapshots:
             path = snapshot.get_env_path_by_type("main")
             paths.append(path)
     
@@ -1464,9 +1464,9 @@ class TextureCheckin(Command):
 
 
             
-    def get_texture_md5(my):
+    def get_texture_md5(self):
         files = []
-        for snapshot in my.texture_snapshots:
+        for snapshot in self.texture_snapshots:
             #path = snapshot.get_lib_path_by_type("main")
             #paths.append(path)
             file_code = snapshot.get_file_code_by_type("main")
@@ -1476,20 +1476,20 @@ class TextureCheckin(Command):
         return files
          
           
-    def get_file_codes(my):
+    def get_file_codes(self):
         '''get file codes of the main type corresponding to new texture file objects'''
         file_codes = []
-        for snapshot in my.texture_snapshots:
+        for snapshot in self.texture_snapshots:
             file_code = snapshot.get_file_code_by_type("main")
             file_codes.append(file_code)
     
         return file_codes
     
-    def set_option(my, key, value):
-        my.options[key] = value
+    def set_option(self, key, value):
+        self.options[key] = value
 
-    def get_option(my, key):
-        value = my.options.get(key)
+    def get_option(self, key):
+        value = self.options.get(key)
         if not value:
             return ""
         else:
@@ -1497,7 +1497,7 @@ class TextureCheckin(Command):
 
     """
     ## NOT USED ##
-    def get_md5_info(my, new_path, file_info_dict, parent_code, texture_cls):
+    def get_md5_info(self, new_path, file_info_dict, parent_code, texture_cls):
         '''return a dict of info like is_match, file sobject, and snapshot codes'''
         info = {}
         
@@ -1548,28 +1548,28 @@ class TextureCheckin(Command):
     """
 
     ### NOT USED ###
-    def get_info_from_xml(my, xml):
+    def get_info_from_xml(self, xml):
         '''not sure if this will be used.  It is mainly kept here to keep the
         code around'''
 
         # get the dependent textures and process
-        if my.texture_mode == 'ignore':
-            my.texture_nodes = []
+        if self.texture_mode == 'ignore':
+            self.texture_nodes = []
         else:
-            my.texture_nodes = xml.get_nodes("session/*/file[@type='texture']")
+            self.texture_nodes = xml.get_nodes("session/*/file[@type='texture']")
 
-        for node in my.texture_nodes:
-            my.path = Xml.get_attribute(node, "path")
-            my.attr = Xml.get_attribute(node, "attr")
-            my.node_name = Xml.get_attribute(node, "node")
+        for node in self.texture_nodes:
+            self.path = Xml.get_attribute(node, "path")
+            self.attr = Xml.get_attribute(node, "attr")
+            self.node_name = Xml.get_attribute(node, "node")
 
             # ????
-            my.execute()
+            self.execute()
 
 
 
 
-    def execute(my):
+    def execute(self):
         #-------------------------
         # handle textures
 
@@ -1578,9 +1578,9 @@ class TextureCheckin(Command):
         # This is different from the same variable in MayaAssetCheckin
         checked_textures = {}
 
-        base_search_type = my.parent.get_base_search_type()
-        if my.get_option('texture_search_type'):
-            texture_search_type = my.get_option('texture_search_type')
+        base_search_type = self.parent.get_base_search_type()
+        if self.get_option('texture_search_type'):
+            texture_search_type = self.get_option('texture_search_type')
             texture_cls = SearchType.create(texture_search_type)
         elif base_search_type == 'prod/shot':
             texture_cls = ShotTexture
@@ -1589,16 +1589,16 @@ class TextureCheckin(Command):
         else:
             texture_cls = Texture
 
-        parent_code = my.parent.get_code()
+        parent_code = self.parent.get_code()
 
-        #file_info_dict = my.get_file_info_dict(parent_code, my.paths, my.attrs, my.node_names)
+        #file_info_dict = self.get_file_info_dict(parent_code, self.paths, self.attrs, self.node_names)
 
-        for i, path in enumerate(my.paths):
-            if not my.attrs:
+        for i, path in enumerate(self.paths):
+            if not self.attrs:
                 attr = None
             else:
-                attr = my.attrs[i]
-            node_name = my.node_names[i]
+                attr = self.attrs[i]
+            node_name = self.node_names[i]
             full_node_name = ''
             # for xsi:
             if attr == "SourceFileName":
@@ -1633,7 +1633,7 @@ class TextureCheckin(Command):
             # remove subcontext /
             texture_code = texture_code.replace("/", "-")
             
-            if my.use_handoff_dir:
+            if self.use_handoff_dir:
                 
                 from pyasm.web import WebContainer 
                 web = WebContainer.get_web()
@@ -1685,9 +1685,9 @@ class TextureCheckin(Command):
                 texture_name = file_object.get_full_file_name()
 
                 # store the necessary info about this texture
-                my.texture_names.append(texture_name)
-                my.textures.append(texture)
-                my.texture_snapshots.append(texture_snapshot)
+                self.texture_names.append(texture_name)
+                self.textures.append(texture)
+                self.texture_snapshots.append(texture_snapshot)
 
                 continue
 
@@ -1701,31 +1701,31 @@ class TextureCheckin(Command):
                     node_name = full_node_name
                 description = '%s %s' % ( texture_basename, node_name )
 
-                texture = texture_cls.create(my.parent, texture_code, 
-                    category, description, sobject_context=my.context )
+                texture = texture_cls.create(self.parent, texture_code, 
+                    category, description, sobject_context=self.context )
 
 
             
-            file_range = my.file_ranges[i]
+            file_range = self.file_ranges[i]
             if file_range:
                 file_range = FileRange.get(file_range)
            
             # generate icon for now
-            web_path, icon_path = my.process_icon(local_path, file_range)
+            web_path, icon_path = self.process_icon(local_path, file_range)
             # checkin all of the texture maps
             if web_path:
                 file_paths = [local_path, web_path, icon_path]
                 file_types = ['main','web','icon']
-                md5s = [my.md5s[i], None, None]
+                md5s = [self.md5s[i], None, None]
             else:
                 file_paths = [local_path]
                 file_types = ['main']
-                md5s = [my.md5s[i]]
+                md5s = [self.md5s[i]]
             """
             # if skipping icon generation completely
             file_paths = [local_path]
             file_types = ['main']
-            md5s = [my.md5s[i]]
+            md5s = [self.md5s[i]]
             """
 
             if file_range:
@@ -1757,22 +1757,22 @@ class TextureCheckin(Command):
             file_name = texture_snapshot.get_name_by_type("main")
             file_code = texture_snapshot.get_file_code_by_type("main")
 
-            main_file_obj = my._get_file_object(file_code, texture_file_objs)
+            main_file_obj = self._get_file_object(file_code, texture_file_objs)
             if not main_file_obj:
                 raise CheckinException('Main file object not found for code [%s]'%file_code)
             # store the file object here to minimize db activity
             checked_textures[local_path.lower()] = main_file_obj
 
             # store the texture snapshots
-            my.texture_names.append(file_name)
-            my.textures.append(texture)
-            my.texture_snapshots.append(texture_snapshot)
+            self.texture_names.append(file_name)
+            self.textures.append(texture)
+            self.texture_snapshots.append(texture_snapshot)
 
             
-        my.description = "Checked in textures to [%s]" % parent_code
+        self.description = "Checked in textures to [%s]" % parent_code
         
 
-    def _get_file_object(my, file_code, file_objects):
+    def _get_file_object(self, file_code, file_objects):
         '''get the proper file object matching the file_code'''
         for file_obj in file_objects:
             if file_code == file_obj.get_code():
@@ -1781,7 +1781,7 @@ class TextureCheckin(Command):
         return None
 
 
-    def process_icon(my, local_path, file_range=None):
+    def process_icon(self, local_path, file_range=None):
         '''process icon and return web_path, icon_path as tuple'''
         # take the first one for file range
         if file_range:
@@ -1796,7 +1796,7 @@ class TextureCheckin(Command):
         return web_path, icon_path
 
     """
-    def get_file_info_dict(my, parent_code, paths, attrs, node_names):
+    def get_file_info_dict(self, parent_code, paths, attrs, node_names):
         '''get a dictionary of file_path : texture_code_list, md5'''
         info = {}
         for i, path in enumerate(paths):
@@ -1843,7 +1843,7 @@ class TextureCheckin(Command):
             filename = os.path.basename(path)
             filename = File.get_filesystem_name( filename )
 
-            if my.use_handoff_dir:
+            if self.use_handoff_dir:
                 from pyasm.web import WebContainer 
                 web = WebContainer.get_web()
                 temp_path = path.replace('\\','/')

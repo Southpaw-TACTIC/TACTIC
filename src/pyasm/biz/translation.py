@@ -112,12 +112,16 @@ class Translation(SObject):
 
         base_language = 'en'
 
-        dict = cls.get_cache_dict()
+        dictionary = cls.get_cache_dict()
         main_key = '%s|%s' %(language, msg)
+
         sobject = None
-        if dict.has_key(main_key):
-            sobject = dict[main_key]
+        if dictionary.has_key("__loaded__"):
+            sobject = dictionary.get(main_key)
         else:
+
+            dictionary['__loaded__'] = True
+
             search = Search(cls)
             sobjs = search.get_sobjects()
             for idx, sobj in enumerate(sobjs):
@@ -139,7 +143,8 @@ class Translation(SObject):
                 if key == main_key:
                     sobject = sobj
 
-       
+
+
         # autocreate
         """
         if not sobject:

@@ -23,77 +23,77 @@ class MayaException(AppException):
 
 
 class MayaNodeNaming:
-    def __init__(my, node_name=None):
-        my.node_name = node_name
-        my.namespace = ''
-        my.asset_code = ''
-        if my.node_name:
-            if my.node_name.find(":") != -1:
-                my.has_namespace_flag = True
-                my.namespace, my.asset_code = my.node_name.split(":",1)
+    def __init__(self, node_name=None):
+        self.node_name = node_name
+        self.namespace = ''
+        self.asset_code = ''
+        if self.node_name:
+            if self.node_name.find(":") != -1:
+                self.has_namespace_flag = True
+                self.namespace, self.asset_code = self.node_name.split(":",1)
             else:
-                my.has_namespace_flag = False
-                my.asset_code = my.namespace = my.node_name
-        if my.namespace:
-            my.namespace = my.namespace.replace(' ', '_')
+                self.has_namespace_flag = False
+                self.asset_code = self.namespace = self.node_name
+        if self.namespace:
+            self.namespace = self.namespace.replace(' ', '_')
 
         
-    def get_asset_code(my):
-        return my.asset_code
+    def get_asset_code(self):
+        return self.asset_code
 
-    def set_asset_code(my, asset_code):
-        my.asset_code = asset_code
+    def set_asset_code(self, asset_code):
+        self.asset_code = asset_code
 
     
     #TODO: deprecate the instance methods    
-    def get_instance(my):
-        return my.namespace
+    def get_instance(self):
+        return self.namespace
 
-    def set_instance(my, namespace):
-        my.has_namespace_flag = True
-        my.namespace = namespace
+    def set_instance(self, namespace):
+        self.has_namespace_flag = True
+        self.namespace = namespace
 
-    def get_namespace(my):
-        return my.namespace
+    def get_namespace(self):
+        return self.namespace
 
-    def set_namespace(my, namespace):
-        my.has_namespace_flag = True
-        my.namespace = namespace
+    def set_namespace(self, namespace):
+        self.has_namespace_flag = True
+        self.namespace = namespace
 
-    def set_node_name(my, node_name):
-        my.node_name = node_name
+    def set_node_name(self, node_name):
+        self.node_name = node_name
 
     # HACK: this is REALLY bad code.  FIXME: Tactic needs a much better
     # node naming implementation.  Functions should pass around the naming
     # object, not the node_name
-    def get_node_name(my):
-        if not my.node_name:
-            if my.asset_code:
-                my.node_name = "%s:%s" % (my.namespace, my.asset_code)
+    def get_node_name(self):
+        if not self.node_name:
+            if self.asset_code:
+                self.node_name = "%s:%s" % (self.namespace, self.asset_code)
             else: # user-created node has no asset code
-                my.node_name = my.namespace
-                return my.node_name
+                self.node_name = self.namespace
+                return self.node_name
             app = Maya.get()
-            if not app.node_exists(my.node_name):
-                my.node_name = my.namespace
-            if not app.node_exists(my.node_name):
-                my.node_name = my.asset_code
+            if not app.node_exists(self.node_name):
+                self.node_name = self.namespace
+            if not app.node_exists(self.node_name):
+                self.node_name = self.asset_code
 
-        return my.node_name
+        return self.node_name
 
-    def build_node_name(my):
-        node_name = "%s:%s" % (my.namespace, my.asset_code)
+    def build_node_name(self):
+        node_name = "%s:%s" % (self.namespace, self.asset_code)
         # prevent problems when no namespace or asset code is given
         if node_name == ":":
             node_name = ""
         return node_name
 
 
-    def has_instance(my):
-        return my.has_namespace_flag
+    def has_instance(self):
+        return self.has_namespace_flag
 
-    def has_namespace(my):
-        return my.has_namespace_flag
+    def has_namespace(self):
+        return self.has_namespace_flag
 
 pymel = None
 maya = None
@@ -105,48 +105,48 @@ class Maya(Application):
 
     APPNAME = "maya"
 
-    def __init__(my, init=False):
-        my.name = "maya"
+    def __init__(self, init=False):
+        self.name = "maya"
 
         try:
             exec("import pymel as pymel")
-        except Exception, e:
-            print "exception"
+        except Exception as e:
+            print("exception")
             raise MayaException(e)
 
         if init == True:
             pymel.maya_init("default")
 
-        super(Maya, my).__init__()
+        super(Maya, self).__init__()
 
-        my.mel("loadPlugin -quiet animImportExport")
+        self.mel("loadPlugin -quiet animImportExport")
 
 
-    def is_tactic_node(my, node):
+    def is_tactic_node(self, node):
         return NodeData.is_tactic_node(node)
 
-    def new_session(my):
+    def new_session(self):
         return mel("file -f -new")
 
 
-    def get_node_naming(my, node_name=None):
+    def get_node_naming(self, node_name=None):
         return MayaNodeNaming(node_name)
 
 
 
-    def mel(my, cmd, verbose=None):
-        if my.buffer_flag == True:
-            my.buffer.append(cmd)
+    def mel(self, cmd, verbose=None):
+        if self.buffer_flag == True:
+            self.buffer.append(cmd)
         else:
             if not pymel:
                 exec("import pymel as pymel", globals(), locals())
-            if verbose == True or (verbose == None and my.verbose == True):
-                print "->", cmd
+            if verbose == True or (verbose == None and self.verbose == True):
+                print("->", cmd)
             return pymel.mel(cmd)
 
 
 
-    def cleanup(my):
+    def cleanup(self):
         exec("import pymel as pymel")
         pymel.maya_cleanup()
 
@@ -160,25 +160,25 @@ class Maya(Application):
     # As few basic operations as possible into maya are defined to simplify
     # porting.
 
-    def get_var(my, name):
+    def get_var(self, name):
         value = mel('$%s = $%s' % (name, name) ) 
         #value = value.replace("||", "/")
-        #print "value: ", name, value
+        #print("value: ", name, value)
         return value
 
 
-    def get_node_type(my, node_name):
+    def get_node_type(self, node_name):
         type = mel('nodeType "%s"' % node_name)
         if not type:
             raise MayaException("Node '%s' does not exist" % node_name)
         return type
 
-    def get_parent(my, node_name):
+    def get_parent(self, node_name):
         parent = mel('firstParentOf %s' % node_name)
         return parent
 
 
-    def get_children(my, node_name, full_path=True, type='transform', recurse=False):
+    def get_children(self, node_name, full_path=True, type='transform', recurse=False):
         '''Get the children nodes. type: transform, shape'''
         full_path_switch = ''
         recurse_switch = ''
@@ -193,7 +193,7 @@ class Maya(Application):
             return []
     
     # action functions
-    def set_attr(my, node, attr, value, attr_type=""):
+    def set_attr(self, node, attr, value, attr_type=""):
         if attr_type == "string":
             mel('setAttr %s.%s -type "string" "%s"' % (node,attr,value))
         # maya doesn't work too well with this
@@ -205,38 +205,38 @@ class Maya(Application):
 
 
     # selection functions
-    def select(my, node):
+    def select(self, node):
         mel('select -noExpand "%s"' % node )
 
-    def select_add(my, node):
+    def select_add(self, node):
         mel('select -noExpand -add "%s"' % node )
 
-    def select_none(my):
+    def select_none(self):
         mel('select -cl')
 
-    def select_restore(my, nodes):
-        my.select_none()
+    def select_restore(self, nodes):
+        self.select_none()
         for node in nodes:
-            my.select_add(node)
+            self.select_add(node)
 
-    def select_hierarchy(my, node):
+    def select_hierarchy(self, node):
         mel("select -hi %s" %node)
 
     # interaction with files
-    def import_file(my, path, namespace=":"):
+    def import_file(self, path, namespace=":"):
         if namespace in ['',":"]:
             mel('file -pr -import "%s"' % (path) )
         else:
             mel('file -namespace "%s" -pr -import "%s"' % (namespace, path) )
 
 
-    def import_reference(my, path, namespace=":"):
+    def import_reference(self, path, namespace=":"):
         if namespace in ['',":"]:
             mel('file -pr -reference "%s"' % (path) )
         else:
             mel('file -namespace "%s" -pr -reference "%s"' % (namespace, path) )
 
-    def is_reference(my, node_name):
+    def is_reference(self, node_name):
         is_ref = mel('reference -q -inr "%s"' % node_name)
         if is_ref:
             return True
@@ -244,7 +244,7 @@ class Maya(Application):
             return False
 
 
-    def replace_reference(my, node_name, path, top_reference=True):
+    def replace_reference(self, node_name, path, top_reference=True):
         '''load using references. If top reference is False, 
             it will replace the sub reference if any (To be verified!)'''
         switch = '-rfn'
@@ -258,29 +258,29 @@ class Maya(Application):
 
 
 
-    def is_keyed(my, node_name, attr):
+    def is_keyed(self, node_name, attr):
         is_keyed = mel('connectionInfo -id %s.%s' %(node_name, attr))
         if is_keyed:
             return True
         else:
             return False
 
-    def import_anim(my, path, namespace=":"):
+    def import_anim(self, path, namespace=":"):
         mel('file -import -type animImport "%s"' % path)
     
-    def import_static(my, buffer, node_name):
+    def import_static(self, buffer, node_name):
         lines = buffer.split("\n")
         pat = re.compile('(.+) -type (.+) -default (.+) -value (.+)') 
         for line in lines:
             m = pat.match(line)
             if m:
                 attr, attr_type, value = m.group(1), m.group(2),  m.group(4)
-                my.set_attr(node_name, attr, value, attr_type)
+                self.set_attr(node_name, attr, value, attr_type)
             
         
     
 
-    def export_anim(my, path, namespace=":"):
+    def export_anim(self, path, namespace=":"):
         mel('file -force -exportAnim -op "-heirarchy none" -type "animExport" "%s"' % path)
         return path
 
@@ -288,17 +288,17 @@ class Maya(Application):
 
     
 
-    def delete(my, node_name):
+    def delete(self, node_name):
         # set has no namespace
-        if my.is_set(node_name):
+        if self.is_set(node_name):
             mel('delete "%s"' % node_name)
             return
         
         # clean out and remove the namespace
-        naming = my.get_node_naming(node_name)
+        naming = self.get_node_naming(node_name)
         instance = naming.get_instance()
         if naming.has_instance():
-            my.set_namespace(instance)
+            self.set_namespace(instance)
             # if the namespace is already removed, skip
             current = mel("namespaceInfo -cur")
             if current == instance:
@@ -306,18 +306,18 @@ class Maya(Application):
                 garbage_nodes = mel("namespaceInfo -listNamespace")
                 if garbage_nodes:
                     for garbage_node in garbage_nodes:
-                        if not my.is_reference(node_name) and "lightLinker" in garbage_node:
-                            my.delete_nondeletable_node(garbage_node)
+                        if not self.is_reference(node_name) and "lightLinker" in garbage_node:
+                            self.delete_nondeletable_node(garbage_node)
                         else:
                             mel('delete "%s"' % garbage_node) 
         
         
         
-        my.set_namespace()
+        self.set_namespace()
         
-        my.remove_namespace(instance)
+        self.remove_namespace(instance)
         
-        if my.is_reference(node_name):
+        if self.is_reference(node_name):
             reference_file = mel('reference -q -filename "%s"' % node_name)
             mel('file -removeReference "%s"' % reference_file)
 
@@ -328,7 +328,7 @@ class Maya(Application):
 
     # file utilities
 
-    def load(my, path):
+    def load(self, path):
         if path.endswith(".ma"):
             mel('file -f -options "v=0"  -typ "mayaAscii" -o "%s"' % path)
         else:
@@ -336,9 +336,9 @@ class Maya(Application):
         return path
 
 
-    def rename(my, path):
+    def rename(self, path):
         '''rename the file so that "save" will go to that directory'''
-        print "renaming: ", path
+        print("renaming: ", path)
         if path.endswith("/") or path.endswith("\\"):
             path = "%suntitled.ma" % path
         elif not path:
@@ -353,7 +353,7 @@ class Maya(Application):
             mel('file -type "mayaBinary"')
 
 
-    def save(my, path, file_type=None):
+    def save(self, path, file_type=None):
         if not file_type:
             file_type="mayaAscii"
 
@@ -364,12 +364,12 @@ class Maya(Application):
             path, ext = os.path.splitext(path)
             path = "%s.mb" % path
 
-        my.rename(path)
+        self.rename(path)
         mel('file -force -save -type %s' % file_type)
         return path
 
-    def save_node(my, node_name, dir=None, type="mayaAscii", as_ref=False ):
-        naming = my.get_node_naming(node_name)
+    def save_node(self, node_name, dir=None, type="mayaAscii", as_ref=False ):
+        naming = self.get_node_naming(node_name)
         asset_code = naming.get_asset_code()
 
         if dir == None:
@@ -384,10 +384,10 @@ class Maya(Application):
             path = "%s.mb" % path
 
 
-        return my.save(path, file_type=type)
+        return self.save(path, file_type=type)
 
     
-    def get_file_path(my):
+    def get_file_path(self):
         # switching because file -q -loc does not return anything until you
         # actually save
         #path = mel("file -q -loc")
@@ -403,27 +403,27 @@ class Maya(Application):
 
  
     
-    def export_node(my, node_names, context, dir=None, type="mayaAscii", as_ref=False, preserve_ref=True, filename='', instance=None ):
+    def export_node(self, node_names, context, dir=None, type="mayaAscii", as_ref=False, preserve_ref=True, filename='', instance=None ):
         '''exports top node(s) in maya'''
 
         asset_code = ''
         if isinstance(node_names, list):
             if not list:
                 raise MayaException('The list to export is empty')
-            my.select_none()
+            self.select_none()
             for node_name in node_names:
-                my.select_add(node_name)
+                self.select_add(node_name)
             # we just pick a node_name for asset_code which is part of
             # a filename, if used
-            if my.is_tactic_node(node_names[0]):
-                naming = my.get_node_naming(node_names[0])
+            if self.is_tactic_node(node_names[0]):
+                naming = self.get_node_naming(node_names[0])
                 instance = naming.get_instance()
             else:
                 instance = node_names[0]
                 
         else:        
-            my.select( node_names )
-            naming = my.get_node_naming(node_names)
+            self.select( node_names )
+            naming = self.get_node_naming(node_names)
             instance = naming.get_instance()
 
         export_mode = "-es"
@@ -469,52 +469,52 @@ class Maya(Application):
 
         mel('file -rename "%s"' % path )
         cmd = 'file -force -op "v=0" %s -type "%s"' % (export_mode, type_key)
-        print "cmd: ", cmd
+        print("cmd: ", cmd)
         mel(cmd)
         
         return path
     
-    def export_collada(my, node_name, dir=None):
+    def export_collada(self, node_name, dir=None):
         type = "COLLADA exporter"
-        return my.export_node(node_name, dir, type)
+        return self.export_node(node_name, dir, type)
 
-    def export_obj(my, node_name, dir=None):
+    def export_obj(self, node_name, dir=None):
         type = "OBJexport"
-        return my.export_node(node_name, dir, type)
+        return self.export_node(node_name, dir, type)
 
 
-    def delete_nondeletable_node(my, node_name):
+    def delete_nondeletable_node(self, node_name):
         #TODO keep current selection
-        my.select_none()
+        self.select_none()
 
         tmp_dir = "%s/temp" % MayaEnvironment.get().get_tmpdir()
-        reference_file =  my.export_node(node_name, tmp_dir, as_ref=True)
+        reference_file =  self.export_node(node_name, tmp_dir, as_ref=True)
         mel('file -removeReference "%s"' % reference_file)
 
 
     # namespace commands
-    def set_namespace(my, namespace=":"):
+    def set_namespace(self, namespace=":"):
         mel('namespace -set "%s"' % namespace)
 
-    def add_namespace(my, namespace):
-        if not my.namespace_exists(namespace):
+    def add_namespace(self, namespace):
+        if not self.namespace_exists(namespace):
             mel('namespace -add "%s"' % namespace)
 
-    def remove_namespace(my, namespace):
+    def remove_namespace(self, namespace):
         mel('namespace -removeNamespace "%s"' % namespace)
 
-    def namespace_exists(my, namespace):
+    def namespace_exists(self, namespace):
         return mel('namespace -exists "%s"' % namespace)
 
-    def get_namespace_info(my, option='-lon'):
+    def get_namespace_info(self, option='-lon'):
         return mel('namespaceInfo %s' %option)
 
-    def rename_node(my, node_name, new_name):
+    def rename_node(self, node_name, new_name):
         '''it assumes the new name is under the root namespace'''
         return mel('rename %s %s' %(node_name, new_name))
         
     # set functions
-    def get_sets(my):
+    def get_sets(self):
         #all_sets = mel('listSets -allSets')
         # change to this.  The above does not give the full namespace name
         all_sets = set(mel('ls -type objectSet'))
@@ -523,7 +523,7 @@ class Maya(Application):
             delight_list = mel('ls -type delightShapeSet')
             if delight_list:
                 delight_set = set(delight_list)
-        except Exception, e:
+        except Exception as e:
             pass
 
         ignore_set = set(['defaultLightSet', 'defaultObjectSet']).union(delight_set)
@@ -558,7 +558,7 @@ class Maya(Application):
         for x in all_sets:
             # cannot use this because sets do not usually have this at the
             # beginning
-            #elif not my.attr_exists(x, "tacticNodeData"):
+            #elif not self.attr_exists(x, "tacticNodeData"):
             #    continue
            
             sets.append(x)
@@ -566,24 +566,24 @@ class Maya(Application):
             
         return sets
 
-    def is_set(my, node_name):
-        if node_name in my.get_sets():
+    def is_set(self, node_name):
+        if node_name in self.get_sets():
             return True
         else:
             return False
 
-    def create_set(my, node_name):
-        if not my.node_exists(node_name):
+    def create_set(self, node_name):
+        if not self.node_exists(node_name):
             mel('sets -n "%s"' % node_name)
         
-    def add_to_set(my, set_name, node_name):
+    def add_to_set(self, set_name, node_name):
         # a quick way of avoiding the add set to set warning msg on shot load
         if node_name in [set_name, ':%s'%set_name]:
             return
         mel('sets -add "%s" "%s"' % (set_name, node_name) )
 
 
-    def get_nodes_in_set(my, set_name):
+    def get_nodes_in_set(self, set_name):
         nodes = mel('sets -q "%s"' % set_name )
         if not nodes:
             return []
@@ -595,36 +595,36 @@ class Maya(Application):
 
 
     # information retrieval functions.  Requires an open Maya session
-    def node_exists(my,node):
+    def node_exists(self,node):
         node = mel("ls %s" % node)
         if node == None:
             return False
         else:
             return True
 
-    def get_nodes_by_type(my, type):
+    def get_nodes_by_type(self, type):
         return mel("ls -type %s" % type)
 
 
 
-    def get_selected_node(my):
+    def get_selected_node(self):
         nodes = mel("ls -sl")
         if nodes:
             return nodes[0]
         else:
             return None
 
-    def get_selected_nodes(my):
+    def get_selected_nodes(self):
         nodes = mel("ls -sl")
         return nodes
 
 
-    def get_selected_top_nodes(my):
+    def get_selected_top_nodes(self):
         return mel("ls -sl -as")
 
    
 
-    def get_top_nodes(my):
+    def get_top_nodes(self):
         # maya 7.0 bug: "ls -as" produces garbage
         nodes  = mel("ls -tr -l")
 
@@ -646,7 +646,7 @@ class Maya(Application):
 
 
 
-    def get_tactic_nodes(my, top_node=None):
+    def get_tactic_nodes(self, top_node=None):
         '''Much simpler method to get TACTIC nodes using new definition of
         TACTIC nodes
         '''
@@ -662,7 +662,7 @@ class Maya(Application):
             
 
 
-    def get_reference_nodes(my, top_node=None, sub_references=False, recursive=False):
+    def get_reference_nodes(self, top_node=None, sub_references=False, recursive=False):
         '''Want to get all of the tactic nodes that exist under a single
         entity.  This entity can be one of 3 items.  The maya file itself,
         a set containing a number of top nodes or a single top node.  These
@@ -674,8 +674,8 @@ class Maya(Application):
 
         if top_node == None:
             # find all of the top nodes in the file
-            top_nodes = my.get_top_nodes()
-        elif my.get_node_type(top_node) == "objectSet":
+            top_nodes = self.get_top_nodes()
+        elif self.get_node_type(top_node) == "objectSet":
             # if this is a set: get all of the nodes in the set
             top_nodes = mel('sets -q -nodesOnly "%s"' % top_node)
         else:
@@ -729,14 +729,14 @@ class Maya(Application):
             if is_ref:
                 # found a potential node ...
                 # make sure this has a tacticNodeData attribute
-                if my.attr_exists(node, "tacticNodeData"):
+                if self.attr_exists(node, "tacticNodeData"):
                     references.append(node)
 
 
         return references
 
 
-    def get_reference_path(my, node):
+    def get_reference_path(self, node):
         path = mel("reference -q -filename %s" % node)
         if path:
             return path
@@ -745,14 +745,14 @@ class Maya(Application):
 
 
 
-    def add_node(my, type, node_name, unique=False):
+    def add_node(self, type, node_name, unique=False):
         return mel("createNode -n %s %s" % (node_name, type) )
 
 
     # attributes
-    def add_attr(my, node, attribute, type="long"):
+    def add_attr(self, node, attribute, type="long"):
         # do nothing if it already exists
-        if my.attr_exists(node,attribute):
+        if self.attr_exists(node,attribute):
             return
         if type == "string":
             return mel('addAttr -ln "%s" -dt "string" %s' % (attribute, node) )
@@ -760,12 +760,12 @@ class Maya(Application):
             return mel('addAttr -ln "%s" -at "long" %s' % (attribute, node) )
 
 
-    def attr_exists(my, node, attribute):
+    def attr_exists(self, node, attribute):
         # don't bother being verbose with this one
-        return my.mel("attributeExists %s \"%s\"" % (attribute, node), verbose=False )
+        return self.mel("attributeExists %s \"%s\"" % (attribute, node), verbose=False )
 
-    def get_attr(my, node, attribute):
-        if not my.attr_exists(node, attribute):
+    def get_attr(self, node, attribute):
+        if not self.attr_exists(node, attribute):
             return ""
         value = mel("getAttr %s.%s" % (node, attribute) )
         # never return None for an attr
@@ -774,9 +774,9 @@ class Maya(Application):
         else:
             return value
 
-    def get_attr_type(my, node, attribute):
+    def get_attr_type(self, node, attribute):
         ''' get the attribute type e.g. int, string, double '''
-        if not my.attr_exists(node, attribute):
+        if not self.attr_exists(node, attribute):
             return ""
         value = mel("getAttr -type %s.%s" % (node, attribute) )
         # never return None for an attr
@@ -785,7 +785,7 @@ class Maya(Application):
         else:
             return value
 
-    def get_all_attrs(my, node):
+    def get_all_attrs(self, node):
         keyable = mel("listAttr -keyable %s" % node )
         user_defined = mel("listAttr -userDefined %s" % node)
         attrs = []
@@ -794,18 +794,18 @@ class Maya(Application):
             attrs.extend(user_defined)
         return attrs
 
-    def get_attr_default(my, node, attr):
+    def get_attr_default(self, node, attr):
          return mel("attributeQuery -node %s -listDefault %s" % \
             (node, attr) )
 
 
 
     # layer functions
-    def get_all_layers(my):
+    def get_all_layers(self):
         '''get all of the render layers'''
         return mel("ls -type renderLayer")
 
-    def get_layer_nodes(my, layer_name):
+    def get_layer_nodes(self, layer_name):
         '''get all of the tactic nodes in a render layer'''
         return mel("editRenderLayerMembers -q %s" % layer_name)
 
@@ -820,32 +820,32 @@ class Maya(Application):
 
     # namespaces
     # these 2 can be replaced with get_namespace_info()
-    def get_namespace_contents(my):
+    def get_namespace_contents(self):
         '''retrieves the contents of the current namespac'''
         contents = mel('namespaceInfo -listNamespace')
         return contents
 
 
-    def get_all_namespaces(my):
+    def get_all_namespaces(self):
         return mel('namespaceInfo -listOnlyNamespaces')
 
 
 
-    def get_workspace_dir(my):
+    def get_workspace_dir(self):
         return mel("workspace -q -rootDirectory")
 
 
-    def set_project(my, dir):
+    def set_project(self, dir):
         mel('setProject "%s"' % dir)        
 
-    def get_project(my):
+    def get_project(self):
         return mel("workspace -q -rootDirectory")
 
 
-    def get_window_title(my):
+    def get_window_title(self):
         return mel('window -q -title $gMainWindow')
 
-    def set_window_title(my, title):
+    def set_window_title(self, title):
         mel('window -edit -title "%s" $gMainWindow' % title )
 
 
@@ -870,34 +870,34 @@ except:
 
 
 class Maya85(Maya):
-    def __init__(my, init=True):
-        my.name = "maya"
+    def __init__(self, init=True):
+        self.name = "maya"
 
         # don't use the Maya constructor
-        super(Maya, my).__init__()
+        super(Maya, self).__init__()
 
 
-        my.mel("loadPlugin -quiet animImportExport")
+        self.mel("loadPlugin -quiet animImportExport")
 
 
-    def mel(my, cmd, verbose=None):
-        if my.buffer_flag == True:
-            my.buffer.append(cmd)
+    def mel(self, cmd, verbose=None):
+        if self.buffer_flag == True:
+            self.buffer.append(cmd)
         else:
-            if verbose == True or (verbose == None and my.verbose == True):
-                print "->", cmd
+            if verbose == True or (verbose == None and self.verbose == True):
+                print("->", cmd)
             try:
                 return mm.mel.eval(cmd)
-            except Exception, e:
+            except Exception as e:
                 if cmd.startswith("MayaManInfo"):
-                    print "Warning: ", cmd
+                    print("Warning: ", cmd)
                 else:
-                    print "Error: ", cmd
+                    print("Error: ", cmd)
                     # Let the MEL keep running
                     raise MayaException(cmd)
 
     # FIXME: reference command is Obsolete
-    def is_reference(my, node_name):
+    def is_reference(self, node_name):
         is_ref = mel('reference -q -inr "%s"' % node_name)
         if is_ref:
             return True
@@ -906,7 +906,7 @@ class Maya85(Maya):
 
 
     # FIXME: reference command is Obsolete
-    def get_reference_path(my, node):
+    def get_reference_path(self, node):
         path = mel("reference -q -filename %s" % node)
         if path:
             return path
@@ -916,7 +916,7 @@ class Maya85(Maya):
 
 
 
-    def cleanup(my):
+    def cleanup(self):
         '''do nothing'''
         pass
 

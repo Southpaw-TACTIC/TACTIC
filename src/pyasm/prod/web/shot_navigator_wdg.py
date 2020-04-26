@@ -25,61 +25,61 @@ __all__ = ['ShotNavigatorWdg', 'SequenceNavigatorWdg', 'GeneralNavigatorWdg',
 
 class ShotNavigatorWdg(BaseRefreshWdg):
     
-    def init(my):
+    def init(self):
         shot_select_name = 'shot_id' 
-        if my.kwargs.get('name'):
-            shot_select_name = my.kwargs.get('name')
-        my.shot_select_name = shot_select_name
-        my.seq_select_name = "seq_select"
-        my.epi_select_name = "epi_select"
-        my.shot_id = None
+        if self.kwargs.get('name'):
+            shot_select_name = self.kwargs.get('name')
+        self.shot_select_name = shot_select_name
+        self.seq_select_name = "seq_select"
+        self.epi_select_name = "epi_select"
+        self.shot_id = None
 
     
         
             
         
         epi_code = ''
-        my.epi_select = FilterSelectWdg(my.epi_select_name, \
+        self.epi_select = FilterSelectWdg(self.epi_select_name, \
                 label='Episode: ', css='small smaller')
         
         if ProdSetting.get_value_by_key('shot_hierarchy') == 'episode_sequence':
-            my.epi_select.add_empty_option('-- Select --')
-            my.epi_select.add_style("font-size: 0.9em")
+            self.epi_select.add_empty_option('-- Select --')
+            self.epi_select.add_style("font-size: 0.9em")
             search = Search( Episode.SEARCH_TYPE )
             search.add_order_by("code")
-            my.epi_select.set_search_for_options(search, "code")
-            my.epi_select.add_behavior({'type' : 'change',
+            self.epi_select.set_search_for_options(search, "code")
+            self.epi_select.add_behavior({'type' : 'change',
                 'cbjs_action': "var seq_select= bvr.src_el.getParent('.spt_filter_top').getElement('input[name=%s]'); \
             if (seq_select) {seq_select.value='';} var shot_select=bvr.src_el.getParent('.spt_filter_top').getElement('input[name=%s]'); \
-            if (shot_select) {shot_select.value='';} %s; %s " %( my.seq_select_name, my.shot_select_name, my.epi_select.get_save_script(), my.epi_select.get_refresh_script())})
-            epi_code = my.epi_select.get_value()
+            if (shot_select) {shot_select.value='';} %s; %s " %( self.seq_select_name, self.shot_select_name, self.epi_select.get_save_script(), self.epi_select.get_refresh_script())})
+            epi_code = self.epi_select.get_value()
             
 
-        my.seq_select = FilterSelectWdg(my.seq_select_name, \
+        self.seq_select = FilterSelectWdg(self.seq_select_name, \
             label='Sequence: ', css='small smaller')
-        my.seq_select.add_empty_option('-- Select --')
-        my.seq_select.add_style("font-size: 0.9em")
-        my.seq_select.add_behavior({'type' : 'change',
+        self.seq_select.add_empty_option('-- Select --')
+        self.seq_select.add_style("font-size: 0.9em")
+        self.seq_select.add_behavior({'type' : 'change',
             'cbjs_action': "var shot_select=bvr.src_el.getParent('.spt_filter_top').getElement('input[name=%s]'); \
             if (shot_select) {shot_select.value='';}  %s; %s" \
-            % (my.shot_select_name, my.seq_select.get_save_script(), my.seq_select.get_refresh_script())})
-        seq_code = my.seq_select.get_value()
+            % (self.shot_select_name, self.seq_select.get_save_script(), self.seq_select.get_refresh_script())})
+        seq_code = self.seq_select.get_value()
         
         search = Search( Sequence.SEARCH_TYPE )
         if epi_code:
             search.add_filter('episode_code', epi_code)        
             
-        my.seq_select.set_search_for_options(search, "code")
+        self.seq_select.set_search_for_options(search, "code")
 
         
-        my.shot_id = 0
+        self.shot_id = 0
 
-        my.shot_select = SelectWdg(my.shot_select_name)
-        my.shot_select.add_empty_option('-- Select --')
-        my.shot_select.set_id("shot_id")
-        my.shot_select.add_behavior({'type' : 'change',
+        self.shot_select = SelectWdg(self.shot_select_name)
+        self.shot_select.add_empty_option('-- Select --')
+        self.shot_select.set_id("shot_id")
+        self.shot_select.add_behavior({'type' : 'change',
             'cbjs_action': "%s; %s" \
-            % (my.shot_select.get_save_script(), my.shot_select.get_refresh_script())})
+            % (self.shot_select.get_save_script(), self.shot_select.get_refresh_script())})
 
         # get all of the shots
         shot_search = Search("prod/shot")
@@ -88,49 +88,49 @@ class ShotNavigatorWdg(BaseRefreshWdg):
         if seq_code:
             shot_search.add_filter("sequence_code", seq_code)
         shot_search.add_order_by("code")
-        my.shots = shot_search.get_sobjects()
+        self.shots = shot_search.get_sobjects()
 
         # if shots are defined, then find the selected one
-        if my.shots:
-            my.shot_select.set_sobjects_for_options(my.shots,"id","code")
+        if self.shots:
+            self.shot_select.set_sobjects_for_options(self.shots,"id","code")
 
             # adjust the value if buttons have been pressed
-            my.shot_id = my.shot_select.get_value( for_display=False )
-            my.shot = my.get_shot_by_buttons(my.shot_id)
-            if my.shot:
-                my.shot_id = my.shot.get_id()
-                my.shot_select.set_value(my.shot_id)
+            self.shot_id = self.shot_select.get_value( for_display=False )
+            self.shot = self.get_shot_by_buttons(self.shot_id)
+            if self.shot:
+                self.shot_id = self.shot.get_id()
+                self.shot_select.set_value(self.shot_id)
 
             else:
-                if my.shot_id == "":
-                    my.shot = my.shots[0]
+                if self.shot_id == "":
+                    self.shot = self.shots[0]
                     # set the value as a default
-                    my.shot_select.set_value(my.shot.get_id())
+                    self.shot_select.set_value(self.shot.get_id())
                 else:
-                    my.shot = Shot.get_by_id(my.shot_id)
+                    self.shot = Shot.get_by_id(self.shot_id)
 
-            if not my.shot and my.shots:
-                my.shot = my.shots[0]
+            if not self.shot and self.shots:
+                self.shot = self.shots[0]
 
-            if not my.shot:
+            if not self.shot:
                 return
 
             #TODO: remove these
-            WebState.get().add_state("shot_key", my.shot.get_search_key())
-            WebState.get().add_state("shot_id" , my.shot.get_id())
-            WebState.get().add_state("shot_code", my.shot.get_code())
-            WebState.get().add_state("edit|shot_code", my.shot.get_code())
+            WebState.get().add_state("shot_key", self.shot.get_search_key())
+            WebState.get().add_state("shot_id" , self.shot.get_id())
+            WebState.get().add_state("shot_code", self.shot.get_code())
+            WebState.get().add_state("edit|shot_code", self.shot.get_code())
 
         
     
-    def get_display(my):
+    def get_display(self):
         # use a span instead so I can add more stuff easily on its right
         div = SpanWdg(css='spt_filter_top')
 
         if ProdSetting.get_value_by_key('shot_hierarchy') == 'episode_sequence':
-            div.add(my.epi_select)
+            div.add(self.epi_select)
 
-        div.add(my.seq_select)
+        div.add(self.seq_select)
 
         # actually draw the widgets
         title = SpanWdg("Shot: ")
@@ -152,14 +152,14 @@ class ShotNavigatorWdg(BaseRefreshWdg):
         next.set_text('')
 
         title.add( prev )
-        title.add(my.shot_select)
+        title.add(self.shot_select)
         title.add( next )
 
         div.add(title)
         return div
-        #my.add(div)
+        #self.add(div)
 
-    def get_shot_by_buttons(my, shot_id):
+    def get_shot_by_buttons(self, shot_id):
         ''' find out the position in shots array for the current shot_value
             and sets it if the user press "Prev" or "Next" '''    
 
@@ -170,13 +170,13 @@ class ShotNavigatorWdg(BaseRefreshWdg):
             return None
        
         # if there are not shots, don't bother
-        if not my.shots:
+        if not self.shots:
             return None
 
         index = 0
        
         # find the current hsot
-        for shot in my.shots:
+        for shot in self.shots:
             if shot_id and shot_id != "" \
                 and shot.get_id() == int(shot_id):
                 break
@@ -184,34 +184,34 @@ class ShotNavigatorWdg(BaseRefreshWdg):
 
         if web.get_form_value("Prev") != "":
             if index == 0:
-                index = len(my.shots) - 1
+                index = len(self.shots) - 1
             else:
                 index = index-1
 
         elif web.get_form_value("Next") != "":
-            if index == len(my.shots):
+            if index == len(self.shots):
                 index = 0
             else:
                 index += 1
                
-        if index < 0 or index >= len(my.shots):
-            shot = my.shots[0]
+        if index < 0 or index >= len(self.shots):
+            shot = self.shots[0]
         else:
-            shot = my.shots[index]
+            shot = self.shots[index]
 
         return shot
 
 
 
-    def get_value(my):
-        value = my.shot_id
+    def get_value(self):
+        value = self.shot_id
         if value == '':
-            return my.shots[0].get_id()
+            return self.shots[0].get_id()
         else:
-            return my.shot_id
+            return self.shot_id
 
-    def get_shot(my):
-        shot_id = my.get_value()
+    def get_shot(self):
+        shot_id = self.get_value()
         if shot_id == "":
             return None
         else:
@@ -220,33 +220,33 @@ class ShotNavigatorWdg(BaseRefreshWdg):
 
 class SequenceNavigatorWdg(HtmlElement):
     
-    def __init__(my, name="sequence_code_nav"):
-        my.select_name = name 
-        my.select = None 
-        my.epi_select = None
-        super(SequenceNavigatorWdg,my).__init__('span')
+    def __init__(self, name="sequence_code_nav"):
+        self.select_name = name 
+        self.select = None 
+        self.epi_select = None
+        super(SequenceNavigatorWdg,self).__init__('span')
        
-    def init(my):
+    def init(self):
         epi_code = ''
-        my.epi_select = FilterSelectWdg("epi_select_%s" %my.select_name, \
+        self.epi_select = FilterSelectWdg("epi_select_%s" %self.select_name, \
                 label='Episode: ', css='small smaller')
-        my.epi_select.add_empty_option('-- Any --')
+        self.epi_select.add_empty_option('-- Any --')
 
         if ProdSetting.get_value_by_key('shot_hierarchy') == 'episode_sequence':
-            my.epi_select.add_style("font-size: 0.9em")
+            self.epi_select.add_style("font-size: 0.9em")
             search = Search( Episode.SEARCH_TYPE )
             search.add_order_by("code")
-            my.epi_select.set_search_for_options(search, "code")
+            self.epi_select.set_search_for_options(search, "code")
 
-            my.epi_select.set_event('onchange', "var seq_select=get_elements('%s'); \
-            if (seq_select) {seq_select.value='';} " %(my.select_name))
-            epi_code = my.epi_select.get_value()
-            my.add(my.epi_select)
+            self.epi_select.set_event('onchange', "var seq_select=get_elements('%s'); \
+            if (seq_select) {seq_select.value='';} " %(self.select_name))
+            epi_code = self.epi_select.get_value()
+            self.add(self.epi_select)
 
-        sequence_select = FilterSelectWdg(my.select_name, label="Sequence: ", css='smaller')
+        sequence_select = FilterSelectWdg(self.select_name, label="Sequence: ", css='smaller')
         #sequence_select.set_submit_onchange(False)
         # set up the select to be manipulated on
-        my.select = sequence_select
+        self.select = sequence_select
         
         sequence_select.add_style("font-size: 0.95em")
         
@@ -256,7 +256,7 @@ class SequenceNavigatorWdg(HtmlElement):
             search.add_filter('episode_code', epi_code)
         sequence_select.set_search_for_options(search,"code")
         
-        my.add( sequence_select )
+        self.add( sequence_select )
 
         sequence_code = sequence_select.get_value()
         if sequence_code == '':
@@ -270,22 +270,22 @@ class SequenceNavigatorWdg(HtmlElement):
         # of what the state is used for
         state.add_state("edit|sequence_code", sequence_code)
 
-    def add_none_option(my):
-        my.select.add_none_option()
+    def add_none_option(self):
+        self.select.add_none_option()
  
-    def remove_empty_option(my):
-        my.select.remove_empty_option()
+    def remove_empty_option(self):
+        self.select.remove_empty_option()
         
-    def get_value(my):
-        seq_code = my.select.get_value()
-        epi_code = my.epi_select.get_value()
+    def get_value(self):
+        seq_code = self.select.get_value()
+        epi_code = self.epi_select.get_value()
         return epi_code, seq_code
 
-    def set_option(my, name, value):
-        my.select.set_option(name, value)
+    def set_option(self, name, value):
+        self.select.set_option(name, value)
 
-    def get_select(my):
-        return my.select
+    def get_select(self):
+        return self.select
 
     
    
@@ -293,58 +293,58 @@ class SequenceNavigatorWdg(HtmlElement):
 class GeneralNavigatorWdg(HtmlElement):
     '''a general navigation widget that is built up from a hierarchy of
     sobjects'''
-    def __init__(my, search_types):
+    def __init__(self, search_types):
         if isinstance(search_types, list):
-            my.search_types = search_types
+            self.search_types = search_types
         else:
-            my.search_types = [search_types]
+            self.search_types = [search_types]
 
-        my.selects = []
-        super(GeneralNavigatorWdg,my).__init__("span")
+        self.selects = []
+        super(GeneralNavigatorWdg,self).__init__("span")
 
 
-    def init(my):
+    def init(self):
 
-        for search_type in my.search_types:
+        for search_type in self.search_types:
 
             search_type_obj = SearchType.get(search_type)
 
-            my.add("<b>%s</b>: " % search_type_obj.get_title())
+            self.add("<b>%s</b>: " % search_type_obj.get_title())
 
-            select = my._create_select_wdg(search_type,"code")
-            my.add( select )
+            select = self._create_select_wdg(search_type,"code")
+            self.add( select )
 
 
-    def _create_select_wdg(my, search_type, column ):
+    def _create_select_wdg(self, search_type, column ):
 
         select = SelectWdg(column)
         select.add_style("font-size: 0.9em")
         search = Search( search_type )
         select.set_search_for_options(search,column)
-        select.set_persistence(my)
+        select.set_persistence(self)
         return select
 
 
 
-    def get_value(my):
-        if my.selects:
-            return my.selects[0].get_value()
+    def get_value(self):
+        if self.selects:
+            return self.selects[0].get_value()
 
 
 class EpisodeNavigatorWdg(SequenceNavigatorWdg):
 
-    def __init__(my, name="episode_code_nav", title="Episode"):
+    def __init__(self, name="episode_code_nav", title="Episode"):
         # quick fix.  If name is used, it will get reset in the super functions
-        my.select_name = name 
-        my.display_title = title
-        super(EpisodeNavigatorWdg,my).__init__(name)
-        my.name = name 
+        self.select_name = name 
+        self.display_title = title
+        super(EpisodeNavigatorWdg,self).__init__(name)
+        self.name = name 
 
 
-    def init(my):
+    def init(self):
         # set up the select to be manipulated on
-        my.select = FilterSelectWdg(my.select_name)
-        episode_select = my.select
+        self.select = FilterSelectWdg(self.select_name)
+        episode_select = self.select
         
         episode_select.add_empty_option("-- Any Episodes --")
         episode_select.add_style("font-size: 0.9em")
@@ -353,8 +353,8 @@ class EpisodeNavigatorWdg(SequenceNavigatorWdg):
         episode_select.set_search_for_options(search,"code")
         
 
-        my.add(SpanWdg("%s:" % my.display_title, css='small'))
-        my.add( episode_select )
+        self.add(SpanWdg("%s:" % self.display_title, css='small'))
+        self.add( episode_select )
 
         episode_code = episode_select.get_value()
                
@@ -369,114 +369,114 @@ class EpisodeNavigatorWdg(SequenceNavigatorWdg):
 
         search.add_regex_filter("code", episode_code, op='EQ') 
 
-    def get_value(my):
-        epi_code = my.select.get_value()
+    def get_value(self):
+        epi_code = self.select.get_value()
         return epi_code
    
         
 class EpisodeShotNavigatorWdg(SequenceNavigatorWdg):
 
-    def __init__(my, episode_select_name='combo_episode_code_nav', shot_select_name='combo_shot_code_nav'):
-        my.episode_select_name = episode_select_name
-        my.shot_select_name = shot_select_name
-        super(EpisodeShotNavigatorWdg,my).__init__()
+    def __init__(self, episode_select_name='combo_episode_code_nav', shot_select_name='combo_shot_code_nav'):
+        self.episode_select_name = episode_select_name
+        self.shot_select_name = shot_select_name
+        super(EpisodeShotNavigatorWdg,self).__init__()
 
 
-    def init(my):
+    def init(self):
         
-        my.episode_select = FilterSelectWdg(my.episode_select_name, \
+        self.episode_select = FilterSelectWdg(self.episode_select_name, \
             label='Episode: ', css='med')
-        my.episode_select.add_style("font-size: 0.9em")
+        self.episode_select.add_style("font-size: 0.9em")
         search = Search( Episode.SEARCH_TYPE )
         search.add_order_by("code")
-        my.episode_select.set_search_for_options(search,"code")
+        self.episode_select.set_search_for_options(search,"code")
 
-        my.episode_select.set_event('onchange', "var sec_select=get_elements('%s'); \
-            if (sec_select) {sec_select.value='NONE';}" % my.shot_select_name)
+        self.episode_select.set_event('onchange', "var sec_select=get_elements('%s'); \
+            if (sec_select) {sec_select.value='NONE';}" % self.shot_select_name)
 
-        episode_code = my.episode_select.get_value()
+        episode_code = self.episode_select.get_value()
 
-        my.shot_select = FilterSelectWdg(my.shot_select_name, label='Shot: ')
-        my.shot_select.add_style("font-size: 0.9em")
+        self.shot_select = FilterSelectWdg(self.shot_select_name, label='Shot: ')
+        self.shot_select.add_style("font-size: 0.9em")
 
         # set up the select to be manipulated on
-        my.select = my.shot_select
+        self.select = self.shot_select
 
         search = Search( "flash/shot" )
         search.add_column('code')
         search.add_filter("episode_code", episode_code)
-        my.shot_select.add_empty_option('-- Any --')
-        my.shot_select.set_search_for_options(search,"code","code")
+        self.shot_select.add_empty_option('-- Any --')
+        self.shot_select.set_search_for_options(search,"code","code")
         
-        my.add(my.episode_select)
+        self.add(self.episode_select)
         
-        my.add(my.shot_select)
+        self.add(self.shot_select)
 
 
         state = WebState.get()
         state.add_state("episode_code", episode_code)
-        state.add_state("shot_code", my.get_value())
-        state.add_state("edit|shot_code", my.get_value())
+        state.add_state("shot_code", self.get_value())
+        state.add_state("edit|shot_code", self.get_value())
 
   
 
-    def get_value(my):
-        return my.shot_select.get_value()
+    def get_value(self):
+        return self.shot_select.get_value()
 
 class SequenceShotNavigatorWdg(SequenceNavigatorWdg):
 
-    def __init__(my, seq_select_name='combo_sequence_code_nav', shot_select_name='combo_shot_code_nav'):
-        my.seq_select_name = seq_select_name
-        my.shot_select_name = shot_select_name
-        my.epi_select_name = 'combo_epi_code_nav'
-        super(SequenceShotNavigatorWdg, my).__init__()
+    def __init__(self, seq_select_name='combo_sequence_code_nav', shot_select_name='combo_shot_code_nav'):
+        self.seq_select_name = seq_select_name
+        self.shot_select_name = shot_select_name
+        self.epi_select_name = 'combo_epi_code_nav'
+        super(SequenceShotNavigatorWdg, self).__init__()
 
 
-    def init(my):
+    def init(self):
 
         epi_code = ''
-        my.epi_select = FilterSelectWdg(my.epi_select_name, \
+        self.epi_select = FilterSelectWdg(self.epi_select_name, \
                 label='Episode: ', css='small smaller')
-        my.epi_select.add_empty_option('-- Any --')
+        self.epi_select.add_empty_option('-- Any --')
         if ProdSetting.get_value_by_key('shot_hierarchy') == 'episode_sequence':
             
-            my.epi_select.add_style("font-size: 0.9em")
+            self.epi_select.add_style("font-size: 0.9em")
             search = Search( Episode.SEARCH_TYPE )
             search.add_order_by("code")
-            my.epi_select.set_search_for_options(search, "code")
+            self.epi_select.set_search_for_options(search, "code")
 
-            my.epi_select.set_event('onchange', "var seq_select=get_elements('%s'); \
+            self.epi_select.set_event('onchange', "var seq_select=get_elements('%s'); \
             if (seq_select) {seq_select.value='';} var shot_select=get_elements('%s'); \
-            if (shot_select) {shot_select.value='';} " %(my.seq_select_name, my.shot_select_name))
-            epi_code = my.epi_select.get_value()
-            my.add(my.epi_select)
+            if (shot_select) {shot_select.value='';} " %(self.seq_select_name, self.shot_select_name))
+            epi_code = self.epi_select.get_value()
+            self.add(self.epi_select)
 
-        my.seq_select = FilterSelectWdg(my.seq_select_name, \
+        self.seq_select = FilterSelectWdg(self.seq_select_name, \
             label='Sequence: ', css='small smaller')
-        my.seq_select.add_empty_option('-- Any --')
-        my.seq_select.add_style("font-size: 0.9em")
+        self.seq_select.add_empty_option('-- Any --')
+        self.seq_select.add_style("font-size: 0.9em")
         search = Search( Sequence.SEARCH_TYPE )
         if epi_code:
             search.add_filter('episode_code', epi_code)
 
         search.add_order_by("code")
         seq_sobjs = search.get_sobjects()
-        my.seq_select.set_sobjects_for_options(seq_sobjs, "code")
+        self.seq_select.set_sobjects_for_options(seq_sobjs, "code")
 
-        my.seq_select.set_event('onchange', "var sec_select=document.form.elements['%s']; \
-            if (sec_select) {sec_select.value='';} document.form.submit()" % my.shot_select_name)
+        self.seq_select.set_event('onchange', "var sec_select=document.form.elements['%s']; \
+            if (sec_select) {sec_select.value='';} document.form.submit()" % self.shot_select_name)
 
-        seq_code = my.seq_select.get_value()
+        seq_code = self.seq_select.get_value()
         
         # if there is no sequence sobjects, do not show any shots
         if not seq_sobjs:
             seq_code = "NONE"
 
-        my.shot_select = FilterSelectWdg(my.shot_select_name, label='Shot: ', css='small smaller')
-        my.shot_select.add_style("font-size: 0.9em")
+        self.shot_select = FilterSelectWdg(self.shot_select_name, label='Shot: ', css='small smaller')
+        self.shot_select.add_style("font-size: 0.9em")
 
         # set up the select to be manipulated on
-        my.select = my.shot_select
+        self.select = self.shot_select
 
         search = Search( "prod/shot" )
         search.add_column('code')
@@ -484,27 +484,27 @@ class SequenceShotNavigatorWdg(SequenceNavigatorWdg):
             search.add_filter("sequence_code", seq_code)
         shot_sobjs = search.get_sobjects()
         if shot_sobjs:
-            my.shot_select.add_empty_option('-- Any --')
-            my.shot_select.set_sobjects_for_options(shot_sobjs,"code","code")
+            self.shot_select.add_empty_option('-- Any --')
+            self.shot_select.set_sobjects_for_options(shot_sobjs,"code","code")
         
-        my.add(my.seq_select)
+        self.add(self.seq_select)
         
-        my.add(my.shot_select)
+        self.add(self.shot_select)
 
 
         state = WebState.get()
         state.add_state("seq_code", seq_code)
-        state.add_state("shot_code", my.shot_select.get_value())
-        state.add_state("edit|shot_code", my.shot_select.get_value())
+        state.add_state("shot_code", self.shot_select.get_value())
+        state.add_state("edit|shot_code", self.shot_select.get_value())
 
   
 
-    def get_value(my):
+    def get_value(self):
         ''' it returns both seq code and shot_code'''
-        epi_value = my.epi_select.get_value()
-        seq_value = my.seq_select.get_value()
-        shot_value = my.shot_select.get_value()
-        if my.shot_select.get_select_values() == ([],[]):
+        epi_value = self.epi_select.get_value()
+        seq_value = self.seq_select.get_value()
+        shot_value = self.shot_select.get_value()
+        if self.shot_select.get_select_values() == ([],[]):
             shot_value = "NONE"
 
         return epi_value, seq_value, shot_value

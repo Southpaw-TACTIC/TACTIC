@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 ###########################################################
 #
 # Copyright (c) 2005, Southpaw Technology
@@ -26,18 +26,18 @@ import unittest
 
 class SqlTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         # intialiaze the framework as a batch process
         batch = Batch()
         from pyasm.web.web_init import WebInit
         WebInit().execute()
 
-        my.test_env = UnittestEnvironment()
-        my.test_env.create()
+        self.test_env = UnittestEnvironment()
+        self.test_env.create()
 
-    def test_all(my):
+    def test_all(self):
 
-      
+
 
         try:
 
@@ -46,47 +46,47 @@ class SqlTest(unittest.TestCase):
             impl = sql.get_database_impl()
             db_type = impl.get_database_type()
             if db_type == "PostgreSQL":
-                my.prefix = '''"unittest"."public".'''
-                my.sthpw_prefix = '''"sthpw"."public".'''
+                self.prefix = '''"unittest"."public".'''
+                self.sthpw_prefix = '''"sthpw"."public".'''
             elif db_type == "Sqlite":
-                my.prefix = ""
-                my.sthpw_prefix = ""
+                self.prefix = ""
+                self.sthpw_prefix = ""
             else:
-                my.prefix = '''"unittest".'''
-                my.sthpw_prefix = '''"sthpw".'''
+                self.prefix = '''"unittest".'''
+                self.sthpw_prefix = '''"sthpw".'''
 
 
-            my._test_get_connect()
-            my._test_select_class()
-            my._test_insert_class()
-            my._test_update_class()
-            my._test_insert_and_delete()
-            my._test_create_table()
-            my._test_transaction()
-            my._test_order_by()
-            my._test_rpn_filters()
-            my._test_search_filter()
-            my._test_join()
-            my._test_create_view()
+            self._test_get_connect()
+            self._test_select_class()
+            self._test_insert_class()
+            self._test_update_class()
+            self._test_insert_and_delete()
+            self._test_create_table()
+            self._test_transaction()
+            self._test_order_by()
+            self._test_rpn_filters()
+            self._test_search_filter()
+            self._test_join()
+            self._test_create_view()
 
             # it doesn't allow dropping of a column
             if db_type != 'Sqlite':
-                my._test_add_drop_column()
-       
+                self._test_add_drop_column()
+
         finally:
             Project.set_project('unittest')
-            my.test_env.delete()
+            self.test_env.delete()
 
-    def _test_get_connect(my):
+    def _test_get_connect(self):
         database= 'unittest'
         project = Project.get_by_code(database)
         db_resource= project.get_project_db_resource()
         sql1 = DbContainer.get(db_resource)
         sql2 = DbContainer.get(db_resource)
-        
-        my.assertEquals(sql1, sql2)
 
-    def _test_select_class(my):
+        self.assertEquals(sql1, sql2)
+
+    def _test_select_class(self):
         """ test a select """
         select = Select()
         db_res = DbResource.get_default('unittest')
@@ -97,14 +97,14 @@ class SqlTest(unittest.TestCase):
 
         statement = select.get_statement()
 
-        
+
         sql = DbContainer.get(db_res)
         impl = sql.get_database_impl()
         db_type = impl.get_database_type()
 
-        expected = '''SELECT %s"person".* FROM %s"person" WHERE "name_first" = 'megumi' ORDER BY "person"."name_last"''' % (my.prefix, my.prefix)
+        expected = '''SELECT %s"person".* FROM %s"person" WHERE "name_first" = 'megumi' ORDER BY "person"."name_last"''' % (self.prefix, self.prefix)
 
-        my.assertEquals( expected, statement )
+        self.assertEquals( expected, statement )
 
         # test for doubling of apostrophe
         select = Select()
@@ -113,11 +113,11 @@ class SqlTest(unittest.TestCase):
         select.add_filter('name_last', "john's", op='!=')
         statement = select.get_statement()
 
-        expected = """SELECT %s"person".* FROM %s"person" WHERE "person"."name_last" != 'john''s'""" % (my.prefix, my.prefix)
-        my.assertEquals( expected, statement )
+        expected = """SELECT %s"person".* FROM %s"person" WHERE "person"."name_last" != 'john''s'""" % (self.prefix, self.prefix)
+        self.assertEquals( expected, statement )
 
 
-    def _test_insert_class(my):
+    def _test_insert_class(self):
         """test an insert"""
         insert = Insert()
         insert.set_table("person");
@@ -135,40 +135,42 @@ class SqlTest(unittest.TestCase):
         else:
             expected = "INSERT INTO \"person\" (\"name_first\", \"name_last\") VALUES ('megumi', 'takamori')"
 
-        my.assertEquals( expected, statement )
+        self.assertEquals( expected, statement )
 
 
-    def _test_update_class(my):
+    def _test_update_class(self):
         """test an update"""
         update = Update()
+        update.set_database("sthpw")
         update.set_table("person");
         update.set_value("name_first", "megumi");
         update.add_where("\"person_id\" = '1'");
         statement = update.get_statement()
-        expected = "UPDATE \"person\" SET \"name_first\" = 'megumi' WHERE \"person_id\" = '1'"
+        #expected = "UPDATE \"person\" SET \"name_first\" = 'megumi' WHERE \"person_id\" = '1'"
+        expected = """UPDATE "sthpw"."public"."person" SET "name_first" = \'megumi\' WHERE "person_id" = \'1\'"""
 
-        my.assertEqual( expected, statement )
+        self.assertEqual( expected, statement )
 
 
 
-    def _test_insert_and_delete(my):
+    def _test_insert_and_delete(self):
 
         # ensure that we are *NOT* in a transaction
         Transaction.clear_stack()
         transaction = Transaction.get()
         # comment out for now
-        #my.assertEquals( None, transaction )
+        #self.assertEquals( None, transaction )
 
         db_res = DbResource.get_default('unittest')
         sql = DbContainer.get(db_res)
-        my.assertEquals( False, sql.is_in_transaction() )
+        self.assertEquals( False, sql.is_in_transaction() )
 
 
         count_sql = """select count(*) from "person"
                     where "name_first" = 'Bugs' and "name_last" = 'Bunny'"""
 
         num_records = sql.get_int(count_sql)
-        my.assertEquals(0, num_records)
+        self.assertEquals(0, num_records)
 
         # test with no transaction
         transaction = Transaction.get(create=True)
@@ -179,7 +181,7 @@ class SqlTest(unittest.TestCase):
         insert.set_value("name_last", "Bunny")
         statement = insert.get_statement()
         expected = '''INSERT INTO "person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')'''
-        my.assertEquals(expected, statement)
+        self.assertEquals(expected, statement)
 
         # with a db_res added, it should scope the database
         insert = Insert()
@@ -188,28 +190,28 @@ class SqlTest(unittest.TestCase):
         insert.set_value("name_first", "Bugs")
         insert.set_value("name_last", "Bunny")
         statement = insert.get_statement()
-        expected = '''INSERT INTO %s"person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')''' % my.prefix
-        my.assertEquals(expected, statement)
+        expected = '''INSERT INTO %s"person" ("name_first", "name_last") VALUES ('Bugs', 'Bunny')''' % self.prefix
+        self.assertEquals(expected, statement)
 
 
 
         sql.do_update(statement)
 
         num_records = sql.get_int(count_sql)
-        my.assertEquals(1, num_records)
+        self.assertEquals(1, num_records)
 
         delete = """delete from "person"
                  where "name_first" = 'Bugs' and "name_last" = 'Bunny'"""
         sql.do_update(delete)
 
         num_records = sql.get_int(count_sql)
-        my.assertEquals(0, num_records)
+        self.assertEquals(0, num_records)
 
         transaction.rollback()
 
 
 
-    def _test_create_table(my):
+    def _test_create_table(self):
 
         create = CreateTable()
         create.set_table("coffee")
@@ -251,12 +253,12 @@ class SqlTest(unittest.TestCase):
         statement = expected.replace("    ", " ")
         statement = expected.replace("\t", " ")
 
-        my.assertEquals(expected, statement)
+        self.assertEquals(expected, statement)
 
 
 
 
-    def _test_transaction(my):
+    def _test_transaction(self):
         """test a transaction"""
 
         database_type = Project.get_by_code("unittest").get_database_type()
@@ -288,17 +290,17 @@ class SqlTest(unittest.TestCase):
 
         sql.do_update(query)
         new_num_records = sql.get_value(count_sql)
-        my.assertEquals( new_num_records, num_records+1 )
+        self.assertEquals( new_num_records, num_records+1 )
         sql.rollback()
 
         # dump after the rollback
         new_num_records = sql.get_int(count_sql)
-        my.assertEqual( new_num_records, num_records )
+        self.assertEqual( new_num_records, num_records )
 
 
 
-    def _test_order_by(my):
-        
+    def _test_order_by(self):
+
 
         select = Select()
         db_res = DbResource.get_default('unittest')
@@ -307,19 +309,16 @@ class SqlTest(unittest.TestCase):
         select.add_enum_order_by("code", ['cow', 'dog', 'horse'])
 
         expected = '''SELECT %s"asset".* FROM %s"asset" ORDER BY ( CASE "code"
-WHEN 'cow' THEN 1 
-WHEN 'dog' THEN 2 
-WHEN 'horse' THEN 3 
-ELSE 4 END )''' % (my.prefix, my.prefix)
+WHEN 'cow' THEN 1 \nWHEN 'dog' THEN 2 \nWHEN 'horse' THEN 3 \nELSE 4 END )''' % (self.prefix, self.prefix)
 
         statement = select.get_statement()
 
-        my.assertEqual(expected, statement)
+        self.assertEqual(expected, statement)
 
 
 
 
-    def _test_rpn_filters(my):
+    def _test_rpn_filters(self):
         select = Select()
         db_res = DbResource.get_default('unittest')
         select.set_database(db_res)
@@ -333,8 +332,8 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_where("and")
         statement = select.get_statement()
 
-        expected = """SELECT %s"asset".* FROM %s"asset" WHERE ( "code" = 'chr001' OR "code" = 'chr002' OR "code" = 'chr003' ) AND "status" = 'complete'""" % (my.prefix, my.prefix)
-        my.assertEquals(expected, statement)
+        expected = """SELECT %s"asset".* FROM %s"asset" WHERE ( "code" = 'chr001' OR "code" = 'chr002' OR "code" = 'chr003' ) AND "status" = 'complete'""" % (self.prefix, self.prefix)
+        self.assertEquals(expected, statement)
 
 
 
@@ -347,9 +346,9 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_where("and")
         statement = select.get_statement()
         expected = """SELECT "asset".* FROM "asset" WHERE "status" = 'complete'"""
-        my.assertEquals(expected, statement)
+        self.assertEquals(expected, statement)
 
- 
+
 
         # assumed begin
         select = Select()
@@ -360,7 +359,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_where("or")
         statement = select.get_statement()
         expected = """SELECT "asset".* FROM "asset" WHERE "status" = 'retired' OR "code" = 'chr001' OR "code" = 'chr002'"""
-        my.assertEquals(expected, statement)
+        self.assertEquals(expected, statement)
 
 
 
@@ -381,7 +380,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         statement = search.get_statement()
         expected = '''SELECT "person".* FROM "person" WHERE ( "person"."login" = 'joe' AND "person"."login" = 'mary' ) OR ( "person"."attr" = 'tom' AND "person"."attr" = 'peter' )'''
 
-        my.assertEquals(expected, statement)
+        self.assertEquals(expected, statement)
 
 
         # try to throw in an extra begin in the middle
@@ -391,18 +390,49 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         search = Search(search_type)
         search.add_filter("project_code", project_code)
         search.add_filter("search_type", filter_search_type)
-        
+
         search.add_op("begin")
         values = ["chr001"]
         columns = ['keywords']
         for column in columns:
-            search.add_startswith_keyword_filter(column, values) 
+            search.add_startswith_keyword_filter(column, values)
 
         statement = search.get_statement()
-        expected = '''SELECT %s"sobject_list".* FROM %s"sobject_list" WHERE "sobject_list"."project_code" = 'unittest' AND "sobject_list"."search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (my.sthpw_prefix, my.sthpw_prefix)
-        my.assertEquals(expected, statement)
+        expected = '''SELECT %s"sobject_list".* FROM %s"sobject_list" WHERE "sobject_list"."project_code" = 'unittest' AND "sobject_list"."search_type" = 'unittest/city' AND ( lower("sobject_list"."keywords") like lower('%% chr001%%') OR lower("sobject_list"."keywords") like lower('chr001%%') )''' % (self.sthpw_prefix, self.sthpw_prefix)
+        self.assertEquals(expected, statement)
 
-    def _test_search_filter(my):
+
+        ############################## Test case for stripping outside brackets ###################
+        search = Search("unittest/car")
+
+        search.add_filter("code", "123")
+        search.add_filter("name", "xyz")
+
+        search.add_op("begin")
+        search.add_filter("login", "joe")
+        search.add_filter("login", "jack")
+        search.add_op("or")
+        statement = search.get_statement()
+        expected = """SELECT "unittest"."public"."car".* FROM "unittest"."public"."car" WHERE "car"."code" = '123' AND "car"."name" = 'xyz' AND ( "car"."login" = 'joe' OR "car"."login" = 'jack' )"""
+        self.assertEquals( expected, statement )
+
+
+        ############################# Test case for stripping outside brackets ######################
+        search = Search("unittest/car")
+
+        search.add_filter("code", "123")
+        search.add_filter("name", "xyz")
+        search.add_op("and")
+
+        search.add_op("begin")
+        search.add_filter("login", "joe")
+        search.add_filter("login", "jack")
+        search.add_op("or")
+        statement = search.get_statement()
+        expected = """SELECT "unittest"."public"."car".* FROM "unittest"."public"."car" WHERE ( "car"."code" = '123' AND "car"."name" = 'xyz' ) AND ( "car"."login" = 'joe' OR "car"."login" = 'jack' )"""
+        self.assertEquals( expected, statement )
+
+    def _test_search_filter(self):
 
         select = Select()
         db_res = DbResource.get_default('unittest')
@@ -417,8 +447,8 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select2.add_table("request")
         select2.add_select_filter("id", select)
         statement = select2.get_statement()
-        expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
-        my.assertEquals(expected, statement)
+        expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (self.prefix, self.prefix, self.prefix, self.prefix)
+        self.assertEquals(expected, statement)
 
         select3 = Select()
         select3.set_database(db_res)
@@ -427,10 +457,10 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select3.add_select_filter("id", select)
 
         statement = select3.get_statement()
-        expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (my.prefix, my.prefix, my.prefix, my.prefix)
-        my.assertEquals(expected, statement)
- 
-    def _test_add_drop_column(my):
+        expected = '''SELECT %s"request".* FROM %s"request" WHERE "request"."id" in ( SELECT %s"job"."request_id" FROM %s"job" WHERE "job"."code" = '123MMS' )''' % (self.prefix, self.prefix, self.prefix, self.prefix)
+        self.assertEquals(expected, statement)
+
+    def _test_add_drop_column(self):
         #Project.set_project('unittest')
         from pyasm.command import ColumnAddCmd, ColumnDropCmd, Command
         cmd = ColumnAddCmd('unittest/country','special_place','varchar(256)')
@@ -438,12 +468,12 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         search_type = 'unittest/country'
 
         # clear cache
-       
+
         SearchType.clear_column_cache(search_type)
 
         DatabaseImpl.clear_table_cache()
         exists = SearchType.column_exists(search_type, 'special_place')
-        my.assertEquals(exists, True)
+        self.assertEquals(exists, True)
 
         # now drop the column
         cmd = ColumnDropCmd(search_type,'special_place')
@@ -453,20 +483,20 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         SearchType.clear_column_cache(search_type)
         cache_dict = Container.get("DatabaseImpl:column_info")
 
-       
+
         # assume database is the same as sthpw
         database_type = Project.get_by_code("unittest").get_database_type()
         db_resource = DbResource.get_default('unittest')
         table_info = cache_dict.get("%s:%s" % (db_resource, "country"))
-        my.assertEquals(table_info == None, True)
+        self.assertEquals(table_info == None, True)
 
 
         key = "%s:%s" % (db_resource, "country")
         cache_dict[key] = None
         exists = SearchType.column_exists(search_type, 'special_place')
-        my.assertEquals(exists, False)
+        self.assertEquals(exists, False)
 
-    def _test_join(my):
+    def _test_join(self):
         """ test a select """
         Project.set_project('unittest')
         select = Select()
@@ -478,27 +508,27 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
         select.add_order_by("name_last")
 
         statement = select.get_statement()
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "person"."name_last"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
+        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code" ORDER BY "person"."name_last"''' % (self.prefix, self.prefix, self.prefix, self.prefix) )
 
 
         search = Search('unittest/person')
         search.add_join('unittest/city', 'unittest/person')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code"''' % (my.prefix,my.prefix, my.prefix))
+        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code"''' % (self.prefix,self.prefix, self.prefix))
 
         statement = search.get_statement()
         # this one has no schema connection, so will be ignored
         search.add_join('sthpw/login', 'unittest/person')
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code"''' % (my.prefix, my.prefix, my.prefix))
+        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code"''' % (self.prefix, self.prefix, self.prefix))
 
         search.add_join('unittest/country', 'unittest/city')
         statement = search.get_statement()
-        my.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code"''' % (my.prefix, my.prefix, my.prefix, my.prefix) )
+        self.assertEquals(statement, '''SELECT %s"person".* FROM %s"person" LEFT OUTER JOIN %s"city" ON "person"."city_code" = "city"."code" LEFT OUTER JOIN %s"country" ON "city"."country_code" = "country"."code"''' % (self.prefix, self.prefix, self.prefix, self.prefix) )
 
 
 
 
-    def _test_create_view(my):
+    def _test_create_view(self):
         from sql import CreateView
         db_res = DbResource.get_default('unittest')
         sql = DbContainer.get(db_res)
@@ -522,7 +552,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
 
         expected = '''CREATE VIEW "sports_car" AS SELECT "unittest"."public"."car".*, "unittest"."public"."sports_car_data"."acceleration", "unittest"."public"."sports_car_data"."horsepower", "unittest"."public"."sports_car_data"."top_speed" FROM "unittest"."public"."car" LEFT OUTER JOIN "unittest"."public"."sports_car_data" ON "car"."code" = "sports_car_data"."code"'''
 
-        my.assertEquals(expected, statement)
+        self.assertEquals(expected, statement)
 
 
 
@@ -531,7 +561,7 @@ ELSE 4 END )''' % (my.prefix, my.prefix)
 
 
 
-    
+
 if __name__ == "__main__":
     Batch()
     unittest.main()

@@ -22,8 +22,8 @@ class Sequence(SObject):
     SEARCH_TYPE = "prod/sequence"
 
 
-    def get_code(my):
-        return my.get_value("code")
+    def get_code(self):
+        return self.get_value("code")
 
 
     # Static methods

@@ -28,120 +28,120 @@ import re
 
 class ParallelStatusWdg(BaseTableElementWdg):
 
-    def init(my):
-        my.bar_select = None
-        my.label_select = None
-        my.include_sub_task = None
+    def init(self):
+        self.bar_select = None
+        self.label_select = None
+        self.include_sub_task = None
 
-        my.statistics = {}
-        my.statistics2 = {}
-        my.processes_order = []
-        my.completed_processes = []
+        self.statistics = {}
+        self.statistics2 = {}
+        self.processes_order = []
+        self.completed_processes = []
 
 
-        my.label_select_value = "reg"
-        my.desc_checkbox_value = "off"
-        my.bar_select_value = "1"
-        my.include_sub_task_value = False
+        self.label_select_value = "reg"
+        self.desc_checkbox_value = "off"
+        self.bar_select_value = "1"
+        self.include_sub_task_value = False
         
-        my.process_names = None
-        my.recurse = False
-        my.pipeline_code = None
-        my.data = {}
-        my.max_count = 0
+        self.process_names = None
+        self.recurse = False
+        self.pipeline_code = None
+        self.data = {}
+        self.max_count = 0
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def set_process_names(my, process_names):
-        my.process_names = process_names
+    def set_process_names(self, process_names):
+        self.process_names = process_names
 
-    def set_pipeline(my, pipeline):
-        my.pipeline_code = pipeline.get_code()
+    def set_pipeline(self, pipeline):
+        self.pipeline_code = pipeline.get_code()
 
-    def set_pipeline_code(my, pipeline_code):
-        my.pipeline_code = pipeline_code
+    def set_pipeline_code(self, pipeline_code):
+        self.pipeline_code = pipeline_code
 
-    def set_recurse(my, recurse=True):
-        my.recurse = recurse
+    def set_recurse(self, recurse=True):
+        self.recurse = recurse
 
-    def set_data(my, data):
-        my.data = data
+    def set_data(self, data):
+        self.data = data
 
-    def set_label_format(my, label_format):
+    def set_label_format(self, label_format):
         assert label_format in ['reg', 'small', 'abbr', 'none']
-        my.label_select_value = label_format
+        self.label_select_value = label_format
 
 
-    def preprocess(my):
+    def preprocess(self):
         
-        if my.sobjects:
-            tasks = Task.get_by_sobjects(my.sobjects, my.process_names)
+        if self.sobjects:
+            tasks = Task.get_by_sobjects(self.sobjects, self.process_names)
             # create a data structure
             for task in tasks:
                 search_type = task.get_value("search_type")
                 search_id = task.get_value("search_id")
                 search_key = "%s|%s" % (search_type, search_id)
                
-                sobject_tasks = my.data.get(search_key)
+                sobject_tasks = self.data.get(search_key)
                 if not sobject_tasks:
                     sobject_tasks = []
-                    my.data[search_key] = sobject_tasks
+                    self.data[search_key] = sobject_tasks
 
                 sobject_tasks.append(task)
                 status_attr = task.get_attr("status")
                 process_count = len(status_attr.get_pipeline().get_processes())
-                if process_count > my.max_count:
-                    my.max_count = process_count
+                if process_count > self.max_count:
+                    self.max_count = process_count
 
-    def get_title(my):
+    def get_title(self):
         return "Task Status"
 
 
         
-    def get_prefs(my):
+    def get_prefs(self):
         div = DivWdg('Bar Size: ')
-        my.bar_select = FilterSelectWdg('progress_bar_size')
+        self.bar_select = FilterSelectWdg('progress_bar_size')
         bar_sizes = [x*2 + 1 for x in xrange(6)]
-        my.bar_select.set_option('values', bar_sizes)
-        my.bar_select.set_option('default', '3')
-        div.add(my.bar_select)
-        my.bar_select_value = my.bar_select.get_value()
+        self.bar_select.set_option('values', bar_sizes)
+        self.bar_select.set_option('default', '3')
+        div.add(self.bar_select)
+        self.bar_select_value = self.bar_select.get_value()
         
-        my.label_select = FilterSelectWdg('Label_Format')
-        my.label_select_value = my.label_select.get_value()
-        my.label_select.set_option('values', 'reg|small|abbr')
-        my.label_select.set_option('default', 'reg')
+        self.label_select = FilterSelectWdg('Label_Format')
+        self.label_select_value = self.label_select.get_value()
+        self.label_select.set_option('values', 'reg|small|abbr')
+        self.label_select.set_option('default', 'reg')
         
         span = SpanWdg('Label Format: ', css='small')
-        span.add(my.label_select)
+        span.add(self.label_select)
         div.add(span) 
 
-        my.desc_checkbox = FilterCheckboxWdg("Show Description", \
+        self.desc_checkbox = FilterCheckboxWdg("Show Description", \
             'Show Description: ', css='small')
-        my.desc_checkbox_value = my.desc_checkbox.get_value()
+        self.desc_checkbox_value = self.desc_checkbox.get_value()
 
-        div.add(my.desc_checkbox)
+        div.add(self.desc_checkbox)
 
-        my.include_sub_task = FilterCheckboxWdg("include_sub_task", \
+        self.include_sub_task = FilterCheckboxWdg("include_sub_task", \
             label="include sub tasks", css='small')
-        my.include_sub_task_value = my.include_sub_task.is_checked()
-        div.add(my.include_sub_task)
+        self.include_sub_task_value = self.include_sub_task.is_checked()
+        div.add(self.include_sub_task)
         return div
 
 
-    def set_data(my, data):
-        my.data = data
+    def set_data(self, data):
+        self.data = data
 
-    def get_display(my):
-        my.task_per_process_dict = {}
+    def get_display(self):
+        self.task_per_process_dict = {}
         
         # get the sobject and relevent parameters
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_type = sobject.get_search_type()
 
-        if my.pipeline_code:
-            pipeline = Pipeline.get_by_code(my.pipeline_code)
+        if self.pipeline_code:
+            pipeline = Pipeline.get_by_code(self.pipeline_code)
         else:
             pipeline = Pipeline.get_by_sobject(sobject, allow_default=True)
 
@@ -150,15 +150,15 @@ class ParallelStatusWdg(BaseTableElementWdg):
             Environment.add_warning('missing pipeline code', \
                 "Pipeline code is empty for [%s]" %sobject.get_code())
             return
-        if my.include_sub_task_value:
-            my.recurse = True
+        if self.include_sub_task_value:
+            self.recurse = True
 
-        processes = pipeline.get_processes(recurse=my.recurse)
+        processes = pipeline.get_processes(recurse=self.recurse)
         # filter out process names
-        if my.process_names != None:
+        if self.process_names != None:
             filtered_processes = []
             for process in processes:
-                if process.get_name() in my.process_names:
+                if process.get_name() in self.process_names:
                     filtered_processes.append(process)
 
             processes = filtered_processes 
@@ -179,19 +179,19 @@ class ParallelStatusWdg(BaseTableElementWdg):
         table.add_style("font-size: 11px")
         top.add(table)
 
-        #if my.max_count:
-        #    percent_width = float(len(processes)) / float(my.max_count+1) * 100
+        #if self.max_count:
+        #    percent_width = float(len(processes)) / float(self.max_count+1) * 100
         #else:
         #    percent_width = 100
 
         # we want them more squeezed together when in abbr mode
-        if my.label_select_value != 'abbr':
+        if self.label_select_value != 'abbr':
             percent_width = 100
             table.add_style("width: %d%%" % percent_width)
         tr = table.add_row()
         
         for process in processes:
-            completion_wdg = my.get_completion(sobject, process,\
+            completion_wdg = self.get_completion(sobject, process,\
                 len(processes))
             if not completion_wdg:
                 continue
@@ -203,12 +203,12 @@ class ParallelStatusWdg(BaseTableElementWdg):
         tr = table.add_row(css='underline')
         tr.add_color("color", "color")
         
-        label_format = my.get_option("label_format")
+        label_format = self.get_option("label_format")
         if not label_format:
-            label_format =  my.label_select_value
+            label_format =  self.label_select_value
        
 
-        tup_list = my._get_labels(processes, label_format, show_sub_pipeline=my.is_ajax()) 
+        tup_list = self._get_labels(processes, label_format, show_sub_pipeline=self.is_ajax()) 
         style = ''
         for i, tup in enumerate(tup_list):
             name, process = tup
@@ -222,7 +222,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
 
                 swap = SwapDisplayWdg.get_triangle_wdg()
                 content_id =  '%s_%s' %(sobject.get_search_key(), child_pipeline.get_id())
-                content_id = my.generate_unique_id(content_id)
+                content_id = self.generate_unique_id(content_id)
                 content = DivWdg(id=content_id)
 
                 SwapDisplayWdg.create_swap_title(title, swap, content)
@@ -253,7 +253,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
 
             else:
                 span.add(name)
-                if my.task_per_process_dict.get(process) == 0:
+                if self.task_per_process_dict.get(process) == 0:
                     span.add_class('unused')
 
             if label_format == 'small' or label_format == 'abbr':
@@ -265,7 +265,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
         return top
 
 
-    def _get_child_wdg(my):
+    def _get_child_wdg(self):
         ''' this method is called thru ajax '''
         web = WebContainer.get_web()
         args = web.get_form_args()
@@ -282,8 +282,8 @@ class ParallelStatusWdg(BaseTableElementWdg):
         status_wdg.preprocess()
         return status_wdg
 
-    def get_bottom(my):
-        if my.get_option("report") == "false":
+    def get_bottom(self):
+        if self.get_option("report") == "false":
             return Widget()
 
         table = Table()
@@ -294,13 +294,13 @@ class ParallelStatusWdg(BaseTableElementWdg):
         table.add_cell("Completion")
         
 
-        for process in my.processes_order:
-            my._draw_stat_row(table, process)
+        for process in self.processes_order:
+            self._draw_stat_row(table, process)
            
         return table
 
 
-    def _draw_stat_row(my, table, process):
+    def _draw_stat_row(self, table, process):
         table.add_row()
         if process.is_from_sub_pipeline():
             name = process.get_full_name()
@@ -308,18 +308,18 @@ class ParallelStatusWdg(BaseTableElementWdg):
             name = process.get_name()
         table.add_cell(name)
 
-        total_tasks = my.statistics2.get(process)
+        total_tasks = self.statistics2.get(process)
         if not total_tasks:
             total_percentage = 0
         else:
-            total_percentage = my.statistics.get(process) / total_tasks
+            total_percentage = self.statistics.get(process) / total_tasks
 
         completion = CompletionBarWdg(total_percentage, 50)
 
         table.add_cell( str(total_tasks) )
         table.add_cell( completion )
     
-    def _get_labels(my, processes, label_format, show_sub_pipeline=False):
+    def _get_labels(self, processes, label_format, show_sub_pipeline=False):
         '''return a tuple of label, process'''
         process_names = []
         if show_sub_pipeline:
@@ -348,32 +348,32 @@ class ParallelStatusWdg(BaseTableElementWdg):
 
 
 
-    def get_completion(my, sobject, process, processes_count):
+    def get_completion(self, sobject, process, processes_count):
         '''get the completion of a particular task'''
         # get the tasks
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
-        tasks = my.data.get("%s|%s" % (search_type,search_id) )
+        tasks = self.data.get("%s|%s" % (search_type,search_id) )
         if not tasks:
             tasks = []
 
        
         # filter the process
-        my.tasks = []
+        self.tasks = []
         for task in tasks:
             task_value = task.get_value("process")
             if task_value != process.get_name() \
                     and task_value != process.get_full_name():
                 continue
-            my.tasks.append(task)
+            self.tasks.append(task)
         # record no. of tasks per process
-        my.task_per_process_dict[process] = len(my.tasks)
+        self.task_per_process_dict[process] = len(self.tasks)
         
        
         task_percent = 0
         
 
-        for task in my.tasks:
+        for task in self.tasks:
             status_attr = task.get_attr("status")
             percent = status_attr.get_percent_completion()
             
@@ -382,50 +382,50 @@ class ParallelStatusWdg(BaseTableElementWdg):
                 percent = 0
             task_percent += percent
 
-        if my.tasks:
-            task_percent /= len(my.tasks)
+        if self.tasks:
+            task_percent /= len(self.tasks)
        
-        total_percent = my.statistics.get(process)
+        total_percent = self.statistics.get(process)
         if not total_percent:
             total_percent = 0
 
-        total_tasks = my.statistics2.get(process)
+        total_tasks = self.statistics2.get(process)
         if not total_tasks:
             total_tasks = 0
 
 
-        my.statistics[process] = total_percent + task_percent
-        my.statistics2[process] = total_tasks + len(my.tasks)
-        if process not in my.processes_order:
-            my.processes_order.append(process)
+        self.statistics[process] = total_percent + task_percent
+        self.statistics2[process] = total_tasks + len(self.tasks)
+        if process not in self.processes_order:
+            self.processes_order.append(process)
 
         # if this is a subpipeline and not in ajax mode(subpipe drawing)
-        if process.is_from_sub_pipeline() and not my.is_ajax():
+        if process.is_from_sub_pipeline() and not self.is_ajax():
             return None
 
         # draw the widget
 
         bars = DivWdg()
         # each bar is 10px wide, but just add 2px for safety factor
-        #bars_width = 12 * len(my.tasks)
+        #bars_width = 12 * len(self.tasks)
         #if bars_width:
         #    bars.add_style('width', '%spx' %bars_width)
-        if my.max_count == 0:
-            my.max_count = 6
-        for task in my.tasks:
+        if self.max_count == 0:
+            self.max_count = 6
+        for task in self.tasks:
             status_attr = task.get_attr("status")
             percent = status_attr.get_percent_completion()
-            bars.add(my._get_bar(percent, my.max_count, task))
+            bars.add(self._get_bar(percent, self.max_count, task))
  
         return bars
 
 
 
-    def _get_bar(my, percent, proc_count, task):
+    def _get_bar(self, percent, proc_count, task):
         '''get a vertical bar indicating the progress of a task '''
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         bar = DivWdg()
-        if my.desc_checkbox_value == "on":
+        if self.desc_checkbox_value == "on":
             bar.add_style('margin-right: 20px')
         else:
             bar.add_style('width: 10px')
@@ -501,12 +501,12 @@ class ParallelStatusWdg(BaseTableElementWdg):
                 if alert_color:
                     div.add_style("background-color: %s" % alert_color)
                 else:
-                    div.add_style("background-color: %s" % my._get_color_code(percent))
+                    div.add_style("background-color: %s" % self._get_color_code(percent))
 
 
-            bar_height = my.get_option("bar_height")
+            bar_height = self.get_option("bar_height")
             if not bar_height:
-                bar_height = my.bar_select_value
+                bar_height = self.bar_select_value
             if not bar_height:
                 bar_height = '3'
             div.add_style("height: %spx" % bar_height)
@@ -515,7 +515,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
             if sobject.is_retired():
                 div.add_class('task_status_bar_retired')
             else:
-                if my.label_select_value == "abbr":
+                if self.label_select_value == "abbr":
                     div.add_style("margin: -1px")
 
                 #div.add_class("task_status_bar")
@@ -525,7 +525,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
             
             bar.add(div)
 
-        if my.desc_checkbox_value == "on":
+        if self.desc_checkbox_value == "on":
             span = SpanWdg(task_desc)
             span.add_style('font-size: 0.8em')
             bar.add( span )
@@ -533,7 +533,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
         return bar
 
 
-    def _get_color_code(my, percent):
+    def _get_color_code(self, percent):
         ''' get a color code based on percentage of task completion '''
         color = "#ddd"
         if percent > 80:
@@ -547,18 +547,18 @@ class ParallelStatusWdg(BaseTableElementWdg):
        
         return color
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         td.add_style('vertical-align','bottom')
 
 
 
 class ParallelStatusEditWdg(BaseTableElementWdg):
 
-    def is_editable(my):
+    def is_editable(self):
         return False
 
-    def get_display(my):
-        parent = my.get_current_sobject()
+    def get_display(self):
+        parent = self.get_current_sobject()
         parent_key = SearchKey.get_by_sobject(parent)
 
         div = DivWdg()
@@ -600,8 +600,8 @@ class ParallelStatusEditLoadWdg(BaseRefreshWdg):
     }
 
 
-    def get_display(my):
-        parent_key = my.kwargs.get("search_key")
+    def get_display(self):
+        parent_key = self.kwargs.get("search_key")
        
         assert(parent_key)
 
@@ -614,7 +614,7 @@ class ParallelStatusEditLoadWdg(BaseRefreshWdg):
         web.set_form_value("parent_search_type", parent_type);
 
         div = DivWdg()
-        if my.kwargs.get("__hidden__"):
+        if self.kwargs.get("__hidden__"):
             div.add_style("margin-top: -2px")
             div.add_style("margin-left: 0px")
 
@@ -625,7 +625,7 @@ class ParallelStatusEditLoadWdg(BaseRefreshWdg):
 
         from tactic.ui.panel import TableLayoutWdg, FastTableLayoutWdg
 
-        expression = my.kwargs.get('expression')
+        expression = self.kwargs.get('expression')
         if not expression:
             expression = ''
         # title is used for panel refresh overlay
@@ -634,7 +634,7 @@ class ParallelStatusEditLoadWdg(BaseRefreshWdg):
             mode="insert", search_key=parent_key,
             state={'search_key': parent_key},
             expression=expression, title='Task Edit',
-            __hidden__=my.kwargs.get("__hidden__"))
+            __hidden__=self.kwargs.get("__hidden__"))
 
         div.add(table)
 
@@ -649,34 +649,34 @@ from tactic.ui.container import SmartMenu
 class TaskGearElementWdg(BaseTableElementWdg):
     '''Gear Menu for Page Header'''
 
-    def init(my):
+    def init(self):
         pass
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         td.add_class("spt_input_inline")
         td.add_attr("spt_input_type", "gantt")
-        td.add_attr("spt_input_column", my.get_name())
+        td.add_attr("spt_input_column", self.get_name())
 
 
-    def get_display(my):
+    def get_display(self):
 
 
         top = DivWdg()
         top.add_class("spt_task_gear_top")
 
-        #hidden = HiddenWdg(my.get_name())
+        #hidden = HiddenWdg(self.get_name())
         #top.add(hidden)
 
 
         # use a checkbox instead
 
-        checkbox = CheckboxWdg(my.get_name())
+        checkbox = CheckboxWdg(self.get_name())
 
         top.add_behavior( {
             "type": "click_up",
@@ -698,7 +698,7 @@ class TaskGearElementWdg(BaseTableElementWdg):
  
 
 
-        menus = [ my.get_main_menu(), my.get_edit_menu() ]
+        menus = [ self.get_main_menu(), self.get_edit_menu() ]
 
         btn_dd = DivWdg()
         btn_dd.add_styles("width: 36px; height: 18px; padding: none; padding-top: 1px;")
@@ -723,7 +723,7 @@ class TaskGearElementWdg(BaseTableElementWdg):
         return top
 
 
-    def get_main_menu(my):
+    def get_main_menu(self):
         return { 'menu_tag_suffix': 'MAIN', 'width': 160, 'opt_spec_list': [
             #{ "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
             { "type": "action", "label": "Add Pipeline Tasks",
@@ -742,7 +742,7 @@ class TaskGearElementWdg(BaseTableElementWdg):
         ] }
 
 
-    def get_edit_menu(my):
+    def get_edit_menu(self):
         return {
             'menu_tag_suffix': 'EDIT', 'width': 160, 'opt_spec_list': [
 

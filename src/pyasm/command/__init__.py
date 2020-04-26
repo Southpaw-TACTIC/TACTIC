@@ -35,4 +35,6 @@ from database_cmd import *
 
 from workflow import *
 
+from subprocess_trigger import *
+
 

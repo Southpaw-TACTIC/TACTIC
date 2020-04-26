@@ -22,19 +22,19 @@ import os
 
 
 class FakeSecurity(object):
-    def check_access(my, *args):
+    def check_access(self, *args):
         return True
-    def get_user_name(my):
+    def get_user_name(self):
         return "admin"
-    def get_login(my):
-        return my
-    def alter_search(my, search):
+    def get_login(self):
+        return self
+    def alter_search(self, search):
         pass
-    def get_ticket(my):
+    def get_ticket(self):
         from pyasm.search import SearchType
         ticket = SearchType.create("sthpw/ticket")
         return ticket
-    def get_ticket_key(my):
+    def get_ticket_key(self):
         return ""
 
 
@@ -96,7 +96,7 @@ def upgrade():
     if not python:
         python = "python"
 
-    cmd = "%s \"%s/src/bin/upgrade_db.py\" -f -y -p admin" % (python, install_dir)
+    cmd = "%s \"%s/src/bin/upgrade_db.py\" -q -f -y -p admin" % (python, install_dir)
     print cmd
 
     os.system(cmd)

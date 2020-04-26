@@ -20,13 +20,13 @@ from app_environment import AppEnvironment
 class ClientTrigger(object):
     '''Simple implementation of a trigger allowing for custom actions to
     occur on the client side'''
-    def __init__(my):
-        my.event = ""
+    def __init__(self):
+        self.event = ""
 
-    def set_event(my, event):
-        my.event = event
+    def set_event(self, event):
+        self.event = event
 
-    def execute(my):
+    def execute(self):
         pass
 
 
@@ -63,13 +63,13 @@ class ClientTrigger(object):
 
 class TestCheckinTrigger(ClientTrigger):
     '''sample trigger'''
-    def execute(my):
+    def execute(self):
         # get the maya session
         env = AppEnvironment.get()
         app = env.get_app()
 
         # do some checks
-        print "event: ", my.event
+        print "event: ", self.event
 
 
 # register the trigger to just before asset is exported

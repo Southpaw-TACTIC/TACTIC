@@ -9,11 +9,12 @@
 #
 #
 #
-__all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPanelSaveWdg"]
+__all__ = ["SideBarPanelWdg", "SideBarBookmarkMenuWdg", "ViewPanelWdg", "ViewPanelSaveWdg", "ViewPanelSaveCbk"]
 
 import os, types
 import random
 from pyasm.common import Xml, Common, Environment, Container, XmlException, jsonloads, jsondumps, Config, SetupException
+from pyasm.command import Command
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
@@ -28,12 +29,13 @@ from tactic.ui.input import TextInputWdg
 
 class SideBarPanelWdg(BaseRefreshWdg):
 
-    def get_views(my):
+    def get_views(self):
 
         views = []
-        view = my.kwargs.get("view")
+        view = self.kwargs.get("view")
         if view:
-            views.append(view)
+            extra_views = view.split("|")
+            views.extend(extra_views)
 
         if not Project.get().is_admin():
             views.append('project_view')
@@ -43,8 +45,8 @@ class SideBarPanelWdg(BaseRefreshWdg):
         # main project_view
         security = Environment.get_security()
         if security.check_access("builtin", "view_save_my_view", "allow", default='allow'):
-            # show my views section
-            my_view = "my_view_%s" % Environment.get_user_name()
+            # show self views section
+            my_view = "self_view_%s" % Environment.get_user_name()
             my_view = my_view.replace("\\", "_")
             views.append(my_view)
                 
@@ -72,10 +74,11 @@ class SideBarPanelWdg(BaseRefreshWdg):
         return views
 
 
-    def get_display(my):
-        views = my.get_views()
+    def get_display(self):
+        views = self.get_views()
 
-        top = my.top
+        top = self.top
+
 
         # TEST: NEW LAYOUT
         if Config.get_value("install", "layout") == "fixed":
@@ -84,22 +87,28 @@ class SideBarPanelWdg(BaseRefreshWdg):
             top.add_style("z-index: -1")
             top.add_style("width: 185")
 
-        top.add( my.get_subdisplay(views) )
+        top.add( self.get_subdisplay(views) )
         return top
 
 
 
-    def get_subdisplay(my, views):
+    def get_subdisplay(self, views):
 
         div = DivWdg()
-        div.set_attr('spt_class_name', Common.get_full_class_name(my))
+        div.set_attr('spt_class_name', Common.get_full_class_name(self))
+
+
+        div.add_class("spt_window_resize")
+        div.add_attr("spt_window_resize_offset", "35")
+        div.add_color("background", "background3")
+
 
         # remove the default round corners by making this div the same color
         div.add_color("background", "background3")
 
         div.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         # add the down button
@@ -119,13 +128,13 @@ class SideBarPanelWdg(BaseRefreshWdg):
                  "<img class='spt_order_icon' src='/context/icons/common/order_array_up_1.png'></div>")
 
         down.add_event("onclick", "new Fx.Tween('side_bar_scroll').start('margin-top', 0);" \
-                       "$(this).setStyle('display', 'none');")
+                       "document.id(this).setStyle('display', 'none');")
         div.add(down)
 
 
 
         outer_div = DivWdg()
-        outer_div.add_style("overflow: hidden")
+        #outer_div.add_style("overflow: hidden")
         div.add(outer_div)
         inner_div = DivWdg()
         inner_div.set_id("side_bar_scroll")
@@ -144,7 +153,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
         # Project Views (main) side bar bookmark menu ...
         # (passing in an empty, "", title -- so that it is just the rounded div menu)
         #
-        inner_div.add( my.get_bookmark_menu_wdg("", None, views) )
+        inner_div.add( self.get_bookmark_menu_wdg("", None, views) )
         inner_div.add(HtmlElement.br())
 
 
@@ -152,13 +161,13 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_bookmark_menu_wdg(my, title, config, views):
+    def get_bookmark_menu_wdg(self, title, config, views):
 
         kwargs = {
             'title': title,
             'view': views,
             'config': config,
-            'auto_size': my.kwargs.get('auto_size')
+            'auto_size': self.kwargs.get('auto_size')
         }
         section_div = DivWdg()
         section_div.add_style("display: block")
@@ -170,7 +179,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
         return r'''
 
@@ -261,9 +270,9 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         spt.panel.load_popup(title, widget_class, options);
     }
     else {
-        var target_element = $(target_id);
+        var target_element = document.id(target_id);
 
-        var main_body = $('main_body');
+        var main_body = document.id('main_body');
         var tab_top = main_body.getElement(".spt_tab_top");
         spt.tab.top = tab_top;
 
@@ -324,7 +333,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
     this.execute = function() { 
 
         // get the target element
-        var target_element = $(this.target_id);
+        var target_element = document.id(this.target_id);
 
         this.redo();
     }
@@ -348,9 +357,9 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
             spt.panel.load_popup(path, widget_class, this.options);
         }
         else {
-            var target_element = $(this.target_id);
+            var target_element = document.id(this.target_id);
 
-            //$("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
+            //document.id("breadcrumb").innerHTML = '<div><img src="/context/icons/common/indicator_snake.gif" border="0"> ' +
             //                            'Loading "' + this.title + '" ...</div>';
 
             spt.panel.load(target_element, widget_class, this.options, this.values)
@@ -366,8 +375,8 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
             server.set_application_state(key, panel_id, widget_class, this.options, this.values);
 
             // also set the breadcrumb
-            //$("breadcrumb").innerHTML = path
-            //$("breadcrumb").innerHTML = this.title
+            //document.id("breadcrumb").innerHTML = path
+            //document.id("breadcrumb").innerHTML = this.title
 
             // set the url hash
             if (typeof(this.options.element_name) != "undefined") {
@@ -385,7 +394,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
 
     this.undo = function() {
 
-        var target_element = $(this.target_id);
+        var target_element = document.id(this.target_id);
 
         Effects.fade_out(this.prev_target_id, 150);
 
@@ -427,7 +436,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
 //
 spt.side_bar.scroll = function(evt, bvr) {
     var property = "margin-top";
-    var margin = $("side_bar_scroll").getStyle(property);
+    var margin = document.id("side_bar_scroll").getStyle(property);
     margin = parseInt(margin.replace("px", ""));
     if (evt.wheel < 0) {
         margin -= 30;
@@ -438,14 +447,14 @@ spt.side_bar.scroll = function(evt, bvr) {
 
     if (margin > 0) {
         margin = 0;
-        $("side_bar_scroll_down").setStyle('display', 'none');
-        var pos = $(window).getScroll();
-        $(window).scrollTo(pos.x, pos.y - 30);
+        document.id("side_bar_scroll_down").setStyle('display', 'none');
+        var pos = document.id(window).getScroll();
+        document.id(window).scrollTo(pos.x, pos.y - 30);
     }
     else {
-        $("side_bar_scroll_down").setStyle('display', 'block');
+        document.id("side_bar_scroll_down").setStyle('display', 'block');
     }
-    $("side_bar_scroll").setStyle(property, margin);
+    document.id("side_bar_scroll").setStyle(property, margin);
 }
 
 
@@ -458,7 +467,7 @@ spt.side_bar.scroll = function(evt, bvr) {
 
 spt.side_bar.toggle_section_display_cbk = function(evt, bvr)
 {
-    var click_el = $(bvr.src_el);
+    var click_el = document.id(bvr.src_el);
     //hide el could be the section or div inside the section
     if (spt.has_class(click_el, 'spt_side_bar_element'))
         var hide_el = click_el.getElement(".spt_side_bar_section_content");
@@ -512,7 +521,7 @@ spt.side_bar.get_state = function()
 
 spt.side_bar.store_state = function()
 {
-    var elements = $("side_bar").getElements(".spt_side_bar_section_content");
+    var elements = document.id("side_bar").getElements(".spt_side_bar_section_content");
 
     var open_folders = {};
 
@@ -532,7 +541,7 @@ spt.side_bar.store_state = function()
 
 spt.side_bar.restore_state = function()
 {
-    var side_bar_el = $("side_bar");
+    var side_bar_el = document.id("side_bar");
     if( ! side_bar_el ) {
         spt.js_log.warning( "WARNING: in spt.side_bar.restore_state(), element with ID 'side_bar' not found." );
         return;
@@ -554,7 +563,7 @@ spt.side_bar.restore_state = function()
         var path = element.getAttribute("spt_path");
 
         // Find the element with the arrow indicator for open or closed state of section ...
-        var prev = $(element).getPrevious();
+        var prev = document.id(element).getPrevious();
         if (!prev) continue;
         var arrow_img_el = prev.getElement("img");
         var img_src = arrow_img_el.get('src');
@@ -745,7 +754,7 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
                 //kwargs['auto_unique_name'] = true;
                 kwargs['unique'] = true;
                 
-                // add it to the view, if view is my personal view, add login
+                // add it to the view, if view is self personal view, add login
                 search_type = 'SideBarWdg';
                 var info = server.add_config_element(search_type, 'definition', link_name, kwargs);
                 var unique_el_name = info['element_name'];
@@ -858,7 +867,7 @@ spt.side_bar.get_elements = function(view, list_id) {
         list_id = "menu_item_list";
     }
 
-    var elements = $(list_id).getElements(".spt_side_bar_element");
+    var elements = document.id(list_id).getElements(".spt_side_bar_element");
     if (typeof(view) == 'undefined') {
         return elements;
     }
@@ -923,7 +932,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
     //    bvr.src_el = bvr.src_el.parentNode;
     //}
 
-    var ghost_el = $(bvr.drag_el);
+    var ghost_el = document.id(bvr.drag_el);
     if (!ghost_el) {
         var ghost_el = spt.mouse._create_drag_copy( bvr.src_el );
         bvr.drag_el = ghost_el;
@@ -946,7 +955,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
 
         // Then plug the clone div into the Utility ghost_el div to be the contents of the drop ...
         ghost_el.innerHTML = "";
-        ghost_el.appendChild( $(src_copy) );
+        ghost_el.appendChild( document.id(src_copy) );
 
         ghost_el.setStyle( "display", "block" );
         ghost_el.setStyle( "text-align", "left" );
@@ -961,7 +970,7 @@ spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
 
 spt.side_bar.pp_motion = function(evt, bvr, mouse_411)
 {
-    var ghost_el = $(bvr.drag_el);
+    var ghost_el = document.id(bvr.drag_el);
     if( ghost_el )
     {
         ghost_el.setStyle( "left", (mouse_411.curr_x + 10) );
@@ -1240,7 +1249,7 @@ spt.side_bar.add_new_item = function(view, element_name, template_top) {
     // index is prone to error, use element_name instead
 
     if ( typeof(template_top) == 'undefined' ) {
-        template_top = $("menu_item_template");
+        template_top = document.id("menu_item_template");
     }
     var menu_item = template_top.getElement("div[spt_element_name=" + element_name +"]");
   
@@ -1250,7 +1259,7 @@ spt.side_bar.add_new_item = function(view, element_name, template_top) {
     var clone = spt.behavior.clone(menu_item);
 
     // get the element and inject after
-    var div = $(popup_id).getElement('.spt_new_item');
+    var div = document.id(popup_id).getElement('.spt_new_item');
     div.appendChild(clone);
 
     // now add some properties to the new element
@@ -1404,47 +1413,47 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         }
     get_args_keys = classmethod(get_args_keys)
 
-    def get_target_id(my):
+    def get_target_id(self):
         '''get the target to which this side bar loads to'''
         return "main_body"
 
 
-    def get_display(my):
-        my.config_search_type = my.kwargs.get("config_search_type")
-        if not my.config_search_type:
-            my.config_search_type = "SideBarWdg"
-        my.default = my.kwargs.get('default') == 'True'
+    def get_display(self):
+        self.config_search_type = self.kwargs.get("config_search_type")
+        if not self.config_search_type:
+            self.config_search_type = "SideBarWdg"
+        self.default = self.kwargs.get('default') == 'True'
 
         web = WebContainer.get_web()
-        my.palette = web.get_palette()
-        my.project = Project.get()
+        self.palette = web.get_palette()
+        self.project = Project.get()
 
-        title = my.kwargs.get('title')
-        config = my.kwargs.get('config')
-        view = my.kwargs.get('view')
-        parent_view = my.kwargs.get('parent_view')
-        sortable = my.kwargs.get('sortable')
+        title = self.kwargs.get('title')
+        config = self.kwargs.get('config')
+        view = self.kwargs.get('view')
+        parent_view = self.kwargs.get('parent_view')
+        sortable = self.kwargs.get('sortable')
 
-        my.prefix = my.kwargs.get("prefix")
-        if not my.prefix:
-            my.prefix = "side_bar"
+        self.prefix = self.kwargs.get("prefix")
+        if not self.prefix:
+            self.prefix = "side_bar"
 
 
-        width = my.kwargs.get('width')
+        width = self.kwargs.get('width')
         if not width:
             #width = "175"
             width = "100%"
 
-        my.mode = my.kwargs.get("mode")
-        if not my.mode:
-            my.mode = 'view'
+        self.mode = self.kwargs.get("mode")
+        if not self.mode:
+            self.mode = 'view'
 
 
 
         div = DivWdg()
         if web.is_IE():
             div.add_style("text-align: left")
-        background = my.palette.color("background3")
+        background = self.palette.color("background3")
         if width == "100%":
             div.add_style("min-width: 175px")
 
@@ -1456,8 +1465,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         section_div = LabeledHidableWdg(label=label)
         div.add(section_div)
 
-        section_div.set_attr('spt_class_name', Common.get_full_class_name(my))
-        for name, value in my.kwargs.items():
+        section_div.set_attr('spt_class_name', Common.get_full_class_name(self))
+        for name, value in self.kwargs.items():
             if name == "config":
                 continue
             section_div.set_attr("spt_%s" % name, value)
@@ -1473,13 +1482,13 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         content_div.add_attr("spt_view", view)
         content_div.add_style("text-align: left")
 
-        auto_size = my.kwargs.get("auto_size")
+        auto_size = self.kwargs.get("auto_size")
         #if auto_size in ['true', True]:
         if True:
             content_div.add_behavior( {
                 'type': 'load',
                 'cbjs_action': '''
-                var size = $(window).getSize();
+                var size = document.id(window).getSize();
                 //bvr.src_el.setStyle("min-height", size.y - 60);
                 bvr.src_el.setStyle("min-height", size.y);
                 //bvr.src_el.setStyle("overflow-y", "auto");
@@ -1490,7 +1499,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         content_div.add_style("height: 100%")
 
         # add in a context smart menu for all links
-        my.add_link_context_menu(content_div)
+        self.add_link_context_menu(content_div)
 
 
 
@@ -1503,7 +1512,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             if view_item.startswith('my_view_'):
                 is_personal = True
 
-            config = my.get_config(my.config_search_type, view_item, default=my.default, personal=is_personal)
+            config = self.get_config(self.config_search_type, view_item, default=self.default, personal=is_personal)
             if not config:
                 continue
 
@@ -1524,7 +1533,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             view_attrs = config.get_view_attributes()
             tt = view_attrs.get("title")
             if not tt:
-                if view_item.startswith("my_view_"):
+                if view_item.startswith("self_view_"):
                     tt = "My Views"
                 else:
                     tt = view_item.replace("_", " ");
@@ -1543,34 +1552,34 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                     'cbjs_action': "spt.panel.refresh('ManageSideBarBookmark_%s')" % view_item});
             info = { 'counter' : 10, 'view': view_item, 'level': 1 }
 
-            ret_val = my.generate_section( config, content_div, info, personal=is_personal )
+            ret_val = self.generate_section( config, content_div, info, personal=is_personal )
             if ret_val == 'empty':
                 title.add_style("display: none")
 
-            error_list = Container.get_seq(my.ERR_MSG)
+            error_list = Container.get_seq(self.ERR_MSG)
             if error_list: 
                 span = SpanWdg()
                 span.add_style('background', 'red')
                 span.add('<br/>'.join(error_list))
                 content_div.add(span)
-                Container.clear_seq(my.ERR_MSG)
-            my.add_dummy(config, content_div) 
+                Container.clear_seq(self.ERR_MSG)
+            self.add_dummy(config, content_div) 
 
 
 
 
         # display the schema links on the bottom of the the admin views
         if view_item == "admin_views":        
-            config_xml = my.get_schema_xml()
+            config_xml = self.get_schema_xml()
             config = WidgetConfig.get(xml=config_xml, view='schema')
-            my.generate_section( config, content_div, info, personal=False, use_same_config=True )
+            self.generate_section( config, content_div, info, personal=False, use_same_config=True )
 
         return div
 
 
 
 
-    def get_schema_xml(my):
+    def get_schema_xml(self):
 
         config_xml = []
        
@@ -1586,15 +1595,15 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         ''')
 
         # get project type schema
-        project = my.project
+        project = self.project
         project_code = project.get_code()
         project_type = project.get_type()
         schema = Schema.get_by_code(project_code)
 
         if project_code in ['sthpw', 'admin']:
-            my.is_admin = True
+            self.is_admin = True
         else:
-            my.is_admin = False
+            self.is_admin = False
 
 
 
@@ -1602,7 +1611,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         <schema_view>
         ''')
 
-        if not my.is_admin:
+        if not self.is_admin:
             config_xml.append( '''
             <element name='_current_schema' title='%s Schema'>
               <display class='FolderWdg'>
@@ -1643,16 +1652,16 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
         if schema:
-            my.get_schema_snippet("_current_schema", schema, config_xml)
+            self.get_schema_snippet("_current_schema", schema, config_xml)
         if project_type:
             schema = Schema.get_predefined_schema(project_type)
-            my.get_schema_snippet("_prod_schema", schema, config_xml)
+            self.get_schema_snippet("_prod_schema", schema, config_xml)
 
 
         config_schema = Schema.get_predefined_schema('config')
-        my.get_schema_snippet("_config_schema", config_schema, config_xml)
+        self.get_schema_snippet("_config_schema", config_schema, config_xml)
         schema = Schema.get_admin_schema()
-        my.get_schema_snippet("_admin_schema", schema, config_xml)
+        self.get_schema_snippet("_admin_schema", schema, config_xml)
 
 
         config_xml.append( '''
@@ -1671,6 +1680,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         search_types.sort()
 
+        js_load ="false"
+
         config_xml.append( '''
         <%s>
         ''' % view)
@@ -1678,7 +1689,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             try:
                 search_type_obj = SearchType.get(search_type)
             except:
-                print "WARNING: search type [%s] does not exist" % search_type
+                print("WARNING: search type [%s] does not exist" % search_type)
                 continue
             if not search_type_obj:
                 continue
@@ -1691,10 +1702,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
               <display class='LinkWdg'>
                   <search_type>%s</search_type>
                   <view>table</view>
+                  <height>auto</height>
+                  <js_load>%s</js_load>
                   <schema_default_view>true</schema_default_view>
               </display>
             </element>
-            ''' % (search_type, title, search_type) )
+            ''' % (search_type, title, search_type, js_load) )
         config_xml.append( '''
         </%s>
         ''' % view)
@@ -1702,7 +1715,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-    def add_link_context_menu(my, widget):
+    def add_link_context_menu(self, widget):
 
         from tactic.ui.container import  Menu, MenuItem
         menu = Menu(width=180)
@@ -1716,7 +1729,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
             var link = spt.smenu.get_activator(bvr);
-            var main_body = $('main_body');
+            var main_body = document.id('main_body');
             var tab_top = main_body.getElement(".spt_tab_top");
             spt.tab.top = tab_top;
             var class_name = link.getAttribute("spt_class_name");
@@ -1738,7 +1751,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
             var link = spt.smenu.get_activator(bvr);
-            var main_body = $('main_body');
+            var main_body = document.id('main_body');
             var class_name = link.getAttribute("spt_class_name");
 
             var kwargs_str = link.getAttribute("spt_kwargs");
@@ -1847,21 +1860,23 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                     if view_node is not None:
                         configs.append(config)
 
-        except XmlException, e:
+        except XmlException as e:
             msg = "Error with view [%s]"% ' '.join(views)
-            print "Error: ", str(e)
+            print("Error: ", str(e))
             
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
-                print e.__str__()
+                print(e.__str__())
 
 
     add_internal_config = staticmethod(add_internal_config)
 
    
 
-    def get_config(cls, config_search_type, view,  default=False, personal=False):
+    def get_config(cls, config_search_type, view, default=False, personal=False):
+
+        #print("view: ", view)
 
         config = None
         configs = []
@@ -1914,13 +1929,13 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             search = Search("config/widget_config")
             search.add_filter("search_type", config_search_type)
             search.add_filter("view", view)
-            #search.add_filter("login", login)
-            
+            if search.column_exists("priority"):
+                search.add_order_by("priority desc")
             config = search.get_sobject()
             if config:
                 configs.append(config)
+
             # then look for a file
-           
             SideBarBookmarkMenuWdg.add_internal_config(configs, [defined_view])
             
             logins = []
@@ -1952,20 +1967,20 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     get_config = classmethod(get_config)
 
-    def add_dummy(my, config, subsection_div):
+    def add_dummy(self, config, subsection_div):
         div = DivWdg()
         div.add_attr("spt_view", config.get_view() )
         div.add_class("spt_side_bar_element")
         div.add_class("spt_side_bar_dummy")
-        div.add( my.get_drop_wdg() )
+        div.add( self.get_drop_wdg() )
         subsection_div.add(div)
 
-    def generate_section( my, config, subsection_div, info, base_path="", personal=False, use_same_config=False ):
+    def generate_section( self, config, subsection_div, info, base_path="", personal=False, use_same_config=False ):
 
-        title = my.kwargs.get('title')
-        view = my.kwargs.get('view')
-        parent_view = my.kwargs.get('parent_view')
-        sortable = my.kwargs.get('sortable')
+        title = self.kwargs.get('title')
+        view = self.kwargs.get('view')
+        parent_view = self.kwargs.get('parent_view')
+        sortable = self.kwargs.get('sortable')
 
         base_path_flag = True
         if not base_path:
@@ -1989,7 +2004,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         
         # if there are no elements, then just add a drop widget
         if not element_names:
-            if my.mode == 'view':
+            if self.mode == 'view':
                 item_div = DivWdg()
                 item_div.add_style("margin: 3px")
                 item_div.add_color("color", "color")
@@ -1997,14 +2012,14 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 item_div.add("<i>-- No items --</i>")
                 subsection_div.add(item_div)
             else:
-                my.add_dummy(config, subsection_div)
+                self.add_dummy(config, subsection_div)
             return
 
         user = Environment.get_user_name()
 
         for element_name in element_names:
             if not element_name:
-                print "WARNING: element name is None in Sidebar config"
+                print("WARNING: element name is None in Sidebar config")
                 continue
 
             display_class = config.get_display_handler(element_name)
@@ -2017,9 +2032,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 if not security.check_access("side_bar", key, "view", default=default_access):
                     continue
             else:
-                key = {'project': my.project.get_code(), 'element': element_name}
+                key = {'project': self.project.get_code(), 'element': element_name}
                 key2 = {'element': element_name}
-                key3 = {'project': my.project.get_code(), 'element': '*'}
+                key3 = {'project': self.project.get_code(), 'element': '*'}
                 key4 = {'element': '*'}
                 keys = [key, key2, key3, key4]
                 if element_name.startswith('%s.'%user):
@@ -2034,55 +2049,42 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-            # TESTING: backwards compatibility
-            """
-            access = security.get_access("link", keys)
-            # if an access is not defined, then check
-            if access != None:
-                allowed = security.compare_access(access, "view")
-            else:
-                # otherwise check for "side_bar" rule for backwards
-                # compatibility
-                access = security.get_access("side_bar", keys)
-                allowed = security.compare_access(access, "view")
-                if allowed == None:
-                    allowed = False
-
-            if not allowed:
-                return
-            """
-
-
-
-
-
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
-                div = my.get_separator_wdg(element_name, config, options)
+                div = self.get_separator_wdg(element_name, config, options)
                 subsection_div.add(div)
                 continue
 
             elif display_class == "TitleWdg":
                 options = config.get_display_options(element_name)
-                div = my.get_title_wdg(element_name, config, options)
+                div = self.get_title_wdg(element_name, config, options)
                 subsection_div.add(div)
                 continue
 
             elif display_class in ["SideBarSectionLinkWdg","FolderWdg"]:
                options = config.get_display_options(element_name)
-               div = my.get_folder_wdg(element_name, config, options, base_path, current_path, info, personal, use_same_config)
+               div = self.get_folder_wdg(element_name, config, options, base_path, current_path, info, personal, use_same_config)
                subsection_div.add( div )
 
             else:
-                # assume LinkWdg, it's too loosely defined now
-                options = config.get_display_options(element_name)
+
+                view = config.get_element_attribute(element_name, "view")
+                if view:
+                    options = {}
+                    options['widget_key'] = 'custom_layout'
+                    options['view'] = view
+                else:
+                    # assume LinkWdg, it's too loosely defined now
+                    options = config.get_display_options(element_name)
+
+
                 options['path'] = '%s/%s' % (current_path, element_name)
 
                 # If is not link widget then remap dynamically
                 if display_class != 'LinkWdg':
                     options['class_name'] = display_class
 
-                link_wdg = my._get_link_wdg(element_name, config, options, current_path, info)
+                link_wdg = self._get_link_wdg(element_name, config, options, current_path, info)
                 if link_wdg:
                     subsection_div.add(link_wdg)
 
@@ -2096,8 +2098,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_drop_wdg(my):
-        if my.mode == 'view':
+    def get_drop_wdg(self):
+        if self.mode == 'view':
             return SpanWdg()
         hr = DivWdg()
         hr.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
@@ -2112,7 +2114,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_title_wdg(my, element_name, config, options):
+    def get_title_wdg(self, element_name, config, options):
             div = DivWdg()
             div.add_attr("spt_view", config.get_view() )
             div.add_class("spt_side_bar_element")
@@ -2129,9 +2131,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             div.add_style( "font-weight: bold" )
 
             #options = config.get_display_options(element_name)
-            my.add_title_behavior(div, element_name, config, options)
+            self.add_title_behavior(div, element_name, config, options)
 
-            title = my._get_title(config, element_name)
+            title = self._get_title(config, element_name)
             if not title:
                 title = Common.get_display_title(element_name)
 
@@ -2140,7 +2142,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             return div
 
 
-    def get_separator_wdg(my, element_name, config, options):
+    def get_separator_wdg(self, element_name, config, options):
             div = DivWdg()
             div.add_attr("spt_view", config.get_view() )
             div.add_class("spt_side_bar_element")
@@ -2154,13 +2156,13 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             div.add_style("padding-left: 3px")
 
             options = config.get_display_options(element_name)
-            my.add_separator_behavior(div, element_name, config, options)
+            self.add_separator_behavior(div, element_name, config, options)
 
             return div
 
 
 
-    def _get_link_wdg(my, element_name, config, options, current_path, info):
+    def _get_link_wdg(self, element_name, config, options, current_path, info):
         # put in a default class name
         class_name = options.get("class_name")
         widget_key = options.get("widget_key")
@@ -2171,7 +2173,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         if not class_name:
             options['class_name'] = "tactic.ui.panel.ViewPanelWdg"
 
-        link_wdg = my.get_link_wdg(element_name, config, options, info)
+        link_wdg = self.get_link_wdg(element_name, config, options, info)
 
         return link_wdg
 
@@ -2179,13 +2181,13 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-    def get_link_wdg(my, element_name, config, options, info):
+    def get_link_wdg(self, element_name, config, options, info):
         attributes = config.get_element_attributes(element_name)
 
-        if my.mode != 'edit' and attributes.get("is_visible") == "false":
+        if self.mode != 'edit' and attributes.get("is_visible") == "false":
             return
 
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
 
         default_access = "view"
         path = options.get('path')
@@ -2193,7 +2195,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
         link_wdg = DivWdg(css="hand")
-        if my.mode == 'edit' and attributes.get("is_visible") == "false":
+        if self.mode == 'edit' and attributes.get("is_visible") == "false":
             link_wdg.add_style("opacity: 0.5")
             link_wdg.add_style("font-style: italic")
 
@@ -2215,9 +2217,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
        
 
         # add the mouseover color change
-        bg_color = my.palette.color("background3")
-        bg_color2 = my.palette.color("background3", 20)
-        color = my.palette.color("color3")
+        bg_color = self.palette.color("background3")
+        bg_color2 = self.palette.color("background3", 20)
+        color = self.palette.color("color3")
         link_wdg.add_style("color: %s" % color)
         link_wdg.add_class("SPT_DTS")
         link_wdg.add_event("onmouseover", "this.style.background='%s'" % bg_color2)
@@ -2227,7 +2229,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
         # add an invisible drop widget
-        drop_wdg = my.get_drop_wdg()
+        drop_wdg = self.get_drop_wdg()
         drop_wdg.add_style("margin-top: -3px")
         link_wdg.add(drop_wdg)
 
@@ -2252,22 +2254,22 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         link_wdg.add(span)
 
 
-        my.add_link_behavior(link_wdg, element_name, config, options)
+        self.add_link_behavior(link_wdg, element_name, config, options)
 
 
         return link_wdg
 
 
 
-    def get_folder_wdg(my, element_name, config, options, base_path, current_path, info, personal, use_same_config):
+    def get_folder_wdg(self, element_name, config, options, base_path, current_path, info, personal, use_same_config):
         security = Environment.get_security()
         default_access = "view"
 
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
 
         attributes = config.get_element_attributes(element_name)
 
-        if my.mode != 'edit' and attributes.get("is_visible") == "false":
+        if self.mode != 'edit' and attributes.get("is_visible") == "false":
             return
 
         options = config.get_display_options(element_name)
@@ -2290,7 +2292,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         # create HTML elements for Section Link ...
         outer_div = DivWdg()
 
-        if my.mode == 'edit' and attributes.get("is_visible") == "false":
+        if self.mode == 'edit' and attributes.get("is_visible") == "false":
             outer_div.add_style("opacity: 0.5")
             outer_div.add_style("font-style: italic")
 
@@ -2308,7 +2310,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         #    outer_div.add_attr("spt_login", info.get('login')) 
 
         # add an invisible drop widget
-        outer_div.add(my.get_drop_wdg())
+        outer_div.add(self.get_drop_wdg())
 
 
         # Create the link
@@ -2326,9 +2328,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         #s_link_div.add_looks("navmenu_section fnt_text fnt_bold")
         s_link_div.add_looks("fnt_text fnt_bold")
-        bg_color = my.palette.color("background3")
-        bg_color2 = my.palette.color("background3", 20)
-        color = my.palette.color("color3")
+        bg_color = self.palette.color("background3")
+        bg_color2 = self.palette.color("background3", 20)
+        color = self.palette.color("color3")
         s_link_div.add_style("color: %s" % color)
         s_link_div.add_event("onmouseover", "this.style.background='%s'" % bg_color2)
         s_link_div.add_event("onmouseout", "this.style.background='%s'" % bg_color)
@@ -2370,7 +2372,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
         # add the behaviors
-        my.add_folder_behavior(s_link_div, element_name, config, options)
+        self.add_folder_behavior(s_link_div, element_name, config, options)
 
         # then get view name from options in order to read a new
         # config and recurse ...
@@ -2381,10 +2383,10 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 sub_config = WidgetConfig.get(xml=xml)
                 sub_config.set_view(options_view_name)
             else:
-                sub_config = my.get_config( my.config_search_type, options_view_name, default=my.default, personal=personal)
+                sub_config = self.get_config( self.config_search_type, options_view_name, default=self.default, personal=personal)
 
             info['level'] += 1
-            my.generate_section( sub_config, s_content_div, info, base_path=current_path, personal=personal, use_same_config=use_same_config )
+            self.generate_section( sub_config, s_content_div, info, base_path=current_path, personal=personal, use_same_config=use_same_config )
             info['level'] -= 1
 
 
@@ -2401,14 +2403,14 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
     #
     # behavior functions
     #
-    def add_separator_behavior(my, separator_wdg, element_name, config, options):
+    def add_separator_behavior(self, separator_wdg, element_name, config, options):
         pass
 
-    def add_title_behavior(my, title_wdg, element_name, config, options):
+    def add_title_behavior(self, title_wdg, element_name, config, options):
         pass
 
 
-    def add_folder_behavior(my, folder_wdg, element_name, config, options):
+    def add_folder_behavior(self, folder_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a folder'''
 
         # determines whether the folder opens on click
@@ -2419,17 +2421,17 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         folder_wdg.add_behavior( behavior )
 
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
 
-        target_id = my.get_target_id()
+        target_id = self.get_target_id()
 
         # if a parent key filter is specified, use it
-        parent_key = my.kwargs.get("parent_key")
+        parent_key = self.kwargs.get("parent_key")
         if parent_key:
             options['parent_key'] = parent_key
 
-        state = my.kwargs.get("state")
+        state = self.kwargs.get("state")
         if state:
             options['state'] = state
 
@@ -2441,7 +2443,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             options['help_alias'] = attributes.get("help")
 
         # send the title through
-        title = my._get_title(config, element_name)
+        title = self._get_title(config, element_name)
 
         header_title = options.get('header_title')
         if not header_title:
@@ -2504,7 +2506,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-    def _get_title(my, config, element_name):
+    def _get_title(self, config, element_name):
         attributes = config.get_element_attributes(element_name)
         title = attributes.get("title")
         if not title:
@@ -2520,8 +2522,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
 
 
-
-
+# for dyanmically importing into this namespace
+gl = globals()
+lc = locals()
 
 
 class ViewPanelWdg(BaseRefreshWdg):
@@ -2563,7 +2566,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         'simple_search_config': {
             'description': 'config xml as opposed to a view for defining a simple search',
             'type': 'TextWdg',
-            'order': '5a',
+            'order': 5,
             'category': 'Search'
         },
         'simple_search_visible_rows': {
@@ -2686,7 +2689,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determine if it displays top, bottom or both search limit",
             'type': 'SelectWdg',
             'values': 'bottom|top|both',
-            'order': '07a',
+            'order': 7,
             'category': 'Display'
         },
 
@@ -2724,14 +2727,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determines whether or not to expand the table",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": '11a',
+            "order": 11,
             'category': 'Display'
         },
         "show_border": {
             'description': "determines whether or not to show borders on the table",
             'type': 'SelectWdg',
             'values': 'true|false',
-            "order": '11b',
+            "order": 11,
             'category': 'Display'
         },
         'checkin_context': {
@@ -2879,24 +2882,24 @@ class ViewPanelWdg(BaseRefreshWdg):
 
     }
 
-    def get_display(my):
-        target_id = my.kwargs.get("target_id")
+    def get_display(self):
+        target_id = self.kwargs.get("target_id")
         if not target_id:
             target_id = 'main_body'
 
-        link_view = my.kwargs.get("link")
-        my.default = my.kwargs.get('default') == 'True'
-        parent_key = my.kwargs.get('parent_key')
-        search_key = my.kwargs.get('search_key')
-        order_by = my.kwargs.get('order_by')
-        element_name = my.kwargs.get('element_name')
+        link_view = self.kwargs.get("link")
+        self.default = self.kwargs.get('default') == 'True'
+        parent_key = self.kwargs.get('parent_key')
+        search_key = self.kwargs.get('search_key')
+        order_by = self.kwargs.get('order_by')
+        element_name = self.kwargs.get('element_name')
 
-        mode = my.kwargs.get('mode')
+        mode = self.kwargs.get('mode')
 
 
 
         if link_view:   
-            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", "definition", default=my.default)
+            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", "definition", default=self.default)
             display_options = config.get_display_options(link_view)
 
             search_type = display_options.get("search_type")
@@ -2909,12 +2912,12 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         else:
-            search_type = my.kwargs.get("search_type")
-            view = my.kwargs.get("view")
-            search_view = my.kwargs.get('search_view')
-            custom_filter_view = my.kwargs.get('custom_filter_view')
-            custom_search_view = my.kwargs.get("custom_search_view")
-            filter = my.kwargs.get("filter")
+            search_type = self.kwargs.get("search_type")
+            view = self.kwargs.get("view")
+            search_view = self.kwargs.get('search_view')
+            custom_filter_view = self.kwargs.get('custom_filter_view')
+            custom_search_view = self.kwargs.get("custom_search_view")
+            filter = self.kwargs.get("filter")
 
             # take the search filter structure from search_view
             # if filter is a non-xml string, then it is in JSON format
@@ -2933,8 +2936,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         from pyasm.search import SearchException
-        my.element_names = my.kwargs.get('element_names')
-        if not my.element_names:
+        self.element_names = self.kwargs.get('element_names')
+        if not self.element_names:
             if not search_type:
                 # this could be the old default layout, just return
                 if not search_view and not has_view:
@@ -2944,7 +2947,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 impl = SearchType.get_database_impl_by_search_type(search_type)
                 if impl.get_database_type() == "MongoDb":
-                    my.element_names = impl.get_default_columns()
+                    self.element_names = impl.get_default_columns()
             except SearchException:
                 raise
 
@@ -2957,16 +2960,16 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # set the state
-        my.state = my.kwargs.get('state')
-        if not my.state:
-            my.state = {}
-        if type(my.state) in types.StringTypes:
+        self.state = self.kwargs.get('state')
+        if not self.state:
+            self.state = {}
+        if type(self.state) in types.StringTypes:
             try:
-                my.state = eval(my.state)
-            except Exception, e:
-                print "WARNING: eval(state) error", e.__str__()
-                my.state = {}
-        Container.put("global_state", my.state)
+                self.state = eval(self.state)
+            except Exception as e:
+                print("WARNING: eval(state) error", e.__str__())
+                self.state = {}
+        Container.put("global_state", self.state)
 
 
         if not custom_search_view:
@@ -2975,7 +2978,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # define the top widget
-        top = my.top
+        top = self.top
         top.add_class("spt_view_panel_top");
 
         inner = DivWdg()
@@ -2986,14 +2989,14 @@ class ViewPanelWdg(BaseRefreshWdg):
         if not Container.get_dict("JSLibraries", "spt_view_panel"):
             inner.add_behavior({
                 'type': 'load',
-                'cbjs_action': my.get_onload_js()
+                'cbjs_action': self.get_onload_js()
             });
 
 
 
         # add refresh information
         top.set_attr("spt_node", "true")
-        my.set_as_panel(top, class_name='spt_view_panel')
+        self.set_as_panel(top, class_name='spt_view_panel')
 
             
         if not search_type or not view:
@@ -3001,7 +3004,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-        title_wdg = my.get_title_wdg()
+        title_wdg = self.get_title_wdg()
         if title_wdg:
             inner.add(title_wdg)
 
@@ -3009,12 +3012,12 @@ class ViewPanelWdg(BaseRefreshWdg):
         # set up a search
         try:
             search_type_obj = SearchType.get(search_type)
-        except SearchException, e:
-            print "Warning: can't find search type [%s]" % search_type
+        except SearchException as e:
+            print("Warning: can't find search type [%s]" % search_type)
             return top
 
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
             title = "%s : %s view" % (search_type_obj.get_title(), view)
 
@@ -3050,27 +3053,27 @@ class ViewPanelWdg(BaseRefreshWdg):
         # Search box
         inline_search = "true"
         search = None
-        use_last_search = my.kwargs.get('use_last_search')
+        use_last_search = self.kwargs.get('use_last_search')
         if use_last_search in ['false', "False", False]:
             use_last_search = False
         else:
             use_last_search = True
         
-        show_search = my.kwargs.get('show_search')
+        show_search = self.kwargs.get('show_search')
         if show_search in [False,'false']:
             show_search = 'false'
         else:
             show_search = 'true'
 
-        search_limit = my.kwargs.get("search_limit")
-        run_search_bvr = my.kwargs.get('run_search_bvr') 
+        search_limit = self.kwargs.get("search_limit")
+        run_search_bvr = self.kwargs.get('run_search_bvr') 
 
 
         search_dialog_id = 0
         search_wdg = None
         can_search = True
 
-        show_shelf = my.kwargs.get("show_shelf")
+        show_shelf = self.kwargs.get("show_shelf")
 
 
         # make some checks to see if search will actually work
@@ -3078,7 +3081,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             search = Search(search_type)
             search.set_null_filter()
             sobjects = search.get_sobjects()
-        except Exception, e:
+        except Exception as e:
             impl = SearchType.get_database_impl_by_search_type(search_type)
             if impl.get_database_type() == "MongoDb":
                 can_search = False
@@ -3089,11 +3092,11 @@ class ViewPanelWdg(BaseRefreshWdg):
         #if show_shelf not in [False, 'false']:
         #if True:
         if can_search:
-            search = my.kwargs.get("search")
+            search = self.kwargs.get("search")
             try:
                 from tactic.ui.app import SearchWdg
-                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=my.state, run_search_bvr=run_search_bvr, limit=search_limit)
-            except SearchException, e:
+                search_wdg = SearchWdg(search=search,search_type=search_type, view=search_view, parent_key=None, filter=filter, use_last_search=use_last_search, display=True, custom_filter_view=custom_filter_view, custom_search_view=custom_search_view, state=self.state, run_search_bvr=run_search_bvr, limit=search_limit)
+            except SearchException as e:
                 # reset the top_layout and must raise again
                 WidgetSettings.set_value_by_key('top_layout','')
                 raise
@@ -3102,7 +3105,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tactic.ui.container import DialogWdg
             search_dialog = DialogWdg(width=770, offset={'x':-250,'y':0})
             search_dialog_id = search_dialog.get_id()
-            #if show_search == 'true':
             # Comment out the above. 
             # Needs to draw the search_dialog for pre-saved parameters to go thru
             # Fast(Base) Table Layout will take care of hiding it
@@ -3118,12 +3120,12 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         # add an exposed search
-        simple_search_view = my.kwargs.get('simple_search_view')
-        simple_search_config = my.kwargs.get('simple_search_config')
+        simple_search_view = self.kwargs.get('simple_search_view')
+        simple_search_config = self.kwargs.get('simple_search_config')
         
         custom_simple_search_view = None
 
-        simple_search_mode = my.kwargs.get("simple_search_mode")
+        simple_search_mode = self.kwargs.get("simple_search_mode")
 
         if simple_search_view:
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
@@ -3132,29 +3134,32 @@ class ViewPanelWdg(BaseRefreshWdg):
             search_class = "tactic.ui.app.simple_search_wdg.SimpleSearchWdg"
         else:
             # add a custom search class
-            search_class = my.kwargs.get('search_class')
-            custom_simple_search_view = my.kwargs.get("search_view")
+            search_class = self.kwargs.get('search_class')
+            custom_simple_search_view = self.kwargs.get("search_view")
 
         if search_class:
+            simple_search_mode = self.kwargs.get("simple_search_mode")
             kwargs = {
                 "search_type": search_type,
-                "search_view": custom_simple_search_view
+                "search_view": custom_simple_search_view,
+                "mode": simple_search_mode,
+                "show_saved_search": self.kwargs.get("show_shaved_search"),
             }
             if run_search_bvr:
                 kwargs['run_search_bvr'] = run_search_bvr
 
-            if my.kwargs.get("keywords"):
-                kwargs['keywords'] = my.kwargs.get("keywords")
+            if self.kwargs.get("keywords"):
+                kwargs['keywords'] = self.kwargs.get("keywords")
 
             if simple_search_config:
                 kwargs['search_config'] = simple_search_config
 
-            kwargs['visible_rows'] = my.kwargs.get("simple_search_visible_rows")
-            kwargs['columns'] = my.kwargs.get("simple_search_columns")
+            kwargs['visible_rows'] = self.kwargs.get("simple_search_visible_rows")
+            kwargs['columns'] = self.kwargs.get("simple_search_columns")
  
 
 
-            show_shelf = my.kwargs.get("show_shelf")
+            show_shelf = self.kwargs.get("show_shelf")
             
             # display search button when shelf is not shown
             if show_shelf in [True, 'true', ""]:
@@ -3186,44 +3191,68 @@ class ViewPanelWdg(BaseRefreshWdg):
         inner.add(target_node)
 
 
-        #show_view_select = my.kwargs.get("show_view_select")
-        schema_default_view = my.kwargs.get("schema_default_view")
-        show_keyword_search = my.kwargs.get("show_keyword_search")
-        show_search_limit = my.kwargs.get("show_search_limit")
-        search_limit_mode = my.kwargs.get("search_limit_mode")
-        show_layout_switcher = my.kwargs.get("show_layout_switcher")
-        show_column_manager = my.kwargs.get("show_column_manager")
-        show_context_menu = my.kwargs.get("show_context_menu")
-        show_insert = my.kwargs.get("show_insert")
-        insert_view = my.kwargs.get("insert_view")
-        edit_view = my.kwargs.get("edit_view")
-        show_border = my.kwargs.get("show_border")
-        show_select = my.kwargs.get("show_select")
-        show_refresh = my.kwargs.get("show_refresh")
-        show_gear = my.kwargs.get("show_gear")
-        show_expand = my.kwargs.get("show_expand")
-        show_shelf = my.kwargs.get("show_shelf")
-        show_help = my.kwargs.get("show_help")
-        width = my.kwargs.get("width")
-        height = my.kwargs.get("height")
-        expression = my.kwargs.get("expression")
-        do_initial_search = my.kwargs.get("do_initial_search")
-        keywords = my.kwargs.get("keywords")
-        init_load_num = my.kwargs.get("init_load_num")
-        checkin_context = my.kwargs.get("checkin_context")
-        checkin_type = my.kwargs.get("checkin_type")
-        ingest_data_view = my.kwargs.get("ingest_data_view")
-        ingest_custom_view = my.kwargs.get("ingest_custom_view")
-        group_elements = my.kwargs.get("group_elements")
-        expand_mode = my.kwargs.get("expand_mode")
-        show_name_hover = my.kwargs.get("show_name_hover")
-        op_filters = my.kwargs.get("op_filters")
-        show_collection_tool = my.kwargs.get("show_collection_tool")
+        #show_view_select = self.kwargs.get("show_view_select")
+        schema_default_view = self.kwargs.get("schema_default_view")
+        show_keyword_search = self.kwargs.get("show_keyword_search")
+        show_search_limit = self.kwargs.get("show_search_limit")
+        search_limit_mode = self.kwargs.get("search_limit_mode")
+        show_layout_switcher = self.kwargs.get("show_layout_switcher")
+        show_column_manager = self.kwargs.get("show_column_manager")
+        show_context_menu = self.kwargs.get("show_context_menu")
+        show_insert = self.kwargs.get("show_insert")
+        show_group_insert = self.kwargs.get("show_group_insert")
+        insert_view = self.kwargs.get("insert_view")
+        edit_view = self.kwargs.get("edit_view")
+        show_border = self.kwargs.get("show_border")
+        show_select = self.kwargs.get("show_select")
+        show_refresh = self.kwargs.get("show_refresh")
+        show_gear = self.kwargs.get("show_gear")
+        show_expand = self.kwargs.get("show_expand")
+        show_shelf = self.kwargs.get("show_shelf")
+        show_header = self.kwargs.get("show_header")
+        show_help = self.kwargs.get("show_help")
+        show_row_highlight = self.kwargs.get("show_row_highlight")
+        show_group_highlight = self.kwargs.get("show_group_highlight")
+        width = self.kwargs.get("width")
+        height = self.kwargs.get("height")
+        expression = self.kwargs.get("expression")
+        do_initial_search = self.kwargs.get("do_initial_search")
+        keywords = self.kwargs.get("keywords")
+        keywords_columns = self.kwargs.get("keywords_columns")
+        init_load_num = self.kwargs.get("init_load_num")
+        checkin_context = self.kwargs.get("checkin_context")
+        checkin_type = self.kwargs.get("checkin_type")
+        ingest_data_view = self.kwargs.get("ingest_data_view")
+        ingest_custom_view = self.kwargs.get("ingest_custom_view")
+        group_elements = self.kwargs.get("group_elements")
+        group_label_expr = self.kwargs.get("group_label_expr")
+        group_label_view = self.kwargs.get("group_label_view")
+        expand_mode = self.kwargs.get("expand_mode")
+        show_name_hover = self.kwargs.get("show_name_hover")
+        op_filters = self.kwargs.get("op_filters")
+        show_collection_tool = self.kwargs.get("show_collection_tool")
+        settings = self.kwargs.get("settings")
+        gear_settings = self.kwargs.get("gear_settings")
+        shelf_view = self.kwargs.get("shelf_view")
+        badge_view = self.kwargs.get("badge_view")
+        extra_data = self.kwargs.get("extra_data")
+        if extra_data:
+            if isinstance(extra_data, dict):
+                extra_data = jsondumps(extra_data)
+
+        is_inner = self.kwargs.get("is_inner")
+
+        document_mode = self.kwargs.get("document_mode")
+
+        js_load = self.kwargs.get("js_load") or False
        
 
-        save_inputs = my.kwargs.get("save_inputs")
-        no_results_mode = my.kwargs.get("no_results_mode")
-        no_results_msg = my.kwargs.get("no_results_msg")
+        save_inputs = self.kwargs.get("save_inputs")
+        no_results_mode = self.kwargs.get("no_results_mode")
+        no_results_msg = self.kwargs.get("no_results_msg")
+
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+
 
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, random.randint(0,10000))
@@ -3231,13 +3260,13 @@ class ViewPanelWdg(BaseRefreshWdg):
         # this can be used to relate a View Panel to a table in order to 
         # tell if a table is embedded or not in js
         top.set_attr('table_id', table_id)
-        layout = my.kwargs.get("layout")
+        layout = self.kwargs.get("layout")
         if not layout or layout == "default":
             layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
 
-        search = my.kwargs.get("search")
+        search = self.kwargs.get("search")
 
         kwargs = {
             "table_id": table_id,
@@ -3258,16 +3287,19 @@ class ViewPanelWdg(BaseRefreshWdg):
             "show_select": show_select,
             "show_refresh": show_refresh,
             "show_insert": show_insert,
-            #"shelf_view": my.kwargs.get("shelf_view"),
+            "show_group_insert": show_group_insert,
+            "shelf_view": shelf_view,
+            "badge_view": badge_view,
             "insert_view": insert_view,
             "edit_view": edit_view,
             "show_gear": show_gear,
             "show_expand": show_expand,
             "show_shelf": show_shelf,
+            "show_header": show_header,
             "show_help" : show_help,
             "search_key": search_key,
             "parent_key": parent_key,
-            "state": my.state,
+            "state": self.state,
             "show_border": show_border,
             "search_class": search_class,
             "search_view": search_view,
@@ -3275,7 +3307,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "custom_search_view": custom_search_view,
             "expression": expression,
             "do_search": 'false',
-            "element_names":  my.element_names,
+            "element_names":  self.element_names,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
             "simple_search_config": simple_search_config,
@@ -3290,95 +3322,131 @@ class ViewPanelWdg(BaseRefreshWdg):
             "ingest_data_view" : ingest_data_view,
             "ingest_custom_view": ingest_custom_view,
             "group_elements" : group_elements,
+            "group_label_expr" : group_label_expr,
+            "group_label_view" : group_label_view,
             "mode": mode,
             "height": height,
             "keywords": keywords,
+            "keywords_columns": keywords_columns,
             "filter": filter,
             "expand_mode": expand_mode,
             "show_name_hover": show_name_hover,
             "op_filters": op_filters,
-            "show_collection_tool": show_collection_tool
+            "show_collection_tool": show_collection_tool,
+            "show_row_highlight": show_row_highlight,
+            "show_group_highlight": show_group_highlight,
+            "is_inner": is_inner,
+            "settings": settings,
+            "gear_settings": gear_settings,
+            "extra_data": extra_data,
             #"search_wdg": search_wdg
-            
+            "document_mode": document_mode,
+            "window_resize_offset": window_resize_offset,
         }
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
-      
+
+        kwargs['config_xml'] = self.kwargs.get("config_xml")
+
+
+        # set up the extra keys (for all layouts)
+        if not layout or layout == "table":
+            layout_class_path = "tactic.ui.panel.TableLayoutWdg"
+        else:
+            layout_class_path = None
+
+        if layout_class_path:
+            (module_name, class_name) = Common.breakup_class_path(layout_class_path)
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception as e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = self.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
+
+
+
         if layout == 'tile':
             from tile_layout_wdg import TileLayoutWdg
-            kwargs['top_view'] = my.kwargs.get("top_view")
-            kwargs['bottom_view'] = my.kwargs.get("bottom_view")
-            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
-            kwargs['scale'] = my.kwargs.get("scale")
-            kwargs['show_scale'] = my.kwargs.get("show_scale")
-            kwargs['styles'] = my.kwargs.get("styles")
-            kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
-            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
-            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
-            kwargs['title_expr'] = my.kwargs.get("title_expr")
-            kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
-            kwargs['overlay_color'] = my.kwargs.get("overlay_color")
-            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
-            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
-            kwargs['process'] = my.kwargs.get("process")
-            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
-            kwargs['script_path'] = my.kwargs.get("script_path")
-            kwargs['script'] = my.kwargs.get("script")
-            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
-            kwargs['hide_checkbox'] = my.kwargs.get("hide_checkbox")
+            kwargs['top_view'] = self.kwargs.get("top_view")
+            kwargs['bottom_view'] = self.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = self.kwargs.get("sticky_scale")
+            kwargs['scale'] = self.kwargs.get("scale")
+            kwargs['show_scale'] = self.kwargs.get("show_scale")
+            kwargs['styles'] = self.kwargs.get("styles")
+            kwargs['show_drop_shadow'] = self.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = self.kwargs.get("show_name_hover")
+            kwargs['detail_element_names'] = self.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = self.kwargs.get("title_expr")
+            kwargs['overlay_expr'] = self.kwargs.get("overlay_expr")
+            kwargs['overlay_color'] = self.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = self.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = self.kwargs.get("upload_mode")
+            kwargs['process'] = self.kwargs.get("process")
+            kwargs['gallery_align'] = self.kwargs.get("gallery_align")
+            kwargs['script_path'] = self.kwargs.get("script_path")
+            kwargs['script'] = self.kwargs.get("script")
+            kwargs['allow_drag'] = self.kwargs.get("allow_drag")
+            kwargs['hide_checkbox'] = self.kwargs.get("hide_checkbox")
             layout_table = TileLayoutWdg(**kwargs)
 
         elif layout == 'static_table':
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'widget'
             layout_table = StaticTableLayoutWdg(**kwargs)
+
         elif layout == 'raw_table':
             from static_table_layout_wdg import StaticTableLayoutWdg
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
-        elif layout == 'fast_table':
-            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
-            kwargs['edit'] = my.kwargs.get("edit")
+
+        elif layout in ['fast_table', 'table']:
+            kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
+            kwargs['edit'] = self.kwargs.get("edit")
             from table_layout_wdg import FastTableLayoutWdg
             layout_table = FastTableLayoutWdg(**kwargs)
 
 
         elif layout == 'tool':
             from tool_layout_wdg import ToolLayoutWdg
-            kwargs['tool_icon'] = my.kwargs.get('tool_icon')
-            kwargs['tool_msg'] = my.kwargs.get('tool_msg')
+            kwargs['tool_icon'] = self.kwargs.get('tool_icon')
+            kwargs['tool_msg'] = self.kwargs.get('tool_msg')
             layout_table = ToolLayoutWdg(**kwargs)
 
         elif layout == 'browser':
             from tool_layout_wdg import RepoBrowserLayoutWdg
-            kwargs['parent_mode'] = my.kwargs.get('parent_mode')
-            kwargs['file_system_edit'] = my.kwargs.get('file_system_edit')
+            kwargs['parent_mode'] = self.kwargs.get('parent_mode')
+            kwargs['file_system_edit'] = self.kwargs.get('file_system_edit')
+            kwargs['base_dir'] = self.kwargs.get('base_dir')
             layout_table = RepoBrowserLayoutWdg(**kwargs)
 
         elif layout == 'card':
-            kwargs['preview_width'] = my.kwargs.get("preview_width")
-            kwargs['process'] = my.kwargs.get("process")
+            kwargs['preview_width'] = self.kwargs.get("preview_width")
+            kwargs['process'] = self.kwargs.get("process")
             from tool_layout_wdg import CardLayoutWdg
             layout_table = CardLayoutWdg(**kwargs)
 
         elif layout == 'collection':
-            kwargs['top_view'] = my.kwargs.get("top_view")
-            kwargs['bottom_view'] = my.kwargs.get("bottom_view")
-            kwargs['sticky_scale'] = my.kwargs.get("sticky_scale")
-            kwargs['scale'] = my.kwargs.get("scale")
-            kwargs['show_scale'] = my.kwargs.get("show_scale")
-            kwargs['styles'] = my.kwargs.get("styles")
-            kwargs['show_drop_shadow'] = my.kwargs.get("show_drop_shadow")
-            kwargs['show_name_hover'] = my.kwargs.get("show_name_hover")
-            kwargs['detail_element_names'] = my.kwargs.get("detail_element_names")
-            kwargs['title_expr'] = my.kwargs.get("title_expr")
-            kwargs['overlay_expr'] = my.kwargs.get("overlay_expr")
-            kwargs['overlay_color'] = my.kwargs.get("overlay_color")
-            kwargs['allow_drag'] = my.kwargs.get("allow_drag")
-            kwargs['upload_mode'] = my.kwargs.get("upload_mode")
-            kwargs['process'] = my.kwargs.get("process")
-            kwargs['gallery_align'] = my.kwargs.get("gallery_align")
+            kwargs['top_view'] = self.kwargs.get("top_view")
+            kwargs['bottom_view'] = self.kwargs.get("bottom_view")
+            kwargs['sticky_scale'] = self.kwargs.get("sticky_scale")
+            kwargs['scale'] = self.kwargs.get("scale")
+            kwargs['show_scale'] = self.kwargs.get("show_scale")
+            kwargs['styles'] = self.kwargs.get("styles")
+            kwargs['show_drop_shadow'] = self.kwargs.get("show_drop_shadow")
+            kwargs['show_name_hover'] = self.kwargs.get("show_name_hover")
+            kwargs['detail_element_names'] = self.kwargs.get("detail_element_names")
+            kwargs['title_expr'] = self.kwargs.get("title_expr")
+            kwargs['overlay_expr'] = self.kwargs.get("overlay_expr")
+            kwargs['overlay_color'] = self.kwargs.get("overlay_color")
+            kwargs['allow_drag'] = self.kwargs.get("allow_drag")
+            kwargs['upload_mode'] = self.kwargs.get("upload_mode")
+            kwargs['process'] = self.kwargs.get("process")
+            kwargs['gallery_align'] = self.kwargs.get("gallery_align")
             from collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
 
@@ -3397,12 +3465,33 @@ class ViewPanelWdg(BaseRefreshWdg):
         elif layout == 'old_table':
             from layout_wdg import OldTableLayoutWdg
             layout_table = OldTableLayoutWdg(**kwargs)
+
+        elif layout and layout != "default":
+            (module_name, class_name) = Common.breakup_class_path(layout)
+
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception as e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = self.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
+            layout_table = Common.create_from_class_path(layout, kwargs=kwargs)
+
         else:
-            kwargs['expand_on_load'] = my.kwargs.get("expand_on_load")
-            kwargs['show_border'] = my.kwargs.get("show_border")
-            kwargs['edit'] = my.kwargs.get("edit")
-            from table_layout_wdg import FastTableLayoutWdg
-            layout_table = FastTableLayoutWdg(**kwargs)
+            from table_layout_wdg import TableLayoutWdg
+            kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
+            kwargs['show_border'] = self.kwargs.get("show_border")
+            kwargs['edit'] = self.kwargs.get("edit")
+            layout_table = TableLayoutWdg(**kwargs)
+
+
+
+
+
+
 
         layout_table.set_search_wdg(search_wdg)
 
@@ -3412,14 +3501,14 @@ class ViewPanelWdg(BaseRefreshWdg):
         #    search_div.add_style("display: none")
         #layout_table.search_container_wdg.add(search_wdg)
 
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
         if search_keys:
-            my.sobjects = Search.get_by_search_keys(search_keys)
+            self.sobjects = Search.get_by_search_keys(search_keys)
 
 
-        if my.sobjects:
-            layout_table.set_sobjects(my.sobjects)
-            layout_table.set_items_found(len(my.sobjects))
+        if self.sobjects:
+            layout_table.set_sobjects(self.sobjects)
+            layout_table.set_items_found(len(self.sobjects))
 
         else:
             # perform the search.  It is possible that the search is badly formed
@@ -3429,7 +3518,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             try:
                 if can_search:
                     layout_table.handle_search()
-            except SqlException, e:
+            except SqlException as e:
                 from pyasm.widget import ExceptionWdg
                 exception_wdg = ExceptionWdg(e)
 
@@ -3443,21 +3532,21 @@ class ViewPanelWdg(BaseRefreshWdg):
         
         target_node.add(layout_table) 
 
-        if my.kwargs.get('is_refresh') in ['true', True]:
+        if self.kwargs.get('is_refresh') in ['true', True]:
             return inner
         else:
             return top
 
 
 
-    def get_title_wdg(my):
+    def get_title_wdg(self):
 
         # FIXME: just a test
 
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         title = ""
-        description = my.kwargs.get("description")
-        title_view = my.kwargs.get("title_view")
+        description = self.kwargs.get("description")
+        title_view = self.kwargs.get("title_view")
         if not title and not description and not title_view:
             return
 
@@ -3491,7 +3580,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
         return r'''
 
@@ -3575,30 +3664,121 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
     '''Simple dialog widget which popups and allows you to save the
     current view'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'table_id': 'id of the table to be operated on',
         'dialog_id': 'id of the dialog',
         #'is_aux_title': 'True if it is in title mode'
         }
 
-    def init(my):
-        my.table_id = my.kwargs.get("table_id")
-        assert my.table_id
+    def init(self):
+        self.table_id = self.kwargs.get("table_id")
+        assert self.table_id
 
-    def get_display(my):
+    def get_display(self):
        
-        js_action = "spt.dg_table.save_view_cbk('%s','%s')" % (my.table_id, Environment.get_user_name())
+        js_action = "spt.dg_table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
+
+        js_actionX = '''
+
+    var table_id = bvr.table_id;
+    var table = document.id(table_id);
+    var top = table.getParent(".spt_view_panel");
+    // it may not always be a View Panel top
+    if (!top) top = table.getParent(".spt_table_top");
+    
+    var view_info = top.getElement(".spt_save_top");
+
+    var values = spt.api.Utility.get_input_values(view_info , null, false);
+
+    // rename view
+    var new_view = values["save_view_name"];
+    var new_title = values["save_view_title"];
+    var same_as_title = values["same_as_title"] == 'on';
+    //var save_a_link = values["save_a_link"] == 'on';
+  
+    var save_mode = values['save_mode'];
+    if (!save_mode) {
+        var save_project_views = values['save_project_views'] == 'on';
+        if (save_project_views) {
+            save_mode = 'save_project_views';
+        }
+        var save_my_views = values['save_my_views'] == 'on';
+        if (save_my_views) {
+            save_mode = 'save_my_views';
+        }
+        var save_view_only = values['save_view_only'] == 'on';
+        if (save_view_only) {
+            save_mode = 'save_view_only';
+        }
+    }
+
+    if (same_as_title) {
+        new_view = new_title;
+    }
+
+    if (spt.input.has_special_chars(new_view)) {
+        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        return;
+    }
+    if (new_view == "") {
+        spt.alert("Empty view name not permitted");
+        return;
+    }
+    
+    if ((/^(saved_search|link_search)/i).test(new_view)) {
+        spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
+        return;
+    }
+    var table = document.getElementById(table_id);
+    if (!table) {
+        spt.alert('This command requires a Table in the main viewing area');
+        return;
+    }
+    var table_search_type = table.getAttribute("spt_search_type");
+    var table_view = table.getAttribute("spt_view");
+    var last_element = top.getAttribute("spt_element_name");
+
+
+    var kwargs = {
+        'new_title' : new_title, 
+        'element_name': new_view,
+        'last_element_name': last_element,
+        'save_mode': save_mode,
+    } 
+
+
+    var class_name = 'tactic.ui.panel.ViewPanelSaveCbk';
+    var server = TacticServerStub.get();
+    var rtn = server.execute_cmd(class_name, kwargs);
+
+
+    if (!rtn)
+        return;
+
+
+    spt.hide(document.id(bvr.dialog_id));
+    var top = bvr.src_el.getParent(".spt_new_view_top");
+    spt.api.Utility.clear_inputs(top);
+    
+    return true;
+
+
+        '''
+
+
 
         # create the buttons
         save_button = ActionButtonWdg(title='Save')
         behavior = {
         'type': 'click_up',
-        'dialog_id': my.kwargs.get("dialog_id"),
+        'dialog_id': self.kwargs.get("dialog_id"),
+        'table_id': self.table_id,
+        #'cbjs_action': js_action,
         'cbjs_action':  '''
             var ret_val = %s;
             if (ret_val) {
-                spt.hide($(bvr.dialog_id));
+                spt.hide(document.id(bvr.dialog_id));
                 var top = bvr.src_el.getParent(".spt_new_view_top");
                 spt.api.Utility.clear_inputs(top);
             }
@@ -3612,9 +3792,9 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         cancel_button = ActionButtonWdg(title='Cancel')
         behavior = {
         'type': 'click_up',
-        'dialog_id': my.kwargs.get("dialog_id"),
+        'dialog_id': self.kwargs.get("dialog_id"),
         #'cbjs_action': "var el=bvr.src_el.getParent('.spt_table_aux');spt.hide(el)"
-        'cbjs_action': 'spt.hide($(bvr.dialog_id))'
+        'cbjs_action': 'spt.hide(document.id(bvr.dialog_id))'
         }
         cancel_button.add_behavior(behavior)
 
@@ -3772,6 +3952,77 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         return new_views
 
     get_existing_views = staticmethod(get_existing_views)
+
+
+class ViewPanelSaveCbk(Command):
+    '''Callback to save views'''
+
+    def execute(self):
+
+        save_mode = self.kwargs.get("save_mode")
+        new_title = self.kwargs.get("new_title")
+        new_view = self.kwargs.get("new_view")
+        last_element_name = self.kwargs.get("last_element_name")
+
+        login = self.kwargs.get("login")
+        if login != Environment.get_user_name():
+            raise Exception("Cannot create a personal view for others")
+
+
+        dis_options = {}
+
+        save_as_personal = save_mode == 'save_my_views'
+
+        if save_as_personal:
+            side_bar_view = 'my_view_' + login
+        else:
+            side_bar_view = 'project_view'
+
+        element_name = new_view
+        unique = kwargs.unique
+
+
+        # Save My View allows to save over the current view if it is
+        # already a personal view or if the user is admin, he can save
+        # over anything
+        if kwargs.element_name:
+            element_name = kwargs.element_name
+
+
+        # If it is saving as a new personal view, we try to append login name
+        if save_as_personal:
+            # only do this to search_view to make it easier to retrieve a search for my_view_<user>
+            if login and element_name.index(".") != -1:
+                element_name = login + '.' + element_name
+
+
+
+
+        # Copy the value of the "icon" attribute from the previous XML widget
+        # config.
+        icon = null
+        widget_config_before = server.get_config_definition(search_type, "definition", last_element_name)
+        # Skip if there is no previous matching XML widget config.
+        if widget_config_before != "":
+            xmlDoc = spt.parse_xml(widget_config_before)
+            elem_nodes = xmlDoc.getElementsByTagName("element")
+
+            if (elem_nodes.length > 0):
+                attr_node = elem_nodes[0].getAttributeNode("icon")
+
+                # Skip if there is no icon to copy over from the old link.
+                if (attr_node != null):
+                    icon = attr_node.nodeValue
+
+                # keep title
+                if save_mode == 'save_view_only':
+                    title_node = elem_nodes[0].getAttributeNode("title")
+                    if title_node:
+                        new_title = title_node.nodeValue
+
+
+
+
 
 
 

@@ -111,7 +111,7 @@ spt.gantt.drag2_setup = function(evt, bvr, mouse_411)
 
     // if none are selected, get the one that is dragged
     if (spt.gantt.ranges.length == 0) {
-        var ghost_el = $(bvr.drag_el);
+        var ghost_el = document.id(bvr.drag_el);
         var range = ghost_el.getParent(".spt_gantt_range");
         var search_key = ghost_el.getParent(container_css).getAttribute("spt_search_key");
         spt.gantt.ranges.push(range);
@@ -723,7 +723,7 @@ spt.gantt.accept_day = function(evt, bvr) {
     //var cbk_vals = bvr.cbk_values;
    
     // rely on id for now
-    var top_el = $(bvr.top_id);
+    var top_el = document.id(bvr.top_id);
     var json_dict = {};
     var json_el = top_el.getElement(".spt_json_data");
     if (json_el.value)

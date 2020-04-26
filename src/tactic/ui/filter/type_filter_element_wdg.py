@@ -27,24 +27,24 @@ from filter_element_wdg import BaseFilterElementWdg
 
 class TypeFilterElementWdg(BaseFilterElementWdg):
 
-    def set_filter_value(my, filter):
+    def set_filter_value(self, filter):
         # templates do not have values
         #if filter_index == -1:
         #    return
 
         # set the value
         filter_id = filter.get_name()
-        value = my.values.get(filter_id)
+        value = self.values.get(filter_id)
         if value:
             filter.set_value(value, set_form_value=False)
 
 
-    def init(my):
-        my.prefix = 'custom'
+    def init(self):
+        self.prefix = 'custom'
 
 
-    def get_display(my):
-        type = my.kwargs.get("type")
+    def get_display(self):
+        type = self.kwargs.get("type")
 
         if type not in ['string', 'varchar', 'float', 'integer', 'timestamp', 'login']:
             print("WARNING: FilterWdg: type [%s] not supported, using 'string'" % type)
@@ -57,73 +57,73 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
         if type in ["string", "varchar"]:
 
             relations = ["is", "is not", "contains", "does not contain", "is empty", "starts with", "ends with"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select)
+            self.set_filter_value(relation_select)
 
             filter_span.add(relation_select)
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text)
+            self.set_filter_value(value_text)
             filter_span.add(value_text)
 
         elif type in ['integer', 'float', 'currency']:
             relations = ["is equal to", "is greater than", "is less than"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select)
+            self.set_filter_value(relation_select)
             filter_span.add(relation_select)
 
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text)
+            self.set_filter_value(value_text)
             filter_span.add(value_text)
 
         elif type == 'timestamp':
             relations = ["is newer than", "is older than"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select)
+            self.set_filter_value(relation_select)
             filter_span.add(relation_select)
 
             options = ["1 day", '2 days', '1 week', '1 month']
-            another_select = SelectWdg("%s_select" % my.prefix)
+            another_select = SelectWdg("%s_select" % self.prefix)
             another_select.add_empty_option("-- Select --")
             another_select.set_option("values", options)
             another_select.set_persist_on_submit()
-            my.set_filter_value(another_select)
+            self.set_filter_value(another_select)
             filter_span.add(another_select)
 
             filter_span.add(" or ")
 
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text)
+            self.set_filter_value(value_text)
             filter_span.add(value_text)
 
         elif type in ['login']:
 
             relations = ["is", "is not", "contains", "does not contain", "is empty", "starts with", "ends with"]
-            relation_select = SelectWdg("%s_relation" % my.prefix)
+            relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.set_option("values", relations)
             relation_select.set_persist_on_submit()
-            my.set_filter_value(relation_select)
+            self.set_filter_value(relation_select)
             filter_span.add(relation_select)
 
-            value_text = CheckboxWdg("%s_user" % my.prefix)
+            value_text = CheckboxWdg("%s_user" % self.prefix)
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text)
+            self.set_filter_value(value_text)
             filter_span.add(value_text)
             filter_span.add("{user}")
 
             filter_span.add(" or ")
 
-            value_text = TextWdg("%s_value" % my.prefix)
+            value_text = TextWdg("%s_value" % self.prefix)
             value_text.set_persist_on_submit()
-            my.set_filter_value(value_text)
+            self.set_filter_value(value_text)
             filter_span.add(value_text)
 
 
@@ -132,11 +132,11 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
 
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        expression = my.kwargs.get("column")
+        expression = self.kwargs.get("column")
         if not expression:
-            expression = my.values.get("%s_column" % my.prefix)
+            expression = self.values.get("%s_column" % self.prefix)
         if not expression:
             return
         parts = expression.split(".")
@@ -150,7 +150,7 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
             search_types.reverse()
             for search_type in search_types:
                 if sobjects == None:
-                    my._alter_search(search, column)
+                    self._alter_search(search, column)
                 else:
                     search2 = Search(search_type)
                     search2.add_relationship_filters(sobjects)
@@ -163,14 +163,14 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
 
 
         elif not search_types:
-            my._alter_search(search, column)
+            self._alter_search(search, column)
             return
         else:
             search_type = search_types[0]
 
             # get all the sobjects at the appropriate hierarchy
             search2 = Search(search_type)
-            my._alter_search(search2, column)
+            self._alter_search(search2, column)
             sobjects = search2.get_sobjects()
 
         if search2:
@@ -184,18 +184,18 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
 
 
 
-    def _alter_search(my, search, column=None):
+    def _alter_search(self, search, column=None):
 
         search_type_obj = search.get_search_type_obj()
-        values = my.values
+        values = self.values
 
-        enabled = values.get("%s_enabled" % my.prefix)
+        enabled = values.get("%s_enabled" % self.prefix)
         if not column:
-            column = values.get("%s_column" % my.prefix)
-        relation = values.get("%s_relation" % my.prefix)
-        value = values.get("%s_value" % my.prefix)
+            column = values.get("%s_column" % self.prefix)
+        relation = values.get("%s_relation" % self.prefix)
+        value = values.get("%s_value" % self.prefix)
         if not value:
-            value = values.get("%s_select" % my.prefix)
+            value = values.get("%s_select" % self.prefix)
 
         column_type = search_type_obj.get_tactic_type(column)
 
@@ -215,7 +215,7 @@ class TypeFilterElementWdg(BaseFilterElementWdg):
             search.add_where('''("%s" = '' or "%s" is NULL)''' % (column, column) )
             return
 
-        user = values.get("%s_user" % my.prefix)
+        user = values.get("%s_user" % self.prefix)
         if user:
             search.add_user_filter()
             return

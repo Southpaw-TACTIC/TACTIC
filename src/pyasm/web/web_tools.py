@@ -24,97 +24,97 @@ class AjaxLoaderException(Exception):
 class AjaxLoader(Base):
     '''helper class to interact with the server by ajax'''
     
-    def __init__(my, display_id=None):
-        super(AjaxLoader,my).__init__()
+    def __init__(self, display_id=None):
+        super(AjaxLoader,self).__init__()
 
         # ensure a unique display id for those who don't wish to manage it
         if not display_id:
             display_id = Widget.generate_unique_id( base='dynamic_display', \
                     wdg='DyanmicLoaderWdg', is_random=True)
            
-        my.display_id = display_id
+        self.display_id = display_id
         # define the loaded class
-        my.load_class = None
-        my.load_args = None
-        my.options = {}
+        self.load_class = None
+        self.load_args = None
+        self.options = {}
 
-        my.element_names = []
+        self.element_names = []
 
         web = WebContainer.get_web()
-        my.loader_url = web.get_widget_url()
-        my.marshallers = []
-        my.is_command = False
-        my.loader_url.set_option("ajax", "true")
+        self.loader_url = web.get_widget_url()
+        self.marshallers = []
+        self.is_command = False
+        self.loader_url.set_option("ajax", "true")
 
 
-    def set_option(my, name, value):
-        my.options[name] = value
+    def set_option(self, name, value):
+        self.options[name] = value
 
-    def get_option(my, name):
-        return my.options.get(name)
+    def get_option(self, name):
+        return self.options.get(name)
 
 
-    def add_element_name(my, element_name):
+    def add_element_name(self, element_name):
         '''adds an element name in the dom whose value needs to be passed
         through'''
-        my.element_names.append(element_name)
+        self.element_names.append(element_name)
 
 
-    def register_cmd(my, cmd_class):
-        my.is_command = True
+    def register_cmd(self, cmd_class):
+        self.is_command = True
         marshaller = Marshaller(cmd_class)
         
-        my.marshallers.append( marshaller ) 
+        self.marshallers.append( marshaller ) 
 
         return marshaller
 
 
-    def set_display_id(my, display_id):
+    def set_display_id(self, display_id):
         '''set the id that will be replaced'''
-        my.display_id = display_id
+        self.display_id = display_id
 
-    def get_display_id(my):
-        return my.display_id
+    def get_display_id(self):
+        return self.display_id
 
 
-    def generate_div(my):
+    def generate_div(self):
         ''' this is meant to be called to get the container div for the 
             ajax widget '''
         div = DivWdg()
-        div.set_id(my.display_id)
+        div.set_id(self.display_id)
         div.add_style("display: block")
         return div
 
 
-    def get_loader_url(my):
-        return my.loader_url
+    def get_loader_url(self):
+        return self.loader_url
 
-    def set_load_class(my, load_class, load_args=None):
-        '''my.load_args will be converted to a string with a '||' delimiter
+    def set_load_class(self, load_class, load_args=None):
+        '''self.load_args will be converted to a string with a '||' delimiter
         at the end'''
-        my.load_class = load_class
-        my.load_args = load_args
+        self.load_class = load_class
+        self.load_args = load_args
         if isinstance(load_args, dict):
-            my.loader_url.set_option("arg_type", "dict")
+            self.loader_url.set_option("arg_type", "dict")
             arg_list = []
-            for key, value in my.load_args.items():
+            for key, value in self.load_args.items():
                 arg_list.append('%s=%s'%(key, value))
-            my.load_args = '||'.join(arg_list)    
+            self.load_args = '||'.join(arg_list)    
 
 
-    def set_load_method(my, method_name):
-        my.loader_url.set_option("method", method_name)
+    def set_load_method(self, method_name):
+        self.loader_url.set_option("method", method_name)
 
 
-    def is_refresh(my):
-        refresh_id = my.get_refresh_id()
+    def is_refresh(self):
+        refresh_id = self.get_refresh_id()
 
         if refresh_id:
             return True
         else:
             return False
 
-    def get_refresh_id(my):
+    def get_refresh_id(self):
         '''gets the id of the element that was used to refresh'''
         web = WebContainer.get_web()
         return web.get_form_value("ajax_refresh")
@@ -122,42 +122,42 @@ class AjaxLoader(Base):
 
 
 
-    def get_refresh_script(my, is_cmd=False, show_progress=True, load_once=False):
+    def get_refresh_script(self, is_cmd=False, show_progress=True, load_once=False):
         # this function differs from get_on_scrpit() in that it should be use
         # for function that will refresh the widget instead of turning the
-        return my.get_on_script(is_cmd, show_progress, load_once, is_refresh=True)
+        return self.get_on_script(is_cmd, show_progress, load_once, is_refresh=True)
 
 
-    def get_on_script(my, is_cmd=False, show_progress=True, load_once=False, is_refresh=False):
+    def get_on_script(self, is_cmd=False, show_progress=True, load_once=False, is_refresh=False):
 
         if is_refresh:
-            my.loader_url.set_option('ajax_refresh', my.display_id)
+            self.loader_url.set_option('ajax_refresh', self.display_id)
         else:
-            my.loader_url.set_option('ajax_refresh', "")
+            self.loader_url.set_option('ajax_refresh', "")
             
         
-        for marshaller in my.marshallers:
-            my.loader_url.set_option('marshalled', marshaller.get_marshalled())
+        for marshaller in self.marshallers:
+            self.loader_url.set_option('marshalled', marshaller.get_marshalled())
 
-        if my.load_class == None:
-            if my.is_command:
-                my.set_load_class("pyasm.widget.CmdReportWdg")
+        if self.load_class == None:
+            if self.is_command:
+                self.set_load_class("pyasm.widget.CmdReportWdg")
             else:
                 raise AjaxLoaderException("Load class is None")
 
-        my.loader_url.set_option('widget', my.load_class)
+        self.loader_url.set_option('widget', self.load_class)
         
-        if my.load_args != None:
-            my.loader_url.set_option(WebEnvironment.ARG_NAME, my.load_args)
+        if self.load_args != None:
+            self.loader_url.set_option(WebEnvironment.ARG_NAME, self.load_args)
 
-        for name,value in my.options.items():
-            my.loader_url.set_option(name, value)
+        for name,value in self.options.items():
+            self.loader_url.set_option(name, value)
             
-        my.loader_url.add_web_state()
-        url = my.loader_url.to_string() 
+        self.loader_url.add_web_state()
+        url = self.loader_url.to_string() 
 
         # handle element names
-        element_names_str = "||".join(my.element_names)
+        element_names_str = "||".join(self.element_names)
         script = ''
         if show_progress:
             show_progress = 'true'
@@ -165,21 +165,21 @@ class AjaxLoader(Base):
             show_progress = 'false'
         if is_cmd:
             script = "AjaxLoader_execute_cmd('%s', '%s', this, '%s','%s');" \
-                %(my.display_id, url, element_names_str, show_progress )
+                %(self.display_id, url, element_names_str, show_progress )
         else:
             base_script = "AjaxLoader_load_cbk('%s','%s','%s','%s')" \
-                %(my.display_id, url, element_names_str, show_progress)
+                %(self.display_id, url, element_names_str, show_progress)
             if load_once:
                 script = "var x=$('%s'); if (x.getAttribute('loaded') !='true') {%s}; set_display_on('%s')"\
-                        %(my.display_id, base_script, my.display_id)
+                        %(self.display_id, base_script, self.display_id)
             else:
-                script = "%s; set_display_on('%s')" %(base_script, my.display_id)
+                script = "%s; set_display_on('%s')" %(base_script, self.display_id)
                 
         return script
 
     
-    def get_off_script(my):
-        return "set_display_off(\'%s\')" % my.display_id
+    def get_off_script(self):
+        return "set_display_off(\'%s\')" % self.display_id
 
 
 
@@ -191,98 +191,98 @@ class AjaxWdg(Widget):
         - All input elements require names
         - The top node to be replaced has to have an id
     '''
-    def __init__(my, check_name=False):
-        my.web = WebContainer.get_web()
-        my.ajax = None
-        super(AjaxWdg,my).__init__()
+    def __init__(self, check_name=False):
+        self.web = WebContainer.get_web()
+        self.ajax = None
+        super(AjaxWdg,self).__init__()
 
-        if my.is_from_ajax(check_name=check_name):
-            my.init_cgi()
+        if self.is_from_ajax(check_name=check_name):
+            self.init_cgi()
 
-        my.top_id = None
+        self.top_id = None
 
 
-    def is_from_ajax(my, check_name=False):
-        ajax_class = my.web.get_form_value("widget")
-        ajax = my.web.get_form_value("ajax")
+    def is_from_ajax(self, check_name=False):
+        ajax_class = self.web.get_form_value("widget")
+        ajax = self.web.get_form_value("ajax")
         if ajax != "":
-            if check_name and ajax_class != Common.get_full_class_name(my):
+            if check_name and ajax_class != Common.get_full_class_name(self):
                 return False
             return True
         else:
             return False
 
 
-    def init_cgi(my):
+    def init_cgi(self):
         '''function that will get the necessary parameters to recreate this
         widget from cgi values'''
         pass
 
-    def reset_ajax(my):
+    def reset_ajax(self):
         ''' this could be called in get_display() when the AjaxWdg is used as a BaseTableElement
             depending on implementation'''
-        my.ajax = None
+        self.ajax = None
 
-    def get_ajax(my):
-        if not my.ajax:
-            my.ajax = AjaxLoader()
-            class_path = Common.get_full_class_name(my)
-            my.ajax.set_load_class( class_path )
-            my.ajax.set_option("is_form_submitted", "true")
-        return my.ajax
+    def get_ajax(self):
+        if not self.ajax:
+            self.ajax = AjaxLoader()
+            class_path = Common.get_full_class_name(self)
+            self.ajax.set_load_class( class_path )
+            self.ajax.set_option("is_form_submitted", "true")
+        return self.ajax
 
 
-    def get_top_id(my):
-        return my.top_id
+    def get_top_id(self):
+        return self.top_id
 
   
-    def set_ajax_top_id(my, id):
-        my.get_ajax().set_display_id(id)
-        my.top_id = id
+    def set_ajax_top_id(self, id):
+        self.get_ajax().set_display_id(id)
+        self.top_id = id
 
-    def set_ajax_top(my, widget):
+    def set_ajax_top(self, widget):
         ''' it is mandatory for this widget to have an unique id, especially
         if there are multiple AjaxWdgs instantiated in the same page'''
-        ajax = my.get_ajax()
+        ajax = self.get_ajax()
 
         # get the id of the top widget.  If there is none, then generate one
         top_id = widget.get_id()
         if not top_id:
-            top_id = my.generate_unique_id("top_wdg")
+            top_id = self.generate_unique_id("top_wdg")
             widget.set_id(top_id)
         ajax.set_display_id( top_id )
 
         # make sure that the display style is set
         widget.add_style("display: block")
 
-        my.top_id = top_id
+        self.top_id = top_id
 
 
-    def add_ajax_input(my, widget):
-        ajax = my.get_ajax()
+    def add_ajax_input(self, widget):
+        ajax = self.get_ajax()
         ajax.add_element_name( widget.get_input_name() )
 
-    def add_ajax_input_name(my, element_name ):
-        ajax = my.get_ajax()
+    def add_ajax_input_name(self, element_name ):
+        ajax = self.get_ajax()
         ajax.add_element_name( element_name )
 
 
 
-    def set_ajax_option(my, name, value):
-        ajax = my.get_ajax()
+    def set_ajax_option(self, name, value):
+        ajax = self.get_ajax()
         ajax.set_option(name, value)
 
-    def register_cmd(my, cmd_class):
-        ajax = my.get_ajax()
+    def register_cmd(self, cmd_class):
+        ajax = self.get_ajax()
         ajax.register_cmd(cmd_class)
 
 
-    def get_on_script(my, show_progress=True):
-        ajax = my.get_ajax() 
+    def get_on_script(self, show_progress=True):
+        ajax = self.get_ajax() 
         return ajax.get_refresh_script(show_progress=show_progress)
         
-    def get_refresh_script(my, show_progress=True):
-        ajax = my.get_ajax() 
+    def get_refresh_script(self, show_progress=True):
+        ajax = self.get_ajax() 
         return ajax.get_refresh_script(show_progress=show_progress)
         
    
@@ -304,8 +304,8 @@ class AjaxWdg(Widget):
 class AjaxCmd(AjaxLoader):
     '''An ajax call to execute a tactic command'''
     
-    def get_on_script(my, show_progress=True):
-        return super(AjaxCmd, my).get_on_script(is_cmd=True, \
+    def get_on_script(self, show_progress=True):
+        return super(AjaxCmd, self).get_on_script(is_cmd=True, \
             show_progress=show_progress)
         
 
@@ -315,7 +315,7 @@ class DragDropWdg(Widget):
     '''gives the ability for any element to have drag and drop capabilities.
     This is a wrapper around wz_dropdrop.js'''
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         '''override this.  These elements should not be getting a search
         at all because they may have already affected a search before.
         This is not completely necessary as the drag drop widget is 
@@ -323,16 +323,16 @@ class DragDropWdg(Widget):
         pass
 
 
-    def get_display(my):
+    def get_display(self):
 
-        if len(my.widgets) == 0:
+        if len(self.widgets) == 0:
             return ""
 
         script = HtmlElement.script()
 
         script.add( 'SET_DHTML( ' )
         args = []
-        for widget in my.widgets:
+        for widget in self.widgets:
             args.append('"%s"' % widget.get_id() )
 
         script.add( ", ".join(args) )
@@ -345,17 +345,17 @@ class DragDropWdg(Widget):
 class WikiUtil(object):
     '''Converts text into a wiki style'''
 
-    def __init__(my, process_url=False, replace_tag=True):
-        my.process_url = process_url
-        my.replace_tag = replace_tag
+    def __init__(self, process_url=False, replace_tag=True):
+        self.process_url = process_url
+        self.replace_tag = replace_tag
 
     xxx = 0
         
-    def convert(my, text):
+    def convert(self, text):
         if not type(text) in types.StringTypes:
             text = str(text)
       
-        text = my._replace_tag(text)
+        text = self._replace_tag(text)
 
         # convert <> inside <code/>
         '''
@@ -366,15 +366,15 @@ class WikiUtil(object):
             group1 = m.groups()[1]
             group2 = m.groups()[2]
             group3 = m.groups()[3]
-            group2 = my._replace_tag(group2)
+            group2 = self._replace_tag(group2)
             text = '%s<code>%s</code>%s' %(group0, group2, group3)
         else:    
-            text = my._replace_linebreak(text)
+            text = self._replace_linebreak(text)
         '''
 
         #text = r"%s" %text
         #text = re.sub(r"\\", "/", text)
-        if my.process_url:
+        if self.process_url:
             proc = "((?:http|ftp)://)"
             url_part = "([a-z0-9\-.]+\.[a-z0-9\-]+)([\/]([a-z0-9_\/\-.?&%=+])*)"
             url_pat = re.compile(proc + url_part, re.IGNORECASE)
@@ -384,11 +384,11 @@ class WikiUtil(object):
         return text
 
 
-    def _replace_linebreak(my, text):
+    def _replace_linebreak(self, text):
         text = text.replace("\n", "<br/>")
         return text
 
-    def _replace_tag(my, text):
+    def _replace_tag(self, text):
         text = text.replace("<", "&spt_lt;")
         text = text.replace(">", "&spt_gt;")
         #text = text.replace("<", "&lt;")

@@ -21,18 +21,18 @@ from tactic.ui.container import ContextMenuWdg, DropdownMenuWdg, SubMenuWdg
 
 class AttachContextMenuWdg(BaseRefreshWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.kwargs = kwargs
+        self.handle_args(kwargs)
+        self.kwargs = kwargs
                
         # required args
-        my.activator_wdg = kwargs['activator_wdg']
-        my.menus = kwargs['menus']
+        self.activator_wdg = kwargs['activator_wdg']
+        self.menus = kwargs['menus']
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'activator_wdg': 'Pass in the html element based widget that will be assigned the behavior which ' \
                              'will launch the given context menu on right click. The menus are also added to ' \
@@ -42,38 +42,38 @@ class AttachContextMenuWdg(BaseRefreshWdg):
         }
 
 
-    def handle_args(my, kwargs):
+    def handle_args(self, kwargs):
         # verify the args
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in kwargs.keys():
             if not args_keys.has_key(key):
                 #raise WidgetException("Key [%s] not in accepted arguments" % key)
                 pass
 
         web = WebContainer.get_web()
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in args_keys.keys():
             if not kwargs.has_key(key):
                 value = web.get_form_value(key)
                 kwargs[key] = value
 
 
-    def get_display(my):
+    def get_display(self):
         hidden_div = DivWdg()
         hidden_div.add_class("SPT_MENU_ACTIVATOR_STUBS")
         hidden_div.add_style("display: none")  # be sure this display is 'none'!
 
         # Generate the main context menu ...
-        ctx_map = my.menus[0]
+        ctx_map = self.menus[0]
         if not ctx_map.has_key('allow_icons'):
             ctx_map['allow_icons'] = True
-        ctx_menu_wdg = ContextMenuWdg( activator_wdg=my.activator_wdg, menu_id=ctx_map['menu_id'],
+        ctx_menu_wdg = ContextMenuWdg( activator_wdg=self.activator_wdg, menu_id=ctx_map['menu_id'],
                                        width=ctx_map['width'], opt_spec_list=ctx_map['opt_spec_list'],
                                        allow_icons=ctx_map['allow_icons'] )
         hidden_div.add( ctx_menu_wdg )
 
         # Generate any needed sub-menus for the context menu ...
-        sm_map_list = my.menus[1:]
+        sm_map_list = self.menus[1:]
         for sm_map in sm_map_list:
             if not sm_map.has_key('allow_icons'):
                 sm_map['allow_icons'] = True
@@ -93,30 +93,30 @@ class AttachContextMenuWdg(BaseRefreshWdg):
 
 class ButtonForDropdownMenuWdg(BaseRefreshWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.kwargs = kwargs
+        self.handle_args(kwargs)
+        self.kwargs = kwargs
                
         # required args
-        my.title = kwargs['title']
-        my.id    = kwargs['id']
-        my.menus = kwargs['menus']
-        my.width = kwargs['width']
-        my.style = kwargs['style']
+        self.title = kwargs['title']
+        self.id    = kwargs['id']
+        self.menus = kwargs['menus']
+        self.width = kwargs['width']
+        self.style = kwargs['style']
 
-        my.match_width = False
+        self.match_width = False
         if kwargs.has_key('match_width'):
-            my.match_width = kwargs['match_width']
+            self.match_width = kwargs['match_width']
 
-        my.nudge_menu_horiz = 0;
+        self.nudge_menu_horiz = 0;
         if kwargs.has_key('nudge_menu_horiz') and kwargs['nudge_menu_horiz']:
-            my.nudge_menu_horiz = int( kwargs['nudge_menu_horiz'] )
+            self.nudge_menu_horiz = int( kwargs['nudge_menu_horiz'] )
 
-        my.nudge_menu_vert = 0;
+        self.nudge_menu_vert = 0;
         if kwargs.has_key('nudge_menu_vert') and kwargs['nudge_menu_vert']:
-            my.nudge_menu_vert = int( kwargs['nudge_menu_vert'] )
+            self.nudge_menu_vert = int( kwargs['nudge_menu_vert'] )
 
         # -- Here is an example of what the menus parameter should look like ...
         # -- (it'll be an array of "menu details" dictionaries as per the following)
@@ -135,7 +135,7 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
         #   } ]
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'title': 'Text for Button Title',
             'id': 'The element ID for the drop down button',
@@ -150,38 +150,38 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
         }
 
 
-    def handle_args(my, kwargs):
+    def handle_args(self, kwargs):
         # verify the args
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in kwargs.keys():
             if not args_keys.has_key(key):
                 #raise WidgetException("Key [%s] not in accepted arguments" % key)
                 pass
 
         web = WebContainer.get_web()
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in args_keys.keys():
             if not kwargs.has_key(key):
                 value = web.get_form_value(key)
                 kwargs[key] = value
 
 
-    def get_display(my):
+    def get_display(self):
 
         dd_activator = DivWdg()
-        dd_activator.set_id( my.id )
+        dd_activator.set_id( self.id )
 
-        if my.style:
-            dd_activator.add_styles( my.style )
+        if self.style:
+            dd_activator.add_styles( self.style )
 
-        dd_activator.add_style( "width: %spx" % my.width )
+        dd_activator.add_style( "width: %spx" % self.width )
         dd_activator.add_class("SPT_DTS");
 
-        if my.nudge_menu_horiz != 0:
-            dd_activator.set_attr("spt_nudge_menu_horiz", my.nudge_menu_horiz)
+        if self.nudge_menu_horiz != 0:
+            dd_activator.set_attr("spt_nudge_menu_horiz", self.nudge_menu_horiz)
 
-        if my.nudge_menu_vert != 0:
-            dd_activator.set_attr("spt_nudge_menu_vert", my.nudge_menu_vert)
+        if self.nudge_menu_vert != 0:
+            dd_activator.set_attr("spt_nudge_menu_vert", self.nudge_menu_vert)
 
         # Generate button ...
         #
@@ -195,7 +195,7 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
         title_div = DivWdg()
         title_div.add_styles( "padding: 0px; margin-left: 4px; margin-top: 1px;" )
         title_div.add_looks("menu fnt_text")
-        title_div.add(my.title)
+        title_div.add(self.title)
 
         td.add( title_div )
 
@@ -215,18 +215,18 @@ class ButtonForDropdownMenuWdg(BaseRefreshWdg):
 
         # Now generate the main drop down menu and any needed sub-menus ...
         #
-        dd_map = my.menus[0]
+        dd_map = self.menus[0]
         if not dd_map.has_key('allow_icons'):
             dd_map['allow_icons'] = True  # default is to allow icons
-        if my.match_width:
-            dd_map['width'] = my.width
+        if self.match_width:
+            dd_map['width'] = self.width
 
         dd_menu_wdg = DropdownMenuWdg( activator_wdg=dd_activator, menu_id=dd_map['menu_id'],
                                        width=dd_map['width'], opt_spec_list=dd_map['opt_spec_list'],
                                        allow_icons=dd_map['allow_icons'] )
         dd_activator.add( dd_menu_wdg )
 
-        sm_map_list = my.menus[1:]
+        sm_map_list = self.menus[1:]
         for sm_map in sm_map_list:
             if not sm_map.has_key('allow_icons'):
                 sm_map['allow_icons'] = True

@@ -31,24 +31,24 @@ BASE_DIR = "%s/src/tactic/active_directory" % INSTALL_DIR
 
 class ADSearchWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         pass
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'cbjs_action': 'callback when a user is clicked',
         }
 
 
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
         key = web.get_form_value('name')
 
         top = DivWdg()
         top.add_class('ad_search_wdg_top')
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         text = TextWdg("name")
         text.set_value(key)
@@ -74,7 +74,7 @@ class ADSearchWdg(BaseRefreshWdg):
         table = Table()
         table.add_row()
         table.add_cell(text)
-        td = table.add_cell(my.get_search_wdg())
+        td = table.add_cell(self.get_search_wdg())
         td.add_style("display", "")
         top.add(table)
 
@@ -94,7 +94,7 @@ class ADSearchWdg(BaseRefreshWdg):
 
 
         results_div.add("Results Found ...")
-        users = my.find_users(key)
+        users = self.find_users(key)
 
         max_num_users = 20
         if len(users) > max_num_users:
@@ -124,11 +124,11 @@ class ADSearchWdg(BaseRefreshWdg):
                 user_div.add(" (%s) " % email)
 
 
-            my.cbjs_action = my.kwargs.get('cbjs_action')
-            if my.cbjs_action:
+            self.cbjs_action = self.kwargs.get('cbjs_action')
+            if self.cbjs_action:
                 user_behavior = {
                     'type': 'click_up',
-                    'cbjs_action': my.cbjs_action
+                    'cbjs_action': self.cbjs_action
                 }
                 user_div.add_behavior( user_behavior )
             else:
@@ -173,7 +173,7 @@ class ADSearchWdg(BaseRefreshWdg):
         return top
         
 
-    def find_users(my, key):
+    def find_users(self, key):
         # find users in the current database
         users = []
 
@@ -260,7 +260,7 @@ class ADSearchWdg(BaseRefreshWdg):
         return users
 
 
-    def get_search_wdg(my):
+    def get_search_wdg(self):
         filter_div = DivWdg()
         filter_div.add_style("width: 100px")
 
@@ -298,16 +298,16 @@ class ADSearchWdg(BaseRefreshWdg):
 
 from pyasm.widget import BaseInputWdg
 class ADInputWdg(BaseInputWdg):
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("ad_input_top")
 
-        name = my.get_name()
-        text = TextWdg(my.get_input_name())
+        name = self.get_name()
+        text = TextWdg(self.get_input_name())
 
 
         # get the login
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         client = sobject.get_value("contact_name")
         print "client: ", client
         if client:
@@ -325,8 +325,8 @@ class ADInputWdg(BaseInputWdg):
 
         
         print "login: ", login
-        hidden = HiddenWdg(my.get_input_name())
-        hidden.set_options( my.options.copy() )
+        hidden = HiddenWdg(self.get_input_name())
+        hidden.set_options( self.options.copy() )
         hidden.add_class("spt_ad_input")
         if login:
             hidden.set_value(login)
@@ -334,7 +334,7 @@ class ADInputWdg(BaseInputWdg):
 
 
         # copy over some options
-        #text.set_options( my.options.copy() )
+        #text.set_options( self.options.copy() )
         if login:
             text.set_value(display_name)
         text.set_option("read_only", "true")
@@ -347,7 +347,7 @@ class ADInputWdg(BaseInputWdg):
 
 
 
-        groups_str = my.get_option("groups_allowed_to_search")
+        groups_str = self.get_option("groups_allowed_to_search")
         if groups_str:
             stmt = 'groups_list = %s' % groups_str
             exec stmt
@@ -420,12 +420,12 @@ class ADInputWdg(BaseInputWdg):
 
 from pyasm.command import Command
 class ADCacheUserCbk(Command):
-    def execute(my):
+    def execute(self):
         # disabling for now
         print "caching user ..."
 
         web = WebContainer.get_web()
-        login = my.kwargs.get("login")
+        login = self.kwargs.get("login")
 
         login_sobj = Search.eval("@SOBJECT(sthpw/login['login','%s'])" % login, show_retired=True)
         if login_sobj:

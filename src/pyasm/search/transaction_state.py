@@ -41,29 +41,29 @@ class TransactionState(SObject):
         return state
 
 
-    def reset_state(my):
+    def reset_state(self):
         data = Xml()
         data.create_doc("state")
-        my.set_value("data", data.to_string() )
+        self.set_value("data", data.to_string() )
 
 
-    def set_state(my, name, value):
+    def set_state(self, name, value):
         '''set a state outside of the whole transaction'''
-        data = my.get_xml_value("data")
+        data = self.get_xml_value("data")
         node = data.get_node("state/%s" % name)
 
         root = data.get_root_node()
         element = data.create_text_element(name, str(value), node)
         data.append_child(root,element)
 
-        my.set_value( "data", data.to_string() )
+        self.set_value( "data", data.to_string() )
 
         return True
 
 
-    def get_state(my, name):
+    def get_state(self, name):
         '''get a state value'''
-        data = my.get_xml_value("data")
+        data = self.get_xml_value("data")
         value = data.get_value("state/%s" % name)
         return value
 
@@ -71,13 +71,13 @@ class TransactionState(SObject):
 
 
 
-    def restore_state(my):
+    def restore_state(self):
         '''
         <state>
         <project>bar</project>
         </state>
         '''
-        data = my.get_xml_value("data")
+        data = self.get_xml_value("data")
 
         # restore project
         project_code = data.get_value("state/project")

@@ -20,59 +20,59 @@ import unittest
 class MayaTest(unittest.TestCase):
     '''Unit test that tests all of the interactions of Tactic with Maya'''
 
-    def test_all(my):
+    def test_all(self):
 
         # start up maya session
-        my.maya = Maya70()
-        MayaEnvironment.get().set_maya(my.maya)
+        self.maya = Maya70()
+        MayaEnvironment.get().set_maya(self.maya)
 
 
-        my._test_basic()
-        my._test_namespace()
+        self._test_basic()
+        self._test_namespace()
 
-        my.maya.cleanup()
+        self.maya.cleanup()
 
 
-    def _test_basic(my):
+    def _test_basic(self):
 
         # create a few spheres
         node1, shape1 = mel("sphere")
         node2, shape2 = mel("sphere")
 
-        my.assertEquals("nurbsSphere1", node1)
-        my.assertEquals("nurbsSphere2", node2)
+        self.assertEquals("nurbsSphere1", node1)
+        self.assertEquals("nurbsSphere2", node2)
 
         # test set_attr
-        my.maya.set_attr(node1, "translateX", 1)
-        tx = my.maya.get_attr(node1, "translateX")
-        my.assertEquals(1, tx)
+        self.maya.set_attr(node1, "translateX", 1)
+        tx = self.maya.get_attr(node1, "translateX")
+        self.assertEquals(1, tx)
 
 
 
         # test top nodes
-        nodes = my.maya.get_top_nodes()
-        my.assertEquals(nodes, ['front', 'nurbsSphere1', 'nurbsSphere2', 'persp', 'side', 'top'] )
+        nodes = self.maya.get_top_nodes()
+        self.assertEquals(nodes, ['front', 'nurbsSphere1', 'nurbsSphere2', 'persp', 'side', 'top'] )
 
         # test select node
-        my.maya.select("nurbsSphere1")
-        selected = my.maya.get_selected_node()
-        my.assertEquals(selected, "nurbsSphere1")
+        self.maya.select("nurbsSphere1")
+        selected = self.maya.get_selected_node()
+        self.assertEquals(selected, "nurbsSphere1")
 
 
-    def _test_namespace(my):
+    def _test_namespace(self):
         # test namespaces
-        my.maya.add_namespace("cow")
-        my.maya.set_namespace("cow")
+        self.maya.add_namespace("cow")
+        self.maya.set_namespace("cow")
         mel("sphere")
-        namespace_nodes = my.maya.get_namespace_contents()
-        my.assertEquals(namespace_nodes, \
+        namespace_nodes = self.maya.get_namespace_contents()
+        self.assertEquals(namespace_nodes, \
             ('cow:makeNurbSphere1','cow:nurbsSphere1','cow:nurbsSphereShape1'))
 
         # set back to main namespace
-        my.maya.set_namespace()
+        self.maya.set_namespace()
 
-        namespaces = my.maya.get_all_namespaces()
-        my.assertEquals(namespaces, ('UI', 'cow') )
+        namespaces = self.maya.get_all_namespaces()
+        self.assertEquals(namespaces, ('UI', 'cow') )
 
         
 

@@ -30,24 +30,24 @@ class FormatValueWdg(BaseRefreshWdg):
     ARGS_KEYS = {
     }
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
 
-        format_str = my.kwargs.get('format')
-        value = my.kwargs.get('value')
+        format_str = self.kwargs.get('format')
+        value = self.kwargs.get('value')
 
 
         format = FormatValue()
         display_value = format.get_format_value( value, format_str )
 
-        widget = my.get_format_wdg(value, format_str, display_value)
+        widget = self.get_format_wdg(value, format_str, display_value)
         top.add(widget)
 
         return top
 
 
-    def get_format_wdg(my, value, format, display_value):
+    def get_format_wdg(self, value, format, display_value):
         div = DivWdg()
 
         if format not in ['Checkbox'] and value == '':
@@ -58,7 +58,7 @@ class FormatValueWdg(BaseRefreshWdg):
             div.add_style("width: 100%")
             div.add_class("spt_boolean_top")
             from pyasm.widget import CheckboxWdg
-            checkbox = CheckboxWdg(my.get_name())
+            checkbox = CheckboxWdg(self.get_name())
             checkbox.set_option("value", "true")
             if value:
                 checkbox.set_checked()

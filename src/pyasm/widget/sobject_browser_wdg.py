@@ -23,7 +23,7 @@ from pyasm.common import Date, Common
 class SObjectBrowserWdg(BaseInputWdg):
     '''A widget that allows you to search for an sobject and select it'''
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
         select = SelectWdg("browser_search_type")
@@ -31,7 +31,7 @@ class SObjectBrowserWdg(BaseInputWdg):
         search = Search("sthpw/search_object")
         search.add_order_by("search_type")
 
-        search_types = my.get_option("search_types")
+        search_types = self.get_option("search_types")
         if search_types:
             search_types = search_types.split("|")
             search.add_filters("search_type", search_types)
@@ -70,7 +70,7 @@ class SObjectBrowserWdg(BaseInputWdg):
 
 class SObjectBrowserListWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         search_type = web.get_form_value("browser_search_type")
@@ -79,11 +79,11 @@ class SObjectBrowserListWdg(Widget):
         div = DivWdg()
 
         if search_type.startswith("prod/shot"):
-            filter = my.get_filter(search_text, ['code','description'])
+            filter = self.get_filter(search_text, ['code','description'])
         elif search_type.startswith("prod/art_reference"):
-            filter = my.get_filter(search_text, ['category','description'])
+            filter = self.get_filter(search_text, ['category','description'])
         else:
-            filter = my.get_filter(search_text, ['name','code','description'])
+            filter = self.get_filter(search_text, ['name','code','description'])
         if not filter:
             return div
 
@@ -102,7 +102,7 @@ class SObjectBrowserListWdg(Widget):
         return div
 
 
-    def get_filter(my, text_value, columns):
+    def get_filter(self, text_value, columns):
         '''a more sophisticated search'''
         if text_value == "":
             return None
@@ -113,17 +113,17 @@ class SObjectBrowserListWdg(Widget):
 
 class SObjectBrowserAction(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
         # do nothing
         pass
 
-    def postprocess(my):
+    def postprocess(self):
         web = WebContainer.get_web()
         values = web.get_form_values("select_key")
         if not values or values == ['']:
             return
 
-        dst_sobject = my.sobject
+        dst_sobject = self.sobject
 
         project_code = Project.get_project_code()
 
@@ -145,10 +145,10 @@ class SObjectBrowserAction(DatabaseAction):
 
 class SObjectConnectionElement(AjaxWdg, BaseTableElementWdg):
 
-    def set_name(my, name):
-        my.name = name
+    def set_name(self, name):
+        self.name = name
 
-    def init_cgi(my):
+    def init_cgi(self):
         web = WebContainer.get_web()
         search_key = web.get_form_value("search_key")
         if not search_key:
@@ -160,20 +160,20 @@ class SObjectConnectionElement(AjaxWdg, BaseTableElementWdg):
             search_id = web.get_form_value("search_id")
             search_key = "%s|%s" % (search_type,search_id)
         sobject = Search.get_by_search_key(search_key)
-        my.set_sobject(sobject)
+        self.set_sobject(sobject)
 
-    def get_display(my):
+    def get_display(self):
 
         # get all of the options
-        direction = my.get_option("direction")
+        direction = self.get_option("direction")
         if not direction:
             direction = "dst"
 
-        icon_size = my.get_option("icon_size")
+        icon_size = self.get_option("icon_size")
         if not icon_size:
             icon_size = 60
 
-        src_sobject = my.get_current_sobject()
+        src_sobject = self.get_current_sobject()
         dst_sobjects = []
 
         if isinstance(src_sobject, SObjectConnection):
@@ -192,9 +192,9 @@ class SObjectConnectionElement(AjaxWdg, BaseTableElementWdg):
         div.set_id("connection_%s" % src_sobject.get_id() )
 
         # set the ajax options
-        my.set_ajax_top(div)
-        my.set_ajax_option("search_key", src_sobject.get_search_key() )
-        my.register_cmd("pyasm.widget.SObjectConnectionRemoveCbk")
+        self.set_ajax_top(div)
+        self.set_ajax_option("search_key", src_sobject.get_search_key() )
+        self.register_cmd("pyasm.widget.SObjectConnectionRemoveCbk")
 
         table = Table()
         table.set_max_width()
@@ -238,8 +238,8 @@ class SObjectConnectionElement(AjaxWdg, BaseTableElementWdg):
             # remove connection
             connection = connections[count]
             connection_id = connection.get_id()
-            my.set_ajax_option("connection_id", connection_id )
-            refresh_script = my.get_refresh_script(False)
+            self.set_ajax_option("connection_id", connection_id )
+            refresh_script = self.get_refresh_script(False)
 
             remove = IconButtonWdg("Remove Connection", IconWdg.DELETE)
             remove.add_event("onclick", refresh_script)
@@ -254,12 +254,12 @@ class SObjectConnectionElement(AjaxWdg, BaseTableElementWdg):
 
 class SObjectConnectionDetailElement(SObjectConnectionElement):
 
-    def preprocess(my):
-        direction = my.get_option("direction")
-        my.info = {}
+    def preprocess(self):
+        direction = self.get_option("direction")
+        self.info = {}
         if not direction:
             direction = "dst"
-        for sobject in my.sobjects:
+        for sobject in self.sobjects:
             src_sobject = sobject
             dst_sobjects = []
             if isinstance(src_sobject, SObjectConnection):
@@ -273,12 +273,12 @@ class SObjectConnectionDetailElement(SObjectConnectionElement):
             else:
                 connections, dst_sobjects = SObjectConnection.get_connected_sobjects(src_sobject, direction)
 
-            my.info[sobject.get_search_key()] = (connections, dst_sobjects, sobject)
+            self.info[sobject.get_search_key()] = (connections, dst_sobjects, sobject)
 
         # reorder sobjects
         sobj_dict = {}
         idx = 0
-        for connections, dst_sobjects, sobject in my.info.values():
+        for connections, dst_sobjects, sobject in self.info.values():
             obj = dst_sobjects[0]
             # obj has been deleted
             if obj:
@@ -290,28 +290,28 @@ class SObjectConnectionDetailElement(SObjectConnectionElement):
 
         sobj_list = Common.sort_dict(sobj_dict, reverse=True)
 
-        my.sobjects = sobj_list
+        self.sobjects = sobj_list
 
 
-    def get_display(my):
+    def get_display(self):
 
         # get all of the options
-        direction = my.get_option("direction")
+        direction = self.get_option("direction")
         if not direction:
             direction = "dst"
         
 
-        icon_size = my.get_option("icon_size")
+        icon_size = self.get_option("icon_size")
         if not icon_size:
             icon_size = 60
         try:
-            sobject = my.get_current_sobject()
+            sobject = self.get_current_sobject()
         except IndexError:
             return ''
-        if not hasattr(my, 'info'):
+        if not hasattr(self, 'info'):
             return ''
         
-        connections, dst_sobjects, sobj = my.info.get(sobject.get_search_key())
+        connections, dst_sobjects, sobj = self.info.get(sobject.get_search_key())
       
         src_sobject = sobject
 
@@ -325,9 +325,9 @@ class SObjectConnectionDetailElement(SObjectConnectionElement):
         div.set_id("connection_%s" % src_sobject.get_id() )
 
         # set the ajax options
-        my.set_ajax_top(div)
-        my.set_ajax_option("search_key", src_sobject.get_search_key() )
-        my.register_cmd("pyasm.widget.SObjectConnectionRemoveCbk")
+        self.set_ajax_top(div)
+        self.set_ajax_option("search_key", src_sobject.get_search_key() )
+        self.register_cmd("pyasm.widget.SObjectConnectionRemoveCbk")
 
         table = Table()
         table.set_max_width()
@@ -385,8 +385,8 @@ class SObjectConnectionDetailElement(SObjectConnectionElement):
             # remove connection
             connection = connections[count]
             connection_id = connection.get_id()
-            my.set_ajax_option("connection_id", connection_id )
-            refresh_script = my.get_refresh_script(False)
+            self.set_ajax_option("connection_id", connection_id )
+            refresh_script = self.get_refresh_script(False)
 
             remove = IconButtonWdg("Remove Connection", IconWdg.DELETE)
             remove.add_event("onclick", refresh_script)
@@ -402,10 +402,10 @@ class SObjectConnectionDetailElement(SObjectConnectionElement):
 
 class SObjectConnectionRemoveCbk(Callback):
 
-    def get_title(my):
+    def get_title(self):
         return "Remove Connection"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         connection_id = web.get_form_value("connection_id")
 
@@ -413,6 +413,6 @@ class SObjectConnectionRemoveCbk(Callback):
         if connection:
             connection.delete()
 
-        my.description = "Deleted connection"
+        self.description = "Deleted connection"
 
 

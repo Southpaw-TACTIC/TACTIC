@@ -40,92 +40,92 @@ class LoaderCmd(Command):
     SessionBuilder class will handle'''
 
 
-    def __init__(my):
+    def __init__(self):
 
         # the input snapshot and xml
-        my.snapshot = None
-        my.snapshot_xml = None
+        self.snapshot = None
+        self.snapshot_xml = None
 
         # the final xml file
-        my.execute_xml = None
-        my.is_top_loader_flag = False
+        self.execute_xml = None
+        self.is_top_loader_flag = False
 
         # the instance passed from a parent loader.
-        my.instance = None
-        my.instance_name = ""
+        self.instance = None
+        self.instance_name = ""
 
         # loader options
-        my.options = {}
+        self.options = {}
 
         # use the default one
-        my.loader_context = None
+        self.loader_context = None
 
 
         # determine whether this loader must check for uniqueness first
-        my.is_unique = False
+        self.is_unique = False
 
 
-    def get_execute_xml(my):
-        return my.execute_xml
+    def get_execute_xml(self):
+        return self.execute_xml
 
 
-    def set_snapshot(my, snapshot):
-        my.snapshot = snapshot
-        my.snapshot_xml = snapshot.get_xml_value("snapshot")
+    def set_snapshot(self, snapshot):
+        self.snapshot = snapshot
+        self.snapshot_xml = snapshot.get_xml_value("snapshot")
 
-    def set_snapshot_xml(my, snapshot_xml):
-        my.snapshot_xml = Xml()
-        my.snapshot_xml.read_string(snapshot_xml)
-
-
-    def get_context(my):
-        return my.loader_context.get_context()
+    def set_snapshot_xml(self, snapshot_xml):
+        self.snapshot_xml = Xml()
+        self.snapshot_xml.read_string(snapshot_xml)
 
 
-    def get_option(my, name):
-        return my.loader_context.get_option(name)
+    def get_context(self):
+        return self.loader_context.get_context()
 
 
-    def get_instance(my, instance):
-        return my.instance
-
-    def set_instance(my, instance):
-        my.instance = instance
-        my.instance_name = instance.get_name()
+    def get_option(self, name):
+        return self.loader_context.get_option(name)
 
 
-    def set_unique(my):
-        my.is_unique = True
+    def get_instance(self, instance):
+        return self.instance
+
+    def set_instance(self, instance):
+        self.instance = instance
+        self.instance_name = instance.get_name()
+
+
+    def set_unique(self):
+        self.is_unique = True
 
 
 
-    def check(my):
+    def check(self):
         return True
 
-    def get_description(my):
+    def get_description(self):
         return "LoaderCmd"
 
 
-    def set_loader_context(my, loader_context):
-        my.loader_context = loader_context
+    def set_loader_context(self, loader_context):
+        self.loader_context = loader_context
 
-    def get_loader_context(my):
-        return my.loader_context
+    def get_loader_context(self):
+        return self.loader_context
 
 
 
-    def add_warning(my, msg, label=""):
+    def add_warning(self, msg, label=""):
         '''add a warning to the execute xml'''
         print msg
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
-        warning_node = my.execute_xml.create_element("warning")
+        warning_node = self.execute_xml.create_element("warning")
         Xml.set_attribute(warning_node, "label", label)
         Xml.set_attribute(warning_node, "msg", msg)
         Xml.append_child(root, warning_node)
 
 
-    def _create_file_info(my, node, snapshot):
+    def _create_file_info(self, node, snapshot):
         assert snapshot
 
         file_code = Xml.get_attribute(node,"file_code")
@@ -137,7 +137,7 @@ class LoaderCmd(Command):
             return None, None
 
         # create the file node
-        file_node = my.execute_xml.create_element("file")
+        file_node = self.execute_xml.create_element("file")
 
 
         # get the repo
@@ -146,7 +146,7 @@ class LoaderCmd(Command):
         if isinstance(repo, PerforceRepo):
             conn_type = "perforce"
         else:
-            conn_type = my.get_option("connection")
+            conn_type = self.get_option("connection")
 
         file_type = Xml.get_attribute(node, "type")
         
@@ -178,7 +178,7 @@ class LoaderCmd(Command):
         filename = file.get_full_file_name()
 
         # handle the type of link
-        link = my.get_option("link")
+        link = self.get_option("link")
         if link == "current":
             filename = re.sub("_v\d+_(r\d+_)?", "_CURRENT_", filename)
             Xml.set_attribute(file_node, "link", link)
@@ -218,80 +218,80 @@ class LoaderCmd(Command):
 
 
 
-    def execute(my):
+    def execute(self):
 
         # get the current execute parser.  Note this assume that there
         # can only be one at a time.
         key = "LoaderCmd:top_loader"
         top_loader = Container.get(key)
         if top_loader == None:
-            my.execute_xml = Xml()
-            my.execute_xml.create_doc("execute")
-            top_loader = my
-            my.is_top_loader_flag = True
+            self.execute_xml = Xml()
+            self.execute_xml.create_doc("execute")
+            top_loader = self
+            self.is_top_loader_flag = True
             Container.put(key, top_loader)
         else:
-            my.execute_xml = top_loader.execute_xml
+            self.execute_xml = top_loader.execute_xml
 
         # decipher the XML
-        my.handle_xml(my.snapshot_xml)
+        self.handle_xml(self.snapshot_xml)
 
         # clean up the execute xml
-        if top_loader == my:
+        if top_loader == self:
 
             print "*"*20
-            my.execute_xml.dump()
+            self.execute_xml.dump()
             print "*"*20
 
             Container.remove(key)
 
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
         raise LoaderException("Must override handle_xml() function")
 
 
 
-    def is_top_loader(my):
+    def is_top_loader(self):
         '''determine whether this loader is the top loader'''
-        return my.is_top_loader_flag
+        return self.is_top_loader_flag
 
 
 
 class MayaFileLoaderCmd(LoaderCmd):
     '''Simply loads in a file'''
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
         ref_file_node = xml.get_node("snapshot/file")
-        file_node, file = my._create_file_info(ref_file_node,my.snapshot)
+        file_node, file = self._create_file_info(ref_file_node,self.snapshot)
         if file_node is None:
             return
         Xml.append_child(root, file_node)
         
-        instantiation = my.get_option("instantiation") 
+        instantiation = self.get_option("instantiation") 
         if instantiation == 'reference':
-            import_node = my.execute_xml.create_element("reference")
+            import_node = self.execute_xml.create_element("reference")
         elif instantiation == 'import':
-            import_node = my.execute_xml.create_element("import")
+            import_node = self.execute_xml.create_element("import")
             proj_setting = ProdSetting.get_value_by_key('loader_use_namespace')
             config_setting = Config.get_value('load', 'loader_use_namespace')
             if proj_setting in ['true','false']:
-                my.loader_context.set_option("use_namespace", proj_setting)
+                self.loader_context.set_option("use_namespace", proj_setting)
             elif config_setting in ['true','false']:
-                my.loader_context.set_option("use_namespace", config_setting)
+                self.loader_context.set_option("use_namespace", config_setting)
 
         elif instantiation == 'import_media':
-            import_node = my.execute_xml.create_element("import_media")
+            import_node = self.execute_xml.create_element("import_media")
         else:
-            import_node = my.execute_xml.create_element("open")
+            import_node = self.execute_xml.create_element("open")
         
         Xml.append_child(root, import_node)
-        Xml.set_attribute(import_node, "name", my.snapshot.get_sobject().get_code())
-        Xml.set_attribute(import_node, "node_name", my.snapshot.get_sobject().get_code())
-        Xml.set_attribute(import_node, "namespace", my.snapshot.get_sobject().get_code())
-        Xml.set_attribute(import_node, "asset_code", my.snapshot.get_sobject().get_code())
+        Xml.set_attribute(import_node, "name", self.snapshot.get_sobject().get_code())
+        Xml.set_attribute(import_node, "node_name", self.snapshot.get_sobject().get_code())
+        Xml.set_attribute(import_node, "namespace", self.snapshot.get_sobject().get_code())
+        Xml.set_attribute(import_node, "asset_code", self.snapshot.get_sobject().get_code())
         Xml.set_attribute(import_node, "project_code", Project.get_project_code())
 
 
@@ -301,8 +301,8 @@ class MayaAssetLoaderCmd(LoaderCmd):
     '''Implementation of the loader for assets.  Assets are loaded as
     imports (not references) so that they can be worked on as assets'''
 
-    def handle_xml(my, xml):
-        is_file_system = my.get_option("connection") == "file system"
+    def handle_xml(self, xml):
+        is_file_system = self.get_option("connection") == "file system"
         # get any sub references first
         if not is_file_system:
             sub_nodes = xml.get_nodes("snapshot//ref")
@@ -314,27 +314,27 @@ class MayaAssetLoaderCmd(LoaderCmd):
                 # of the high level of complex dependency which must be done
                 # manually - eg: uv - model relationship
                 context = Xml.get_attribute(sub_node,"context")
-                ref_snapshot = my.loader_context.get_snapshot( \
+                ref_snapshot = self.loader_context.get_snapshot( \
                     sub_node, context, latest)
                 
-                my.handle_ref_snapshot(ref_snapshot)
+                self.handle_ref_snapshot(ref_snapshot)
         
         inst_mode = 'reference'
-        if my.get_option("instantiation") == "import":
+        if self.get_option("instantiation") == "import":
             inst_mode = 'import'
             proj_setting = ProdSetting.get_value_by_key('loader_use_namespace')
             config_setting = Config.get_value('load', 'loader_use_namespace')
             if proj_setting in ['true','false']:
-                my.loader_context.set_option("use_namespace", proj_setting)
+                self.loader_context.set_option("use_namespace", proj_setting)
             elif config_setting in ['true','false']:
-                my.loader_context.set_option("use_namespace", config_setting)
-        elif my.get_option("instantiation") == "open":
+                self.loader_context.set_option("use_namespace", config_setting)
+        elif self.get_option("instantiation") == "open":
             inst_mode = 'open'
-        elif my.get_option("instantiation") == "import_media":
+        elif self.get_option("instantiation") == "import_media":
             inst_mode = 'import_media'
         
         use_namespace = True
-        if my.get_option("use_namespace") == "false" or inst_mode == 'open':
+        if self.get_option("use_namespace") == "false" or inst_mode == 'open':
             use_namespace = False
 
 
@@ -343,14 +343,14 @@ class MayaAssetLoaderCmd(LoaderCmd):
             app_nodes = xml.get_nodes("snapshot/file[@type='%s']" % node_type)
             for app_node in app_nodes:
 
-                my.handle_app_file(app_node, instantiation=inst_mode, is_unique=my.is_unique, use_namespace=use_namespace)
+                self.handle_app_file(app_node, instantiation=inst_mode, is_unique=self.is_unique, use_namespace=use_namespace)
         #if not is_file_system:
-        my.handle_all_textures(xml, use_namespace)
+        self.handle_all_textures(xml, use_namespace)
 
-        my.handle_all_cache(xml, use_namespace)
+        self.handle_all_cache(xml, use_namespace)
 
 
-    def handle_ref_snapshot(my, snapshot):
+    def handle_ref_snapshot(self, snapshot):
         if not snapshot:
             return
 
@@ -376,21 +376,21 @@ class MayaAssetLoaderCmd(LoaderCmd):
             ref_snapshot = Snapshot.get_by_version(search_type,search_id,\
                         context, version)
 
-            my.handle_ref_snapshot(ref_snapshot)
+            self.handle_ref_snapshot(ref_snapshot)
 
         # handle file nodes
         file_nodes = xml.get_nodes("snapshot/file")
         for file_node in file_nodes:
             if Xml.get_attribute(file_node, 'type') in ['web','icon']:
                 continue
-            file_node, file = my._create_file_info(file_node,snapshot)
+            file_node, file = self._create_file_info(file_node,snapshot)
             if file_node is None:
                 return
 
-            root = my.execute_xml.get_root_node()
+            root = self.execute_xml.get_root_node()
             Xml.append_child(root, file_node)
 
-    def get_asset_code(my, sobject):
+    def get_asset_code(self, sobject):
         asset_code = ''
         if sobject.has_value("asset_code"):
             asset_code = sobject.get_value("asset_code")
@@ -399,52 +399,52 @@ class MayaAssetLoaderCmd(LoaderCmd):
 
         return asset_code
 
-    def handle_app_file(my, node, instantiation='reference', is_unique=True,  use_namespace=True):
+    def handle_app_file(self, node, instantiation='reference', is_unique=True,  use_namespace=True):
 
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
-        file_node, file = my._create_file_info(node,my.snapshot)
+        file_node, file = self._create_file_info(node,self.snapshot)
         if file_node is None:
             return
 
 
-        my.execute_xml.append_child(root, file_node)
+        self.execute_xml.append_child(root, file_node)
 
         # use the open flag
         if instantiation == 'open':
-            import_node = my.execute_xml.create_element("open")
+            import_node = self.execute_xml.create_element("open")
 
         # add the import node
         elif instantiation == 'import':
-            import_node = my.execute_xml.create_element("import")
+            import_node = self.execute_xml.create_element("import")
         elif instantiation == 'import_media':
-            import_node = my.execute_xml.create_element("import_media")
+            import_node = self.execute_xml.create_element("import_media")
         else:
-            import_node = my.execute_xml.create_element("reference")
+            import_node = self.execute_xml.create_element("reference")
 
         # HACK: put in an overriding replace mode in here for now
-        if my.get_option("load_mode") == "replace":
-            import_node = my.execute_xml.create_element("replace")
+        if self.get_option("load_mode") == "replace":
+            import_node = self.execute_xml.create_element("replace")
             Xml.set_attribute(import_node, "append_attr", "true")
-            replacee = my.get_option("replacee")
+            replacee = self.get_option("replacee")
             if replacee:
                 Xml.set_attribute(import_node, "replacee",  replacee)
 
         sobject = file.get_sobject()
 
         # get the instance if one is set
-        if my.instance_name:
-            Xml.set_attribute(import_node, "instance", my.instance_name )
+        if self.instance_name:
+            Xml.set_attribute(import_node, "instance", self.instance_name )
 
         # use ProdNodeNaming
         naming = Project.get_naming("node")
 
-        if my.instance:
-            naming.set_sobject(my.instance)
+        if self.instance:
+            naming.set_sobject(self.instance)
         else:
             naming.set_sobject(sobject)
 
-        naming.set_snapshot(my.snapshot)
+        naming.set_snapshot(self.snapshot)
         namespace = naming.get_value()
         namespace = namespace.replace("/", "_")
         
@@ -460,7 +460,7 @@ class MayaAssetLoaderCmd(LoaderCmd):
 
 
         # add the asset_code
-        asset_code = my.get_asset_code(sobject)
+        asset_code = self.get_asset_code(sobject)
 
         Xml.set_attribute(import_node, "asset_code", asset_code)
 
@@ -468,7 +468,7 @@ class MayaAssetLoaderCmd(LoaderCmd):
         # add the node_name if available.  The node name is stored in
         # the database so that it will match the reference within a file.
         # (it cannot be procedurally built)
-        xml = my.snapshot_xml
+        xml = self.snapshot_xml
         node = xml.get_node('snapshot/file')
         node_name = Xml.get_attribute(node, 'node_name')
         if node_name:
@@ -483,13 +483,13 @@ class MayaAssetLoaderCmd(LoaderCmd):
         Xml.append_child(root, import_node)
 
         # add info about this snapshot
-        my._add_info(my.snapshot)
+        self._add_info(self.snapshot)
 
 
 
-    def _add_attr(my, name, value, type=""):
-        root = my.execute_xml.get_root_node()
-        attr_node = my.execute_xml.create_element("add_attr")
+    def _add_attr(self, name, value, type=""):
+        root = self.execute_xml.get_root_node()
+        attr_node = self.execute_xml.create_element("add_attr")
         Xml.set_attribute(attr_node, "attr", name)
         Xml.set_attribute(attr_node, "value", value)
         if type != "":
@@ -497,9 +497,9 @@ class MayaAssetLoaderCmd(LoaderCmd):
 
         Xml.append_child(root, attr_node)
 
-    def _set_node_attr(my, name, attr, value, node_name=None):
-        root = my.execute_xml.get_root_node()
-        attr_node = my.execute_xml.create_element("set_node_attr")
+    def _set_node_attr(self, name, attr, value, node_name=None):
+        root = self.execute_xml.get_root_node()
+        attr_node = self.execute_xml.create_element("set_node_attr")
         if node_name:
             Xml.set_attribute(attr_node, "node", node_name)
         Xml.set_attribute(attr_node, "name", name)
@@ -507,27 +507,27 @@ class MayaAssetLoaderCmd(LoaderCmd):
         Xml.set_attribute(attr_node, "value", value)
         Xml.append_child(root, attr_node)
 
-    def _add_current_node(my, asset_code, namespace=''):
+    def _add_current_node(self, asset_code, namespace=''):
         ''' a node that specifies the builder what the current node is 
             NOTE: Don't put : as the default here. MayaNodeNaming will take care of that'''
-        root = my.execute_xml.get_root_node()
-        attr_node = my.execute_xml.create_element("current_node")
+        root = self.execute_xml.get_root_node()
+        attr_node = self.execute_xml.create_element("current_node")
         Xml.set_attribute(attr_node, "asset_code", asset_code)
         Xml.set_attribute(attr_node, "namespace", namespace)
         Xml.append_child(root, attr_node)
 
-    def _add_node(my, node_name, type):
-        root = my.execute_xml.get_root_node()
-        attr_node = my.execute_xml.create_element("add_node")
+    def _add_node(self, node_name, type):
+        root = self.execute_xml.get_root_node()
+        attr_node = self.execute_xml.create_element("add_node")
         Xml.set_attribute(attr_node, "name", node_name)
         Xml.set_attribute(attr_node, "type", type)
         Xml.append_child(root, attr_node)
 
 
 
-    def _add_to_set(my, set_name, instance_name=None):
-        root = my.execute_xml.get_root_node()
-        attr_node = my.execute_xml.create_element("add_to_set")
+    def _add_to_set(self, set_name, instance_name=None):
+        root = self.execute_xml.get_root_node()
+        attr_node = self.execute_xml.create_element("add_to_set")
         Xml.set_attribute(attr_node, "set_name", set_name)
 
         if instance_name:
@@ -537,9 +537,9 @@ class MayaAssetLoaderCmd(LoaderCmd):
 
 
         
-    def _add_info(my, snapshot):
+    def _add_info(self, snapshot):
         # add info attributes
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
         snapshot_code = snapshot.get_code()
         context = snapshot.get_value("context")
         version = snapshot.get_value("version")
@@ -550,28 +550,28 @@ class MayaAssetLoaderCmd(LoaderCmd):
         element_name = '%s_snapshot' % type
         sobject = snapshot.get_sobject()
 
-        asset_code = my.get_asset_code(sobject)
+        asset_code = self.get_asset_code(sobject)
         # tacticNodeData
-        my._set_node_attr(element_name, "code", snapshot_code)
-        my._set_node_attr(element_name, "context", context)
-        my._set_node_attr(element_name, "version", version)
+        self._set_node_attr(element_name, "code", snapshot_code)
+        self._set_node_attr(element_name, "context", context)
+        self._set_node_attr(element_name, "version", version)
         if revision:
-            my._set_node_attr(element_name, "revision", revision)
+            self._set_node_attr(element_name, "revision", revision)
 
-        my._set_node_attr(element_name, "asset_code", asset_code )
-        if my.instance_name:
-            my._set_node_attr(element_name, "instance", my.instance_name )
+        self._set_node_attr(element_name, "asset_code", asset_code )
+        if self.instance_name:
+            self._set_node_attr(element_name, "instance", self.instance_name )
 
-        my._set_node_attr(element_name, "project_code", Project.get_project_code())
+        self._set_node_attr(element_name, "project_code", Project.get_project_code())
 
-    def handle_all_textures(my, xml, use_namespace):
+    def handle_all_textures(self, xml, use_namespace):
 
         # determine which textures to load
-        textures_option = my.get_option("textures")
+        textures_option = self.get_option("textures")
         texture_nodes = []
 
-        dependency_option = my.get_option("dependency")
-        connection_option = my.get_option("connection")
+        dependency_option = self.get_option("dependency")
+        connection_option = self.get_option("connection")
 
         # handle all of the references the textures
 
@@ -619,7 +619,7 @@ class MayaAssetLoaderCmd(LoaderCmd):
             Xml.set_attribute(file_node, "node", node_name)
             Xml.set_attribute(file_node, "attr", attr_name)
 
-            my._handle_texture(file_node, snapshot, use_namespace)
+            self._handle_texture(file_node, snapshot, use_namespace)
 
 
 
@@ -629,11 +629,11 @@ class MayaAssetLoaderCmd(LoaderCmd):
             # clear all texture node attributes
             rm_texture_nodes = xml.get_nodes("snapshot/file[@type='texture']")
             for node in rm_texture_nodes:
-                my.handle_clear_texture_attr(node)
+                self.handle_clear_texture_attr(node)
                 return
         elif textures_option == "low":
             texture_nodes = xml.get_nodes("snapshot/file[@type='texture|lowres']")
-        elif my.get_context() == "proxy":
+        elif self.get_context() == "proxy":
             texture_nodes = xml.get_nodes("snapshot/file[@type='texture|lowres']")
         else:
             texture_nodes = xml.get_nodes("snapshot/file[@type='texture']")
@@ -641,16 +641,16 @@ class MayaAssetLoaderCmd(LoaderCmd):
 
         # handle all of the textures
         for texture_node in texture_nodes:
-            my._handle_texture(texture_node, my.snapshot)
+            self._handle_texture(texture_node, self.snapshot)
 
 
 
-    def _handle_texture(my, node, snapshot, use_namespace ):
+    def _handle_texture(self, node, snapshot, use_namespace ):
 
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
         # get and add file node
-        file_node, file = my._create_file_info(node,snapshot)
+        file_node, file = self._create_file_info(node,snapshot)
         if file_node is None:
             return
         
@@ -671,21 +671,21 @@ class MayaAssetLoaderCmd(LoaderCmd):
         url = Xml.get_attribute(file_node, "url")
         
         # for web connection, marshal to the local path
-        if my.get_option("connection") == "http":
+        if self.get_option("connection") == "http":
             # put in the local scenes path
             local_repo_dir = snapshot.get_local_repo_dir()
             # Commented out for now.. This tries to set a relative path. but Maya would only 
             # accept it if the project is set to this location where the relative path 
             # actually exists
-            #app_local_repo_dir = my.snapshot.get_local_repo_dir()
+            #app_local_repo_dir = self.snapshot.get_local_repo_dir()
             #relative_dir = Common.relative_dir(app_local_repo_dir, local_repo_dir)
             texture_path = "%s/%s" % (local_repo_dir, os.path.basename(url))
         # for file connections, map to the repository
-        elif my.get_option("connection") == "server_fs":
+        elif self.get_option("connection") == "server_fs":
             fs_texture_dir = snapshot.get_lib_dir()
             texture_path = "%s/%s" % (fs_texture_dir, os.path.basename(url))
 
-        elif my.get_option("connection") == "file system":
+        elif self.get_option("connection") == "file system":
             fs_texture_dir = snapshot.get_client_lib_dir()
             texture_path = "%s/%s" % (fs_texture_dir, os.path.basename(url))
         else:
@@ -693,17 +693,17 @@ class MayaAssetLoaderCmd(LoaderCmd):
             texture_path = "%s/%s" % (local_repo_dir, os.path.basename(url))
 
         # reset the file attribute to point to this texture
-        set_attr_node = my.execute_xml.create_element("add_attr")
+        set_attr_node = self.execute_xml.create_element("add_attr")
         Xml.set_attribute(set_attr_node, "node", node_name)
         Xml.set_attribute(set_attr_node, "attr", attr_name)
         Xml.set_attribute(set_attr_node, "value", texture_path)
         Xml.set_attribute(set_attr_node, "type", "string")
-        snapshot_type = my.snapshot.get_value("snapshot_type")
+        snapshot_type = self.snapshot.get_value("snapshot_type")
         Xml.set_attribute(set_attr_node, "snapshot_type", snapshot_type)
         Xml.set_attribute(set_attr_node, "file_range", file_range)
 
-        is_xsi = my.snapshot.get_name_by_type('xsi')
-        is_hou = my.snapshot.get_name_by_type('houdini')
+        is_xsi = self.snapshot.get_name_by_type('xsi')
+        is_hou = self.snapshot.get_name_by_type('houdini')
         if is_xsi or is_hou or not use_namespace:
             Xml.set_attribute(set_attr_node, "use_namespace", "false")
         Xml.append_child(root, set_attr_node)
@@ -711,22 +711,22 @@ class MayaAssetLoaderCmd(LoaderCmd):
 
 
 
-    def handle_clear_texture_attr(my, node):
-        root = my.execute_xml.get_root_node()
+    def handle_clear_texture_attr(self, node):
+        root = self.execute_xml.get_root_node()
 
         node_name = Xml.get_attribute(node, "node")
         attr_name = Xml.get_attribute(node, "attr")
 
-        set_attr_node = my.execute_xml.create_element("add_attr")
+        set_attr_node = self.execute_xml.create_element("add_attr")
         Xml.set_attribute(set_attr_node, "node", node_name)
         Xml.set_attribute(set_attr_node, "attr", attr_name)
         Xml.set_attribute(set_attr_node, "value", "")
-        snapshot_type = my.snapshot.get_value("snapshot_type")
+        snapshot_type = self.snapshot.get_value("snapshot_type")
         Xml.set_attribute(set_attr_node, "snapshot_type", snapshot_type)
         Xml.append_child(root, set_attr_node)
 
 
-    def handle_all_cache(my, xml, use_namespace):
+    def handle_all_cache(self, xml, use_namespace):
         '''handle all of the references to the cache'''
         cache_nodes = xml.get_nodes("snapshot/ref[@type='cache']")
         for cache_node in cache_nodes:
@@ -753,15 +753,15 @@ class MayaAssetLoaderCmd(LoaderCmd):
             Xml.set_attribute(file_node, "node", node_name)
             Xml.set_attribute(file_node, "attr", attr_name)
 
-            my._handle_cache(file_node, snapshot, use_namespace)
+            self._handle_cache(file_node, snapshot, use_namespace)
 
 
-    def _handle_cache(my, node, snapshot, use_namespace ):
+    def _handle_cache(self, node, snapshot, use_namespace ):
         '''handle each cache node here'''
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
         # get and add file node
-        file_node, file = my._create_file_info(node,snapshot)
+        file_node, file = self._create_file_info(node,snapshot)
         if file_node is None:
             return
         Xml.append_child(root, file_node)
@@ -779,27 +779,27 @@ class MayaAssetLoaderCmd(LoaderCmd):
         url = Xml.get_attribute(file_node, "url")
         
         # for web connection, marshal to the local path
-        if my.get_option("connection") == "http":
+        if self.get_option("connection") == "http":
             # put in the local scenes path
             local_repo_dir = snapshot.get_local_repo_dir()
             # Commented out for now.. This tries to set a relative path. but Maya would only 
             # accept it if the project is set to this location where the relative path 
             # actually exists
-            #app_local_repo_dir = my.snapshot.get_local_repo_dir()
+            #app_local_repo_dir = self.snapshot.get_local_repo_dir()
             #relative_dir = Common.relative_dir(app_local_repo_dir, local_repo_dir)
             cache_path = "%s/%s" % (local_repo_dir, os.path.basename(url))
         # for file connections, map to the repository
-        elif my.get_option("connection") == "server_fs":
+        elif self.get_option("connection") == "server_fs":
             fs_texture_dir = snapshot.get_lib_dir()
             cache_path = "%s/%s" % (fs_texture_dir, os.path.basename(url))
 
-        elif my.get_option("connection") == "file system":
+        elif self.get_option("connection") == "file system":
             fs_texture_dir = snapshot.get_client_lib_dir()
             cache_path = "%s/%s" % (fs_texture_dir, os.path.basename(url))
         else:
             local_repo_dir = snapshot.get_local_repo_dir()
             cache_path = "%s/%s" % (local_repo_dir, os.path.basename(url))
-        is_maya = my.snapshot.get_name_by_type('maya')
+        is_maya = self.snapshot.get_name_by_type('maya')
 
         cache_leaf = cache_path
         cache_dir = ''
@@ -810,7 +810,7 @@ class MayaAssetLoaderCmd(LoaderCmd):
         # set the base directory to cache_dir for maya, otherwise it would not enable a 
         # cache path pointing to somewhere outside the base directory data\cache\
 
-        set_attr_node = my.execute_xml.create_element("add_attr")
+        set_attr_node = self.execute_xml.create_element("add_attr")
         Xml.set_attribute(set_attr_node, "node", node_name)
         Xml.set_attribute(set_attr_node, "attr", "cachePath")
         Xml.set_attribute(set_attr_node, "value", cache_dir)
@@ -822,46 +822,46 @@ class MayaAssetLoaderCmd(LoaderCmd):
         
         # reset the file attribute to point to this cache
  
-        set_attr_node = my.execute_xml.create_element("add_attr")
+        set_attr_node = self.execute_xml.create_element("add_attr")
         Xml.set_attribute(set_attr_node, "node", node_name)
         Xml.set_attribute(set_attr_node, "attr", attr_name)
         Xml.set_attribute(set_attr_node, "value", cache_leaf)
         Xml.set_attribute(set_attr_node, "type", "string")
-        snapshot_type = my.snapshot.get_value("snapshot_type")
+        snapshot_type = self.snapshot.get_value("snapshot_type")
         Xml.set_attribute(set_attr_node, "snapshot_type", snapshot_type)
         Xml.set_attribute(set_attr_node, "file_range", file_range)
 
-        #is_xsi = my.snapshot.get_name_by_type('xsi')
+        #is_xsi = self.snapshot.get_name_by_type('xsi')
         if not use_namespace:
             Xml.set_attribute(set_attr_node, "use_namespace", "false")
         Xml.append_child(root, set_attr_node)
       
 
-    def handle_mel(my, mel_node):
-        root = my.execute_xml.get_root_node()
+    def handle_mel(self, mel_node):
+        root = self.execute_xml.get_root_node()
         child = Xml.get_first_child(mel_node)
         cmd = Xml.get_node_value(child)
 
-        new_mel_node = my.execute_xml.create_text_element('mel',cmd)
+        new_mel_node = self.execute_xml.create_text_element('mel',cmd)
         Xml.append_child(root, new_mel_node)
 
 
 
-    def handle_standard_tags(my, xml):
+    def handle_standard_tags(self, xml):
         '''handles all of the standard tags found'''
 
         # handle any maya nodes
         maya_nodes = xml.get_nodes("snapshot/file[@type='maya']")
         for maya_node in maya_nodes:
-            my.handle_app_file(maya_node, instantiation = 'reference')
+            self.handle_app_file(maya_node, instantiation = 'reference')
 
         # allow the ability to add arbitrary mel commands
         mel_nodes = xml.get_nodes("snapshot/mel")
         for mel_node in mel_nodes:
-            my.handle_mel(mel_node)
+            self.handle_mel(mel_node)
 
         # handle any textures
-        my.handle_all_textures(xml)
+        self.handle_all_textures(xml)
  
 
 
@@ -871,39 +871,39 @@ class MayaInstanceLoaderCmd(MayaAssetLoaderCmd):
     '''Implementation of the loader for instances.  Instances are loaded
     as references (as opposed in import).'''
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
         # get any sub references first
         sub_nodes = xml.get_nodes("snapshot/file/ref")
         for sub_node in sub_nodes:
-            ref_snapshot = my.loader_context.get_snapshot(node)
+            ref_snapshot = self.loader_context.get_snapshot(node)
 
             ref_xml = ref_snapshot.get_xml_value("snapshot")
             ref_file_node = ref_xml.get_node("snapshot/file")
-            file_node, file = my._create_file_info(ref_file_node,ref_snapshot)
+            file_node, file = self._create_file_info(ref_file_node,ref_snapshot)
 
-            root = my.execute_xml.get_root_node()
+            root = self.execute_xml.get_root_node()
             Xml.append_child(root, file_node)
 
         # get the maya node and handle it
         maya_node = xml.get_node("snapshot/file[@type='maya']")
-        my.handle_app_file(maya_node, instantiation == 'reference')
-        my.handle_all_textures(xml)
+        self.handle_app_file(maya_node, instantiation == 'reference')
+        self.handle_all_textures(xml)
 
 
 
 class MayaAnimExportLoaderCmd(MayaAssetLoaderCmd):
     '''loads in animation that was exported using MayaExport'''
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
-        my.loader_context.set_option("has_instance", "false")
-        #my.loader_context.set_option("instantiation", "import")
-        my.loader_context.set_option("use_namespace", "false")
-        #my.loader_context.set_option("is_unique", "true")
-        my.set_unique()
+        self.loader_context.set_option("has_instance", "false")
+        #self.loader_context.set_option("instantiation", "import")
+        self.loader_context.set_option("use_namespace", "false")
+        #self.loader_context.set_option("is_unique", "true")
+        self.set_unique()
 
-        super(MayaAnimExportLoaderCmd,my).handle_xml(xml)
+        super(MayaAnimExportLoaderCmd,self).handle_xml(xml)
 
 
 
@@ -911,7 +911,7 @@ class MayaAnimExportLoaderCmd(MayaAssetLoaderCmd):
 class MayaAnimLoaderCmd(MayaInstanceLoaderCmd):
     '''loads in animation takes of instances'''
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
         # first get all of the references
         ref_nodes = xml.get_nodes("snapshot/ref")
@@ -922,19 +922,19 @@ class MayaAnimLoaderCmd(MayaInstanceLoaderCmd):
             context = Xml.get_attribute(ref_node, "context")
 
             # get the snapshot for this reference
-            ref_snapshot = my.loader_context.get_snapshot(ref_node, context)
+            ref_snapshot = self.loader_context.get_snapshot(ref_node, context)
             if ref_snapshot == None:
                 msg = "Skipping [%s]" %  ref_instance_name
-                my.add_warning(msg, ref_instance_name)
+                self.add_warning(msg, ref_instance_name)
                 continue
 
             # anim loaders always load the reference with specified context
             # in the ref node
-            loader = my.loader_context.get_loader(ref_snapshot, context)
+            loader = self.loader_context.get_loader(ref_snapshot, context)
             if loader == None:
                 continue
 
-            shot = my.loader_context.get_shot(shot)
+            shot = self.loader_context.get_shot(shot)
             instance = ShotInstance.get_by_shot(shot, ref_instance_name)
             if not instance:
                 print('WARNING: Asset Instance [%s] not found in shot [%s]'%(ref_instance_name, shot.get_code()))
@@ -949,23 +949,23 @@ class MayaAnimLoaderCmd(MayaInstanceLoaderCmd):
             # handle anim
             anim_node = xml.get_node("snapshot/file[@type='anim']")
             if anim_node is not None:
-                my.handle_anim(anim_node, ref_instance_name)
+                self.handle_anim(anim_node, ref_instance_name)
 
 
             # add data about this snapshot
-            my._add_info(my.snapshot)
+            self._add_info(self.snapshot)
 
-        my.handle_standard_tags(xml)
+        self.handle_standard_tags(xml)
 
 
 
-    def handle_anim(my, node, instance_name):
-        root = my.execute_xml.get_root_node()
+    def handle_anim(self, node, instance_name):
+        root = self.execute_xml.get_root_node()
 
         # get and add file node
-        file_node, file = my._create_file_info(node,my.snapshot)
+        file_node, file = self._create_file_info(node,self.snapshot)
         Xml.append_child(root, file_node) 
-        anim_node = my.execute_xml.create_element("anim")
+        anim_node = self.execute_xml.create_element("anim")
         Xml.set_attribute(anim_node, "instance", instance_name)
         Xml.append_child(root, anim_node)
 
@@ -976,15 +976,15 @@ class MayaGroupLoaderCmd(MayaAnimLoaderCmd):
     a single file that positions everything'''
 
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
         # get all of the references and the anim node
         ref_nodes = xml.get_nodes("snapshot/ref")
         anim_node = xml.get_node("snapshot/file[@type='anim']")
-        sobject = my.snapshot.get_sobject()
+        sobject = self.snapshot.get_sobject()
         
-        if not my.instance_name:
-            my.instance_name = sobject.get_value("name")
+        if not self.instance_name:
+            self.instance_name = sobject.get_value("name")
 
 
         for ref_node in ref_nodes:
@@ -994,35 +994,35 @@ class MayaGroupLoaderCmd(MayaAnimLoaderCmd):
             # namespaces
             if ref_instance_name.find(":") != -1:
                 msg = "WARNING: snapshot '%s' has Maya namespaces in it" % \
-                    my.snapshot.get_code()
-                my.add_warning(msg, my.snapshot.get_code())
+                    self.snapshot.get_code()
+                self.add_warning(msg, self.snapshot.get_code())
                 ref_instance_name, tmp = ref_instance_name.split(":", 1)
 
 
             # if this instance is culled, then skip loading this
-            if my.loader_context.is_instance_culled(ref_instance_name):
+            if self.loader_context.is_instance_culled(ref_instance_name):
                 print "Culling [%s]" % ref_instance_name
                 continue
 
-            context = my.loader_context.get_context()
+            context = self.loader_context.get_context()
 
             # Get the snapshot for this reference, using the group's context.
             # Loading a group's within a context means that references
             # below will inherit this context
-            ref_snapshot = my.loader_context.get_snapshot(ref_node, context, recurse=True)
+            ref_snapshot = self.loader_context.get_snapshot(ref_node, context, recurse=True)
 
 
             if not ref_snapshot:
                 msg = "Skipping [%s]: No snapshot found" %  ref_instance_name
-                my.add_warning(msg, ref_instance_name)
+                self.add_warning(msg, ref_instance_name)
                 continue
 
             # group loaders always load references under the context of the
             # group, not the reference.  The reference context is ignored
-            loader = my.loader_context.get_loader(ref_snapshot, context)
+            loader = self.loader_context.get_loader(ref_snapshot, context)
             if loader == None:
                 msg = "Skipping [%s]: No loader found" %  ref_instance_name
-                my.add_warning(msg, ref_instance_name)
+                self.add_warning(msg, ref_instance_name)
                 continue
             # FIXME: using backdoor here
             loader.instance_name = ref_instance_name
@@ -1032,16 +1032,16 @@ class MayaGroupLoaderCmd(MayaAnimLoaderCmd):
             # handle anim for this group only if there is no animation
             # set by loader
             has_anim = isinstance( loader, MayaAnimLoaderCmd )
-            if my.instance_name != "cull" and not has_anim and anim_node:
-                my.handle_anim(anim_node, ref_instance_name)
+            if self.instance_name != "cull" and not has_anim and anim_node:
+                self.handle_anim(anim_node, ref_instance_name)
 
             # put a references to this group
-            my._add_info(my.snapshot)
+            self._add_info(self.snapshot)
 
-            #my._add_to_set(my.instance_name, ref_instance_name)
+            #self._add_to_set(self.instance_name, ref_instance_name)
             # ref_instance_name should not be passed thru, use current node
             # name instead
-            my._add_to_set(my.instance_name)
+            self._add_to_set(self.instance_name)
 
 
         # handle any maya nodes
@@ -1049,40 +1049,40 @@ class MayaGroupLoaderCmd(MayaAnimLoaderCmd):
         for maya_node in maya_nodes:
             # this is for now meant for non-tactic nodes
             # references requires namespace so we support import for now
-            my.handle_app_file(maya_node, instantiation = 'import', is_unique=False)
-            my._add_selection_to_set(my.instance_name)
+            self.handle_app_file(maya_node, instantiation = 'import', is_unique=False)
+            self._add_selection_to_set(self.instance_name)
             
         # allow the ability to add arbitrary mel commands
         mel_nodes = xml.get_nodes("snapshot/mel")
         for mel_node in mel_nodes:
-            my.handle_mel(mel_node)
+            self.handle_mel(mel_node)
 
 
 
         # handle any textures
-        my.handle_all_textures(xml)
+        self.handle_all_textures(xml)
 
 
         # add the information to the set
-        my._set_node_attr("set_snapshot", "code", my.snapshot.get_code(), my.instance_name )
-        my._set_node_attr("set_snapshot", "context", my.snapshot.get_value('context'), my.instance_name )
-        my._set_node_attr("set_snapshot", "version", my.snapshot.get_version(), my.instance_name )
-        my._set_node_attr("set_snapshot", "asset_code", sobject.get_code(), my.instance_name )
-        my._set_node_attr("set_snapshot", "project_code", Project.get_project_code(), my.instance_name )
+        self._set_node_attr("set_snapshot", "code", self.snapshot.get_code(), self.instance_name )
+        self._set_node_attr("set_snapshot", "context", self.snapshot.get_value('context'), self.instance_name )
+        self._set_node_attr("set_snapshot", "version", self.snapshot.get_version(), self.instance_name )
+        self._set_node_attr("set_snapshot", "asset_code", sobject.get_code(), self.instance_name )
+        self._set_node_attr("set_snapshot", "project_code", Project.get_project_code(), self.instance_name )
 
-    def handle_app_file(my, node, instantiation='reference', is_unique=True, use_namespace=False):
+    def handle_app_file(self, node, instantiation='reference', is_unique=True, use_namespace=False):
         ''' assuming these are non-tactic nodes that accompany a set'''
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
-        file_node, file = my._create_file_info(node,my.snapshot)
+        file_node, file = self._create_file_info(node,self.snapshot)
         Xml.append_child(root, file_node)
         
         if instantiation == 'import':
-            import_node = my.execute_xml.create_element("import")
+            import_node = self.execute_xml.create_element("import")
         else:
-            import_node = my.execute_xml.create_element("reference")
+            import_node = self.execute_xml.create_element("reference")
          
-        Xml.set_attribute(import_node, "set", my.instance_name )
+        Xml.set_attribute(import_node, "set", self.instance_name )
      
         # set whether the instance must be unique
         if is_unique:
@@ -1092,37 +1092,37 @@ class MayaGroupLoaderCmd(MayaAnimLoaderCmd):
             
         Xml.append_child(root, import_node)
 
-    def _add_selection_to_set(my, set_name):
-        root = my.execute_xml.get_root_node()
+    def _add_selection_to_set(self, set_name):
+        root = self.execute_xml.get_root_node()
         
         mel_cmd = "sets -add %s `selectedNodes`" %set_name
-        attr_node = my.execute_xml.create_text_element("mel", mel_cmd)
+        attr_node = self.execute_xml.create_text_element("mel", mel_cmd)
         
         Xml.append_child(root, attr_node) 
         
 class MayaShotLoaderCmd(MayaAssetLoaderCmd):
 
 
-    def handle_app_file(my, node, instantiation='reference', is_unique=True,\
+    def handle_app_file(self, node, instantiation='reference', is_unique=True,\
             has_instance=True, use_namespace=False):
 
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
-        file_node, file = my._create_file_info(node,my.snapshot)
+        file_node, file = self._create_file_info(node,self.snapshot)
         Xml.append_child(root, file_node)
         
         if instantiation == 'open':
-            import_node = my.execute_xml.create_element("open")
+            import_node = self.execute_xml.create_element("open")
         elif instantiation == 'reference':
-            import_node = my.execute_xml.create_element("reference")
+            import_node = self.execute_xml.create_element("reference")
         else:
-            import_node = my.execute_xml.create_element("import")  
+            import_node = self.execute_xml.create_element("import")  
             # hardcoding the default for import
             Xml.set_attribute(import_node, "use_namespace", "false" )
     
         # HACK: put in an overriding replace mode in here for now
-        if my.get_option("load_mode") == "replace":
-            import_node = my.execute_xml.create_element("replace")
+        if self.get_option("load_mode") == "replace":
+            import_node = self.execute_xml.create_element("replace")
             Xml.set_attribute(import_node, "append_attr", "true")
 
         Xml.append_child(root, import_node)
@@ -1130,14 +1130,14 @@ class MayaShotLoaderCmd(MayaAssetLoaderCmd):
 
         sobject = file.get_sobject()
         # get the instance, just for completeness of the tacticNodeData
-        if my.instance_name == "":
-            my.instance_name = sobject.get_name()
+        if self.instance_name == "":
+            self.instance_name = sobject.get_name()
             
 
         # use ProdNodeNaming
         naming = Project.get_naming("node")
         naming.set_sobject(sobject)
-        naming.set_snapshot(my.snapshot)
+        naming.set_snapshot(self.snapshot)
         namespace = naming.get_value()
 
 
@@ -1153,44 +1153,44 @@ class MayaShotLoaderCmd(MayaAssetLoaderCmd):
         if instantiation == 'import':
             # this is important when import mode is chosen since current node will become
             # randomly as one of the top nodes of the imported shot
-            my._add_current_node(asset_code)
+            self._add_current_node(asset_code)
 
-        my._add_to_set(asset_code)
+        self._add_to_set(asset_code)
         # add data about this snapshot
-        my._add_info(my.snapshot)
+        self._add_info(self.snapshot)
 
        
 class FlashAssetLoaderCmd(MayaAssetLoaderCmd):
     pass
 
 class TemplateLoaderCmd(LoaderCmd):
-    def __init__(my):
-        my.file_path = ''
-        super(TemplateLoaderCmd, my).__init__()
+    def __init__(self):
+        self.file_path = ''
+        super(TemplateLoaderCmd, self).__init__()
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
-        root = my.execute_xml.get_root_node()
+        root = self.execute_xml.get_root_node()
 
         ref_file_node = xml.get_node("snapshot/file")
         file_node = None
-        if my.snapshot:
-            file_node, file = my._create_file_info(ref_file_node,my.snapshot)
+        if self.snapshot:
+            file_node, file = self._create_file_info(ref_file_node,self.snapshot)
         else:
-            file_node = my.get_file_node_from_path()
+            file_node = self.get_file_node_from_path()
         Xml.append_child(root, file_node)
-        import_node = my.execute_xml.create_element("open")
+        import_node = self.execute_xml.create_element("open")
         Xml.append_child(root, import_node)
         
-        Xml.set_attribute(import_node, "asset_code", my.snapshot.get_sobject().get_code())
+        Xml.set_attribute(import_node, "asset_code", self.snapshot.get_sobject().get_code())
    
-    def get_file_node_from_path(my):
+    def get_file_node_from_path(self):
          # server side nfs
        
-        url = my.file_path
+        url = self.file_path
 
         # build up the file node
-        file_node = my.execute_xml.create_element("file")
+        file_node = self.execute_xml.create_element("file")
         Xml.set_attribute(file_node, "url", url)
 
         # establish the "to" path for non http connections
@@ -1208,30 +1208,30 @@ class TemplateLoaderCmd(LoaderCmd):
 class MayaAssetUpdaterCmd(MayaAssetLoaderCmd):
     '''Implementation of the node info updater for assets.'''
 
-    def __init__(my):
-        my.asset_code = ''
-        # my.instance is not really useful in Updater
-        my.instance_name = ''
-        my.namespace = ''
-        super(MayaAssetUpdaterCmd, my).__init__()
+    def __init__(self):
+        self.asset_code = ''
+        # self.instance is not really useful in Updater
+        self.instance_name = ''
+        self.namespace = ''
+        super(MayaAssetUpdaterCmd, self).__init__()
         
-    def set_asset_code(my, asset_code):
-        my.asset_code = asset_code
+    def set_asset_code(self, asset_code):
+        self.asset_code = asset_code
 
-    def set_namespace(my, namespace):
-        my.namespace = namespace
+    def set_namespace(self, namespace):
+        self.namespace = namespace
 
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
         node_types = ['maya','houdini']
         for node_type in node_types:
             app_nodes = xml.get_nodes("snapshot/file[@type='%s']" % node_type)
             for app_node in app_nodes:
-                my._add_current_node(my.asset_code, my.namespace)
+                self._add_current_node(self.asset_code, self.namespace)
                 # add info attributes for every app file
-                my._add_info(my.snapshot)
+                self._add_info(self.snapshot)
 
-    def _add_info(my, snapshot):
+    def _add_info(self, snapshot):
         # add info attributes
         snapshot_code = snapshot.get_code()
         snapshot_type = snapshot.get_value("snapshot_type")
@@ -1243,43 +1243,43 @@ class MayaAssetUpdaterCmd(MayaAssetLoaderCmd):
 
         # tacticNodeData
         # node name is required
-        my._set_node_attr(element_name, "code", snapshot_code)
-        my._set_node_attr(element_name, "context", context)
-        my._set_node_attr(element_name, "version", version)
-        my._set_node_attr(element_name, "asset_code", sobject.get_code())
-        my._set_node_attr(element_name, "project_code", Project.get_project_code())
+        self._set_node_attr(element_name, "code", snapshot_code)
+        self._set_node_attr(element_name, "context", context)
+        self._set_node_attr(element_name, "version", version)
+        self._set_node_attr(element_name, "asset_code", sobject.get_code())
+        self._set_node_attr(element_name, "project_code", Project.get_project_code())
 
 
 
 class MayaShotUpdaterCmd(MayaAssetUpdaterCmd):
     
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
         
         # add info attributes
-        snapshot_code = my.snapshot.get_code()
-        context = my.snapshot.get_value("context")
-        version = my.snapshot.get_value("version")
-        element_name = '%s_snapshot' % my.snapshot.get_value("snapshot_type")
-        sobject = my.snapshot.get_sobject()
+        snapshot_code = self.snapshot.get_code()
+        context = self.snapshot.get_value("context")
+        version = self.snapshot.get_value("version")
+        element_name = '%s_snapshot' % self.snapshot.get_value("snapshot_type")
+        sobject = self.snapshot.get_sobject()
 
         # commented out just like MayaShotLoaderCmd
-        #my._add_to_set(my.namespace)
+        #self._add_to_set(self.namespace)
 
         # tacticNodeData
         # select the node first i.e. a shot or shot_set which are both objectSet
-        my._add_current_node(my.asset_code, my.namespace)
-        my._set_node_attr(element_name, "code", snapshot_code)
-        my._set_node_attr(element_name, "context", context)
-        my._set_node_attr(element_name, "version", version )
-        my._set_node_attr(element_name, "asset_code", sobject.get_code())
-        my._set_node_attr(element_name, "project_code", Project.get_project_code()) 
+        self._add_current_node(self.asset_code, self.namespace)
+        self._set_node_attr(element_name, "code", snapshot_code)
+        self._set_node_attr(element_name, "context", context)
+        self._set_node_attr(element_name, "version", version )
+        self._set_node_attr(element_name, "asset_code", sobject.get_code())
+        self._set_node_attr(element_name, "project_code", Project.get_project_code()) 
 
 
 
 class MayaAnimUpdaterCmd(MayaAssetUpdaterCmd):
     '''loads in animation takes of instances'''
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
         # first get all of the references
         ref_nodes = xml.get_nodes("snapshot/ref")
@@ -1290,25 +1290,25 @@ class MayaAnimUpdaterCmd(MayaAssetUpdaterCmd):
             context = Xml.get_attribute(ref_node, "context")
 
             # get the snapshot for this reference
-            ref_snapshot = my.loader_context.get_snapshot(ref_node, context)
+            ref_snapshot = self.loader_context.get_snapshot(ref_node, context)
             if ref_snapshot == None:
                 msg = "Skipping [%s]" % ref_instance_name
-                my.add_warning(msg, ref_instance_name)
+                self.add_warning(msg, ref_instance_name)
                 continue
 
             # anim updaters always update the reference with specified context
             # in the ref node
-            updater = my.loader_context.get_updater(ref_snapshot, my.asset_code, \
-                my.namespace, context)
+            updater = self.loader_context.get_updater(ref_snapshot, self.asset_code, \
+                self.namespace, context)
             if not updater:
                 continue
             #updater.set_instance(ref_instance_name)
             updater.execute()
 
             # specify current node
-            my._add_current_node(my.asset_code, my.namespace)
+            self._add_current_node(self.asset_code, self.namespace)
             # add data about this snapshot
-            my._add_info(my.snapshot)
+            self._add_info(self.snapshot)
 
 
 class MayaGroupUpdaterCmd(MayaAssetUpdaterCmd):
@@ -1316,15 +1316,15 @@ class MayaGroupUpdaterCmd(MayaAssetUpdaterCmd):
     a single file that positions everything'''
 
 
-    def handle_xml(my, xml):
+    def handle_xml(self, xml):
 
         # get all of the references and the anim node
         ref_nodes = xml.get_nodes("snapshot/ref")
         anim_node = xml.get_node("snapshot/file[@type='anim']")
-        sobject = my.snapshot.get_sobject()
+        sobject = self.snapshot.get_sobject()
         
-        if my.namespace == "":
-            my.namespace = sobject.get_value("name")
+        if self.namespace == "":
+            self.namespace = sobject.get_value("name")
 
         for ref_node in ref_nodes:
             ref_instance_name = Xml.get_attribute(ref_node,"instance")
@@ -1334,24 +1334,24 @@ class MayaGroupUpdaterCmd(MayaAssetUpdaterCmd):
             # namespaces
             if ref_instance_name.find(":") != -1:
                 print "WARNING: snapshot '%s' has Maya namespaces in it" % \
-                    my.snapshot.get_code()
+                    self.snapshot.get_code()
                 ref_instance_name, tmp = ref_instance_name.split(":", 1)
 
 
             # if this instance is culled, then skip loading this
-            if my.loader_context.is_instance_culled(ref_instance_name):
+            if self.loader_context.is_instance_culled(ref_instance_name):
                 print "Culling [%s]" % ref_instance_name
                 continue
 
-            context = my.loader_context.get_context()
+            context = self.loader_context.get_context()
 
             # Get the snapshot for this reference, using the group's context.
             # Loading a group's within a context means that references
             # below will inherit this context
-            ref_snapshot = my.loader_context.get_snapshot(ref_node, context)
+            ref_snapshot = self.loader_context.get_snapshot(ref_node, context)
             if ref_snapshot == None:
                 msg = "Skipping [%s]: No snapshot found" %  ref_instance_name
-                my.add_warning(msg, ref_instance_name)
+                self.add_warning(msg, ref_instance_name)
                 continue
 
             # group loaders always load references under the context of the
@@ -1359,7 +1359,7 @@ class MayaGroupUpdaterCmd(MayaAssetUpdaterCmd):
             asset = Search.get_by_id(ref_snapshot.get_value('search_type'), \
                 ref_snapshot.get_value('search_id'))
 
-            updater = my.loader_context.get_updater(ref_snapshot, asset.get_code(), \
+            updater = self.loader_context.get_updater(ref_snapshot, asset.get_code(), \
                 ref_instance_name, context)
             if not updater:
                 continue
@@ -1367,40 +1367,40 @@ class MayaGroupUpdaterCmd(MayaAssetUpdaterCmd):
             updater.execute()
 
             # add data about this snapshot
-            my._add_info(my.snapshot)
+            self._add_info(self.snapshot)
 
 
 
-        my._add_current_node(my.asset_code, my.namespace)
+        self._add_current_node(self.asset_code, self.namespace)
         # add the information to the set
         
-        my._set_node_attr("set_snapshot", "code", my.snapshot.get_code() )
-        my._set_node_attr("set_snapshot", "context", my.snapshot.get_value('context') )
-        my._set_node_attr("set_snapshot", "version", my.snapshot.get_version() )
-        my._set_node_attr("set_snapshot", "asset_code", sobject.get_code() )
-        my._set_node_attr("set_snapshot", "instance", sobject.get_code() )
+        self._set_node_attr("set_snapshot", "code", self.snapshot.get_code() )
+        self._set_node_attr("set_snapshot", "context", self.snapshot.get_value('context') )
+        self._set_node_attr("set_snapshot", "version", self.snapshot.get_version() )
+        self._set_node_attr("set_snapshot", "asset_code", sobject.get_code() )
+        self._set_node_attr("set_snapshot", "instance", sobject.get_code() )
 
 
 
 class CreateSetNodeCmd(MayaAssetLoaderCmd):
     '''Implementation of the node info updater for assets.'''
 
-    def __init__(my):
-        my.asset_code = ''
-        my.instance_name = ''
-        my.selected_list = []
-        super(CreateSetNodeCmd, my).__init__()
+    def __init__(self):
+        self.asset_code = ''
+        self.instance_name = ''
+        self.selected_list = []
+        super(CreateSetNodeCmd, self).__init__()
         
-    def set_asset_code(my, asset_code):
-        my.asset_code = asset_code
+    def set_asset_code(self, asset_code):
+        self.asset_code = asset_code
    
-    def set_instance(my, instance_name):
-        my.instance_name = instance_name
+    def set_instance(self, instance_name):
+        self.instance_name = instance_name
 
-    def set_contents(my, selected_list):
-        my.selected_list = selected_list
+    def set_contents(self, selected_list):
+        self.selected_list = selected_list
 
-    def execute(my):
+    def execute(self):
 
         # get the current execute parser.  Note this assume that there
         # can only be one at a time.
@@ -1408,30 +1408,30 @@ class CreateSetNodeCmd(MayaAssetLoaderCmd):
         key = "LoaderCmd:top_loader"
         top_loader = Container.get(key)
         if top_loader == None:
-            my.execute_xml = Xml()
-            my.execute_xml.create_doc("execute")
-            top_loader = my
-            my.is_top_loader_flag = True
+            self.execute_xml = Xml()
+            self.execute_xml.create_doc("execute")
+            top_loader = self
+            self.is_top_loader_flag = True
             Container.put(key, top_loader)
         else:
-            my.execute_xml = top_loader.execute_xml
+            self.execute_xml = top_loader.execute_xml
 
-        my.construct()    
+        self.construct()    
         # clean up the execute xml
-        if top_loader == my:
+        if top_loader == self:
 
             print "*"*20
-            my.execute_xml.dump()
+            self.execute_xml.dump()
             print "*"*20
 
             Container.remove(key)
             
-    def construct(my):
-        my._add_current_node(my.asset_code, my.instance_name)
+    def construct(self):
+        self._add_current_node(self.asset_code, self.instance_name)
         # add a set node
         element_name = "add_to_set"
-        for selected in my.selected_list:
-            my._add_to_set(my.instance_name, selected)
+        for selected in self.selected_list:
+            self._add_to_set(self.instance_name, selected)
 
             
    

@@ -19,15 +19,15 @@ from base_example_wdg import BaseExampleWdg
 
 class KeyboardHandlerExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Various Keyboard Handler Examples"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "A few examples of multi-line keyboard handlers"
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 

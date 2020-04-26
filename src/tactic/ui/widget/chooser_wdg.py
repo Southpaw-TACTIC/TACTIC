@@ -26,23 +26,23 @@ class IconChooserWdg(BaseRefreshWdg):
 
     '''Tool for choosing a single Icon from set of TACTIC icons'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'is_popup': 'if "true" then return as a full popup, otherwise return inner div'
         }
 
 
-    def init(my):
-        is_popup = my.kwargs.get('is_popup')
+    def init(self):
+        is_popup = self.kwargs.get('is_popup')
         if is_popup in [ 1, True, 'true', 'TRUE', 'True' ]:
-            my.is_popup = True
+            self.is_popup = True
         else:
-            my.is_popup = False
+            self.is_popup = False
 
 
-    def get_display(my):
+    def get_display(self):
 
-        if my.is_popup:
+        if self.is_popup:
             icon_chooser_popup_id = "IconChooserPopup"
             icon_chooser_popup = PopupWdg(id=icon_chooser_popup_id, allow_page_activity=False, width="760px")
             icon_chooser_popup.add("Icon Chooser", "title")
@@ -99,7 +99,7 @@ class IconChooserWdg(BaseRefreshWdg):
                     if icon_name == '-- No Icon --':
                         icon_name = ''
                     td.add_class( "SPT_ICON_SELECT_%s" % icon_name )
-                    if my.is_popup:
+                    if self.is_popup:
                         cbjs_action = '''
                             var cwd = bvr.src_el.getParent(".SPT_ICON_CHOOSER_WRAPPER_DIV");
                             cwd.setProperty("spt_icon_selected", "%s");
@@ -122,7 +122,7 @@ class IconChooserWdg(BaseRefreshWdg):
         chooser_wrapper_div.add( chooser_bkg_rc )
 
 
-        if my.is_popup:
+        if self.is_popup:
             icon_chooser_popup.add(chooser_wrapper_div, "content")
             return icon_chooser_popup
 

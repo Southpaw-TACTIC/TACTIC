@@ -33,12 +33,12 @@ class MainTabWdg(BaseTabWdg):
     '''This is the main tab for the Production application'''
 
     TAB_KEY = "main_tab"
-    def init(my):
-        my.setup_tab( my.TAB_KEY)
+    def init(self):
+        self.setup_tab( self.TAB_KEY)
 
 
 
-    def handle_tab(my, tab):
+    def handle_tab(self, tab):
         tab.add(MyTacticTabWdg, _("My Tactic"))
 
         #from pyasm.alpha.sobject_navigator_wdg import SObjectNavigatorLayoutWdg
@@ -52,18 +52,18 @@ class MainTabWdg(BaseTabWdg):
         tab.add(OverviewTabWdg, _("Overview"))
         tab.add(ClientTabWdg, _("Client"))
         #tab.add(MayaTabWdg, _("Application"))
-        tab.add(my.get_undo_wdg, _("Undo"))
+        tab.add(self.get_undo_wdg, _("Undo"))
 
         tab.add(AdminTabWdg, _("Admin"))
 
 
 
-    def get_undo_wdg(my):
+    def get_undo_wdg(self):
         widget = UndoLogWdg()
         return widget
 
 
-    def get_episode_wdg(my):
+    def get_episode_wdg(self):
         return Widget()
 
 

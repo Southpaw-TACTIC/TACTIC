@@ -125,7 +125,7 @@ spt.ctx_menu.submenu_entry_over = function( evt, bvr, mouse_411 )
 {
     spt.mouse.default_add_class_on_hover_over( evt, bvr, mouse_411 );
 
-    var target = $(spt.get_event_target(evt));
+    var target = document.id(spt.get_event_target(evt));
     var menu = target.getParent(".SPT_CTX_MENU");
 
     if( spt.ctx_menu.stack.length > menu.spt_ctx_menu_stack_number ) {
@@ -152,7 +152,7 @@ spt.ctx_menu.entry_over = function( evt, bvr, mouse_411 )
 {
     spt.mouse.default_add_class_on_hover_over( evt, bvr, mouse_411 );
 
-    var target = $(spt.get_event_target(evt));
+    var target = document.id(spt.get_event_target(evt));
     var menu = target.getParent(".SPT_CTX_MENU");
     spt.ctx_menu.clear_higher( menu.spt_ctx_menu_stack_number );
 }
@@ -226,10 +226,10 @@ spt.ctx_menu._show_action = function( evt, menu_id, bvr, is_dropdown )
     var activator_el = null;
     var popup = null;
     if( bvr ) {
-        activator_el = $(bvr.src_el);
+        activator_el = document.id(bvr.src_el);
         
     } else {
-        activator_el = $(spt.get_event_target( evt ));
+        activator_el = document.id(spt.get_event_target( evt ));
     }
 
     
@@ -243,7 +243,7 @@ spt.ctx_menu._show_action = function( evt, menu_id, bvr, is_dropdown )
         nudge_vert = parseInt( activator_el.getProperty("spt_nudge_menu_vert") );
     }
 
-    var menu = $(menu_id);
+    var menu = document.id(menu_id);
     menu.setStyle("display", "block");
     
     popup = activator_el.getParent('.SPT_Z');
@@ -257,7 +257,7 @@ spt.ctx_menu._show_action = function( evt, menu_id, bvr, is_dropdown )
 
     if( bvr ) {
         if( is_dropdown ) {
-            var activator = $(bvr.src_el);
+            var activator = document.id(bvr.src_el);
             var abs_offset = spt.get_absolute_offset(activator);
             menu.setStyle("left", (abs_offset.x + nudge_horiz));
             menu.setStyle("top" , (abs_offset.y + activator.clientHeight - 1 + nudge_vert));
@@ -294,9 +294,9 @@ spt.ctx_menu._show_action = function( evt, menu_id, bvr, is_dropdown )
     // reposition if offscreen
     var size = menu.getSize();
     var pos = menu.getPosition();
-    var win_size = $(document.body).getSize();
+    var win_size = document.id(document.body).getSize();
 
-    var body = $(document.body);
+    var body = document.id(document.body);
     var scroll_top = body.scrollTop;
     var scroll_left = body.scrollLeft;
 
@@ -315,7 +315,7 @@ spt.ctx_menu._show_action = function( evt, menu_id, bvr, is_dropdown )
 
 spt.ctx_menu.get_activator = function( bvr )
 {
-    var menu = $(bvr.src_el).getParent('.SPT_CTX_MENU');
+    var menu = document.id(bvr.src_el).getParent('.SPT_CTX_MENU');
     var activator = null;
 
     while( true ) {

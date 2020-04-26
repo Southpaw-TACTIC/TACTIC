@@ -42,7 +42,7 @@ class PopupWdg(BaseRefreshWdg):
     RIGHT = 'right'
     BOTTOM = 'bottom'
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'id': 'The id of the top widget',
             'width': 'The width of the popup',
@@ -59,18 +59,18 @@ class PopupWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
-        my.name = my.kwargs.get('id')
-        if not my.name:
-            my.name = 'popup'
+    def init(self):
+        self.name = self.kwargs.get('id')
+        if not self.name:
+            self.name = 'popup'
 
-        my.allow_page_activity = False
-        if my.kwargs.get('allow_page_activity'):
-            my.allow_page_activity = True
+        self.allow_page_activity = False
+        if self.kwargs.get('allow_page_activity'):
+            self.allow_page_activity = True
 
-        my.z_start = 200
-        if my.kwargs.get('z_start'):
-            my.z_start = my.kwargs.get('z_start')
+        self.z_start = 200
+        if self.kwargs.get('z_start'):
+            self.z_start = self.kwargs.get('z_start')
 
 
         # TODO: make 'destroy_on_close' the default behavior for popups ... do this when there is a chance to go
@@ -80,26 +80,26 @@ class PopupWdg(BaseRefreshWdg):
         #        NOTE: destroy_on_close will lose the popup window's last position ... do we really want to
         #              make it the default?
         #
-        my.destroy_on_close = False
+        self.destroy_on_close = False
 
 
-        if my.kwargs.get('destroy_on_close'):
-            my.destroy_on_close = True
+        if self.kwargs.get('destroy_on_close'):
+            self.destroy_on_close = True
 
-        my.allow_close = True
-        if my.kwargs.get('allow_close') in ['false', 'False', False]:
-            my.allow_close = False
+        self.allow_close = True
+        if self.kwargs.get('allow_close') in ['false', 'False', False]:
+            self.allow_close = False
 
 
-        my.aux_position = my.kwargs.get('aux_position')
-        if my.aux_position:
-            assert my.aux_position in [my.RIGHT, my.BOTTOM]
+        self.aux_position = self.kwargs.get('aux_position')
+        if self.aux_position:
+            assert self.aux_position in [self.RIGHT, self.BOTTOM]
         
-        my.content_wdg = Widget()
-        my.title_wdg = Widget()
-        my.aux_wdg = Widget()
+        self.content_wdg = Widget()
+        self.title_wdg = Widget()
+        self.aux_wdg = Widget()
 
-    def get_cancel_script(my):
+    def get_cancel_script(self):
 
         #TODO: when the add_named_listener is fixed, will add these closing function into the listener
         cbjs_action = '''
@@ -108,46 +108,91 @@ class PopupWdg(BaseRefreshWdg):
             spt.named_events.fire_event('preclose_' + popup_id, {});
         '''
 
-        if my.destroy_on_close:
+        if self.destroy_on_close:
             cbjs_action = '%s; spt.popup.destroy( popup );'% cbjs_action
         else:
             cbjs_action = '%s; spt.popup.close( spt.popup.get_popup( popup ) );'% cbjs_action
 
         return cbjs_action
 
-    def get_show_script(my):
+    def get_show_script(self):
         cbjs_action = 'spt.popup.open( spt.popup.get_popup( bvr.src_el ) );'
         return cbjs_action
 
-    def get_show_aux_script(my):
-        cbjs_action = "spt.show('%s')" % my.get_aux_id()
+    def get_show_aux_script(self):
+        cbjs_action = "spt.show('%s')" % self.get_aux_id()
         return cbjs_action
 
-    def get_cancel_aux_script(my):
-        cbjs_action = "spt.hide('%s')" % my.get_aux_id()
+    def get_cancel_aux_script(self):
+        cbjs_action = "spt.hide('%s')" % self.get_aux_id()
         return cbjs_action
 
-    def get_aux_id(my):
-        return '%s_Aux' % my.name
+    def get_aux_id(self):
+        return '%s_Aux' % self.name
 
-    def add_title(my, widget):
-        my.title_wdg.add(widget)
+    def add_title(self, widget):
+        self.title_wdg.add(widget)
 
-    def add_aux(my, widget):
-        my.aux_wdg.add(widget)
+    def add_aux(self, widget):
+        self.aux_wdg.add(widget)
 
-    def add(my, widget, name=None):
+    def add(self, widget, name=None):
         if name == 'content':
-            my.content_wdg = widget
+            self.content_wdg = widget
         elif name == 'title':
-            my.title_wdg = widget
+            self.title_wdg = widget
         else:
-            my.content_wdg.add(widget, name)
+            self.content_wdg.add(widget, name)
         
+    def get_styles(self):
+       
+        # Style of title_div
+        div = DivWdg()
+        palette = div.get_palette()
+        background = palette.color("background", -5)
 
-    def get_display(my):
+        text_color = palette.color("color")
+        
+        style = HtmlElement.style()
+        style.add('''
+        
+            .spt_popup_title {
+                font-weight: bold;
+                font-size: 12px;
+                padding: 6px;
+                color: %s;    
+                background: %s;
+            }
+        
+        ''' % (text_color, background))
+       
+            
+        style.add('''
+            .spt_popup_close {
+                margin: 8px 1px 3px 2px;
+            }
+
+        ''')
+        
+       
+        border_color = palette.color("border")
+
+        style.add('''
+            .spt_popup {
+                border-style: solid;
+                border-width: 1px;
+                border-color: %s;
+            }
+
+        ''' % border_color)
+
+        return style 
+
+
+    def get_display(self):
 
         div = DivWdg()
+
 
         if not Container.get_dict("JSLibraries", "spt_popup"):
             div.add_style("position: fixed")
@@ -160,6 +205,7 @@ class PopupWdg(BaseRefreshWdg):
             div.add_style("width: 100%")
             div.add_class("spt_popup_background")
             div.add_style("display: none")
+            div.add_style("z-index: 2")
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
@@ -172,26 +218,28 @@ class PopupWdg(BaseRefreshWdg):
 
         widget = DivWdg()
         div.add(widget)
+        
         widget.add_class("spt_popup")
+        
 
 
 
         if not Container.get_dict("JSLibraries", "spt_popup"):
             widget.add_behavior( {
                 'type': 'load',
-                'cbjs_action': my.get_onload_js()
+                'cbjs_action': self.get_onload_js()
             } )
 
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = 10
 
         web = WebContainer.get_web()
 
 
-        widget.set_id(my.name)
-        if my.kwargs.get("display") == "true":
+        widget.set_id(self.name)
+        if self.kwargs.get("display") == "true":
             pass
         else:
             widget.add_style("display: none")
@@ -200,7 +248,6 @@ class PopupWdg(BaseRefreshWdg):
         widget.add_style("left: 400px")
         widget.add_style("top: 100px")
 
-        widget.add_border()
         widget.add_color("background", "background")
 
         #widget.set_box_shadow(color="#000")
@@ -215,7 +262,7 @@ class PopupWdg(BaseRefreshWdg):
         bvr.src_el.setStyle("width", bvr.width)
 
         var popup = bvr.src_el.getParent(".spt_popup");
-        var window_size = $(window).getSize();
+        var window_size = document.id(window).getSize();
         var size = bvr.src_el.getSize();
         var left = window_size.x/2 - size.x/2;
         var top = window_size.y/2 - size.y/2;
@@ -243,31 +290,39 @@ class PopupWdg(BaseRefreshWdg):
         #drag_div.add(arrow)
 
 
-        my.add_header_context_menu(drag_div)
+        self.add_header_context_menu(drag_div)
 
 
         # create the 'close' button ...
-        if my.allow_close:
-            close_wdg = SpanWdg(css='spt_popup_close')
-            #close_wdg.add( IconWdg("Close", IconWdg.POPUP_WIN_CLOSE) )
-            close_wdg.add( IconWdg("Close", "BS_REMOVE") )
-            close_wdg.add_style("margin: 5px 1px 3px 1px")
+        if self.allow_close:
+            close_wdg = DivWdg(css='spt_popup_close')
+            close_wdg.add_style("display: inline-block")
+            close_wdg.add( IconWdg("Close", "FA_REMOVE", size=14) )
             close_wdg.add_style("float: right")
             close_wdg.add_class("hand")
 
             close_wdg.add_behavior({
                 'type': 'click_up',
-                'cbjs_action': my.get_cancel_script()
+                'cbjs_action': self.get_cancel_script()
             })
 
             drag_div.add(close_wdg)
 
 
             # create the 'minimize' button ...
-            minimize_wdg = SpanWdg(css='spt_popup_min')
-            minimize_wdg.add_style("margin: 5px 1px 3px 1px")
-            #minimize_wdg.add( IconWdg("Minimize", IconWdg.POPUP_WIN_MINIMIZE) )
-            minimize_wdg.add( IconWdg("Minimize", "BS_MINUS") )
+            minimize_wdg = DivWdg(css='spt_popup_min')
+            minimize_wdg.add_style("margin: 9px 1px 3px 1px")
+
+            minimize = IconWdg("Minimize", "FA_WINDOW_MINIMIZE", size=12)
+            minimize.add_class("spt_minimize")
+            minimize.add_style("vertical-align: middle")
+            maximize = IconWdg("Maximize", "FA_WINDOW_MAXIMIZE", size=12)
+            maximize.add_class("spt_maximize")
+            maximize.add_style("display: none")
+            maximize.add_style("vertical-align: middle")
+
+            minimize_wdg.add( minimize )
+            minimize_wdg.add( maximize )
             minimize_wdg.add_style("float: right")
             minimize_wdg.add_class("hand")
             behavior = {
@@ -276,6 +331,10 @@ class PopupWdg(BaseRefreshWdg):
             }
             minimize_wdg.add_behavior( behavior );
             drag_div.add(minimize_wdg)
+
+
+
+
 
         #-- TO ADD SOON -- create the 'refresh' button ...
         #   refresh_wdg = SpanWdg()
@@ -289,7 +348,7 @@ class PopupWdg(BaseRefreshWdg):
         #   refresh_wdg.add_behavior( behavior );
         #   drag_div.add(refresh_wdg)
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
 
         # style
         drag_div.add_style("font-size: 1.1em")
@@ -297,14 +356,7 @@ class PopupWdg(BaseRefreshWdg):
         drag_div.add_style("text-align: left")
         drag_div.add_class("spt_popup_width")
 
-        drag_handle_div = DivWdg(id='%s_title' %my.name)
-        drag_handle_div.add_style("padding: 6px;")
-        #drag_handle_div.add_gradient("background", "background", +10)
-        drag_handle_div.add_color("background", "background", -5)
-        drag_handle_div.add_color("color", "color")
-        drag_handle_div.add_style("font-weight", "bold")
-        drag_handle_div.add_style("font-size", "12px")
-
+        drag_handle_div = DivWdg(id='%s_title' %self.name)
 
         # add the drag capability.
         # NOTE: need to use getParent because spt.popup has not yet been
@@ -348,7 +400,7 @@ class PopupWdg(BaseRefreshWdg):
 
 
         
-        title_wdg = my.title_wdg
+        title_wdg = self.title_wdg
         if not title_wdg:
             title_wdg = "No Title"
         #else:
@@ -356,7 +408,7 @@ class PopupWdg(BaseRefreshWdg):
 
         drag_handle_div.add_behavior({
             'type': 'double_click',
-            'cbjs_action': my.get_cancel_script()
+            'cbjs_action': self.get_cancel_script()
         })
 
 
@@ -374,36 +426,32 @@ class PopupWdg(BaseRefreshWdg):
         # add the content
         content_div = DivWdg()
         content_div.add_color("color", "color2")
-        #content_div.add_color("background", "background2")
-        from pyasm.web.palette import Palette
-        palette = Palette.get()
-        content_div.add_color("color", "color2")
         content_div.add_color("background", "background2")
 
         content_div.add_style("margin", "0px, -1px -0px -1px")
 
-        content_div.set_id("%s_content" % my.name)
+        content_div.set_id("%s_content" % self.name)
         content_div.add_class("spt_popup_content")
         content_div.add_style("overflow: hidden")
         content_div.add_style("display: block")
         #content_div.add_style("padding: 10px")
-        if not my.content_wdg:
-            my.content_wdg = "No Content"
+        if not self.content_wdg:
+            self.content_wdg = "No Content"
         content_div.add_color("background", "background")
 
-        content_div.add(my.content_wdg)
+        content_div.add(self.content_wdg)
 
         drag_div.add( drag_handle_div )
-        my.position_aux_div(drag_div, content_div)
+        self.position_aux_div(drag_div, content_div)
         content_td.add(drag_div)
         widget.add(table)
 
         # ALWAYS make the Popup a Page Utility Widget (now processed client side)
         widget.add_class( "SPT_PUW" )
 
-        if my.z_start:
-            widget.set_z_start( my.z_start )
-            widget.add_style("z-index: %s" % my.z_start)
+        if self.z_start:
+            widget.set_z_start( self.z_start )
+            widget.add_style("z-index: %s" % self.z_start)
         else:
             widget.add_style("z-index: 102")
 
@@ -426,12 +474,15 @@ class PopupWdg(BaseRefreshWdg):
 
         content_td.add(icon)
 
-        #return widget
+      
+        style = self.get_styles()
+        div.add(style)
+        
         return div
 
 
 
-    def add_header_context_menu(my, widget):
+    def add_header_context_menu(self, widget):
         from menu_wdg import Menu, MenuItem
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -496,7 +547,7 @@ class PopupWdg(BaseRefreshWdg):
             spt.app_busy.show("Copying to new browser window");
             var win = window.open(url);
             setTimeout( function() {
-                var empty_el = $(win.document).getElement(".spt_empty_top");
+                var empty_el = document.id(win.document).getElement(".spt_empty_top");
                 spt.behavior.replace_inner_html(empty_el, html);
                 spt.app_busy.hide();
             }, 2000 );
@@ -521,27 +572,27 @@ class PopupWdg(BaseRefreshWdg):
 
 
 
-    def position_aux_div(my, drag_div, content_div):
+    def position_aux_div(self, drag_div, content_div):
         # add the aux div
         # add optional aux div
-        if not my.aux_position:
+        if not self.aux_position:
             drag_div.add(content_div)
             return
         content_table = Table()
         content_table.add_row()
 
-        aux_div = DivWdg(id=my.get_aux_id())
+        aux_div = DivWdg(id=self.get_aux_id())
         aux_div.add_style("display: none")
 
-        aux_div_content = DivWdg(id='%s_Content' %my.get_aux_id())
-        aux_div_content.add(my.aux_wdg)
+        aux_div_content = DivWdg(id='%s_Content' %self.get_aux_id())
+        aux_div_content.add(self.aux_wdg)
         aux_div.add( aux_div_content )
 
-        if my.aux_position == my.RIGHT:
+        if self.aux_position == self.RIGHT:
             content_table.add_cell(content_div)
             content_table.add_cell(aux_div)
             drag_div.add(content_table)
-        elif my.aux_position == my.BOTTOM:
+        elif self.aux_position == self.BOTTOM:
             drag_div.add(content_div)
             drag_div.add(aux_div)
         else:
@@ -549,7 +600,7 @@ class PopupWdg(BaseRefreshWdg):
             drag_div.add(aux_div)
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 if (spt.z_index) {
@@ -629,7 +680,7 @@ spt.z_index.sort_z_grouping = function( z_start_str )
 spt.z_index.bring_forward_cbk = function( evt, bvr, mouse_411 )
 {
     if( !evt ) { evt = window.event; }  // IE compat.
-    spt.z_index.bring_forward( $(spt.get_event_target(evt)) );
+    spt.z_index.bring_forward( document.id(spt.get_event_target(evt)) );
 }
 
 
@@ -665,7 +716,7 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
     var popup = null;
 
     if( spt.get_typeof( popup_el_or_id ) == 'string' ) {
-        popup = $(popup_el_or_id);
+        popup = document.id(popup_el_or_id);
         if( ! popup ) {
             if( ! suppress_errors ) {
                 log.error( "ERROR in '" + fn_name + "' ... NO popup found with ID '" + popup_el_or_id + "'" );
@@ -674,7 +725,7 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
         }
     }
     else {
-        popup = $(popup_el_or_id);
+        popup = document.id(popup_el_or_id);
         if( ! popup ) {
             if( ! suppress_errors ) {
                 log.error( "ERROR in '" + fn_name + "' ... could not obtain popup element from popup_el_or_id argument." );
@@ -754,7 +805,7 @@ spt.popup.toggle_display = function( popup_el_or_id, use_safe_position )
 
 spt.popup.hide_all_aux_divs = function( popup_el_or_id, fade )
 {
-    var popup = $(popup_el_or_id);
+    var popup = document.id(popup_el_or_id);
     var aux_divs = popup.getElements('.SPT_AUX');
     for( var c=0; c < aux_divs.length; c++ )
     {
@@ -830,7 +881,7 @@ spt.popup._position = function( popup, use_safe_position )
 
 spt.popup.destroy = function( popup_el_or_id, fade )
 {
-    var popup = $(popup_el_or_id);
+    var popup = document.id(popup_el_or_id);
 
     var is_minimized = popup.hasClass("spt_popup_minimized");
 
@@ -842,11 +893,12 @@ spt.popup.destroy = function( popup_el_or_id, fade )
     }
     else {
         spt.popup.close( popup);
-        destroy_fn();
+        spt.behavior.destroy_element( popup );
+        //destroy_fn();
     }
 
     if (is_minimized) { 
-        var els = $(document.body).getElements(".spt_popup_minimized");
+        var els = document.id(document.body).getElements(".spt_popup_minimized");
         for (var i = 0; i < els.length; i++) {
             els[i].setStyle("left", i*205);
         }
@@ -888,13 +940,14 @@ spt.popup.get_widget = function( evt, bvr )
     var resize = options["resize"];
     var on_close = options["on_close"];
     var allow_close = options["allow_close"];
+    var top_class = options["top_class"];
 
     // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
     var popup = null;
     var popup_id = null;
     if( bvr.options.hasOwnProperty("popup_id") ) {
         popup_id = bvr.options.popup_id;
-        popup = $(popup_id);
+        popup = document.id(popup_id);
     }
 
     // if load_once is true, just show the existing one
@@ -906,10 +959,9 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_template = null;
     if( ! popup ) {
         // get the common popup, clone it and fill it in
-        popup_template = $("popup_template");
+        var popup_template = document.id("popup_template");
         // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
         var popup = spt.behavior.duplicate_element(popup_template);
-
 
 
         if( popup_id ) {
@@ -922,16 +974,18 @@ spt.popup.get_widget = function( evt, bvr )
         // existing default popup container available to the page
         var popup_parent = null;
         if( bvr.options.hasOwnProperty("popup_parent_id") ) {
-            popup_parent = $(bvr.options.popup_parent_id);
+            popup_parent = document.id(bvr.options.popup_parent_id);
         }
 
         if( popup_parent ) {
             popup.inject( popup_parent, 'bottom' );
         } else {
-            popup.inject(  $("popup_container"), 'bottom' );
+            popup.inject(  document.id("popup_container"), 'bottom' );
         }
         spt.puw.process_new( popup.parentNode );
     }
+
+    if (top_class) popup.addClass(top_class);
 
     var close_wdg = popup.getElement('.spt_popup_close');
     var min_wdg = popup.getElement('.spt_popup_min');
@@ -1010,8 +1064,8 @@ spt.popup.get_widget = function( evt, bvr )
         // place in the middle of the screen
         var size = popup.getSize();
         var body = document.body;
-        var win_size = $(window).getSize();
-        var offset = $(window);
+        var win_size = document.id(window).getSize();
+        var offset = document.id(window);
         var xpos = win_size.x / 2 - size.x / 2 + 0*body.scrollLeft;
         var ypos = win_size.y / 2 - size.y / 2 + 0*body.scrollTop;
         if (xpos < 0) {
@@ -1058,17 +1112,17 @@ spt.popup.get_widget = function( evt, bvr )
     var popup_header_height = 0;
     var popup_footer_height = 0;
 
-    var window_size = $(window).getSize();
+    var window_size = document.id(window).getSize();
 
     if (popup_body && (popup_header || popup_footer)) {
         if (popup_header) {
-            popup_header_height = $(popup_header).getSize().y;
+            popup_header_height = document.id(popup_header).getSize().y;
         }
         if (popup_footer) {
-            popup_footer_height = $(popup_footer).getSize().y;
+            popup_footer_height = document.id(popup_footer).getSize().y;
         }
 
-        var window_size = $(window).getSize();
+        var window_size = document.id(window).getSize();
         content_wdg.setStyle("overflow-y","hidden");
         content_wdg.setStyle("max-height", "auto");
         popup_body.setStyle("overflow-y","auto");
@@ -1087,13 +1141,13 @@ spt.popup.is_background_visible = false;
 
 spt.popup.show_background = function() {
     spt.popup.is_background_visible = true;
-    var bkg = $(document.body).getElements(".spt_popup_background");
+    var bkg = document.id(document.body).getElements(".spt_popup_background");
     spt.show( bkg[bkg.length-1] );
 }
 
 spt.popup.hide_background = function() {
     spt.popup.is_background_visible = false;
-    var bkg = $(document.body).getElements(".spt_popup_background");
+    var bkg = document.id(document.body).getElements(".spt_popup_background");
     spt.hide( bkg[bkg.length-1] );
 }
 
@@ -1186,6 +1240,11 @@ spt.popup.toggle_minimize = function( src_el )
     var popup = spt.popup.get_popup(src_el);
     var resize = popup.getElement(".spt_popup_resize");
 
+    var header = popup.getElement(".spt_popup_min");
+
+    min_icon = header.getElement(".spt_minimize")
+    max_icon = header.getElement(".spt_maximize")
+
     if (spt.popup.is_minimized(popup)) {
 
         popup.setStyle("bottom", "");
@@ -1199,6 +1258,10 @@ spt.popup.toggle_minimize = function( src_el )
 
         resize.setStyle("display", "");
 
+        min_icon.setStyle("display", "inline-block")
+        max_icon.setStyle("display", "none")
+
+
     }
     else {
 
@@ -1209,7 +1272,7 @@ spt.popup.toggle_minimize = function( src_el )
         popup.setStyle("right", "");
         popup.setStyle("bottom", "2px");
 
-        var minimized = $(document.body).getElements(".spt_popup_minimized");
+        var minimized = document.id(document.body).getElements(".spt_popup_minimized");
         var num = minimized.length * 205;
 
         popup.setStyle("left", num+"px");
@@ -1218,6 +1281,10 @@ spt.popup.toggle_minimize = function( src_el )
 
         popup.addClass("spt_popup_minimized");
         spt.popup.hide_background();
+
+
+        min_icon.setStyle("display", "none")
+        max_icon.setStyle("display", "inline-block")
     }
 
 }
@@ -1228,7 +1295,7 @@ spt.popup._check_focus_by_target = function( target )
     if( ! target ) {
         return;
     }
-    var target = $(target);
+    var target = document.id(target);
 
     var popup = null;
 
@@ -1238,7 +1305,7 @@ spt.popup._check_focus_by_target = function( target )
     }
 
     if( ! popup ) {
-        // FIXME: This is the same error as above.  IE does not return a mootools object with $(target).
+        // FIXME: This is the same error as above.  IE does not return a mootools object with document.id(target).
         if (typeof(target.getParent) == 'undefined') {
             popup = null
         }
@@ -1290,7 +1357,7 @@ spt.popup.remove_el_by_class = function( popup, class_tag )
 //
 spt.popup.tear_off_el = function( el, title, popup_predisplay_fn, class_search_str )
 {
-    el = $(el);
+    el = document.id(el);
 
     // First see if el is already a popup ...
     if( el.hasClass("SPT_IN_A_POPUP") ) {
@@ -1301,7 +1368,7 @@ spt.popup.tear_off_el = function( el, title, popup_predisplay_fn, class_search_s
     var popup = null;
 
     // get the common popup, clone it and fill it in
-    var popup_template = $("popup_template");
+    var popup_template = document.id("popup_template");
     // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
     var popup = spt.behavior.duplicate_element( popup_template );
 
@@ -1347,6 +1414,10 @@ spt.popup.resize_drag_setup = function(evt, bvr, mouse_411) {
 
     spt.popup.last_resize_pos = { x: mouse_411.curr_x, y: mouse_411.curr_y };
     spt.popup.last_size = content.getSize();
+
+    // remove the max height requirement
+    content.setStyle("max-height", "");
+    content.setStyle("overflow-y", "auto");
 
 }
 

@@ -25,59 +25,59 @@ class FlashException(Exception):
 
 
 class FlashNodeNaming(object):
-    def __init__(my, node_name=None):
+    def __init__(self, node_name=None):
         # chr001_joe_black
-        my.node_name = node_name
-        my.namespace = ''
+        self.node_name = node_name
+        self.namespace = ''
 
         if node_name:
-            if my.node_name.find("_") != -1:
-                my.has_namespace_flag = True
-                my.asset_code, my.namespace = node_name.split("_",1)
+            if self.node_name.find("_") != -1:
+                self.has_namespace_flag = True
+                self.asset_code, self.namespace = node_name.split("_",1)
             else:
-                my.has_namespace_flag = False
-                my.asset_code = my.namespace = node_name
+                self.has_namespace_flag = False
+                self.asset_code = self.namespace = node_name
 
-    def get_asset_code(my):
-        return my.asset_code
+    def get_asset_code(self):
+        return self.asset_code
 
-    def set_asset_code(my, asset_code):
-        my.asset_code = asset_code
-
-    # DEPRECATED
-    def get_instance(my):
-        return my.namespace
+    def set_asset_code(self, asset_code):
+        self.asset_code = asset_code
 
     # DEPRECATED
-    def set_instance(my, namespace):
-        my.has_namespace_flag = True
-        my.namespace = namespace
+    def get_instance(self):
+        return self.namespace
+
+    # DEPRECATED
+    def set_instance(self, namespace):
+        self.has_namespace_flag = True
+        self.namespace = namespace
 
 
-    def get_namespace(my):
-        return my.namespace
+    def get_namespace(self):
+        return self.namespace
 
-    def set_namespace(my, namespace):
-        my.has_namespace_flag = True
-        my.namespace = namespace
-
-
-    def get_node_name(my):
-        return my.build_node_name()
+    def set_namespace(self, namespace):
+        self.has_namespace_flag = True
+        self.namespace = namespace
 
 
-    def build_node_name(my):
-        if my.asset_code == my.namespace:
-            return my.asset_code
+    def get_node_name(self):
+        return self.build_node_name()
+
+
+    def build_node_name(self):
+        if self.asset_code == self.namespace:
+            return self.asset_code
         else:
-            return "%s_%s" % (my.asset_code, my.namespace)
+            return "%s_%s" % (self.asset_code, self.namespace)
 
 
-    def has_instance(my):
-        return my.has_namespace_flag
+    def has_instance(self):
+        return self.has_namespace_flag
         
-    def has_namespace(my):
-        return my.has_namespace_flag
+    def has_namespace(self):
+        return self.has_namespace_flag
 
 
 
@@ -87,61 +87,61 @@ class Flash(Application):
     FLASH_EXE = "C:/Program Files/Macromedia/Flash 8/Flash.exe"
 
     '''interface to connect to flash on the client side'''
-    def __init__(my):
+    def __init__(self):
         from flash_environment import FlashEnvironment
         from flash_info import FlashInfo
-        my.env = FlashEnvironment.get()
-        my.is_initialized = False
-        my.info = FlashInfo.get()
+        self.env = FlashEnvironment.get()
+        self.is_initialized = False
+        self.info = FlashInfo.get()
         
-    def init(my):
+    def init(self):
         jsfl_list = []
 
-        if my.is_initialized:
+        if self.is_initialized:
             return jsfl_list
 
         # instantiate the session
-        #server = my.env.get_server_url()
+        #server = self.env.get_server_url()
         server = "http://fugu"
 
-        my.info.download("%s/context/JSFL/common.jsfl" % server)
-        my.load_jsfl = my.info.download("%s/context/JSFL/load2.jsfl" % server)
-        my.publish_jsfl = my.info.download("%s/context/JSFL/publish2.jsfl" % server)
-        my.render_jsfl = my.info.download("%s/context/JSFL/render.jsfl" % server)
+        self.info.download("%s/context/JSFL/common.jsfl" % server)
+        self.load_jsfl = self.info.download("%s/context/JSFL/load2.jsfl" % server)
+        self.publish_jsfl = self.info.download("%s/context/JSFL/publish2.jsfl" % server)
+        self.render_jsfl = self.info.download("%s/context/JSFL/render.jsfl" % server)
       
-        my.sandbox_path = my.info.get_sandbox_dir()
-        my.log_path = my.info.get_log_path() 
-        my.publish_dir =  my.info.get_publish_dir() 
+        self.sandbox_path = self.info.get_sandbox_dir()
+        self.log_path = self.info.get_log_path() 
+        self.publish_dir =  self.info.get_publish_dir() 
 
         # load the appropriate jsfl files
-        jsfl = my.get_jsfl(my.load_jsfl, "include", "common.jsfl", my.info.get_tmp_dir())
+        jsfl = self.get_jsfl(self.load_jsfl, "include", "common.jsfl", self.info.get_tmp_dir())
         jsfl_list.append(jsfl)
 
-        my.is_initialized == True
+        self.is_initialized == True
 
         return jsfl_list
 
-    def get_workspace_dir(my):
-        tactic_dir = my.env.get_tmpdir()
+    def get_workspace_dir(self):
+        tactic_dir = self.env.get_tmpdir()
         return "%s/sandbox" % tactic_dir
 
 
-    def get_var(my, name):
+    def get_var(self, name):
         return name
 
 
     # undefined in Application
-    def get_node_naming(my, node_name=None):
+    def get_node_naming(self, node_name=None):
         return FlashNodeNaming(node_name)
 
 
 
 
-    def run_flash(my, exec_path=None):
+    def run_flash(self, exec_path=None):
         '''execute a non blocking flash session'''
 
         if not exec_path:
-            tmp_dir = my.env.get_tmpdir()
+            tmp_dir = self.env.get_tmpdir()
             exec_path = "%s/run.jsfl" % tmp_dir
            
             file = open(exec_path, "wb")
@@ -151,7 +151,7 @@ class Flash(Application):
         print exec_path
 
         # run flash
-        pid = Popen([my.FLASH_EXE, exec_path])
+        pid = Popen([self.FLASH_EXE, exec_path])
         print pid
         #os.system(exec_path)
 
@@ -159,42 +159,42 @@ class Flash(Application):
         import time
         time.sleep(1)
 
-    def load(my, path, asset_code):
+    def load(self, path, asset_code):
         ''' just open the file in simple mode '''
-        my.import_file(asset_code, path, instantiation='import', load_mode='simple', use_namespace=False)
+        self.import_file(asset_code, path, instantiation='import', load_mode='simple', use_namespace=False)
 
 
-    def import_file(my, node_name, path, instantiation='import', load_mode='merge', use_namespace=True):
+    def import_file(self, node_name, path, instantiation='import', load_mode='merge', use_namespace=True):
 
-        jsfl_list = my.init()
+        jsfl_list = self.init()
         # initialize the session
         prefix_mode = ""
-        jsfl = my.get_jsfl(my.load_jsfl, "init_session", load_mode, prefix_mode, my.log_path, my.sandbox_path)
+        jsfl = self.get_jsfl(self.load_jsfl, "init_session", load_mode, prefix_mode, self.log_path, self.sandbox_path)
         jsfl_list.append(jsfl)
 
         # for image/audio import, load_mode='import'
         if instantiation =='import_media':
             # load file
-            jsfl = my.get_jsfl(my.load_jsfl, "import_asset", path, None, node_name)
+            jsfl = self.get_jsfl(self.load_jsfl, "import_asset", path, None, node_name)
             jsfl_list.append(jsfl)
         else:
             # load file
-            jsfl = my.get_jsfl(my.load_jsfl, "load_asset", path, None, node_name)
+            jsfl = self.get_jsfl(self.load_jsfl, "load_asset", path, None, node_name)
             jsfl_list.append(jsfl)
 
         # execute all of the jsfl commands
         jsfl_final = "\n".join(jsfl_list)
         print jsfl_final
-        my.run_jsfl(jsfl_final)
+        self.run_jsfl(jsfl_final)
 
-    def close_files(my):
-        jsfl_list = my.init()
-        jsfl = my.get_jsfl(my.load_jsfl, "close_docs")
+    def close_files(self):
+        jsfl_list = self.init()
+        jsfl = self.get_jsfl(self.load_jsfl, "close_docs")
         print "JSFL ", jsfl
-        my.run_jsfl(jsfl)
+        self.run_jsfl(jsfl)
 
-    def run_jsfl(my, jsfl):
-        tmp_dir = my.env.get_tmpdir()
+    def run_jsfl(self, jsfl):
+        tmp_dir = self.env.get_tmpdir()
         exec_path = "%s/exec.jsfl" % tmp_dir
 
         file = open(exec_path, "w")
@@ -209,7 +209,7 @@ class Flash(Application):
 
 
 
-    def get_jsfl(my, load_path, function, *args):
+    def get_jsfl(self, load_path, function, *args):
         '''get the jsfl string that runs a specific jsfl command'''
         jsfl = "fl.runScript('file:///%s', '%s'" % (load_path, function)
         new_args = []
@@ -228,28 +228,28 @@ class Flash(Application):
         return jsfl
 
 
-    def download_jsfl(my, file_name):
-        server_url = my.env.get_server_url()
+    def download_jsfl(self, file_name):
+        server_url = self.env.get_server_url()
         jsfl_url = server_url + "/context/JSFL/" + file_name
 
-        local_dir = my.env.get_tmpdir()
+        local_dir = self.env.get_tmpdir()
 
         jsfl_to_path = local_dir + "/JSFL"
         print "jsfl_to_path: ", jsfl_to_path
 
-        my.download(jsfl_url, jsfl_to_path)
+        self.download(jsfl_url, jsfl_to_path)
 
         if not os.path.exists(jsfl_to_path):
             raise FlashException("Failed to download: %s" % file_name)
 
 
-    def download(my, url, to_dir="", skip_if_exists=False):
+    def download(self, url, to_dir="", skip_if_exists=False):
         import urllib, urllib2
         filename = os.path.basename(url)
 
         # download to the current project
         if not to_dir:
-            to_dir = my.get_workspace_dir()
+            to_dir = self.get_workspace_dir()
             # for now, put everything in scenes
             to_dir = "%s/scenes" % to_dir
 

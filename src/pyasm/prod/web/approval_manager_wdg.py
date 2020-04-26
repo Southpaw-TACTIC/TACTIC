@@ -24,46 +24,46 @@ from task_manager_wdg import TaskStatusFilterWdg, SObjectStatusFilterWdg
 
 class ApprovalManagerWdg(Widget):
 
-    def __init__(my, name=None):
-        my.search_type = None
-        my.pipeline_name = None
-        my.sobject_filter = None
-        my.process_filter_name = 'process_filter'
-        my.search_limit = 10     # default 10
-        my.view = "table"
-        super(ApprovalManagerWdg,my).__init__(name)
+    def __init__(self, name=None):
+        self.search_type = None
+        self.pipeline_name = None
+        self.sobject_filter = None
+        self.process_filter_name = 'process_filter'
+        self.search_limit = 10     # default 10
+        self.view = "table"
+        super(ApprovalManagerWdg,self).__init__(name)
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
-    def set_pipeline_name(my, pipeline_name):
-        my.pipeline_name = pipeline_name
+    def set_pipeline_name(self, pipeline_name):
+        self.pipeline_name = pipeline_name
 
-    def set_sobject_filter(my, sobject_filter):
-        my.sobject_filter = sobject_filter
+    def set_sobject_filter(self, sobject_filter):
+        self.sobject_filter = sobject_filter
 
-    def set_search_limit(my, limit):
-        my.search_limit = limit
+    def set_search_limit(self, limit):
+        self.search_limit = limit
 
-    def set_process_filter_name(my, filter_name):
-        my.process_filter_name = filter_name
+    def set_process_filter_name(self, filter_name):
+        self.process_filter_name = filter_name
 
-    def set_view(my, view):
-        my.view = view
+    def set_view(self, view):
+        self.view = view
 
-    def get_display(my):
+    def get_display(self):
         ''' this does not run do_search'''
-        search_type = my.options.get("search_type")
+        search_type = self.options.get("search_type")
         if search_type:
-            my.search_type = search_type
+            self.search_type = search_type
 
-        view = my.options.get("view")
+        view = self.options.get("view")
         if view:
-            my.view = view
+            self.view = view
 
-        search_type = my.search_type
-        pipeline_name = my.pipeline_name
-        sobject_filter = my.sobject_filter
+        search_type = self.search_type
+        pipeline_name = self.pipeline_name
+        sobject_filter = self.sobject_filter
 
 
         assert search_type != None
@@ -76,9 +76,9 @@ class ApprovalManagerWdg(Widget):
         widget.add(div)
 
        
-        my.process_filter = ProcessFilterSelectWdg(label="Process: ", \
-            search_type=search_type, css='med', name=my.process_filter_name)
-        my.process_filter.set_submit_onchange(False)
+        self.process_filter = ProcessFilterSelectWdg(label="Process: ", \
+            search_type=search_type, css='med', name=self.process_filter_name)
+        self.process_filter.set_submit_onchange(False)
 
         
         # get all of the sobjects related to this task
@@ -93,7 +93,7 @@ class ApprovalManagerWdg(Widget):
 
 
         # append the process filter and user filter
-        div.add_advanced_filter(my.process_filter)
+        div.add_advanced_filter(self.process_filter)
         
 
         # add a hint
@@ -104,21 +104,21 @@ class ApprovalManagerWdg(Widget):
 
         if UserFilterWdg.has_restriction():
             user = Environment.get_user_name()
-            my.user_filter = HiddenWdg('user_filter', user) 
-            my.user_filter.set_persistence() 
+            self.user_filter = HiddenWdg('user_filter', user) 
+            self.user_filter.set_persistence() 
         else:
             # it has a special colunn 'assigned'
-            my.user_filter = UserFilterWdg(['user_filter', 'Assigned: '])
-            my.user_filter.set_search_column('assigned')
-        div.add_advanced_filter(my.user_filter)
+            self.user_filter = UserFilterWdg(['user_filter', 'Assigned: '])
+            self.user_filter.set_search_column('assigned')
+        div.add_advanced_filter(self.user_filter)
 
         # add the show assets with no task option
         div.add_advanced_filter(taskless_filter)
         
         
         # add the task filter
-        my.task_status_filter = TaskStatusFilterWdg()
-        div.add_advanced_filter(my.task_status_filter)
+        self.task_status_filter = TaskStatusFilterWdg()
+        div.add_advanced_filter(self.task_status_filter)
 
         div.add_advanced_filter(HtmlElement.br())
         if search_type == 'prod/shot': 
@@ -130,7 +130,7 @@ class ApprovalManagerWdg(Widget):
 
         # add search limit
         search_limit = SearchLimitWdg()
-        search_limit.set_limit(my.search_limit)
+        search_limit.set_limit(self.search_limit)
         div.add_bottom(search_limit)
 
 
@@ -143,7 +143,7 @@ class ApprovalManagerWdg(Widget):
             if tmp_sobjects:
 
                 # get all of the sobject ids corresponding to these tasks
-                tasks = my.get_tasks(tmp_sobjects)
+                tasks = self.get_tasks(tmp_sobjects)
                 sobject_ids = SObject.get_values(tasks, "search_id", unique=True)
 
                 search = Search(search_type)
@@ -157,7 +157,7 @@ class ApprovalManagerWdg(Widget):
             sobjects = tmp_sobjects
             
             
-        table = TableWdg(search_type, my.view)
+        table = TableWdg(search_type, self.view)
         widget.add(HtmlElement.br())
         table.set_sobjects(sobjects)
 
@@ -167,7 +167,7 @@ class ApprovalManagerWdg(Widget):
 
     
 
-    def get_tasks(my, sobjects=[]):
+    def get_tasks(self, sobjects=[]):
 
 
         # get all of the relevant tasks to the user
@@ -182,18 +182,18 @@ class ApprovalManagerWdg(Widget):
 
 
         # only look at this project
-        search_type = SearchType.get(my.search_type).get_full_key()
+        search_type = SearchType.get(self.search_type).get_full_key()
         task_search.add_filter("search_type", search_type)
 
 
-        my.process_filter.alter_search(task_search)
-        if isinstance(my.user_filter, UserFilterWdg):
-            my.user_filter.alter_search(task_search)
+        self.process_filter.alter_search(task_search)
+        if isinstance(self.user_filter, UserFilterWdg):
+            self.user_filter.alter_search(task_search)
         else:
             user = Environment.get_user_name()
             task_search.add_filter('assigned', user)
         
-        status_filters = my.task_status_filter.get_values()
+        status_filters = self.task_status_filter.get_values()
         
         if not status_filters:
             return []

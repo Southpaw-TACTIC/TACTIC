@@ -21,7 +21,7 @@ from pyasm.security import Batch
 
 class SnapshotSync(Command):
 
-    def execute(my):
+    def execute(self):
 
         # get all of the snapshots taht are not in sync
         messages = []

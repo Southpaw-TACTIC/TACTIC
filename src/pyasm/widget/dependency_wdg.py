@@ -27,9 +27,9 @@ import os, re
 
 class DependencyLink(FunctionalTableElement):
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
 
@@ -39,13 +39,13 @@ class DependencyLink(FunctionalTableElement):
         button.add_style("margin: 3px 5px")
 
         # view doesn't matter
-        behavior = my.get_edit_behavior('pyasm.widget.DependencyWdg', search_type, \
+        behavior = self.get_edit_behavior('pyasm.widget.DependencyWdg', search_type, \
             search_id)
         button.add_behavior(behavior)
 
         return button
 
-    def get_edit_behavior(my, class_name, search_type, search_id, view=''):
+    def get_edit_behavior(self, class_name, search_type, search_id, view=''):
         '''get the default edit behavior'''
         behavior = {
             "type": "click_up",
@@ -67,32 +67,32 @@ class DependencyLink(FunctionalTableElement):
 class DependencyWdg(BaseRefreshWdg):
     '''widget that follows a snapshot's dependencies and prints them out'''
     MAX_NODE_LENGTH = 100
-    def init(my):
-        my.show_title = True
-        my.mode = my.kwargs.get('mode')
+    def init(self):
+        self.show_title = True
+        self.mode = self.kwargs.get('mode')
 
-    def set_show_title(my, flag):
-        my.show_title = flag
+    def set_show_title(self, flag):
+        self.show_title = flag
 
 
-    def get_display(my):
+    def get_display(self):
         
-        if my.mode == 'detail':
+        if self.mode == 'detail':
             upstream = True
             div = DivWdg()
-            my.snapshot_code = my.kwargs.get('snapshot_code')
-            ref_snapshot = Snapshot.get_by_code(my.snapshot_code)
-            my._handle_snapshot(ref_snapshot, div, upstream, recursive=False)
+            self.snapshot_code = self.kwargs.get('snapshot_code')
+            ref_snapshot = Snapshot.get_by_code(self.snapshot_code)
+            self._handle_snapshot(ref_snapshot, div, upstream, recursive=False)
             return div
 
 
-        my.web = WebContainer.get_web()
+        self.web = WebContainer.get_web()
 
-        if my.sobjects:
-            snapshot = my.sobjects[0]
+        if self.sobjects:
+            snapshot = self.sobjects[0]
         else:
-            search_type = my.kwargs.get("search_type")
-            search_id = my.kwargs.get("search_id")
+            search_type = self.kwargs.get("search_type")
+            search_id = self.kwargs.get("search_id")
 
             snapshot = None
             if search_type == Snapshot.SEARCH_TYPE:
@@ -100,8 +100,8 @@ class DependencyWdg(BaseRefreshWdg):
             else:
                 snapshot = Snapshot.get_latest(search_type, search_id)
         if not snapshot:
-            my.add(HtmlElement.h3("No snapshot found"))
-            return super(DependencyWdg,my).get_display()
+            self.add(HtmlElement.h3("No snapshot found"))
+            return super(DependencyWdg,self).get_display()
 
 
 
@@ -109,8 +109,8 @@ class DependencyWdg(BaseRefreshWdg):
         widget.add_style('min-width: 700px')
         
       
-        if my.show_title:
-            my.add(HtmlElement.h3("Asset Dependency"))
+        if self.show_title:
+            self.add(HtmlElement.h3("Asset Dependency"))
 
         from tactic.ui.panel import TableLayoutWdg
         table = TableLayoutWdg(search_type="sthpw/snapshot", mode='simple', view='table', width='700px')
@@ -140,7 +140,7 @@ class DependencyWdg(BaseRefreshWdg):
         title.add_style("font-size: 1.2em")
         #title.add_style('margin-left', '10px')
 
-        if my.show_title:
+        if self.show_title:
             title.add(search_type_obj.get_title() )
             title.add(" - ")
             title.add(sobject.get_code() )
@@ -154,32 +154,32 @@ class DependencyWdg(BaseRefreshWdg):
         # find out how many 1st level ref nodes we are dealing with
         xml = snapshot.get_xml_value("snapshot")
         
-        #my.total_ref_count = len(xml.get_nodes("snapshot/file/ref | snapshot/ref |snapshot/input_ref| snapshot/fref"))
+        #self.total_ref_count = len(xml.get_nodes("snapshot/file/ref | snapshot/ref |snapshot/input_ref| snapshot/fref"))
 
-        my._handle_snapshot(snapshot, file_div, upstream=True, recursive=True )
-        my._handle_snapshot(snapshot, file_div,  upstream=False, recursive=True )
+        self._handle_snapshot(snapshot, file_div, upstream=True, recursive=True )
+        self._handle_snapshot(snapshot, file_div,  upstream=False, recursive=True )
 
         #widget.add(widget)
         widget.add(file_div)
         widget.add(HtmlElement.br(2))
 
-        #return super(DependencyWdg,my).get_display()
+        #return super(DependencyWdg,self).get_display()
         return widget
 
 
-    def _handle_snapshot(my, snapshot, widget, upstream, recursive=True):
+    def _handle_snapshot(self, snapshot, widget, upstream, recursive=True):
         ''' handle the files and refs in this snapshot '''
        
  
         if upstream:
-            my._handle_files(snapshot, widget, upstream, recursive)
+            self._handle_files(snapshot, widget, upstream, recursive)
         # handle the refs in this snapshot
-        my._handle_refs(snapshot, widget, upstream, recursive)
+        self._handle_refs(snapshot, widget, upstream, recursive)
 
        
         return len(widget.widgets)
 
-    def _handle_files(my, snapshot, widget, upstream, recursive=True):
+    def _handle_files(self, snapshot, widget, upstream, recursive=True):
 
         web_dir = snapshot.get_web_dir()
         xml = snapshot.get_xml_value("snapshot")
@@ -249,7 +249,7 @@ class DependencyWdg(BaseRefreshWdg):
             widget.add(HtmlElement.br(clear="all"))
             # handle sub refs
             for node in nodes:
-                my._handle_ref_node(node, block, upstream, recursive)
+                self._handle_ref_node(node, block, upstream, recursive)
                 block.add(HtmlElement.br())
             if nodes:
                 widget.add(block)
@@ -274,7 +274,7 @@ class DependencyWdg(BaseRefreshWdg):
 
 
 
-    def _handle_refs(my, snapshot, widget, upstream, recursive=True):
+    def _handle_refs(self, snapshot, widget, upstream, recursive=True):
 
         xml = snapshot.get_xml_value("snapshot")
         
@@ -288,7 +288,7 @@ class DependencyWdg(BaseRefreshWdg):
                 block.add_style("margin-left: 30px")
                 block.add_style("margin-top: 10px")
                 for node in nodes:
-                    my._handle_ref_node(node, block, upstream, recursive)
+                    self._handle_ref_node(node, block, upstream, recursive)
                     block.add(HtmlElement.br())
                 widget.add(block)
                
@@ -302,7 +302,7 @@ class DependencyWdg(BaseRefreshWdg):
                 block.add_style("margin-left: 30px")
                 block.add_style("margin-top: 10px")
                 for node in nodes:
-                    my._handle_ref_node(node, block, upstream, recursive)
+                    self._handle_ref_node(node, block, upstream, recursive)
                 widget.add(block)
     
         else:
@@ -314,12 +314,12 @@ class DependencyWdg(BaseRefreshWdg):
                 block.add_style("margin-left: 30px")
                 block.add_style("margin-top: 10px")
                 for node in nodes:
-                    my._handle_ref_node(node, block, upstream, recursive)
+                    self._handle_ref_node(node, block, upstream, recursive)
                 widget.add(block)
 
 
 
-    def _handle_ref_node(my, node, widget, upstream=False, recursive=True):
+    def _handle_ref_node(self, node, widget, upstream=False, recursive=True):
 
         # get the reference snapshot (should maybe use the loader or
         # at least share the code
@@ -341,7 +341,7 @@ class DependencyWdg(BaseRefreshWdg):
                 (search_type, search_id, context) )
             return
 
-        toggle_id = my.generate_unique_id('toggle')
+        toggle_id = self.generate_unique_id('toggle')
         widget.add(FloatDivWdg(), toggle_id)
         version = ref_snapshot.get_value("version")
 
@@ -404,8 +404,8 @@ class DependencyWdg(BaseRefreshWdg):
         if node_name:
             node_name_len = len(node_name)
             suffix = ''
-            if node_name_len > my.MAX_NODE_LENGTH:
-                node_name_len = my.MAX_NODE_LENGTH
+            if node_name_len > self.MAX_NODE_LENGTH:
+                node_name_len = self.MAX_NODE_LENGTH
                 suffix = '...'
             node_data = "<b>node</b> : %s %s" % (node_name[:node_name_len], suffix)
             node_span = SpanWdg(node_data)
@@ -442,7 +442,7 @@ class DependencyWdg(BaseRefreshWdg):
         
         """ 
         # set recursive to False here to keep it simple for now 
-        widget_len = my._handle_snapshot(ref_snapshot, div, upstream, recursive=False)
+        widget_len = self._handle_snapshot(ref_snapshot, div, upstream, recursive=False)
         # add the toggle swap on if there are contents in the content div
         if widget_len:
             widget.set_widget(swap, toggle_id)
@@ -457,7 +457,7 @@ class DependencyWdg(BaseRefreshWdg):
 
 class DependencyThumbWdg(ThumbWdg):
 
-    def set_text_link(my, widget, div, image_link):
+    def set_text_link(self, widget, div, image_link):
         '''override how the text link is drawn'''
         div.add_style('float', 'left')
         div.add_style('margin-left', '10px')
@@ -474,12 +474,12 @@ class DependencyThumbWdg(ThumbWdg):
         span.add_tip('Right-click and choose [Save Link As..] to save to disk.')
 
 
-    def get_icon_info(my, image_link, repo_path=None, icon_type='icon'):
-        icon_size = my.get_icon_size()
+    def get_icon_info(self, image_link, repo_path=None, icon_type='icon'):
+        icon_size = self.get_icon_size()
         
         p = re.compile(r'.*(\.jpg|\.png|\.tif)$')
-        if p.match(image_link) and my.info.has_key(icon_type):
-            icon_link = my.info.get('icon')
+        if p.match(image_link) and self.info.has_key(icon_type):
+            icon_link = self.info.get('icon')
         else:
             icon_link = ThumbWdg.find_icon_link(image_link)
         

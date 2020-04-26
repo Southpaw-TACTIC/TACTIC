@@ -34,7 +34,7 @@ class SchemaDumpCmd(object):
     fine for database independence for the base schema.
     '''
 
-    def execute(my):
+    def execute(self):
         plugin_code = "sthpw_schema"
         project_code = 'sthpw'
 
@@ -73,7 +73,7 @@ class SchemaDumpCmd(object):
         ]
 
 
-        my.dump(plugin_code, project_code, search_types)
+        self.dump(plugin_code, project_code, search_types)
 
 
         plugin_code = "config_schema"
@@ -90,22 +90,22 @@ class SchemaDumpCmd(object):
             "config/prod_setting",
         ]
 
-        my.dump(plugin_code, project_code, search_types)
+        self.dump(plugin_code, project_code, search_types)
 
 
         #project_code = 'project'
         #search_type_objs = Project.get_by_code(project_code).get_search_types()
         #search_types = [x.get_value("search_type") for x in search_type_objs]
         #plugin_code = "%s_schema" % project_code
-        #my.dump(plugin_code, project_code, search_types)
+        #self.dump(plugin_code, project_code, search_types)
  
 
 
 
-    def dump(my, plugin_code, project_code, search_types):
+    def dump(self, plugin_code, project_code, search_types):
 
         xml = Xml()
-        my.xml = xml
+        self.xml = xml
 
         xml.create_doc("manifest")
         manifest_node = xml.get_root_node()

@@ -37,45 +37,45 @@ class ViewManagerWdg(BaseRefreshWdg):
     '''Panel to manage views ... this is mean to be a generic interface for
     manipulating the side bar views'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_type': 'search type of the view',
         'view': 'view to be edited'
         }
 
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
-        my.view = my.kwargs.get('view')
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
+        self.view = self.kwargs.get('view')
 
         web = WebContainer.get_web()
-        if not my.search_type:
-            my.search_type = web.get_form_value('search_type')
-        if not my.view:
-            my.view = web.get_form_value('view')
+        if not self.search_type:
+            self.search_type = web.get_form_value('search_type')
+        if not self.view:
+            self.view = web.get_form_value('view')
 
-        if not my.view:
-            my.view = 'table'
+        if not self.view:
+            self.view = 'table'
 
-        my.refresh = web.get_form_value('is_refresh')=='true'
+        self.refresh = web.get_form_value('is_refresh')=='true'
 
 
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
         div.add_class( "spt_view_manager_top" )
-        my.set_as_panel(div)
+        self.set_as_panel(div)
 
-        if not my.search_type or not my.view:
+        if not self.search_type or not self.view:
             return div
 
 
 
-        div.add( my.get_action_wdg() )
+        div.add( self.get_action_wdg() )
 
         div.add(HtmlElement.br(2))
 
-        tool_bar = my.get_tool_bar()
+        tool_bar = self.get_tool_bar()
         div.add(tool_bar)
  
         div.add(HtmlElement.br())
@@ -86,7 +86,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         menu_div = DivWdg()
         menu_div.set_id("menu_item_template")
         menu_div.add_style("display: none")
-        menu_div.add( my.get_section_wdg("_template", editable=False) )
+        menu_div.add( self.get_section_wdg("_template", editable=False) )
         div.add(menu_div)
 
 
@@ -97,18 +97,18 @@ class ViewManagerWdg(BaseRefreshWdg):
         td = table.add_cell()
         project_view = DivWdg()
         project_view.set_id("menu_item_list")
-        project_view.add( my.get_section_wdg(my.view ))
+        project_view.add( self.get_section_wdg(self.view ))
         td.add(project_view)
         td.add_style("vertical-align: top")
         #td.add_attr("rowspan", "2")
 
-        tool_bar = my.get_tool_bar()
+        tool_bar = self.get_tool_bar()
         td.add(tool_bar)
 
         td.add("<br/>")
 
         # add detail information
-        td = table.add_cell( my.get_detail_wdg() )
+        td = table.add_cell( self.get_detail_wdg() )
 
 
         # FIXME: get rid of hard coded classes
@@ -117,7 +117,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         td.add_class("spt_view_manager_detail")
         td.add_style("display", "table-cell")
         td.add_attr("spt_class_name", "tactic.ui.panel.ManageSideBarDetailWdg")
-        td.add_attr("spt_search_type", my.search_type)
+        td.add_attr("spt_search_type", self.search_type)
 
         td.add_style("padding: 0 20px 20px 20px")
         td.add_style("vertical-align: top")
@@ -128,7 +128,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_tool_bar(my):
+    def get_tool_bar(self):
         widget = Widget()
         trash_div = SpanWdg()
         # reset some global variables on load
@@ -154,7 +154,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         # FIXME: is_personal???
         is_personal = 'false'
         bvr = { "type": "click_up",\
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (my.view, is_personal)} 
+                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (self.view, is_personal)} 
         save_div.add_behavior(bvr)
         widget.add(save_div)
         return widget
@@ -162,12 +162,12 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_detail_wdg(my):
+    def get_detail_wdg(self):
         return "<<-- Click on a link for the detail to appear"
 
 
 
-    def get_menu_item(my, element_name, display_handler):
+    def get_menu_item(self, element_name, display_handler):
 
         content = DivWdg()
         content.add_attr("spt_element_name", element_name)
@@ -199,7 +199,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         return content
 
 
-    def get_action_menu_details(my):
+    def get_action_menu_details(self):
         '''method to override the details of the action menu'''
         return {
             'menu_id': 'ManageViewPanelWdg_DropdownMenu',
@@ -213,9 +213,9 @@ class ViewManagerWdg(BaseRefreshWdg):
         }
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
         div = DivWdg()
-        menus = [ my.get_action_menu_details() ]
+        menus = [ self.get_action_menu_details() ]
         dd_activator = ButtonForDropdownMenuWdg( id="SideBarManagerActionDropDown", title="-- Action --", menus=menus,
                                                  width=150, match_width=True)
         div.add( dd_activator )
@@ -225,7 +225,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
-    def get_section_wdg(my, view, editable=True, default=False):
+    def get_section_wdg(self, view, editable=True, default=False):
         from panel_wdg import SideBarBookmarkMenuWdg
 
         title = ""
@@ -236,7 +236,7 @@ class ViewManagerWdg(BaseRefreshWdg):
             edit_mode = 'read'
         kwargs = {
             'title': title,
-            'config_search_type': my.search_type,
+            'config_search_type': self.search_type,
             'view': view,
             'target_id': target_id,
             'width': '300',
@@ -276,14 +276,14 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
         return config
 
 
-    def get_detail_class_name(my):
+    def get_detail_class_name(self):
         return "tactic.ui.panel.element_definition_wdg.ElementDefinitionWdg"
 
     #
     # behavior functions
     #
-    def add_separator_behavior(my, separator_wdg, element_name, config, options):
-        if my.mode == 'edit':
+    def add_separator_behavior(self, separator_wdg, element_name, config, options):
+        if self.mode == 'edit':
             # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -296,15 +296,15 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
 
 
 
-    def add_folder_behavior(my, folder_wdg, element_name, config, options):
+    def add_folder_behavior(self, folder_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a folder'''
 
         # determines whether the folder opens on click
-        recurse = my.kwargs.get("recurse")!= "false"
+        recurse = self.kwargs.get("recurse")!= "false"
 
         # edit behavior
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
             # IS EDITABLE ...
 
             # add the drag/drop behavior
@@ -319,7 +319,7 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
                                                      'spt.side_bar.display_element_info_cbk(evt,bvr);'
             else:
                 behavior['cbjs_action_onnomotion'] = 'spt.side_bar.display_element_info_cbk(evt,bvr);'
-            behavior['class_name'] = my.get_detail_class_name()
+            behavior['class_name'] = self.get_detail_class_name()
            
             folder_wdg.add_behavior(behavior)
             folder_wdg.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
@@ -334,7 +334,7 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
 
 
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
 
         # check security
@@ -346,7 +346,7 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
         # make it draggable
         
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
                 # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -354,7 +354,7 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
                 "drop_code": 'manageSideBar',
                 "cb_set_prefix": 'spt.side_bar.pp',
                 'cbjs_action_onnomotion':  'spt.side_bar.display_element_info_cbk(evt,bvr);',
-                'class_name':   my.get_detail_class_name()
+                'class_name':   self.get_detail_class_name()
             }
            
                 
@@ -369,24 +369,24 @@ class SectionListWdg(SideBarBookmarkMenuWdg):
 
 class NewLinkViewSelectWdg(BaseRefreshWdg):
     '''A widget for the view select when creating a new link'''            
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
-        my.search_type = web.get_form_value('search_type')
-        my.refresh = web.get_form_value('is_refresh')=='true'
+        self.search_type = web.get_form_value('search_type')
+        self.refresh = web.get_form_value('is_refresh')=='true'
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg(id='link_view_select')
         widget.add_class("link_view_select")
-        if my.refresh:
+        if self.refresh:
             widget = Widget()
         else:
-            my.set_as_panel(widget)
+            self.set_as_panel(widget)
         
         views = []
-        if my.search_type:
+        if self.search_type:
             from pyasm.search import WidgetDbConfig
             search = Search( WidgetDbConfig.SEARCH_TYPE )
-            search.add_filter("search_type", my.search_type)
+            search.add_filter("search_type", self.search_type)
             search.add_regex_filter("view", "link_search:|saved_search:", op="NEQI")
             search.add_order_by('view')
             widget_dbs = search.get_sobjects()
@@ -404,14 +404,14 @@ class NewLinkViewSelectWdg(BaseRefreshWdg):
 
 class ManageViewNewItemWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.type = my.kwargs.get('type')
-        my.view = my.kwargs.get('view')
-        my.is_personal = False
-        if 'my_view' in my.view:
-            my.is_personal = True
+    def init(self):
+        self.type = self.kwargs.get('type')
+        self.view = self.kwargs.get('view')
+        self.is_personal = False
+        if 'my_view' in self.view:
+            self.is_personal = True
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg(id='new_item_panel')
         widget.add_class("new_item_panel")
         widget.add_class("spt_new_item_top")
@@ -422,12 +422,12 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
         div.add_style("padding", "5px")
         div.add_border()
 
-        if my.is_personal:
+        if self.is_personal:
             is_personal = 'true'
         else:
             is_personal = 'false'
 
-        if my.type == 'new_folder':
+        if self.type == 'new_folder':
             #div.set_attr('spt_view', 'new_folder')
             div.add(HtmlElement.b('Create New Folder'))
             div.add(HtmlElement.br(2))
@@ -439,7 +439,7 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
             # add exisiting views in the div for checking with client's input
              # add exiting views:
             from panel_wdg import ViewPanelSaveWdg
-            views = ViewPanelSaveWdg.get_existing_views(my.is_personal)
+            views = ViewPanelSaveWdg.get_existing_views(self.is_personal)
             hidden = HiddenWdg('existing_views', '|'.join(views))
             div.add(hidden)
             """
@@ -501,7 +501,7 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
        
             bvr = {
             "type": "click_up",
-            "view": my.view,
+            "view": self.view,
             "is_personal": is_personal == 'true',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_new_item_top");
@@ -524,7 +524,7 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
             div.add(HtmlElement.br())
 
 
-        elif my.type == 'new_link':
+        elif self.type == 'new_link':
 
             div.set_attr('spt_view', 'new_link')
             div.add(HtmlElement.b('Create New Link'))
@@ -609,11 +609,11 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
             div.add(save_button)
             bvr = { "type": "click_up",
                 'cbjs_action': "spt.side_bar.manage_section_action_cbk({"\
-                "'value':'save_link'},'%s', %s);" %(my.view, is_personal)}
+                "'value':'save_link'},'%s', %s);" %(self.view, is_personal)}
             save_button.add_behavior(bvr)
             div.add(HtmlElement.br(1))
 
-        elif my.type == 'new_separator':
+        elif self.type == 'new_separator':
             div.set_attr('spt_view', 'new_separator')
             div.add(HtmlElement.b('Creating New Separator. . .'))
             div.add(HtmlElement.br())
@@ -629,7 +629,7 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
         
             bvr = { "type": "click_up",\
                 'cbjs_action': "spt.side_bar.manage_section_action_cbk({"\
-                "'value':'save_separator'},'%s');" %my.view}
+                "'value':'save_separator'},'%s');" %self.view}
             save_div.add_behavior(bvr)
             div.add(save_div)
             """
@@ -638,7 +638,7 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
 
 class ManageSideBarDetailCbk(Command):
 
-    def get_args_key(my):
+    def get_args_key(self):
         return {
         'search_type': 'search_type of the element',
         'element_name': 'name of the element to get information from',
@@ -646,42 +646,42 @@ class ManageSideBarDetailCbk(Command):
         'login': 'login for config filtering. <user> for personal view'
         }
 
-    def get_title(my):
+    def get_title(self):
         return "ManageSideBarDetailCbk in View Manager"
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
         if web.get_form_value("update") != "true":
             return
 
-        my.element_name = my.kwargs.get("element_name")
-        #my.view = my.kwargs.get("view")
-        my.view = "definition"
-        my.login = my.kwargs.get("login")
-        if my.login == 'None' or not my.login:
-            my.login = None
-        my.handle_config()
+        self.element_name = self.kwargs.get("element_name")
+        #self.view = self.kwargs.get("view")
+        self.view = "definition"
+        self.login = self.kwargs.get("login")
+        if self.login == 'None' or not self.login:
+            self.login = None
+        self.handle_config()
 
 
-    def handle_config(my):
+    def handle_config(self):
         web = WebContainer.get_web()
 
-        search_type = my.kwargs.get("search_type")
-        view = my.view
+        search_type = self.kwargs.get("search_type")
+        view = self.view
         config_search_type = "config/widget_config"
         
         search = Search(config_search_type)
         search.add_filter("search_type", search_type)
         search.add_filter("view", view)
-        search.add_filter("login", my.login)
+        search.add_filter("login", self.login)
         config = search.get_sobject()
         if not config:
             config = SearchType.create(config_search_type)
             config.set_value("search_type", search_type )
             config.set_value("view", view )
-            if my.login:
-                 config.set_value("login", my.login )
+            if self.login:
+                 config.set_value("login", self.login )
             xml = config.get_xml_value("config", "config")
             root = xml.get_root_node()
             # reinitialize
@@ -704,11 +704,11 @@ class ManageSideBarDetailCbk(Command):
             # TAKEN FROM API: should be centralized or something
             from tactic.ui.panel import SideBarBookmarkMenuWdg
             config_view = SideBarBookmarkMenuWdg.get_config(search_type, view)
-            node = config_view.get_element_node(my.element_name)
+            node = config_view.get_element_node(self.element_name)
             if node:
                 config_xml = config_view.get_xml()
 
-                node = config_view.get_element_node(my.element_name)
+                node = config_view.get_element_node(self.element_name)
                 Xml.set_attribute(node, "title", config_title)
                 Xml.set_attribute(node, "icon", config_icon)
 
@@ -716,29 +716,29 @@ class ManageSideBarDetailCbk(Command):
             else:
                 config_string = '''
                 <element name="%s" title="%s" icon="%s"/>
-                ''' %(my.element_name, config_title, config_icon)
+                ''' %(self.element_name, config_title, config_icon)
 
-        config.append_xml_element(my.element_name, config_string)
+        config.append_xml_element(self.element_name, config_string)
         config.commit_config()
 
 
 
 class ManageSideBarSecurityCbk(Command):
 
-    def get_args_key(my):
+    def get_args_key(self):
         return {
         'search_type': 'search_type of the element',
         'element_name': 'name of the element to get information from',
         }
 
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
         if web.get_form_value("update") != "true":
             return
 
-        my.element_name = my.kwargs.get("element_name")
+        self.element_name = self.kwargs.get("element_name")
 
         security_groups = web.get_form_values("security")
         from pyasm.security import AccessRuleBuilder, AccessManager
@@ -758,9 +758,9 @@ class ManageSideBarSecurityCbk(Command):
 
             code = login_group.get_value("login_group")
             if code in security_groups:
-                builder.remove_rule(rule_group, my.element_name)
+                builder.remove_rule(rule_group, self.element_name)
             else:
-                builder.add_rule(rule_group, my.element_name, "deny")
+                builder.add_rule(rule_group, self.element_name, "deny")
 
             login_group.set_value("access_rules", builder.to_string())
             login_group.commit()

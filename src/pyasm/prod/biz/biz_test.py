@@ -21,13 +21,13 @@ import unittest
 class BizTest(unittest.TestCase):
     '''Unit test that tests all of the interactions of Tactic with Maya'''
 
-    def test_all(my):
+    def test_all(self):
 
         Batch()
-        my._test_parent()
+        self._test_parent()
 
 
-    def _test_parent(my):
+    def _test_parent(self):
 
         SearchType.set_global_template("prod", "bar")
 

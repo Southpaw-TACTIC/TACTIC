@@ -40,22 +40,22 @@ def get_app_server():
 
     class CherryPyAppServer(base_cls):
 
-        def get_adapter(my):
+        def get_adapter(self):
             adapter = CherryPyAdapter()
             return adapter
             
 
         @cherrypy.expose()
-        def index(my, **kwargs):
-            my.hash = ()
-            return my.get_display()
+        def index(self, **kwargs):
+            self.hash = ()
+            return self.get_display()
 
 
         # set the hash object as a list
         @cherrypy.expose()
-        def default(my, *vpath, **kwargs):
-            my.hash = vpath
-            return my.get_display()
+        def default(self, *vpath, **kwargs):
+            self.hash = vpath
+            return self.get_display()
 
 
 
@@ -69,7 +69,7 @@ def get_xmlrpc_server():
 
     from cherrypy import _cptools
     class XmlrpcServer(_cptools.XMLRPCController):
-         def get_adapter(my):
+         def get_adapter(self):
             adapter = CherryPyAdapter()
             return adapter
 
@@ -81,18 +81,18 @@ from cherrypy_adapter import CherryPyAdapter as CherryPyAdapter20
 class CherryPyAdapter(CherryPyAdapter20):
     """Encapsulates cherrypy environment. Implements the web interface"""
 
-    def __init__(my):
-        my.request = cherrypy.request
-        my.response = cherrypy.response
+    def __init__(self):
+        self.request = cherrypy.request
+        self.response = cherrypy.response
 
-        #my.request.wsgi_environ['REQUEST_URI'] = my.request.browser_url
-        my.request.wsgi_environ['REQUEST_URI'] = cherrypy.url()
+        #self.request.wsgi_environ['REQUEST_URI'] = self.request.browser_url
+        self.request.wsgi_environ['REQUEST_URI'] = cherrypy.url()
 
 
-    def get_context_name(my):
+    def get_context_name(self):
         '''this includes all of the subdirectories as well as the main
         context. Preferabbly it gets the project_code. if not, site_code '''
-        path = my.get_request_path()
+        path = self.get_request_path()
         
         p = re.compile( r"/(tactic|projects)/?(\w+)/")
         m = p.search(path)
@@ -115,83 +115,83 @@ class CherryPyAdapter(CherryPyAdapter20):
         return context
 
 
-    def get_request_path(my):
-        return my.request.path_info
+    def get_request_path(self):
+        return self.request.path_info
 
 
-    def get_request_method(my):
-        return my.request.method
+    def get_request_method(self):
+        return self.request.method
 
-    def get_request(my):
-        return my.request
+    def get_request(self):
+        return self.request
 
-    def get_request_headers(my):
-        return my.request.headers
-
-
-    def get_response(my):
-        return my.response
-
-    def set_header(my, name, value):
-        my.response.headers[name] = value
-
-    def get_response(my):
-        return my.response
-
-    def set_content_type(my, content_type):
-        my.response.headers['Content-Type'] = content_type
-
-    def get_content_type(my):
-        return my.response.headers['Content-Type']
+    def get_request_headers(self):
+        return self.request.headers
 
 
+    def get_response(self):
+        return self.response
 
-    def set_force_download(my, filename):
-        my.response.headers['Content-Type'] = "application/force-download"
-        my.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
+    def set_header(self, name, value):
+        self.response.headers[name] = value
+
+    def get_response(self):
+        return self.response
+
+    def set_content_type(self, content_type):
+        self.response.headers['Content-Type'] = content_type
+
+    def get_content_type(self):
+        return self.response.headers['Content-Type']
 
 
-    def set_csv_download(my, filename):
+
+    def set_force_download(self, filename):
+        self.response.headers['Content-Type'] = "application/force-download"
+        self.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
+
+
+    def set_csv_download(self, filename):
         filename = os.path.basename(filename)
-        my.response.headers['Content-Type'] = "text/x-csv"
-        my.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
+        self.response.headers['Content-Type'] = "text/x-csv"
+        self.response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
 
 
 
     # form submission functions
-    def reset_form(my):
-        my.request.params = {}
+    def reset_form(self):
+        self.request.params = {}
    
-    def get_form_keys(my):
-        return my.request.params.keys()
+    def get_form_keys(self):
+        return self.request.params.keys()
 
-    def has_form_key(my, key):
-        return my.request.params.has_key(key)
+    def has_form_key(self, key):
+        return self.request.params.has_key(key)
 
-    def set_form_value(my, name, value):
+    def set_form_value(self, name, value):
         '''Set the form value to appear like it was submitted'''
         # protect from accidental null names.  This can occur when an
         # input widget has not name specified.
         if not name:
             return
-        my.request.params[name] = value
+        self.request.params[name] = value
 
 
-    def get_form_data(my):
-        return my.request.params
+    def get_form_data(self):
+        return self.request.params
 
 
 
     # cookie functions
 
-    def set_cookie(my, name, value):
+    def set_cookie(self, name, value):
         '''set a cookie'''
         cherrypy.response.cookie[name] = value
         cherrypy.response.cookie[name]['path'] = '/'
         cherrypy.response.cookie[name]['max-age'] = 120*3600
 
 
-    def get_cookie(my, name):
+    def get_cookie(self, name):
         '''get a cookie'''
         try:
             return cherrypy.request.cookie[name].value
@@ -201,7 +201,7 @@ class CherryPyAdapter(CherryPyAdapter20):
 
 
 
-    def get_cookies(my):
+    def get_cookies(self):
         '''get a cookies'''
         return cherrypy.request.cookie
             
@@ -209,14 +209,14 @@ class CherryPyAdapter(CherryPyAdapter20):
 
     # environment functions
     """
-    def get_env_keys(my):
-        env = my.request.wsgi_environ
+    def get_env_keys(self):
+        env = self.request.wsgi_environ
         return env.keys()
 
 
 
-    def get_env(my, env_var):
-        env = my.request.wsgi_environ
+    def get_env(self, env_var):
+        env = self.request.wsgi_environ
         return env.get(env_var)
     """
 

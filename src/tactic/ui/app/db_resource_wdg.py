@@ -29,25 +29,25 @@ from tactic.ui.widget import ActionButtonWdg
 
 class DbResourceWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 20px")
 
         wizard = WizardWdg(title="Database Resource Manager")
         top.add(wizard)
 
 
-        wizard.add(my.get_vendor_wdg(), "Vendor" )
-        wizard.add(my.get_connect_wdg(), "Connection" )
-        wizard.add(my.get_tables_wdg(), "Tables" )
+        wizard.add(self.get_vendor_wdg(), "Vendor" )
+        wizard.add(self.get_connect_wdg(), "Connection" )
+        wizard.add(self.get_tables_wdg(), "Tables" )
         
 
         return top
    
 
 
-    def get_vendor_wdg(my):
+    def get_vendor_wdg(self):
         
         div = DivWdg()
         div.set_name("Vendor")
@@ -103,7 +103,7 @@ class DbResourceWdg(BaseRefreshWdg):
 
 
 
-    def get_connect_wdg(my):
+    def get_connect_wdg(self):
         
         div = DivWdg()
         div.set_name("Connection")
@@ -124,7 +124,7 @@ class DbResourceWdg(BaseRefreshWdg):
 
 
 
-    def get_tables_wdg(my):
+    def get_tables_wdg(self):
         
         div = DivWdg()
         div.set_name("Tables")
@@ -146,7 +146,7 @@ class DbResourceWdg(BaseRefreshWdg):
 
         try:
             connect = DbContainer.get(db_resource)
-        except Exception, e:
+        except Exception as e:
             div.add("Could not connect")
             div.add_style("padding: 30px")
             div.add("<br/>"*2)
@@ -232,7 +232,7 @@ class DbResourceWdg(BaseRefreshWdg):
 
 
 
-    def get_convert_to_project_wgd(my):
+    def get_convert_to_project_wgd(self):
         
         div = DivWdg()
         div.set_name("Project")

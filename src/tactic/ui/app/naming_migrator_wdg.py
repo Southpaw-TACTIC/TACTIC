@@ -26,9 +26,9 @@ class NamingMigratorWdg(BaseRefreshWdg):
     naming'''
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         top.add("Search Type: ")
         search_type_text = TextWdg("search_type")

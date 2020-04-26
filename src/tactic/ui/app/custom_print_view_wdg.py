@@ -24,7 +24,7 @@ import types
 
 class CustomPrintViewWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             "search_key": "search_key for the item being printed?",
             "page_title": "Title for the title tag of the print view page",
@@ -33,17 +33,17 @@ class CustomPrintViewWdg(BaseRefreshWdg):
         }
 
 
-    def init(my):
+    def init(self):
 
-        my.search_key = my.kwargs.get('search_key')
-        my.page_title = my.kwargs.get('page_title')
-        my.content_type = my.kwargs.get('content_type')
-        my.html_file  = my.kwargs.get('custom_html_layout_file')
+        self.search_key = self.kwargs.get('search_key')
+        self.page_title = self.kwargs.get('page_title')
+        self.content_type = self.kwargs.get('content_type')
+        self.html_file  = self.kwargs.get('custom_html_layout_file')
 
 
-    def get_display(my): 
+    def get_display(self): 
 
-        if not my.html_file:
+        if not self.html_file:
             return ""
 
 
@@ -52,15 +52,15 @@ class CustomPrintViewWdg(BaseRefreshWdg):
         html_templates_path = "%s/templates" % utility_path
         custom_template_path = "%s/site_custom" % utility_path
 
-        if my.content_type == 'title':
-            return my.page_title
+        if self.content_type == 'title':
+            return self.page_title
 
-        elif my.content_type == 'body':
+        elif self.content_type == 'body':
             body_template_fp = open( "%s/print_custom_page_TEMPLATE_body_contents.html" % html_templates_path, "r" )
             body_template = body_template_fp.read()
             body_template_fp.close()
 
-            layout_html_fp = open( "%s/%s" % (custom_template_path, my.html_file), "r" )
+            layout_html_fp = open( "%s/%s" % (custom_template_path, self.html_file), "r" )
             layout_html = layout_html_fp.read()
             layout_html_fp.close()
 
@@ -77,7 +77,7 @@ class CustomPrintViewWdg(BaseRefreshWdg):
 
             exec stmt  # assigns 'gather_specs' dictionary ...
 
-            layout_html_filled = my.process_data_gather( my.search_key, gather_specs, layout_html )
+            layout_html_filled = self.process_data_gather( self.search_key, gather_specs, layout_html )
 
             body_html = body_template.replace("[[PRINT_LAYOUT_PLACEHOLDER]]", layout_html_filled)
             return body_html
@@ -85,7 +85,7 @@ class CustomPrintViewWdg(BaseRefreshWdg):
         return ""  # FIXME: should error or return some error message
 
 
-    def process_data_gather( my, search_key, gather_specs, layout_html ):
+    def process_data_gather( self, search_key, gather_specs, layout_html ):
 
         sobject = Search.get_by_search_key( search_key )
         for label,info in gather_specs.iteritems():

@@ -17,7 +17,7 @@ from pyasm.web import AppServer
 
 class Error403(AppServer):
 
-    def get_page_widget(my):
+    def get_page_widget(self):
 
         return("""
 <html>

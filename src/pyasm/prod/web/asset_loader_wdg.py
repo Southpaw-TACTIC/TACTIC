@@ -33,35 +33,35 @@ class SnapshotLoaderButtonWdg(Widget):
 
     LOAD_BUTTON_ID = "load_id"
 
-    def init(my):
-        my.load_script = ""
-        my.smart_menu_data = None
+    def init(self):
+        self.load_script = ""
+        self.smart_menu_data = None
 
-    def set_load_script(my, load_script):
-        my.load_script = load_script
+    def set_load_script(self, load_script):
+        self.load_script = load_script
         
-    def set_smart_menu(my, data):
-        my.smart_menu_data = data
+    def set_smart_menu(self, data):
+        self.smart_menu_data = data
 
-    def get_display(my):
-        assert my.load_script
+    def get_display(self):
+        assert self.load_script
 
         widget = DivWdg()
         widget.add_style('float', 'right')
 
         load_button = TextOptionBtnWdg(label='   Load   ', size='medium')
         load_button.get_top_el().add_style('float', 'left')
-        load_button.get_top_el().set_id(my.LOAD_BUTTON_ID)
+        load_button.get_top_el().set_id(self.LOAD_BUTTON_ID)
         load_button.add_behavior(
                 {'type': "click_up", 
                 "cbjs_action":
-                "setTimeout(function() {%s}, 200) "% my.load_script
+                "setTimeout(function() {%s}, 200) "% self.load_script
                 })  
         widget.add(load_button)
         arrow_button = load_button.get_option_widget()
         #widget.add(arrow_button)
         suffix = "ASSET_LOADER_FUNCTIONS"
-        menus_in = [ my.smart_menu_data ]
+        menus_in = [ self.smart_menu_data ]
 
         SmartMenu.add_smart_menu_set( arrow_button,  menus_in)
         SmartMenu.assign_as_local_activator(arrow_button, None, True)
@@ -92,25 +92,25 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
     PREFIX = "asset"
 
 
-    def init(my):
-        parent_key = my.kwargs.get("parent_key")
-        my.parent = Search.get_by_search_key(parent_key)
-        my.search_type = my.parent.get_search_type()
-        my.search_id = my.parent.get_id()
+    def init(self):
+        parent_key = self.kwargs.get("parent_key")
+        self.parent = Search.get_by_search_key(parent_key)
+        self.search_type = self.parent.get_search_type()
+        self.search_id = self.parent.get_id()
 
 
 
-    def set_cb_name(my):
-        my.name = my.CB_NAME
+    def set_cb_name(self):
+        self.name = self.CB_NAME
 
 
-    def get_load_script(my):
+    def get_load_script(self):
         load_script = "execute_client_callback('ClientLoadCbk')"
         return load_script
 
 
 
-    def get_process_data(my):
+    def get_process_data(self):
         '''get the list of processes that can be checked in with this widget'''
         labels, values = Pipeline.get_process_select_data('prod/asset', \
             extra_process=['publish'], project_code=Project.get_project_code())
@@ -118,30 +118,30 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         return labels, values
 
    
-    def get_title(my):
-        mode = my.get_option("mode")
+    def get_title(self):
+        mode = self.get_option("mode")
         if mode == "input":
             return "Input"
         else:
             return "Output"
 
         #loader = SnapshotLoaderButtonWdg()
-        #loader.set_load_script( my.get_load_script() )
+        #loader.set_load_script( self.get_load_script() )
         #return loader
 
     
-    def preprocess(my):
+    def preprocess(self):
         # get the session, by default asset_mode = False, but we set it to True
-        my.session = SessionContents.get(asset_mode=True)
+        self.session = SessionContents.get(asset_mode=True)
     
         # add some action buttons
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         if mode != "input":
             # float item is related to the output snapshot
-            my.add_float_items() 
+            self.add_float_items() 
         
 
-    def get_process(my):
+    def get_process(self):
         process_select = Container.get('process_filter')
         process = ''
         if process_select:
@@ -156,9 +156,9 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         return process
 
 
-    def get_snapshot(my, mode):
+    def get_snapshot(self, mode):
         ''' get the snapshot depending on the mode i.e. input, output'''
-        dict = my.get_current_aux_data()
+        dict = self.get_current_aux_data()
         output_snapshots = input_snapshots = None
         # the check for key is needed since snapshot can be None
         if dict and dict.has_key('%s_snapshots' %mode):
@@ -167,8 +167,8 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
             else:
                 input_snapshots = dict.get('%s_snapshots' %mode)
         else:
-            sobject = my.get_current_sobject()
-            process = my.get_process()
+            sobject = self.get_current_sobject()
+            process = self.get_process()
             loader = ProdLoaderContext()
 
             output_snapshots = loader.get_output_snapshots(sobject, process)
@@ -176,8 +176,8 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
             
             # this is for sharing with AssetLoaderWdg
             # should only be called once per sobject
-            idx = my.get_current_index()
-            my.insert_aux_data(idx, {'output_snapshots': output_snapshots, \
+            idx = self.get_current_index()
+            self.insert_aux_data(idx, {'output_snapshots': output_snapshots, \
                 'input_snapshots': input_snapshots})
 
         if mode == 'output':
@@ -187,7 +187,7 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
 
 
 
-    def get_namespace(my, sobject, snapshot):
+    def get_namespace(self, sobject, snapshot):
         ''' this is actually the namespace in Maya and node name in Houdini'''
         if not sobject:
             return ""
@@ -199,9 +199,9 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         return instance   
 
 
-    def get_asset_code(my):
+    def get_asset_code(self):
         asset_code = ''
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject.has_value("asset_code"):
             asset_code = sobject.get_value("asset_code")
         else:
@@ -209,7 +209,7 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
 
         return asset_code
     
-    def get_node_name(my, snapshot, asset_code, namespace):
+    def get_node_name(self, snapshot, asset_code, namespace):
         ''' if possible get the node name from snapshot which is more accurate'''
         node_name = snapshot.get_node_name()
         if not node_name:
@@ -228,28 +228,28 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         return node_name
 
 
-    def get_session_asset_mode(my):
+    def get_session_asset_mode(self):
         '''For assets, this is true.  For instances, this is false'''
         return True
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         table = Table(css='minimal')
         table.add_style("font-size: 0.9em")
 
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         if not mode:
             mode = "output"
         
-        snapshots = my.get_snapshot(mode)
+        snapshots = self.get_snapshot(mode)
         for snapshot in snapshots:
             table.add_row()
 
-            value = my.get_input_value(sobject, snapshot)
+            value = self.get_input_value(sobject, snapshot)
 
             latest_version = snapshot.get_value("version")
             latest_context = snapshot.get_value("context")
@@ -266,7 +266,7 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
                 table.add_cell("(---)")
                 return table
 
-            checkbox = CheckboxWdg(my.CB_NAME)
+            checkbox = CheckboxWdg(self.CB_NAME)
             checkbox.set_option("value", value )
             table.add_cell( checkbox )
 
@@ -283,27 +283,27 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
             image.add_style("width: 15px")
             table.add_cell(image)
 
-            namespace = my.get_namespace(sobject, snapshot) 
-            asset_code = my.get_asset_code()
+            namespace = self.get_namespace(sobject, snapshot) 
+            asset_code = self.get_asset_code()
           
             # force asset mode = True   
-            my.session.set_asset_mode(asset_mode=my.get_session_asset_mode())
-            node_name = my.get_node_name(snapshot, asset_code, namespace)
+            self.session.set_asset_mode(asset_mode=self.get_session_asset_mode())
+            node_name = self.get_node_name(snapshot, asset_code, namespace)
             # get session info
             session_context = session_version = session_revision = None
-            if my.session:
+            if self.session:
                 
-                session_context = my.session.get_context(node_name, asset_code, latest_snapshot_type)
-                session_version = my.session.get_version(node_name, asset_code, latest_snapshot_type)
-                session_revision = my.session.get_revision(node_name, asset_code, latest_snapshot_type)
+                session_context = self.session.get_context(node_name, asset_code, latest_snapshot_type)
+                session_version = self.session.get_version(node_name, asset_code, latest_snapshot_type)
+                session_revision = self.session.get_revision(node_name, asset_code, latest_snapshot_type)
 
 
                 # Maya Specific: try with namespace in front of it for referencing
                 referenced_name = '%s:%s' %(namespace, node_name)
                 if not session_context or not session_version:
-                    session_context = my.session.get_context(referenced_name, asset_code, latest_snapshot_type)
-                    session_version = my.session.get_version(referenced_name, asset_code, latest_snapshot_type)
-                    session_revision = my.session.get_revision(referenced_name, asset_code, latest_snapshot_type)
+                    session_context = self.session.get_context(referenced_name, asset_code, latest_snapshot_type)
+                    session_version = self.session.get_version(referenced_name, asset_code, latest_snapshot_type)
+                    session_revision = self.session.get_revision(referenced_name, asset_code, latest_snapshot_type)
 
 
             version_wdg = LatestVersionContextWdg()
@@ -340,7 +340,7 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
                 #td.add_style("text-align: right")
 
                 sub_ref_wdg = SubRefWdg()
-                sub_ref_wdg.set_info(snapshot, my.session, namespace)
+                sub_ref_wdg.set_info(snapshot, self.session, namespace)
                 swap.add_action_script( sub_ref_wdg.get_on_script(), "toggle_display('%s')" % sub_ref_wdg.get_top_id() )
 
                 status = sub_ref_wdg.get_overall_status()
@@ -361,8 +361,8 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         return table
 
 
-    def get_bottom(my):
-        if my.get_option('mode') =='input':
+    def get_bottom(self):
+        if self.get_option('mode') =='input':
             return 
         web = WebContainer.get_web()
         if web.get_selected_app() not in ['XSI','Maya']:
@@ -370,7 +370,7 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         div = DivWdg( css='spt_outdated_ref')
        
 
-        refs = my.session.get_data().get_nodes("session/node/ref")
+        refs = self.session.get_data().get_nodes("session/node/ref")
         snap_codes = []
         snap_contexts = []
         sobjects = []
@@ -419,14 +419,14 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         # draw the nodes to be udpated
         for idx, current_snap in enumerate(current_snapshots):
             
-            cb = CheckboxWdg(my.REF_CB_NAME)
+            cb = CheckboxWdg(self.REF_CB_NAME)
             cb.add_class('spt_ref')
             cb.add_style('display: none')
             sobj = sobjects[idx]
             node_name = node_names[idx]
             session_version = session_versions[idx]
             snapshot = current_snap
-            cb_value = my.get_input_value(sobj, snapshot)
+            cb_value = self.get_input_value(sobj, snapshot)
             items = cb_value.split('|')
             items[-1] = node_name
             cb_value = '|'.join(items)
@@ -442,27 +442,27 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         div.add(HtmlElement.br())
         if current_snapshots:
             # add the button
-            prefix = my.PREFIX 
+            prefix = self.PREFIX 
             update_button = ProdIconButtonWdg("Update all references")
             update_button.add_behavior({'type': "click_up",\
             'cbjs_action': '''var cousins = bvr.src_el.getParent('.spt_outdated_ref').getElements('.spt_ref');
                              cousins.each( function(x) {x.checked=true;}); py_replace_reference('%s','%s')'''
-                    % (prefix, my.REF_CB_NAME)})
+                    % (prefix, self.REF_CB_NAME)})
             div.add( SpanWdg(update_button, css='small'))
         
         return div
 
 
-    def get_input_value(my, sobject, snapshot):
+    def get_input_value(self, sobject, snapshot):
         from pyasm.search import SearchKey
         value = SearchKey.build_by_sobject(snapshot)
         return value
 
 
 
-    def add_float_items(my):
+    def add_float_items(self):
         # these float items are applicable to 3d assets
-        prefix = my.PREFIX 
+        prefix = self.PREFIX 
         float_span = SpanWdg()
         select_button = IconButtonWdg("Select", IconWdg.SELECT, long=False)
         select_button.add_event("onclick", "py_select('%s')" % prefix)
@@ -487,13 +487,13 @@ class SnapshotLoaderWdg(BaseRefreshWdg):
         float_span.add( SpanWdg(update_sel_button, css='small') )
 
         #if not Container.get('SnapshotAction'):
-        #    my.add_snapshot_action(float_span)
+        #    self.add_snapshot_action(float_span)
 
 
        
 
-    def get_smart_menu(my):
-        prefix = my.PREFIX
+    def get_smart_menu(self):
+        prefix = self.PREFIX
 
         menu_data = []
 
@@ -536,13 +536,13 @@ class AssetLoaderWdg(SnapshotLoaderWdg):
 
     CB_NAME = "load_snapshot"  
 
-    def get_load_script(my):
+    def get_load_script(self):
         load_script = "load_selected_snapshots_cbk('%s', '%s', bvr) " \
-            %(my.PREFIX, my.CB_NAME)
+            %(self.PREFIX, self.CB_NAME)
         return load_script
 
-    def get_input_value(my, sobject, snapshot):
-        namespace = my.get_namespace(sobject,snapshot)
+    def get_input_value(self, sobject, snapshot):
+        namespace = self.get_namespace(sobject,snapshot)
         snap_node_name = snapshot.get_node_name()
         value = "%s|%s|%s|%s" % (snapshot.get_code(), snapshot.get_context(), \
             namespace, snap_node_name)
@@ -555,28 +555,28 @@ class InstanceLoaderWdg(AssetLoaderWdg):
   
     PREFIX = 'instance'
     CB_NAME = 'instance'  
-    def get_session_asset_mode(my):
+    def get_session_asset_mode(self):
         '''For assets, this is true.  For instances, this is false'''
         return False
 
-    def get_load_script(my):
+    def get_load_script(self):
         load_script = "load_selected_snapshots_cbk('%s','%s', bvr) " \
-            %(my.PREFIX, my.CB_NAME)
+            %(self.PREFIX, self.CB_NAME)
         return load_script
 
 
-    def preprocess(my):
+    def preprocess(self):
         # get the session, by default asset_mode = False
-        my.session = SessionContents.get(asset_mode=False)
+        self.session = SessionContents.get(asset_mode=False)
     
         # add some action buttons
-        mode = my.get_option("mode")
+        mode = self.get_option("mode")
         if mode != "input":
             # float item is related to the output snapshot
-            my.add_float_items() 
+            self.add_float_items() 
 
-    def get_title(my):
-        mode = my.get_option("mode")
+    def get_title(self):
+        mode = self.get_option("mode")
         if mode == "input":
             return "Input"
 
@@ -587,31 +587,31 @@ class InstanceLoaderWdg(AssetLoaderWdg):
         icon = float_menu.get_icon()
         widget.add(SpanWdg(icon, css='small'))
 
-        #widget.add(super(AssetLoaderWdg,my).get_title())
-        my.shot = ProdContext.get_shot()
+        #widget.add(super(AssetLoaderWdg,self).get_title())
+        self.shot = ProdContext.get_shot()
 
         load_button = ProdIconButtonWdg("Load", long=True)
-        load_button.set_id(my.LOAD_BUTTON_ID)
-        prefix = my.PREFIX
+        load_button.set_id(self.LOAD_BUTTON_ID)
+        prefix = self.PREFIX
         load_button.add_behavior({"type": "click_up", \
             "cbjs_action":
             "setTimeout(function() { load_selected_snapshots_cbk('%s', '%s', bvr)}, 200)" \
-            % (prefix, my.CB_NAME)
+            % (prefix, self.CB_NAME)
             })
         widget.add(load_button)
 
         update_button = ProdIconButtonWdg("Update", long=True)
         update_button.add_event("onclick", "setTimeout(function() {py_replace_reference('%s','%s')}, 200)" % \
-            (prefix, my.CB_NAME))
+            (prefix, self.CB_NAME))
         widget.add(update_button)
 
         # get the session
-        my.session = SessionContents.get()
+        self.session = SessionContents.get()
         
         return widget
 
    
-    def get_node_name(my, snapshot, asset_code, namespace):
+    def get_node_name(self, snapshot, asset_code, namespace):
         ''' if possible get the node name from snapshot which is more accurate'''
         # don't use snapshot's node name since it's not correct in initial version for a new context 
         #node_name = snapshot.get_node_name()
@@ -632,7 +632,7 @@ class InstanceLoaderWdg(AssetLoaderWdg):
         return node_name
 
 
-    def get_input_value(my, sobject, snapshot):
+    def get_input_value(self, sobject, snapshot):
         ''' value of the loading checkbox''' 
         # use the naming
         naming = Project.get_naming("node")
@@ -644,7 +644,7 @@ class InstanceLoaderWdg(AssetLoaderWdg):
 
         """
         # Currently, web state object is not rebuilt.
-        shot_id = my.search_id
+        shot_id = self.search_id
         if not shot_id:
             shot_id = WebState.get().get_state("shot_id")
 
@@ -655,9 +655,9 @@ class InstanceLoaderWdg(AssetLoaderWdg):
         """
 
          
-        #shot = my.parent.get_shot()
+        #shot = self.parent.get_shot()
 
-        shot_code = my.parent.get_value("shot_code")
+        shot_code = self.parent.get_value("shot_code")
 
         value = "%s|%s|%s|%s|%s|%s" % (snapshot.get_code(), shot_code, \
                 instance, snapshot.get_context(), namespace, snap_node_name)
@@ -665,9 +665,9 @@ class InstanceLoaderWdg(AssetLoaderWdg):
 
 
 
-    def add_float_items(my):
+    def add_float_items(self):
         # these float items are applicable to instances assigned to a shot
-        prefix = my.PREFIX
+        prefix = self.PREFIX
         float_span = SpanWdg()
         select_button = IconButtonWdg("Select", IconWdg.SELECT, long=False)
         select_button.add_event("onclick", "py_select('%s')" %prefix)
@@ -690,7 +690,7 @@ class InstanceLoaderWdg(AssetLoaderWdg):
         update_sel_button.add_event("onclick", "py_replace_reference_selected('%s')" % prefix)
         float_span.add( SpanWdg(update_sel_button, css='small') )
 
-        #my.add_snapshot_action(float_span)
+        #self.add_snapshot_action(float_span)
 
         WebContainer.get_float_menu().add(float_span) 
         WebContainer.get_float_menu().set_title('Shot Instances')
@@ -698,7 +698,7 @@ class InstanceLoaderWdg(AssetLoaderWdg):
 class LayerLoaderWdg(InstanceLoaderWdg):
 
     
-    def get_input_value(my, sobject, snapshot):
+    def get_input_value(self, sobject, snapshot):
 
         instance = sobject.get_value("name")
 
@@ -712,9 +712,9 @@ class LayerLoaderWdg(InstanceLoaderWdg):
         return value
 
 
-    def get_snapshot(my, mode):
+    def get_snapshot(self, mode):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         # get the current shot (Should probably use WebState)
         web = WebContainer.get_web()
@@ -731,7 +731,7 @@ class LayerLoaderWdg(InstanceLoaderWdg):
         if not shot:
             return None
             
-        context = my.get_process()
+        context = self.get_process()
         loader = ProdLoaderContext()
         snapshot = loader.get_snapshot_by_sobject( sobject, context )
         '''
@@ -745,7 +745,7 @@ class ShotLoaderWdg(AssetLoaderWdg):
     LOAD_BUTTON_ID = 'load_shot_id'
     PREFIX = 'shot'
     CB_NAME = "shot"  
-    def get_process_data(my):
+    def get_process_data(self):
         '''get the list of contexts that can be checked in with this widget'''
         labels, values = Pipeline.get_process_select_data('prod/shot', \
             project_code=Project.get_project_code())
@@ -753,27 +753,27 @@ class ShotLoaderWdg(AssetLoaderWdg):
         return labels, values 
   
 
-    def add_float_items(my):
+    def add_float_items(self):
         pass
    
 
-    def get_title(my):
-        mode = my.get_option("mode")
+    def get_title(self):
+        mode = self.get_option("mode")
         if mode == "input":
             return "Input"
 
         widget = SpanWdg()
-        #widget.add(super(AssetLoaderWdg,my).get_title())
+        #widget.add(super(AssetLoaderWdg,self).get_title())
         
         widget.set_attr("nowrap", "1")
         load_button = ProdIconButtonWdg("Load Shot")
-        load_button.set_id(my.LOAD_BUTTON_ID) 
-        prefix = my.PREFIX
+        load_button.set_id(self.LOAD_BUTTON_ID) 
+        prefix = self.PREFIX
         load_button.add_behavior(
                 {'type': "click_up", 
                 "cbjs_action":
                 "setTimeout(function() {load_selected_snapshots_cbk('%s', '%s', bvr)}, 200) " \
-                % (prefix, my.CB_NAME) \
+                % (prefix, self.CB_NAME) \
                 })
         widget.add(load_button)
 
@@ -785,15 +785,15 @@ class ShotLoaderWdg(AssetLoaderWdg):
         if WebContainer.get_web().get_selected_app() != 'XSI':
             update_button = ProdIconButtonWdg("Update", long=True)
            
-            prefix = my.PREFIX
+            prefix = self.PREFIX
             update_button.add_event("onclick", "setTimeout( function() {py_replace_reference('%s','%s')}, 200)" % \
-                (prefix, my.CB_NAME))
+                (prefix, self.CB_NAME))
 
             widget.add(update_button)
 
 
         # Get the session. This overrides what is run in preprocess()
-        my.session = SessionContents.get(asset_mode=True)
+        self.session = SessionContents.get(asset_mode=True)
 
         return widget
 
@@ -804,21 +804,21 @@ class SubRefWdg(AjaxWdg):
     '''Widget that draws the hierarchical references of the asset of interest'''
     CB_NAME = "load_snapshot"
 
-    def init(my):
-        my.version_wdgs = []
+    def init(self):
+        self.version_wdgs = []
 
-    def set_info(my, snapshot, session, namespace):
-        my.session = session
-        my.snapshot = snapshot
-        my.namespace = namespace
+    def set_info(self, snapshot, session, namespace):
+        self.session = session
+        self.snapshot = snapshot
+        self.namespace = namespace
 
         # handle ajax settings
-        my.widget = DivWdg()
-        my.set_ajax_top(my.widget)
-        my.set_ajax_option("namespace", my.namespace)
-        my.set_ajax_option("snapshot_code", my.snapshot.get_code())
+        self.widget = DivWdg()
+        self.set_ajax_top(self.widget)
+        self.set_ajax_option("namespace", self.namespace)
+        self.set_ajax_option("snapshot_code", self.snapshot.get_code())
 
-    def init_cgi(my):
+    def init_cgi(self):
         web = WebContainer.get_web()
         snapshot_code = web.get_form_value("snapshot_code")
         namespace = web.get_form_value("namespace")
@@ -826,16 +826,16 @@ class SubRefWdg(AjaxWdg):
         snapshot = Snapshot.get_by_code(snapshot_code)
         session = SessionContents.get(asset_mode=True)
 
-        my.set_info(snapshot, session, namespace)
+        self.set_info(snapshot, session, namespace)
 
-    def get_version_wdgs(my):
+    def get_version_wdgs(self):
         '''get a list of version wdgs'''
-        if my.version_wdgs:
-            return my.version_wdgs
-        xml = my.snapshot.get_xml_value("snapshot")
+        if self.version_wdgs:
+            return self.version_wdgs
+        xml = self.snapshot.get_xml_value("snapshot")
         refs = xml.get_nodes("snapshot/file/ref")
         if not refs:
-            return my.version_wdgs
+            return self.version_wdgs
 
        
         # handle subreferences
@@ -845,7 +845,7 @@ class SubRefWdg(AjaxWdg):
             node_name = Xml.get_attribute(ref, "node_name")
             snapshot = Snapshot.get_ref_snapshot_by_node(ref, mode='current')
             if not snapshot:
-                print "WARNING: reference in snapshot [%s] does not exist" % my.snapshot.get_code()
+                print "WARNING: reference in snapshot [%s] does not exist" % self.snapshot.get_code()
                 continue
 
             #checkin_snapshot = Snapshot.get_ref_snapshot_by_node(ref)
@@ -861,7 +861,7 @@ class SubRefWdg(AjaxWdg):
             # HACK: if node name was not specified, then try to guess it
             # (for backwards compatibility)
             if not node_name: 
-                node_name = my.get_node_name(snapshot, asset_code, my.namespace)
+                node_name = self.get_node_name(snapshot, asset_code, self.namespace)
                 # HACK
                 parts = node_name.split(":")
                 parts.insert(1, instance)
@@ -877,8 +877,8 @@ class SubRefWdg(AjaxWdg):
             '''
             if app_name == 'Maya':
                 
-                if not node_name.startswith("%s:" % my.namespace):
-                    node_name = "%s:%s" % (my.namespace, node_name)
+                if not node_name.startswith("%s:" % self.namespace):
+                    node_name = "%s:%s" % (self.namespace, node_name)
             elif app_name == "XSI":
                 pass
             ''' 
@@ -890,10 +890,10 @@ class SubRefWdg(AjaxWdg):
 
 
             # get the session information
-            my.session.set_asset_mode(False)
-            session_context = my.session.get_context(node_name, asset_code, latest_snapshot_type)
-            session_version = my.session.get_version(node_name, asset_code, latest_snapshot_type)
-            session_revision = my.session.get_revision(node_name, asset_code, latest_snapshot_type)
+            self.session.set_asset_mode(False)
+            session_context = self.session.get_context(node_name, asset_code, latest_snapshot_type)
+            session_version = self.session.get_version(node_name, asset_code, latest_snapshot_type)
+            session_revision = self.session.get_revision(node_name, asset_code, latest_snapshot_type)
             #print "session: ", session_version, session_context, session_revision
             # add to outdated ref list here
             version_wdg = LatestVersionContextWdg()
@@ -909,25 +909,25 @@ class SubRefWdg(AjaxWdg):
                 'snapshot': snapshot}
 
             version_wdg.set_options(data)
-            my.version_wdgs.append(version_wdg)
+            self.version_wdgs.append(version_wdg)
 
             # This only adds when it is being drawn with the corresponding process selected
             # so not that useful, commented out for now.
             #if version_wdg.get_status() not in [ VersionWdg.NOT_LOADED, VersionWdg.UPDATED]:
             #    SubRefWdg.add_outdated_ref(version_wdg)
 
-        return my.version_wdgs
+        return self.version_wdgs
 
-    def get_display(my):
+    def get_display(self):
 
-        assert my.snapshot
-        assert my.session
-        assert my.namespace
+        assert self.snapshot
+        assert self.session
+        assert self.namespace
 
-        widget = my.widget
+        widget = self.widget
         
 
-        if not my.is_ajax():
+        if not self.is_ajax():
             return widget
  
         #widget.add_style("border-style: solid")
@@ -937,12 +937,12 @@ class SubRefWdg(AjaxWdg):
         widget.add_style("text-align: left")
         table = Table()
         
-        version_wdgs = my.get_version_wdgs()
+        version_wdgs = self.get_version_wdgs()
 
         for version_wdg in version_wdgs:
             # draw the info
             table.add_row()
-            #checkbox = CheckboxWdg(my.CB_NAME)
+            #checkbox = CheckboxWdg(self.CB_NAME)
             #checkbox.set_option("value", "cow" )
             #table.add_cell( checkbox )
 
@@ -961,8 +961,8 @@ class SubRefWdg(AjaxWdg):
         return widget
 
 
-    def get_overall_status(my):
-        version_wdgs = my.get_version_wdgs()
+    def get_overall_status(self):
+        version_wdgs = self.get_version_wdgs()
         all_updated = True
         is_loaded = False
         for wdg in version_wdgs:
@@ -982,7 +982,7 @@ class SubRefWdg(AjaxWdg):
         else: 
             return VersionWdg.UPDATED
 
-    def get_node_name(my, snapshot, asset_code, namespace):
+    def get_node_name(self, snapshot, asset_code, namespace):
         ''' if possible get the node name from snapshot which is more accurate'''
         node_name = snapshot.get_node_name()
 

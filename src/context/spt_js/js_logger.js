@@ -47,7 +47,7 @@ spt.js_log.setup = function()
         }
     }
 
-    var js_log_el = $("spt_js_log_output_div");
+    var js_log_el = document.id("spt_js_log_output_div");
     if( js_log_el )
     {
         spt.js_log.output_div = js_log_el;

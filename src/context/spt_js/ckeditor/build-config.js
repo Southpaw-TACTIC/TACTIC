@@ -1,5 +1,5 @@
 ﻿/**
- * @license Copyright (c) 2003-2014, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2016, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
@@ -13,10 +13,10 @@
  * (1) http://ckeditor.com/builder
  *     Visit online builder to build CKEditor from scratch.
  *
- * (2) http://ckeditor.com/builder/1bf9940fbf434a4bcdffcb2ce5161b33
+ * (2) http://ckeditor.com/builder/ba0d86b4a03f476b450cdf7d3057be62
  *     Visit online builder to build CKEditor, starting with the same setup as before.
  *
- * (3) http://ckeditor.com/builder/download/1bf9940fbf434a4bcdffcb2ce5161b33
+ * (3) http://ckeditor.com/builder/download/ba0d86b4a03f476b450cdf7d3057be62
  *     Straight download link to the latest version of CKEditor (Optimized) with the same setup as before.
  *
  * NOTE:
@@ -28,11 +28,26 @@ var CKBUILDER_CONFIG = {
 	skin: 'moono',
 	preset: 'standard',
 	ignore: [
+		'.bender',
+		'bender.js',
+		'bender-err.log',
+		'bender-out.log',
 		'dev',
-		'.gitignore',
+		'.DS_Store',
+		'.editorconfig',
 		'.gitattributes',
+		'.gitignore',
+		'gruntfile.js',
+		'.idea',
+		'.jscsrc',
+		'.jshintignore',
+		'.jshintrc',
+		'less',
+		'.mailmap',
+		'node_modules',
+		'package.json',
 		'README.md',
-		'.mailmap'
+		'tests'
 	],
 	plugins : {
 		'a11yhelp' : 1,
@@ -40,7 +55,6 @@ var CKBUILDER_CONFIG = {
 		'basicstyles' : 1,
 		'blockquote' : 1,
 		'clipboard' : 1,
-		'colorbutton' : 1,
 		'contextmenu' : 1,
 		'elementspath' : 1,
 		'enterkey' : 1,
@@ -61,6 +75,7 @@ var CKBUILDER_CONFIG = {
 		'removeformat' : 1,
 		'resize' : 1,
 		'scayt' : 1,
+		'showborders' : 1,
 		'sourcearea' : 1,
 		'specialchar' : 1,
 		'stylescombo' : 1,
@@ -83,9 +98,11 @@ var CKBUILDER_CONFIG = {
 		'cy' : 1,
 		'da' : 1,
 		'de' : 1,
+		'de-ch' : 1,
 		'el' : 1,
 		'en' : 1,
 		'en-au' : 1,
+		'en-ca' : 1,
 		'en-gb' : 1,
 		'eo' : 1,
 		'es' : 1,
@@ -132,6 +149,7 @@ var CKBUILDER_CONFIG = {
 		'sv' : 1,
 		'th' : 1,
 		'tr' : 1,
+		'tt' : 1,
 		'ug' : 1,
 		'uk' : 1,
 		'vi' : 1,

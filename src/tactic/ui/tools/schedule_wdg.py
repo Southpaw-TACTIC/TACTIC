@@ -27,12 +27,12 @@ from pipeline_wdg import *
 
 class ScheduleToolWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.sobject_display_expr = my.kwargs.get('sobject_display_expr')
-        my.tab_view = my.kwargs.get('tab_view')
+    def init(self):
+        self.sobject_display_expr = self.kwargs.get('sobject_display_expr')
+        self.tab_view = self.kwargs.get('tab_view')
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_class("spt_schedule_top")
@@ -45,7 +45,7 @@ class ScheduleToolWdg(BaseRefreshWdg):
 
         table.add_row()
         left = table.add_cell()
-        user_wdg = my.get_group_wdg()
+        user_wdg = self.get_group_wdg()
         left.add(user_wdg)
         left.add_style("vertical-align: top")
         left.add_border()
@@ -81,7 +81,7 @@ class ScheduleToolWdg(BaseRefreshWdg):
         return top
 
 
-    def get_group_wdg(my):
+    def get_group_wdg(self):
 
         div = DivWdg()
 
@@ -95,7 +95,7 @@ class ScheduleToolWdg(BaseRefreshWdg):
         title_wdg.add_style("min-width: 200px")
 
 
-        filtered_groups = my.kwargs.get("groups")
+        filtered_groups = self.kwargs.get("groups")
         if isinstance(filtered_groups, basestring):
             filtered_groups = filtered_groups.split("|")
 
@@ -142,14 +142,14 @@ class ScheduleToolWdg(BaseRefreshWdg):
             SwapDisplayWdg.create_swap_title(title, swap, div=content_div, is_open=True, action_script=None)
 
             logins = group.get_logins()
-            logins_div = my.get_logins_wdg(logins)
+            logins_div = self.get_logins_wdg(logins)
             content_div.add(logins_div)
             content_div.add_style("padding-left: 15px")
 
         return div
 
 
-    def get_logins_wdg(my, logins):
+    def get_logins_wdg(self, logins):
         logins_div = DivWdg()
         for login in logins:
             login_div = DivWdg()
@@ -174,8 +174,8 @@ class ScheduleToolWdg(BaseRefreshWdg):
 
             login_div.add_behavior( {
             'type': 'click_up',
-            'sobject_display_expr' : my.sobject_display_expr,
-            'tab_view' : my.tab_view,
+            'sobject_display_expr' : self.sobject_display_expr,
+            'tab_view' : self.tab_view,
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_schedule_top");
             var class_name = 'tactic.ui.tools.schedule_wdg.ScheduleUserToolWdg';
@@ -199,7 +199,7 @@ class ScheduleToolWdg(BaseRefreshWdg):
         return logins_div
 
 
-    def get_schedule_wdg(my):
+    def get_schedule_wdg(self):
 
         div = DivWdg()
         div.add_style("width: 500px")
@@ -211,14 +211,14 @@ class ScheduleToolWdg(BaseRefreshWdg):
 
 class ScheduleUserToolWdg(BaseRefreshWdg):
 
-    def init(my):
-        my.sobject_display_expr = my.kwargs.get('sobject_display_expr')
-        my.tab_view = my.kwargs.get('tab_view')
+    def init(self):
+        self.sobject_display_expr = self.kwargs.get('sobject_display_expr')
+        self.tab_view = self.kwargs.get('tab_view')
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        login = my.kwargs.get("login")
+        top = self.top
+        login = self.kwargs.get("login")
         if not login or login == "$LOGIN":
             login = Environment.get_user_name()
 
@@ -266,10 +266,10 @@ class ScheduleUserToolWdg(BaseRefreshWdg):
         from tactic.ui.container import TabWdg
 
         # return if the supplied tab view has a config xml
-        if my.tab_view:
+        if self.tab_view:
             search = Search("config/widget_config")
             search.add_filter("category", "TabWdg")
-            search.add_filter("view", my.tab_view)
+            search.add_filter("view", self.tab_view)
             config_sobj = search.get_sobject()
             if config_sobj:
               
@@ -278,7 +278,7 @@ class ScheduleUserToolWdg(BaseRefreshWdg):
                 if login:
                     config_xml = config_xml.replace('$login', login)
                
-                tab = TabWdg(config_xml=config_xml, view=my.tab_view, show_add=False, show_remove=False)
+                tab = TabWdg(config_xml=config_xml, view=self.tab_view, show_add=False, show_remove=False)
                 top.add(tab)
                 return top
 
@@ -297,7 +297,7 @@ class ScheduleUserToolWdg(BaseRefreshWdg):
             <show_border>false</show_border>
           </display>
         </element> 
-        ''' % (login, my.sobject_display_expr))
+        ''' % (login, self.sobject_display_expr))
 
 
         config_xml.append('''

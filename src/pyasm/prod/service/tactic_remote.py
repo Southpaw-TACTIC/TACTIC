@@ -28,7 +28,7 @@ from pyasm.search import SearchType
 
 class Root:
     @cherrypy.expose()
-    def index(my):
+    def index(self):
         return "hello"
 
 class RemoteXmlRpcServer:
@@ -37,17 +37,17 @@ class RemoteXmlRpcServer:
     server that tactic can use with minimal install.  All of the marshalling
     and caching of files and code is handled transparently'''
 
-    my.is_busy = True
+    self.is_busy = True
 
-    #def login_user(my, name, password):
+    #def login_user(self, name, password):
     #    os.environ["TACTIC_CONFIG_PATH"] = "/home/apache/tactic_sites/config/tactic_linux-conf.xml"
     #    security = Security()
     #    WebContainer.set_security(security)
     #    security.login_user(name,password)
-    #    my.ticket = security.get_ticket()
+    #    self.ticket = security.get_ticket()
 
 
-    def do_download(my, url, to_path):
+    def do_download(self, url, to_path):
         import urllib, os
         f = urllib.urlopen(url)
         file = open(to_path, 'w')
@@ -55,12 +55,12 @@ class RemoteXmlRpcServer:
         file.close()
         f.close()
 
-    def is_busy(my):
-        return my.is_busy
+    def is_busy(self):
+        return self.is_busy
 
 
     @cherrypy.expose()
-    def do_remote_render(my, execute_xml):
+    def do_remote_render(self, execute_xml):
         '''This data gets an xml document and downloads the files
         and renders them.  There are no interactions with the database
         and suitable to run on a render farm or a remote machine'''
@@ -72,10 +72,10 @@ class RemoteXmlRpcServer:
 
         # get the client files
         zip = local_dir+"/download/sthpw.zip"
-        my.do_download(server_url+"/sthpw/context/client/sthpw.zip", zip)
+        self.do_download(server_url+"/sthpw/context/client/sthpw.zip", zip)
 
         delegator = local_dir+"/download/delegator.py"
-        my.do_download(server_url+"/sthpw/context/client/delegator.py", delegator )
+        self.do_download(server_url+"/sthpw/context/client/delegator.py", delegator )
 
         import sys
         sys.path.append(local_dir+"/download/sthpw.zip")

@@ -29,8 +29,8 @@ class Maya(Application):
 
     APPNAME = "maya"
 
-    def __init__(my):
-        my.name = "maya"
+    def __init__(self):
+        self.name = "maya"
 
         try:
             import maya
@@ -43,7 +43,7 @@ class Maya(Application):
 
 
 
-    def mel(my, cmd, verbose=None):
+    def mel(self, cmd, verbose=None):
         '''Excecute a mel command'''
         import maya
         return maya.mel.eval(cmd)
@@ -54,8 +54,8 @@ class Maya(Application):
     #
     # Node functions
     #
-    def node_exists(my, node_name):
-        node = my.mel("ls %s" % node_name)
+    def node_exists(self, node_name):
+        node = self.mel("ls %s" % node_name)
         if node == None:
             return False
         else:
@@ -63,7 +63,7 @@ class Maya(Application):
 
 
 
-    def add_node(my, node_name, type="transform", unique=False):
+    def add_node(self, node_name, type="transform", unique=False):
         '''creates new node with the given name
 
         @params:
@@ -75,15 +75,15 @@ class Maya(Application):
         @return:
         string: name of the node actually created
         '''
-        if unique and my.node_exists(node_name):
+        if unique and self.node_exists(node_name):
             return node_name
             
-        return my.mel("createNode -n %s %s" % (node_name, type) )
+        return self.mel("createNode -n %s %s" % (node_name, type) )
 
 
 
 
-    def get_nodes_by_name(my, pattern):
+    def get_nodes_by_name(self, pattern):
         '''get all the nodes that match the given pattern
 
         @params
@@ -92,7 +92,7 @@ class Maya(Application):
         @return
         list: all of the node names matching the pattern
         '''
-        nodes = my.mel('ls "%s"' % pattern)
+        nodes = self.mel('ls "%s"' % pattern)
         if not nodes:
             return []
         else:
@@ -102,7 +102,7 @@ class Maya(Application):
     #
     # Attribute functions
     #
-    def add_attr(my, node_name, attribute, type="long"):
+    def add_attr(self, node_name, attribute, type="long"):
         '''add an attribute to a given node
 
         @params
@@ -114,15 +114,15 @@ class Maya(Application):
         None
         '''
         # do nothing if it already exists
-        if my.attr_exists(node_name, attribute):
+        if self.attr_exists(node_name, attribute):
             return
         if type == "string":
-            return my.mel('addAttr -ln "%s" -dt "string" %s' % (attribute, node_name) )
+            return self.mel('addAttr -ln "%s" -dt "string" %s' % (attribute, node_name) )
         else:
-            return my.mel('addAttr -ln "%s" -at "long" %s' % (attribute, node_name) )
+            return self.mel('addAttr -ln "%s" -at "long" %s' % (attribute, node_name) )
 
 
-    def attr_exists(my, node_name, attribute):
+    def attr_exists(self, node_name, attribute):
         '''determines whether an attribute exists on a give node name
 
         @params
@@ -133,11 +133,11 @@ class Maya(Application):
         boolean: True if attribute exists, False if it does not.
         '''
         # don't bother being verbose with this one
-        return my.mel("attributeExists %s %s" % (attribute, node_name), verbose=False )
+        return self.mel("attributeExists %s %s" % (attribute, node_name), verbose=False )
 
 
 
-    def get_attr(my, node_name, attribute):
+    def get_attr(self, node_name, attribute):
         '''get the attribute value for a give node
 
         node_name: name of the node that will be queried
@@ -146,9 +146,9 @@ class Maya(Application):
         @return
         string: value of attribute
         '''
-        if not my.attr_exists(node_name, attribute):
+        if not self.attr_exists(node_name, attribute):
             return ""
-        value = my.mel("getAttr %s.%s" % (node_name, attribute) )
+        value = self.mel("getAttr %s.%s" % (node_name, attribute) )
         # never return None for an attr
         if value == None:
             return ""
@@ -158,11 +158,11 @@ class Maya(Application):
 
 
 
-    def get_attr_type(my, node, attribute):
+    def get_attr_type(self, node, attribute):
         ''' get the attribute type e.g. int, string, double '''
-        if not my.attr_exists(node, attribute):
+        if not self.attr_exists(node, attribute):
             return ""
-        value = my.mel("getAttr -type %s.%s" % (node, attribute) )
+        value = self.mel("getAttr -type %s.%s" % (node, attribute) )
         # never return None for an attr
         if not value:
             return ""
@@ -171,9 +171,9 @@ class Maya(Application):
 
 
 
-    def get_all_attrs(my, node):
-        keyable = my.mel("listAttr -keyable %s" % node )
-        user_defined = my.mel("listAttr -userDefined %s" % node)
+    def get_all_attrs(self, node):
+        keyable = self.mel("listAttr -keyable %s" % node )
+        user_defined = self.mel("listAttr -userDefined %s" % node)
         attrs = []
         attrs.extend(keyable)
         if user_defined:
@@ -182,25 +182,25 @@ class Maya(Application):
 
 
 
-    def get_attr_default(my, node, attr):
-         return my.mel("attributeQuery -node %s -listDefault %s" % \
+    def get_attr_default(self, node, attr):
+         return self.mel("attributeQuery -node %s -listDefault %s" % \
             (node, attr) )
 
 
 
 
-    def set_attr(my, node, attr, value, attr_type=""):
+    def set_attr(self, node, attr, value, attr_type=""):
         if attr_type == "string":
-            my.mel('setAttr %s.%s -type "string" "%s"' % (node,attr,value))
+            self.mel('setAttr %s.%s -type "string" "%s"' % (node,attr,value))
         else:
             '''attr_type is optional for numeric value'''
-            my.mel('setAttr %s.%s %s' % (node,attr,value))
+            self.mel('setAttr %s.%s %s' % (node,attr,value))
 
 
     #
     # File operations
     #
-    def load(my, path):
+    def load(self, path):
         '''loads the given path into session
 
         @params
@@ -210,14 +210,14 @@ class Maya(Application):
         string: the path that was loaded
         '''
         if path.endswith(".ma"):
-            my.mel('file -f -options "v=0"  -typ "mayaAscii" -o "%s"' % path)
+            self.mel('file -f -options "v=0"  -typ "mayaAscii" -o "%s"' % path)
         else:
-            my.mel('file -f -options "v=0"  -typ "mayaBinary" -o "%s"' % path)
+            self.mel('file -f -options "v=0"  -typ "mayaBinary" -o "%s"' % path)
         return path
 
 
 
-    def save(my, path, file_type=None):
+    def save(self, path, file_type=None):
         '''Save the current session to a file
 
         @params
@@ -242,8 +242,8 @@ class Maya(Application):
         if os.path.exists(path):
             os.unlink(path)
 
-        my.rename(path)
-        created_path = my.mel('file -force -save -type %s' % file_type)
+        self.rename(path)
+        created_path = self.mel('file -force -save -type %s' % file_type)
 
         if not os.path.exists(created_path):
             raise MayaException("Could not save to [%s]" % created_path)
@@ -251,7 +251,7 @@ class Maya(Application):
         return created_path
 
 
-    def rename(my, path):
+    def rename(self, path):
         '''rename the file so that "save" will go to that directory
        
         @params
@@ -267,11 +267,11 @@ class Maya(Application):
         #elif not path.endswith(".ma"):
         #    path = "%s.ma" % path
 
-        my.mel('file -rename "%s"' % path)
+        self.mel('file -rename "%s"' % path)
         if path.endswith(".ma"):
-            my.mel('file -type "mayaAscii"')
+            self.mel('file -type "mayaAscii"')
         elif path.endswith(".mb"):
-            my.mel('file -type "mayaBinary"')
+            self.mel('file -type "mayaBinary"')
 
 
 

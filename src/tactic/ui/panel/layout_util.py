@@ -125,7 +125,7 @@ class LayoutUtil(object):
         labels = ['Table', 'Tile', 'List', 'Content', 'Navigator', 'Task Schedule', 'Check-in', 'Tools', 'File Browser', 'Card', 'Overview']
 
         # this is fast table biased
-        if my.kwargs.get("is_refresh") in ['false', False]:
+        if self.kwargs.get("is_refresh") in ['false', False]:
             class_names = [
                 'tactic.ui.panel.ViewPanelWdg',
                 'tactic.ui.panel.ViewPanelWdg',
@@ -183,7 +183,7 @@ class LayoutUtil(object):
             ['preview','name','task_pipeline_report','summary','completion'],
 	    ]
 
-        if not SearchType.column_exists(my.search_type, 'name'):
+        if not SearchType.column_exists(self.search_type, 'name'):
             element_names = [
             default_element_names,
             [],

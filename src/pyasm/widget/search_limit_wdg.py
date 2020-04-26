@@ -25,68 +25,68 @@ class SearchLimitWdg(Widget):
     LESS_DETAIL = "less_detail_style"
     SIMPLE = "simple_style"
 
-    def __init__(my, name='search_limit', label="Showing", limit=10, refresh=True):
-        my.search_limit_name = name
-        my.label = label
-        my.search_limit = limit
-        my.fixed_offset = False
-        my.style = my.DETAIL
-        my.refresh = refresh
-        my.refresh_script = ''
-        if my.refresh:
-            my.prev_hidden_name = 'Prev'
-            my.next_hidden_name='Next'
+    def __init__(self, name='search_limit', label="Showing", limit=10, refresh=True):
+        self.search_limit_name = name
+        self.label = label
+        self.search_limit = limit
+        self.fixed_offset = False
+        self.style = self.DETAIL
+        self.refresh = refresh
+        self.refresh_script = ''
+        if self.refresh:
+            self.prev_hidden_name = 'Prev'
+            self.next_hidden_name='Next'
         else:
-            my.prev_hidden_name = '%s_Prev' %my.label
-            my.next_hidden_name = '%s_Next' %my.label
+            self.prev_hidden_name = '%s_Prev' %self.label
+            self.next_hidden_name = '%s_Next' %self.label
 
-        super(SearchLimitWdg, my).__init__()
+        super(SearchLimitWdg, self).__init__()
         
-    def init(my):
+    def init(self):
         
-        my.current_offset = 0
-        my.count = None
-        my.text = FilterTextWdg(my.search_limit_name, is_number=True, has_persistence=False)
+        self.current_offset = 0
+        self.count = None
+        self.text = FilterTextWdg(self.search_limit_name, is_number=True, has_persistence=False)
 
-    def set_refresh_script(my, script):
-        my.refresh_script = script
+    def set_refresh_script(self, script):
+        self.refresh_script = script
 
-    def set_label(my, label):
-        my.label = label
+    def set_label(self, label):
+        self.label = label
 
-    def get_limit(my):
-        return my.search_limit
+    def get_limit(self):
+        return self.search_limit
 
-    def set_limit(my, limit):
+    def set_limit(self, limit):
         if limit <= 10:
             limit = 10
-        my.search_limit = limit
+        self.search_limit = limit
 
-    def set_offset(my, offset):
-        my.fixed_offset = True
-        my.current_offset = offset
+    def set_offset(self, offset):
+        self.fixed_offset = True
+        self.current_offset = offset
 
-    def set_style(my, style):
-        my.style = style
+    def set_style(self, style):
+        self.style = style
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        my.set_search(search)
-        my.count = search.get_count()
+        self.set_search(search)
+        self.count = search.get_count()
         web = WebContainer.get_web()
         
         
-        search_limit = my.text.get_value()
+        search_limit = self.text.get_value()
         if search_limit != "":
             try:
-                my.search_limit = int(search_limit)
+                self.search_limit = int(search_limit)
             except ValueError:
-                my.search_limit = 20
-            if my.search_limit <= 0:
-                my.search_limit = 1
+                self.search_limit = 20
+            if self.search_limit <= 0:
+                self.search_limit = 1
         
         # find out what the last offset was
-        last_search_offset = web.get_form_value("%s_last_search_offset"%my.label)
+        last_search_offset = web.get_form_value("%s_last_search_offset"%self.label)
 
         if last_search_offset != "":
             last_search_offset = int(last_search_offset)
@@ -94,35 +94,35 @@ class SearchLimitWdg(Widget):
             last_search_offset = 0
 
         # based on the action, set the new offset
-        if web.get_form_value(my.next_hidden_name) == "Next":
-            current_offset = last_search_offset + my.search_limit
-            if current_offset >= my.count:
+        if web.get_form_value(self.next_hidden_name) == "Next":
+            current_offset = last_search_offset + self.search_limit
+            if current_offset >= self.count:
                 current_offset = 0
 
-        elif web.get_form_value(my.prev_hidden_name) == "Prev":
-            current_offset = last_search_offset - my.search_limit
+        elif web.get_form_value(self.prev_hidden_name) == "Prev":
+            current_offset = last_search_offset - self.search_limit
             if current_offset < 0:
-                current_offset = int(my.count/my.search_limit) * my.search_limit
+                current_offset = int(self.count/self.search_limit) * self.search_limit
        
         # this happens when the user jumps from Page 3 of a tab to a tab that
         # doesn't really need this widget
-        elif last_search_offset > my.count:
+        elif last_search_offset > self.count:
             current_offset = 0
-        elif web.get_form_value(my.label) != "":
-            value = web.get_form_value(my.label)
+        elif web.get_form_value(self.label) != "":
+            value = web.get_form_value(self.label)
             current_offset, tmp = value.split(" - ")
             current_offset = int(current_offset) - 1
         else:
             current_offset = 0 
 
        
-        if my.fixed_offset == False:
-            my.current_offset = current_offset
+        if self.fixed_offset == False:
+            self.current_offset = current_offset
        
-        my.search.set_limit(my.search_limit)
-        my.search.set_offset(my.current_offset)
+        self.search.set_limit(self.search_limit)
+        self.search.set_offset(self.current_offset)
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -131,55 +131,55 @@ class SearchLimitWdg(Widget):
         div = SpanWdg(css='med')
         div.set_attr("nowrap", "1")
 
-        limit_wdg = my.text
+        limit_wdg = self.text
         limit_wdg.add_event('onchange', 'if (this.value < 20 || !Common.validate_int(this.value)) this.value=20 ') 
         limit_wdg.add_style("margin-top: -3px")
         limit_wdg.set_attr("size", "1")
-        #limit_wdg.set_value(my.search_limit)
+        #limit_wdg.set_value(self.search_limit)
 
-        offset_wdg = HiddenWdg("%s_last_search_offset" %my.label)
-        offset_wdg.set_value(my.current_offset)
+        offset_wdg = HiddenWdg("%s_last_search_offset" %self.label)
+        offset_wdg.set_value(self.current_offset)
         #div.add(limit_wdg)
         div.add(offset_wdg)
     
 
-        if my.search or my.sobjects:
-            # my.count should have been set in alter_search()
-            # which can be called explicitly thru this instance, my.
-            if not my.count:
-                my.count = my.search.get_count()
+        if self.search or self.sobjects:
+            # self.count should have been set in alter_search()
+            # which can be called explicitly thru this instance, self.
+            if not self.count:
+                self.count = self.search.get_count()
             
-            # if my.sobjects exist thru inheriting from parent widgets
+            # if self.sobjects exist thru inheriting from parent widgets
             # or explicitly set, (this is not mandatory though)
-            if my.sobjects and len(my.sobjects) < my.search_limit:
-                limit = len(my.sobjects)
-            elif my.search and my.count < my.search_limit:
+            if self.sobjects and len(self.sobjects) < self.search_limit:
+                limit = len(self.sobjects)
+            elif self.search and self.count < self.search_limit:
                 # this is only true if the total result of the search is 
                 # less than the limit and so this wdg will not display
-                limit = my.count
+                limit = self.count
             else:
-                limit = my.search_limit
+                limit = self.search_limit
  
         
-            if my.current_offset == 0 and limit < my.search_limit:
+            if self.current_offset == 0 and limit < self.search_limit:
                 return None
               
-            if my.refresh:
+            if self.refresh:
                 prev = IconSubmitWdg("Prev", IconWdg.LEFT, False )
                 next = IconSubmitWdg("Next", IconWdg.RIGHT, False, icon_pos="right" )
             else:
                 prev = IconButtonWdg("Prev", IconWdg.LEFT, False )
-                hidden_name = my.prev_hidden_name
+                hidden_name = self.prev_hidden_name
                 hidden = HiddenWdg(hidden_name,"")
                 prev.add(hidden)
                 prev.add_event('onclick',"get_elements('%s').set_value('Prev');%s"\
-                        %(hidden_name, my.refresh_script))
+                        %(hidden_name, self.refresh_script))
                 next = IconButtonWdg("Next", IconWdg.RIGHT, False, icon_pos="right" )
-                hidden_name = my.next_hidden_name
+                hidden_name = self.next_hidden_name
                 hidden = HiddenWdg(hidden_name,"")
                 next.add(hidden)
                 next.add_event('onclick',"get_elements('%s').set_value('Next');%s" \
-                        %(hidden_name, my.refresh_script))
+                        %(hidden_name, self.refresh_script))
 
             label_span = SpanWdg("Showing:")
             label_span.add_style('color','#c2895d')
@@ -187,28 +187,28 @@ class SearchLimitWdg(Widget):
             div.add( prev )
            
 
-            # this min calculation is used so that if my.sobjects is not set
+            # this min calculation is used so that if self.sobjects is not set
             # above for the calculation of the limit, which will make the last 
             # set of range numbers too big
             
-            left_bound = my.current_offset+1
-            right_bound = min(my.current_offset+limit, my.count)
+            left_bound = self.current_offset+1
+            right_bound = min(self.current_offset+limit, self.count)
             if left_bound > right_bound:
                 left_bound = 1
             current_value = "%d - %d" % (left_bound, right_bound)
 
-            if my.style == my.SIMPLE:
+            if self.style == self.SIMPLE:
                 div.add( current_value )
             else:
                 # add a range selector using ItemsNavigatorWdg
                 from input_wdg import ItemsNavigatorWdg
-                selector = ItemsNavigatorWdg(my.label, my.count, my.search_limit, refresh=my.refresh)
-                selector.set_style(my.style)
+                selector = ItemsNavigatorWdg(self.label, self.count, self.search_limit, refresh=self.refresh)
+                selector.set_style(self.style)
 
                 selector.set_value(current_value)
                 selector.set_display_label(False)
-                if my.refresh_script:
-                    selector.set_refresh_script(my.refresh_script)
+                if self.refresh_script:
+                    selector.set_refresh_script(self.refresh_script)
                 div.add( selector) 
                 div.add( " - ")
                 div.add( limit_wdg)
@@ -226,48 +226,48 @@ class SearchLimitWdg(Widget):
 
 class RetiredFilterWdg(SwapDisplayWdg):
     ''' a button that triggers the display of retired items''' 
-    def __init__(my, prefix='', refresh=True):
+    def __init__(self, prefix='', refresh=True):
         name = 'show_retired'
         if prefix:
             name = '%s_show_retired' %prefix
-        my.hidden = HiddenWdg(name,'')
+        self.hidden = HiddenWdg(name,'')
         if refresh:
-            my.hidden.set_persistence() 
-        my.refresh = refresh
-        super(RetiredFilterWdg, my).__init__()
+            self.hidden.set_persistence() 
+        self.refresh = refresh
+        super(RetiredFilterWdg, self).__init__()
        
-    def _get_script(my, value):
+    def _get_script(self, value):
         script = "var x=get_elements('%s'); x.set_value('%s')"\
-                 %(my.hidden.get_name(), value) 
-        if my.refresh:
+                 %(self.hidden.get_name(), value) 
+        if self.refresh:
             script = "%s;document.form.submit()" %script
         return script
 
-    def get_display(my):
+    def get_display(self):
         
         on_icon = IconWdg('click to show retired', icon="/context/icons/common/hide_retire.png")
         off_icon = IconWdg('click to hide retired', icon=IconWdg.RETIRE)
-        off_icon.add(my.hidden)
+        off_icon.add(self.hidden)
         
-        on_script = my._get_script('true')
-        off_script = my._get_script('false')
+        on_script = self._get_script('true')
+        off_script = self._get_script('false')
         
         # swap the icons if it is clicked on 
-        if my.get_value()=='true':
-            my.set_display_widgets(off_icon, on_icon)
-            my.add_action_script(off_script, on_script)
+        if self.get_value()=='true':
+            self.set_display_widgets(off_icon, on_icon)
+            self.add_action_script(off_script, on_script)
         else:
-            my.set_display_widgets(on_icon, off_icon)
-            my.add_action_script(on_script, off_script)
+            self.set_display_widgets(on_icon, off_icon)
+            self.add_action_script(on_script, off_script)
 
-        return super(RetiredFilterWdg, my).get_display()
+        return super(RetiredFilterWdg, self).get_display()
     
-    def get_value(my):
-        return my.hidden.get_value()
+    def get_value(self):
+        return self.hidden.get_value()
     
 
-    def alter_search(my, search):
-        if my.get_value() == 'true':
+    def alter_search(self, search):
+        if self.get_value() == 'true':
             search.set_show_retired(True)
 
 

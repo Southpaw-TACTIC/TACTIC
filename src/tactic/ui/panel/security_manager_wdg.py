@@ -26,12 +26,12 @@ from tactic.ui.widget import ActionButtonWdg
 
 class SecurityManagerButtonWdg(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
 
         div = DivWdg()
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_key = SearchKey.get_by_sobject(sobject)
 
         if sobject.is_admin():
@@ -82,32 +82,32 @@ permission_list = [
 class SecurityManagerWdg(BaseRefreshWdg):
     '''Panel to manage global security settings'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'search_key': 'the search key of the sobject to be operated on',
         'update': 'true|false determines whether to update or not'
         }
 
 
-    def init(my):
-        my.search_key = my.kwargs.get("search_key")
-        my.update = my.kwargs.get("update")
-        my.description = ''
-        if my.update == "true":
+    def init(self):
+        self.search_key = self.kwargs.get("search_key")
+        self.update = self.kwargs.get("update")
+        self.description = ''
+        if self.update == "true":
             cmd = SecurityManagerCbk()
-            cmd.set_search_key(my.search_key)
+            cmd.set_search_key(self.search_key)
             Command.execute_cmd(cmd)
-            my.description = cmd.get_description()
+            self.description = cmd.get_description()
 
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
        
       
         div.add_class("spt_security")
         div.add_attr("id", "SecurityManagerWdg")
-        div.add_attr("spt_class_name", Common.get_full_class_name(my) )
-        div.add_attr("spt_search_key", my.search_key)
+        div.add_attr("spt_class_name", Common.get_full_class_name(self) )
+        div.add_attr("spt_search_key", self.search_key)
         div.add_attr("spt_update", "true")
 
         project_div = DivWdg()
@@ -117,7 +117,7 @@ class SecurityManagerWdg(BaseRefreshWdg):
         project_div.add_border()
         project_div.add_style("width: 300px")
 
-        group = SearchKey.get_by_search_key(my.search_key)
+        group = SearchKey.get_by_search_key(self.search_key)
 
         title = DivWdg()
         title.add_class("maq_search_bar")
@@ -203,9 +203,9 @@ class SecurityManagerWdg(BaseRefreshWdg):
 
             
         div.add(project_div)
-        if my.update == "true":
+        if self.update == "true":
             div.add(HtmlElement.br())
-            div.add(HtmlElement.b(my.description))
+            div.add(HtmlElement.b(self.description))
  
         return div
 
@@ -214,15 +214,15 @@ class SecurityManagerWdg(BaseRefreshWdg):
 class SecurityManagerCbk(Command):
     '''Panel to manage global security settings'''
 
-    def check(my):
+    def check(self):
         return True
 
-    def set_search_key(my, search_key):
-        my.search_key = search_key
+    def set_search_key(self, search_key):
+        self.search_key = search_key
 
-    def execute(my):
+    def execute(self):
 
-        search_key = my.search_key
+        search_key = self.search_key
         assert search_key
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -259,6 +259,6 @@ class SecurityManagerCbk(Command):
         new_rules = builder.to_string()
         sobject.set_value("access_rules", new_rules)
         sobject.commit()
-        my.add_description('Built-in access rules updated sucessfully!')
+        self.add_description('Built-in access rules updated sucessfully!')
 
 

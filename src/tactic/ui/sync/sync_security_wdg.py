@@ -27,9 +27,9 @@ from tactic.ui.startup import ProjectSecurityWdg, SearchTypeSecurityWdg
 
 class SyncSecurityWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         return top
 
@@ -37,21 +37,21 @@ class SyncSecurityWdg(BaseRefreshWdg):
 
 class SyncProjectSecurityWdg(ProjectSecurityWdg):
 
-    def get_groups(my):
+    def get_groups(self):
 
         search = Search("sthpw/sync_server")
         servers = search.get_sobjects()
-        my.servers = {}
+        self.servers = {}
 
         # HACK
         for server in servers:
             server.set_value("login_group", server.get_code() )
-            my.servers[server.get_code()] = server
+            self.servers[server.get_code()] = server
 
         return servers
 
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         # get the project sobjects
         search = Search("sthpw/project")
         search.add_filters("code", ['sthpw','admin','unittest'], op='not in')
@@ -80,7 +80,7 @@ class SyncProjectSecurityWdg(ProjectSecurityWdg):
 
                     #!!!!!!
                     #group = LoginGroup.get_by_group_name(group_name)
-                    group = my.servers.get(group_name)
+                    group = self.servers.get(group_name)
 
 
                     access_rules = group.get_xml_value("access_rules")
@@ -101,26 +101,26 @@ class SyncProjectSecurityWdg(ProjectSecurityWdg):
 
 class SyncSearchTypeSecurityWdg(SearchTypeSecurityWdg):
 
-    def get_save_cbk(my):
+    def get_save_cbk(self):
         return 'tactic.ui.startup.SearchTypeSecurityCbk'
 
-    def get_groups(my):
+    def get_groups(self):
 
         search = Search("sthpw/sync_server")
         servers = search.get_sobjects()
-        my.servers = {}
+        self.servers = {}
 
         # HACK
         for server in servers:
             server.set_value("login_group", server.get_code() )
-            my.servers[server.get_code()] = server
+            self.servers[server.get_code()] = server
 
         return servers
 
 
 
 
-    def get_sobjects(my, group_names):
+    def get_sobjects(self, group_names):
         # get the project sobjects
         sobjects = Project.get().get_search_types()
 
@@ -146,7 +146,7 @@ class SyncSearchTypeSecurityWdg(SearchTypeSecurityWdg):
 
                     #!!!!!!
                     #group = LoginGroup.get_by_group_name(group_name)
-                    group = my.servers.get(group_name)
+                    group = self.servers.get(group_name)
 
                     access_rules = group.get_xml_value("access_rules")
                     rules_dict[group_name] = access_rules

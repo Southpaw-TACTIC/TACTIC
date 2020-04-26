@@ -27,28 +27,28 @@ from pyasm.command import Trigger, Command
 class CacheList(object):
     '''Generic caching class'''
 
-    def __init__(my):
+    def __init__(self):
         
         # on startup, build all of the cache objects and remember the timestamp
-        my.caches = {}
-        my.mtimes = {}
+        self.caches = {}
+        self.mtimes = {}
 
 
-    def get_cache(my, key):
-        cache = my.caches.get(key)
+    def get_cache(self, key):
+        cache = self.caches.get(key)
         return cache
         
         
 
-    def set_cache(my, key, cache):
-        my.caches[key] = cache
+    def set_cache(self, key, cache):
+        self.caches[key] = cache
         now = time.time()
-        my.mtimes[key] = now
+        self.mtimes[key] = now
 
 
-    def check(my):
+    def check(self):
         
-        for key, mtime in my.mtimes.items():
+        for key, mtime in self.mtimes.items():
 
             # get all of the dirty values (where keys have modification values
             # greter than mtime of the key
@@ -59,14 +59,14 @@ class CacheList(object):
 
             if dtime:
                 print "re-caching ..."
-                cache = my.caches[key]
+                cache = self.caches[key]
                 cache.cache()
 
                 now = time.time()
-                my.mtimes[key] = now
+                self.mtimes[key] = now
 
 
-        for key, mtime in my.mtimes.items():
+        for key, mtime in self.mtimes.items():
             print key, mtime, now - mtime
 
 
@@ -91,40 +91,40 @@ class CacheList(object):
 class Cache(object):
     '''Generic caching class'''
 
-    def __init__(my, key):
-        my.key = key
-        my.attrs = {}
+    def __init__(self, key):
+        self.key = key
+        self.attrs = {}
 
-        my.cache()
+        self.cache()
 
 
-    def cache(my):
+    def cache(self):
 
         # get the value from cache
         from pyasm.biz import ExpressionParser
         parser = ExpressionParser()
         logins = parser.eval("@SOBJECT(sthpw/login)")
 
-        my.attrs[my.key] = logins
+        self.attrs[self.key] = logins
 
 
-    def get_key(my):
-        return my.key
+    def get_key(self):
+        return self.key
 
 
-    def make_dirty(my):
+    def make_dirty(self):
         dirty = SearchType.create("sthpw/cache")
-        dirty.set_value("key", my.key)
+        dirty.set_value("key", self.key)
         dirty.set_now("mtime")
         dirty.commit()
 
 
-    def get_attr(my, key):
-        return my.attrs.get(key)
+    def get_attr(self, key):
+        return self.attrs.get(key)
 
 
 
-    def get_events(my):
+    def get_events(self):
         # set an event to listen for to update caches
         return [
             "change|sthpw/login"
@@ -150,10 +150,10 @@ class Cache(object):
 
 class CacheTrigger(Trigger):
 
-    #def set_cache(my, cache):
-    #    my.cache = cache
+    #def set_cache(self, cache):
+    #    self.cache = cache
 
-    def execute(my):
+    def execute(self):
         print "running cache trigger"
         cache = Cache.get("logins")
         cache.make_dirty()
@@ -162,7 +162,7 @@ class CacheTrigger(Trigger):
 
 class TestCommand(Command):
 
-    def execute(my):
+    def execute(self):
 
         # get the cache list
         login_cache = Cache.get("logins")

@@ -26,7 +26,7 @@ from pyasm.search import SObjectFactory
 
 class RemoteExec(Command):
 
-    def execute_slave(my):
+    def execute_slave(self):
         pass
 
 
@@ -36,7 +36,7 @@ class RemoteExec(Command):
 
 class XmlRpcExec(RemoteExec):
 
-    def execute_slave(my, command):
+    def execute_slave(self, command):
 
         # start a new thread
         import thread
@@ -51,13 +51,13 @@ class XmlRpcExec(RemoteExec):
         pickled = pickle.dumps(command)
 
         try:
-            print "slave command ...."
+            print("slave command ....")
             server_url = "http://saba:8081/xmlrpc"
             server = xmlrpclib.ServerProxy(server_url)
-            print server.do_login(ticket)
+            print(server.do_login(ticket))
 
-            print server.do_command(pickled)
-            print "... done!!!!"
+            print(server.do_command(pickled))
+            print("... done!!!!")
 
         except (socket.error), e:
             raise SetupException( 'Could not connect to slave server "%s":\n\nError given: %s' % (server_url, e.__str__() ))
@@ -74,13 +74,13 @@ class XmlRpcExec(RemoteExec):
 class TacticDispatcher(RemoteExec):
     '''The tactic dispatcher works by storing a queue object'''
 
-    def __init__(my):
-        my.description = "No Description"
+    def __init__(self):
+        self.description = "No Description"
 
-    def set_description(my, description):
-        my.description = description
+    def set_description(self, description):
+        self.description = description
 
-    def execute_slave(my, command):
+    def execute_slave(self, command):
         import socket, xmlrpclib, pickle, time
         pickled = pickle.dumps(command)
 
@@ -91,7 +91,7 @@ class TacticDispatcher(RemoteExec):
         queue.set_value("serialized", pickled)
 
         queue.set_value("priority", "AAA")
-        queue.set_value("description", my.description)
+        queue.set_value("description", self.description)
 
         queue.set_user()
         queue.commit()

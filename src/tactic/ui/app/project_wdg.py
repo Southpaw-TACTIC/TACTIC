@@ -15,15 +15,16 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import SwapDisplayWdg, CheckboxWdg
 from tactic.ui.common import BaseRefreshWdg
 
+# DEPRECATED
 
 class ProjectSetupWdg(BaseRefreshWdg):
     '''Widget that manages the entire project overview'''
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_class("spt_project_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
 
         inner = DivWdg()

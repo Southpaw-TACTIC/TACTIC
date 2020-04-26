@@ -131,6 +131,7 @@
     <element name="first_name"/>
     <element name="last_name"/>
     <element name="display_name"/>
+    <element name="email"/>
     <element name="activity"/>
     <element name="groups"/>
     <element name="security"/>

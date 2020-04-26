@@ -31,19 +31,19 @@ from pyasm.unittest import UnittestEnvironment, Sample3dEnvironment
 
 class TestFileNaming(FileNaming):
 
-    def unittest_person(my):
+    def unittest_person(self):
 
-        context = my.snapshot.get_value("context")
+        context = self.snapshot.get_value("context")
 
-        file_type = my.snapshot.get_file_type()
+        file_type = self.snapshot.get_file_type()
         parts = []
 
-        asset_code = my.sobject.get_code()
+        asset_code = self.sobject.get_code()
         parts.append(asset_code)
         parts.append(file_type)
-        parts.append('v%0.3d' %my.snapshot.get_version())
+        parts.append('v%0.3d' %self.snapshot.get_version())
         filename = '_'.join(parts)
-        ext = my.get_ext()
+        ext = self.get_ext()
         if ext:
             filename = '%s%s' %(filename, ext)
         return filename
@@ -51,21 +51,21 @@ class TestFileNaming(FileNaming):
 class TestFileNaming2(FileNaming):
 
         
-    def unittest_person(my):
+    def unittest_person(self):
         '''try an empty file name'''
         return ''
 
 class TestDirNaming(DirNaming):
 
-    def unittest_person(my, dirs):
-        context = my.snapshot.get_value("context")
-        file_type = my.get_file_type()
+    def unittest_person(self, dirs):
+        context = self.snapshot.get_value("context")
+        file_type = self.get_file_type()
         parts = []
 
-        asset_code = my.sobject.get_code()
+        asset_code = self.sobject.get_code()
         dirs.append(asset_code)
-        if my._file_object:
-            file_name = my._file_object.get_file_name()
+        if self._file_object:
+            file_name = self._file_object.get_file_name()
             file_ext = ''
             if file_name:
                 from pyasm.biz import File
@@ -73,57 +73,57 @@ class TestDirNaming(DirNaming):
             dirs.append('%s.%s'%(file_ext, file_type))
         
         #dirs.append(file_type)
-        dirs.append('v%0.3d' %my.snapshot.get_version())
+        dirs.append('v%0.3d' %self.snapshot.get_version())
         return dirs
 
 class NamingTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         # start batch environment
         Batch()
         from pyasm.web.web_init import WebInit
         WebInit().execute()
 
-        my.sample3d_env = Sample3dEnvironment(project_code='sample3d')
-        my.sample3d_env.create()
+        self.sample3d_env = Sample3dEnvironment(project_code='sample3d')
+        self.sample3d_env.create()
 
-        my.test_env = UnittestEnvironment()
-        my.test_env.create()
+        self.test_env = UnittestEnvironment()
+        self.test_env.create()
 
     
 
         # set up the proper project_type, with the use the ProdDirNaming and ProdFileNaming
         search = Search('sthpw/project')
         search.add_filter('code', 'unittest')
-        my.sobj = search.get_sobject()
+        self.sobj = search.get_sobject()
 
         # store the original setting in your database
-        my.original_proj_type_dict = {'dir_naming_cls': my.sobj.get_value('dir_naming_cls'),
-                'file_naming_cls': my.sobj.get_value('file_naming_cls') }
+        self.original_proj_type_dict = {'dir_naming_cls': self.sobj.get_value('dir_naming_cls'),
+                'file_naming_cls': self.sobj.get_value('file_naming_cls') }
 
-        #my.transaction = Transaction.get(create=True)
-        if my.sobj:
-            my.sobj.set_value('dir_naming_cls', 'pyasm.prod.biz.ProdDirNaming')
-            my.sobj.set_value('file_naming_cls', 'pyasm.prod.biz.ProdFileNaming')
-            my.sobj.commit()
+        #self.transaction = Transaction.get(create=True)
+        if self.sobj:
+            self.sobj.set_value('dir_naming_cls', 'pyasm.prod.biz.ProdDirNaming')
+            self.sobj.set_value('file_naming_cls', 'pyasm.prod.biz.ProdFileNaming')
+            self.sobj.commit()
         else:
-            my.sobj = SearchType.create('sthpw/project_type')
-            my.sobj.set_value('dir_naming_cls', 'pyasm.prod.biz.ProdDirNaming')
-            my.sobj.set_value('file_naming_cls', 'pyasm.prod.biz.ProdFileNaming')
-            my.sobj.set_value('code', 'unittest')
-            my.sobj.commit()
+            self.sobj = SearchType.create('sthpw/project_type')
+            self.sobj.set_value('dir_naming_cls', 'pyasm.prod.biz.ProdDirNaming')
+            self.sobj.set_value('file_naming_cls', 'pyasm.prod.biz.ProdFileNaming')
+            self.sobj.set_value('code', 'unittest')
+            self.sobj.commit()
 
       
 
 
-    def create_snapshot(my):
+    def create_snapshot(self):
         # set up a real person and snapshot (as opposed to virtual)
         code = 'phil'
        
-        my.person = SearchType.create( 'unittest/person' )
-        my.person.set_value("code",code)
-        my.person.set_value("name_first", "Philip")
-        my.person.commit()
+        self.person = SearchType.create( 'unittest/person' )
+        self.person.set_value("code",code)
+        self.person.set_value("name_first", "Philip")
+        self.person.commit()
 
 
         # create a new test.txt file
@@ -132,9 +132,9 @@ class NamingTest(unittest.TestCase):
             file = open(file_path, 'w')
             file.write("whatever")
             file.close()
-        checkin = FileCheckin(my.person, file_path, "main", context='naming_test')
+        checkin = FileCheckin(self.person, file_path, "main", context='naming_test')
         checkin.execute()
-        my.snapshot = checkin.get_snapshot()
+        self.snapshot = checkin.get_snapshot()
 
         # create another test_base.txt file
         file_path = "./naming_base_test.txt"
@@ -142,9 +142,9 @@ class NamingTest(unittest.TestCase):
             file = open(file_path, 'w')
             file.write("whatever")
             file.close()
-        checkin = FileCheckin(my.person, file_path, "main", context='naming_base_test')
+        checkin = FileCheckin(self.person, file_path, "main", context='naming_base_test')
         checkin.execute()
-        my.base_snapshot = checkin.get_snapshot()
+        self.base_snapshot = checkin.get_snapshot()
 
         dir_path = "./naming_test_folder"
         dir_path2 = "./.tactic_test" # test . folder
@@ -154,60 +154,60 @@ class NamingTest(unittest.TestCase):
             if not os.path.exists(path):
                 os.makedirs(path)
 
-        checkin = FileCheckin(my.person, dir_path, "main", context='naming_base_test', checkin_type='auto')
+        checkin = FileCheckin(self.person, dir_path, "main", context='naming_base_test', checkin_type='auto')
         checkin.execute()
-        my.auto_snapshot = checkin.get_snapshot()
-        checkin = FileCheckin(my.person, dir_path2, "main", context='naming_folder_test', snapshot_type='directory', checkin_type='auto')
+        self.auto_snapshot = checkin.get_snapshot()
+        checkin = FileCheckin(self.person, dir_path2, "main", context='naming_folder_test', snapshot_type='directory', checkin_type='auto')
         checkin.execute()
-        my.auto_snapshot2 = checkin.get_snapshot()
+        self.auto_snapshot2 = checkin.get_snapshot()
 
         # test a blank checkin_type
-        checkin = FileCheckin(my.person, dir_path3, "main", context='naming_base_test', snapshot_type='directory', checkin_type='')
+        checkin = FileCheckin(self.person, dir_path3, "main", context='naming_base_test', snapshot_type='directory', checkin_type='')
         checkin.execute()
-        my.auto_snapshot3 = checkin.get_snapshot()
+        self.auto_snapshot3 = checkin.get_snapshot()
     
-    def test_all(my):
+    def test_all(self):
         
-        my.transaction = Transaction.get(create=True)
+        self.transaction = Transaction.get(create=True)
         try:
-            my.create_snapshot()
+            self.create_snapshot()
 
-            my._test_base_alias()
+            self._test_base_alias()
 
-            my._test_file_naming()
-            my._test_file_naming_base()
-            my._test_dir_naming()
+            self._test_file_naming()
+            self._test_file_naming_base()
+            self._test_dir_naming()
             # this comes after test_dir_naming so the file_object doesn't get polluted
-            my._test_file_naming_manual_version()
-            my._test_get_naming()
-            my._test_checkin_type()
-            my._test_naming_util()
+            self._test_file_naming_manual_version()
+            self._test_get_naming()
+            self._test_checkin_type()
+            self._test_naming_util()
         finally:
-            my.transaction.rollback()
+            self.transaction.rollback()
             Project.set_project('unittest')
 
-            my.test_env.delete()
-            my.sample3d_env.delete()
+            self.test_env.delete()
+            self.sample3d_env.delete()
 
         # reset the unittest project type to whatever it was
         """
-        for key, value in my.original_proj_type_dict.items():
-            my.sobj.set_value(key, value)
-        my.sobj.commit()
+        for key, value in self.original_proj_type_dict.items():
+            self.sobj.set_value(key, value)
+        self.sobj.commit()
         """
 
 
-    def _test_base_alias(my):
+    def _test_base_alias(self):
 
         plugin_dir = Environment.get_web_dir(alias="plugins")
-        my.assertEquals("/plugins", plugin_dir)
+        self.assertEquals("/plugins", plugin_dir)
 
         plugin_dir = Environment.get_plugin_dir()
         plugin_dir2 = Environment.get_asset_dir(alias="plugins")
-        my.assertEquals(plugin_dir, plugin_dir2)
+        self.assertEquals(plugin_dir, plugin_dir2)
 
 
-    def clear_naming(my):
+    def clear_naming(self):
         Container.put("Naming:cache", None)
         Container.put("Naming:cache:latest", None)
         Container.put("Naming:cache:unittest:latest", None)
@@ -216,9 +216,9 @@ class NamingTest(unittest.TestCase):
         Container.put("Naming:cache:unittest", None)
         Container.put("Naming:namings", None)
 
-    def _test_naming_util(my):
+    def _test_naming_util(self):
        
-        #my.clear_naming()
+        #self.clear_naming()
         naming_util = NamingUtil()
         # these should evaluate to be the same
         file_naming_expr1 = ['{$PROJECT}__{context[0]}__hi_{$BASEFILE}.{$EXT}','{project.code}__{context[0]}__hi_{basefile}.{ext}']
@@ -236,7 +236,7 @@ class NamingTest(unittest.TestCase):
         virtual_snapshot.set_value("context", context)
         virtual_snapshot.set_value("snapshot_type", 'file')
 
-        virtual_snapshot.set_sobject(my.person)
+        virtual_snapshot.set_sobject(self.person)
         virtual_snapshot.set_value("version", version)
 
         file_name = "abc.txt"
@@ -244,16 +244,16 @@ class NamingTest(unittest.TestCase):
         file_obj.set_value("file_name", file_name)
         
         for naming_expr in file_naming_expr1:
-            file_name = naming_util.naming_to_file(naming_expr, my.person, virtual_snapshot, file=file_obj, file_type="main")
-            my.assertEquals(file_name,'unittest__light__hi_abc.txt')
+            file_name = naming_util.naming_to_file(naming_expr, self.person, virtual_snapshot, file=file_obj, file_type="main")
+            self.assertEquals(file_name,'unittest__light__hi_abc.txt')
 
         for naming_expr in dir_naming_expr2:
-            dir_name = naming_util.naming_to_dir(naming_expr, my.person, virtual_snapshot, file=file_obj, file_type="main")
-            my.assertEquals(dir_name,'unittest/special/somedir/Philip')
+            dir_name = naming_util.naming_to_dir(naming_expr, self.person, virtual_snapshot, file=file_obj, file_type="main")
+            self.assertEquals(dir_name,'unittest/special/somedir/Philip')
     
-    def _test_file_naming_manual_version(my):
+    def _test_file_naming_manual_version(self):
        
-        my.clear_naming()
+        self.clear_naming()
 
         naming = SearchType.create('config/naming')
         naming.set_value('search_type','unittest/person')
@@ -265,21 +265,21 @@ class NamingTest(unittest.TestCase):
         from pyasm.common import Environment
         base_dir = Environment.get_asset_dir()
         
-        preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what_v005.ma',ext='ma')
-        my.assertEquals('%s/unittest/cut/phil/phil_v001.ma'%base_dir, preallocated)
+        preallocated = self.snapshot.get_preallocated_path(file_type='maya', file_name='what_v005.ma',ext='ma')
+        self.assertEquals('%s/unittest/cut/phil/phil_v001.ma'%base_dir, preallocated)
 
         # now turn on manual_version
         naming.set_value('manual_version', True)
         naming.commit()
 
-        my.clear_naming()
-        preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what_v005.ma',ext='ma')
-        my.assertEquals('%s/unittest/cut/phil/phil_v005.ma'%base_dir, preallocated)
+        self.clear_naming()
+        preallocated = self.snapshot.get_preallocated_path(file_type='maya', file_name='what_v005.ma',ext='ma')
+        self.assertEquals('%s/unittest/cut/phil/phil_v005.ma'%base_dir, preallocated)
         
         # Uppercase V and more digits
-        preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what_V0010.ma',ext='ma')
-        my.assertEquals('%s/unittest/cut/phil/phil_v010.ma'%base_dir, preallocated)
-        #my.snapshot.commit()
+        preallocated = self.snapshot.get_preallocated_path(file_type='maya', file_name='what_V0010.ma',ext='ma')
+        self.assertEquals('%s/unittest/cut/phil/phil_v010.ma'%base_dir, preallocated)
+        #self.snapshot.commit()
 
         # zero or negative version is ignored
         # create a new manual version test.txt file
@@ -288,10 +288,10 @@ class NamingTest(unittest.TestCase):
             file = open(file_path, 'w')
             file.write("whatever")
             file.close()
-        checkin = FileCheckin(my.person, file_path, "main", context='naming_test')
+        checkin = FileCheckin(self.person, file_path, "main", context='naming_test')
         checkin.execute()
-        my.snapshot = checkin.get_snapshot()
-        my.assertEquals(11, my.snapshot.get_version())
+        self.snapshot = checkin.get_snapshot()
+        self.assertEquals(11, self.snapshot.get_version())
 
         # zero or negative version is ignored
         # create a new manual version test.txt file
@@ -300,27 +300,27 @@ class NamingTest(unittest.TestCase):
             file = open(file_path, 'w')
             file.write("whatever")
             file.close()
-        checkin = FileCheckin(my.person, file_path, "main", context='naming_test')
+        checkin = FileCheckin(self.person, file_path, "main", context='naming_test')
         checkin.execute()
-        my.snapshot = checkin.get_snapshot()
-        my.assertEquals(12, my.snapshot.get_version())
+        self.snapshot = checkin.get_snapshot()
+        self.assertEquals(12, self.snapshot.get_version())
         file_path = "./naming_v025_test.txt"
         for i in range(0,4):
             file = open(file_path, 'w')
             file.write("whatever")
             file.close()
-        checkin = FileCheckin(my.person, file_path, "main", context='naming_test')
+        checkin = FileCheckin(self.person, file_path, "main", context='naming_test')
         checkin.execute()
-        my.snapshot = checkin.get_snapshot()
-        my.assertEquals(25, my.snapshot.get_version())
+        self.snapshot = checkin.get_snapshot()
+        self.assertEquals(25, self.snapshot.get_version())
 
 
         naming.delete()
 
-        my.clear_naming()
+        self.clear_naming()
 
 
-    def _test_file_naming_base(my):
+    def _test_file_naming_base(self):
        
 
         naming = SearchType.create('config/naming')
@@ -330,52 +330,52 @@ class NamingTest(unittest.TestCase):
         naming.set_value('file_naming', '{sobject.code}_v{snapshot.version}_{basefile}.{ext}')
         naming.commit()
         
-        my.clear_naming()
+        self.clear_naming()
 
         # auto_snapshot is at v2
-        preallocated = my.auto_snapshot.get_preallocated_path(file_type='some_dir', file_name='racoon',ext=None)
+        preallocated = self.auto_snapshot.get_preallocated_path(file_type='some_dir', file_name='racoon',ext=None)
         from pyasm.common import Environment
         base_dir = Environment.get_asset_dir()
-        my.assertEquals('%s/unittest/cut/phil/phil_v002_racoon'%base_dir, preallocated)
+        self.assertEquals('%s/unittest/cut/phil/phil_v002_racoon'%base_dir, preallocated)
         
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon',ext=None)
-        my.assertEquals('%s/unittest/cut/phil/phil_v001_racoon'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon',ext=None)
+        self.assertEquals('%s/unittest/cut/phil/phil_v001_racoon'%base_dir, preallocated)
         
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon.jpg',ext='jpg')
-        my.assertEquals('%s/unittest/cut/phil/phil_v001_racoon.jpg'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon.jpg',ext='jpg')
+        self.assertEquals('%s/unittest/cut/phil/phil_v001_racoon.jpg'%base_dir, preallocated)
 
 
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon2.PNG')
-        my.assertEquals('%s/unittest/cut/phil/phil_v001_racoon2.PNG'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon2.PNG')
+        self.assertEquals('%s/unittest/cut/phil/phil_v001_racoon2.PNG'%base_dir, preallocated)
 
         
         # test file expression
         naming.set_value('file_naming', '{@GET(.code)}_v{@GET(snapshot.version)}_{$BASEFILE}.{$EXT}')
         naming.commit()
-        my.clear_naming()
+        self.clear_naming()
         
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon3.jpg',ext='jpg')
-        my.assertEquals('%s/unittest/cut/phil/phil_v1_racoon3.jpg'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon3.jpg',ext='jpg')
+        self.assertEquals('%s/unittest/cut/phil/phil_v1_racoon3.jpg'%base_dir, preallocated)
 
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon4.PNG')
-        my.assertEquals('%s/unittest/cut/phil/phil_v1_racoon4.PNG'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon4.PNG')
+        self.assertEquals('%s/unittest/cut/phil/phil_v1_racoon4.PNG'%base_dir, preallocated)
 
 
         # test dir expression
         naming.set_value('dir_naming', '{$PROJECT}/exp_cut/{@GET(.code)}')
         naming.commit()
-        my.clear_naming()
+        self.clear_naming()
 
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon same.iff',ext='iff')
-        my.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon same.iff'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon same.iff',ext='iff')
+        self.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon same.iff'%base_dir, preallocated)
 
         # file name clean-up is disabled in 4.2: the actual check-in logic would not replace " " with "_"
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon 5.PNG')
-        my.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon 5.PNG'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon 5.PNG')
+        self.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon 5.PNG'%base_dir, preallocated)
  
         # this one does not need clean-up
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon_5.PNG')
-        my.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon_5.PNG'%base_dir, preallocated)
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon_5.PNG')
+        self.assertEquals('%s/unittest/exp_cut/phil/phil_v1_racoon_5.PNG'%base_dir, preallocated)
 
 
         # test dir expression 2
@@ -383,20 +383,20 @@ class NamingTest(unittest.TestCase):
         naming.set_value('dir_naming', '{$PROJECT}/3D/QC/ShotWork/playblast/ByDate/{$TODAY,|([^\s]+)| }/{@GET(.name_first)}')
 
         naming.commit()
-        my.clear_naming()
+        self.clear_naming()
 
-        preallocated = my.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon same.iff',ext='iff')
+        preallocated = self.base_snapshot.get_preallocated_path(file_type='pic', file_name='racoon same.iff',ext='iff')
 
         today = datetime.datetime.today()
         today = datetime.datetime(today.year, today.month, today.day)
         today = today.strftime("%Y-%m-%d")
-        my.assertEquals('%s/unittest/3D/QC/ShotWork/playblast/ByDate/%s/Philip/phil_v1_racoon same.iff'%(base_dir, today), preallocated)
+        self.assertEquals('%s/unittest/3D/QC/ShotWork/playblast/ByDate/%s/Philip/phil_v1_racoon same.iff'%(base_dir, today), preallocated)
 
         naming.delete()
 
-        my.clear_naming()
+        self.clear_naming()
 
-    def _test_file_naming(my):
+    def _test_file_naming(self):
         process = 'model'
         type = 'main'
         context = 'modeling'
@@ -432,7 +432,7 @@ class NamingTest(unittest.TestCase):
 
         expected_file_name = 'vehicle001_%s_v%0.3d.jpg' %(context,version)
         file_name = file_naming.get_file_name()
-        my.assertEquals(expected_file_name, file_name)
+        self.assertEquals(expected_file_name, file_name)
 
 
         # try a default directory name
@@ -444,7 +444,7 @@ class NamingTest(unittest.TestCase):
         # this should adopt the original dir name in the prefix
         expected_file_name = 'test_dir_%s_v%0.3d' %(context,version)
         file_name = file_naming.get_default()
-        my.assertEquals(expected_file_name, file_name)
+        self.assertEquals(expected_file_name, file_name)
 
         #2 try a different search_type unittest/person
         version = 9
@@ -455,53 +455,53 @@ class NamingTest(unittest.TestCase):
         file_obj.set_value('file_name','some_maya_model.ma') 
         
         # use a real snapshot
-        virtual_snapshot.set_sobject(my.person)
+        virtual_snapshot.set_sobject(self.person)
         virtual_snapshot.set_value("version", version)
         
         # change to the test file naming class
-        my.sobj.set_value('file_naming_cls', 'pyasm.biz.naming_test.TestFileNaming')
-        my.sobj.commit()
+        self.sobj.set_value('file_naming_cls', 'pyasm.biz.naming_test.TestFileNaming')
+        self.sobj.commit()
         Project.set_project('unittest')
         file_naming = Project.get_file_naming()
-        file_naming.set_sobject(my.person)
+        file_naming.set_sobject(self.person)
         file_naming.set_snapshot(virtual_snapshot)
         file_naming.set_file_object(file_obj)
         file_name = file_naming.get_file_name()
 
         expected_file_name = 'phil_main_v009.ma'
-        my.assertEquals(expected_file_name, file_name)
+        self.assertEquals(expected_file_name, file_name)
 
         # get_preallocated_path
         type = 'ma'
         #file_obj.set_value('type', type)
         #file_naming.set_file_object(file_obj)
 
-        preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what.ma',ext='ma')
+        preallocated = self.snapshot.get_preallocated_path(file_type='maya', file_name='what.ma',ext='ma')
         preallocated_file_name = os.path.basename(preallocated)
-        my.assertEquals("phil_main_v001.ma", preallocated_file_name)
+        self.assertEquals("phil_main_v001.ma", preallocated_file_name)
 
-        preallocated = my.snapshot.get_preallocated_path(file_type='houdini', file_name='what.otl',ext='otl')
+        preallocated = self.snapshot.get_preallocated_path(file_type='houdini', file_name='what.otl',ext='otl')
         preallocated_file_name = os.path.basename(preallocated)
-        my.assertEquals("phil_main_v001.otl", preallocated_file_name)
+        self.assertEquals("phil_main_v001.otl", preallocated_file_name)
 
-        preallocated = my.snapshot.get_preallocated_path(file_type='houdini', file_name='what_is.otl', ext='hipnc')
+        preallocated = self.snapshot.get_preallocated_path(file_type='houdini', file_name='what_is.otl', ext='hipnc')
         preallocated_file_name = os.path.basename(preallocated)
-        my.assertEquals("phil_main_v001.hipnc", preallocated_file_name)
+        self.assertEquals("phil_main_v001.hipnc", preallocated_file_name)
 
 
         # try an empty file naming
         # change to the test file naming class
-        my.sobj.set_value('file_naming_cls', 'pyasm.biz.naming_test.TestFileNaming2')
-        my.sobj.commit()
+        self.sobj.set_value('file_naming_cls', 'pyasm.biz.naming_test.TestFileNaming2')
+        self.sobj.commit()
 
         Project.set_project('unittest')
         file_naming = Project.get_file_naming()
-        file_naming.set_sobject(my.person)
+        file_naming.set_sobject(self.person)
         file_naming.set_snapshot(virtual_snapshot)
         file_naming.set_file_object(file_obj)
         file_name = file_naming.get_file_name()
        
-        preallocated = my.snapshot.get_preallocated_path(file_type='houdini', file_name='what_is.otl', ext='hipnc')
+        preallocated = self.snapshot.get_preallocated_path(file_type='houdini', file_name='what_is.otl', ext='hipnc')
 
         if not os.path.exists(preallocated):
             os.makedirs(preallocated)
@@ -510,31 +510,31 @@ class NamingTest(unittest.TestCase):
         client = TacticServerStub.get()
         
         if os.path.isdir(preallocated):
-            rtn = client.add_directory(my.snapshot.get_code(), preallocated, 'houdini', mode='preallocate')
+            rtn = client.add_directory(self.snapshot.get_code(), preallocated, 'houdini', mode='preallocate')
         else:
-            rtn = client.add_file(my.snapshot.get_code(), preallocated, 'houdini', mode='preallocate')
-        rtn = client.get_snapshot(SearchKey.get_by_sobject(my.snapshot.get_parent()), context = 'naming_test', version = 1, include_files=True)
+            rtn = client.add_file(self.snapshot.get_code(), preallocated, 'houdini', mode='preallocate')
+        rtn = client.get_snapshot(SearchKey.get_by_sobject(self.snapshot.get_parent()), context = 'naming_test', version = 1, include_files=True)
         files =  rtn.get('__files__')
         
         # assuming the file is ordered by code
         # the 1st file obj is a file and 2nd file obj is a directory
         for idx, file in enumerate(files):
             if idx ==0:
-                my.assertEquals(file.get('type'), 'main')
-                my.assertEquals(file.get('base_type'), 'file')
-                my.assertEquals(file.get('file_name'), 'naming_test_naming_test_v001.txt')
+                self.assertEquals(file.get('type'), 'main')
+                self.assertEquals(file.get('base_type'), 'file')
+                self.assertEquals(file.get('file_name'), 'naming_test_naming_test_v001.txt')
                 
             elif idx ==1:
-                my.assertEquals(file.get('type'), 'houdini')
-                my.assertEquals(file.get('base_type'), 'directory')
-                my.assertEquals(file.get('md5'), '')
-                my.assertEquals(file.get('file_name'), '')
+                self.assertEquals(file.get('type'), 'houdini')
+                self.assertEquals(file.get('base_type'), 'directory')
+                self.assertEquals(file.get('md5'), '')
+                self.assertEquals(file.get('file_name'), '')
 
-    def _test_dir_naming(my):
+    def _test_dir_naming(self):
 
         # change to the test dir naming class
-        my.sobj.set_value('dir_naming_cls', 'pyasm.biz.naming_test.TestDirNaming')
-        my.sobj.commit()
+        self.sobj.set_value('dir_naming_cls', 'pyasm.biz.naming_test.TestDirNaming')
+        self.sobj.commit()
 
         # 1. try a different search_type unittest/person
         version = 9
@@ -581,7 +581,7 @@ class NamingTest(unittest.TestCase):
         dir_name = dir_naming.get_dir()
         expected_dir_name = '/assets/phil2/mb.main/v009'
         expected_dir_name2 = '/phil2/mb.main/v009'
-        my.assertEquals(expected_dir_name, dir_name)
+        self.assertEquals(expected_dir_name, dir_name)
         
         lib_paths = virtual_snapshot.get_all_lib_paths()
         sand_paths = virtual_snapshot.get_all_lib_paths(mode='sandbox')
@@ -592,26 +592,26 @@ class NamingTest(unittest.TestCase):
         client_base_dir = dir_naming.get_base_dir(protocol='client_repo')
        
 
-        my.assertEquals(lib_paths[0].startswith('%s%s'%(base_dir, expected_dir_name2)), True)
-        my.assertEquals(sand_paths[0].startswith('%s%s'%(sand_base_dir[0], expected_dir_name2)), True)
-        my.assertEquals(client_paths[0].startswith('%s%s'%(client_base_dir[0], expected_dir_name2)), True)
+        self.assertEquals(lib_paths[0].startswith('%s%s'%(base_dir, expected_dir_name2)), True)
+        self.assertEquals(sand_paths[0].startswith('%s%s'%(sand_base_dir[0], expected_dir_name2)), True)
+        self.assertEquals(client_paths[0].startswith('%s%s'%(client_base_dir[0], expected_dir_name2)), True)
 
         # 2  get_preallocated_path
         # set version 1 here since it's the first snapshot for this sobject. 
         # without a virtual file_object, the file_name is empty, and so the dir ma.maya is now .maya
-        my.assertEquals("phil/.maya/v001", my.get_preallocated_dir()) 
+        self.assertEquals("phil/.maya/v001", self.get_preallocated_dir()) 
         
         # switch back to regular file naming
-        my.sobj.set_value('file_naming_cls', 'pyasm.biz.naming_test.TestFileNaming')
-        my.sobj.commit()
+        self.sobj.set_value('file_naming_cls', 'pyasm.biz.naming_test.TestFileNaming')
+        self.sobj.commit()
 
-        my.assertEquals("phil/ma.maya/v001", my.get_preallocated_dir()) 
+        self.assertEquals("phil/ma.maya/v001", self.get_preallocated_dir()) 
         
 
 
 
-    def get_preallocated_dir(my):
-        preallocated = my.snapshot.get_preallocated_path(file_type='maya', file_name='what.ma',ext='ma')
+    def get_preallocated_dir(self):
+        preallocated = self.snapshot.get_preallocated_path(file_type='maya', file_name='what.ma',ext='ma')
         preallocated_dir_name = os.path.dirname(preallocated)
         preallocated_dir_name = preallocated_dir_name.replace('%s/' %Environment.get_asset_dir(), '')
         # remove the base part
@@ -624,7 +624,7 @@ class NamingTest(unittest.TestCase):
 
 
 
-    def _test_get_naming(my):
+    def _test_get_naming(self):
      
         # versionless
         naming = SearchType.create('config/naming')
@@ -744,7 +744,7 @@ class NamingTest(unittest.TestCase):
             message = 'sandbox_dir_name should not end with /'
         else:
             message = 'Pass'
-        my.assertEquals(message, 'sandbox_dir_name should not end with /')
+        self.assertEquals(message, 'sandbox_dir_name should not end with /')
 
         naming7 = SearchType.create('config/naming')
         naming7.set_value('dir_naming', '{$PROJECT}/{@GET(.id)}/')
@@ -754,7 +754,7 @@ class NamingTest(unittest.TestCase):
             message = 'dir_name should not end with /'
         else:
             message = 'Pass'
-        my.assertEquals(message, 'dir_name should not end with /')
+        self.assertEquals(message, 'dir_name should not end with /')
 
         naming8 = SearchType.create('config/naming')
         naming8.set_value('sandbox_dir_naming', '{$PROJECT}/{@GET(.id)}')
@@ -764,7 +764,7 @@ class NamingTest(unittest.TestCase):
             message = 'sandbox_dir_name should not end with /'
         else:
             message = 'Pass'
-        my.assertEquals(message, 'Pass')
+        self.assertEquals(message, 'Pass')
         
         process= 'lgt'
         context = 'light'
@@ -813,162 +813,162 @@ class NamingTest(unittest.TestCase):
         Container.put("Naming:cache:current", None)
         Container.put("Naming:namings", None)
         name = Naming.get(sobject, virtual_snapshot)
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/{sobject.code}')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/{sobject.code}')
 
         virtual_snapshot.set_value('context', 'light/sub2')
         name = Naming.get(sobject, virtual_snapshot)
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/light')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/light')
         
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         virtual_snapshot.set_value('context', 'asset/light')
         name = Naming.get(sobject, virtual_snapshot)
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/cut')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/cut')
         has = Naming.has_versionless(sobject, virtual_snapshot)
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         virtual_snapshot.set_value('context', 'model/sub1')
         name = Naming.get(sobject, virtual_snapshot)
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/sub')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/sub')
         has = Naming.has_versionless(sobject, virtual_snapshot)
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         virtual_snapshot.set_value('context', 'light/sub1')
         name = Naming.get(sobject, virtual_snapshot)
 
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/light/sub1')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/light/sub1')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         virtual_snapshot.set_value('context', 'unknown')
         name = Naming.get(sobject, virtual_snapshot)
         # should get the generic with snapshot_type, search_type in this case
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/generic_snapshot/{sobject.code}')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/generic_snapshot/{sobject.code}')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
 
         virtual_snapshot.set_value('context', 'icon')
         name = Naming.get(sobject, virtual_snapshot)
         # should get the chip_ICON in this case
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/chip_ICON/{sobject.code}')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/chip_ICON/{sobject.code}')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
         
         sobject.set_value('name_first', 'peter')
         sobject.commit()
         name = Naming.get(sobject, virtual_snapshot)
         # should get the basic ICON in this case
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/ICON/{sobject.code}')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/ICON/{sobject.code}')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         virtual_snapshot.set_value('snapshot_type', 'custom')
         virtual_snapshot.set_value('context', 'custom')
         name = Naming.get(sobject, virtual_snapshot)
         # should get the ultimate generic in this case
-        my.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/generic/{sobject.code}')
+        self.assertEquals(name.get_value('dir_naming'), '{project.code}/cut/generic/{sobject.code}')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         virtual_snapshot.set_value('snapshot_type', 'file')
         virtual_snapshot.set_value('context', 'super')
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='latest')
-        my.assertEquals(has, True)
+        self.assertEquals(has, True)
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='current')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
     
         has = Naming.has_versionless(sobject2, virtual_snapshot2, versionless='latest')
-        my.assertEquals(has, True)
+        self.assertEquals(has, True)
      
 
         naming_sobj = Naming.get(sobject2, virtual_snapshot2, versionless='latest', mode='check')
-        my.assertEquals(naming_sobj.get_value('dir_naming'), \
+        self.assertEquals(naming_sobj.get_value('dir_naming'), \
             "{project.code}/cut/{snapshot.context}/VERSIONLESS/{sobject.code}")
 
         naming_sobj = Naming.get(sobject2, virtual_versionless_snapshot, mode='find')
-        my.assertEquals(naming_sobj.get_value('dir_naming'), \
+        self.assertEquals(naming_sobj.get_value('dir_naming'), \
             "{project.code}/cut/{snapshot.context}/VERSIONLESS/{sobject.code}")
 
         has = Naming.has_versionless(sobject2, virtual_snapshot2, versionless='current')
-        my.assertEquals(has, False)
+        self.assertEquals(has, False)
 
         naming_sobj = Naming.get(sobject2, virtual_snapshot2, versionless='', mode='find')
-        my.assertEquals(naming_sobj.get_value('dir_naming'), \
+        self.assertEquals(naming_sobj.get_value('dir_naming'), \
             "{project.code}/cut/{snapshot.context}/DEFAULT/{sobject.code}")
 
 
         # this is always true in theory when versionless is empty, but the source code doesn't make use of this mode
         has = Naming.has_versionless(sobject, virtual_snapshot, versionless='')
-        my.assertEquals(has, True)
+        self.assertEquals(has, True)
    
-    def _test_checkin_type(my):
-        my.assertEquals(my.auto_snapshot.get_version(), 2)
-        dir_name = my.auto_snapshot.get_file_name_by_type('main')
-        my.assertEquals(dir_name , 'naming_test_folder_naming_base_test_v002')
+    def _test_checkin_type(self):
+        self.assertEquals(self.auto_snapshot.get_version(), 2)
+        dir_name = self.auto_snapshot.get_file_name_by_type('main')
+        self.assertEquals(dir_name , 'naming_test_folder_naming_base_test_v002')
         
-        dir_name = my.auto_snapshot2.get_file_name_by_type('main')
+        dir_name = self.auto_snapshot2.get_file_name_by_type('main')
 
-        my.assertEquals(1, my.auto_snapshot2.get_version())
-        my.assertEquals(dir_name , '.tactic_test_naming_folder_test_v001')
+        self.assertEquals(1, self.auto_snapshot2.get_version())
+        self.assertEquals(dir_name , '.tactic_test_naming_folder_test_v001')
 
-        dir_name = my.auto_snapshot3.get_file_name_by_type('main')
+        dir_name = self.auto_snapshot3.get_file_name_by_type('main')
         # this takes the auto generated name
-        my.assertEquals(dir_name , 'naming_test_folder3_naming_base_test_v003')
+        self.assertEquals(dir_name , 'naming_test_folder3_naming_base_test_v003')
 
 
         # this one would take into account of the new naming entry introduced in _test_get_naming
         # test a blank checkin_type
         dir_path4 = "./naming_test_folder4"
-        checkin = FileCheckin(my.person, dir_path4, "main", context='naming_base_test', snapshot_type='directory', checkin_type='', mode='copy')
+        checkin = FileCheckin(self.person, dir_path4, "main", context='naming_base_test', snapshot_type='directory', checkin_type='', mode='copy')
         checkin.execute()
-        my.auto_snapshot4 = checkin.get_snapshot()
-        dir_name = my.auto_snapshot4.get_file_name_by_type('main')
-        lib_dir = my.auto_snapshot4.get_dir('relative')
-        my.assertEquals(dir_name , 'generic_phil_v004')
-        my.assertEquals(lib_dir , 'unittest/cut/generic/phil')
-        snapshot_xml = my.auto_snapshot4.get_xml_value('snapshot')
+        self.auto_snapshot4 = checkin.get_snapshot()
+        dir_name = self.auto_snapshot4.get_file_name_by_type('main')
+        lib_dir = self.auto_snapshot4.get_dir('relative')
+        self.assertEquals(dir_name , 'generic_phil_v004')
+        self.assertEquals(lib_dir , 'unittest/cut/generic/phil')
+        snapshot_xml = self.auto_snapshot4.get_xml_value('snapshot')
         checkin_type = snapshot_xml.get_nodes_attr('/snapshot','checkin_type')
         # un-specified checkin_type with a matching naming will default to "strict"
-        my.assertEquals('strict', checkin_type[0])
+        self.assertEquals('strict', checkin_type[0])
 
         # this should pick the auto checkin_type naming convention with the _OO at the end of context
-        checkin = FileCheckin(my.person, dir_path4, "main", context='naming_base_test_OO', snapshot_type='directory', checkin_type='', mode='copy')
+        checkin = FileCheckin(self.person, dir_path4, "main", context='naming_base_test_OO', snapshot_type='directory', checkin_type='', mode='copy')
         checkin.execute()
-        my.auto_snapshot4 = checkin.get_snapshot()
-        dir_name = my.auto_snapshot4.get_file_name_by_type('main')
-        lib_dir = my.auto_snapshot4.get_dir('relative')
-        my.assertEquals(dir_name , 'generic_phil_v001')
-        my.assertEquals(lib_dir , 'unittest/cut/generic/phil')
-        snapshot_xml = my.auto_snapshot4.get_xml_value('snapshot')
+        self.auto_snapshot4 = checkin.get_snapshot()
+        dir_name = self.auto_snapshot4.get_file_name_by_type('main')
+        lib_dir = self.auto_snapshot4.get_dir('relative')
+        self.assertEquals(dir_name , 'generic_phil_v001')
+        self.assertEquals(lib_dir , 'unittest/cut/generic/phil')
+        snapshot_xml = self.auto_snapshot4.get_xml_value('snapshot')
         checkin_type = snapshot_xml.get_nodes_attr('/snapshot','checkin_type')
         # un-specified checkin_type with a matching naming will default to "strict"
-        my.assertEquals('auto', checkin_type[0])
+        self.assertEquals('auto', checkin_type[0])
 
 
         dir_path4 = "./naming_test_folder4"
-        checkin = FileCheckin(my.person, dir_path4, "main", context='naming_base_test', snapshot_type='directory', checkin_type='auto')
+        checkin = FileCheckin(self.person, dir_path4, "main", context='naming_base_test', snapshot_type='directory', checkin_type='auto')
         checkin.execute()
-        my.auto_snapshot5 = checkin.get_snapshot()
-        snapshot_xml = my.auto_snapshot5.get_xml_value('snapshot')
+        self.auto_snapshot5 = checkin.get_snapshot()
+        snapshot_xml = self.auto_snapshot5.get_xml_value('snapshot')
         checkin_type = snapshot_xml.get_nodes_attr('/snapshot','checkin_type')
         
-        dir_name = my.auto_snapshot5.get_file_name_by_type('main')
-        lib_dir = my.auto_snapshot5.get_dir('relative')
-        my.assertEquals(dir_name , 'generic_phil_v005')
-        my.assertEquals(lib_dir , 'unittest/cut/generic/phil')
-        my.assertEquals('auto', checkin_type[0])
+        dir_name = self.auto_snapshot5.get_file_name_by_type('main')
+        lib_dir = self.auto_snapshot5.get_dir('relative')
+        self.assertEquals(dir_name , 'generic_phil_v005')
+        self.assertEquals(lib_dir , 'unittest/cut/generic/phil')
+        self.assertEquals('auto', checkin_type[0])
 
-        versionless = Snapshot.get_versionless(my.auto_snapshot5.get_value('search_type'), my.auto_snapshot5.get_value('search_id'), 'naming_base_test', mode='latest', create=False)
+        versionless = Snapshot.get_versionless(self.auto_snapshot5.get_value('search_type'), self.auto_snapshot5.get_value('search_id'), 'naming_base_test', mode='latest', create=False)
 
         dir_name = versionless.get_file_name_by_type('main')
         lib_dir = versionless.get_dir('relative')
-        my.assertEquals(dir_name , 'generic_phil')
-        my.assertEquals(lib_dir , 'unittest/cut/generic/phil')
+        self.assertEquals(dir_name , 'generic_phil')
+        self.assertEquals(lib_dir , 'unittest/cut/generic/phil')
         path = versionless.get_lib_path_by_type()
 
 

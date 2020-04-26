@@ -19,24 +19,24 @@ from common import *
 
 class Introspect(object):
 
-    def __init__(my):
-        my.info = TacticInfo.get()
-        my.app = my.info.get_app()
-        my.impl = my.info.get_app_implementation()
-        my.mode = "all"
+    def __init__(self):
+        self.info = TacticInfo.get()
+        self.app = self.info.get_app()
+        self.impl = self.info.get_app_implementation()
+        self.mode = "all"
 
-    def set_mode(my, mode):
-        my.mode = mode
+    def set_mode(self, mode):
+        self.mode = mode
 
-    def execute(my):
+    def execute(self):
 
         node_names = []
 
         # find out which nodes are of interest
-        if my.mode == "select":
-            top_nodes = my.app.get_selected_top_nodes()
+        if self.mode == "select":
+            top_nodes = self.app.get_selected_top_nodes()
         else:
-            top_nodes = my.app.get_top_nodes()
+            top_nodes = self.app.get_top_nodes()
 
 
         # go through each top level node
@@ -45,13 +45,13 @@ class Introspect(object):
                 continue
             node_names.append(top_node)
 
-        set_names = my.app.get_sets()
+        set_names = self.app.get_sets()
         node_names.extend( set_names )
 
         # sort the node_names
         node_names.sort()
 
-        user = my.info.get_user()
+        user = self.info.get_user()
 
 
         # get the pid of this process
@@ -64,31 +64,31 @@ class Introspect(object):
 
 
         # get the name of the file
-        file_path = my.app.get_file_path()
+        file_path = self.app.get_file_path()
         file_node = doc.createElement("file")
         file_node.setAttribute("name", os.path.basename(file_path))
         file_node.setAttribute("dir", os.path.dirname(file_path))
         root.appendChild(file_node)
 
         project_node = doc.createElement("project")
-        project_node.setAttribute("dir", my.app.get_project() )
+        project_node.setAttribute("dir", self.app.get_project() )
         root.appendChild(project_node)
 
         # max it drill down is 4 levels to discover tactic node
-        my.process_nodes(doc, node_names, level=4)
+        self.process_nodes(doc, node_names, level=4)
 
 
         # add namespace info
-        if my.app.name == "maya":
+        if self.app.name == "maya":
             
-            cur_namespace = my.app.get_namespace_info('-cur')
+            cur_namespace = self.app.get_namespace_info('-cur')
             xml_node = doc.createElement("namespace")
             xml_node.setAttribute("name", cur_namespace)
             xml_node.setAttribute("current", "true")
             root.appendChild(xml_node)
 
 
-            namespaces = my.app.get_namespace_info()
+            namespaces = self.app.get_namespace_info()
             if namespaces:
                 for namespace in namespaces:
                     xml_node = doc.createElement("namespace")
@@ -100,13 +100,13 @@ class Introspect(object):
         xml = doc.toprettyxml()
 
         # inform the server of the information of this session
-        server = my.info.get_xmlrpc_server()
-        ticket = my.info.get_ticket()
-        project_code = my.info.get_project_code()
+        server = self.info.get_xmlrpc_server()
+        ticket = self.info.get_ticket()
+        project_code = self.info.get_project_code()
         server.update_session(ticket, project_code, user, pid, xml)
 
 
-    def process_nodes(my, doc, node_names, is_top_node=True, level=0):
+    def process_nodes(self, doc, node_names, is_top_node=True, level=0):
         if level < 0:
             return
         
@@ -115,7 +115,7 @@ class Introspect(object):
             #last_ns = ''
             xml_node = doc.createElement("node")
             root.appendChild(xml_node)
-            my.process_node(doc, xml_node, node_name, is_top_node, level)
+            self.process_node(doc, xml_node, node_name, is_top_node, level)
 
             # get all of the tactic sub references.
             # 
@@ -138,18 +138,18 @@ class Introspect(object):
             #
             find_sub_refs = True
             if find_sub_refs:
-                sub_refs = my.app.get_reference_nodes(node_name, recursive=True)
+                sub_refs = self.app.get_reference_nodes(node_name, recursive=True)
                 for sub_ref in sub_refs:
                     sub_node = doc.createElement("ref")
-                    my.process_node(doc, sub_node, sub_ref, is_top_node=False, level=None)
+                    self.process_node(doc, sub_node, sub_ref, is_top_node=False, level=None)
                     xml_node.appendChild(sub_node)
                     '''
-                    node_naming2 = my.app.get_node_naming(sub_ref)
+                    node_naming2 = self.app.get_node_naming(sub_ref)
                     instance2 = node_naming2.get_instance()
 
-                    sub_path = my.app.get_reference_path(sub_ref)
-                    sub_asset_snapshot_code = my.impl.get_snapshot_code(sub_ref,"asset")
-                    sub_anim_snapshot_code = my.impl.get_snapshot_code(sub_ref,"anim")
+                    sub_path = self.app.get_reference_path(sub_ref)
+                    sub_asset_snapshot_code = self.impl.get_snapshot_code(sub_ref,"asset")
+                    sub_anim_snapshot_code = self.impl.get_snapshot_code(sub_ref,"anim")
 
                     sub_node = doc.createElement("ref")
                     sub_node.setAttribute("asset_snapshot_code", sub_asset_snapshot_code)
@@ -164,9 +164,9 @@ class Introspect(object):
 
 
 
-    def process_node(my, doc, xml_node, node_name, is_top_node=True, level=0):
+    def process_node(self, doc, xml_node, node_name, is_top_node=True, level=0):
         # find out if this is a reference
-        is_reference = my.app.is_reference(node_name)
+        is_reference = self.app.is_reference(node_name)
         if is_reference:
             xml_node.setAttribute("reference", "true")
         else:
@@ -181,24 +181,24 @@ class Introspect(object):
         # non tactic nodes
         '''
         if is_reference:
-            node_naming = my.app.get_node_naming(node_name)
+            node_naming = self.app.get_node_naming(node_name)
             last_ns = node_naming.get_namespace()
             # when a node is referenced in, we should ignore that namespace
             plain_node_name = node_name.replace('%s:'%last_ns, '')
         '''
         # check if it is a tactic node
-        if my.app.is_tactic_node(node_name):
+        if self.app.is_tactic_node(node_name):
             xml_node.setAttribute("tactic_node", "true")
         else:
             xml_node.setAttribute("tactic_node", "false")
             
             # check its children until it hits a node with namespace
-            if ':' not in plain_node_name and not my.app.is_set(plain_node_name):
-                children = my.app.get_children(node_name)
+            if ':' not in plain_node_name and not self.app.is_set(plain_node_name):
+                children = self.app.get_children(node_name)
                 if children:
                     if level != None:
                         level -= 1
-                    my.process_nodes(doc, children, is_top_node=False, level=level)
+                    self.process_nodes(doc, children, is_top_node=False, level=level)
 
                 # all children non tactic nodes are not recorded
                 # NOTE: this is critical so as not to blow up the server
@@ -207,11 +207,11 @@ class Introspect(object):
                     return
                
 
-        type = my.app.get_node_type(node_name)
+        type = self.app.get_node_type(node_name)
         if not type:
             raise Exception("Type for node '%s' is None" % node_name)
         xml_node.setAttribute("type", type)
-        node_naming = my.app.get_node_naming(node_name)
+        node_naming = self.app.get_node_naming(node_name)
         asset_code =  node_naming.get_asset_code()
         namespace = node_naming.get_instance()
 
@@ -229,12 +229,12 @@ class Introspect(object):
             snapshot_asset_code = ''
             # special case for set
             if snapshot_type == 'set':
-                snapshot_asset_code = my.impl.get_snapshot_attr(node_name, \
+                snapshot_asset_code = self.impl.get_snapshot_attr(node_name, \
                 snapshot_type, "asset_code")
 
             # override the instance name for anim snapshots
             #if snapshot_type == 'anim':
-            instance = my.impl.get_snapshot_attr(node_name, \
+            instance = self.impl.get_snapshot_attr(node_name, \
                 snapshot_type, "instance")
             if instance:
                 xml_node.setAttribute("instance", instance )
@@ -243,14 +243,14 @@ class Introspect(object):
                 xml_node.setAttribute("instance", namespace )
 
                 
-            snapshot_code = my.impl.get_snapshot_code(node_name, \
+            snapshot_code = self.impl.get_snapshot_code(node_name, \
                 snapshot_type)
             
-            snapshot_version = my.impl.get_snapshot_attr(node_name, \
+            snapshot_version = self.impl.get_snapshot_attr(node_name, \
                 snapshot_type, "version")
-            snapshot_context = my.impl.get_snapshot_attr(node_name, \
+            snapshot_context = self.impl.get_snapshot_attr(node_name, \
                 snapshot_type, "context")
-            snapshot_revision = my.impl.get_snapshot_attr(node_name, \
+            snapshot_revision = self.impl.get_snapshot_attr(node_name, \
                 snapshot_type, "revision")
 
             if snapshot_asset_code:

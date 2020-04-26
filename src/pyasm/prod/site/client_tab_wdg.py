@@ -25,19 +25,19 @@ class ClientTabWdg(BaseTabWdg):
     TAB_KEY = "client_tab"
     CLIENT_TAB = "Review"
 
-    def init(my):
-        my.setup_tab(my.TAB_KEY, css=TabWdg.SMALL)
+    def init(self):
+        self.setup_tab(self.TAB_KEY, css=TabWdg.SMALL)
 
-    def handle_tab(my, tab):
-        tab.add(my.get_client_wdg, my.CLIENT_TAB)
+    def handle_tab(self, tab):
+        tab.add(self.get_client_wdg, self.CLIENT_TAB)
 
-    def _get_aux_data(my, sobjs):
+    def _get_aux_data(self, sobjs):
         info = SubmissionInfo(sobjs)
         aux_data = info.get_info()
         return aux_data 
 
 
-    def get_client_wdg(my):
+    def get_client_wdg(self):
 
         widget = Widget()
     
@@ -92,7 +92,7 @@ class ClientTabWdg(BaseTabWdg):
         search.add_order_by('timestamp desc')
 
         all_sobjs = search.get_sobjects()
-        all_aux_data = my._get_aux_data(all_sobjs)
+        all_aux_data = self._get_aux_data(all_sobjs)
 
         status_filter_value = status_filter.get_value()
         if status_filter_value:
@@ -118,7 +118,7 @@ class ClientTabWdg(BaseTabWdg):
         table.set_sobjects(sobjs)
 
      
-        aux_data = my._get_aux_data(sobjs)
+        aux_data = self._get_aux_data(sobjs)
         table.set_aux_data(aux_data)
         widget.add(nav)
         
@@ -133,7 +133,7 @@ class ClientTabWdg(BaseTabWdg):
 
 
 
-    def get_undo_wdg(my):
+    def get_undo_wdg(self):
         widget = UndoLogWdg()
         return widget
 

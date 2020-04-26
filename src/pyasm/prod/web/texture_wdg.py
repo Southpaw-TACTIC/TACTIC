@@ -30,7 +30,7 @@ class TextureSourceElementWdg(BaseTableElementWdg):
     '''display the source information about textures.
         This class is shared by both Texture and Texture Source Tab'''
 
-    def is_source(my, sobject):
+    def is_source(self, sobject):
         if isinstance(sobject, TextureSource):
             return True
         else:
@@ -38,12 +38,12 @@ class TextureSourceElementWdg(BaseTableElementWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        if my.is_source(sobject):
-            widget = my.get_add_textures_wdg()
+        if self.is_source(sobject):
+            widget = self.get_add_textures_wdg()
             return widget
 
         # get the latest snapshot
@@ -55,7 +55,7 @@ class TextureSourceElementWdg(BaseTableElementWdg):
         nodes = xml.get_nodes("snapshot/ref")
         if not nodes:
             widget = Widget()
-            icon = my.get_add_source_wdg()
+            icon = self.get_add_source_wdg()
             widget.add(icon)
             widget.add("No Source")
             return widget
@@ -64,13 +64,13 @@ class TextureSourceElementWdg(BaseTableElementWdg):
         #node = nodes[0]
         widget = Widget()
         for node in nodes:
-            widget.add(my.get_source_link(node))
+            widget.add(self.get_source_link(node))
             widget.add(HtmlElement.br())
             
         
         return widget
 
-    def get_source_link(my, node):
+    def get_source_link(self, node):
         search_type = Xml.get_attribute(node, "search_type")
         search_id = Xml.get_attribute(node, "search_id")
         context = Xml.get_attribute(node, "context")
@@ -97,8 +97,8 @@ class TextureSourceElementWdg(BaseTableElementWdg):
         
 
 
-    def get_add_textures_wdg(my):
-        sobject = my.get_current_sobject()
+    def get_add_textures_wdg(self):
+        sobject = self.get_current_sobject()
 
         widget = Widget()
 
@@ -165,9 +165,9 @@ class TextureSourceElementWdg(BaseTableElementWdg):
 
 
 
-    def get_add_source_wdg(my):
+    def get_add_source_wdg(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
 
@@ -196,26 +196,26 @@ class TextureSourceElementWdg(BaseTableElementWdg):
 class TextureAddSourceWdg(Widget):
     '''The entire widget for adding a source to the texture'''
 
-    def init(my):
+    def init(self):
         search = Search("prod/texture")
         search.add_filter("category", "source")
         table = TableWdg("prod/texture", "source")
         table.set_search(search)
-        my.add(table)
+        self.add(table)
 
 
 
 class TextureAddTexturesWdg(Widget):
     '''The entire widget for adding a source to the texture'''
 
-    def is_error_free(my, web):
+    def is_error_free(self, web):
         ''' if it is instructed to close and is error-free , return True'''
         if web.get_form_value('add'):
             return True
 
         return False
 
-    def get_sobject(my):
+    def get_sobject(self):
 
         web = WebContainer.get_web()
 
@@ -235,9 +235,9 @@ class TextureAddTexturesWdg(Widget):
         return None
 
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
-        if my.is_error_free(web):
+        if self.is_error_free(web):
             event_container = WebContainer.get_event_container()
             refresh_script = "window.parent.%s" % event_container.get_refresh_caller()
 
@@ -248,12 +248,12 @@ class TextureAddTexturesWdg(Widget):
             %s
             %s
             ''' % (off_script, refresh_script) )
-            my.add(script)
+            self.add(script)
             return
 
         widget = Widget()
 
-        sobject = my.get_sobject()
+        sobject = self.get_sobject()
         search_type = sobject.get_search_type()
         table = TableWdg(search_type, "source")
         table.remove_widget("select")
@@ -273,7 +273,7 @@ class TextureAddTexturesWdg(Widget):
         table.set_search(search)
         widget.add(div)
         widget.add(table)
-        my.add(widget)
+        self.add(widget)
 
 
 
@@ -281,14 +281,14 @@ class TextureAddTexturesWdg(Widget):
 class TextureAddSourceElementWdg(BaseTableElementWdg):
     '''The table element that adds a specific source'''
 
-    def get_title(my):
+    def get_title(self):
         WebContainer.register_cmd("pyasm.prod.web.TextureAddSourceCmd")
-        add_button = SubmitWdg(my.name)
+        add_button = SubmitWdg(self.name)
         return add_button
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_key = sobject.get_search_key()
 
         checkbox = CheckboxWdg("selected")
@@ -301,10 +301,10 @@ class TextureAddSourceElementWdg(BaseTableElementWdg):
 
 class TextureAddSourceCmd(Command):
 
-    def check(my):
+    def check(self):
         return True
     
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -323,7 +323,7 @@ class TextureAddSourceCmd(Command):
         
         # get the selected textures
         selected = web.get_form_values("selected")
-        my.add_description("Adding source to texture for [%s]" %','.join(selected))
+        self.add_description("Adding source to texture for [%s]" %','.join(selected))
         for select in selected:
             sobject = Search.get_by_search_key(select)
 
@@ -352,7 +352,7 @@ class TextureAddSourceCmd(Command):
 class TextureAddSourceEditElement(BaseInputWdg):
     '''This widget is used to add a source to a texture at upload time'''
     
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
@@ -390,11 +390,11 @@ class TextureAddSourceEditElement(BaseInputWdg):
 
 class TextureAddSourceAction(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
         pass
 
-    def postprocess(my):
-        sobject = my.sobject
+    def postprocess(self):
+        sobject = self.sobject
         texture_snapshot = Snapshot.get_latest_by_sobject(sobject)
         web = WebContainer.get_web()
 
@@ -434,7 +434,7 @@ class TextureAddSourceAction(DatabaseAction):
         # checkin this as a new source
         import os
         source_code = os.path.basename(files[0])
-        source_description = "Referred to %s" % my.sobject.get_code()
+        source_description = "Referred to %s" % self.sobject.get_code()
         source_category = "default"
         source = TextureSource.create(asset_code, source_code, \
             source_category, source_description)

@@ -35,66 +35,66 @@ class SObjectPlannerWdg(ShotInstanceAdderWdg):
     ADD_BUTTON = "Add Instance"
 
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(SObjectPlannerWdg,my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(SObjectPlannerWdg,self).__init__()
 
-    def init(my):
-        my.options = my.kwargs
-        super(SObjectPlannerWdg,my).init()
+    def init(self):
+        self.options = self.kwargs
+        super(SObjectPlannerWdg,self).init()
 
 
-    def get_search_type(my):
-        search_type = my.options.get("search_type")
+    def get_search_type(self):
+        search_type = self.options.get("search_type")
         return search_type
 
-    def get_left_search_type(my):
-        search_type = my.options.get("left_search_type")
+    def get_left_search_type(self):
+        search_type = self.options.get("left_search_type")
         return search_type
 
-    def get_left_view(my):
-        view = my.options.get("left_view")
+    def get_left_view(self):
+        view = self.options.get("left_view")
         if not view:
             view = "planner_left"
         return view
 
 
-    def get_right_search_type(my):
-        search_type = my.options.get("right_search_type")
+    def get_right_search_type(self):
+        search_type = self.options.get("right_search_type")
         return search_type
 
-    def get_right_view(my):
-        view = my.options.get("right_view")
+    def get_right_view(self):
+        view = self.options.get("right_view")
         if not view:
             view = "planner_right"
         return view
 
 
-    def get_left_filter(my, search):
+    def get_left_filter(self, search):
         return None
 
-    def get_right_filter(my, search):
+    def get_right_filter(self, search):
         return None
 
 
-    def get_action_cbk(my):
+    def get_action_cbk(self):
         return ["pyasm.prod.web.SObjectInstanceAdderCbk", \
                 "pyasm.prod.web.SObjectInstanceRemoverCbk" ]
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
        
         main_div = DivWdg(css="filter_box center_content")
         div = DivWdg()
-        main_div.add(my.get_view_select())
+        main_div.add(self.get_view_select())
         main_div.add(div)
         div.add_style('height', '16px')
         div.add_style('margin', '3px 0 3px 0')
 
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
          
         div.add(HtmlElement.b("Action: "))
-        add_button = IconButtonWdg(my.ADD_BUTTON, IconWdg.ADD, long=True)
+        add_button = IconButtonWdg(self.ADD_BUTTON, IconWdg.ADD, long=True)
         behavior = {
             'type': 'click_up',
             'mouse_btn': 'LMB',
@@ -146,7 +146,7 @@ class SObjectPlannerWdg(ShotInstanceAdderWdg):
         content = DivWdg()
         #content.add_style("height: 500px")
         #content.add_style("overflow: scroll")
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
         layout = TableLayoutWdg(search_type=search_type, view="planner_left")
         search = Search(search_type)
         layout.set_sobjects( search.get_sobjects() )
@@ -173,27 +173,27 @@ class SObjectPlannerWdg(ShotInstanceAdderWdg):
 
 class SObjectInstanceAdderCbk(Command):
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value(SObjectPlannerWdg.ADD_BUTTON) != "":
             return True
 
-    def get_title(my):
+    def get_title(self):
         return "Add Instance"
 
     
-    def get_checkbox_names(my):
+    def get_checkbox_names(self):
         ''' returns the class of the left and right CheckboxColWdg'''
         return "left_search_key", "right_search_key"
 
-    def get_search_type(my):
+    def get_search_type(self):
         web = WebContainer.get_web()
         search_type = web.get_form_value("search_type")
         return search_type
         
-    def execute(my):
+    def execute(self):
 
-        left_cb_name , right_cb_name = my.get_checkbox_names()
+        left_cb_name , right_cb_name = self.get_checkbox_names()
         
         web = WebContainer.get_web()
 
@@ -206,7 +206,7 @@ class SObjectInstanceAdderCbk(Command):
             right_sobject = Search.get_by_search_key(right_search_key)
             right_sobjects.append(right_sobject)
 
-        search_type = my.get_search_type()
+        search_type = self.get_search_type()
 
         left_search_keys = web.get_form_values(left_cb_name)
         for left_search_key in left_search_keys:
@@ -230,22 +230,22 @@ class SObjectInstanceAdderCbk(Command):
 
 class SObjectInstanceRemoverCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Retire/Delete Instance"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
         if web.get_form_value("Delete Instance") == "":
-            my.mode = "delete"
+            self.mode = "delete"
         elif web.get_form_value("Retire Instance") == "":
-            my.mode = "retire"
+            self.mode = "retire"
         else:
             return False
 
         return True
 
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
 
@@ -255,12 +255,12 @@ class SObjectInstanceRemoverCbk(Command):
             # NOTE: should probably check if there are any snapshots before
             # deleting
 
-            if my.mode == "retire":
+            if self.mode == "retire":
                 sobject.retire()
-                my.add_description("Retired [%s]" % sobject.get_code() )
-            elif my.mode == "delete":
+                self.add_description("Retired [%s]" % sobject.get_code() )
+            elif self.mode == "delete":
                 sobject.delete()
-                my.add_description("Deleted [%s]" % sobject.get_code() )
+                self.add_description("Deleted [%s]" % sobject.get_code() )
 
 
 
@@ -268,15 +268,15 @@ class SObjectInstanceRemoverCbk(Command):
 
 class NumSObjectInstancesWdg(FunctionalTableElement):
     '''Lists the number of instances in a shot'''
-    def init(my):
-        my.numbers = {}
+    def init(self):
+        self.numbers = {}
 
-    def get_title(my):
+    def get_title(self):
         return "#"
 
-    def preprocess(my):
+    def preprocess(self):
 
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         if not sobjects:
             return
 
@@ -302,20 +302,20 @@ class NumSObjectInstancesWdg(FunctionalTableElement):
         # convert to a dictionary
         for child in children:
             code = child.get_value(foreign_key)
-            number = my.numbers.get(code)
+            number = self.numbers.get(code)
             if not number:
                 number = 0
            
             number += 1
-            my.numbers[code] = number
+            self.numbers[code] = number
 
-        #print my.numbers
+        #print self.numbers
  
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        number = my.numbers.get(sobject.get_code())
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        number = self.numbers.get(sobject.get_code())
         if not number:
             return "&nbsp;"
         return "(%d)" % number
@@ -323,13 +323,13 @@ class NumSObjectInstancesWdg(FunctionalTableElement):
 
 
 class SObjectInstanceListWdg(Widget):
-    def get_search_type(my):
+    def get_search_type(self):
         web = WebContainer.get_web()
         search_type = web.get_form_value("planner_search_type")
         assert( search_type )
         return search_type
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         args = web.get_form_args()
@@ -340,7 +340,7 @@ class SObjectInstanceListWdg(Widget):
 
         sobject = Search.get_by_search_key("%s|%s" % (search_type,search_id) )
 
-        planner_search_type = my.get_search_type()
+        planner_search_type = self.get_search_type()
 
 
         # get parent instances first

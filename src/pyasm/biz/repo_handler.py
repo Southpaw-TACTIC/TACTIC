@@ -21,36 +21,36 @@ class BaseRepoHandler(object):
     PERFORCE_REPO = "pyasm.checkin.PerforceRepo"
     SUBVERSION_REPO = "pyasm.checkin.SubversionRepo" # not implemented
 
-    def __init__(my):
-        my.sobject = None
-        my.snapshot = None
+    def __init__(self):
+        self.sobject = None
+        self.snapshot = None
 
-    def get_repo_class(my):
+    def get_repo_class(self):
         '''You can define which repo class is used based on certain conditions
         This gives the ability to use different styles and or 3rd party
         repositories such as Perforce or Subversion'''
-        return my.TACTIC_REPO
+        return self.TACTIC_REPO
 
 
-    def set_sobject(my, sobject):
-        my.sobject = sobject
+    def set_sobject(self, sobject):
+        self.sobject = sobject
 
-    def set_snapshot(my, snapshot):
-        my.snapshot = snapshot
+    def set_snapshot(self, snapshot):
+        self.snapshot = snapshot
 
 
-    def get_repo(my):
-        repo_handler = my.get_repo_class()
+    def get_repo(self):
+        repo_handler = self.get_repo_class()
         repo = Common.create_from_class_path(repo_handler)
         return repo
 
 
 
-    def is_tactic_repo(my):
+    def is_tactic_repo(self):
         '''returns whether the current state is a tactic repo'''
 
-        repo_handler = my.get_repo_class()
-        if repo_handler == my.TACTIC_REPO:
+        repo_handler = self.get_repo_class()
+        if repo_handler == self.TACTIC_REPO:
             return True
         else:
             return False
@@ -60,24 +60,24 @@ class BaseRepoHandler(object):
 
 class SampleRepoHandler(BaseRepoHandler):
 
-    def get_repo_class(my):
-        context = my.snapshot.get_value("context")
+    def get_repo_class(self):
+        context = self.snapshot.get_value("context")
 
-        search_type = my.sobject.get_base_search_type()
+        search_type = self.sobject.get_base_search_type()
 
         # all contexts of game are sent to perforce
         if context == "Game Ready":
-            return my.PERFORCE_REPO
+            return self.PERFORCE_REPO
 
         #elif search_type == "prod/texture":
-        #    asset_context = my.sobject.get_value("asset_context")
+        #    asset_context = self.sobject.get_value("asset_context")
         #    if asset_context == "model":
-        #        return my.PERFORCE_REPO
+        #        return self.PERFORCE_REPO
         #    else:
-        #        return my.TACTIC_REPO
+        #        return self.TACTIC_REPO
 
         else:
-            return my.TACTIC_REPO
+            return self.TACTIC_REPO
 
 
 

@@ -24,14 +24,14 @@ from pyasm.command import Command
 
 class AddTranslationCmd(Command):
 
-    def set_path(my, path):
-        my.path = path
+    def set_path(self, path):
+        self.path = path
 
-    def set_language(my, language):
-        my.language = language
+    def set_language(self, language):
+        self.language = language
 
 
-    def execute(my):
+    def execute(self):
 
         keys = ["#:", "msgid", "msgstr"]
 
@@ -39,7 +39,7 @@ class AddTranslationCmd(Command):
         msgid = ""
         msgstr = ""
 
-        file = open(my.path, 'r')
+        file = open(self.path, 'r')
         for line in file.readlines():
             line = line.rstrip()
             if line.startswith("#:") and line != "#:":
@@ -57,14 +57,14 @@ class AddTranslationCmd(Command):
                 # look up the string first
                 search = Search("sthpw/translation")
                 search.add_filter("msgid", msgid)
-                search.add_filter("language", my.language)
+                search.add_filter("language", self.language)
                 translation = search.get_sobject()
 
                 if not translation:
                     print "New: ", msgid
                     translation = SearchType.create("sthpw/translation")
                     translation.set_value("msgid", msgid)
-                    translation.set_value("language", my.language)
+                    translation.set_value("language", self.language)
 
                 code_line = code_line.replace('\\','/')
                 translation.set_value("line", code_line)

@@ -22,11 +22,11 @@ from main_tab_wdg import *
 
 class BaseIndexWdg(Widget):
 
-    def init(my):
+    def init(self):
 
         web = WebContainer.get_web()
 
-        my.add(HeaderWdg())
+        self.add(HeaderWdg())
 
         undo_redo = HtmlElement.span()
         undo_redo.add_style("float", "right")
@@ -35,10 +35,10 @@ class BaseIndexWdg(Widget):
         undo_redo.add(RedoButtonWdg())
         undo_redo.add(IconRefreshWdg())
 
-        my.add_widget( undo_redo )
+        self.add_widget( undo_redo )
 
         tab = MainTabWdg()
-        my.add(tab)
+        self.add(tab)
 
 
 

@@ -30,20 +30,20 @@ class ClipboardWdg(AjaxWdg):
 
     ID = 'ClipboardWdg'
     EVENT_ID = 'ClipboardWdg_refresh'
-    def __init__(my):
-        super(ClipboardWdg,my).__init__()
+    def __init__(self):
+        super(ClipboardWdg,self).__init__()
 
-    def get_display(my):
+    def get_display(self):
         # set up the self refresh event for other widgets or callbacks to call
         event_container = WebContainer.get_event_container()
         script = ClipboardWdg.get_self_refresh_script(show_progress=False)
-        event_container.add_listener(my.EVENT_ID, script, replace=True )
+        event_container.add_listener(self.EVENT_ID, script, replace=True )
 
-        if my.is_from_ajax():
+        if self.is_from_ajax():
             div = Widget()
         else:
             div = DivWdg()
-            div.set_id(my.ID)
+            div.set_id(self.ID)
             div.add_style("display: block")
             div.add_class("background_box")
             div.add_style("padding-left: 3px")
@@ -52,9 +52,9 @@ class ClipboardWdg(AjaxWdg):
             div.add_style("width: 150px")
 
         # handle the ajax
-        my.set_ajax_top_id(my.ID)
-        my.register_cmd(ClipboardClearCbk)
-        refresh_script = my.get_refresh_script()
+        self.set_ajax_top_id(self.ID)
+        self.register_cmd(ClipboardClearCbk)
+        refresh_script = self.get_refresh_script()
 
         search = Search("sthpw/clipboard")
         search.add_user_filter()
@@ -90,18 +90,18 @@ class ClipboardWdg(AjaxWdg):
 
 
 class ClipboardListWdg(AjaxWdg):
-    def __init__(my, view="table"):
-        super(ClipboardListWdg,my).__init__()
-        my.view = view
+    def __init__(self, view="table"):
+        super(ClipboardListWdg,self).__init__()
+        self.view = view
 
-    def get_display(my):
+    def get_display(self):
     
         clipboards = Clipboard.get_all("select")
 
         from layout_wdg import TableWdg
         widget = Widget()
         widget.add( "<h3>Clipboard</h3>")
-        table = TableWdg("sthpw/clipboard", my.view)
+        table = TableWdg("sthpw/clipboard", self.view)
         table.set_sobjects(clipboards)
         widget.add(table)
         return widget
@@ -110,9 +110,9 @@ class ClipboardListWdg(AjaxWdg):
 
 class ClipboardHistoryElement(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         sobject = sobject.get_parent()
         if not sobject:
             return Widget()
@@ -144,32 +144,32 @@ class ClipboardHistoryElement(BaseTableElementWdg):
 
 class ClipboardAddWdg(Widget):
     '''A widget that allows adding of sobjects into the clipboard''' 
-    def __init__(my, sobject, icon_size=0):
+    def __init__(self, sobject, icon_size=0):
         assert sobject
-        super(ClipboardAddWdg,my).__init__()
-        my.sobject = sobject
-        my.icon_size = icon_size
-        my.thumbnail_mode = True
+        super(ClipboardAddWdg,self).__init__()
+        self.sobject = sobject
+        self.icon_size = icon_size
+        self.thumbnail_mode = True
     
-    def set_thumbnail_mode(my, mode):
+    def set_thumbnail_mode(self, mode):
         ''' If set to true, adding it will refresh the thumbnail '''
-        my.thumbnail_mode = mode
+        self.thumbnail_mode = mode
 
-    def get_id(my):
-        return "clipboard_%s" % my.sobject.get_search_key()
+    def get_id(self):
+        return "clipboard_%s" % self.sobject.get_search_key()
 
-    def get_display(my):
+    def get_display(self):
         ajax = AjaxCmd()
         ajax.register_cmd("pyasm.widget.ClipboardAddCbk")
         progress = ajax.generate_div()
         progress.add_style('display', 'inline')
 
-        search_type = my.sobject.get_search_type()
-        search_id = my.sobject.get_id()
+        search_type = self.sobject.get_search_type()
+        search_id = self.sobject.get_id()
         ajax.set_option("search_type", search_type)
         ajax.set_option("search_id", search_id)
 
-        search_key = my.sobject.get_search_key()
+        search_key = self.sobject.get_search_key()
 
         span = SpanWdg()
         span.set_id("clipboard_%s" % search_key)
@@ -191,12 +191,12 @@ class ClipboardAddWdg(Widget):
         from file_wdg import ThumbWdg
         post_script = [caller]
 
-        if my.thumbnail_mode: 
+        if self.thumbnail_mode: 
             post_script.append( ThumbWdg.get_refresh_script(\
-                my.sobject, my.icon_size, show_progress=False) )
+                self.sobject, self.icon_size, show_progress=False) )
         progress.set_post_ajax_script(';'.join(post_script))
         
-        if Clipboard.is_selected(my.sobject):
+        if Clipboard.is_selected(self.sobject):
             checkbox.set_option("checked", "1")
         """
         span.add(checkbox)
@@ -208,7 +208,7 @@ class ClipboardAddWdg(Widget):
 
 class ClipboardAddCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Add to clipboard"
 
 
@@ -216,10 +216,10 @@ class ClipboardAddCbk(Command):
         return False
     is_undoable = staticmethod(is_undoable)
 
-    def check(my):
+    def check(self):
         return True
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web() 
 
@@ -242,7 +242,7 @@ class ClipboardAddCbk(Command):
             search_type_obj = sobject.get_search_type_obj()
 
 
-            my.description = "Removed %s '%s' from clipboard" % (search_type_obj.get_title(), sobject.get_code() )
+            self.description = "Removed %s '%s' from clipboard" % (search_type_obj.get_title(), sobject.get_code() )
 
         else:
             search = Search(search_type)
@@ -259,19 +259,19 @@ class ClipboardAddCbk(Command):
             clipboard.set_user()
             clipboard.commit()
 
-            my.description = "Added %s '%s' to clipboard" % (search_type_obj.get_title(), sobject.get_code() )
+            self.description = "Added %s '%s' to clipboard" % (search_type_obj.get_title(), sobject.get_code() )
 
 
 
 class ClipboardClearCbk(Command):
-    def get_title(my):
+    def get_title(self):
         return "Clear clipboard"
 
     def is_undoable():
         return False
     is_undoable = staticmethod(is_undoable)
 
-    def execute(my):
+    def execute(self):
         category = "select"
         search = Search("sthpw/clipboard")
         search.add_filter("category", category)
@@ -280,20 +280,20 @@ class ClipboardClearCbk(Command):
         for item in clipboards:
             item.delete()
 
-        my.description = "Cleared %s items from clipboard" % len(clipboards)
+        self.description = "Cleared %s items from clipboard" % len(clipboards)
 
 
 
 class ClipboardCopyInputWdg(BaseInputWdg):
     '''Input that edit widget can use to add as a connection'''
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
-        checkbox = CheckboxWdg(my.get_input_name())
+        checkbox = CheckboxWdg(self.get_input_name())
         widget.add(checkbox)
 
-        where = my.get_option("where")
+        where = self.get_option("where")
         count = Clipboard.get_count(where=where)
 
         widget.add("Copy from clipboard: ( %s items )" % count)
@@ -309,17 +309,17 @@ class ClipboardCopyInputWdg(BaseInputWdg):
 class ClipboardCopyConnectionCmd(DatabaseAction):
     '''Action that edit widget can use to add as a connection'''
 
-    def execute(my):
+    def execute(self):
 
-        name = my.get_input_name()
+        name = self.get_input_name()
         web = WebContainer.get_web()
-        if not web.get_form_value( my.get_input_name() ):
+        if not web.get_form_value( self.get_input_name() ):
             return
 
         clipboard_items = Clipboard.get_all(category='select')
-        sobject = my.sobject
+        sobject = self.sobject
 
-        context = my.get_option("context")
+        context = self.get_option("context")
         if not context:
             context = 'reference'
 
@@ -334,26 +334,26 @@ class ClipboardMoveToCategoryCbk(Command):
     '''Moves the selected clipboard items to a new category'''
     COPY_BUTTON = "Copy from Clipboard"
 
-    def get_title(my):
+    def get_title(self):
         return "ClipboardMoveToCategoryCbk"
 
-    def check(my):
+    def check(self):
         web = WebContainer.get_web()
-        if not web.get_form_value(my.COPY_BUTTON):
+        if not web.get_form_value(self.COPY_BUTTON):
             return False
 
-        my.category = web.get_form_value("clipboard_category")
-        if not my.category:
+        self.category = web.get_form_value("clipboard_category")
+        if not self.category:
             raise UserException("You need to select a watch list")
             return False
 
         return True
 
-    def execute(my):
+    def execute(self):
 
         clipboard_items = Clipboard.get_all(category="select")
         for item in clipboard_items:
-            item.set_value("category", my.category)
+            item.set_value("category", self.category)
             item.commit()
 
             

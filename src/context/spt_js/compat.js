@@ -54,7 +54,7 @@ Effects = new function()
         duration: time, 
         onComplete: function()
             {
-              // by using $(id).setStyle('display','none'), 
+              // by using document.id(id).setStyle('display','none'), 
               // the reference to this object is guaranteed
               if (typeof(on_complete_script) =='string') {
                   eval(on_complete_script); 
@@ -63,7 +63,7 @@ Effects = new function()
               }
             }
             });
-        hide.start($(id).getStyle('opacity'), 0);
+        hide.start(document.id(id).getStyle('opacity'), 0);
         // hide it completely
         
     }
@@ -123,7 +123,7 @@ Effects = new function()
     {
         alert("Effects.blink in compat.js is deprecated");
         
-        var elem = $(obj_id)
+        var elem = document.id(obj_id)
         // it returns false if it is not available
         if (!elem)
             return 
@@ -165,7 +165,7 @@ Effects = new function()
     /* arg: direction = up | down */
     {
         alert("Effects in compat.js is deprecated");
-        var obj = $(obj_id)
+        var obj = document.id(obj_id)
         //var effect = obj.effects({transition:Fx.Transitions.sineInOut})
         
         if (direction == 'up') // close
@@ -181,13 +181,13 @@ Effects = new function()
             tween.addEvents({
                     'start': function() 
                         {   // hide inner div first if applicable
-                            $(obj_id + "_inner").setStyle('opacity', 0);
+                            document.id(obj_id + "_inner").setStyle('opacity', 0);
                         },
                     'complete': function()
                         {   
                             //Effects.fade_out(obj_id, 300)
                             set_display_off(obj_id);
-                            $(obj_id + "_inner").setStyle('opacity', 1);
+                            document.id(obj_id + "_inner").setStyle('opacity', 1);
                         }
                         });
             tween.start(obj.getStyle('height'), 0);
@@ -217,13 +217,13 @@ Effects = new function()
     this.slide_in = function(obj_id, msg)
     {
         alert("Effects in compat.js is deprecated");
-        var elem = $(obj_id);
-        var body = $(obj_id + '_body');
+        var elem = document.id(obj_id);
+        var body = document.id(obj_id + '_body');
         if (!body)
             return ;
         body.innerHTML= msg;
         [obj_id, obj_id+'_overflow'].each(function(el) {
-            if (!$(el))
+            if (!document.id(el))
                 return;
             var slide = new Fx.Slide(el, {mode: 'horizontal'});
             slide.slideIn();
@@ -232,9 +232,9 @@ Effects = new function()
     this.slide_out = function(obj_id)
     {
         alert("Effects in compat.js is deprecated");
-        var elem = $(obj_id);
+        var elem = document.id(obj_id);
         [obj_id, obj_id+'_overflow'].each(function(el) {
-            if (!$(el))
+            if (!document.id(el))
                 return;
             var slide = new Fx.Slide(el, {mode: 'horizontal'});
             slide.slideOut();
@@ -246,7 +246,7 @@ Effects = new function()
     this.slide_hide = function(obj_id)
     {
         alert("Effects in compat.js is deprecated");
-        var elem = $(obj_id);
+        var elem = document.id(obj_id);
         var slide = new Fx.Slide(obj_id, obj_id + '_overflow', {mode: 'horizontal'});
         slide.hide('horizontal');
         set_display_on(obj_id);

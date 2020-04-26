@@ -22,20 +22,20 @@ from pyasm.prod.site import MainTabWdg
 
 class BaseIndexWdg(Widget):
 
-    def init(my):
+    def init(self):
 
         web = WebContainer.get_web()
 
-        my.add(HeaderWdg())
+        self.add(HeaderWdg())
 
         menu = SiteMenuWdg()
         menu.add_style("float: right")
         menu.add_style("margin-top: -2px")
-        my.add(menu)
+        self.add(menu)
 
         from pyasm.web import get_main_tab_wdg
         tab = get_main_tab_wdg()
-        my.add(tab)
+        self.add(tab)
 
 
 

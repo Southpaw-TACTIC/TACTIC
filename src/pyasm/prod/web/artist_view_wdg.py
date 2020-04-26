@@ -22,33 +22,33 @@ from pyasm.widget import CheckboxWdg
 
 class ArtistViewWdg(SpanWdg):
 
-    def init(my):
-        my.add("Show assigned only: ")
-        my.checkbox = CheckboxWdg("show_assigned_only")
-        my.checkbox.set_option("value", "on")
-        my.checkbox.set_persistence()
-        my.checkbox.add_event("onclick", "document.form.submit()")
-        my.add(my.checkbox)
+    def init(self):
+        self.add("Show assigned only: ")
+        self.checkbox = CheckboxWdg("show_assigned_only")
+        self.checkbox.set_option("value", "on")
+        self.checkbox.set_persistence()
+        self.checkbox.add_event("onclick", "document.form.submit()")
+        self.add(self.checkbox)
 
 
-        my.add_class("med")
+        self.add_class("med")
 
 
 
-    def is_supervisor(my):
+    def is_supervisor(self):
         # if the user is a supervisor, look at all of the assets
         project = Project.get_project_name()
         security = Environment.get_security()
         return security.check_access("prod/%s" % project, "model/supervisor", "true")
 
-    def is_artist(my):
+    def is_artist(self):
         # if the user is a artist, look at all of the assets
         project = Project.get_project_name()
         security = Environment.get_security()
         return security.check_access("prod/%s" % project, "model/artist", "true")
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
         # get all of the relevant tasks to the user
         task_search = Search("sthpw/task")
@@ -65,13 +65,13 @@ class ArtistViewWdg(SpanWdg):
 
 
 
-        print "is_artist: ", my.is_artist()
-        print "is_supervisor: ", my.is_supervisor()
+        print "is_artist: ", self.is_artist()
+        print "is_supervisor: ", self.is_supervisor()
 
 
         # do some filtering
         web = WebContainer.get_web()
-        show_assigned_only = my.checkbox.get_value()
+        show_assigned_only = self.checkbox.get_value()
         show_process = web.get_form_values("process")
         if not show_process or show_process[0] == '':
             show_process = []
@@ -98,10 +98,10 @@ class ArtistViewWdg(SpanWdg):
 
 
         # record the tasks
-        my.tasks = task_search.get_sobjects()
+        self.tasks = task_search.get_sobjects()
 
         # get all of the sobject ids
-        sobject_ids = ["'%s'" % x.get_value("search_id") for x in my.tasks]
+        sobject_ids = ["'%s'" % x.get_value("search_id") for x in self.tasks]
 
         # get all of the sobjects related to this task
         if sobject_ids:
@@ -114,16 +114,16 @@ class ArtistViewWdg(SpanWdg):
 
 class SupervisorViewWdg(Widget):
 
-    def init(my):
-        my.add("Process: ")
+    def init(self):
+        self.add("Process: ")
         checkbox = CheckboxWdg("process")
         checkbox.set_option("value", "on")
         checkbox.set_persistence()
         checkbox.add_event("onclick", "document.form.submit()")
-        my.add(checkbox)
+        self.add(checkbox)
 
 
-    def filter_sobjects(my, orig_sobjects):
+    def filter_sobjects(self, orig_sobjects):
 
         # look for groups that are relevant
         groups = Environment.get_security().get_groups()

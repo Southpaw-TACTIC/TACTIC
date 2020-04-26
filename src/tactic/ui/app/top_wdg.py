@@ -9,6 +9,9 @@
 #
 #
 
+from __future__ import print_function
+
+
 __all__ = [ 'TopWdg', 'TitleTopWdg']
 
 import types
@@ -17,41 +20,42 @@ import os
 import js_includes
 
 from pyasm.common import Common, Container, Environment, jsondumps, jsonloads, Config
-from pyasm.biz import Project
+from pyasm.biz import Project, ProjectSetting
 from pyasm.web import WebContainer, Widget, HtmlElement, DivWdg, BaseAppServer, Palette, SpanWdg
 from pyasm.widget import IconWdg
 from pyasm.search import Search
+from pyasm.security import Site
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg
-from tactic.ui.app import TacticCopyrightNoticeWdg
+from tactic.ui.app import TacticCopyrightNoticeWdg, GoogleAnalyticsWdg
 from tactic.ui.widget import IconButtonWdg
 
 
 
 class TopWdg(Widget):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
-        super(TopWdg, my).__init__()
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        super(TopWdg, self).__init__()
 
 
 
-    def init(my):
-        my.body = HtmlElement("body")
-        Container.put("TopWdg::body", my.body)
+    def init(self):
+        self.body = HtmlElement("body")
+        Container.put("TopWdg::body", self.body)
 
-        my.top = DivWdg()
-        my.body.add(my.top)
-        my.top.add_class("spt_top")
-        Container.put("TopWdg::top", my.top)
+        self.top = DivWdg()
+        self.body.add(self.top)
+        self.top.add_class("spt_top")
+        Container.put("TopWdg::top", self.top)
 
 
-        my.body.add_attr("ondragover", "return false;")
-        my.body.add_attr("ondragleave", "return false;")
-        my.body.add_attr("ondrop", "return false;")
+        self.body.add_attr("ondragover", "return false;")
+        self.body.add_attr("ondragleave", "return false;")
+        self.body.add_attr("ondrop", "return false;")
 
-        my.body.add_behavior( {
+        self.body.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
 
@@ -77,20 +81,20 @@ class TopWdg(Widget):
             '''
         } )
 
-        my.add_top_behaviors()
+        self.add_top_behaviors()
 
 
 
         
         click_div = DivWdg()
-        my.top.add(click_div)
+        self.top.add(click_div)
         click_div.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
         spt.body = {};
 
         spt.body.is_active = function() {
-            return $(document.body).spt_window_active;
+            return document.id(document.body).spt_window_active;
         }
 
         spt.body.focus_elements = [];
@@ -98,11 +102,20 @@ class TopWdg(Widget):
             spt.body.focus_elements.push(el);
         }
 
+        spt.body.remove_focus_element = function(el) {
+            var index = spt.body.focus_elements.indexOf(el);
+            if (index != -1) {
+                spt.body.focus_elements.splice(index, 1);
+            }
+        }
+
         // find all of the registered popups and close them
         // NOTE: logic can handle more than 1 focus element should it happen ...
         spt.body.hide_focus_elements = function(evt) {
             var mouse = evt.client;
             var target = evt.target;
+
+
             
             var targets = [];
             var count = 0;
@@ -132,6 +145,13 @@ class TopWdg(Widget):
 
             }
 
+
+            var dialog = evt.target.getParent(".MooDialog");
+            if (dialog) {
+                targets.push(dialog);
+            }
+
+            var hitEls = [];
             // find out if any of the parents of target is the focus element
             for (var i = 0; i < spt.body.focus_elements.length; i++) {
                 var el = spt.body.focus_elements[i];
@@ -146,47 +166,54 @@ class TopWdg(Widget):
                     }
                 }
         
-                if (hit)
-                    break;
-                else{
-                    spt.hide(el);
+                if (hit) {
+                    hitEls.push(el);
+                    continue;
+                }
+                else {
+                    if ( el.isVisible() && el.on_complete ) {
+                        el.on_complete(el);
+                    }
+                    else {
+                        spt.hide(el);
+                    }
       
                 }
             }
-            if (!hit)
-                spt.body.focus_elements = [];
+
+            spt.body.focus_elements = hitEls;
 
         }
         //bvr.src_el.addEvent("mousedown", spt.body.hide_focus_elements);
-        document.body.addEvent("mousedown", spt.body.hide_focus_elements);
+        document.id(document.body).addEvent("mousedown", spt.body.hide_focus_elements);
 
         '''
         } )
 
         web = WebContainer.get_web()
-        my.body.add_color("color", "color")
+        self.body.add_color("color", "color")
 
         #if web.is_title_page():
-        #    my.body.add_gradient("background", "background", 0, -20)
+        #    self.body.add_gradient("background", "background", 0, -20)
         #else:
-        #    my.body.add_gradient("background", "background", 0, -15)
-        my.body.add_color("background", "background")
+        #    self.body.add_gradient("background", "background", 0, -15)
+        self.body.add_color("background", "background")
 
-        my.body.add_style("background-attachment: fixed !important")
-        my.body.add_style("margin: 0px")
-        my.body.add_style("padding: 0px")
+        self.body.add_style("background-attachment: fixed !important")
+        self.body.add_style("margin: 0px")
+        self.body.add_style("padding: 0px")
 
 
         # ensure that any elements that force the default menu over any TACTIC right-click context menus has the
         # 'force_default_context_menu' flag reset for the next right click that occurs ...
         #
-        my.body.add_event( "oncontextmenu", "spt.force_default_context_menu = false;" )
+        self.body.add_event( "oncontextmenu", "spt.force_default_context_menu = false;" )
 
 
 
 
-    def add_top_behaviors(my):
-        my.body.add_relay_behavior( {
+    def add_top_behaviors(self):
+        self.body.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'tactic_popup',
             'cbjs_action': '''
@@ -196,17 +223,30 @@ class TopWdg(Widget):
             }
 
             var target = bvr.src_el.getAttribute("target");
+            var title = bvr.src_el.getAttribute("title");
 
             var class_name = 'tactic.ui.panel.CustomLayoutWdg';
             var kwargs = {
                 view: view,  
             }
-            spt.panel.load_popup(target, class_name, kwargs);
+
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var name = attributes[i].name;
+                if (name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[name] = value;
+            }
+
+
+            spt.panel.load_popup(title, class_name, kwargs);
             '''
         } )
 
 
-        my.body.add_relay_behavior( {
+        self.body.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'tactic_load',
             'cbjs_action': '''
@@ -227,7 +267,7 @@ class TopWdg(Widget):
                 var target = top.getElement("."+parts[1]);  
             }
             else {
-                var target = $(document.body).getElement("."+target_class);
+                var target = document.id(document.body).getElement("."+target_class);
             }
 
 
@@ -260,9 +300,28 @@ class TopWdg(Widget):
 
 
 
+        self.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_link',
+            'cbjs_action': '''
+            var href = bvr.src_el.getAttribute("href");
+            if (!href) {
+                spt.alert("No href defined for this link");
+                return;
+            }
+            var target = bvr.src_el.getAttribute("target");
+            if (!target) {
+                target = "_self";
+            }
+            window.open(href, target);
+            '''
+        } )
 
 
-        my.body.add_relay_behavior( {
+
+
+
+        self.body.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'tactic_refresh',
             'cbjs_action': '''
@@ -273,7 +332,7 @@ class TopWdg(Widget):
                 var target = top.getElement("."+parts[1]);  
             }
             else {
-                var target = $(document.body).getElement("."+target_class);
+                var target = document.id(document.body).getElement("."+target_class);
             }
 
             spt.panel.refresh(target);
@@ -282,11 +341,14 @@ class TopWdg(Widget):
 
 
 
-        my.body.add_relay_behavior( {
+        self.body.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'tactic_new_tab',
             'cbjs_action': '''
+
             var view = bvr.src_el.getAttribute("view")
+            var search_key = bvr.src_el.getAttribute("search_key")
+            var expression = bvr.src_el.getAttribute("expression")
 
             var name = bvr.src_el.getAttribute("name");
             var title = bvr.src_el.getAttribute("title");
@@ -304,12 +366,40 @@ class TopWdg(Widget):
             }
 
 
+            if (expression) {
+                var server = TacticServerStub.get();
+                var sss = server.eval(expression, {search_keys: search_key, single: true})
+                search_key = sss.__search_key__;
+            }
+
+
             spt.tab.set_main_body_tab()
 
-            var cls = "tactic.ui.panel.CustomLayoutWdg";
-            var kwargs = {
-                view: view
+            if (view) {
+                var cls = "tactic.ui.panel.CustomLayoutWdg";
+                var kwargs = {
+                    view: view
+                }
             }
+            else if (search_key) {
+                var cls = "tactic.ui.tools.SObjectDetailWdg";
+                var kwargs = {
+                    search_key: search_key
+                }
+            }
+
+
+            var attributes = bvr.src_el.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var attr_name = attributes[i].name;
+                if (attr_name == "class") {
+                    continue;
+                }
+                var value = attributes[i].value;
+                kwargs[attr_name] = value;
+            }
+
+
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
             } catch(e) {
@@ -320,7 +410,7 @@ class TopWdg(Widget):
 
 
 
-        my.body.add_relay_behavior( {
+        self.body.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'tactic_submit',
             'cbjs_action': '''
@@ -337,24 +427,60 @@ class TopWdg(Widget):
             } )
 
 
-        my.body.add_relay_behavior( {
+        self.body.add_relay_behavior( {
             'type': 'mouseenter',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
+            var bgcolor = bvr.src_el.getStyle("background");
+            bvr.src_el.setAttribute("spt_bgcolor", bgcolor);
             bvr.src_el.setStyle("background", "#EEE");
             '''
             } )
 
-        my.body.add_relay_behavior( {
+        self.body.add_relay_behavior( {
             'type': 'mouseleave',
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
-            bvr.src_el.setStyle("background", "");
+            var bgcolor = bvr.src_el.getAttribute("spt_bgcolor");
+            if (!bgcolor) bgcolor = "";
+            //var bgcolor = ""
+            bvr.src_el.setStyle("background", bgcolor);
             '''
             } )
 
-        my.body.set_unique_id()
-        my.body.add_smart_style( "tactic_load", "cursor", "pointer" )
+
+        self.body.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'tactic_not_implemented',
+            'cbjs_action': '''
+            spt.alert("Feature is not yet implemented");
+            '''
+            } )
+
+
+
+        self.body.set_unique_id()
+        self.body.add_smart_style( "tactic_load", "cursor", "pointer" )
+
+
+        # check version of the database
+        project = Project.get()
+        version = project.get_value("last_version_update")
+        release = Environment.get_release_version()
+        #if version < release:
+        # FIXME: can't do this ... TACTIC cannot be running when the database
+        # is upgrading.
+        if False:
+            try:
+                from pyasm.security import Site
+                site = Site.get_site()
+                install_dir = Environment.get_install_dir()
+                cmd = '''python "%s/src/bin/upgrade_db.py" -f -s "%s" --quiet --yes &''' % (install_dir, site)
+                print("cmd: ", cmd)
+                os.system(cmd)
+                pass
+            except Exception as e:
+                print("WARNING: ", e)
 
 
 
@@ -363,16 +489,16 @@ class TopWdg(Widget):
 
 
 
-    def get_body(my):
-        return my.body
+    def get_body(self):
+        return self.body
 
-    def get_top(my):
-        return my.top
-
-
+    def get_top(self):
+        return self.top
 
 
-    def get_display(my):
+
+
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -392,8 +518,24 @@ class TopWdg(Widget):
 
 
         # add the copyright
-        widget.add( my.get_copyright_wdg() )
+        widget.add( self.get_copyright_wdg() )
         widget.add(html)
+
+        # handle redirect
+        request_url = web.get_request_url().get_info().path
+        if request_url in ["/tactic/Index", "/Index", "/"]:
+            # if we have the root path name, provide the ability for the site to
+            # redirect
+            from pyasm.security import Site
+            site_obj = Site.get()
+            redirect = site_obj.get_site_redirect()
+            if redirect:
+                widget.add('''<meta http-equiv="refresh" content="0; url=%s">''' % redirect)
+                return widget
+
+
+
+
 
 
         # create the header
@@ -407,7 +549,7 @@ class TopWdg(Widget):
         head.add('<link rel="shortcut icon" href="/context/favicon.ico" type="image/x-icon"/>')
 
         # add the css styling
-        head.add(my.get_css_wdg())
+        head.add(self.get_css_wdg())
 
         # add the title in the header
         project = Project.get()
@@ -428,15 +570,23 @@ class TopWdg(Widget):
         # add the javascript libraries
         head.add( JavascriptImportWdg() )
 
+        # add google analytics
+        head.add(GoogleAnalyticsWdg())
 
 
         # add the body
-        body = my.body
+        body = self.body
         html.add( body )
-        body.add_event('onload', 'spt.onload_startup(this)')
+
+        if web.is_admin_page():
+            body.add_event('onload', 'spt.onload_startup(admin=true)')
+        else:
+            body.add_event('onload', 'spt.onload_startup(admin=false)')
+
+        body.add_style('overflow', 'hidden')
 
 
-        top = my.top
+        top = self.top
 
         # Add a NOSCRIPT tag block here to provide a warning message on browsers where 'Enable JavaScript'
         # is not checked ... TODO: clean up and re-style to make look nicer
@@ -468,11 +618,11 @@ class TopWdg(Widget):
 
 
 
-        if my.widgets:
-            content_wdg = my.get_widget('content')
+        if self.widgets:
+            content_wdg = self.get_widget('content')
         else:
             content_wdg = Widget()
-            my.add(content_wdg)
+            self.add(content_wdg)
 
         content_div.add( content_wdg )
         
@@ -623,7 +773,7 @@ class TopWdg(Widget):
         'event_name': 'show_script_editor',
         'cbjs_action': '''
         var js_popup_id = "TACTIC Script Editor";
-        var js_popup = $(js_popup_id);
+        var js_popup = document.id(js_popup_id);
         if( js_popup ) {
             spt.popup.toggle_display( js_popup_id, false );
         }
@@ -635,7 +785,7 @@ class TopWdg(Widget):
 
 
         # deal with the palette defined in /index which can override the palette
-        if my.kwargs.get("hash") == ():
+        if self.kwargs.get("hash") == ():
             key = "index"
             search = Search("config/url")
             search.add_filter("url", "/%s/%%"%key, "like")
@@ -674,8 +824,21 @@ class TopWdg(Widget):
 
     
         from pyasm.security import Site
+        from pyasm.prod.biz import ProdSetting
         site = Site.get_site()
-       
+
+        master_enabled = Config.get_value("master", "enabled")
+        master_site = ProdSetting.get_value_by_key("master/site")
+        master_url = Config.get_value("master", "url")
+        master_url = "http://" + master_url + "/tactic/default/Api/"
+        security = Environment.get_security()
+        ticket = security.get_ticket()
+        if ticket:
+            master_login_ticket = ticket.get_value("ticket")
+        else:
+            master_login_ticket = ""
+        master_project_code = Config.get_value("master", "project_code")
+
         kiosk_mode = Config.get_value("look", "kiosk_mode")
         if not kiosk_mode:
             kiosk_mode = 'false'
@@ -691,8 +854,13 @@ class TopWdg(Widget):
         env.set_client_handoff_dir('%s');
         env.set_client_repo_dir('%s');
         env.set_kiosk_mode('%s');
-
-        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode))
+        env.set_master_enabled('%s');
+        env.set_master_url('%s');
+        env.set_master_login_ticket('%s');
+        env.set_master_project_code('%s');
+        env.set_master_site('%s');
+        ''' % (site, Project.get_project_code(), user_name, user_id, '|'.join(login_groups), client_handoff_dir,client_asset_dir, kiosk_mode,
+		master_enabled, master_url, master_login_ticket, master_project_code, master_site))
         top.add(script)
 
 
@@ -779,7 +947,7 @@ class TopWdg(Widget):
 
 
 
-    def get_copyright_wdg(my):
+    def get_copyright_wdg(self):
         widget = Widget()
 
         # add the copyright information
@@ -790,7 +958,7 @@ class TopWdg(Widget):
         return widget
 
 
-    def get_css_wdg(my):
+    def get_css_wdg(self):
 
         widget = Widget()
 
@@ -799,11 +967,15 @@ class TopWdg(Widget):
 
         skin = web.get_skin()
 
+        version = Environment.get_release_version()
 
         # Bootstrap
         use_bootstrap = True
         if use_bootstrap:
-            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css" % context_url)
+            Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
+
+
+        Container.append_seq("Page:css", "%s/spt_js/font-awesome-4.7.0/css/font-awesome.css?ver=%s" % (context_url, version))
 
 
 
@@ -817,7 +989,7 @@ class TopWdg(Widget):
 
 
 
-        # TEST
+        # video js
         Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
 
 
@@ -832,15 +1004,22 @@ class TopWdg(Widget):
         for include in includes:
             include = include.strip()
             if include:
-                print "include: ", include
                 widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
 
+
+
+        includes = ProjectSetting.get_value_by_key("css_libraries")
+        includes = includes.split(",")
+        for include in includes:
+            include = include.strip()
+            if include:
+                widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
         return widget
 
 
 class JavascriptImportWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         context_url = web.get_context_url().to_string()
@@ -853,6 +1032,16 @@ class JavascriptImportWdg(BaseRefreshWdg):
         third_party = js_includes.third_party
         security = Environment.get_security()
 
+        Container.append_seq("Page:js", "%s/load-image.min.js" % spt_js_url)
+        Container.append_seq("Page:js", "%s/rrule/rrule.js" % spt_js_url)
+        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
+
+        if not web.is_admin_page():
+            Container.append_seq("Page:js", "%s/require.js" % spt_js_url)
+            use_jquery = ProjectSetting.get_value_by_key("js_libraries/jquery")
+            if use_jquery == "true":
+                Container.append_seq("Page:js", "%s/jquery.js" % spt_js_url)
+
 
         for include in js_includes.third_party:
             Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
@@ -862,24 +1051,34 @@ class JavascriptImportWdg(BaseRefreshWdg):
         if os.path.exists( all_js_path ):
             Container.append_seq("Page:js", "%s/%s" % (context_url, js_includes.get_compact_js_context_path_suffix()))
         else:
-            for include in js_includes.legacy_core:
-                Container.append_seq("Page:js", "%s/%s" % (js_url,include))
+            #for include in js_includes.legacy_core:
+            #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
             for include in js_includes.spt_js:
                 Container.append_seq("Page:js", "%s/%s" % (spt_js_url,include))
 
-            for include in js_includes.legacy_app:
-                Container.append_seq("Page:js", "%s/%s" % (js_url,include))
+            #for include in js_includes.legacy_app:
+            #    Container.append_seq("Page:js", "%s/%s" % (js_url,include))
 
 
-        # custom js files to include
-        includes = Config.get_value("install", "include_js")
-        includes = includes.split(",")
-        for include in includes:
-            include = include.strip()
-            if include:
-                print "include: ", include
-                Container.append_seq("Page:js", include)
+        includes = ProjectSetting.get_value_by_key("js_libraries")
+        if includes == "__NONE__":
+            pass
+        elif includes:
+            includes = includes.split(",")
+            for include in includes:
+                include = include.strip()
+                if include:
+                    Container.append_seq("Page:js", include)
+        else:
+            # custom js files to include
+            includes = Config.get_value("install", "include_js")
+            includes = includes.split(",")
+            for include in includes:
+
+                include = include.strip()
+                if include:
+                    Container.append_seq("Page:js", include)
 
 
         widget = Widget()
@@ -898,24 +1097,26 @@ class TitleTopWdg(TopWdg):
     '''Top used in title page for logins.  This does not include any of the
     js libraries or other common TACTIC functionaity'''
     
-    def init(my):
-        my.body = HtmlElement("body")
+    def init(self):
+        self.body = HtmlElement("body")
 
         web = WebContainer.get_web()
-        my.body.add_color("color", "color")
-
-        if web.is_title_page():
-            my.body.add_gradient("background", "background", 0, -20)
-        else:
-            my.body.add_gradient("background", "background", 0, -15)
-
-        my.body.add_style("background-attachment: fixed !important")
-        #my.body.add_style("min-height: 1200px")
-        my.body.add_style("height: 100%")
-        my.body.add_style("margin: 0px")
+        self.body.add_color("color", "color")
 
 
-    def get_display(my):
+        #if web.is_title_page():
+        #    self.body.add_gradient("background", "background", 0, -20)
+        #else:
+        #    self.body.add_gradient("background", "background", 0, -15)
+        self.body.add_color("background", "background")
+
+        self.body.add_style("background-attachment: fixed !important")
+        #self.body.add_style("min-height: 1200px")
+        self.body.add_style("height: 100%")
+        self.body.add_style("margin: 0px")
+
+
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -936,7 +1137,7 @@ class TitleTopWdg(TopWdg):
 
 
         # add the copyright
-        widget.add( my.get_copyright_wdg() )
+        widget.add( self.get_copyright_wdg() )
         widget.add(html)
 
 
@@ -951,13 +1152,13 @@ class TitleTopWdg(TopWdg):
         head.add('<link rel="shortcut icon" href="/context/favicon.ico" type="image/x-icon"/>')
 
         # add the css styling
-        head.add(my.get_css_wdg())
+        head.add(self.get_css_wdg())
 
         # add the title in the header
         try:
             project = Project.get()
-        except Exception, e:
-            print "ERROR: ", e
+        except Exception as e:
+            print("ERROR: ", e)
             # if the project doesn't exist, then use the admin project
             project = Project.get_by_code("admin")
         project_code = project.get_code()
@@ -968,13 +1169,16 @@ class TitleTopWdg(TopWdg):
         else:
             head.add("<title>%s</title>\n" % project_title )
 
+        # add google analytics
+        head.add(GoogleAnalyticsWdg())
+
         # add the body
-        body = my.body
+        body = self.body
         html.add( body )
 
         body.add("<form id='form' name='form' method='post' enctype='multipart/form-data'>\n")
 
-        for content in my.widgets:
+        for content in self.widgets:
             body.add(content)
 
         body.add("</form>\n")
@@ -1000,14 +1204,19 @@ from pyasm.common import SecurityException
 class IndexWdg(Widget):
     # This is the outside wrapper for an HTML5 application
 
-    def __init__(my, hash=""):
-        my.hash = hash
-        super(IndexWdg, my).__init__()
+    def __init__(self, hash=""):
+        self.hash = hash
+        self.top = DivWdg()
+        super(IndexWdg, self).__init__()
 
-    def get_display(my):
+    def get_display(self):
 
-        top = DivWdg()
+        top = self.top
         top.set_id('top_of_application')
+        top.add_style("height: 100%")
+        top.add_style("width: 100%")
+        top.add_style("overflow-x: auto")
+        top.add_style("overflow-y: auto")
 
         from tactic.ui.panel import HashPanelWdg 
         splash_div = HashPanelWdg.get_widget_from_hash("/splash", return_none=True)
@@ -1029,7 +1238,7 @@ class IndexWdg(Widget):
 
         splash_div.add_behavior( {
             'type': 'load',
-            'hash': my.hash,
+            'hash': self.hash,
             'cbjs_action': '''
             if (bvr.hash) {
                 spt.hash.hash = "/" + bvr.hash;
@@ -1051,41 +1260,35 @@ class IndexWdg(Widget):
 
 
 class SitePage(AppServer):
-    def __init__(my, context=None):
-        super(SitePage,my).__init__()
-        my.project_code = context
-        my.custom_url = None
+    def __init__(self, context=None):
+        super(SitePage,self).__init__()
+        self.project_code = context
+        self.custom_url = None
 
 
-    def set_templates(my):
+    def set_templates(self):
 
-        #if my.project_code:
-        #    project_code = my.project_code
-        #else:
-        #    project_code = WebContainer.get_web().get_full_context_name()
         project_code = WebContainer.get_web().get_full_context_name()
         if project_code == "default":
             project_code = Project.get_default_project()
 
-        #if not project_code:
-        #    project_code = my.project_code
 
         try:
             SearchType.set_global_template("project", project_code)
-        except SecurityException, e:
-            print "WARNING: ", e
+        except SecurityException as e:
+            print("WARNING: ", e)
 
 
 
 
 
-    def get_application_wdg(my):
+    def get_application_wdg(self):
 
         page = None
 
         try:
             project = Project.get()
-        except Exception, e:
+        except Exception as e:
             Project.set_project("sthpw")
             from pyasm.widget import Error404Wdg
             page = Error404Wdg()
@@ -1093,12 +1296,12 @@ class SitePage(AppServer):
             page.status = ''
 
 
-        application = my.get_top_wdg()
+        application = self.get_top_wdg()
 
         # get the main page widget
         # NOTE: this needs to happen after the body is put in a Container
         if not page:
-            page = my.get_page_widget()
+            page = self.get_page_widget()
         page.set_as_top()
         if type(page) in types.StringTypes:
             page = StringWdg(page)
@@ -1111,9 +1314,9 @@ class SitePage(AppServer):
 
 
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         try:
-            hash = my.hash
+            hash = self.hash
         except:
             hash = None
         if hash:
@@ -1127,7 +1330,7 @@ class SitePage(AppServer):
         return index
 
 
-    def get_top_wdg(my):
+    def get_top_wdg(self):
         ''' A custom widget can replace TopWdg per custom URL or per project.
          1. If a custom url specifies a top class through the top_wdg_cls attribute, 
             then this class is used.
@@ -1135,16 +1338,36 @@ class SitePage(AppServer):
             through the ProjectSetting key top_wdg_cls, this class is used 
             except for TACTIC admin pages.
          3. The default widget used is tactic.ui.app.TopWdg.'''
-         
+
+
         top_wdg_cls = None
        
-        if not my.hash and not my.custom_url:
+        if not self.hash and not self.custom_url:
             search = Search("config/url")
             search.add_filter("url", "/index")
-            my.custom_url = search.get_sobject()
+            self.custom_url = search.get_sobject()
+
+
+
+        # TEST Using X-SendFile
+        #if self.hash and self.hash[0] == 'ASSETS':
+        #    self.top = XSendFileTopWdg(hash=self.hash)
+        #    return self.top
+
+        # REST API
+        if self.hash and self.hash[0] == 'REST':
+            handler = 'tactic.protocol.APIRestHandler' 
+            hash = "/".join(self.hash)
+            hash = "/%s" % hash
+            self.top = CustomTopWdg(url=None, hash=hash, handler=handler)
+            return self.top
+
+
+
+
         
-        if my.custom_url:
-            xml = my.custom_url.get_xml_value("widget")
+        if self.custom_url:
+            xml = self.custom_url.get_xml_value("widget")
             index = xml.get_value("element/@index")
             admin = xml.get_value("element/@admin")
             top_wdg_cls = xml.get_value("element/@top_wdg_cls")
@@ -1156,32 +1379,31 @@ class SitePage(AppServer):
                 widget = BootstrapIndexWdg()
                 return widget
             elif widget == 'true':
-                web = WebContainer.get_web()
-                hash = "/".join(my.hash)
+                hash = "/".join(self.hash)
                 hash = "/%s" % hash
-                my.top = CustomTopWdg(url=my.custom_url, hash=hash)
-                return my.top
+                self.top = CustomTopWdg(url=self.custom_url, hash=hash)
+                return self.top
  
         if not top_wdg_cls:
-            if my.hash and my.hash[0] == "admin":
+            if self.hash and self.hash[0] == "admin":
                 pass
             else:
                 from pyasm.biz import ProjectSetting
                 top_wdg_cls = ProjectSetting.get_value_by_key("top_wdg_cls")
         
         if top_wdg_cls:
-            my.top = Common.create_from_class_path(top_wdg_cls, {}, {'hash': my.hash})
+            self.top = Common.create_from_class_path(top_wdg_cls, {}, {'hash': self.hash})
         else:
             from tactic.ui.app import TopWdg
-            my.top = TopWdg(hash=my.hash)
+            self.top = TopWdg(hash=self.hash)
         
-        return my.top
+        return self.top
 
 
 
 class BootstrapIndexWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         top = Widget()
         from tactic.ui.panel import CustomLayoutWdg
@@ -1195,24 +1417,28 @@ class BootstrapIndexWdg(BaseRefreshWdg):
 
 class CustomTopWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         # Custom URLs have the ability to send out different content types
-        url = my.kwargs.get("url")
+        url = self.kwargs.get("url")
 
         web = WebContainer.get_web()
 
-        #content_type = my.kwargs.get("content_type")
-        #print "content_type: ", content_type
+        #content_type = self.kwargs.get("content_type")
+        #print("content_type: ", content_type)
 
-        hash = my.kwargs.get("hash")
+        hash = self.kwargs.get("hash")
         ticket = web.get_form_value("ticket")
         method = web.get_request_method()
         headers = web.get_request_headers()
         accept = headers.get("Accept")
-        expression = url.get_value("url")
-        
-        kwargs = Common.extract_dict(hash, expression)
+        if url:
+            expression = url.get_value("url")
+            # extract values from custom url
+            kwargs = Common.extract_dict(hash, expression)
+        else:
+            kwargs = {}
+       
         
         # Does the URL listen to specific Accept values?
         # or does it enforce a return content type ... and how does one
@@ -1223,13 +1449,17 @@ class CustomTopWdg(BaseRefreshWdg):
         kwargs['Accept'] = accept
         kwargs['Method'] = method
 
-        from tactic.ui.panel import HashPanelWdg 
-        hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
+        handler = self.kwargs.get("handler")
+        if handler:
+            hash_widget = Common.create_from_class_path(handler, [], kwargs)
+        else:
+            from tactic.ui.panel import HashPanelWdg 
+            hash_widget = HashPanelWdg.get_widget_from_hash(hash, kwargs=kwargs)
 
 
         # Really, the hash widget should determine what is returned, but
         # should take the Accept into account.  It is not up to this
-        # class to determine what is or isn't implemented, not is it the
+        # class to determine what is or isn't implemented, nor is it the
         # responsibility of this class to convert the data.  So, it
         # returns whatever is given.
         try:
@@ -1277,13 +1507,79 @@ class CustomTopWdg(BaseRefreshWdg):
                 web.set_content_type("text/html")
 
         widget.add(value)
+
         return widget
 
 
 
+class XSendFileTopWdg(BaseRefreshWdg):
+
+    def get_display(self):
+
+        web = WebContainer.get_web()
+        response = web.get_response()
+
+        # get info from url
+        site_obj = Site.get()
+        path = web.get_request_path()
+        path_info = site_obj.break_up_request_path(path)
+        site = path_info.get("site")
+        project_code = path_info.get("project_code")
+
+
+        # find the relative path
+        hash = self.kwargs.get("hash")
+        parts = hash[1:]
+        rel_path = "/".join(parts)
+
+        #rel_path = "asset/Fantasy/Castle/54d45150c61251f65687d716cc3951f1_v001.jpg"
+
+
+        # construct all of the paths
+        asset_dir = web.get_asset_dir()
+        base_dir = "%s/%s" % (asset_dir, project_code)
+        path = "%s/%s" % (base_dir, rel_path)
+        filename = os.path.basename(rel_path)
+
+
+
+        # determine the mimetype automatically
+        import mimetypes
+        base, ext = os.path.splitext(path)
+        ext = ext.lower()
+        mimetype = mimetypes.types_map[ext]
+
+        headers = response.headers
+        response.headers['Content-Type'] = mimetype
+
+        response.headers['Content-Disposition'] = 'inline; filename={0}'.format(filename)
+
+        use_xsendfile = True
+        if use_xsendfile:
+            response.headers['X-Sendfile'] = path
+            return Widget(path)
+
+        else:
+
+            response.headers['Content-Transfer-Encoding'] = 'BINARY'
+
+            widget = Widget()
+            f = open(path, 'rb')
+            data = f.read()
+            f.close()
+
+            widget.add(data)
+            return widget
+
+        #import base64
+        #data64 = base64.b64encode(data)
+        #widget.add(data64)
+        #return widget
+
+
 
 class SiteXMLRPC(BaseXMLRPC):
-    def set_templates(my):
+    def set_templates(self):
         context = WebContainer.get_web().get_full_context_name()
         SearchType.set_global_template("project", context)
 

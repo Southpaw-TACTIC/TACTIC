@@ -28,15 +28,15 @@ from tactic.ui.filter import FilterData, BaseFilterElementWdg
 
 class YearlyReportFilterWdg(BaseFilterElementWdg):
 
-    def alter_search(my, search):
+    def alter_search(self, search):
         pass
 
 
-    def get_display(my):
+    def get_display(self):
         div = SpanWdg()
         div.add(" is ")
         text = TextWdg("year")
-        value = my.values.get("year")
+        value = self.values.get("year")
         if value:
             text.set_value(value)
         div.add(text)
@@ -47,7 +47,7 @@ class YearlyReportFilterWdg(BaseFilterElementWdg):
 
 class YearlyReportWdg(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
         filter_data = FilterData.get_from_cgi()
         values = filter_data.get_values("custom", "year")
 
@@ -62,11 +62,11 @@ class YearlyReportWdg(BaseTableElementWdg):
             date = Date()
             year = int(date.get_year())
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         id = sobject.get_id()
 
-        column = my.get_option("column")
-        month = int( my.get_option('month') )
+        column = self.get_option("column")
+        month = int( self.get_option('month') )
 
         end_year = year
         end_month = month + 1

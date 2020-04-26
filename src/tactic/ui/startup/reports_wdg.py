@@ -28,12 +28,12 @@ class ReportsWdg(BaseRefreshWdg):
     project
     '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_section_wdg(my, title, description, image, behavior):
+    def get_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
         section_wdg.set_round_corners()
@@ -60,7 +60,7 @@ class ReportsWdg(BaseRefreshWdg):
         button.add_style("float: right")
 
         # set up menus
-        menu = my.get_menu()
+        menu = self.get_menu()
         SmartMenu.add_smart_menu_set( button, { 'MENU_ITEM': menu } )
         SmartMenu.assign_as_local_activator( button, "MENU_ITEM", True )
 
@@ -96,7 +96,7 @@ class ReportsWdg(BaseRefreshWdg):
 
 
 
-    def get_menu(my):
+    def get_menu(self):
         menu = Menu(width=180)
         menu_item = MenuItem(type='title', label='Actions')
         menu.add(menu_item)
@@ -189,7 +189,7 @@ class ReportsWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -199,7 +199,7 @@ class ReportsWdg(BaseRefreshWdg):
         #top.add_style("height: 550px")
 
         top.add_class("spt_reports_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
@@ -322,7 +322,7 @@ class ReportsWdg(BaseRefreshWdg):
         file_path="%s/../config/reports-conf.xml" % (dir_name)
         config = WidgetConfig.get(file_path=file_path, view="definition")
 
-        category = my.kwargs.get('category')
+        category = self.kwargs.get('category')
 
         # get all of the configs from the database
         if not category or category in ["custom_reports", "custom_charts"]:
@@ -341,7 +341,7 @@ class ReportsWdg(BaseRefreshWdg):
             db_configs = []
 
 
-        element_names = my.kwargs.get("element_names")
+        element_names = self.kwargs.get("element_names")
         if element_names is None:
             element_names = config.get_element_names()
 
@@ -547,7 +547,7 @@ class ReportsWdg(BaseRefreshWdg):
             'type': 'click_up',
             'category': category,
             'element_names': element_names,
-            'class_name': Common.get_full_class_name(my),
+            'class_name': Common.get_full_class_name(self),
             'cbjs_action': '''
             var kwargs = {
                 is_refresh: true,
@@ -599,7 +599,7 @@ class ReportsWdg(BaseRefreshWdg):
             td.add("There are no reports defined.")
             td.add_style("padding: 50px")
 
-            if my.kwargs.get("is_refresh") in ['true', True]:
+            if self.kwargs.get("is_refresh") in ['true', True]:
                 return inner
             else:
                 return top
@@ -684,7 +684,7 @@ class ReportsWdg(BaseRefreshWdg):
             spt.tab.add_new(bvr.title, bvr.title, bvr.class_name, bvr.kwargs);
             '''
             }
-            schema_wdg = my.get_section_wdg(title, description, image, behavior)
+            schema_wdg = self.get_section_wdg(title, description, image, behavior)
 
             schema_wdg.add_behavior( {
             'type': 'load',
@@ -712,7 +712,7 @@ class ReportsWdg(BaseRefreshWdg):
         #tab = TabWdg(show_add=False)
         #inner.add(tab)
 
-        if my.kwargs.get("is_refresh") in ['true', True]:
+        if self.kwargs.get("is_refresh") in ['true', True]:
             return inner
         else:
             return top
@@ -721,8 +721,8 @@ class ReportsWdg(BaseRefreshWdg):
 __all__.append("BigTableTest")
 class BigTableTest(BaseRefreshWdg):
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("top")
 
         top.add( '''

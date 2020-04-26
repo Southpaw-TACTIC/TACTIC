@@ -18,13 +18,13 @@ exec( get_site_import(__file__) )
 
 class Index(AppServer):
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         return IndexWdg()
 
-    def get_top_wdg(my):
+    def get_top_wdg(self):
         from tactic.ui.app import TopWdg
-        my.top = TopWdg()
-        body = my.top.get_body()
+        self.top = TopWdg()
+        body = self.top.get_body()
         body.add_class("body_login")
-        return my.top
+        return self.top
 

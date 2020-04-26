@@ -28,27 +28,27 @@ def convert_sqlserver_upgrade(namespace):
 # This will convert the upgrade script to one which is compatible with
 # SQLSever 
 class BaseSQLConverter(object):
-    def __init__(my, vendor):
-        my.vendor = vendor
-        my.namespace = None
+    def __init__(self, vendor):
+        self.vendor = vendor
+        self.namespace = None
 
 
-    def convert_upgrade(my, namespace):
+    def convert_upgrade(self, namespace):
 
-        my.namespace = namespace
+        self.namespace = namespace
 
         upgrade_dir = Environment.get_upgrade_dir() 
         tmp_dir = Environment.get_tmp_dir()
 
         src_path ="%s/project/%s_upgrade.py" % (upgrade_dir, namespace)
-        dst_path = "%s/upgrade/%s/%s_upgrade.py" % (tmp_dir, my.vendor, namespace)
+        dst_path = "%s/upgrade/%s/%s_upgrade.py" % (tmp_dir, self.vendor, namespace)
 
-        my.convert_file(src_path, dst_path)
+        self.convert_file(src_path, dst_path)
 
         return dst_path
 
 
-    def convert_bootstrap(my):
+    def convert_bootstrap(self):
         upgrade_dir = Environment.get_upgrade_dir() 
 
         file_names = [
@@ -58,16 +58,16 @@ class BaseSQLConverter(object):
         ]
         for file_name in file_names:
             src_file = "%s/postgresql/%s" % (upgrade_dir, file_name)
-            dst_file = "%s/%s/%s" % (upgrade_dir, my.vendor.lower(), file_name)
+            dst_file = "%s/%s/%s" % (upgrade_dir, self.vendor.lower(), file_name)
             print "Converting .."
             print "  from: ", src_file
             print "  to:   ", dst_file
-            my.convert_file(src_file, dst_file)
+            self.convert_file(src_file, dst_file)
 
 
 
 
-    def convert_file(my, src_path, dst_path):
+    def convert_file(self, src_path, dst_path):
 
         upgrade_dir = Environment.get_upgrade_dir() 
         tmp_dir = Environment.get_tmp_dir()
@@ -80,12 +80,12 @@ class BaseSQLConverter(object):
         f2 = open(dst_path, 'w')
 
         # prepend lines
-        lines = my.get_prepend_lines()
+        lines = self.get_prepend_lines()
         for line in lines:
             f2.write(line)
 
         for line in f.xreadlines():
-            line = my.handle_line(line)
+            line = self.handle_line(line)
             if line == None:
                 continue
             f2.write(line)
@@ -96,8 +96,8 @@ class BaseSQLConverter(object):
         return dst_path
 
 
-    def get_prepend_lines(my):
-        if my.namespace:
+    def get_prepend_lines(self):
+        if self.namespace:
             return []
         else:
             return ["SET QUOTED_IDENTIFIER ON;\n"];
@@ -106,18 +106,18 @@ class BaseSQLConverter(object):
 
 class SQLServerConverter(BaseSQLConverter):
 
-    def __init__(my):
-        my.vendor = 'SQLServer'
-        my.namespace = None
+    def __init__(self):
+        self.vendor = 'SQLServer'
+        self.namespace = None
 
 
-    def handle_line(my, line):
-        # FIXME: this could be genealized with my.vendor
+    def handle_line(self, line):
+        # FIXME: this could be genealized with self.vendor
         if line.startswith("class "):
-            line = "class %s%sUpgrade(BaseUpgrade):\n" % (my.vendor, my.namespace.capitalize())
+            line = "class %s%sUpgrade(BaseUpgrade):\n" % (self.vendor, self.namespace.capitalize())
 
         elif line.startswith("__all__ "):
-            line = "__all__ = ['%s%sUpgrade']\n" % (my.vendor, my.namespace.capitalize())
+            line = "__all__ = ['%s%sUpgrade']\n" % (self.vendor, self.namespace.capitalize())
 
 
         #if line.find("timestamp") != -1 and line.find("now()") == -1:

@@ -24,13 +24,13 @@ import os
 
 class FilePropertiesWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        path = my.kwargs.get("path")
-        md5 = my.kwargs.get("md5")
-        snapshot_code = my.kwargs.get("snapshot_code")
+        path = self.kwargs.get("path")
+        md5 = self.kwargs.get("md5")
+        snapshot_code = self.kwargs.get("snapshot_code")
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 10px")
         top.add_color("background", "background", -5)
 
@@ -48,7 +48,7 @@ class FilePropertiesWdg(BaseRefreshWdg):
         info_wdg.add_style("padding: 5px")
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         sobject = Search.get_by_search_key(search_key)
 
 

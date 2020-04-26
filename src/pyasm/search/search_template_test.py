@@ -22,15 +22,15 @@ import unittest
 
 class TestCmd(Command):
 
-    def __init__(my, sobject):
-        my.sobject = sobject
+    def __init__(self, sobject):
+        self.sobject = sobject
 
 
-    def execute(my):
-        my.sobject.set_value("description", "whatever2")
-        my.sobject.commit()
+    def execute(self):
+        self.sobject.set_value("description", "whatever2")
+        self.sobject.commit()
 
-        my.description = "changed description to 'whatever'"
+        self.description = "changed description to 'whatever'"
 
 
 
@@ -38,14 +38,14 @@ class TestCmd(Command):
 class SearchTest(unittest.TestCase):
 
 
-    def setUp(my):
+    def setUp(self):
         Batch()
 
-    def test_all(my):
-        my._test_search_type()
+    def test_all(self):
+        self._test_search_type()
 
 
-    def _test_search_type(my):
+    def _test_search_type(self):
         '''tests search type as an object'''
 
         # set the template and instantiate
@@ -59,8 +59,8 @@ class SearchTest(unittest.TestCase):
         print search_type.get_base_key()
         print search_type.get_full_key()
 
-        my.assertEquals("prod/template", search_type.get_base_key())
-        my.assertEquals("prod/template?prod=prod2",search_type.get_full_key())
+        self.assertEquals("prod/template", search_type.get_base_key())
+        self.assertEquals("prod/template?prod=prod2",search_type.get_full_key())
 
         search = Search(search_type)
         sobjects = search.do_search()

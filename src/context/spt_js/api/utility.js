@@ -54,11 +54,11 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
     if (! kwargs) kwargs = {};
 
     var retrieve = kwargs.retrieve == true;
-    var element = $(element_id);
+    var element = document.id(element_id);
 
     var input_list; 
     if (element) {
-        input_list = $(element_id).getElements(filter);
+        input_list = document.id(element_id).getElements(filter);
         // include top element if it is also an input
         if (element.hasClass && element.hasClass(filter.replace("\.", "")) ) {
             input_list.push(element);
@@ -217,7 +217,7 @@ spt.api.Utility.set_input_values2 = function(element_id, values, filter) {
         filter = ".spt_input";
 
     // get all of the inputs
-    var element = $(element_id);
+    var element = document.id(element_id);
     if (!element){
         //alert(element_id + 'is null');
     	return;
@@ -252,7 +252,7 @@ spt.api.Utility.set_input_values = function(element_id, values, filter) {
         filter = ".spt_input";
 
     // get all of the inputs
-    var element = $(element_id);
+    var element = document.id(element_id);
     if (!element){
         //alert(element_id + 'is null');
     	return;
@@ -285,7 +285,7 @@ spt.api.Utility.clear_inputs = function(element_id, filter) {
     if (filter == undefined)
         filter = ".spt_input";
 
-    var input_list = $(element_id).getElements(filter);
+    var input_list = document.id(element_id).getElements(filter);
     for (var i = 0; i < input_list.length; i++) {
         var filter = input_list[i];
         if (filter.type =='checkbox') {
@@ -321,7 +321,7 @@ spt.api.Utility.get_inputs = function(element_id, name, filter) {
         filter = ".spt_input";
 
     // todo: this is a little heavy to search linearly
-    var input_list = $(element_id).getElements(filter);
+    var input_list = document.id(element_id).getElements(filter);
     var list = [];
     for (var i = 0; i < input_list.length; i++) {
         var input = input_list[i];
@@ -359,7 +359,7 @@ spt.api.Utility.get_input = function(element_id, name, filter) {
 spt.api.Utility.toggle_display = function(element_id)
 {
 
-    var element = $(element_id);
+    var element = document.id(element_id);
     if (element == null) {
         return;
     }
@@ -408,7 +408,7 @@ spt.api.Utility.set_display_on = function(element_id)
                 element.style.display = "inline"
             else 
                 element.style.display = "block"
-            $( element_id ).setStyle('opacity',1) 
+            document.id( element_id ).setStyle('opacity',1) 
         }
     }
 }

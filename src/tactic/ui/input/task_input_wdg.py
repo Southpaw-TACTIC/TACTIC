@@ -24,12 +24,12 @@ class TaskSObjectInputWdg(BaseInputWdg):
     ''' This is mostly used in EditWdg only, for display purpose rather than editing.
     When used in insert, it will insert the parent_key '''
 
-    def get_display(my):
-        current = my.get_current_sobject()
+    def get_display(self):
+        current = self.get_current_sobject()
 
         if current.is_insert():
             widget = Widget()
-            parent_key = my.get_option('parent_key')
+            parent_key = self.get_option('parent_key')
             if parent_key:
                 parent = SearchKey.get_by_search_key(parent_key)
                 if parent:
@@ -42,7 +42,7 @@ class TaskSObjectInputWdg(BaseInputWdg):
 
                 #raise TacticException('Task creation aborted since parent is undetermined. Please check the configuration that generates this table.')
 
-            text = HiddenWdg(my.get_input_name())
+            text = HiddenWdg(self.get_input_name())
             text.set_option('size','40')
             text.set_value(parent_key)
 
@@ -63,7 +63,7 @@ class TaskSObjectInputWdg(BaseInputWdg):
                 return widget
         
         # What is this look up code for?
-        text = TextWdg(my.get_input_name())
+        text = TextWdg(self.get_input_name())
         behavior = {
             'type': 'keyboard',
             'kbd_handler_name': 'DgTableMultiLineTextEdit'

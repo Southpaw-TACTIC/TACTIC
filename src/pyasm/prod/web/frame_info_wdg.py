@@ -27,11 +27,11 @@ from version_history_wdg import *
 
 class IFrameLink(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        widget_class = my.get_option("class")
+        widget_class = self.get_option("class")
         
         if widget_class == '':
             raise WidgetException("No widget class defined")
@@ -46,7 +46,7 @@ class IFrameLink(BaseTableElementWdg):
         iframe.set_width(90)
         action = iframe.get_on_script(ref)
 
-        info_type = my.get_option("info_type")
+        info_type = self.get_option("info_type")
         
         button = IconButtonWdg("%s info" % info_type, IconWdg.INFO)
         button.add_event("onclick", "%s" % (action) )
@@ -58,7 +58,7 @@ class IFrameLink(BaseTableElementWdg):
 
 class FrameInfoWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         search_key = web.get_form_value("search_key")
@@ -115,9 +115,9 @@ class FrameInfoWdg(Widget):
         
         for file_node in file_nodes: 
             if Xml.get_attribute(file_node, 'type') == 'main':
-                file_name, frame_range = my._get_frame_info(file_node, sobject)
+                file_name, frame_range = self._get_frame_info(file_node, sobject)
             if Xml.get_attribute(file_node, 'type') == 'icon':
-                icon_file_name, icon_frame_range = my._get_frame_info(file_node, sobject)
+                icon_file_name, icon_frame_range = self._get_frame_info(file_node, sobject)
             
         file_names = [file_name]
         icon_file_names = [icon_file_name]        
@@ -155,18 +155,18 @@ class FrameInfoWdg(Widget):
         widget.add(div)
 
         widget.add( "<h3>Render History</h3>" )
-        widget.add( my.get_render_history(renders) )
+        widget.add( self.get_render_history(renders) )
 
         return widget
 
-    def _get_frame_info(my, file_node, sobject):
+    def _get_frame_info(self, file_node, sobject):
         '''get the full file name and frame range'''
         file_name = Snapshot._get_file_name(file_node)
         frame_range = sobject.get_frame_range()
 
         return file_name, frame_range
 
-    def get_render_history(my, renders):
+    def get_render_history(self, renders):
         table = TableWdg("prod/render", "history")
         table.set_sobjects( renders )
         return table
@@ -181,12 +181,12 @@ class FrameInfoWdg(Widget):
 class FrameRangeWdg(BaseTableElementWdg):
     '''widget that displays a simple frame range'''
 
-    def get_title(my):
+    def get_title(self):
         return "Frame Range"
         
 
-    def get_simple_display(my):
-        sobject = my.get_current_sobject()
+    def get_simple_display(self):
+        sobject = self.get_current_sobject()
         start = sobject.get_frame_start()
         end = sobject.get_frame_end()
         range = "%s - %s" % (start, end)
@@ -195,7 +195,7 @@ class FrameRangeWdg(BaseTableElementWdg):
         inout = "%s - %s" % (frame_in, frame_out)
         return '%s<br/>(%s)' %(range, inout)
 
-    def _get_frame_num(my, sobject, attr):
+    def _get_frame_num(self, sobject, attr):
         if not sobject.has_value(attr):
             return 0
         frame_start = sobject.get_value(attr)
@@ -204,7 +204,7 @@ class FrameRangeWdg(BaseTableElementWdg):
         except ValueError, e:
             return 1     
     
-    def _get_frame_handles(my, sobject):
+    def _get_frame_handles(self, sobject):
         frame_in = sobject.get_value("frame_in", no_exception=True)
         frame_out = sobject.get_value("frame_out", no_exception=True)
         if frame_in:
@@ -217,8 +217,8 @@ class FrameRangeWdg(BaseTableElementWdg):
             frame_out = 0
         return frame_in, frame_out
 
-    def get_text_value(my):
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        sobject = self.get_current_sobject()
         if isinstance(sobject, Shot):
             frame_range = sobject.get_frame_range()
             frame_start = frame_range.frame_start
@@ -226,10 +226,10 @@ class FrameRangeWdg(BaseTableElementWdg):
             frame_in, frame_out = sobject.get_frame_handles()
         else:
             from pyasm.prod.biz import FrameRange
-            frame_start = my._get_frame_num(sobject, "tc_frame_start")
-            frame_end = my._get_frame_num(sobject, "tc_frame_end")
+            frame_start = self._get_frame_num(sobject, "tc_frame_start")
+            frame_end = self._get_frame_num(sobject, "tc_frame_end")
             frame_range = FrameRange(frame_start, frame_end, 1 )
-            frame_in, frame_out = my._get_frame_handles(sobject)
+            frame_in, frame_out = self._get_frame_handles(sobject)
 
         if frame_range.frame_end == frame_range.frame_start == 0:
             return 'n/a'
@@ -243,18 +243,18 @@ class FrameRangeWdg(BaseTableElementWdg):
 
         return result
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         if isinstance(sobject, Shot):
             frame_range = sobject.get_frame_range()
             frame_in, frame_out = sobject.get_frame_handles()
             frame_notes = sobject.get_frame_notes()
         else:
             from pyasm.prod.biz import FrameRange
-            frame_start = my._get_frame_num(sobject, "tc_frame_start")
-            frame_end = my._get_frame_num(sobject, "tc_frame_end")
+            frame_start = self._get_frame_num(sobject, "tc_frame_start")
+            frame_end = self._get_frame_num(sobject, "tc_frame_end")
             frame_range = FrameRange(frame_start, frame_end, 1 )
-            frame_in, frame_out = my._get_frame_handles(sobject)
+            frame_in, frame_out = self._get_frame_handles(sobject)
             frame_notes = sobject.get_value("frame_note", no_exception=True)
         
         frame_notes = WikiUtil().convert(frame_notes)    
@@ -368,7 +368,7 @@ class FrameRangeWdg(BaseTableElementWdg):
 
 class BackPlateInfoWdg(FrameInfoWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         search_key = web.get_form_value("search_key")
@@ -395,9 +395,9 @@ class BackPlateInfoWdg(FrameInfoWdg):
         
         for file_node in file_nodes: 
             if Xml.get_attribute(file_node, 'type') == 'main':
-                file_name, frame_range = my._get_frame_info(file_node, sobject)
+                file_name, frame_range = self._get_frame_info(file_node, sobject)
             if Xml.get_attribute(file_node, 'type') == 'icon':
-                icon_file_name, icon_frame_range = my._get_frame_info(file_node, sobject)
+                icon_file_name, icon_frame_range = self._get_frame_info(file_node, sobject)
             
         file_names = [file_name]
         icon_file_names = [icon_file_name]        

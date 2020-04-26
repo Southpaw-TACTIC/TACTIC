@@ -18,21 +18,21 @@ from pyasm.web import DivWdg
 
 class TitleWdg(BaseRefreshWdg):
 
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
 
-        my.kwargs = kwargs
-        my.name_of_title = kwargs.get("name_of_title")
-        if not my.name_of_title:
-            my.name_of_title = '&nbsp'
+        self.kwargs = kwargs
+        self.name_of_title = kwargs.get("name_of_title")
+        if not self.name_of_title:
+            self.name_of_title = '&nbsp'
 
-        my.help_alias = kwargs.get("help_alias")
-        if not my.help_alias:
-            my.help_alias = 'main'
+        self.help_alias = kwargs.get("help_alias")
+        if not self.help_alias:
+            self.help_alias = 'main'
 
-    def get_display(my):
+    def get_display(self):
 
         title = DivWdg()
-        title.add(my.name_of_title)
+        title.add(self.name_of_title)
 
         title.add_style("padding: 5px")
         title.add_style("margin: -10px -10px 10px -10px")
@@ -41,12 +41,12 @@ class TitleWdg(BaseRefreshWdg):
         #title.add_gradient("background", "background", -10)
         title.add_color("background", "background", -3)
         title.add_color("color", "color", -10)
-        if my.help_alias:
+        if self.help_alias:
             title.add_style('height: 20px')
         title.add_border()
 
         from tactic.ui.app import HelpButtonWdg
-        help_wdg = HelpButtonWdg(alias=my.help_alias)
+        help_wdg = HelpButtonWdg(alias=self.help_alias)
 
         help_wdg.add_style("float: right")
         help_wdg.add_style("margin-top: -5px")

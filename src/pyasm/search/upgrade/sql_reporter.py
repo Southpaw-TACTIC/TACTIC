@@ -15,32 +15,32 @@
 
 class SqlReporter:
 
-    def __init__(my, target, standard):
-        my.target = target
-        my.standard = standard
+    def __init__(self, target, standard):
+        self.target = target
+        self.standard = standard
 
 
-    def ignore_table(my, table):
+    def ignore_table(self, table):
         if table.startswith("pga_") or table.startswith("pg_"):
             return True
         else:
             return False
 
 
-    def compare_tables(my):
+    def compare_tables(self):
         
-        t_tables = my.target.get_tables()
-        s_tables = my.standard.get_tables()
+        t_tables = self.target.get_tables()
+        s_tables = self.standard.get_tables()
 
         print "-- extra tables: ", [x for x in t_tables if x not in s_tables]
         missing_tables = [x for x in s_tables if x not in t_tables]
         print "-- missing tables: ", missing_tables
 
 
-    def compare_all_schema(my):
+    def compare_all_schema(self):
         # get union of all tables
-        t_tables = my.target.get_tables()
-        s_tables = my.standard.get_tables()
+        t_tables = self.target.get_tables()
+        s_tables = self.standard.get_tables()
 
         missing_tables = [x for x in s_tables if x not in t_tables]
         tables = t_tables
@@ -48,15 +48,15 @@ class SqlReporter:
 
 
         for table in tables:
-            if my.ignore_table(table):
+            if self.ignore_table(table):
                 continue
-            my.compare_table_schema(table)
+            self.compare_table_schema(table)
 
 
-    def compare_table_schema(my, table):
+    def compare_table_schema(self, table):
         '''dumps a readable comparison between 2 tables'''
-        target_data = my.target.get_data(table)
-        standard_data = my.standard.get_data(table)
+        target_data = self.target.get_data(table)
+        standard_data = self.standard.get_data(table)
 
         columns = target_data.columns
         columns2 = standard_data.columns
@@ -145,18 +145,18 @@ class SqlReporter:
 
 
 
-    def create_missing_tables(my):
-        t_tables = my.target.get_tables()
-        s_tables = my.standard.get_tables()
+    def create_missing_tables(self):
+        t_tables = self.target.get_tables()
+        s_tables = self.standard.get_tables()
 
         missing_tables = [x for x in s_tables if x not in t_tables]
         
         file = open("upgrade.sql","w")
 
         for table in missing_tables:
-            if my.ignore_table(table):
+            if self.ignore_table(table):
                 continue
-            data = my.standard.get_data(table)
+            data = self.standard.get_data(table)
             print data.get_create_table()
             file.write( data.get_create_table() )
 
@@ -164,47 +164,47 @@ class SqlReporter:
  
 
 
-    def create_extra_tables(my):
-        t_tables = my.target.get_tables()
-        s_tables = my.standard.get_tables()
+    def create_extra_tables(self):
+        t_tables = self.target.get_tables()
+        s_tables = self.standard.get_tables()
 
         extra_tables = [x for x in t_tables if x not in s_tables]
 
         
         for table in extra_tables:
-            if my.ignore_table(table):
+            if self.ignore_table(table):
                 continue
-            data = my.target.get_data(table)
+            data = self.target.get_data(table)
 
             print data.get_create_table()
 
  
 
 
-    def create_diffs(my):
-        t_tables = my.target.get_tables()
-        s_tables = my.standard.get_tables()
+    def create_diffs(self):
+        t_tables = self.target.get_tables()
+        s_tables = self.standard.get_tables()
 
         common_tables = [x for x in s_tables if x in t_tables]
 
         for table in common_tables:
-            target_data = my.target.get_data(table)
-            standard_data = my.standard.get_data(table)
+            target_data = self.target.get_data(table)
+            standard_data = self.standard.get_data(table)
             target_data.get_diff(standard_data)
             
 
 
 
-    def create_data_diffs(my):
-        t_tables = my.target.get_tables()
-        s_tables = my.standard.get_tables()
+    def create_data_diffs(self):
+        t_tables = self.target.get_tables()
+        s_tables = self.standard.get_tables()
 
         common_tables = [x for x in s_tables if x in t_tables]
 
         for table in common_tables:
             print "table: ", table
-            target_data = my.target.get_data(table)
-            standard_data = my.standard.get_data(table)
+            target_data = self.target.get_data(table)
+            standard_data = self.standard.get_data(table)
 
             for row_key,target_rows in target_data.rows.items():
 

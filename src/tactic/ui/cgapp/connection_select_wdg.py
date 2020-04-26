@@ -21,7 +21,7 @@ from tactic.ui.common import BaseRefreshWdg
 
 class ConnectionSelectWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg(id='AppSelectWdg', css='spt_panel')
         widget.add_style('padding-left','6px')

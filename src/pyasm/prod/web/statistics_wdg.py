@@ -23,7 +23,7 @@ from pyasm.prod.biz import ProdSetting
 class EpisodeCompletionWdg(TaskCompletionWdg):
     '''Shows the task completion for each episode'''
 
-    def get_tasks(my, sobject):
+    def get_tasks(self, sobject):
 
         search_type = SearchType.get("prod/shot").get_full_key()
 
@@ -42,9 +42,9 @@ class EpisodeCompletionWdg(TaskCompletionWdg):
 class FrameCompletionWdg(BaseTableElementWdg):
     '''Shows the frame completion for each episode'''
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         shots = sobject.get_all_children("prod/shot")
        
@@ -108,12 +108,12 @@ class FrameCompletionWdg(BaseTableElementWdg):
 
         table.add_row()
         for process in processes:
-            time = my.convert_to_time(completion[process])
+            time = self.convert_to_time(completion[process])
             td = table.add_cell("%s (%s)" % (time, completion[process]))
             if completion[process] == 0:
                 td.add_style("color: #ccc")
 
-        table.add_cell("%s (%s)" % (my.convert_to_time(total), total) )
+        table.add_cell("%s (%s)" % (self.convert_to_time(total), total) )
 
 
         table.add_row_cell("<hr size='1'/>")
@@ -129,7 +129,7 @@ class FrameCompletionWdg(BaseTableElementWdg):
 
 
 
-    def convert_to_time(my, frames):
+    def convert_to_time(self, frames):
         fps = ProdSetting.get_value_by_key("fps")
         if not fps:
             fps = 24

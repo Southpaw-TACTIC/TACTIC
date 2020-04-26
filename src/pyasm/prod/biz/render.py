@@ -20,7 +20,7 @@ class Render(SObject):
 
     SEARCH_TYPE = "prod/render"
 
-    def get_defaults(my):
+    def get_defaults(self):
         # TODO: autogenerate code
 
         defaults = {
@@ -97,10 +97,10 @@ class Render(SObject):
 class RenderPolicy(SObject):
     SEARCH_TYPE = "prod/render_policy"
 
-    def get_resolution(my):
+    def get_resolution(self):
         try:
-            width = int( my.get_value("width") )
-            height = int( my.get_value("height") )
+            width = int( self.get_value("width") )
+            height = int( self.get_value("height") )
         except ValueError:
             width = 640
             height = 480

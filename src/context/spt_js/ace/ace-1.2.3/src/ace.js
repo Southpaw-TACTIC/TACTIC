@@ -5326,7 +5326,7 @@ var TextHighlightRules = function() {
                         if (rule.next.indexOf(prefix) !== 0)
                             rule.next = prefix + rule.next;
                     }
-                    if (rule.nextState && rule.nextState.indexOf(prefix) !== 0)
+                    if (rule.nextState && typeof rule.nextState == "string" && rule.nextState.indexOf(prefix) !== 0)
                         rule.nextState = prefix + rule.nextState;
                 }
             }

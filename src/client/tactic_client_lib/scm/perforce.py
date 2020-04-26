@@ -25,20 +25,20 @@ except Exception, e:
 
 class PerforceImpl(ScmImpl):
 
-    def __init__(my, **kwargs):
-        super(PerforceImpl, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        super(PerforceImpl, self).__init__(**kwargs)
 
-        port = my.kwargs.get("port")
-        my.user = my.kwargs.get("user")
-        my.depot = my.kwargs.get("depot")
-        password = my.kwargs.get("password")
-        client = my.kwargs.get("client")
+        port = self.kwargs.get("port")
+        self.user = self.kwargs.get("user")
+        self.depot = self.kwargs.get("depot")
+        password = self.kwargs.get("password")
+        client = self.kwargs.get("client")
 
-        my.sync_dir = my.kwargs.get("sync_dir")
+        self.sync_dir = self.kwargs.get("sync_dir")
 
 
-        if not my.depot:
-            my.depot = "depot"
+        if not self.depot:
+            self.depot = "depot"
 
 
         use_env = False
@@ -59,33 +59,33 @@ class PerforceImpl(ScmImpl):
                 del(os.environ['P4CLIENT'])
 
 
-        my.p4 = P4()
+        self.p4 = P4()
 
-        my.p4.user = str(my.user)
-        my.p4.port = str(port)
-        my.p4.password = str(password)
+        self.p4.user = str(self.user)
+        self.p4.port = str(port)
+        self.p4.password = str(password)
 
         if client:
-            my.p4.client = str(client)
+            self.p4.client = str(client)
 
-        my.p4.connect()
-        #my.log.append(str(my.p4.run("info")))
+        self.p4.connect()
+        #self.log.append(str(self.p4.run("info")))
 
-        if my.sync_dir:
-            my.set_sync_dir(my.sync_dir)
+        if self.sync_dir:
+            self.set_sync_dir(self.sync_dir)
 
-    def ping(my):
-        my.log.append("ping")
+    def ping(self):
+        self.log.append("ping")
         return "OK"
 
 
     #
     # user specific functions
     #
-    def is_logged_in(my):
-        my.log.append("p4 login -s")
+    def is_logged_in(self):
+        self.log.append("p4 login -s")
         try:
-            msg = my.p4.run("login", "-s")
+            msg = self.p4.run("login", "-s")
         except Exception, e:
             # for some reason, the "p4 login -s" command gives an exception
             # if you are not logged in
@@ -115,50 +115,50 @@ class PerforceImpl(ScmImpl):
     #
     # depot functions
     #
-    def add_depot(my, depot):
-        depot = my.p4.fetch_depot(depot)
-        my.p4.save_depot(depot)
+    def add_depot(self, depot):
+        depot = self.p4.fetch_depot(depot)
+        self.p4.save_depot(depot)
         return depot
 
-    def get_depots(my):
-        depots = my.p4.run("depots")
+    def get_depots(self):
+        depots = self.p4.run("depots")
         return depots
 
 
     #
     # branch functions
     #
-    def get_branches(my):
-        return my.p4.run("branches")
+    def get_branches(self):
+        return self.p4.run("branches")
 
 
 
     #
     # workspace functions
     #
-    def get_workspaces(my, user=None):
+    def get_workspaces(self, user=None):
         if not user:
-            user = my.user
+            user = self.user
         if user:
-            return my.p4.run("workspaces", "-u", user)
+            return self.p4.run("workspaces", "-u", user)
         else:
-            return my.p4.run("workspaces")
+            return self.p4.run("workspaces")
 
-    def get_workspace_info(my, workspace):
+    def get_workspace_info(self, workspace):
         if not workspace:
-            workspace = my.client_name
-        return my.p4.run("workspace", "-o", workspace)
+            workspace = self.client_name
+        return self.p4.run("workspace", "-o", workspace)
 
 
-    def check_workspace(my):
+    def check_workspace(self):
 
-        workspaces = my.get_workspaces()
+        workspaces = self.get_workspaces()
         workspaces = [x.get("client") for x in workspaces]
 
-        clientspec = my.p4.fetch_client()
+        clientspec = self.p4.fetch_client()
         client_name = clientspec.get("Client")
 
-        my.log.append(workspaces)
+        self.log.append(workspaces)
 
         if client_name not in workspaces:
             return False
@@ -167,7 +167,7 @@ class PerforceImpl(ScmImpl):
 
 
 
-    def set_sync_dir(my, sync_dir):
+    def set_sync_dir(self, sync_dir):
         '''This function sets the user's workspace.  It allows for dynamic
         setting of user's workspace depending on which directory the user
         is getting the files from.  However, most will have this location
@@ -180,42 +180,42 @@ class PerforceImpl(ScmImpl):
         if not sync_dir:
             raise Exception("Sync dir is None")
 
-        my.sync_dir = sync_dir
+        self.sync_dir = sync_dir
 
         # get the client
-        clientspec = my.p4.fetch_client()
-        clientspec["Client"] = my.client_name
-        clientspec["Root"] = my.sync_dir
-        clientspec["Owner"] = my.user
+        clientspec = self.p4.fetch_client()
+        clientspec["Client"] = self.client_name
+        clientspec["Root"] = self.sync_dir
+        clientspec["Owner"] = self.user
 
         view = []
-        view.append("//%s/... //%s/..." % (my.depot, my.client_name) )
+        view.append("//%s/... //%s/..." % (self.depot, self.client_name) )
 
         clientspec["View"] = view
-        my.p4.save_client(clientspec)
+        self.p4.save_client(clientspec)
 
 
-    def add(my, path, changelist="default"):
+    def add(self, path, changelist="default"):
 
         if not changelist:
             changelist = "default"
 
 
-        my.log.append("p4 add -c %s %s" % (changelist, path))
-        my.p4.run("add", "-c", changelist, path)
+        self.log.append("p4 add -c %s %s" % (changelist, path))
+        self.p4.run("add", "-c", changelist, path)
 
 
-    def checkout(my, repo_dir, recurse=None, depth=None):
+    def checkout(self, repo_dir, recurse=None, depth=None):
 
         if not repo_dir.startswith("//"):
-            repo_dir = "//%s/%s" % (my.depot, repo_dir)
+            repo_dir = "//%s/%s" % (self.depot, repo_dir)
         if not repo_dir.endswith("/..."):
             repo_dir = "%s/..." % repo_dir
 
-        my.log.append("sync -f %s" % repo_dir)
+        self.log.append("sync -f %s" % repo_dir)
         try:
             #print "sync", "-f", repo_dir
-            sync_data = my.p4.run("sync", "-f", repo_dir)
+            sync_data = self.p4.run("sync", "-f", repo_dir)
         except Exception, e:
             if str(e).find("up-to-date") == -1:
                 raise
@@ -239,99 +239,99 @@ class PerforceImpl(ScmImpl):
             "error": error
         }
 
-    def checkout_file(my, repo_path):
+    def checkout_file(self, repo_path):
         # ????
-        my.p4.run("sync", "-f", repo_path)
+        self.p4.run("sync", "-f", repo_path)
 
 
-    def revert(my, sync_path):
-        my.log.append("p4 revert %s" % sync_path)
-        return my.p4.run("revert", "-a", sync_path)
+    def revert(self, sync_path):
+        self.log.append("p4 revert %s" % sync_path)
+        return self.p4.run("revert", "-a", sync_path)
 
 
 
-    def restore(my, sync_path):
-        my.log.append("p4 revert %s" % sync_path)
-        return my.p4.run("revert", sync_path)
+    def restore(self, sync_path):
+        self.log.append("p4 revert %s" % sync_path)
+        return self.p4.run("revert", sync_path)
 
 
-    def edit(my, repo_path, changelist="default"):
+    def edit(self, repo_path, changelist="default"):
         if not changelist:
             changelist = 'default'
-        my.log.append("p4 edit -c %s %s" % (changelist, repo_path))
-        return my.p4.run("edit", "-c", changelist, repo_path )
+        self.log.append("p4 edit -c %s %s" % (changelist, repo_path))
+        return self.p4.run("edit", "-c", changelist, repo_path )
 
 
 
-    def update(my, repo_path, recurse=None, depth=None):
+    def update(self, repo_path, recurse=None, depth=None):
         pass
 
 
-    def export(my, repo_path, dst, recurse=None, depth=None):
+    def export(self, repo_path, dst, recurse=None, depth=None):
         pass
 
 
 
-    def file_log(my, repo_path):
-        my.log.append("p4 filelog %s" % repo_path)
-        return my.p4.run("filelog", repo_path )
+    def file_log(self, repo_path):
+        self.log.append("p4 filelog %s" % repo_path)
+        return self.p4.run("filelog", repo_path )
 
 
 
-    def commit_file(my, path, description, keep_editable=False):
+    def commit_file(self, path, description, keep_editable=False):
         '''Commit a bunch of files'''
 
 
-        if not path.startswith(my.sync_dir):
-            path = "%s/%s" % (my.sync_dir, path)
+        if not path.startswith(self.sync_dir):
+            path = "%s/%s" % (self.sync_dir, path)
 
-        status = my.status(path).get(path)
+        status = self.status(path).get(path)
 
         if status == 'unversioned':
-            my.add(path)
+            self.add(path)
         elif status == 'missing':
-            my.checkout_file(path)
+            self.checkout_file(path)
 
         elif status == 'modified':
             # not really sure how it can be "modified" without having
             # edited it.
-            my.edit(path)
+            self.edit(path)
         elif status == 'same':
-            my.edit(path)
+            self.edit(path)
         elif status == None:
             # if this file is unknown, then add it.
-            my.add(path)
+            self.add(path)
 
         # first create a new changelist
-        #changelist = my.add_changelist(description)
+        #changelist = self.add_changelist(description)
 
         # NOTE: you can only submit individual file to check-in
         # from the default changelist
-        my.log.append("p4 submit -r -d \"%s\" \"%s\"" % (description, path))
+        self.log.append("p4 submit -r -d \"%s\" \"%s\"" % (description, path))
         if keep_editable:
-            ret_val = my.p4.run("submit", "-r", "-d", description, path)
+            ret_val = self.p4.run("submit", "-r", "-d", description, path)
         else:
-            ret_val = my.p4.run("submit", "-d", description, path)
+            ret_val = self.p4.run("submit", "-d", description, path)
         return ret_val
 
 
-    def commit_changelist(my, changelist="default", description=""):
+    def commit_changelist(self, changelist="default", description=""):
         keep_open = False       # -r option
         if changelist in [None, 'default']:
-            my.log.append("p4 submit -d \"%s\"" % description)
-            ret_val = my.p4.run("submit", "-d", description)
+            self.log.append("p4 submit -d \"%s\"" % description)
+            ret_val = self.p4.run("submit", "-d", description)
         else:
-            my.log.append("p4 submit -r -c %s" % changelist)
-            ret_val = my.p4.run("submit", "-r", "-c", changelist)
+            self.log.append("p4 submit -r -c %s" % changelist)
+            ret_val = self.p4.run("submit", "-r", "-c", changelist)
         return ret_val
 
 
 
 
-    def status(my, sync_dir=None):
+    def status(self, sync_dir=None):
 
         if not sync_dir:
-            sync_dir = my.sync_dir
+            sync_dir = self.sync_dir
 
 
         sync_expr = sync_dir
@@ -343,17 +343,17 @@ class PerforceImpl(ScmImpl):
 
         try:
             if sync_expr:
-                my.log.append("p4 diff -sl -f %s"  % sync_expr)
-                diff = my.p4.run("diff", "-sl", "-f", sync_expr)
+                self.log.append("p4 diff -sl -f %s"  % sync_expr)
+                diff = self.p4.run("diff", "-sl", "-f", sync_expr)
             else:
-                my.log.append("p4 diff -sl -f")
-                diff = my.p4.run("diff", "-sl", "-f")
+                self.log.append("p4 diff -sl -f")
+                diff = self.p4.run("diff", "-sl", "-f")
 
         except Exception, e:
             # if there is an exception, likely this is because there are 
             # no files on the client and Perforce does not like this
             print "WARNING: ", e
-            print my.p4.run("info")
+            print self.p4.run("info")
             diff = []
 
 
@@ -371,13 +371,13 @@ class PerforceImpl(ScmImpl):
 
 
         # find opened files
-        opened_files = my.p4.run("opened")
+        opened_files = self.p4.run("opened")
         new_files = {} 
         for opened_file in opened_files:
             if opened_file['action'] != 'add':
                 continue
             path = opened_file['depotFile']
-            path = path.replace("//%s" % my.depot, my.sync_dir)
+            path = path.replace("//%s" % self.depot, self.sync_dir)
             new_files[path] = 'add'
 
         for root, dirnames, basenames in os.walk(sync_dir):
@@ -414,39 +414,39 @@ class PerforceImpl(ScmImpl):
 
 
 
-    def add_changelist(my, description, changelist=None):
-        changespec = my.p4.fetch_change()
+    def add_changelist(self, description, changelist=None):
+        changespec = self.p4.fetch_change()
         changespec['Description'] = description
-        changespec['User'] = my.user
-        info = my.p4.save_change(changespec)
+        changespec['User'] = self.user
+        info = self.p4.save_change(changespec)
         return info
 
 
-    def get_changelist_files(my, changelist='default'):
-        files = my.p4.run("opened", "-c", changelist)
+    def get_changelist_files(self, changelist='default'):
+        files = self.p4.run("opened", "-c", changelist)
         return files
 
-    def get_changelist_info(my, changelist='default'):
-        info = my.p4.run("describe", changelist)
+    def get_changelist_info(self, changelist='default'):
+        info = self.p4.run("describe", changelist)
         return info
 
 
-    def get_changelists_by_user(my, user=None):
+    def get_changelists_by_user(self, user=None):
         if not user:
-            user = my.user
-        changeslists = my.p4.run("changelists", "-u", user, "-s", "pending", "-c", my.client_name)
+            user = self.user
+        changeslists = self.p4.run("changelists", "-u", user, "-s", "pending", "-c", self.client_name)
         return changeslists
 
 
 
 
-    def get_changelists(my, counter='tactic'):
-        changeslists = my.p4.run("review", "-t", counter)
+    def get_changelists(self, counter='tactic'):
+        changeslists = self.p4.run("review", "-t", counter)
         return changeslists
 
 
-    def set_changelist_counter(my, changelist, counter='tactic'):
-        changeslists = my.p4.run("review", "-t", counter, '-c', changelist)
+    def set_changelist_counter(self, changelist, counter='tactic'):
+        changeslists = self.p4.run("review", "-t", counter, '-c', changelist)
         return changeslists
 
 

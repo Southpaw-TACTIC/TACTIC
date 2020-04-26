@@ -18,15 +18,15 @@ from pyasm.search.upgrade.project import *
 
 class EffectsUpgrade(BaseUpgrade):
 
-    def upgrade_20061102(my):
-        my.run_sql('''
+    def upgrade_20061102(self):
+        self.run_sql('''
         -- add a keywords column to the art_reference table --
         alter table art_reference add column keywords text;
         ''')
 
 
-    def upgrade_20060907(my):
-        my.run_sql('''
+    def upgrade_20060907(self):
+        self.run_sql('''
         ALTER TABLE texture ADD COLUMN pipeline varchar(30);
         ''')
 

@@ -28,24 +28,24 @@ class EditorialTabWdg(BaseTabWdg):
     TAB_KEY = "editorial_tab"
     DAILIES_TAB = "Dailies"
     
-    def init(my):
+    def init(self):
         help = HelpItemWdg('Editorial', 'The Editorial area lets users manage bins for media submission, review dailies, organize plates and cut sequences.')
-        my.add(help)
+        self.add(help)
 
-        my.setup_tab(my.TAB_KEY, css=TabWdg.SMALL)
+        self.setup_tab(self.TAB_KEY, css=TabWdg.SMALL)
         
 
 
-    def handle_tab(my, tab):
-        tab.add(my.get_bins, _("Bins") )
-        tab.add(my.get_submissions_in_bins, my.DAILIES_TAB)
-        tab.add(my.get_plate_wdg, _("Plates") )
-        tab.add(my.get_cut_seq_wdg, _("Cut Sequences") )
-        #tab.add(my.get_director_notes, "Director Notes")
-        #tab.add(my.get_final_approval, "Final Approval")
+    def handle_tab(self, tab):
+        tab.add(self.get_bins, _("Bins") )
+        tab.add(self.get_submissions_in_bins, self.DAILIES_TAB)
+        tab.add(self.get_plate_wdg, _("Plates") )
+        tab.add(self.get_cut_seq_wdg, _("Cut Sequences") )
+        #tab.add(self.get_director_notes, "Director Notes")
+        #tab.add(self.get_final_approval, "Final Approval")
 
 
-    def get_bins(my):
+    def get_bins(self):
         widget = Widget()
     
         nav = DivWdg(css='filter_box')
@@ -81,16 +81,16 @@ class EditorialTabWdg(BaseTabWdg):
     
         return widget
    
-    def _get_aux_data(my, sobjs):
+    def _get_aux_data(self, sobjs):
         info = SubmissionInfo(sobjs)
         aux_data = info.get_info()
         return aux_data 
 
-    def get_submissions_in_bins(my):
+    def get_submissions_in_bins(self):
         widget = Widget()
    
         help = HelpItemWdg('Dailies', 'Dailies tab show a list of submitted media for the bin selected. You can narrow down the submission of a particular asset by using the Item Filter.')
-        my.add(help)
+        self.add(help)
 
         nav = DivWdg(css='filter_box')
         #nav = FilterboxWdg()
@@ -141,7 +141,7 @@ class EditorialTabWdg(BaseTabWdg):
         search.add_order_by('timestamp desc')
 
         all_sobjs = search.get_sobjects()
-        all_aux_data = my._get_aux_data(all_sobjs)
+        all_aux_data = self._get_aux_data(all_sobjs)
 
         status_filter_value = status_filter.get_value()
         if status_filter_value:
@@ -158,7 +158,7 @@ class EditorialTabWdg(BaseTabWdg):
         sobjs = search.get_sobjects(redo=True)
         table.set_sobjects(sobjs)
       
-        aux_data = my._get_aux_data(sobjs)
+        aux_data = self._get_aux_data(sobjs)
         
         table.set_aux_data(aux_data)
         widget.add(nav)
@@ -173,7 +173,7 @@ class EditorialTabWdg(BaseTabWdg):
     
         return widget
 
-    def get_director_notes(my):
+    def get_director_notes(self):
         # FIXME: hard-coded director notes status
         task_status = "Waiting"
         
@@ -216,7 +216,7 @@ class EditorialTabWdg(BaseTabWdg):
 
 
 
-    def get_final_approval(my):
+    def get_final_approval(self):
         widget = Widget()
 
         nav = DivWdg(css='filter_box')
@@ -241,7 +241,7 @@ class EditorialTabWdg(BaseTabWdg):
 
     
 
-    def get_plate_wdg(my):
+    def get_plate_wdg(self):
         ''' get the plates tab'''
         search = Search("effects/plate")
 
@@ -271,13 +271,13 @@ class EditorialTabWdg(BaseTabWdg):
 
         return widget
 
-    def get_cut_seq_wdg(my):
+    def get_cut_seq_wdg(self):
         ''' get the cut sequences tab'''
         search = Search("prod/cut_sequence")
 
         widget = Widget()
         help = HelpItemWdg('Cut Sequences', 'Cut Sequences tab lets the user organize cuts for each sequence. You are only required to [Insert] once per sequence. Subsequent versions of the cut should be published via the [Publish] button.')
-        my.add(help)
+        self.add(help)
 
         div = DivWdg(css="filter_box")
         sequence_filter = SequenceFilterWdg()
@@ -310,9 +310,9 @@ class EditorialTabWdg(BaseTabWdg):
 
 class SubmissionListWdg(BaseRefreshWdg):
 
-    def get_search_wdg(my):
+    def get_search_wdg(self):
         search_type = "prod/submission"
-        type = my.kwargs.get('type') 
+        type = self.kwargs.get('type') 
         if not type:
             type = 'dailies'
         from tactic.ui.app import SearchWdg
@@ -351,16 +351,16 @@ class SubmissionListWdg(BaseRefreshWdg):
         
         return search_wdg
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg(css="spt_view_panel")
    
-        search_wdg = my.get_search_wdg()
+        search_wdg = self.get_search_wdg()
         widget.add(search_wdg)
         widget.add(HtmlElement.br())
         search = search_wdg.get_search()
        
-        type = my.kwargs.get('type')
-        view = my.kwargs.get('view')
+        type = self.kwargs.get('type')
+        view = self.kwargs.get('view')
         if not view:
             view = 'table'
         

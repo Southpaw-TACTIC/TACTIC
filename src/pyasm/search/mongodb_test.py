@@ -25,16 +25,16 @@ import unittest
 class SqlTest(unittest.TestCase):
 
 
-    def test_all(my):
+    def test_all(self):
 
         #test_env = UnittestEnvironment()
         #test_env.create()
 
         try:
-            my._test_get_by_search_keys()
-            my._test_relationship()
-            my._create_table()
-            my._test_search()
+            self._test_get_by_search_keys()
+            self._test_relationship()
+            self._create_table()
+            self._test_search()
 
         finally:
             #test_env.delete()
@@ -43,14 +43,14 @@ class SqlTest(unittest.TestCase):
 
 
 
-    def _test_get_by_search_keys(my):
+    def _test_get_by_search_keys(self):
         search_keys = ['table/posts?project=mongodb&code=POSTS52086a28e138236a389e670e']
         sobjects = Search.get_by_search_keys(search_keys, keep_order=True)
-        my.assertEquals( 1, len(sobjects) )
+        self.assertEquals( 1, len(sobjects) )
 
 
 
-    def _test_relationship(my):
+    def _test_relationship(self):
 
         search_type = "table/posts?project=mongodb"
         search_type2 = "table/posts2?project=mongodb"
@@ -59,19 +59,19 @@ class SqlTest(unittest.TestCase):
         schema = Schema.get()
 
         relationship = schema.get_relationship(search_type, search_type2)
-        my.assertEquals(None, relationship)
+        self.assertEquals(None, relationship)
 
         search_type2 = "sthpw/task"
         relationship = schema.get_relationship(search_type, search_type2)
-        my.assertEquals("search_id", relationship)
+        self.assertEquals("search_id", relationship)
 
         attrs = schema.get_relationship_attrs(search_type, search_type2)
-        my.assertEquals("*", attrs.get("to") )
-        my.assertEquals("search_type", attrs.get("relationship") )
+        self.assertEquals("*", attrs.get("to") )
+        self.assertEquals("search_type", attrs.get("relationship") )
 
 
 
-    def _create_table(my):
+    def _create_table(self):
 
         from pyasm.search import CreateTable
 
@@ -88,12 +88,12 @@ class SqlTest(unittest.TestCase):
 
 
 
-    def _test_search(my):
+    def _test_search(self):
 
         # test search
         search = Search("table/posts?project=mongodb")
         sobject = search.get_sobject()
-        my.assertNotEquals(None, sobject)
+        self.assertNotEquals(None, sobject)
 
         sobjects = search.get_sobjects()
         #for sobject in sobjects:
@@ -105,7 +105,7 @@ class SqlTest(unittest.TestCase):
         search.add_filter("author", "Mike")
         sobjects = search.get_sobjects()
         for sobject in sobjects:
-            my.assertEquals("Mike", sobject.get_value("author") )
+            self.assertEquals("Mike", sobject.get_value("author") )
 
 
         # do an update
@@ -116,8 +116,8 @@ class SqlTest(unittest.TestCase):
         # search by id
         object_id = sobject.get_id()
         updated_sobject = Search.get_by_id("table/posts?project=mongodb", object_id)
-        my.assertNotEquals(None, updated_sobject)
-        my.assertEquals("This is wonderful!!!", updated_sobject.get_value("text"))
+        self.assertNotEquals(None, updated_sobject)
+        self.assertEquals("This is wonderful!!!", updated_sobject.get_value("text"))
 
 
 
@@ -129,7 +129,7 @@ class SqlTest(unittest.TestCase):
         test_sobject = Search.get_by_search_key(search_key)
         print "search_key: ", search_key
         print "test: ", test_sobject.get_data()
-        my.assertNotEquals(None, test_sobject)
+        self.assertNotEquals(None, test_sobject)
 
 
 

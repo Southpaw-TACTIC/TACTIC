@@ -301,8 +301,10 @@
     <display class="LinkWdg">
       <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
       <search_type>sthpw/task</search_type>
-      <search_limit_mode>both</search_limit_mode>
       <view>table</view>
+      <height>auto</height>
+      <element_names>parent,process,description,milestone,status,assigned,priority</element_names>
+      <window_resize_offset>195</window_resize_offset>
       <filter>
       [
         {"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},
@@ -317,6 +319,9 @@
       <class_name>tactic.ui.panel.ViewPanelWdg</class_name>      
       <search_type>sthpw/note</search_type>
       <simple_search_view>simple_filter</simple_search_view>
+      <window_resize_offset>250</window_resize_offset>
+      <height>auto</height>
+      <element_names>project,timestamp,process,note</element_names>
       <view>table</view>
       <filter>
       [
@@ -390,6 +395,7 @@
   <element name="config_trigger" title="Server Triggers" icon="arrow_out" help='main'>
     <display class="LinkWdg">
       <search_type>config/trigger</search_type>
+      <height>auto</height>
       <view>table</view>
     </display>
   </element>
@@ -875,9 +881,13 @@
   <element name="config_naming"/>
   <element name="config_process"/>
   <element name="config_widget_config"/>
+<!--
   <element name="config_client_trigger"/>
+-->
   <element name="config_trigger"/>
+<!--
   <element name="global_trigger"/>
+-->
   <element name="config_custom_url"/>
   <element name="sthpw_notification"/>
   <element name="project_settings"/>
@@ -887,8 +897,6 @@
   <element name="sthpw_schema"/>
   <element name="sthpw_pipelines"/>
 
-
-  
 
 
 </_project_essentials>

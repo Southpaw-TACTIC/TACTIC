@@ -51,104 +51,104 @@ class AppEnvironment(object):
     environment can be extracted from here.  If necessary, it will delegate
     to the "info" object to extract the real source of the information'''
 
-    def __init__(my):
-        my.app = None
-        my.tmpdir = None
-        my.ticket = None
-        my.upload_server = None
-        my.xmlrpc_server = None
-        my.user = None
-        my.project_code = None
-        my.server = None
-        my.info = None
+    def __init__(self):
+        self.app = None
+        self.tmpdir = None
+        self.ticket = None
+        self.upload_server = None
+        self.xmlrpc_server = None
+        self.user = None
+        self.project_code = None
+        self.server = None
+        self.info = None
 
-    def set_info(my, info):
-        my.info = info
+    def set_info(self, info):
+        self.info = info
 
         # extract information from info object
-        my.tmpdir = info.get_tmpdir()
-        my.sandbox_dir = info.get_sandbox_dir()
-        my.ticket = info.get_ticket()
-        my.upload_server = info.get_upload_server()
-        my.xmlrpc_server = info.get_xmlrpc_server()
-        my.user = info.get_user()
-        my.project_code = info.get_project_code() 
-        my.server = info.get_server()
-        my.save_dir = None
+        self.tmpdir = info.get_tmpdir()
+        self.sandbox_dir = info.get_sandbox_dir()
+        self.ticket = info.get_ticket()
+        self.upload_server = info.get_upload_server()
+        self.xmlrpc_server = info.get_xmlrpc_server()
+        self.user = info.get_user()
+        self.project_code = info.get_project_code() 
+        self.server = info.get_server()
+        self.save_dir = None
 
-    def get_info(my):
-        return my.info
+    def get_info(self):
+        return self.info
 
-    def set_app(my, app):
+    def set_app(self, app):
         '''set the maya object'''
-        my.app = app
+        self.app = app
 
-    def get_app(my):
-        return my.app
+    def get_app(self):
+        return self.app
 
 
-    def set_tmpdir(my, tmpdir):
-        my.tmpdir = tmpdir
+    def set_tmpdir(self, tmpdir):
+        self.tmpdir = tmpdir
 
         # make sure tmpdir exists
-        if not os.path.exists(my.tmpdir):
-            os.makedirs(my.tmpdir)
+        if not os.path.exists(self.tmpdir):
+            os.makedirs(self.tmpdir)
 
-    def get_tmpdir(my):
-        return my.tmpdir
+    def get_tmpdir(self):
+        return self.tmpdir
 
-    def set_save_dir(my, save_dir):
-        my.save_dir = save_dir
+    def set_save_dir(self, save_dir):
+        self.save_dir = save_dir
 
-    def get_save_dir(my):
+    def get_save_dir(self):
         # by default it is the tmpdir
-        return my.tmpdir
+        return self.tmpdir
 
-    def set_ticket(my, ticket):
-        my.ticket = ticket
+    def set_ticket(self, ticket):
+        self.ticket = ticket
 
-    def get_ticket(my):
-        return my.ticket
+    def get_ticket(self):
+        return self.ticket
 
  
-    def set_sandbox_dir(my, sandbox_dir):
-        my.sandbox_dir = sandbox_dir
+    def set_sandbox_dir(self, sandbox_dir):
+        self.sandbox_dir = sandbox_dir
 
         # make sure sandbox_dir exists
-        if not os.path.exists(my.sandbox_dir):
+        if not os.path.exists(self.sandbox_dir):
             try:
-                os.makedirs(my.sandbox_dir)
+                os.makedirs(self.sandbox_dir)
             except Exception, e:
-                raise Exception("Cannot create directory '%s'" % my.sandbox_dir)
+                raise Exception("Cannot create directory '%s'" % self.sandbox_dir)
 
 
-    def get_sandbox_dir(my):
-        return my.sandbox_dir
+    def get_sandbox_dir(self):
+        return self.sandbox_dir
 
 
-    def get_upload_server(my):
-        return my.upload_server
+    def get_upload_server(self):
+        return self.upload_server
 
-    def get_xmlrpc_server(my):
-        return my.xmlrpc_server
-
-
-    def get_user(my):
-        return my.user
-
-    def get_project_code(my):
-        return my.project_code
-
-    def get_server(my):
-        return my.server
+    def get_xmlrpc_server(self):
+        return self.xmlrpc_server
 
 
-    def upload(my, from_path):
+    def get_user(self):
+        return self.user
+
+    def get_project_code(self):
+        return self.project_code
+
+    def get_server(self):
+        return self.server
+
+
+    def upload(self, from_path):
 
         print "uploading: ", from_path
 
-        ticket = my.get_ticket()
-        upload_server = my.get_upload_server()
+        ticket = self.get_ticket()
+        upload_server = self.get_upload_server()
 
         upload = UploadMultipart()
         upload.set_ticket(ticket)
@@ -159,13 +159,13 @@ class AppEnvironment(object):
 
 
 
-    def download(my, url, to_dir="", md5_checksum=""):
+    def download(self, url, to_dir="", md5_checksum=""):
 
         filename = os.path.basename(url)
 
         # download to temp_dir
         if not to_dir:
-            to_dir = my.get_tmpdir()
+            to_dir = self.get_tmpdir()
 
         # make sure the directory exists
         if not os.path.exists(to_dir):
@@ -179,7 +179,7 @@ class AppEnvironment(object):
             # if it exists, check the MD5 checksum
             if HAS_MD5:
                 if md5_checksum:
-                    if my._md5_check(to_path, md5_checksum):
+                    if self._md5_check(to_path, md5_checksum):
                         print "skipping '%s', already exists" % to_path
                         return to_path
                 else:
@@ -199,7 +199,7 @@ class AppEnvironment(object):
 
         # check for downloaded file
         # COMMENTED OUT for now since it does not work well with icons
-        #if md5_checksum and not my._md5_check(to_path, md5_checksum):
+        #if md5_checksum and not self._md5_check(to_path, md5_checksum):
         #    raise TacticException('Downloaded file [%s] in local repo failed md5 check. This file may be missing on the server or corrupted.'%to_path)
 
         """
@@ -244,7 +244,7 @@ class AppEnvironment(object):
     create_from_class_path = staticmethod(create_from_class_path)
  
 
-    def _md5_check(my, to_path, md5_checksum):
+    def _md5_check(self, to_path, md5_checksum):
         if not HAS_MD5:
             return True
 

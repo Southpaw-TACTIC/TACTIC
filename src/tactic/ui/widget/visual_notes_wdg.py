@@ -28,36 +28,36 @@ class VisualNotesWdg(BaseRefreshWdg):
     'context': 'context of the snapshot to operate on'
     }
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
         top.add_class("spt_visual_notes_top")
 
-        my.search_key = my.kwargs.get("search_key")
-        my.context = my.kwargs.get("context")
-        assert my.search_key
-        assert my.context
+        self.search_key = self.kwargs.get("search_key")
+        self.context = self.kwargs.get("context")
+        assert self.search_key
+        assert self.context
 
 
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         sobj_search_type = sobject.get_search_type()
         sobj_id = sobject.get_id()
         assert sobject
 
-        snapshot = Snapshot.get_latest(sobj_search_type, sobj_id, my.context)
+        snapshot = Snapshot.get_latest(sobj_search_type, sobj_id, self.context)
         if not snapshot:
-            my.path = ''
+            self.path = ''
             top.add("<b>No snapshot found</b>")
             return top
         else:
             files = snapshot.get_files_by_type("main")
             
             file = files[0]
-            my.path = "/assets/%s/%s" % (file.get_value("relative_dir"), file.get_value("file_name") )
+            self.path = "/assets/%s/%s" % (file.get_value("relative_dir"), file.get_value("file_name") )
 
-            #my.path = "/assets/cg/asset/chr/chr001/icon/hawaii01_web_icon_v001.jpg"
+            #self.path = "/assets/cg/asset/chr/chr001/icon/hawaii01_web_icon_v001.jpg"
 
 
-        my.note_context = my.context + '|note'
+        self.note_context = self.context + '|note'
 
 
         # put in a title
@@ -68,13 +68,13 @@ class VisualNotesWdg(BaseRefreshWdg):
 
 
         # add in the buttons bar
-        buttons_wdg = my.get_buttons_wdg()
+        buttons_wdg = self.get_buttons_wdg()
         top.add(buttons_wdg)
 
 
 
 
-        flash_vars = "file=" + my.path;
+        flash_vars = "file=" + self.path;
 
         #'swf_url': '/assets/sthpw/widget/visual_notes_wdg/VisualNotesWdg.swf',
         kwargs = {
@@ -94,7 +94,7 @@ class VisualNotesWdg(BaseRefreshWdg):
         return top
 
 
-    def get_buttons_wdg(my):
+    def get_buttons_wdg(self):
         buttons_div = DivWdg()
         buttons_div.add_style("margin-left: 20px")
         buttons_div.add_style("margin-right: 20px")
@@ -167,8 +167,8 @@ class VisualNotesWdg(BaseRefreshWdg):
         'type': 'click_up',
         'cbjs_action': script,
         'kwargs': {
-            'search_key': my.search_key,
-            'context': my.note_context
+            'search_key': self.search_key,
+            'context': self.note_context
         }
         })
    

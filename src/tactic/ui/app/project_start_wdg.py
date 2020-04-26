@@ -26,22 +26,20 @@ class ProjectStartWdg(BaseRefreshWdg):
     project
     '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_main_section_wdg(my, title, description, image, behavior):
+    def get_main_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
         #section_wdg.add_style("height: 200px")
 	section_wdg.add_style("height: 310px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("1px 1px 2px 2px")
 
 
         title_wdg = DivWdg()
@@ -51,7 +49,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 3px")
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "#F2F2F2")
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
@@ -85,16 +83,16 @@ class ProjectStartWdg(BaseRefreshWdg):
 
 
 
-    def get_small_section_wdg(my, title, description, image, behavior):
+    def get_small_section_wdg(self, title, description, image, behavior):
 
         section_wdg = DivWdg()
-        section_wdg.set_round_corners()
+        #section_wdg.set_round_corners()
         section_wdg.add_border()
         section_wdg.add_style("width: 225px")
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        section_wdg.set_box_shadow("1px 1px 1px 1px")
+        #section_wdg.set_box_shadow("1px 1px 1px 1px")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
@@ -103,7 +101,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 3px")
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "#F2F2F2")
 
         section_wdg.add_color("background", "background")
         #section_wdg.add_gradient("background", "background", 0, -3)
@@ -135,7 +133,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         return section_wdg
 
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
         top.add_border()
@@ -146,9 +144,9 @@ class ProjectStartWdg(BaseRefreshWdg):
 
         title = DivWdg()
         title.add("Advanced Project Setup Tools")
-        title.add_style("font-size: 18px")
-        title.add_style("font-weight: bold")
-        title.add_style("text-align: center")
+        title.add_style("font-size: 25px")
+        #title.add_style("font-weight: bold")
+        #title.add_style("text-align: center")
         title.add_style("padding: 10px")
         title.add_style("margin: -10px -10px 10px -10px")
 
@@ -157,7 +155,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         subtitle = TitleWdg(name_of_title='',help_alias='project-startup-configuration')
         top.add(subtitle)
 
-        title.add_gradient("background", "background3", 5, -10)
+        #title.add_gradient("background", "background3", 5, -10)
         top.add("<br/>")
 
 
@@ -177,7 +175,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         """
 
         button_div = DivWdg()
-        button = SingleButtonWdg(title="Project Startup", icon=IconWdg.HOME)
+        button = SingleButtonWdg(title="Project Startup", icon="FA_HOME")
         button_div.add(button)
         button_div.add_style("float: left")
 	button_div.add_style("margin-top: -10px")
@@ -224,7 +222,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         spt.tab.add_new("create_schema", "Create Schema", class_name, kwargs);
         '''
         }
-        schema_wdg = my.get_main_section_wdg(title, description, image, behavior)
+        schema_wdg = self.get_main_section_wdg(title, description, image, behavior)
         td.add(schema_wdg)
 
 
@@ -248,7 +246,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         spt.tab.add_new("create_workflow", "Create Workflow", class_name, kwargs);
         '''
         }
-        pipeline_wdg = my.get_main_section_wdg(title, description, image, behavior)
+        pipeline_wdg = self.get_main_section_wdg(title, description, image, behavior)
         td.add(pipeline_wdg)
 
 
@@ -274,7 +272,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        side_bar_wdg = my.get_main_section_wdg(title, description, image, behavior)
+        side_bar_wdg = self.get_main_section_wdg(title, description, image, behavior)
         td.add(side_bar_wdg)
 
 
@@ -304,7 +302,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        manage_view_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        manage_view_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(manage_view_wdg)
 
 
@@ -334,7 +332,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        naming_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        naming_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(naming_wdg)
 
 
@@ -362,7 +360,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        users_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        users_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(users_wdg)
 
 
@@ -393,7 +391,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        script_editor_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        script_editor_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(script_editor_wdg)
 
 
@@ -424,7 +422,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        prod_settings_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        prod_settings_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(prod_settings_wdg)
 
 
@@ -453,7 +451,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         '''
         }
 
-        config_wdg = my.get_small_section_wdg(title, description, image, behavior)
+        config_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(config_wdg)
 
 
@@ -475,7 +473,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title.add("Quick Links")
         title.add_style("font-size: 16px")
         title.add_style("padding: 5px")
-        title.add_gradient("background", "background")
+        title.add_color("background", "#F2F2F2")
         title.add_border()
         title.set_round_corners(corners=['TL','TR'])
 
@@ -563,7 +561,7 @@ class ProjectStartWdg(BaseRefreshWdg):
 
 
 
-    def get_totals_wdg(my):
+    def get_totals_wdg(self):
         div = DivWdg()
         
 

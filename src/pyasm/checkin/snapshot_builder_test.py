@@ -20,10 +20,10 @@ from snapshot_builder import *
 
 class SnapshotBuilderTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         batch = Batch()
 
-    def test_all(my):
+    def test_all(self):
 
         builder = SnapshotBuilder()
         builder._add_ref_node("prod/asset", "132", "12", "prp101_01" )
@@ -39,7 +39,7 @@ class SnapshotBuilderTest(unittest.TestCase):
 </snapshot>
 """
 
-        my.assertEquals(expected, snapshot_xml)
+        self.assertEquals(expected, snapshot_xml)
 
 
 

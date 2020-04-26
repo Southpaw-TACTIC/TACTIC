@@ -21,29 +21,29 @@ class Notification(SObject):
     SEARCH_TYPE = "sthpw/notification"
 
 
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         return "notification_id"
 
 
-    def get_defaults(my):
+    def get_defaults(self):
         '''specifies the defaults for this sobject'''
         defaults = {
             "type": "email"
         }
         return defaults
     """
-    def get_description(my):
-        desc = [my.get_code()]
-        if my.get_value('search_type'):
-            desc.append('for %s' % my.get_value('search_type'))
-        if my.get_value('context'):
-            desc.append('in %s' % my.get_value('context'))    
+    def get_description(self):
+        desc = [self.get_code()]
+        if self.get_value('search_type'):
+            desc.append('for %s' % self.get_value('search_type'))
+        if self.get_value('context'):
+            desc.append('in %s' % self.get_value('context'))    
         
         return " ".join(desc)
     """
 
-    def get_description(my):
-        return my.get_value("description")
+    def get_description(self):
+        return self.get_value("description")
        
 
     """

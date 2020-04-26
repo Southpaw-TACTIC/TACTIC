@@ -217,7 +217,7 @@ Replacing /bin/sh shell backquote
 ---------------------------------
 output=`mycmd myarg`
 ==>
-output = Popen(["mycmd", "myarg"], stdout=PIPE).communicate()[0]
+output = Popen(["selfcmd", "selfarg"], stdout=PIPE).communicate()[0]
 
 
 Replacing shell pipe line
@@ -231,9 +231,9 @@ output = p2.communicate()[0]
 
 Replacing os.system()
 ---------------------
-sts = os.system("mycmd" + " myarg")
+sts = os.system("selfcmd" + " myarg")
 ==>
-p = Popen("mycmd" + " myarg", shell=True)
+p = Popen("selfcmd" + " myarg", shell=True)
 pid, sts = os.waitpid(p.pid, 0)
 
 Note:
@@ -246,7 +246,7 @@ Note:
 A more real-world example would look like this:
 
 try:
-    retcode = call("mycmd" + " myarg", shell=True)
+    retcode = call("selfcmd" + " myarg", shell=True)
     if retcode < 0:
         print >>sys.stderr, "Child was terminated by signal", -retcode
     else:
@@ -259,16 +259,16 @@ Replacing os.spawn*
 -------------------
 P_NOWAIT example:
 
-pid = os.spawnlp(os.P_NOWAIT, "/bin/mycmd", "mycmd", "myarg")
+pid = os.spawnlp(os.P_NOWAIT, "/bin/mycmd", "selfcmd", "selfarg")
 ==>
-pid = Popen(["/bin/mycmd", "myarg"]).pid
+pid = Popen(["/bin/mycmd", "selfarg"]).pid
 
 
 P_WAIT example:
 
-retcode = os.spawnlp(os.P_WAIT, "/bin/mycmd", "mycmd", "myarg")
+retcode = os.spawnlp(os.P_WAIT, "/bin/mycmd", "selfcmd", "selfarg")
 ==>
-retcode = call(["/bin/mycmd", "myarg"])
+retcode = call(["/bin/mycmd", "selfarg"])
 
 
 Vector example:
@@ -280,9 +280,9 @@ Popen([path] + args[1:])
 
 Environment example:
 
-os.spawnlpe(os.P_NOWAIT, "/bin/mycmd", "mycmd", "myarg", env)
+os.spawnlpe(os.P_NOWAIT, "/bin/mycmd", "selfcmd", "selfarg", env)
 ==>
-Popen(["/bin/mycmd", "myarg"], env={"PATH": "/usr/bin"})
+Popen(["/bin/mycmd", "selfarg"], env={"PATH": "/usr/bin"})
 
 
 Replacing os.popen*
@@ -359,10 +359,10 @@ On Unix, popen2 also accepts a sequence as the command to execute, in
 which case arguments will be passed directly to the program without
 shell intervention.  This usage can be replaced as follows:
 
-(child_stdout, child_stdin) = popen2.popen2(["mycmd", "myarg"], bufsize,
+(child_stdout, child_stdin) = popen2.popen2(["selfcmd", "selfarg"], bufsize,
                                             mode)
 ==>
-p = Popen(["mycmd", "myarg"], bufsize=bufsize,
+p = Popen(["selfcmd", "selfarg"], bufsize=bufsize,
           stdin=PIPE, stdout=PIPE, close_fds=True)
 (child_stdout, child_stdin) = (p.stdout, p.stdin)
 

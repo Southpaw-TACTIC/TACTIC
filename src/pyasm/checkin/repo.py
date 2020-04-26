@@ -21,10 +21,10 @@ from checkin import CheckinException
 
 class BaseRepo(object):
     '''abstract class defining repositories'''
-    def has_file_codes(my):
+    def has_file_codes(self):
         return True
 
-    def handle_system_commands(my, snapshot, files, file_objects, mode, md5s, source_paths=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[]):
         pass
 
 
@@ -32,7 +32,7 @@ class BaseRepo(object):
 
 class TacticRepo(BaseRepo):
 
-    def handle_system_commands(my, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[]):
         '''move the tmp files in the appropriate directory'''
 
         # if mode is local then nothing happens here
@@ -108,6 +108,7 @@ class TacticRepo(BaseRepo):
                 #elif mode == 'copy': # was free_copy
                    
                     #FileUndo.create( source_paths[i], to_path, io_action=io_action )
+
                 # make it look like the files was created in the repository
                 else: # mode ='create'
                     
@@ -122,7 +123,7 @@ class TacticRepo(BaseRepo):
 
                     file_name = to_name
                     rel_path = "%s/%s" % (rel_dir, file_name)
-                    
+
                     FileUndo.create( src_path, to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
 
 

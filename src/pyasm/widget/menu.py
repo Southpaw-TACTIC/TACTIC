@@ -19,7 +19,7 @@ from pyasm.widget import *
 
 class MenuTest(Widget):
 
-    def init(my):
+    def init(self):
 
         # create the main menu widget.  This may need to be a MainMenuWdg class
         main_menu = MenuWdg("Main")
@@ -55,92 +55,92 @@ class MenuTest(Widget):
 
 
         # add it to this widget
-        my.add(main_menu)
+        self.add(main_menu)
 
 class MenuBar(HtmlElement):
-    def __init__(my, title, link="", name=None):
+    def __init__(self, title, link="", name=None):
         # init
-        super(MenuBar, my).__init__()
+        super(MenuBar, self).__init__()
         #
-        my.set_type("div")
-        my.set_attr("class","menuBar")
+        self.set_type("div")
+        self.set_attr("class","menuBar")
         # name of the js object 
         if name == None:
-            my.name = "MenuBar%s" % (my.generate_unique_id())
+            self.name = "MenuBar%s" % (self.generate_unique_id())
         else:
-            my.name = name
-        my.set_id( my.name )
-        my.add("&nbsp;")
+            self.name = name
+        self.set_id( self.name )
+        self.add("&nbsp;")
    
-    def add_item(my, MenuButton):
-        my.add(MenuButton) 
+    def add_item(self, MenuButton):
+        self.add(MenuButton) 
         
 
 class MenuButton(HtmlElement):
-    def __init__(my, title, link="", name=None, active=False, menu=None):
+    def __init__(self, title, link="", name=None, active=False, menu=None):
         # init  
-        super(MenuButton, my).__init__()
+        super(MenuButton, self).__init__()
         # title is used as the text tile
-        my.title = title 
+        self.title = title 
         # name of the js object 
         if name == None:
-            my.name = "MenuButton%s" % (my.generate_unique_id())
+            self.name = "MenuButton%s" % (self.generate_unique_id())
         else:
-            my.name = name
-        my.set_id( my.name )
+            self.name = name
+        self.set_id( self.name )
             
         #link of the object
-        my.link = link
+        self.link = link
         #is object active?  Boolean 1 or 0
-        my.active = active
+        self.active = active
         
-        if my.active:
+        if self.active:
             activestr="menuButton menuButtonActive"
         else:
             activestr="menuButton"
         # check to see if there is a submenu
         if menu != None:
-           my.set_attr("OnClick","javascript:return buttonClick(event, '%s');" % menu.get_name())
-           my.set_attr("OnMouseOver","javascript:buttonMouseover(event, '%s');" % menu.get_name())
-        my.set_type("a")
-        my.set_class(activestr)
-        my.set_attr("href", link )
-        my.add(title)
-    def get_title(my):
-        return my.title
+           self.set_attr("OnClick","javascript:return buttonClick(event, '%s');" % menu.get_name())
+           self.set_attr("OnMouseOver","javascript:buttonMouseover(event, '%s');" % menu.get_name())
+        self.set_type("a")
+        self.set_class(activestr)
+        self.set_attr("href", link )
+        self.add(title)
+    def get_title(self):
+        return self.title
 
-    def get_link(my):
-        return my.link
+    def get_link(self):
+        return self.link
 
-    def set_name(my, name):
-        my.name = name
+    def set_name(self, name):
+        self.name = name
 
 
 class Menu(HtmlElement):
 
-    def __init__(my, name=None):
-        super(Menu, my).__init__()
-        my.set_type("div")
-        my.set_class( "menu")
-        my.set_attr("OnMouseOver","menuMouseover(event)")
+    def __init__(self, name=None):
+        super(Menu, self).__init__()
+        self.set_type("div")
+        self.set_class( "menu")
+        self.set_attr("OnMouseOver","menuMouseover(event)")
         if name == None:
-            my.name = "Menu%s" % (my.generate_unique_id()) 
+            self.name = "Menu%s" % (self.generate_unique_id()) 
         else:
-            my.name = name
-        my.set_id(my.name)
+            self.name = name
+        self.set_id(self.name)
     
-    def get_name(my):
-        return my.name
+    def get_name(self):
+        return self.name
 
-    def set_name(my, name):
-        my.name = name
+    def set_name(self, name):
+        self.name = name
 
-    def get_display(my):
+    def get_display(self):
 
-        for widget in my.widgets:
+        for widget in self.widgets:
             if isinstance(widget, Menu):
                 me.add("<span class=\"menuItemText\">Menu 3 Item 4</span>")
-        return super(Menu, my).get_display()
+        return super(Menu, self).get_display()
         
 class MenuItem(HtmlElement):
     ''' A MenuItem is added to a Menu Object to create individual items in
@@ -154,56 +154,56 @@ class MenuItem(HtmlElement):
             name will be created automatically
             menu = put a submenu in place of a menuitem
    ''' 
-    def __init__(my, title, link=None, name="", menu=None):
-        super(MenuItem, my).__init__()
-        my.set_type("a")
+    def __init__(self, title, link=None, name="", menu=None):
+        super(MenuItem, self).__init__()
+        self.set_type("a")
 
-        my.title = title
-        my.link = link
+        self.title = title
+        self.link = link
         if name == "":
-            my.name = "MenuItem%s" % (my.generate_unique_id()) 
+            self.name = "MenuItem%s" % (self.generate_unique_id()) 
         else:
-            my.name = name
-        my.set_id(my.name)
+            self.name = name
+        self.set_id(self.name)
         if link != None:
-            my.set_attr("href",my.link)
+            self.set_attr("href",self.link)
         if menu != None:
-            my.set_attr("OnClick","javascript:return false;")
-            my.set_attr("OnMouseOver","javascript:menuItemMouseover(event, '%s');" % menu.get_name())
+            self.set_attr("OnClick","javascript:return false;")
+            self.set_attr("OnMouseOver","javascript:menuItemMouseover(event, '%s');" % menu.get_name())
             textSpan=HtmlElement()
             textSpan.set_type("span")
             textSpan.set_class("menuItemText")
-            textSpan.add(my.title)
+            textSpan.add(self.title)
             arrowSpan=HtmlElement()
             arrowSpan.set_type("span")
             textSpan.set_class("menuItemArrow")
             arrowSpan.add("&#9654;")
             
-            my.add(textSpan)
-            my.add(arrowSpan)
+            self.add(textSpan)
+            self.add(arrowSpan)
         else:
-            my.add(title)
+            self.add(title)
 
-        my.set_class("menuItem" )
-        if my.link == "":
-            my.set_attr("href", link )
+        self.set_class("menuItem" )
+        if self.link == "":
+            self.set_attr("href", link )
 
-    def get_title(my):
-        return my.title
+    def get_title(self):
+        return self.title
 
-    def get_link(my):
-        return my.link
+    def get_link(self):
+        return self.link
 
-    def set_name(my, name):
-        my.name=name
+    def set_name(self, name):
+        self.name=name
 
-    def get_name(my):
-        return my.name
+    def get_name(self):
+        return self.name
 
 
 
 class MenuSeparator(HtmlElement):
-    def __init__(my):
-        super(MenuSeparator, my).__init__()
-        my.set_type("div")
-        my.set_class( "menuItemSep")
+    def __init__(self):
+        super(MenuSeparator, self).__init__()
+        self.set_type("div")
+        self.set_class( "menuItemSep")

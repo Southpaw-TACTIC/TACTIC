@@ -25,16 +25,16 @@ from pyasm.application.maya import *
 
 class SubmissionCheckin(FileCheckin):
 
-    def __init__(my, sobject, file_paths, file_types, context='publish', snapshot_type='submission',
+    def __init__(self, sobject, file_paths, file_types, context='publish', snapshot_type='submission',
              column='snapshot',description="", is_current=True, source_paths=[],
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
             checkin_type='strict', version=None):
-        BaseCheckin.__init__(my, sobject)
+        BaseCheckin.__init__(self, sobject)
         #context = "publish"
 
-        super(SubmissionCheckin,my).__init__(sobject, file_paths, file_types, context=context, snapshot_type=snapshot_type,\
+        super(SubmissionCheckin,self).__init__(sobject, file_paths, file_types, context=context, snapshot_type=snapshot_type,\
                 column=column, description=description, is_current=is_current, source_paths=source_paths,
             level_type=level_type, level_id=level_id, mode=mode, keep_file_name=keep_file_name,
             base_dir=base_dir, is_revision=is_revision, md5s=md5s, file_sizes=file_sizes, dir_naming=dir_naming, 
@@ -42,12 +42,12 @@ class SubmissionCheckin(FileCheckin):
 
 
 
-    def add_dependencies(my, snapshot_xml):
+    def add_dependencies(self, snapshot_xml):
         '''link to the referenced versions'''
-        search_type = my.sobject.get_value("search_type")
-        search_id = my.sobject.get_value("search_id")
-        context = my.sobject.get_value("context")
-        version = my.sobject.get_value("version")
+        search_type = self.sobject.get_value("search_type")
+        search_id = self.sobject.get_value("search_id")
+        context = self.sobject.get_value("context")
+        version = self.sobject.get_value("version")
 
         # Insert directly in the Review or Dailies tab
         if not search_type and not search_id:
@@ -65,8 +65,8 @@ class SubmissionCheckin(FileCheckin):
         builder.add_ref_by_snapshot(snapshot, type='input_ref')
 
         # commit it to the snapshot
-        my.snapshot.set_value("snapshot", builder.to_string())       
-        my.snapshot.commit()
+        self.snapshot.set_value("snapshot", builder.to_string())       
+        self.snapshot.commit()
 
 
         

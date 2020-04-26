@@ -11,7 +11,7 @@
 #
 
 
-__all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd']
+__all__ = ['DynamicUpdateWdg', 'DynamicUpdateCmd','DynamicUpdateHandler']
 
 import tacticenv
 from pyasm.common import jsonloads, Common
@@ -31,22 +31,22 @@ from tactic.ui.common import BaseRefreshWdg
 
 class DynamicUpdateWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         interval = 5000
 
         top.add_behavior( {
             'type': 'load',
             'interval': interval,
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
 
         top.add_behavior( {
             'type': 'unload',
             'cbjs_action': '''
-            var top = $(document.body);
+            var top = document.id(document.body);
             clearInterval( top.spt_update_interval_id );
             top.spt_update_interval_id = 0;
             top.spt_update_src_el = null;
@@ -56,7 +56,7 @@ class DynamicUpdateWdg(BaseRefreshWdg):
         return top
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         return r'''
 
 spt.update = {};
@@ -94,8 +94,8 @@ spt.update.add = function(el, update) {
 
 
 spt.update.display = function(el, column, value) {
-    var div = $(document.createElement("div"));
-    $(document.body).appendChild(div);
+    var div = document.id(document.createElement("div"));
+    document.id(document.body).appendChild(div);
     div.addClass("glyphicon glyphicon-refresh");
     //div.innerHTML = "Update...";
 
@@ -124,7 +124,7 @@ spt.update.display = function(el, column, value) {
 }
 
 
-var top = $(document.body);
+var top = document.id(document.body);
 
 if (top.spt_update_interval_id) {
     clearInterval( top.spt_update_interval_id );
@@ -135,13 +135,13 @@ top.spt_update_src_el = bvr.src_el;
 //setTimeout( function() {
 top.spt_update_interval_id = setInterval( function() {
 
-    var top = $(document.body);
+    var top = document.id(document.body);
     if (spt.body.is_active() == false) {
         return;
     }
 
 
-    if ( $(top.spt_update_src_el).isVisible() == false) {
+    if ( document.id(top.spt_update_src_el).isVisible() == false) {
         clearInterval( top.spt_update_interval_id );
         top.spt_update_interval_id = 0;
         top.spt_update_src_el = null;
@@ -234,7 +234,7 @@ top.spt_update_interval_id = setInterval( function() {
 
             for (var el_id in server_data) {
 
-                var el = $(el_id);
+                var el = document.id(el_id);
                 if (!el) {
                     continue;
                 }
@@ -393,7 +393,7 @@ class DynamicUpdateCmd(Command):
         
         '''
 
-    def execute(my):
+    def execute(self):
   
         start = time.time()
 
@@ -404,14 +404,14 @@ class DynamicUpdateCmd(Command):
         format = '%Y-%m-%d %H:%M:%S'
         timestamp = timestamp.strftime(format)
         
-        updates = my.kwargs.get("updates")
-        
+        updates = self.kwargs.get("updates")
+
         if isinstance(updates, basestring):
             updates = jsonloads(updates)
-        last_timestamp = my.kwargs.get("last_timestamp")
+        last_timestamp = self.kwargs.get("last_timestamp")
         #assert last_timestamp
         if not last_timestamp:
-            my.info = {
+            self.info = {
                 "updates": {},
                 "timestamp": timestamp
             }
@@ -425,6 +425,8 @@ class DynamicUpdateCmd(Command):
         # get out all of the search_keys
         client_keys = set()
         client_stypes = set()
+
+
         for id, values_list in updates.items():
             if isinstance(values_list, dict):
                 values_list = [values_list]
@@ -432,7 +434,7 @@ class DynamicUpdateCmd(Command):
             for values in values_list:
                 handler = values.get("handler")
                 if handler:
-                    handler = Common.create_from_class_path(handler)
+                    handler = Common.create_from_class_path(handler, args=[], kwargs={'update':values})
                     # it could be a list
                     search_key = handler.get_search_key()
                 else:
@@ -467,7 +469,7 @@ class DynamicUpdateCmd(Command):
                     search_key = "%s&code=%s" % (search_type, search_code)
                 changed_keys.add(u'%s'%search_key)
                 changed_types.add(search_type)
-
+  
         intersect_keys = client_keys.intersection(changed_keys)
         
         from pyasm.web import HtmlElement
@@ -481,13 +483,16 @@ class DynamicUpdateCmd(Command):
 
                 handler = values.get("handler")
                 if handler:
-                    handler = Common.create_from_class_path(handler)
+                    handler = Common.create_from_class_path(handler, kwargs={'update': values})
                     # handler can return a list of search_keys
                     search_key = handler.get_search_key()
                 else:
                     search_key = values.get("search_key")
-                
+               
                 stype = values.get("search_type")
+                if stype and stype.find("?project=") == -1:
+                    from pyasm.search import SearchType
+                    stype = SearchType.build_search_type(stype)
                 
                 search_key_set = set()
                 if search_key:
@@ -504,6 +509,15 @@ class DynamicUpdateCmd(Command):
                 elif search_key_set and len(intersect_keys  - search_key_set) == len(intersect_keys):
                     continue
                
+                feed_expr = values.get("feed_expr")
+                if feed_expr:
+                    feed_search = Search.eval(feed_expr)
+                    feed_search.add_filter("timestamp", last_timestamp, op=">")
+                    sobjects = feed_search.get_sobjects()
+                    if not sobjects:
+                        continue
+                    values['feed_sobjects'] = sobjects
+                    
                 # evaluate any compare expressions
                 compare = values.get("compare")
                 if compare:
@@ -515,7 +529,6 @@ class DynamicUpdateCmd(Command):
                         sobject = Search.get_by_search_key(expr_key)
                     else:
                         sobject = None
-                   
                     cmp_result = Search.eval(compare, sobject, single=True)
                     if cmp_result == True:
                         continue
@@ -524,20 +537,20 @@ class DynamicUpdateCmd(Command):
                     value = "Loading ..."
                 else:
                     value = HtmlElement.eval_update(values)
-              
+             
                 if value == None:
                     continue
 
                 results[id] = value
 
-        my.info = {
+        self.info = {
             "updates": results,
             "timestamp": timestamp
         }
 
 
 
-        #print "Dyn Cmd duration", time.time()  - start
+        #print("Dyn Cmd duration", time.time()  - start)
         return results
 
 
@@ -546,16 +559,16 @@ import unittest
 
 class UpdateTest(unittest.TestCase):
 
-    def __init__(my, *args):
-        unittest.TestCase.__init__(my, *args)
+    def __init__(self, *args):
+        unittest.TestCase.__init__(self, *args)
    
-        my.updates = None
-        my.last_timestamp = None
+        self.updates = None
+        self.last_timestamp = None
 
-        my.search_key = None
-        my.task_sk = None
+        self.search_key = None
+        self.task_sk = None
 
-    def test_all(my):
+    def test_all(self):
         '''entry point function'''
 
         Batch(site="demo")
@@ -575,19 +588,19 @@ class UpdateTest(unittest.TestCase):
         #transaction.commit()
    
         # Get updates - creates shots and tasks
-        my.updates = my._get_updates()
+        self.updates = self._get_updates()
         
         try:
-            my._test_no_updates()
-            my._test_insert()
-            my._test_status_change()
-            my._test_compare()
-            my._test_empty_update()
-            #my._test_time()
+            self._test_no_updates()
+            self._test_insert()
+            self._test_status_change()
+            self._test_compare()
+            self._test_empty_update()
+            #self._test_time()
         finally:
             test_env.delete()
    
-    def _get_updates(my):
+    def _get_updates(self):
         '''Create sObject and tasks that we will test to receive updates on.
         Current transaction is commited in _test_insert.'''
        
@@ -598,14 +611,14 @@ class UpdateTest(unittest.TestCase):
         sobj.set_defaults()
         sobj.commit()
         search_key = sobj.get_search_key()
-        my.search_key = search_key
+        self.search_key = search_key
         search_type = sobj.get_search_type()
         search_code = sobj.get_value('code')
 
         tasks = Task.add_initial_tasks(sobj, pipeline_code='__default__')
         first_task = tasks[0]
         task_sk = first_task.get_search_key()
-        my.task_sk = task_sk
+        self.task_sk = task_sk
 
         script = '''console.log('hello world.')'''
         
@@ -637,20 +650,20 @@ class UpdateTest(unittest.TestCase):
 
         return updates
 
-    def _test_no_updates(my): 
+    def _test_no_updates(self): 
         '''Test no updates and set the initial timestamp'''
         transaction = Transaction.get(create=True)
         transaction.commit()
         
         from pyasm.command import Command
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates") 
 
-        my.assertEquals(updates, {})
+        self.assertEquals(updates, {})
 
-    def _test_insert(my):
+    def _test_insert(self):
         '''Test insertion of tasks and shots.'''
 
         # Commit creation of asset and tasks
@@ -659,33 +672,33 @@ class UpdateTest(unittest.TestCase):
         time.sleep(3)
         
         # Test initial insert of shot and tasks
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")  
        
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
-        my.assertEquals(updates["001"], num_tasks)
+        self.assertEquals(updates["001"], num_tasks)
         
-        task = Search.get_by_search_key(my.task_sk)
+        task = Search.get_by_search_key(self.task_sk)
         status = task.get_value("status")
-        my.assertEquals(updates["002"], status)
+        self.assertEquals(updates["002"], status)
         
-        my.assertEquals(updates["003"], "Loading ...")
-        my.assertEquals(updates["004"], True)
-        my.assertEquals(updates["005"], "Loading ...")
-        my.assertEquals(updates["006"], num_tasks)
+        self.assertEquals(updates["003"], "Loading ...")
+        self.assertEquals(updates["004"], True)
+        self.assertEquals(updates["005"], "Loading ...")
+        self.assertEquals(updates["006"], num_tasks)
   
   
-    def _test_status_change(my):
+    def _test_status_change(self):
         '''Test a change to a single task.'''
         
         # Clear expression cache
         ExpressionParser.clear_cache()
         
         transaction = Transaction.get(create=True)
-        task = Search.get_by_search_key(my.task_sk) 
+        task = Search.get_by_search_key(self.task_sk) 
         new_status = 'pending'
         task.set_value("status", new_status)
         task.commit()
@@ -693,21 +706,21 @@ class UpdateTest(unittest.TestCase):
         
         time.sleep(3)
 
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")
         
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         num_tasks = Search.eval("@COUNT(@SOBJECT(sthpw/task))", sobject)
-        my.assertEquals(updates["001"], num_tasks)
-        my.assertEquals(updates["002"], new_status)
-        my.assertEquals(updates["003"], "Loading ...")
-        my.assertEquals(updates["004"], True)
-        my.assertEquals(updates["005"], "Loading ...")
-        my.assertEquals(updates["006"], num_tasks)
+        self.assertEquals(updates["001"], num_tasks)
+        self.assertEquals(updates["002"], new_status)
+        self.assertEquals(updates["003"], "Loading ...")
+        self.assertEquals(updates["004"], True)
+        self.assertEquals(updates["005"], "Loading ...")
+        self.assertEquals(updates["006"], num_tasks)
 
-    def _test_compare(my):
+    def _test_compare(self):
         '''Test early exiting of compare statements.'''
  
         # Clear expression cache
@@ -715,7 +728,7 @@ class UpdateTest(unittest.TestCase):
 
         transaction = Transaction.get(create=True)
 
-        sobject = Search.get_by_search_key(my.search_key)
+        sobject = Search.get_by_search_key(self.search_key)
         tasks = Search.eval("@SOBJECT(sthpw/task)", sobject)
         new_status = 'complete'
         for task in tasks:
@@ -726,31 +739,31 @@ class UpdateTest(unittest.TestCase):
         
         time.sleep(3)
 
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")
  
-        my.assertEquals(updates["001"], 0)
-        my.assertEquals(updates["002"], new_status)
-        my.assertEquals(updates.get("003"), None)
-        my.assertEquals(updates["004"], True)
-        my.assertEquals(updates.get("005"), None)
-        my.assertEquals(updates["006"], 0)
+        self.assertEquals(updates["001"], 0)
+        self.assertEquals(updates["002"], new_status)
+        self.assertEquals(updates.get("003"), None)
+        self.assertEquals(updates["004"], True)
+        self.assertEquals(updates.get("005"), None)
+        self.assertEquals(updates["006"], 0)
 
 
-    def _test_empty_update(my):
-        cmd = DynamicUpdateCmd(last_timestamp=my.last_timestamp, updates=my.updates)
+    def _test_empty_update(self):
+        cmd = DynamicUpdateCmd(last_timestamp=self.last_timestamp, updates=self.updates)
         Command.execute_cmd(cmd)
-        my.last_timestamp = cmd.get_info("timestamp")
+        self.last_timestamp = cmd.get_info("timestamp")
         updates = cmd.get_info("updates")
 
-        my.assertEquals(updates["001"], 0)
-        my.assertEquals(updates.get("002"), None)
-        my.assertEquals(updates.get("003"), None)
-        my.assertEquals(updates.get("004"), None)
-        my.assertEquals(updates.get("005"), None)
-        my.assertEquals(updates.get("006"), None)
+        self.assertEquals(updates["001"], 0)
+        self.assertEquals(updates.get("002"), None)
+        self.assertEquals(updates.get("003"), None)
+        self.assertEquals(updates.get("004"), None)
+        self.assertEquals(updates.get("005"), None)
+        self.assertEquals(updates.get("006"), None)
 
 
     def _test_time():
@@ -776,8 +789,19 @@ class UpdateTest(unittest.TestCase):
 
             diff = now - change_t_timestamp
             # should be roughly the same minute, not hours apart
-            print "Change timestamp diff is ", diff.seconds 
+            print("Change timestamp diff is ", diff.seconds )
 
+
+class DynamicUpdateHandler(object):
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def get_search_key(self):
+        pass
+
+    def get_value(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()

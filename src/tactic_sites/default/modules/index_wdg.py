@@ -23,9 +23,9 @@ import os
 
 
 class IndexWdg(Widget):
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
-        class_path = Common.get_full_class_name(my)
+        class_path = Common.get_full_class_name(self)
 
         from tactic.ui.panel import HashPanelWdg
         try:
@@ -42,18 +42,14 @@ class IndexWdg(Widget):
                 'type': 'load',
                 'class_path': class_path,
                 'kwargs': kwargs,
-                'cbjs_action': '''
-                spt.dom.load_js(["popup.js"], function() {
-                    spt.panel.load(bvr.src_el, bvr.class_path, bvr.kwargs);
-                });
-                '''
+                'cbjs_action': 'spt.panel.load(bvr.src_el, bvr.class_path, bvr.kwargs)'
             } )
         return div
 
 
 
 class IndexWdg2(Widget):
-    def get_display(my):
+    def get_display(self):
 
 
         web = WebContainer.get_web()

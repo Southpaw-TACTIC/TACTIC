@@ -21,17 +21,17 @@ from base_example_wdg import BaseExampleWdg
 
 class SptFxSliderExampleWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "SPT Fx Slider Example"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Example of using an SPT Fx Slider (vs. a MooTools Fx Slider). The SPT Fx Slider can adapt to " \
                 "dynamically changing dimensions of its content, where the MooTools Fx Slider cannot. Currently still " \
                 "some clunkiness in the SPT Fx Slider -- needs some refinement to be able to be used more extensively."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
 

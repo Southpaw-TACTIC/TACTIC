@@ -25,11 +25,11 @@ from scm_dir_list_wdg import get_onload_js as scm_get_onload_js
 class WorkspaceWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_workspace_content")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_color("color", "color")
         top.add_color("background", "background")
         top.add_style("min-width: 600px")
@@ -52,7 +52,7 @@ class WorkspaceWdg(BaseRefreshWdg):
         location = '//%s' % depot
 
 
-        workspace = my.kwargs.get("workspace")
+        workspace = self.kwargs.get("workspace")
         if not workspace:
             workspace = WidgetSettings.get_value_by_key("current_workspace")
         else:
@@ -62,7 +62,7 @@ class WorkspaceWdg(BaseRefreshWdg):
             workspace = 'main'
 
 
-        workspaces = my.kwargs.get("workspaces")
+        workspaces = self.kwargs.get("workspaces")
         if not workspaces:
             workspaces = []
         elif isinstance(workspaces, basestring):
@@ -183,7 +183,7 @@ class WorkspaceWdg(BaseRefreshWdg):
 
         inner.add("<hr/>")
 
-        if my.kwargs.get("workspaces") == None:
+        if self.kwargs.get("workspaces") == None:
             inner.add_behavior( {
             'type': 'load',
             'location': location,

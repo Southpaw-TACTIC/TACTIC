@@ -30,7 +30,7 @@ WARNING = False
 
 class FixIsLatestSnapshotCmd(Command):
 
-    def execute(my):
+    def execute(self):
         count = 0
         change_count = 0
         from pyasm.search import Search, SearchException

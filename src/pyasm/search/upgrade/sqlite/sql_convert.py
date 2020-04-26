@@ -28,24 +28,24 @@ def convert_sqlite_upgrade(namespace):
 
 class SqliteConverter(BaseSQLConverter):
 
-    def __init__(my):
-        my.vendor = 'Sqlite'
-        my.namespace = None
+    def __init__(self):
+        self.vendor = 'Sqlite'
+        self.namespace = None
 
 
-    def get_prepend_lines(my):
+    def get_prepend_lines(self):
         return []
 
 
 
-    def handle_line(my, line):
+    def handle_line(self, line):
 
-        # FIXME: this could be genealized with my.vendor
+        # FIXME: this could be genealized with self.vendor
         if line.startswith("class "):
-            line = "class %s%sUpgrade(BaseUpgrade):\n" % (my.vendor, my.namespace.capitalize())
+            line = "class %s%sUpgrade(BaseUpgrade):\n" % (self.vendor, self.namespace.capitalize())
 
         elif line.startswith("__all__ "):
-            line = "__all__ = ['%s%sUpgrade']\n" % (my.vendor, my.namespace.capitalize())
+            line = "__all__ = ['%s%sUpgrade']\n" % (self.vendor, self.namespace.capitalize())
 
         if line.find("serial PRIMARY KEY") != -1:
             line = line.replace("serial PRIMARY KEY", "integer PRIMARY KEY AUTOINCREMENT")

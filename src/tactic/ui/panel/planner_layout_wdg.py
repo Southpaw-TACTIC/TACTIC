@@ -32,8 +32,8 @@ class PlannerLayoutWdg(BaseRefreshWdg):
     }
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
 
         table = ResizableTableWdg()
         table.add_color("color", "color")
@@ -72,7 +72,7 @@ class PlannerLayoutWdg(BaseRefreshWdg):
         left_div.add(left_layout)
 
         middle = table.add_cell(resize=False)
-        middle.add( my.get_middle_wdg() )
+        middle.add( self.get_middle_wdg() )
 
         right = table.add_cell()
         right.add_border()
@@ -102,7 +102,7 @@ class PlannerLayoutWdg(BaseRefreshWdg):
 
 
 
-    def get_middle_wdg(my):
+    def get_middle_wdg(self):
         div = DivWdg()
         #button = ActionButtonWdg(title="<<<")
         #div.add(button)

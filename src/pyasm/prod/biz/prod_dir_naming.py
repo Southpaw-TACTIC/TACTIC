@@ -19,7 +19,7 @@ from pyasm.search import SearchType
 class ProdDirNaming(DirNaming):
 
 
-    def _get_subdir(my, snapshot):
+    def _get_subdir(self, snapshot):
         '''make the sub directory look like a maya project'''
         context = snapshot.get_value("context")
         snapshot_type = snapshot.get_value("snapshot_type")
@@ -37,38 +37,38 @@ class ProdDirNaming(DirNaming):
 
 
 
-    def prod_asset(my, dirs):
+    def prod_asset(self, dirs):
 
-        dirs = my.get_default(dirs)
+        dirs = self.get_default(dirs)
 
         template = "{asset_library}/{code}"
-        dirs.extend( my.get_template_dir(template) )
+        dirs.extend( self.get_template_dir(template) )
 
-        if my.snapshot:
-            subdir = my._get_subdir(my.snapshot)
+        if self.snapshot:
+            subdir = self._get_subdir(self.snapshot)
             dirs.append( subdir )
 
 
         return dirs
 
 
-    def prod_shot_instance(my, dirs):
+    def prod_shot_instance(self, dirs):
         
-        dirs = my.get_parent_dir("prod/shot")
+        dirs = self.get_parent_dir("prod/shot")
         
         #template = "instance/{name}"
-        #dirs.extend( my.goet_template_dir(template) )
+        #dirs.extend( self.goet_template_dir(template) )
         dirs.append("instance")
 
         return dirs
 
 
-    def prod_texture(my, dirs):
+    def prod_texture(self, dirs):
 
-        parent_context = my.sobject.get_value("asset_context")
+        parent_context = self.sobject.get_value("asset_context")
 
         # get the the assets directory
-        dirs = my.get_parent_dir("prod/asset", parent_context)
+        dirs = self.get_parent_dir("prod/asset", parent_context)
 
         # replace the scenes directory
         #if not parent_context:
@@ -83,11 +83,11 @@ class ProdDirNaming(DirNaming):
         return dirs
 
 
-    def prod_shot_texture(my, dirs):
-        parent_context = my.sobject.get_value("asset_context")
+    def prod_shot_texture(self, dirs):
+        parent_context = self.sobject.get_value("asset_context")
 
         # get the the assets directory
-        dirs = my.get_parent_dir(context=parent_context)
+        dirs = self.get_parent_dir(context=parent_context)
         
         dirs.append("textures")
 
@@ -95,18 +95,18 @@ class ProdDirNaming(DirNaming):
 
 
 
-    def prod_texture_source(my, dirs):
+    def prod_texture_source(self, dirs):
         ''' can't use prod_texture any more since it uses
             asset_context'''
-        dirs = my.get_parent_dir("prod/asset")
+        dirs = self.get_parent_dir("prod/asset")
         
         dirs.append("textures")
         return dirs
 
     """
-    def prod_shot(my, dirs):            
-            shot = my.sobject
-            snapshot = my.snapshot
+    def prod_shot(self, dirs):            
+            shot = self.sobject
+            snapshot = self.snapshot
             print 'shot', shot
             print 'dict', shot.data
             print 'id', shot.get_value('id')
@@ -114,7 +114,7 @@ class ProdDirNaming(DirNaming):
             #if shot.get_value('id') == -1:
             #        return 
             #if snapshot.get_context() == "icon":
-            #	return super(SheenCustomDirNaming, my).prod_shot(dirs)
+            #	return super(SheenCustomDirNaming, self).prod_shot(dirs)
     
             dirs.append("sheen")
             dirs.append("episodes")
@@ -149,40 +149,40 @@ class ProdDirNaming(DirNaming):
 
     """
 
-    def prod_shot(my, dirs):
-        dirs = my.get_default(dirs)
+    def prod_shot(self, dirs):
+        dirs = self.get_default(dirs)
 
         # TODO: have to put seqeuence code in there sometime
         #template = "{sequence_code}/{code}"
         template = "{code}"
-        dirs.extend( my.get_template_dir(template) )
+        dirs.extend( self.get_template_dir(template) )
 
-        if my.snapshot:
-            subdir = my._get_subdir(my.snapshot)
+        if self.snapshot:
+            subdir = self._get_subdir(self.snapshot)
             dirs.append( subdir )
 
-            if my.snapshot.get_value("context") == "cache":
+            if self.snapshot.get_value("context") == "cache":
                 dirs.append( "data" )
 
         return dirs
    
-    def prod_sequence(my, dirs):
-        dirs = my.get_default(dirs)
+    def prod_sequence(self, dirs):
+        dirs = self.get_default(dirs)
 
         template = "{code}"
-        dirs.extend( my.get_template_dir(template) )
+        dirs.extend( self.get_template_dir(template) )
 
-        if my.snapshot:
-            context = my.snapshot.get_value("context")
+        if self.snapshot:
+            context = self.snapshot.get_value("context")
             dirs.append( context )
 
 
         return dirs
 
-    def prod_submission(my, dirs):
-        dirs = my.get_default(dirs)
+    def prod_submission(self, dirs):
+        dirs = self.get_default(dirs)
 
-        bins = my.sobject.get_bins()
+        bins = self.sobject.get_bins()
         if not bins:
             return dirs
         
@@ -198,16 +198,16 @@ class ProdDirNaming(DirNaming):
         return dirs
 
 
-    def prod_render(my, dirs):
-        dirs = my.get_default(dirs)
+    def prod_render(self, dirs):
+        dirs = self.get_default(dirs)
 
-        search_type = SearchType.get( my.sobject.get_value("search_type") )
+        search_type = SearchType.get( self.sobject.get_value("search_type") )
         table = search_type.get_table()
         dirs.append( table )
 
         base_search_type = search_type.get_base_search_type()
 
-        parent = my.sobject.get_parent()
+        parent = self.sobject.get_parent()
 
         if base_search_type =='prod/layer':
             shot_code = parent.get_value('shot_code')
@@ -218,30 +218,30 @@ class ProdDirNaming(DirNaming):
             code = parent.get_code()
             dirs.append( code )
 
-        if my.snapshot:
-            version = my.snapshot.get_value("version")
+        if self.snapshot:
+            version = self.snapshot.get_value("version")
         if not version:
             version = 1
         dirs.append("v%0.3d" % int(version))
 
         return dirs
 
-    def prod_composite(my, dirs):
-        dirs = my.get_default(dirs)
+    def prod_composite(self, dirs):
+        dirs = self.get_default(dirs)
 
-        sobject = my.sobject
+        sobject = self.sobject
         shot_code = sobject.get_value('shot_code')
         dirs.append(shot_code)
-        context = my.snapshot.get_value("context")
+        context = self.snapshot.get_value("context")
         dirs.append(context)
         return dirs
     
-    def effects_plate(my, dirs):
-        dirs = my.get_default(dirs)
+    def effects_plate(self, dirs):
+        dirs = self.get_default(dirs)
 
-        dirs.extend(my.get_template_dir('{shot_code}'))
-        if my.snapshot:
-            version = my.snapshot.get_value("version")
+        dirs.extend(self.get_template_dir('{shot_code}'))
+        if self.snapshot:
+            version = self.snapshot.get_value("version")
         if not version:
             version = 1
         dirs.append("v%0.3d" % int(version))

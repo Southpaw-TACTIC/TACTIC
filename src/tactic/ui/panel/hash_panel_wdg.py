@@ -31,12 +31,12 @@ class HashPanelWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        hash = my.kwargs.get("hash")
+        hash = self.kwargs.get("hash")
 
-        top = my.top
-        widget = my.get_widget_from_hash(hash, kwargs=my.kwargs)
+        top = self.top
+        widget = self.get_widget_from_hash(hash, kwargs=self.kwargs)
         top.add(widget)
         return top
 
@@ -62,7 +62,7 @@ class HashPanelWdg(BaseRefreshWdg):
         p = re.compile("^/(\w+)")
         m = p.search(hash)
         if not m:
-            print "Cannot parse hash[%s]" % hash
+            print("Cannot parse hash[%s]" % hash)
             return None
         key = m.groups()[0]
 
@@ -70,12 +70,14 @@ class HashPanelWdg(BaseRefreshWdg):
         if key == 'link':
             return None
 
-        # look up the expression
-        search = Search("config/url")
-        search.add_filter("url", "/%s/%%"%key, "like")
-        search.add_filter("url", "/%s"%key)
-        search.add_where("or")
-        sobject = search.get_sobject()
+        sobject = cls._get_predefined_url(key, hash)
+        if not sobject:
+            # look up the expression
+            search = Search("config/url")
+            search.add_filter("url", "/%s/%%"%key, "like")
+            search.add_filter("url", "/%s"%key)
+            search.add_where("or")
+            sobject = search.get_sobject()
 
         return sobject
 
@@ -196,13 +198,25 @@ class HashPanelWdg(BaseRefreshWdg):
                     { "element": "*", "project": project_code }
             ]
             if not personal and not security.check_access("link", keys, "allow", default="deny"):
-                print "Not allowed"
+                print("Not allowed")
                 return None
 
 
+            # This is used to find a sub menu (?)
+            #view = link
+            view = "definition"
+            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", view, personal=personal)
 
-            config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", link, personal=personal)
-            options = config.get_display_options(link)
+            view = config.get_element_attribute(link, 'view')
+            if view:
+                options['widget_key'] = 'custom_layout'
+                options['view'] = view
+                class_name = None
+            else:
+                options = config.get_display_options(link)
+                class_name = config.get_display_handler(link)
+
+
             if not options:
 
                 from pyasm.biz import Schema
@@ -233,10 +247,12 @@ class HashPanelWdg(BaseRefreshWdg):
                     return None
 
 
+            if not class_name or class_name == "LinkWdg":
+                class_name = options.get("class_name")
 
-
-            class_name = options.get("class_name")
             widget_key = options.get("widget_key")
+
+
             if widget_key:
                 class_name = WidgetClassHandler().get_display_handler(widget_key)
             elif not class_name:
@@ -269,7 +285,22 @@ class HashPanelWdg(BaseRefreshWdg):
             sobject.set_value("widget", xml )
 
             return sobject
- 
+
+
+        elif key == "rest":
+
+            xml = '''<element widget='true'>
+  <display class='tactic.protocol.APIRestHandler'>
+  </display>
+</element>'''
+
+            sobject = SearchType.create("config/url")
+            sobject.set_value("url", "/rest")
+            sobject.set_value("widget", xml )
+
+            return sobject
+
+
         else:
             return None
 
@@ -293,7 +324,7 @@ class HashPanelWdg(BaseRefreshWdg):
         if not m:
             if return_none:
                 return None
-            print "Cannot parse hash[%s]" % hash
+            print("Cannot parse hash[%s]" % hash)
             return DivWdg("Cannot parse hash [%s]" % hash)
         key = m.groups()[0]
         

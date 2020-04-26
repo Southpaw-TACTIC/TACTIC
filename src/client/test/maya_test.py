@@ -22,54 +22,54 @@ import xmlrpclib, sys, os, shutil
 class MayaTest(unittest.TestCase):
     '''Test the basic level interaction to Maya'''
 
-    def test_all(my):
+    def test_all(self):
 
         from tactic_client_lib.application.common import TacticNodeUtil
-        my.util = TacticNodeUtil()
+        self.util = TacticNodeUtil()
         from tactic_client_lib.application.maya import Maya
-        my.app = Maya()
+        self.app = Maya()
 
-        my._test_nodes()
-        my._test_attributes()
-        my._test_file()
+        self._test_nodes()
+        self._test_attributes()
+        self._test_file()
 
 
 
-    def _test_nodes(my):
+    def _test_nodes(self):
 
         # create a test node
         node_name = "test_node"
-        created_name = my.app.add_node(node_name)
-        my.assertEquals(node_name, created_name)
+        created_name = self.app.add_node(node_name)
+        self.assertEquals(node_name, created_name)
 
         # test to see whether it exists
-        exists = my.app.node_exists(created_name)
-        my.assertEquals(True, exists)
+        exists = self.app.node_exists(created_name)
+        self.assertEquals(True, exists)
 
         # create a node of the same name
-        created_name2 = my.app.add_node(node_name)
-        my.assertEquals("test_node1", created_name2)
+        created_name2 = self.app.add_node(node_name)
+        self.assertEquals("test_node1", created_name2)
 
         # create a node that should be unique
-        created_name3 = my.app.add_node(node_name, unique=True)
-        my.assertEquals("test_node", created_name3)
+        created_name3 = self.app.add_node(node_name, unique=True)
+        self.assertEquals("test_node", created_name3)
 
         # get the nodes by name pattern
         pattern = "test_*"
-        nodes = my.app.get_nodes_by_name(pattern)
-        my.assertEquals(['test_node','test_node1'], nodes)
+        nodes = self.app.get_nodes_by_name(pattern)
+        self.assertEquals(['test_node','test_node1'], nodes)
         
 
 
 
 
 
-    def _test_attributes(my):
+    def _test_attributes(self):
         '''tests various attribute functionality'''
 
 
 
-    def _test_file(my):
+    def _test_file(self):
         if os.name == "nt":
             dir = "C:/sthpw/temp"
         else:
@@ -81,8 +81,8 @@ class MayaTest(unittest.TestCase):
         if os.path.exists(path):
             os.unlink(path)
 
-        path = my.app.save(path)            
-        my.assertEquals(True, os.path.exists(path))
+        path = self.app.save(path)            
+        self.assertEquals(True, os.path.exists(path))
 
         # remove the file
         if os.path.exists(path):

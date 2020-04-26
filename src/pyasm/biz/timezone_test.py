@@ -24,18 +24,18 @@ from pyasm.biz import Project
 
 class TimeZoneTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         # start batch environment
         Batch()
 
 
-    def test_all(my):
+    def test_all(self):
 
-        my._test_task()
+        self._test_task()
 
 
 
-    def _test_task(my):
+    def _test_task(self):
 
         project = Project.get()
 
@@ -53,7 +53,7 @@ class TimeZoneTest(unittest.TestCase):
 
         # asset that the time has not changed
         timestamp = task.get_value("timestamp")
-        my.assertEquals(timestamp, test_time)
+        self.assertEquals(timestamp, test_time)
         task.commit()
 
 
@@ -65,7 +65,7 @@ class TimeZoneTest(unittest.TestCase):
         # make sure the time has not changed.  This value should is assumed
         # to be in GMT
         timestamp = task.get_value("timestamp")
-        my.assertEquals(timestamp, test_time)
+        self.assertEquals(timestamp, test_time)
 
         task.delete()
 

@@ -22,7 +22,7 @@ from web_wdg import HintWdg
 
 class BaseFilterWdg(Widget):
     '''represents the base filter'''
-    def alter_search(my, search):
+    def alter_search(self, search):
         pass
 
 
@@ -31,53 +31,53 @@ class BaseFilterWdg(Widget):
 class GeneralFilterWdg(BaseFilterWdg):
     '''Represents a very generic filter matching a column to a value'''
 
-    def init(my):
-        my.column_select = SelectWdg("%s_column" % my.name)
-        my.relation_select = SelectWdg("%s_relation" % my.name)
-        my.value_text = TextWdg("%s_value" % my.name)
+    def init(self):
+        self.column_select = SelectWdg("%s_column" % self.name)
+        self.relation_select = SelectWdg("%s_relation" % self.name)
+        self.value_text = TextWdg("%s_value" % self.name)
 
-        my.columns = []
+        self.columns = []
 
-    def set_columns(my, columns):
-        my.columns = columns
+    def set_columns(self, columns):
+        self.columns = columns
 
-    def set_columns_from_search_type(my, search_type):
-        my.columns = SearchType.get(search_type).get_columns(show_hidden=False)
+    def set_columns_from_search_type(self, search_type):
+        self.columns = SearchType.get(search_type).get_columns(show_hidden=False)
 
 
-    def get_display(my):
+    def get_display(self):
 
-        if not my.columns:
-            print my.options
-            search_type = my.options.get("search_type")
+        if not self.columns:
+            print self.options
+            search_type = self.options.get("search_type")
             if search_type:
-                my.set_columns_from_search_type(search_type)
+                self.set_columns_from_search_type(search_type)
 
-        if not my.columns:
-            my.columns = []
+        if not self.columns:
+            self.columns = []
 
         span = SpanWdg()
 
-        my.column_select.set_option("values", my.columns)
-        my.column_select.set_persist_on_submit()
-        span.add(my.column_select)
+        self.column_select.set_option("values", self.columns)
+        self.column_select.set_persist_on_submit()
+        span.add(self.column_select)
 
         relations = ["is", "is not", "contains", "does not contain", "is empty"]
-        my.relation_select.set_option("values", relations)
-        my.relation_select.set_persist_on_submit()
-        span.add(my.relation_select)
+        self.relation_select.set_option("values", relations)
+        self.relation_select.set_persist_on_submit()
+        span.add(self.relation_select)
 
-        my.value_text.set_persist_on_submit()
-        span.add(my.value_text)
+        self.value_text.set_persist_on_submit()
+        span.add(self.value_text)
 
         return span
 
 
-    def alter_search(my, search):
+    def alter_search(self, search):
 
-        value = my.value_text.get_value()
-        column = my.column_select.get_value()
-        relation = my.relation_select.get_value()
+        value = self.value_text.get_value()
+        column = self.column_select.get_value()
+        relation = self.relation_select.get_value()
 
         if relation == "is empty":
             search.add_where("(\"%s\" = '' or \"%s\" is NULL)" % (column, column) )
@@ -101,132 +101,132 @@ class GeneralFilterWdg(BaseFilterWdg):
 class HierarchicalFilterWdg(BaseFilterWdg):
     '''A filter that takes the hierarchical schema into account'''
 
-    def init(my):
-        my.schema = Schema.get()
-        if not my.schema:
-            my.parent_type = None
-            my.select = None
+    def init(self):
+        self.schema = Schema.get()
+        if not self.schema:
+            self.parent_type = None
+            self.select = None
             return
 
         web = WebContainer.get_web()
-        my.search_type = web.get_form_value("filter|search_type")
-        if not my.search_type:
-            search_type = my.options.get("search_type")
+        self.search_type = web.get_form_value("filter|search_type")
+        if not self.search_type:
+            search_type = self.options.get("search_type")
 
-        my.parent_type = my.schema.get_parent_type(my.search_type)
-        if not my.parent_type:
-            my.select = None
+        self.parent_type = self.schema.get_parent_type(self.search_type)
+        if not self.parent_type:
+            self.select = None
         else:
-            my.select = FilterSelectWdg("filter|%s" % my.parent_type)
+            self.select = FilterSelectWdg("filter|%s" % self.parent_type)
 
-    def get_parent_type(my):
-        return my.parent_type
+    def get_parent_type(self):
+        return self.parent_type
 
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
 
-        if not my.select:
+        if not self.select:
             return widget
 
-        if not my.schema:
+        if not self.schema:
             Environment.add_warning("No schema defined")
             widget.add("No schema defined")
             return widget
 
 
-        if not my.search_type:
+        if not self.search_type:
             Environment.add_warning("HierarchicalFilterWdg: Cannot find current search_type")
             widget.add("Cannot find current search_type")
             return widget
 
         span = SpanWdg(css="med")
-        parent_type = my.get_parent_type()
+        parent_type = self.get_parent_type()
         if parent_type:
             parent_type_obj = SearchType.get(parent_type)
             span.add("%s: " % parent_type_obj.get_value("title"))
 
         # assume that there is a code in the parent
-        my.select.add_empty_option("-- Select --")
-        my.select.set_option("query", "%s|code|code" % my.parent_type)
-        span.add(my.select)
+        self.select.add_empty_option("-- Select --")
+        self.select.set_option("query", "%s|code|code" % self.parent_type)
+        span.add(self.select)
 
         widget.add(span)
 
         return widget
 
 
-    def alter_search(my, search):
-        if not my.select:
+    def alter_search(self, search):
+        if not self.select:
             return
-        if not my.parent_type:
+        if not self.parent_type:
             return
-        if not my.schema:
+        if not self.schema:
             return
 
-        parent_code = my.select.get_value()
-        parent = Search.get_by_code(my.parent_type, parent_code)
+        parent_code = self.select.get_value()
+        parent = Search.get_by_code(self.parent_type, parent_code)
         if not parent:
             return
-        parent.children_alter_search(search, my.search_type)
+        parent.children_alter_search(search, self.search_type)
 
 class ProcessContextWdg(AjaxWdg):
     '''A schema search type driven process/context select widget'''
     PUBLISH_TYPE = "asset"
     RELATED_SEARCH_TYPE = "related_search_type"
-    def init(my):
+    def init(self):
         ''' initializes a few variables ''' 
-        my.search_type = ''
-        my.process = ''
-        my.related_search_type = ''
-        my.related_search_type_wdg = None
+        self.search_type = ''
+        self.process = ''
+        self.related_search_type = ''
+        self.related_search_type_wdg = None
 
-    def init_cgi(my):
-        #keys = my.web.get_form_keys()
-        my.search_type = my.web.get_form_value('search_type')
-        my.related_search_type = my.web.get_form_value(my.RELATED_SEARCH_TYPE)
-        my.process = my.web.get_form_value("%s_process" %my.PUBLISH_TYPE)
-        #if my.search_type:
-        my.add_inputs()
+    def init_cgi(self):
+        #keys = self.web.get_form_keys()
+        self.search_type = self.web.get_form_value('search_type')
+        self.related_search_type = self.web.get_form_value(self.RELATED_SEARCH_TYPE)
+        self.process = self.web.get_form_value("%s_process" %self.PUBLISH_TYPE)
+        #if self.search_type:
+        self.add_inputs()
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
-        my.add_inputs()
+    def set_search_type(self, search_type):
+        self.search_type = search_type
+        self.add_inputs()
 
-    def add_inputs(my):
+    def add_inputs(self):
         ''' register the inputs '''
-        hidden = HiddenWdg("%s_process" %my.PUBLISH_TYPE, my.process)
-        my.add_ajax_input(hidden)
-        hidden = HiddenWdg("search_type" ,my.search_type)
-        my.add_ajax_input(hidden)
-        my.related_search_type_wdg = HiddenWdg(my.RELATED_SEARCH_TYPE ,my.related_search_type)
-        my.add_ajax_input(my.related_search_type_wdg)
+        hidden = HiddenWdg("%s_process" %self.PUBLISH_TYPE, self.process)
+        self.add_ajax_input(hidden)
+        hidden = HiddenWdg("search_type" ,self.search_type)
+        self.add_ajax_input(hidden)
+        self.related_search_type_wdg = HiddenWdg(self.RELATED_SEARCH_TYPE ,self.related_search_type)
+        self.add_ajax_input(self.related_search_type_wdg)
         
         div_id='process_context_wdg'
-        my.main_div = DivWdg(id=div_id)
-        my.set_ajax_top(my.main_div)
+        self.main_div = DivWdg(id=div_id)
+        self.set_ajax_top(self.main_div)
 
-    def get_display(my):
-        search_type = my.search_type
-        related_search_type = my.related_search_type_wdg.get_value()
+    def get_display(self):
+        search_type = self.search_type
+        related_search_type = self.related_search_type_wdg.get_value()
         if related_search_type:
             search_type = related_search_type
-        hier_sel = my.get_hier_sel(search_type)
+        hier_sel = self.get_hier_sel(search_type)
         selected_related_search_type = hier_sel.get_value()
         
-        process_wdg = my.get_process_wdg(search_type)
-        context_wdg = my.get_context_wdg(search_type)
-        widget = my.main_div
-        if my.is_from_ajax(True):
+        process_wdg = self.get_process_wdg(search_type)
+        context_wdg = self.get_context_wdg(search_type)
+        widget = self.main_div
+        if self.is_from_ajax(True):
             widget = Widget()
         else:
-            my.set_ajax_top(widget)
+            self.set_ajax_top(widget)
         
         hidden = HiddenWdg("search_type" ,search_type)
         widget.add(hidden)
         
-        hier_sel.add_event('onchange', my.get_refresh_script(show_progress=False))
+        hier_sel.add_event('onchange', self.get_refresh_script(show_progress=False))
         widget.add(hier_sel)
         #Tooltip doesn't work too well
         #hint = HintWdg('Related search type you can optionally select to drive the process')
@@ -237,8 +237,8 @@ class ProcessContextWdg(AjaxWdg):
         widget.add(context_wdg)
         return widget
 
-    def get_hier_sel(my, search_type):
-        sel = SelectWdg(my.RELATED_SEARCH_TYPE, label='Related Search Type: ')
+    def get_hier_sel(self, search_type):
+        sel = SelectWdg(self.RELATED_SEARCH_TYPE, label='Related Search Type: ')
         sel.add_empty_option()
         schema = Schema.get()
         search_type_list = [search_type]
@@ -251,39 +251,39 @@ class ProcessContextWdg(AjaxWdg):
 
         sel.set_option('values', search_type_list)
 
-        sel.set_value(my.related_search_type)
+        sel.set_value(self.related_search_type)
         return sel
         
-    def get_process_wdg(my, search_type):
+    def get_process_wdg(self, search_type):
         '''this should appear in front of the context_filter_wdg'''
         from pyasm.prod.web import ProcessSelectWdg
-        my.process_select = ProcessSelectWdg(label='Process: ', \
+        self.process_select = ProcessSelectWdg(label='Process: ', \
             search_type=search_type, css='', has_empty=False, \
-            name="%s_process" %my.PUBLISH_TYPE)
+            name="%s_process" %self.PUBLISH_TYPE)
 
-        my.process_select.add_empty_option('- Select -')
-        my.process_select.set_event('onchange',\
-                my.get_refresh_script(show_progress=False))
-        my.process_select.set_value(my.process)
-        #my.process_select.set_persistence()
-        #my.process_select.set_submit_onchange()
+        self.process_select.add_empty_option('- Select -')
+        self.process_select.set_event('onchange',\
+                self.get_refresh_script(show_progress=False))
+        self.process_select.set_value(self.process)
+        #self.process_select.set_persistence()
+        #self.process_select.set_submit_onchange()
         # this is only applicable in Shot Tab
         '''
         filter = Container.get('process_fitter')
         if filter:
-            my.process_select.set_value(filter.get_value())
+            self.process_select.set_value(filter.get_value())
         '''
-        div = DivWdg(my.process_select)
+        div = DivWdg(self.process_select)
         div.add_style('padding-right','10px')
         return div
 
-    def get_context_wdg(my, search_type):
+    def get_context_wdg(self, search_type):
         '''drop down which selects which context to checkin'''
         # add a filter
         # use a regular SelectWdg with submit instead of FilterSelectWdg
         filter_div = FloatDivWdg("Context / subcontext:")
         select = SelectWdg("publish_context")
-        labels, values = my.get_context_data(search_type, my.process)
+        labels, values = self.get_context_data(search_type, self.process)
         select.set_option("values", "|".join(values))
         select.set_option("labels", "|".join(labels))
         select.append_option('publish','publish')
@@ -305,7 +305,7 @@ class ProcessContextWdg(AjaxWdg):
         select.set_value( context )
 
         # set it to a instance variable
-        my.context_select = select
+        self.context_select = select
 
         filter_div.add(select)
 
@@ -326,19 +326,19 @@ class ProcessContextWdg(AjaxWdg):
             sub_context.set_attr('size','10') 
         sub_context.set_persistence()
         filter_div.add( sub_context )
-        my.sub_context_select = sub_context
+        self.sub_context_select = sub_context
         #filter_div.add_style('padding-right','10px')
 
         return filter_div
 
 
-    def get_context_data(my, search_type='', process=''):
+    def get_context_data(self, search_type='', process=''):
         '''get the labels and values of contexts that can be checked in with this widget'''
 
         # TODO: this also shows input contexts ... it should only show output
         # contexts
         if not search_type:
-            search_type = my.search_type
+            search_type = self.search_type
 
     
 

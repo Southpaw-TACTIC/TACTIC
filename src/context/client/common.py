@@ -28,25 +28,25 @@ class TacticInfo(BaseAppInfo):
     variables from application.  This information is generally fed into
     the environment class'''
 
-    def get_ticket(my):
-        return my.app.get_var("tactic_ticket")
+    def get_ticket(self):
+        return self.app.get_var("tactic_ticket")
 
 
-    def get_tactic_server(my):
-        tactic_server = my.app.get_var("tactic_server")
+    def get_tactic_server(self):
+        tactic_server = self.app.get_var("tactic_server")
         return tactic_server
         
 
 
-    def get_xmlrpc_server(my):
-        xmlrpc_url = my.app.get_var("tactic_xmlrpc")
+    def get_xmlrpc_server(self):
+        xmlrpc_url = self.app.get_var("tactic_xmlrpc")
         # Applications can't take https 
         #xmlrpc_url = xmlrpc_url.replace('https:', 'http:')
         
         # can't check for None here because this fires and __eq__ function
         # to the server
-        if not isinstance(my.xmlrpc_server, xmlrpclib.Server):
-            my.xmlrpc_server = xmlrpclib.Server(xmlrpc_url, allow_none=True)
+        if not isinstance(self.xmlrpc_server, xmlrpclib.Server):
+            self.xmlrpc_server = xmlrpclib.Server(xmlrpc_url, allow_none=True)
             
             # WARNING: this is changing code in the xmlrpclib library.  This
             # library is not sending a proper user agent.  Hacking it in
@@ -58,33 +58,33 @@ class TacticInfo(BaseAppInfo):
             xmlrpclib.Transport.user_agent = user_agent
 
         # this will be removed. as project_code should be set per call.
-        project_code = my.get_project_code()
+        project_code = self.get_project_code()
         if project_code:
-            my.xmlrpc_server.set_project(project_code)
-        return my.xmlrpc_server
+            self.xmlrpc_server.set_project(project_code)
+        return self.xmlrpc_server
 
-    def get_upload_server(my):
-        upload_url = my.app.get_var("tactic_upload")
+    def get_upload_server(self):
+        upload_url = self.app.get_var("tactic_upload")
         return upload_url
 
-    def get_user(my):
-        user = my.app.get_var("tactic_user")
+    def get_user(self):
+        user = self.app.get_var("tactic_user")
         return user
 
-    def get_tmpdir(my):
-        tmpdir = my.app.get_var("tactic_tmpdir")
+    def get_tmpdir(self):
+        tmpdir = self.app.get_var("tactic_tmpdir")
         return tmpdir
 
-    def get_sandbox_dir(my):
-        sandbox_dir = my.app.get_var("tactic_sandbox_dir")
+    def get_sandbox_dir(self):
+        sandbox_dir = self.app.get_var("tactic_sandbox_dir")
         return sandbox_dir
 
-    def get_project_code(my):
-        project_code = my.app.get_var("tactic_project_code")
+    def get_project_code(self):
+        project_code = self.app.get_var("tactic_project_code")
         return project_code
 
-    def get_server(my):
-        base_url = my.app.get_var("tactic_base_url")
+    def get_server(self):
+        base_url = self.app.get_var("tactic_base_url")
         base_url = re.sub('http://|https://', '', base_url)
         return base_url
 

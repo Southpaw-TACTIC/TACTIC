@@ -39,42 +39,42 @@ class Shot(SObject):
         return []
     get_required_columns = staticmethod(get_required_columns)
 
-    def validate(my):
+    def validate(self):
         pat = re.compile('^\d')
-        code = my.get_code()
+        code = self.get_code()
         if not code:
             return
         if pat.search(code):
             raise TacticException('Shot code should not start with a number')
 
-        if my.get_frame_start() > my.get_frame_end():
+        if self.get_frame_start() > self.get_frame_end():
             raise TacticException('End Frame must be larger than Start Frame')
 
     # simple definition for frames
-    def get_frame_start(my):
-        frame_start = my.get_value("tc_frame_start")
+    def get_frame_start(self):
+        frame_start = self.get_value("tc_frame_start")
         try:
             return int(frame_start)
         except Exception, e:
             return 1
 
-    def get_frame_end(my):
-        frame_end = my.get_value("tc_frame_end")
+    def get_frame_end(self):
+        frame_end = self.get_value("tc_frame_end")
         try:
             return int(frame_end)
         except Exception, e:
             return 1
 
 
-    def get_frame_range(my):
-        frame_range = FrameRange( my.get_frame_start(), \
-            my.get_frame_end(), 1 )
+    def get_frame_range(self):
+        frame_range = FrameRange( self.get_frame_start(), \
+            self.get_frame_end(), 1 )
         return frame_range
 
 
-    def get_frame_handles(my):
-        frame_in = my.get_value("frame_in", no_exception=True)
-        frame_out = my.get_value("frame_out", no_exception=True)
+    def get_frame_handles(self):
+        frame_in = self.get_value("frame_in", no_exception=True)
+        frame_out = self.get_value("frame_out", no_exception=True)
         if frame_in:
             frame_in = int(frame_in)
         else:
@@ -85,32 +85,32 @@ class Shot(SObject):
             frame_out = 0
         return frame_in, frame_out
 
-    def get_frame_notes(my):
-        return my.get_value("frame_note", no_exception=True)
+    def get_frame_notes(self):
+        return self.get_value("frame_note", no_exception=True)
 
 
-    def add_asset(my, asset, instance_name, description=None):
+    def add_asset(self, asset, instance_name, description=None):
         '''adds an asset with an instance to this shot'''
-        instance = Instance.create(my, asset, instance_name, description)
+        instance = Instance.create(self, asset, instance_name, description)
         return instance
 
 
-    def get_snapshot(my, instance, process, version):
+    def get_snapshot(self, instance, process, version):
         pass
 
 
-    def get_all_instances(my, include_parent=False, type='asset'):
+    def get_all_instances(self, include_parent=False, type='asset'):
         '''gets all non-retired instances in the shot'''
         if include_parent:
-            parent_code = my.get_value("parent_code")
-            return ShotInstance.get_all_by_shot(my,[parent_code], type )
+            parent_code = self.get_value("parent_code")
+            return ShotInstance.get_all_by_shot(self,[parent_code], type )
         else:
-            return ShotInstance.get_all_by_shot(my, type=type)
+            return ShotInstance.get_all_by_shot(self, type=type)
 
 
-    def get_all_layers(my):
+    def get_all_layers(self):
         '''gets all non-retired instances in the shot'''
-        return Layer.get_all_by_shot(my)
+        return Layer.get_all_by_shot(self)
 
 
 
@@ -133,29 +133,29 @@ class Shot(SObject):
 
 
     # TODO: this is a carbon copy of the asset delete    
-    def delete(my, log=True):
+    def delete(self, log=True):
 
         '''This is for undo'''
         # TODO: the should probably be clearer!!!!
         if log == False:
-            super(Shot,my).delete(log)
+            super(Shot,self).delete(log)
             return
             
 
         # An asset can only be deleted if only icon snapshots exist
-        snapshots = Snapshot.get_by_sobject(my)
+        snapshots = Snapshot.get_by_sobject(self)
 
         only_icons = True
         for snapshot in snapshots:
             context = snapshot.get_value("context")
-            if context != my.get_icon_context():
+            if context != self.get_icon_context():
                 only_icons = False
 
         if not only_icons:
             raise TacticException("Cannot delete because snapshots exist")
 
         # only delete if not tasks have been assigned
-        tasks = Task.get_by_sobject(my)
+        tasks = Task.get_by_sobject(self)
         has_assigned = False
         for task in tasks:
             assigned = task.get_value("assigned")
@@ -171,9 +171,9 @@ class Shot(SObject):
         for task in tasks:
             task.delete()
 
-        my.description = "Deleted '%s', search_type '%s'" % (my.get_code(), my.get_search_type)
+        self.description = "Deleted '%s', search_type '%s'" % (self.get_code(), self.get_search_type)
 
-        super(Shot,my).delete(log)
+        super(Shot,self).delete(log)
 
 
 
@@ -183,14 +183,14 @@ class Shot(SObject):
 class Layer(SObject):
     SEARCH_TYPE = "prod/layer"
 
-    def get_shot(my):
-        return Shot.get_by_code( my.get_value("shot_code") )
+    def get_shot(self):
+        return Shot.get_by_code( self.get_value("shot_code") )
 
-    def get_foreign_key(my):
+    def get_foreign_key(self):
         return "layer_id"
 
-    def get_frame_range(my):
-        shot = my.get_shot()
+    def get_frame_range(self):
+        shot = self.get_shot()
         return shot.get_frame_range()
 
 

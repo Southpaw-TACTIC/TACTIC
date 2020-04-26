@@ -16,11 +16,19 @@ spt.panel = {}
 // Method to refresh an element.  It will look for the closest parent panel
 // and refresh
 //
-spt.panel.refresh_element = function(element, values, kwargs) {
+spt.panel.refresh_element = function(element, data, kwargs) {
 
-    var panel = spt.has_class(element, "spt_panel") ? element : $(element).getParent(".spt_panel");
+    var panel = spt.has_class(element, "spt_panel") ? element : document.id(element).getParent(".spt_panel");
     var fade = kwargs ? kwargs.fade : false;
-    spt.panel.refresh(panel, values, kwargs);
+
+    if (data) {
+        if (!kwargs) {
+            kwargs = {};
+        }
+        kwargs['data'] = data;
+    }
+
+    spt.panel._refresh_widget(panel, null, kwargs);
 }
 
 
@@ -28,9 +36,9 @@ spt.panel.refresh_element = function(element, values, kwargs) {
 // Callback to refresh a panel widget
 //
 spt.panel.refresh = function(panel_id, values, kwargs) {
-    var panel = $(panel_id);
+    var panel = document.id(panel_id);
     if (panel == null) {
-        log.warning("panel[" + panel_id + "] cannot be found ");
+        spt.js_log.warning("panel[" + panel_id + "] cannot be found ");
         return;
     }
     // either the panel or the first child will have all the necessary
@@ -39,9 +47,11 @@ spt.panel.refresh = function(panel_id, values, kwargs) {
         // go up the hierarchy to find the next panel
         panel = panel.getParent(".spt_panel");
     }
+
     if (values == null || values == undefined || values == {}) {
         values = spt.api.Utility.get_input_values(panel);
     }
+
     spt.panel._refresh_widget(panel, values, kwargs);
 
 }
@@ -75,10 +85,10 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     if (callback) {
         async = true;
     }
-    var panel = $(panel_id);
+    var panel = document.id(panel_id);
     if (!panel)
     {
-        log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
+        spt.js_log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
         return;
     }
     
@@ -94,19 +104,8 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
         if (async) {
 
-            var size = $(panel).getSize();
-
-            /*
-            panel.innerHTML = '<div style="width: '+size.x+'; height: '+size.y+'"><div style="margin-left: auto; margin-right: auto; width: 150px; text-align: center; padding: 20px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div></div>';
-
-            wdg_kwargs.cbjs_action = function(widget_html) {
-                panel.setStyle("opacity", "0.5");
-                spt.behavior.replace_inner_html(panel, widget_html);
-                new Fx.Tween(panel, {duration: "short"}).start('opacity', '1');
-                if (callback) callback();
-            }
-            */
-
+            var size = document.id(panel).getSize();
+            console.log(size);
 
             var env = spt.Environment.get();
             var colors = env.get_colors();
@@ -123,14 +122,25 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 shadow = colors.shadow;
             }
 
-            var element = $(document.createElement("div"));
+
+            // the panel must have a position
+            had_position = true;
+            if (!panel.getStyle("position")) {
+                panel.setStyle("position", "relative");
+                had_position = false;
+            }
+
+
+            var element = document.id(document.createElement("div"));
             element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; background: #EEE; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
             element.setStyle("z-index", "100");
-            element.setStyle("margin-top", -size.y);
-            element.setStyle("position", "relative");
+            //element.setStyle("margin-top", -size.y);
+            element.setStyle("position", "absolute");
+            element.setStyle("top", "10px");
+            element.setStyle("left", size.x/2-75);
 
 
-            var xelement = $(document.createElement("div"));
+            var xelement = document.id(document.createElement("div"));
             xelement.setStyle("opacity", "0.4");
             xelement.innerHTML = '<div style="background: '+fade_color+'; width: '+size.x+'; height: '+size.y+'"></div>';
             xelement.setStyle("margin-top", -size.y);
@@ -144,9 +154,23 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
             wdg_kwargs.cbjs_action = function(widget_html) {
                 xelement.setStyle("opacity", "0.4");
+
+                if (had_position == false) {
+                    panel.setStyle("position", "");
+                }
+
+
+                xelement.destroy();
+                element.destroy();
+
                 spt.behavior.replace_inner_html(panel, widget_html);
                 new Fx.Tween(xelement, {duration: "short"}).start('opacity', '0');
                 if (callback) callback(panel);
+            }
+            wdg_kwargs.on_error = function(error) {
+                xelement.destroy();
+                element.destroy();
+                spt.alert(error);
             }
 
 
@@ -234,6 +258,8 @@ spt.panel.load_popup = function(popup_id, class_name, args, kwargs) {
         bvr2.options.on_close = kwargs.on_close;
     if (kwargs.allow_close != null) 
         bvr2.options.allow_close = kwargs.allow_close;
+    if (kwargs.top_class) 
+        bvr2.options.top_class = kwargs.top_class;
 
     return spt.popup.get_widget({}, bvr2);
 
@@ -292,7 +318,7 @@ spt.panel.show_progress = function(element_id) {
         return;
     }
 
-    var element = $(element_id);
+    var element = document.id(element_id);
    
     element.innerHTML = '<div style="height: 100%; font-size: 1.5em" class="spt_spin"><img src="/context/icons/common/indicator_snake.gif" border="0"> Loading ...</div>';
     //element.fade('in');
@@ -344,9 +370,9 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
         async = true;
     }
 
-    var element = $(element_id);
+    var element = document.id(element_id);
     if (! element) {
-        log.warning("_refresh_widget " + element_id +  " not found ");
+        spt.js_log.warning("_refresh_widget " + element_id +  " not found ");
         return;
     }
     element_id = element.getAttribute('id');
@@ -369,6 +395,14 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
     var options = spt.panel.get_element_options(element);
     // add an is_refresh option
     options['is_refresh'] = "true";
+
+
+    var data = kwargs ? kwargs.data : false;
+    if (data) {
+        for (var key in data) {
+            options[key] = data[key];
+        }
+    }
 
     var server = TacticServerStub.get();
     var wdg_kwargs = {'args': options, 'values': values};
@@ -409,7 +443,7 @@ spt.panel.set_hash = function(panel_id, class_name, options, kwargs) {
     alert("spt.panel.set_hash is DEPRECATED");
 
     // for now, ignore all panels that are not the main_body
-    if ( $(panel_id).getAttribute('id') != 'main_body' ) {
+    if ( document.id(panel_id).getAttribute('id') != 'main_body' ) {
         return;
     }
 

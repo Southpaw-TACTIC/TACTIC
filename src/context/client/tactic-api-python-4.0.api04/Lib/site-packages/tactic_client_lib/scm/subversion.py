@@ -25,113 +25,113 @@ from scm_impl import ScmImpl
 
 class Subversion(ScmImpl):
 
-    def __init__(my, **kwargs):
-        super(Subversion, my).__init__(**kwargs)
+    def __init__(self, **kwargs):
+        super(Subversion, self).__init__(**kwargs)
 
-        my.client = pysvn.Client()
+        self.client = pysvn.Client()
 
 
-    def get_login( my, realm, username, may_save):
+    def get_login( self, realm, username, may_save):
         retcode = True
         print "user: [%s]" % username
-        user = my.user
+        user = self.user
         #password = getpass.getpass("xPassword: ")
-        password = my.password
+        password = self.password
         save = False
         return retcode, user, password, save
 
-    def ssl_server_trust_prompt( my, trust_dict ):
+    def ssl_server_trust_prompt( self, trust_dict ):
         retcode = True
         save = True
         return retcode, -1, save
 
 
-    def notify( my, evt ):
+    def notify( self, evt ):
         #print "action: ", evt.get("action"), evt.get("path")
         pass
 
 
-    def add_default_callbacks(my):
-        my.client.callback_get_login = my.get_login
-        my.client.callback_ssl_server_trust_prompt = my.ssl_server_trust_prompt
-        my.client.callback_notify = my.notify
+    def add_default_callbacks(self):
+        self.client.callback_get_login = self.get_login
+        self.client.callback_ssl_server_trust_prompt = self.ssl_server_trust_prompt
+        self.client.callback_notify = self.notify
 
 
-    def get_repo_url(my, repo_path):
-        repo_url = '%s/branches/%s/%s' % (my.root, my.branch, repo_path)
+    def get_repo_url(self, repo_path):
+        repo_url = '%s/branches/%s/%s' % (self.root, self.branch, repo_path)
         return repo_url
 
 
 
 
-    def add(my, sync_path):
-        my.client.add(sync_path)
+    def add(self, sync_path):
+        self.client.add(sync_path)
 
 
-    def checkout(my, repo_dir, recurse=None, depth='empty'):
-        my.add_default_callbacks()
+    def checkout(self, repo_dir, recurse=None, depth='empty'):
+        self.add_default_callbacks()
 
-        repo_url = my.get_repo_url(repo_dir)
+        repo_url = self.get_repo_url(repo_dir)
         if recurse != None:
-            my.client.checkout(repo_url, my.sync_dir, recurse=recurse)
+            self.client.checkout(repo_url, self.sync_dir, recurse=recurse)
         elif depth:
             depth = eval("pysvn.depth.%s" % depth)
-            my.client.checkout(repo_url, my.sync_dir, depth=depth)
+            self.client.checkout(repo_url, self.sync_dir, depth=depth)
 
 
 
-    def checkout_file(my, repo_path):
+    def checkout_file(self, repo_path):
         '''Check out a sinlge file'''
-        my.add_default_callbacks()
+        self.add_default_callbacks()
 
         repo_dir = os.path.dirname(repo_path)
-        sync_path = "%s/%s" % (my.sync_dir, os.path.basename(repo_path))
+        sync_path = "%s/%s" % (self.sync_dir, os.path.basename(repo_path))
 
-        my.checkout(repo_dir, my.sync_dir, depth='empty')
-        my.export(repo_path, sync_path)
+        self.checkout(repo_dir, self.sync_dir, depth='empty')
+        self.export(repo_path, sync_path)
 
 
 
-    def update(my, repo_path, recurse=None, depth='empty'):
-        my.add_default_callbacks()
-        repo_url = my.get_repo_url(repo_path)
+    def update(self, repo_path, recurse=None, depth='empty'):
+        self.add_default_callbacks()
+        repo_url = self.get_repo_url(repo_path)
         if recurse != None:
-            my.client.update(repo_url, dst, recurse=recurse)
+            self.client.update(repo_url, dst, recurse=recurse)
         elif depth:
             depth = eval("pysvn.depth.%s" % depth)
-            my.client.update(repo_url, dst, depth=depth)
+            self.client.update(repo_url, dst, depth=depth)
 
 
 
-    def export(my, repo_path, dst, recurse=None, depth='empty'):
-        my.add_default_callbacks()
-        repo_url = my.get_repo_url(repo_path)
+    def export(self, repo_path, dst, recurse=None, depth='empty'):
+        self.add_default_callbacks()
+        repo_url = self.get_repo_url(repo_path)
         if recurse != None:
-            my.client.export(repo_url, dst, recurse=recurse)
+            self.client.export(repo_url, dst, recurse=recurse)
         elif depth != None:
             depth = eval("pysvn.depth.%s" % depth)
-            my.client.export(repo_url, dst, depth=depth)
+            self.client.export(repo_url, dst, depth=depth)
         else:
-            my.client.export(repo_url, dst)
+            self.client.export(repo_url, dst)
 
 
 
 
-    def commit(my, paths, description):
-        my.add_default_callbacks()
+    def commit(self, paths, description):
+        self.add_default_callbacks()
 
         full_paths = []
         for path in paths:
-            if not path.startswith(my.sync_dir):
-                path = "%s/%s" % (my.sync_dir, path)
+            if not path.startswith(self.sync_dir):
+                path = "%s/%s" % (self.sync_dir, path)
             full_paths.append(path)
-        my.client.checkin(full_paths, description)
+        self.client.checkin(full_paths, description)
 
 
-    def status(my, path=None):
-        path = "%s/%s" % (my.sync_dir, path)
+    def status(self, path=None):
+        path = "%s/%s" % (self.sync_dir, path)
 
-        changes = my.client.status(path)
+        changes = self.client.status(path)
         info = {}
         for f in changes:
             path = f.path.replace("\\", "/")
@@ -157,14 +157,14 @@ class Subversion(ScmImpl):
     # Query methods
     #
 
-    def get_all_branches(my):
-        repo_url = '%s/branches' % my.root
+    def get_all_branches(self):
+        repo_url = '%s/branches' % self.root
 
-        my.client.callback_get_login = my.get_login
-        my.client.callback_ssl_server_trust_prompt = my.ssl_server_trust_prompt
-        my.client.callback_notify = my.notify
+        self.client.callback_get_login = self.get_login
+        self.client.callback_ssl_server_trust_prompt = self.ssl_server_trust_prompt
+        self.client.callback_notify = self.notify
 
-        dir_list = my.client.ls(repo_url)
+        dir_list = self.client.ls(repo_url)
 
         branches = []
         for dir_entry in dir_list:
@@ -175,14 +175,14 @@ class Subversion(ScmImpl):
         return branches
 
 
-    def get_all_tags(my, branch):
-        repo_url = '%s/tags' % my.root
+    def get_all_tags(self, branch):
+        repo_url = '%s/tags' % self.root
 
-        my.client.callback_get_login = my.get_login
-        my.client.callback_ssl_server_trust_prompt = my.ssl_server_trust_prompt
-        my.client.callback_notify = my.notify
+        self.client.callback_get_login = self.get_login
+        self.client.callback_ssl_server_trust_prompt = self.ssl_server_trust_prompt
+        self.client.callback_notify = self.notify
 
-        dir_list = my.client.ls(repo_url)
+        dir_list = self.client.ls(repo_url)
 
         tags = []
         for dir_entry in dir_list:

@@ -155,6 +155,11 @@
   </element>
 
 
+    <element name="status">
+        <display class="tactic.ui.widget.TaskStatusElementWdg"/>
+    </element>
+    
+
 
 
 </definition>
@@ -231,6 +236,17 @@
       <action class="IsCurrentAction"/>
     </element>
 </edit>
+
+<edit_definition>
+    <element name="status" depend="pipeline_code">
+        <display class="tactic.ui.widget.TaskStatusSelectWdg">
+        </display>
+    </element>
+</edit_definition>
+
+
+
+
 
 <!-- Used to append files to a snapshot -->
 <append>

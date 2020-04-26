@@ -18,11 +18,11 @@ from tactic.ui.common import BaseRefreshWdg
 
 class ProxyWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        class_name = my.kwargs.get("class_name")
-        server_name = my.kwargs.get("server")
-        kwargs = my.kwargs.get("kwargs")
+        class_name = self.kwargs.get("class_name")
+        server_name = self.kwargs.get("server")
+        kwargs = self.kwargs.get("kwargs")
 
         server = TacticServerStub.get(protocol='xmlrpc')
         server.set_server(server_name)

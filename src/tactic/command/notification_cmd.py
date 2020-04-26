@@ -20,15 +20,15 @@ from pyasm.biz import Project
 class NotificationTestCmd(Command):
     '''Do a dry-run of a notification sending'''
 
-    def get_base_search_type(my):
+    def get_base_search_type(self):
         return ''
 
-    def get_prev_value(my):
+    def get_prev_value(self):
         return ''
 
-    def execute(my):
+    def execute(self):
 
-        notification = my.kwargs.get('sobject_dict')
+        notification = self.kwargs.get('sobject_dict')
         search_key = notification.get('__search_key__')
         event = notification.get('event')
         parts  = event.split('|')
@@ -40,7 +40,7 @@ class NotificationTestCmd(Command):
 
        
             
-        my.sobjects.append(sobject)
+        self.sobjects.append(sobject)
 
         search_type = SearchKey.extract_search_type(search_key)
         search_id = notification.get('id')
@@ -82,7 +82,7 @@ class NotificationTestCmd(Command):
             triggers = Trigger.call(sobject, event, output=output, forced_mode='same process,same transaction', process = notification_process, search_type = notification_stype)
             if triggers:
                 for idx, trigger in enumerate(triggers):
-                    my.add_description('%s. %s' %(idx+1, trigger.get_description()))
+                    self.add_description('%s. %s' %(idx+1, trigger.get_description()))
             else:
                 raise TacticException('No notification trigger is fired. Possible mismatched project_code for this notification entry.')
         except Exception, e:

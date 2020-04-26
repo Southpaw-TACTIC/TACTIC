@@ -25,30 +25,30 @@ from tactic.ui.common import BaseRefreshWdg
 class PublishLogWdg(BaseRefreshWdg):
     ''' A widget used to display publish/checkin log '''
 
-    def init(my):
-        my.publish_search_type = my.kwargs.get('publish_search_type')
-        my.snapshot_filter_enabled = my.kwargs.get('snapshot_filter_enabled')
+    def init(self):
+        self.publish_search_type = self.kwargs.get('publish_search_type')
+        self.snapshot_filter_enabled = self.kwargs.get('snapshot_filter_enabled')
 
-    def get_search_wdg(my):
-        if not my.publish_search_type:
-            my.publish_search_type = ''
+    def get_search_wdg(self):
+        if not self.publish_search_type:
+            self.publish_search_type = ''
         search_type = "sthpw/snapshot"
         from tactic.ui.app import SearchWdg
 
         # provide a view, so it will not automatically get the last saved search instead
         # we need to differentiate between client and dailies search
-        state = {'publish_search_type': my.publish_search_type,
-                'snapshot_filter_enabled': my.snapshot_filter_enabled}
+        state = {'publish_search_type': self.publish_search_type,
+                'snapshot_filter_enabled': self.snapshot_filter_enabled}
         search_wdg = SearchWdg(search_type=search_type, view='search', state=state)
     
         
         return search_wdg
 
-    def get_display(my):
+    def get_display(self):
         # create the asset tab
         widget = DivWdg(css="spt_view_panel")
-        my.set_as_panel(widget) 
-        search_wdg = my.get_search_wdg()
+        self.set_as_panel(widget) 
+        search_wdg = self.get_search_wdg()
         widget.add(search_wdg)
         widget.add(HtmlElement.br())
         search = search_wdg.get_search()
@@ -80,25 +80,25 @@ class PublishLogWdg(BaseRefreshWdg):
 class PublishBrowserWdg(BaseRefreshWdg):
     ''' A widget used to display publish/checkin log '''
 
-    def init(my):
-        my.search_type = my.kwargs.get('search_type')
-        my.search_id = my.kwargs.get('search_id')
-        my.is_refresh = my.kwargs.get('is_refresh') =='true'
+    def init(self):
+        self.search_type = self.kwargs.get('search_type')
+        self.search_id = self.kwargs.get('search_id')
+        self.is_refresh = self.kwargs.get('is_refresh') =='true'
 
-    def get_display(my):
+    def get_display(self):
         
-        if not my.is_refresh:
+        if not self.is_refresh:
             widget = DivWdg()
-            my.set_as_panel(widget)
+            self.set_as_panel(widget)
         else:
             widget = Widget() 
 
 
-        sobject = Search.get_by_id(my.search_type, my.search_id)
+        sobject = Search.get_by_id(self.search_type, self.search_id)
         if sobject:
             search_type = sobject.get_base_search_type()
         else:
-            widget.add('sobject not found with [%s,%s]' %(my.search_type, my.search_id))
+            widget.add('sobject not found with [%s,%s]' %(self.search_type, self.search_id))
             return widget
 
         # the filter for searching assets

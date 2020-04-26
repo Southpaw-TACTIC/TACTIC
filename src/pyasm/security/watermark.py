@@ -25,7 +25,7 @@ class Watermark(object):
 
     # http://code.activestate.com/recipes/362879-watermark-with-pil/
 
-    def reduce_opacity(my, im, opacity):
+    def reduce_opacity(self, im, opacity):
         '''Returns an image with reduced opacity.'''
         assert opacity >= 0 and opacity <= 1
         if im.mode != 'RGBA':
@@ -37,10 +37,10 @@ class Watermark(object):
         im.putalpha(alpha)
         return im
 
-    def execute(my, im, mark, position, opacity=1):
+    def execute(self, im, mark, position, opacity=1):
         '''Adds a watermark to an image.'''
         if opacity < 1:
-            mark = my.reduce_opacity(mark, opacity)
+            mark = self.reduce_opacity(mark, opacity)
         if im.mode != 'RGBA':
             im = im.convert('RGBA')
         # create a transparent layer the size of the image and draw the
@@ -64,7 +64,7 @@ class Watermark(object):
         return Image.composite(layer, im, layer)
 
 
-    def generate(my, texts, font_sizes=15):
+    def generate(self, texts, font_sizes=15):
         if isinstance(texts, basestring):
             texts = [texts]
 
@@ -97,7 +97,7 @@ class Watermark(object):
 
 
 
-    def add_watermark(my, in_path, out_path, quality=0.5, texts=[], sizes=[]):
+    def add_watermark(self, in_path, out_path, quality=0.5, texts=[], sizes=[]):
 
         from PIL import Image
         from pyasm.security.watermark import Watermark
@@ -133,8 +133,8 @@ class Watermark(object):
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
 
-            mark = my.generate(texts, sizes)
-            im_out = my.execute(im_in, mark, 'tile', 0.5)
+            mark = self.generate(texts, sizes)
+            im_out = self.execute(im_in, mark, 'tile', 0.5)
             im_out.save(out_path)
         finally:
             if s_in:

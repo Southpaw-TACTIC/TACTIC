@@ -76,11 +76,17 @@ class RetireLog(SObject):
 
 
 
-    def create(search_type, search_id):
+    def create(search_type, search_id=None, search_code=None):
+
+        assert(search_id or search_code)
 
         log = RetireLog( RetireLog.SEARCH_TYPE )
         log.set_value("search_type", search_type)
-        log.set_value("search_id", search_id)
+
+        if search_id:
+            log.set_value("search_id", search_id)
+        else:
+            log.set_value("search_code", search_code)
 
         user = Environment.get_user_name()
         log.set_value("login", user)

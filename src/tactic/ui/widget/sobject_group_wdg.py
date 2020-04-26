@@ -30,7 +30,7 @@ class SObjectGroupWdg(BaseRefreshWdg):
        
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'left_type': 'search type on the left side',
             'right_type': 'search type on the right side',
@@ -38,22 +38,22 @@ class SObjectGroupWdg(BaseRefreshWdg):
         }
 
         
-    def init(my):
+    def init(self):
         
  
-        my.item_cls = my.kwargs.get('left_search_type')
-        my.container_cls = my.kwargs.get('right_search_type')
-        my.grouping_cls  = my.kwargs.get('search_type')
+        self.item_cls = self.kwargs.get('left_search_type')
+        self.container_cls = self.kwargs.get('right_search_type')
+        self.grouping_cls  = self.kwargs.get('search_type')
 
-        my.item_sobj = my.container_sobj = None 
+        self.item_sobj = self.container_sobj = None 
         
         # List the items
-        search = Search(my.item_cls)
-        my._order_search(search)    
+        search = Search(self.item_cls)
+        self._order_search(search)    
         
         items = search.get_sobjects()
         if items:
-            my.item_sobj = items[0]
+            self.item_sobj = items[0]
         #select = MultiSelectWdg("item_ids")
         #select.set_search_for_options(search,"login", "get_full_name()")
 
@@ -88,7 +88,7 @@ class SObjectGroupWdg(BaseRefreshWdg):
         control_div = DivWdg()
         control_div.add_style('padding: 100px 10px 0 10px')
 
-        button = IconSubmitWdg(my.ADD_LABEL, "stock_insert-slide.png", True)
+        button = IconSubmitWdg(self.ADD_LABEL, "stock_insert-slide.png", True)
         button.add_style('padding: 2px 30px 4px 30px')
         control_div.add(button)
         
@@ -99,32 +99,32 @@ class SObjectGroupWdg(BaseRefreshWdg):
         main_table.add_cell(user_span, 'valign_top')
         td = main_table.add_cell(control_div, 'valign_top')
         td.add_style('width','12em')
-        main_table.add_cell(my._get_target_span(), 'valign_top')
+        main_table.add_cell(self._get_target_span(), 'valign_top')
 
-        my.add(main_table)
+        self.add(main_table)
     
         # register command here
-        if my.item_sobj and my.container_sobj:
+        if self.item_sobj and self.container_sobj:
             marshaller = WebContainer.register_cmd("pyasm.widget.SObjectGroupCmd")
-            marshaller.set_option("grouping_search_type", my.grouping_cls)
-            marshaller.set_option("item_foreign_key", my.item_sobj.get_foreign_key())
-            marshaller.set_option("container_foreign_key", my.container_sobj.get_foreign_key())
+            marshaller.set_option("grouping_search_type", self.grouping_cls)
+            marshaller.set_option("item_foreign_key", self.item_sobj.get_foreign_key())
+            marshaller.set_option("container_foreign_key", self.container_sobj.get_foreign_key())
         
-    def _order_search(my, search):
+    def _order_search(self, search):
         config = SObjectConfig.get_by_search_type(search.get_search_type_obj())
         if config:
             search.add_order_by(config.get_order_by())
             
-    def _get_target_span(my):
+    def _get_target_span(self):
         # get the target span
-        search = Search(my.container_cls)
-        my._order_search(search)
+        search = Search(self.container_cls)
+        self._order_search(search)
         groups = search.get_sobjects()
         if groups:
-            my.container_sobj = groups[0]
+            self.container_sobj = groups[0]
         
         target_span = SpanWdg(css='med')
-        group_table = Table(my.GROUP_TABLE_NAME, css='table')
+        group_table = Table(self.GROUP_TABLE_NAME, css='table')
         group_table.add_style('width','30em')
         group_table.add_col(css='small')
         group_table.add_col(css='small')    
@@ -146,7 +146,7 @@ class SObjectGroupWdg(BaseRefreshWdg):
         group_table.add_cell('MASTER CONTROL')
         
         remove_cmd = HiddenWdg(SObjectGroupCmd.REMOVE_CMD)
-        my.add(remove_cmd)
+        self.add(remove_cmd)
         for group in groups:
             group_table.add_row()
             checkbox = CheckboxWdg("container_ids")
@@ -155,7 +155,7 @@ class SObjectGroupWdg(BaseRefreshWdg):
             toggle = HiddenRowToggleWdg(col_name, auto_index=True)
             toggle.store_event()
          
-            group_details = ItemInContainerWdg( group, my.item_sobj, my.item_cls, my.grouping_cls )
+            group_details = ItemInContainerWdg( group, self.item_sobj, self.item_cls, self.grouping_cls )
            
             # set the target content of the toggle
             toggle.set_static_content(group_details)
@@ -175,46 +175,46 @@ class SObjectGroupWdg(BaseRefreshWdg):
 
 class ItemInContainerWdg(HtmlElement):
    
-    def __init__(my, group, item_sobj, item_cls, grouping_cls):
-        my.group = group
-        my.item_cls = item_cls
-        my.item_sobj = item_sobj
-        my.grouping_cls = grouping_cls
-        super(ItemInContainerWdg, my).__init__('div')
+    def __init__(self, group, item_sobj, item_cls, grouping_cls):
+        self.group = group
+        self.item_cls = item_cls
+        self.item_sobj = item_sobj
+        self.grouping_cls = grouping_cls
+        super(ItemInContainerWdg, self).__init__('div')
 
 
-    def init(my):
-        assert my.group != None
-        my.items = my.get_items()
+    def init(self):
+        assert self.group != None
+        self.items = self.get_items()
 
 
-    def get_num_items(my):
-        return len(my.items)
+    def get_num_items(self):
+        return len(self.items)
 
 
-    def get_items(my):
-        if not my.item_sobj:
+    def get_items(self):
+        if not self.item_sobj:
             return []
-        search = Search( my.item_cls )
+        search = Search( self.item_cls )
         query = "%s in (select %s from %s where \
-            %s = '%s')" % (my.item_sobj.get_primary_key(), \
-            my.item_sobj.get_foreign_key(), \
-            SearchType.get(my.grouping_cls).get_table(),\
-            my.group.get_foreign_key(),\
-            my.group.get_value(my.group.get_primary_key()))
+            %s = '%s')" % (self.item_sobj.get_primary_key(), \
+            self.item_sobj.get_foreign_key(), \
+            SearchType.get(self.grouping_cls).get_table(),\
+            self.group.get_foreign_key(),\
+            self.group.get_value(self.group.get_primary_key()))
         
         search.add_where(query)    
         return search.get_sobjects()
     
-    def set_group_name(my, group_name):
-        my.group_name = group_name
+    def set_group_name(self, group_name):
+        self.group_name = group_name
         
-    def get_display(my): 
-        #my.init()
+    def get_display(self): 
+        #self.init()
         item_table = Table(css='minimal')
         item_table.add_style('margin-left','30px')
        
-        for item in my.items:
+        for item in self.items:
             item_table.add_row()
             space_td = item_table.add_blank_cell()
             
@@ -225,85 +225,85 @@ class ItemInContainerWdg(HtmlElement):
                 "stock_stop-16.png",add_hidden=False)
             delete.add_event("onclick","document.form.remove_cmd.value=\
                 '%s|%s';document.form.submit();" \
-                % (my.group.get_primary_key_value(), item.get_primary_key_value()) )
+                % (self.group.get_primary_key_value(), item.get_primary_key_value()) )
             del_span = SpanWdg(css='med')
             del_span.add(delete)
             item_table.add_cell(del_span)
-        if not my.items:
+        if not self.items:
             item_table.add_blank_cell()
        
-        my.add(item_table)
-        return super(ItemInContainerWdg, my).get_display()
+        self.add(item_table)
+        return super(ItemInContainerWdg, self).get_display()
 
 class SObjectGroupCmd(Command):
 
     REMOVE_CMD = 'remove_cmd'
-    def get_title(my):
+    def get_title(self):
         return "Associate sobjects by grouping"
         
     
-    def check(my):
-        my.add = WebContainer.get_web().get_form_value(\
+    def check(self):
+        self.add = WebContainer.get_web().get_form_value(\
             SObjectGroupWdg.ADD_LABEL) != ''
-        my.remove = WebContainer.get_web().get_form_value(\
+        self.remove = WebContainer.get_web().get_form_value(\
             SObjectGroupCmd.REMOVE_CMD) != ''
-        if my.add or my.remove:
-            if my.grouping_search_type and my.item_foreign_key and \
-                    my.container_foreign_key:
+        if self.add or self.remove:
+            if self.grouping_search_type and self.item_foreign_key and \
+                    self.container_foreign_key:
                 return True
         else:
             return False
 
-    def set_grouping_search_type(my, search_type):
-        my.grouping_search_type = search_type    
+    def set_grouping_search_type(self, search_type):
+        self.grouping_search_type = search_type    
         
-    def set_item_foreign_key(my, foreign_key):
-        my.item_foreign_key = foreign_key
+    def set_item_foreign_key(self, foreign_key):
+        self.item_foreign_key = foreign_key
 
-    def set_container_foreign_key(my, foreign_key):
-        my.container_foreign_key = foreign_key
+    def set_container_foreign_key(self, foreign_key):
+        self.container_foreign_key = foreign_key
 
-    def create_grouping(my, item_value, container_value):
-        grouping = my._get_existing_grouping(item_value, container_value)
+    def create_grouping(self, item_value, container_value):
+        grouping = self._get_existing_grouping(item_value, container_value)
         if grouping:
             return grouping
-        sobject = SObjectFactory.create( my.grouping_search_type )
-        sobject.set_value( my.item_foreign_key, item_value)
-        sobject.set_value( my.container_foreign_key, container_value)
+        sobject = SObjectFactory.create( self.grouping_search_type )
+        sobject.set_value( self.item_foreign_key, item_value)
+        sobject.set_value( self.container_foreign_key, container_value)
         sobject.commit()
         return sobject
 
-    def remove_grouping(my, item_value, container_value):
-        grouping = my._get_existing_grouping(item_value, container_value)
+    def remove_grouping(self, item_value, container_value):
+        grouping = self._get_existing_grouping(item_value, container_value)
         if grouping:
             grouping.delete()
             
-    def _get_existing_grouping(my, item_value, container_value):
-        search = Search( my.grouping_search_type )
-        search.add_filter( my.item_foreign_key, item_value)
-        search.add_filter( my.container_foreign_key, container_value)
+    def _get_existing_grouping(self, item_value, container_value):
+        search = Search( self.grouping_search_type )
+        search.add_filter( self.item_foreign_key, item_value)
+        search.add_filter( self.container_foreign_key, container_value)
         return search.get_sobject()
     
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
-        if my.add:
-            my.description = "Add items for [%s]" % my.grouping_search_type
+        if self.add:
+            self.description = "Add items for [%s]" % self.grouping_search_type
             item_ids = web.get_form_values("item_ids")
             container_ids = web.get_form_values("container_ids")
             
             for item_id in item_ids:
                 # add to all of the groups
                 for container_id in container_ids:
-                     my.create_grouping(item_id, container_id)
+                     self.create_grouping(item_id, container_id)
 
-        elif my.remove:
-            my.description = "Remove items for [%s]" % my.grouping_search_type
-            remove_cmd = web.get_form_value(my.REMOVE_CMD)
+        elif self.remove:
+            self.description = "Remove items for [%s]" % self.grouping_search_type
+            remove_cmd = web.get_form_value(self.REMOVE_CMD)
             tmp = remove_cmd.split('|')
             if len(tmp) == 2:
                 container_id = tmp[0]
                 item_id = tmp[1]
-                my.remove_grouping(item_id, container_id)
+                self.remove_grouping(item_id, container_id)
             
 
 

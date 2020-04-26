@@ -25,51 +25,51 @@ class SimpleStatusAttr(SObjectAttr):
     '''Very simple status attribute that just sets the value directly into the
     database'''
 
-    def __init__(my, name, sobject):
-        SObjectAttr.__init__(my, name, sobject)
+    def __init__(self, name, sobject):
+        SObjectAttr.__init__(self, name, sobject)
 
 
-    def init(my):
+    def init(self):
 
         # get the pipeline
-        if my.sobject.has_value("pipeline_code"):
-            pipeline_code = my.sobject.get_value("pipeline_code")
+        if self.sobject.has_value("pipeline_code"):
+            pipeline_code = self.sobject.get_value("pipeline_code")
             if pipeline_code == "":
-                pipeline_code = my.get_option("pipeline")
+                pipeline_code = self.get_option("pipeline")
         else:
-            pipeline_code = my.get_option("pipeline")
+            pipeline_code = self.get_option("pipeline")
 
-        my.pipeline = Pipeline.get_by_code(pipeline_code, allow_default=True)
+        self.pipeline = Pipeline.get_by_code(pipeline_code, allow_default=True)
 
-        if not my.pipeline:
+        if not self.pipeline:
             raise SetupException("Pipeline 'default' is required in the table [sthpw.pipeline]")
 
 
-    def get_pipeline(my):
-        return my.pipeline
+    def get_pipeline(self):
+        return self.pipeline
 
 
 
 
-    def set_status(my, status):
-        my.set_value(status)
+    def set_status(self, status):
+        self.set_value(status)
 
 
-    def get_current_process(my):
-        if my.get_value() == "":
-            processes = my.pipeline.get_processes()
+    def get_current_process(self):
+        if self.get_value() == "":
+            processes = self.pipeline.get_processes()
             if not processes:
                 return None
             else:
-                return my.pipeline.get_processes()[0]
+                return self.pipeline.get_processes()[0]
         else: 
-            return my.pipeline.get_process(my.get_value() )
+            return self.pipeline.get_process(self.get_value() )
 
 
 
-    def get_completion(my):
+    def get_completion(self):
         '''finds the completion of this status. Returns a number from 0 to 1'''
-        context = my.get_current_process()
+        context = self.get_current_process()
         completion = ""
         if context:
             completion = context.get_completion()
@@ -81,7 +81,7 @@ class SimpleStatusAttr(SObjectAttr):
             return float(completion)/100
 
         # calculate the completion of the asset if there are no percentages
-        processes = my.pipeline.get_processes()
+        processes = self.pipeline.get_processes()
         percent = 0.0
         percent += processes.index(context)
         '''
@@ -97,8 +97,8 @@ class SimpleStatusAttr(SObjectAttr):
         return percent
 
 
-    def get_percent_completion(my):
-        return int(my.get_completion() * 100)
+    def get_percent_completion(self):
+        return int(self.get_completion() * 100)
 
 
 

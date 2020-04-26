@@ -25,35 +25,35 @@ class CustomSelectWdg(BaseInputWdg):
     }
 
 
-    def __init__(my, name=None, **kwargs):
+    def __init__(self, name=None, **kwargs):
         if not name:
             name = kwargs.get("name")
-        my.top = DivWdg()
-        my.input = None
-        my.kwargs = kwargs
-        super(CustomSelectWdg, my).__init__(name)
+        self.top = DivWdg()
+        self.input = None
+        self.kwargs = kwargs
+        super(CustomSelectWdg, self).__init__(name)
 
 
     """
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
-    def set_input(my, input):
-        my.input = input
-        my.input.set_name(my.get_input_name() )
+    def set_input(self, input):
+        self.input = input
+        self.input.set_name(self.get_input_name() )
 
-    def get_input(my):
-        return my.input
+    def get_input(self):
+        return self.input
 
-    def add(my, widget):
-        my.top.add(widget)
+    def add(self, widget):
+        self.top.add(widget)
 
     """
 
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("spt_input_top")
         top.add_style("position: relative")
         top.add_style("width: 150px")
@@ -168,7 +168,7 @@ class CustomSelectWdg(BaseInputWdg):
 
         # generally, some real input widget is needed store and transport
         # the data
-        input = HiddenWdg(my.get_input_name() )
+        input = HiddenWdg(self.get_input_name() )
         input.add_class("spt_input_data")
         input.add_class("SPT_NO_RESIZE")
         input.add_behavior( {

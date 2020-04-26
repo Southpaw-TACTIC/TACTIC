@@ -22,10 +22,10 @@ import xmlrpclib, sys, os, shutil
 
 class Sample3dTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         pass
 
-    def test_all(my):
+    def test_all(self):
         print "Running Sample3d Test"
 
         from pyasm.security import Batch
@@ -34,40 +34,40 @@ class Sample3dTest(unittest.TestCase):
         Project.set_project("sample3d")
 
 
-        #my.server = TacticServerStub(protocol="local")
-        my.server = TacticServerStub(protocol="xmlrpc")
+        #self.server = TacticServerStub(protocol="local")
+        self.server = TacticServerStub(protocol="xmlrpc")
         project_code = "sample3d"
-        my.server.set_project(project_code)
+        self.server.set_project(project_code)
 
 
-        my.server.start("Sample3d Test")
+        self.server.start("Sample3d Test")
         try:
-            my._test_create_search_type()
-            my._test_create_submission()
-            my._test_get_submission()
-            my._test_shot_sequence_hierarchy()
-            my._test_query_snapshots()
-            #my._test_performance()
+            self._test_create_search_type()
+            self._test_create_submission()
+            self._test_get_submission()
+            self._test_shot_sequence_hierarchy()
+            self._test_query_snapshots()
+            #self._test_performance()
         except Exception:
-            my.server.abort()
+            self.server.abort()
             raise
-        my.server.abort()
+        self.server.abort()
 
 
         #try:
-        #    my.server.query("prod/asset")
+        #    self.server.query("prod/asset")
         #except Exception:
-        #    my.server.abort()
+        #    self.server.abort()
         #    raise
-        #my.server.abort()
+        #self.server.abort()
 
 
 
-    def _test_query_snapshots(my):
+    def _test_query_snapshots(self):
         filters = []
         filters.append( ['context', 'model'] )
         filters.append( ['search_type', 'prod/asset?project=sample3d'] )
-        snapshots = my.server.query_snapshots(filters=filters, include_paths=True)
+        snapshots = self.server.query_snapshots(filters=filters, include_paths=True)
 
         import time
         start = time.time()
@@ -80,22 +80,22 @@ class Sample3dTest(unittest.TestCase):
 
 
 
-    def _test_create_search_type(my):
+    def _test_create_search_type(self):
         search_type = 'test'
-        search_type_obj = my.server.create_search_type(search_type)
+        search_type_obj = self.server.create_search_type(search_type)
         print search_type_obj
 
 
 
 
-    def _test_performance(my):
+    def _test_performance(self):
 
         for i in range(0,1):
-            assets = my.server.query("prod/asset")
+            assets = self.server.query("prod/asset")
             for asset in assets:
                 asset_key = asset.get("__search_key__")
-                snapshots = my.server.get_all_children(asset_key,'sthpw/snapshot')
-                #snapshot = my.server.get_snapshot(asset_key,context='model', include_paths=True)
+                snapshots = self.server.get_all_children(asset_key,'sthpw/snapshot')
+                #snapshot = self.server.get_snapshot(asset_key,context='model', include_paths=True)
                 #print snapshot.get('__paths__')
 
 
@@ -104,7 +104,7 @@ class Sample3dTest(unittest.TestCase):
 
 
 
-    def _test_get_submission(my):
+    def _test_get_submission(self):
 
         server = TacticServerStub()
         server.set_project("sample3d")
@@ -134,7 +134,7 @@ class Sample3dTest(unittest.TestCase):
 
 
 
-    def _test_create_submission(my):
+    def _test_create_submission(self):
 
         server = TacticServerStub()
         server.set_project("sample3d")
@@ -175,12 +175,12 @@ class Sample3dTest(unittest.TestCase):
 
 
 
-    def _test_shot_sequence_hierarchy(my):
+    def _test_shot_sequence_hierarchy(self):
         shot_key = "prod/shot?project=sample3d&code=RC_001_001"
-        shot = my.server.get_by_search_key(shot_key)
+        shot = self.server.get_by_search_key(shot_key)
         
-        parent = my.server.get_parent(shot_key)
-        my.assertEquals("RC_001", parent.get("code") )
+        parent = self.server.get_parent(shot_key)
+        self.assertEquals("RC_001", parent.get("code") )
 
 
 

@@ -21,7 +21,7 @@ from widget import Html
 class RedirectSecurity(Base):
     '''class that manages the security for the url'''
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
 
@@ -57,7 +57,7 @@ class RedirectSecurity(Base):
 
 class UrlSecurity(Base):
 
-    def get_display(my):
+    def get_display(self):
 
         html = None
 

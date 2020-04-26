@@ -26,18 +26,18 @@ import os
 class ShelfWdg(BaseRefreshWdg):
     '''This is a shelf of clickable icons that execute custom javascript '''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
 
         js_editor_wdg = ShelfEditWdg()
 
-        # div.add( "[<span onclick='$(\"ShelfEditWdg\").setStyle(\"display\",\"block\");' style='cursor: pointer;'>" \
+        # div.add( "[<span onclick='document.id(\"ShelfEditWdg\").setStyle(\"display\",\"block\");' style='cursor: pointer;'>" \
         #          "js_edit<span>]" )
 
         launch_link = DivWdg()
@@ -56,10 +56,10 @@ class ShelfWdg(BaseRefreshWdg):
 
 
 
-    def get_button_wdg(my, script_name):
+    def get_button_wdg(self, script_name):
         func_name = script_name
 
-        custom_script = my.get_custom_script(script_name)
+        custom_script = self.get_custom_script(script_name)
 
 
         script = HtmlElement.script('''
@@ -78,7 +78,7 @@ class ShelfWdg(BaseRefreshWdg):
         return button
 
 
-    def get_custom_script(my, script_name):
+    def get_custom_script(self, script_name):
 
 
         if script_name == "first":
@@ -98,7 +98,7 @@ class ShelfWdg(BaseRefreshWdg):
             '''
         elif script_name == "js_edit":
             custom_script = '''
-            $('ShelfEditWdg').setStyle("display", 'block');
+            document.id('ShelfEditWdg').setStyle("display", 'block');
             '''
         else:
             custom_script = "alert('[%s] not implemented')" % script_name
@@ -112,21 +112,21 @@ class ShelfWdg(BaseRefreshWdg):
 class ScriptEditorWdg(BaseRefreshWdg):
     '''This is a simple editor for shelf custom code'''
 
-    def init(my):
+    def init(self):
         
-        my.search_type = "config/custom_script"
+        self.search_type = "config/custom_script"
         security = Environment.get_security()
         if not security.check_access("builtin", "view_script_editor", "allow"):
             raise SecurityException('You are not allowed to access this widget.')
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         'script_path': 'script path to open to'
         }
 
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_class("spt_script_editor_top")
 
         """
@@ -165,7 +165,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
         top.add_class("spt_panel")
         top.add_class("spt_js_editor")
-        top.add_attr("spt_class_name", Common.get_full_class_name(my) )
+        top.add_attr("spt_class_name", Common.get_full_class_name(self) )
         top.add_color("background", "background")
         top.add_style("padding", "10px")
        
@@ -176,8 +176,8 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
 
         # if script_path
-        script_path = my.kwargs.get("script_path")
-        search_key = my.kwargs.get("search_key")
+        script_path = self.kwargs.get("script_path")
+        search_key = self.kwargs.get("search_key")
         if script_path:
             search = Search("config/custom_script")
             dirname = os.path.dirname(script_path)
@@ -209,13 +209,13 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
 
         editor = AceEditorWdg(custom_script=script_sobj, language=script_language)
-        my.editor_id = editor.get_editor_id()
+        self.editor_id = editor.get_editor_id()
 
 
         if not Container.get_dict("JSLibraries", "spt_script_editor"):
             div.add_behavior( {
                 'type': 'load',
-                'cbjs_action': my.get_onload_js()
+                'cbjs_action': self.get_onload_js()
             } )
 
 
@@ -241,10 +241,10 @@ class ScriptEditorWdg(BaseRefreshWdg):
             'cbfn_action': 'spt.popup.get_widget',
             'options': {
                 'class_name': 'tactic.ui.panel.ViewPanelWdg',
-                'title': 'Manage: [%s]' % my.search_type
+                'title': 'Manage: [%s]' % self.search_type
             },
             'args': {
-                'search_type': my.search_type,
+                'search_type': self.search_type,
                 'view': 'table',
                 'show_shelf': False,
                 'element_names': ['folder', 'title', 'description', 'language'],
@@ -270,7 +270,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
-            //var editor = $('shelf_script');
+            //var editor = document.id('shelf_script');
             var value = editAreaLoader.getValue('shelf_script')
             eval( value )
             '''
@@ -380,7 +380,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
         td = table.add_cell()
         td.add_style('vertical-align: top')
-        td.add(my.get_script_wdg())
+        td.add(self.get_script_wdg())
 
 
         table.add_row(resize=False)
@@ -388,14 +388,14 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
         div.add(table)
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return div
         else:
             return top
 
 
 
-    def get_script_wdg(my):
+    def get_script_wdg(self):
 
         search = Search("config/custom_script")
         #search.add_user_filter()
@@ -449,7 +449,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
             path = "///%s/%s" % (script.get_value("folder"), script.get_value("title"))
             paths.append(path)
             scripts_dict[path] = script
-        dir_list_wdg = ScriptDirListWdg(paths=paths, base_dir="/", editor_id=my.editor_id, scripts=scripts_dict)
+        dir_list_wdg = ScriptDirListWdg(paths=paths, base_dir="/", editor_id=self.editor_id, scripts=scripts_dict)
         inner.add(dir_list_wdg)
 
 
@@ -492,7 +492,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
 
             behavior = {
                 'type': 'click_up',
-                'editor_id': my.editor_id, 
+                'editor_id': self.editor_id, 
                 'cbjs_action': 'spt.script_editor.display_script_cbk(evt, bvr)',
                 'code': script.get_code()
             }
@@ -505,7 +505,7 @@ class ScriptEditorWdg(BaseRefreshWdg):
         return widget
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
         
         return r'''
 
@@ -581,7 +581,7 @@ spt.script_editor.display_script_cbk = function(evt, bvr)
 
     //editAreaLoader.setValue("shelf_script", script_text);
     //editAreaLoader.setSelectionRange("shelf_script", 0, 0);
-    //$("shelf_script").value = script_text;
+    //document.id("shelf_script").value = script_text;
 }
 
 
@@ -633,7 +633,7 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
     server.finish();
 
     // remember the script value
-    //var script_text = $("shelf_script").value;
+    //var script_text = document.id("shelf_script").value;
 
     // destroy before reloading
     spt.ace_editor.editor.destroy();
@@ -657,15 +657,15 @@ spt.script_editor.save_script_cbk = function(evt, bvr)
 
 class ScriptDirListWdg(DirListWdg):
 
-    def init(my):
-        my.kwargs['background'] = "background3"
-        super(ScriptDirListWdg, my).init()
+    def init(self):
+        self.kwargs['background'] = "background3"
+        super(ScriptDirListWdg, self).init()
 
-    def add_top_behaviors(my, top):
+    def add_top_behaviors(self, top):
 
         top.add_relay_behavior( {
             'type': 'mouseup',
-            'editor_id': my.kwargs.get("editor_id"),
+            'editor_id': self.kwargs.get("editor_id"),
             'bvr_match_class': "spt_script_item",
             'cbjs_action': '''
             bvr.code = bvr.src_el.getAttribute("spt_script_code");
@@ -674,14 +674,14 @@ class ScriptDirListWdg(DirListWdg):
             ''',
         } )
 
-    def add_file_behaviors(my, item_div, dirname, basename):
+    def add_file_behaviors(self, item_div, dirname, basename):
         item_div.add_class("spt_script_item")
         if not dirname:
             path = "///%s" % (basename)
         else:
             path = "%s/%s" % (dirname, basename)
         
-        scripts = my.kwargs.get("scripts")
+        scripts = self.kwargs.get("scripts")
         script = scripts.get(path)
         if not script:
             item_div.add_style("background-color", "red")
@@ -714,36 +714,36 @@ class ShelfEditWdg(ScriptEditorWdg):
 __all__.append("AceEditorWdg")
 class AceEditorWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         from pyasm.web import HtmlElement
-        my.text_area = HtmlElement.div()
-        my.text_area.add_class("spt_ace_editor")
-        my.unique_id = my.text_area.set_unique_id("ace_editor")
+        self.text_area = HtmlElement.div()
+        self.text_area.add_class("spt_ace_editor")
+        self.unique_id = self.text_area.set_unique_id("ace_editor")
 
 
-    def get_editor_id(my):
-        return my.unique_id
+    def get_editor_id(self):
+        return self.unique_id
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
-        top = my.top
+        top = self.top
         top.add_class("spt_ace_editor_top")
 
-        script = my.kwargs.get("custom_script")
+        script = self.kwargs.get("custom_script")
         if script:
             language = script.get_value("language")
         else:
-            language = my.kwargs.get("language")
+            language = self.kwargs.get("language")
             if not language:
                 language = 'javascript'
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
         if not code:
             code = ""
 
 
-        show_options = my.kwargs.get("show_options")
+        show_options = self.kwargs.get("show_options")
         if show_options in ['false', False]:
             show_options = False
         else:
@@ -768,7 +768,7 @@ class AceEditorWdg(BaseRefreshWdg):
         select.set_option("values", "javascript|server_js|python|expression|xml")
         select.add_behavior( {
             'type': 'change',
-            'editor_id': my.get_editor_id(),
+            'editor_id': self.get_editor_id(),
             'cbjs_action': '''
             spt.ace_editor.set_editor(bvr.editor_id);
             var value = bvr.src_el.value;
@@ -788,14 +788,14 @@ class AceEditorWdg(BaseRefreshWdg):
         select.set_value("10pt")
         select.add_behavior( {
             'type': 'change',
-            'editor_id': my.get_editor_id(),
+            'editor_id': self.get_editor_id(),
             'cbjs_action': '''
             spt.ace_editor.set_editor(bvr.editor_id);
             var editor = spt.ace_editor.editor;
             var editor_id = spt.ace_editor.editor_id;
 
             var value = bvr.src_el.value;
-            $(editor_id).setStyle("font-size", value)
+            document.id(editor_id).setStyle("font-size", value)
             //editor.resize();
             '''
         } )
@@ -810,7 +810,7 @@ class AceEditorWdg(BaseRefreshWdg):
         select.set_value("10pt")
         select.add_behavior( {
             'type': 'change',
-            'editor_id': my.get_editor_id(),
+            'editor_id': self.get_editor_id(),
             'cbjs_action': '''
             spt.ace_editor.set_editor(bvr.editor_id);
             var editor = spt.ace_editor.editor;
@@ -829,7 +829,7 @@ class AceEditorWdg(BaseRefreshWdg):
         if code:
             load_div = DivWdg()
             top.add(load_div)
-            readonly = my.kwargs.get("readonly")
+            readonly = self.kwargs.get("readonly")
             if readonly in ['true', True]:
                 readonly = True
             else:
@@ -839,7 +839,7 @@ class AceEditorWdg(BaseRefreshWdg):
                 'type': 'load',
                 'code': code,
                 'language': language,
-                'editor_id': my.get_editor_id(),
+                'editor_id': self.get_editor_id(),
                 'readonly': readonly,
                 'cbjs_action': '''
                 spt.ace_editor.set_editor(bvr.editor_id);
@@ -879,7 +879,7 @@ class AceEditorWdg(BaseRefreshWdg):
         select.set_value("twilight")
         select.add_behavior( {
             'type': 'change',
-            'editor_id': my.get_editor_id(),
+            'editor_id': self.get_editor_id(),
             'cbjs_action': '''
             spt.ace_editor.set_editor(bvr.editor_id);
             var editor = spt.ace_editor.editor;
@@ -894,15 +894,17 @@ class AceEditorWdg(BaseRefreshWdg):
         editor_div = DivWdg()
         top.add(editor_div)
 
+        top.add("<style>.spt_ace_editor_top div { font-family: courier new; }</style>")
 
 
 
-        my.text_area.add_style("margin-top: -1px")
-        my.text_area.add_style("margin-bottom: 0px")
-        my.text_area.add_style("font-family: courier new")
-        my.text_area.add_border()
-        editor_div.add(my.text_area)
-        my.text_area.add_style("position: relative")
+
+        self.text_area.add_style("margin-top: -1px")
+        self.text_area.add_style("margin-bottom: 0px")
+        self.text_area.add_style("font-family: courier new")
+        self.text_area.add_border()
+        editor_div.add(self.text_area)
+        self.text_area.add_style("position: relative")
         #text_area.add_style("margin: 20px")
 
 
@@ -910,14 +912,14 @@ class AceEditorWdg(BaseRefreshWdg):
         if size:
             width, height = size.split(",")
         else:
-            width = my.kwargs.get("width")
+            width = self.kwargs.get("width")
             if not width:
                 width = "650px"
-            height = my.kwargs.get("height")
+            height = self.kwargs.get("height")
             if not height:
-                height = "450px"
-        my.text_area.add_style("width: %s" % width)
-        my.text_area.add_style("height: %s" % height)
+                height = "500px"
+        self.text_area.add_style("width: %s" % width)
+        self.text_area.add_style("height: %s" % height)
 
 
 
@@ -960,7 +962,7 @@ class AceEditorWdg(BaseRefreshWdg):
 
         top.add_behavior( {
             'type': 'load',
-            'unique_id': my.unique_id,
+            'unique_id': self.unique_id,
             'theme': theme,
             'cbjs_action': '''
 
@@ -975,7 +977,7 @@ spt.ace_editor.theme = bvr.theme;
 
 spt.ace_editor.set_editor = function(editor_id) {
     spt.ace_editor.editor_id = editor_id;
-    spt.ace_editor.editor = $(editor_id).editor;
+    spt.ace_editor.editor = document.id(editor_id).editor;
 }
 
 spt.ace_editor.set_editor_top = function(top_el) {
@@ -1076,7 +1078,7 @@ spt.ace_editor.set_language = function(value) {
     }
 
     var editor = spt.ace_editor.editor;
-    var top = $(spt.ace_editor.editor_id).getParent(".spt_ace_editor_top");
+    var top = document.id(spt.ace_editor.editor_id).getParent(".spt_ace_editor_top");
     var lang_el = top.getElement(".spt_language");
 
     for ( var i = 0; i < lang_el.options.length; i++ ) {
@@ -1130,7 +1132,7 @@ spt.ace_editor.drag_resize_setup = function(evt, bvr, mouse_411)
     spt.ace_editor.drag_start_x = mouse_411.curr_x;
     spt.ace_editor.drag_start_y = mouse_411.curr_y;
 
-    var editor_el = $(editor_id);
+    var editor_el = document.id(editor_id);
     spt.ace_editor.drag_editor_el = editor_el;
     spt.ace_editor.drag_size = editor_el.getSize();
 
@@ -1167,11 +1169,6 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
     editor.resize();
 
 }
-    var js_files = [
-        "ace/ace-1.2.3/src/ace.js",
-        //"ace/ace-1.2.3/src/ace-uncompressed.js",
-    ];
-
 
    
 
@@ -1181,7 +1178,7 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
 
         // put the editor into the dom
         spt.ace_editor.editor_id = bvr.unique_id;
-        $(bvr.unique_id).editor = editor;
+        document.id(bvr.unique_id).editor = editor;
 
         editor.setTheme("ace/theme/" + spt.ace_editor.theme);
         
@@ -1193,7 +1190,15 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         }
     }
 
-    
+ 
+
+
+     var js_files = [
+        "/context/spt_js/ace/ace-1.2.3/src/ace.js",
+        //"ace/ace-1.2.3/src/ace-uncompressed.js",
+    ];
+
+   
 
 
     spt.dom.load_js(js_files, function() { 
@@ -1201,20 +1206,19 @@ spt.ace_editor.drag_resize_motion = function(evt, bvr, mouse_411)
         ace; require; define; 
 
         var core_js_files = [
-            "ace/ace-1.2.3/src/mode-javascript.js",
-            "ace/ace-1.2.3/src/mode-xml.js",
-            "ace/ace-1.2.3/src/mode-python.js",
-            "ace/ace-1.2.3/src/mode-html.js",
-            "ace/ace-1.2.3/src/theme-twilight.js",
-            "ace/ace-1.2.3/src/theme-textmate.js",
-            "ace/ace-1.2.3/src/theme-vibrant_ink.js",
-            "ace/ace-1.2.3/src/theme-merbivore.js",
-            "ace/ace-1.2.3/src/theme-clouds.js",
-            "ace/ace-1.2.3/src/theme-eclipse.js"
+            "/context/spt_js/ace/ace-1.2.3/src/mode-javascript.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-xml.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-python.js",
+            "/context/spt_js/ace/ace-1.2.3/src/mode-html.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-twilight.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-textmate.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-vibrant_ink.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-merbivore.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-clouds.js",
+            "/context/spt_js/ace/ace-1.2.3/src/theme-eclipse.js"
         ];
         
-        //var supp_js_files = [];
-           
+        //require(core_js_files, ace_setup);
         spt.dom.load_js(core_js_files, ace_setup);
         
         //spt.dom.load_js(supp_js_files);      
@@ -1237,7 +1241,7 @@ else {
 
     spt.ace_editor.editor_id = bvr.unique_id;
     spt.ace_editor.editor = editor;
-    $(bvr.unique_id).editor = editor;
+    document.id(bvr.unique_id).editor = editor;
 
 }
             '''
@@ -1247,7 +1251,7 @@ else {
         return top
 
 
-    def get_buttons_wdg(my):
+    def get_buttons_wdg(self):
 
         button_div = DivWdg()
 
@@ -1316,7 +1320,7 @@ else {
         button.add_style("float: left")
         button.add_behavior( {
             'type': 'click_up',
-            'editor_id': my.unique_id,
+            'editor_id': self.unique_id,
             'cbjs_action': '''
             /*
             if (!has_changes(bvr)) {
@@ -1366,8 +1370,8 @@ else {
             'cbjs_action': '''
             var editor = spt.ace_editor.editor;
             var editor_id = spt.ace_editor.editor_id;
-            $(editor_id).setStyle("width", "1000px");
-            $(editor_id).setStyle("height", "800px");
+            document.id(editor_id).setStyle("width", "1000px");
+            document.id(editor_id).setStyle("height", "800px");
             editor.resize();
 
             '''

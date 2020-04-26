@@ -21,17 +21,17 @@ class TransactionLog(SObject):
     SEARCH_TYPE = "sthpw/transaction_log"
 
 
-    def get_code_key(my):
+    def get_code_key(self):
         return "TRANSACTION"
 
-    def undo(my, ignore_files=False):
+    def undo(self, ignore_files=False):
         Container.put("is_undo", True)
 
-        ticket = my.get_value("ticket", no_exception=True)
+        ticket = self.get_value("ticket", no_exception=True)
 
         try:
 
-            xml = my.get_xml_value("transaction")
+            xml = self.get_xml_value("transaction")
 
             nodes = xml.get_nodes("transaction/*")
             nodes.reverse()
@@ -56,17 +56,17 @@ class TransactionLog(SObject):
         finally:
             Container.put("is_undo", False)
     
-    def redo(my, ignore=[], base_dir=""):
+    def redo(self, ignore=[], base_dir=""):
         Container.put("is_undo", True)
 
         # get some values from transaction log
-        timestamp = my.get_value("timestamp")
+        timestamp = self.get_value("timestamp")
 
 
-        ticket = my.get_value("ticket", no_exception=True)
+        ticket = self.get_value("ticket", no_exception=True)
         try:
 
-            xml = my.get_xml_value("transaction")
+            xml = self.get_xml_value("transaction")
 
             nodes = xml.get_nodes("transaction/*")
             for node in nodes:
@@ -90,35 +90,35 @@ class TransactionLog(SObject):
 
 
 
-    def trigger_remote_sync(my):
+    def trigger_remote_sync(self):
         # Trigger remote synchronization
 
         # This only gets set on a "start" call from client API.  The
         # remote sync job will only get registered is a "finish" is called
-        if my.get_value("state") == "start":
+        if self.get_value("state") == "start":
             return
 
         from tactic.command.run_transaction_cmd import TransactionQueueAppendCmd
         cmd = TransactionQueueAppendCmd()
         input = {
             'search_type': 'sthpw/transaction_log',
-            'sobject': my
+            'sobject': self
         }
         cmd.input = input
         cmd.execute()
 
 
-    def trigger_remote_undo(my):
+    def trigger_remote_undo(self):
         # Trigger remote synchronization
 
-        if my.get_value("state") == "start":
+        if self.get_value("state") == "start":
             return
 
         from tactic.command.run_transaction_cmd import TransactionQueueAppendCmd
         cmd = TransactionQueueAppendCmd()
         input = {
             'search_type': 'sthpw/transaction_log',
-            'sobject': my,
+            'sobject': self,
             'mode': 'undo'
         }
         cmd.input = input
@@ -217,6 +217,10 @@ class TransactionLog(SObject):
         ])
 
 
+        from pyasm.security import Site
+        current_site = Site.get_site()
+
+
         for node in nodes:
             node_name = xml.get_node_name(node)
             if node_name == "sobject":
@@ -230,6 +234,8 @@ class TransactionLog(SObject):
 
                 search_id = Xml.get_attribute(node,"search_id")
                 search_code = Xml.get_attribute(node,"search_code")
+                site = Xml.get_attribute(node,"site")
+
 
                 if search_code:
                     search_key = "%s?code=%s" % (search_type, search_code)
@@ -247,30 +253,47 @@ class TransactionLog(SObject):
                 if action == "delete":
                     continue
 
-                if search_code:
-                    sobject = Search.get_by_code(search_type, search_code)
-                else:
-                    sobject = Search.get_by_id(search_type, search_id)
 
-
-                if sobject:
-                    SObjectLog.create(sobject, log, action)
-                else:
-                    # record has been deleted
-                    if search_code:
-                        print("Skipped SObject log creation for [%s?code=%s]" %(search_type, search_code))
-                    else:
-                        print("Skipped SObject log creation for [%s|%s]" %(search_type, search_id))
-
-                if search_type_obj.get_base_key() in find_parent:
+                has_site = False
+                if site:
                     try:
-                        if sobject:
-                            sobject = sobject.get_parent()
-                    except (SearchException, SqlException):
-                        # don't worry if this parent can't be found.
-                        pass
+                        Site.set_site(site)
+                        has_site = True
+                    except:
+                        print "Site [%s] does not exist" % site
+                        continue
+
+
+                try:
+
+                    if search_code:
+                        sobject = Search.get_by_code(search_type, search_code)
+                    else:
+                        sobject = Search.get_by_id(search_type, search_id)
+
+
                     if sobject:
-                        SObjectLog.create(sobject, log, "child_%s" % action)
+                        SObjectLog.create(sobject, log, action)
+                    else:
+                        # record has been deleted
+                        if search_code:
+                            print("Skipped SObject log creation for [%s?code=%s]" %(search_type, search_code))
+                        else:
+                            print("Skipped SObject log creation for [%s|%s]" %(search_type, search_id))
+
+                    if search_type_obj.get_base_key() in find_parent:
+                        try:
+                            if sobject:
+                                sobject = sobject.get_parent()
+                        except (SearchException, SqlException):
+                            # don't worry if this parent can't be found.
+                            pass
+                        if sobject:
+                            SObjectLog.create(sobject, log, "child_%s" % action)
+                finally:
+                    if has_site:
+                        Site.pop_site()
+
 
     create_sobject_log = classmethod(create_sobject_log)
 

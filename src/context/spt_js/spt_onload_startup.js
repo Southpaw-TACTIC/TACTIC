@@ -10,15 +10,14 @@
 
 // Only to be called on "body" tag "onload" event ...
 //
-spt.onload_startup = function()
+spt.onload_startup = function(admin=false)
 {
     // Set-up keyboard handler to allow for trapping keyboard events on a per element basis ...
     //
-    spt.kbd.setup_handler();
-
+    if (admin) spt.kbd.setup_handler();
     spt.behavior.construct_behaviors_on_startup();
 
-    var body_el = document.getElement("body");
+    var body_el = document.id(document.body);
 
     // setup body event for context menu and smart menu click-off checking ...
     //
@@ -187,7 +186,7 @@ spt.hash.onpopstate = function(evt) {
             document.location.reload();
             return;
         }
-        var panel = $(panel);
+        var panel = document.id(panel);
         spt.panel.load(panel, class_name, kwargs);
     }
     else {
@@ -225,19 +224,30 @@ spt.hash.onload_first = function() {
     spt.hash.first_load = false;
 
 
+
+
     var options = {
-        'hash': decodeURI(hash),
-        'first_load': true
+        hash: decodeURI(hash),
+        first_load: true,
+        pathname: window.location.pathname
     }
 
+    // pass all the ? name/values in
+    var search = location.search.substring(1);
+    var values = search.split("&").reduce(function(prev, curr, i, arr) {
+        var p = curr.split("=");
+            prev[decodeURIComponent(p[0])] = decodeURIComponent(p[1]);
+                    return prev;
+    }, {});
+        
 
     var server = TacticServerStub.get();
     var class_name = "tactic.ui.app.TopContainerWdg";
-    var kwargs = {'args': options, 'values': {}};
+    var kwargs = {'args': options, 'values': values};
     var widget_html = server.get_widget(class_name, kwargs);
 
     setTimeout( function() {
-        spt.behavior.replace_inner_html($("top_of_application"), widget_html);
+        spt.behavior.replace_inner_html(document.id("top_of_application"), widget_html);
 
         if (spt.side_bar) {
             spt.side_bar.restore_state();

@@ -25,38 +25,38 @@ from pyasm.common import *
 
 class SystemTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         if os.name == 'nt':
-            my.base = 'C:/sthpw/temp'
+            self.base = 'C:/sthpw/temp'
         else:
-            my.base = '/tmp/sthpw/temp'
+            self.base = '/tmp/sthpw/temp'
 
-        my._test_makedirs()
+        self._test_makedirs()
 
-    def tearDown(my):
+    def tearDown(self):
         # note this will remove base so recreate it
-        if not os.path.exists(my.base):
-            os.makedirs(my.base)
+        if not os.path.exists(self.base):
+            os.makedirs(self.base)
 
 
-    def _test_makedirs(my):
-        dir = '%s/this/is/a/new/dir' % my.base
+    def _test_makedirs(self):
+        dir = '%s/this/is/a/new/dir' % self.base
         if os.path.exists(dir):
             os.removedirs(dir)
 
         System().makedirs(dir)
-        my.assertEquals( True, os.path.exists(dir) )
+        self.assertEquals( True, os.path.exists(dir) )
 
         exists = System().exists(dir)
-        my.assertEquals( True, exists )
+        self.assertEquals( True, exists )
 
         if os.path.exists(dir):
             os.removedirs(dir)
-        my.assertEquals( False, os.path.exists(dir) )
+        self.assertEquals( False, os.path.exists(dir) )
 
         # test existance
         exists = System().exists(dir)
-        my.assertEquals( False, exists )
+        self.assertEquals( False, exists )
 
 
 

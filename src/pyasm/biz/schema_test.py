@@ -26,24 +26,24 @@ from schema import Schema
 
 class SchemaTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         Batch()
         from pyasm.web.web_init import WebInit
         WebInit().execute()
 
         test_env = UnittestEnvironment()
         test_env.create()
-        my.transaction = Transaction.get(create=True)
+        self.transaction = Transaction.get(create=True)
         try:
-            my._test_multiple_schema()
+            self._test_multiple_schema()
         finally:
-            my.transaction.rollback()
+            self.transaction.rollback()
             Project.set_project('unittest')
 
             test_env.delete()
 
 
-    def _test_multiple_schema(my):
+    def _test_multiple_schema(self):
 
         # add a second schema
         new_schema = SearchType.create("sthpw/schema")

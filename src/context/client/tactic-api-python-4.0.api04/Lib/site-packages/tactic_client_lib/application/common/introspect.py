@@ -24,12 +24,12 @@ from application import Application
 class Introspect(object):
     '''helper class to introspect the session'''
 
-    def __init__(my):
+    def __init__(self):
         # TODO: pull this out of here!!!
-        my.util = TacticNodeUtil()
-        my.app = Application.get()
+        self.util = TacticNodeUtil()
+        self.app = Application.get()
 
-    def execute(my):
+    def execute(self):
 
 
         # create an xml document
@@ -38,34 +38,34 @@ class Introspect(object):
         root = doc.documentElement
 
         # go through the tactic
-        tactic_nodes = my.util.get_all_tactic_nodes() 
+        tactic_nodes = self.util.get_all_tactic_nodes() 
         tactic_nodes.sort()
         for tactic_node in tactic_nodes:
             node_data = NodeData(tactic_node)
             ref_node = node_data.get_ref_node()
             root.appendChild(ref_node)
 
-        my.xml = doc.toxml()
-        return my.xml
+        self.xml = doc.toxml()
+        return self.xml
 
 
-    def commit(my, xml=None):
+    def commit(self, xml=None):
 
         if not xml:
-            xml = my.xml
+            xml = self.xml
 
         from tactic_client_lib import TacticServerStub
-        my.server = TacticServerStub.get()
+        self.server = TacticServerStub.get()
 
         search_type = "prod/session_contents"
 
         # get more info
         pid = os.getpid()
-        login = my.server.get_login()
+        login = self.server.get_login()
 
         data = { 'pid': pid, 'login': login, 'data': xml }
 
-        my.server.insert( search_type, data)
+        self.server.insert( search_type, data)
         
 
 

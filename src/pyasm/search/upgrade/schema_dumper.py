@@ -18,17 +18,17 @@ import sys, os
 class SchemaDumper(object):
     '''Note: this currently has to be run on the local machine of the
     database'''
-    def __init__(my, database):
-        my.database = database
-        my.file_path = None
+    def __init__(self, database):
+        self.database = database
+        self.file_path = None
 
-    def set_file_path(my, file_path):
-        my.file_path = file_path
+    def set_file_path(self, file_path):
+        self.file_path = file_path
         
-    def get_file_path(my):
-        return my.file_path
+    def get_file_path(self):
+        return self.file_path
 
-    def dump_schema(my):
+    def dump_schema(self):
 
         if os.name == "nt":
             tmp_dir = "C:/temp"
@@ -37,16 +37,16 @@ class SchemaDumper(object):
         else:
             tmp_dir = "/tmp"
         
-        if not my.file_path:
-            my.file_path = "%s/%s.sql" % (tmp_dir, my.database)
+        if not self.file_path:
+            self.file_path = "%s/%s.sql" % (tmp_dir, self.database)
 
         cmd = "pg_dump -U postgres -E UTF8 --schema-only %s > \"%s\"" % \
-            (my.database, my.file_path)
+            (self.database, self.file_path)
         os.system(cmd)
 
 
 
-    def dump_data(my, table):
+    def dump_data(self, table):
 
         if os.name == "nt":
             tmp_dir = "C:/temp"
@@ -55,11 +55,11 @@ class SchemaDumper(object):
         else:
             tmp_dir = "/tmp"
         
-        if not my.file_path:
-            my.file_path = "%s/%s.sql" % (tmp_dir, my.database)
+        if not self.file_path:
+            self.file_path = "%s/%s.sql" % (tmp_dir, self.database)
 
         cmd = "pg_dump -U postgres --column-inserts --data-only -t %s %s > \"%s\"" % \
-            (table, my.database, my.file_path)
+            (table, self.database, self.file_path)
         os.system(cmd)
 
 # dump the schema in the <cur_dir>/schema 

@@ -24,17 +24,17 @@ import os, codecs
 
 class SyncFilter(object):
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.log = my.kwargs.get("transaction")
-        my.rules = my.kwargs.get("rules")
-        my.message = ""
+        self.log = self.kwargs.get("transaction")
+        self.rules = self.kwargs.get("rules")
+        self.message = ""
 
 
-    def execute(my):
-        log = my.log
-        rules = my.rules
+    def execute(self):
+        log = self.log
+        rules = self.rules
 
         # Give rules.  Only notes will get through
         # we need heirarchical rules.  This will ensure that only notes
@@ -55,18 +55,18 @@ class SyncFilter(object):
         key2 = { 'code': '*' }
         keys = [key1, key2]
         if not access_manager.check_access("project", keys, "allow", default="deny"):
-            my.filtered_xml = Xml()
-            my.filtered_xml.read_string("<transaction/>")
-            my.message = "Transaction prevented due to project restriction"
+            self.filtered_xml = Xml()
+            self.filtered_xml.read_string("<transaction/>")
+            self.message = "Transaction prevented due to project restriction"
             return
 
 
         # filter the transaction against the security model
         xml = log.get_xml_value("transaction")
 
-        my.filtered_xml = Xml()
-        my.filtered_xml.create_doc("transaction")
-        root2 = my.filtered_xml.get_root_node()
+        self.filtered_xml = Xml()
+        self.filtered_xml.create_doc("transaction")
+        root2 = self.filtered_xml.get_root_node()
 
         nodes = xml.get_nodes("transaction/*")
         num_nodes = len(nodes)
@@ -90,23 +90,23 @@ class SyncFilter(object):
                 parent_type = xml.get_attribute(node, "parent_type")
                 key = "%s.%s" % (parent_type, search_type)
                 
-                my.filtered_xml.append_child(root2, node)
+                self.filtered_xml.append_child(root2, node)
                 count += 1
                 
             else:
-                my.filtered_xml.append_child(root2, node)
+                self.filtered_xml.append_child(root2, node)
                 count += 1
 
-        if len(nodes) != 0 and len(my.filtered_xml.get_nodes("transaction/*")) == 0:
-            my.message = "All actions filtered due to security restrictions (%s actions)" % num_nodes
+        if len(nodes) != 0 and len(self.filtered_xml.get_nodes("transaction/*")) == 0:
+            self.message = "All actions filtered due to security restrictions (%s actions)" % num_nodes
 
 
 
-    def get_filtered_xml(my):
-        return my.filtered_xml
+    def get_filtered_xml(self):
+        return self.filtered_xml
 
-    def get_message(my):
-        return my.message
+    def get_message(self):
+        return self.message
 
 
 if __name__ == '__main__':

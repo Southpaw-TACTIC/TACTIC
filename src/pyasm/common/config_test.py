@@ -24,15 +24,15 @@ from pyasm.common import *
 
 class ConfigTest(unittest.TestCase):
 
-    def setUp(my):
-        my.config = Config()
+    def setUp(self):
+        self.config = Config()
 
-    def test_get_value(my):
+    def test_get_value(self):
         # check integrity of config parsing
 
-        server = my.config.get_value("database", "server")
+        server = self.config.get_value("database", "server")
 
-        my.failUnless(server, "No definition for database/server in config file" )
+        self.failUnless(server, "No definition for database/server in config file" )
 
 
 

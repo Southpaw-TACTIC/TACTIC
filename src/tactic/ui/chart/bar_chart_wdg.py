@@ -39,95 +39,95 @@ class BarChartWdg(BaseRefreshWdg):
     'y_axis': 'List of elements to put on the y_axis'
     }
 
-    def preprocess(my):
-        my.max_value = 0
-        my.min_value = 0
-        my.steps = 0
+    def preprocess(self):
+        self.max_value = 0
+        self.min_value = 0
+        self.steps = 0
 
         web = WebContainer.get_web()
-        my.width = web.get_form_value("width")
-        if not my.width:
-            my.width = my.kwargs.get("width")
+        self.width = web.get_form_value("width")
+        if not self.width:
+            self.width = self.kwargs.get("width")
 
 
-        my.chart_type = web.get_form_value("chart_type")
-        if not my.chart_type:
-            my.chart_type = my.kwargs.get("chart_type")
-        if not my.chart_type:
-            my.chart_type = 'bar'
+        self.chart_type = web.get_form_value("chart_type")
+        if not self.chart_type:
+            self.chart_type = self.kwargs.get("chart_type")
+        if not self.chart_type:
+            self.chart_type = 'bar'
 
 
-        my.x_axis = web.get_form_value("x_axis")
-        if not my.x_axis:
-            my.x_axis = my.kwargs.get("x_axis")
-        if not my.x_axis:
-            my.x_axis = 'code'
+        self.x_axis = web.get_form_value("x_axis")
+        if not self.x_axis:
+            self.x_axis = self.kwargs.get("x_axis")
+        if not self.x_axis:
+            self.x_axis = 'code'
 
 
         # FIXME: which should override???
-        my.y_axis = web.get_form_values("y_axis")
-        if not my.y_axis:
-            my.y_axis = my.kwargs.get("y_axis")
+        self.y_axis = web.get_form_values("y_axis")
+        if not self.y_axis:
+            self.y_axis = self.kwargs.get("y_axis")
 
-        if my.y_axis:
-            my.elements = my.y_axis
+        if self.y_axis:
+            self.elements = self.y_axis
         else:
-            my.elements = my.kwargs.get("elements")
-            if not my.elements:
-                my.elements = web.get_form_value("elements")
+            self.elements = self.kwargs.get("elements")
+            if not self.elements:
+                self.elements = web.get_form_value("elements")
 
-        if isinstance(my.elements,basestring):
-            if my.elements:
-                my.elements = my.elements.split('|')
+        if isinstance(self.elements,basestring):
+            if self.elements:
+                self.elements = self.elements.split('|')
             else:
-                my.elements = []
+                self.elements = []
 
 
 
 
-        my.search_type = web.get_form_value("search_type")
-        if not my.search_type:
-            my.search_type = my.kwargs.get("search_type")
+        self.search_type = web.get_form_value("search_type")
+        if not self.search_type:
+            self.search_type = self.kwargs.get("search_type")
 
 
-        my.search_keys = my.kwargs.get("search_keys")
-        if my.search_type and my.search_type.startswith("@SOBJECT("):
-            my.sobjects = Search.eval(my.search_type)
-        elif my.search_keys:
-            if isinstance(my.search_keys, basestring):
-                my.search_keys = eval(my.search_keys)
-            my.sobjects = Search.get_by_search_keys(my.search_keys)
+        self.search_keys = self.kwargs.get("search_keys")
+        if self.search_type and self.search_type.startswith("@SOBJECT("):
+            self.sobjects = Search.eval(self.search_type)
+        elif self.search_keys:
+            if isinstance(self.search_keys, basestring):
+                self.search_keys = eval(self.search_keys)
+            self.sobjects = Search.get_by_search_keys(self.search_keys)
         else:
-            search = Search(my.search_type)
+            search = Search(self.search_type)
             search.add_limit(100)
-            my.sobjects = search.get_sobjects()
+            self.sobjects = search.get_sobjects()
 
         # get the definition
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         if sobjects:
             sobject = sobjects[0]
             search_type = sobject.get_search_type()
             view = 'definition'
 
             from pyasm.widget import WidgetConfigView
-            my.config = WidgetConfigView.get_by_search_type(search_type, view)
+            self.config = WidgetConfigView.get_by_search_type(search_type, view)
         else:
-            my.config = None
+            self.config = None
 
 
-        my.widgets = {}
+        self.widgets = {}
 
 
-    def get_data(my, sobject):
+    def get_data(self, sobject):
 
         values = []
         labels = []
 
-        if not my.config:
+        if not self.config:
             return values, labels
 
 
-        for element in my.elements:
+        for element in self.elements:
 
             if element.startswith("{") and element.endswith("}"):
                 expr = element.strip("{}")
@@ -136,8 +136,8 @@ class BarChartWdg(BaseRefreshWdg):
 
             else:
 
-                options = my.config.get_display_options(element)
-                attrs = my.config.get_element_attributes(element)
+                options = self.config.get_display_options(element)
+                attrs = self.config.get_element_attributes(element)
 
 
                 label = attrs.get('title')
@@ -145,10 +145,10 @@ class BarChartWdg(BaseRefreshWdg):
                     label = Common.get_display_title(element)
                 labels.append(label)
 
-                widget = my.widgets.get(element)
+                widget = self.widgets.get(element)
                 if not widget:
-                    widget = my.config.get_display_widget(element)
-                    my.widgets[element] = widget
+                    widget = self.config.get_display_widget(element)
+                    self.widgets[element] = widget
 
                 widget.set_sobject(sobject)
 
@@ -172,8 +172,8 @@ class BarChartWdg(BaseRefreshWdg):
             #else:
             #    value = Search.eval(expression, sobject, single=True)
 
-            if value > my.max_value:
-                my.max_value = value
+            if value > self.max_value:
+                self.max_value = value
 
             values.append(value)        
 
@@ -182,32 +182,32 @@ class BarChartWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
-        my.preprocess()
+    def get_display(self):
+        self.preprocess()
 
-        if not my.x_axis:
-            chart_labels = [x.get_code() for x in my.sobjects]
+        if not self.x_axis:
+            chart_labels = [x.get_code() for x in self.sobjects]
         else:
             try:
-                chart_labels = [x.get_value(my.x_axis) for x in my.sobjects]
+                chart_labels = [x.get_value(self.x_axis) for x in self.sobjects]
             except:
                 # FIXME ... put in some special logic for users since it
                 # is used so often in charting
-                if my.search_type == 'sthpw/login':
-                    chart_labels = [x.get_value("login") for x in my.sobjects]
+                if self.search_type == 'sthpw/login':
+                    chart_labels = [x.get_value("login") for x in self.sobjects]
                 else:
-                    chart_labels = [x.get_code() for x in my.sobjects]
+                    chart_labels = [x.get_code() for x in self.sobjects]
 
 
         top = DivWdg()
         top.add_class("spt_chart")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         element_data = []
         labels = []
         element_values = []
-        for sobject in my.sobjects:
-            values, labels = my.get_data(sobject)
+        for sobject in self.sobjects:
+            values, labels = self.get_data(sobject)
 
             for i, value in enumerate(values):
                 if i >= len(element_data):
@@ -229,7 +229,7 @@ class BarChartWdg(BaseRefreshWdg):
         chart = XXChartWdg(
             height="400px",
             width="600px",
-            chart_type=my.chart_type,
+            chart_type=self.chart_type,
             labels=chart_labels,
             label_values=[i+0.5 for i,x in enumerate(chart_labels)]
         )
@@ -261,22 +261,22 @@ class BarChartWdg(BaseRefreshWdg):
         """
         # look at the max value and adjust
         import math
-        if not my.max_value:
-            my.max_value = 10
+        if not self.max_value:
+            self.max_value = 10
 
-        exp = int( math.log10(my.max_value) ) -1
+        exp = int( math.log10(self.max_value) ) -1
         top_value = math.pow(10, exp+1)
         steps = math.pow(10, exp) * 5
 
-        while top_value < my.max_value*1.1:
+        while top_value < self.max_value*1.1:
             top_value += steps
 
-        my.max_value = top_value
+        self.max_value = top_value
         if top_value / steps < 5:
             steps = steps / 5
         elif top_value / steps > 20:
             steps = steps * 2
-        my.steps = steps
+        self.steps = steps
 
 
 
@@ -295,9 +295,9 @@ class BarChartWdg(BaseRefreshWdg):
         chart_data.set_value('x_axis', x_axis)
 
         y_axis = {
-            'max': my.max_value,
-            'min': my.min_value,
-            'steps': my.steps,
+            'max': self.max_value,
+            'min': self.min_value,
+            'steps': self.steps,
             'colour': '#999999',
         }
         chart_data.set_value('y_axis', y_axis)
@@ -315,7 +315,7 @@ class BarChartWdg(BaseRefreshWdg):
             label = labels[i]
 
             # create the element
-            element = ChartElement(my.chart_type)
+            element = ChartElement(self.chart_type)
             element.set_values(element_values)
             chart_data.add_element(element)
 
@@ -325,7 +325,7 @@ class BarChartWdg(BaseRefreshWdg):
 
 
         # draw the chart
-        chart = ChartWdg(chart=chart_data, width=my.width)
+        chart = ChartWdg(chart=chart_data, width=self.width)
         top.add(chart)
         return top
 

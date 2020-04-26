@@ -28,57 +28,57 @@ from pyasm.widget import BaseTableElementWdg
 '''DEPRECATED: use the one in tactic.ui.table.TaskCompletionWdg'''
 class TaskCompletionWdg(BaseTableElementWdg):
 
-    def init(my):
-        my.is_preprocessed = False
-        my.data = {}
-        my.cal_sub_task = None
-        my.cal_sub_task_value = False
+    def init(self):
+        self.is_preprocessed = False
+        self.data = {}
+        self.cal_sub_task = None
+        self.cal_sub_task_value = False
 
 
-    def preprocess(my):
-        my.total_completion = 0.0
-        my.num_sobjects = 0
-        if my.sobjects:
-            tasks = Task.get_by_sobjects(my.sobjects)
+    def preprocess(self):
+        self.total_completion = 0.0
+        self.num_sobjects = 0
+        if self.sobjects:
+            tasks = Task.get_by_sobjects(self.sobjects)
             # create a data structure
             for task in tasks:
                 search_type = task.get_value("search_type")
                 search_id = task.get_value("search_id")
                 search_key = SearchKey.build_search_key(search_type, search_id, column='id')
-                sobject_tasks = my.data.get(search_key)
+                sobject_tasks = self.data.get(search_key)
                 if not sobject_tasks:
                     sobject_tasks = []
-                    my.data[search_key] = sobject_tasks
+                    self.data[search_key] = sobject_tasks
 
                 sobject_tasks.append(task)
-        my.is_preprocessed = True
+        self.is_preprocessed = True
 
-    def get_prefs(my):
-        my.cal_sub_task = FilterCheckboxWdg('calculate_sub_task', \
+    def get_prefs(self):
+        self.cal_sub_task = FilterCheckboxWdg('calculate_sub_task', \
             label='include sub tasks', css='small')
-        my.cal_sub_task_value = my.cal_sub_task.is_checked()
-        return my.cal_sub_task
+        self.cal_sub_task_value = self.cal_sub_task.is_checked()
+        return self.cal_sub_task
 
-    def get_width(my):
+    def get_width(self):
         '''not used I think'''
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
 
         if not width:
             width = 400
         return int(width)
 
-    def get_text_value(my):
-        if not my.is_preprocessed:
-            my.preprocess()
-        sobject = my.get_current_sobject()
-        completion = my.get_completion(sobject)
+    def get_text_value(self):
+        if not self.is_preprocessed:
+            self.preprocess()
+        sobject = self.get_current_sobject()
+        completion = self.get_completion(sobject)
         if not completion:
             completion = 0
         return "%0.1d%%" % completion
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
-        completion = my.get_completion(sobject)
+    def get_display(self):
+        sobject = self.get_current_sobject()
+        completion = self.get_completion(sobject)
         
         # completion is compared to None, because a 0% completion is valid
         if completion == None:
@@ -87,22 +87,22 @@ class TaskCompletionWdg(BaseTableElementWdg):
             return div
 
         widget = DivWdg()
-        width = my.get_width()
+        width = self.get_width()
         bar_wdg = CompletionBarWdg(completion, width )
         widget.add(bar_wdg)
 
         # keep a running tab of the total
-        my.total_completion += completion
-        my.num_sobjects += 1
+        self.total_completion += completion
+        self.num_sobjects += 1
         
         return widget
 
 
-    def get_bottom_wdg(my):
-        width = my.get_width()
+    def get_bottom_wdg(self):
+        width = self.get_width()
         
-        if my.num_sobjects:
-            completion = my.total_completion / my.num_sobjects
+        if self.num_sobjects:
+            completion = self.total_completion / self.num_sobjects
             bar_wdg = CompletionBarWdg(completion, width)
         else:
             bar_wdg = "n/a"
@@ -114,21 +114,21 @@ class TaskCompletionWdg(BaseTableElementWdg):
         return div
 
 
-    def get_tasks(my, sobject):
+    def get_tasks(self, sobject):
         ''' if the sobject is a task, then just return the sobject, since tasks
          do not have tasks. Account for subtask based on preferences. Also
          filters out tasks belonging to obsolete processes'''
         if isinstance(sobject, Task):
             return [sobject]
         
-        tasks = my.data.get( SearchKey.get_by_sobject(sobject, use_id=True) )
+        tasks = self.data.get( SearchKey.get_by_sobject(sobject, use_id=True) )
         if tasks == None:
             tasks = Task.get_by_sobjects([sobject])
         # make sure we only take tasks in the pipeline into account
 
         pipeline = Pipeline.get_by_sobject(sobject)
         recurse = False
-        if my.cal_sub_task_value:
+        if self.cal_sub_task_value:
             recurse = True
         if pipeline:
             processes = pipeline.get_process_names(recurse=recurse)
@@ -147,13 +147,13 @@ class TaskCompletionWdg(BaseTableElementWdg):
 
 
 
-    def get_completion(my, sobject):
-        my.tasks = my.get_tasks(sobject)
+    def get_completion(self, sobject):
+        self.tasks = self.get_tasks(sobject)
 
         percent = 0
         # count the tasks with invalid or obsolete status
         #invalid_count = 0
-        for task in my.tasks:
+        for task in self.tasks:
             status_attr = task.get_attr("status")
             task_percent = status_attr.get_percent_completion()
             if task_percent < 0:
@@ -161,19 +161,19 @@ class TaskCompletionWdg(BaseTableElementWdg):
                 #invalid_count += 1
             percent += task_percent
 
-        if my.tasks:
+        if self.tasks:
             # NOT sure if I should subtract total # of tasks by invalid
             # task, leave it for now
-            percent = int(percent / len(my.tasks))
+            percent = int(percent / len(self.tasks))
         else:
             return None
 
         return percent
 
-    def handle_td(my, td):
+    def handle_td(self, td):
         td.add_style('vertical-align','middle')
-        sobject = my.get_current_sobject()
-        completion = my.get_completion(sobject)
+        sobject = self.get_current_sobject()
+        completion = self.get_completion(sobject)
         td.add_attr("spt_input_value", completion)
 
 
@@ -187,40 +187,40 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         },
 
     }
-    def preprocess(my):
-        my.options = my.get_option('options')
-        if my.options:
+    def preprocess(self):
+        self.options = self.get_option('options')
+        if self.options:
             try:
-                my.group_list = jsonloads(my.options)
+                self.group_list = jsonloads(self.options)
             except:
-                my.group_list = [{'label': 'Syntax Error', 'context':[]}]
+                self.group_list = [{'label': 'Syntax Error', 'context':[]}]
         else:
-            my.group_list = [{'label':'default', 'context': []}]
+            self.group_list = [{'label':'default', 'context': []}]
 
-        super(TaskGroupCompletionWdg, my).preprocess()
+        super(TaskGroupCompletionWdg, self).preprocess()
 
-    def init(my):
+    def init(self):
         # these 2 are used for bottom summary
-        my.total_completion_dict = {}
-        my.num_sobjects = 0
-        super(TaskGroupCompletionWdg, my).init()
+        self.total_completion_dict = {}
+        self.num_sobjects = 0
+        super(TaskGroupCompletionWdg, self).init()
 
-    def get_bottom_wdg(my):
-        if my.total_completion_dict:
+    def get_bottom_wdg(self):
+        if self.total_completion_dict:
             table = Table()
             col = table.add_col()
             col = table.add_col()
             col.add_style('width','80%')
-            for group in my.group_list:
+            for group in self.group_list:
                 group_label = group.get('label')
-                completion = my.total_completion_dict.get(group_label)/ my.num_sobjects
+                completion = self.total_completion_dict.get(group_label)/ self.num_sobjects
             
                 group_contexts = group.get('context')
                 if group_contexts:
                     group_contexts = ', '.join(group_contexts)
 
 
-                width = my.get_width()
+                width = self.get_width()
                 bar_wdg = CompletionBarWdg(completion, width)
                 label_div = FloatDivWdg('%s: ' %group_label)
                 label_div.add_style('margin-right: 4px')
@@ -230,10 +230,10 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
                 table.add_cell(bar_wdg)
             return table
 
-        width = my.get_width()
+        width = self.get_width()
         completion = 0
-        if my.num_sobjects:
-            completion = my.total_completion / my.num_sobjects
+        if self.num_sobjects:
+            completion = self.total_completion / self.num_sobjects
         div = DivWdg()
         div.add("Total")
         div.add("<hr>")
@@ -241,7 +241,7 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         div.add(bar_wdg)
         return div
     
-    def get_group_completion(my, items):
+    def get_group_completion(self, items):
         '''get the avg completion'''
         sum = 0
         if not items:
@@ -251,32 +251,32 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         avg = sum / len(items)
         return avg
 
-    def get_text_value(my):
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        sobject = self.get_current_sobject()
         if sobject.get_id() == -1:
             return ''
-        my.calculate(sobject)
+        self.calculate(sobject)
 
         output = []
-        for group in my.group_list:
+        for group in self.group_list:
             group_label = group.get('label')
             group_contexts = group.get('context')
             if group_contexts:
                 group_contexts = ', '.join(group_contexts)
-            group_completion = my.completion_dict.get(group_label)
-            completion = my.get_group_completion(group_completion)
+            group_completion = self.completion_dict.get(group_label)
+            completion = self.get_group_completion(group_completion)
             output.append('%s: %s%%'%(group_label, completion))
 
         return '\n'.join(output)
 
-    def calculate(my, sobject):
+    def calculate(self, sobject):
         '''do the calculation'''
-        tasks = my.get_tasks(sobject)
+        tasks = self.get_tasks(sobject)
 
 
         completion = '' 
-        my.completion_dict = {}
-        for group in my.group_list:
+        self.completion_dict = {}
+        for group in self.group_list:
             group_label = group.get('label')
             group_contexts = group.get('context')
             if not group_label:
@@ -284,25 +284,25 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
             for task in tasks:
                 context = task.get_value('context')
                 if context in group_contexts:
-                    completion = my.get_completion(task)
-                    group_completion = my.completion_dict.get(group_label)
+                    completion = self.get_completion(task)
+                    group_completion = self.completion_dict.get(group_label)
                     if group_completion == None:
-                        my.completion_dict[group_label] = [completion]
+                        self.completion_dict[group_label] = [completion]
                     else:
                         group_completion.append(completion)
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         if sobject.get_id() == -1:
             return ''
-        my.calculate(sobject)
+        self.calculate(sobject)
         
              
         # completion is compared to None, because a 0% completion is valid
-        if not my.completion_dict:
-            if my.group_list and my.group_list[0].get('label')=='Syntax Error':
+        if not self.completion_dict:
+            if self.group_list and self.group_list[0].get('label')=='Syntax Error':
                 div = DivWdg("<i>Syntax Error in Column Definition</i>")
-            elif my.group_list and my.group_list[0].get('label')=='default':
+            elif self.group_list and self.group_list[0].get('label')=='default':
                 div = DivWdg("<i>Fill in the options e.g. [{'label':'MODEL', 'context': ['model','rig']}] </i>")
             else:
                 div = DivWdg("<i>No tasks</i>")
@@ -313,16 +313,16 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
         col = table.add_col()
         col = table.add_col()
         col.add_style('width','80%')
-        for group in my.group_list:
+        for group in self.group_list:
             group_label = group.get('label')
             group_contexts = group.get('context')
             if group_contexts:
                 group_contexts = ', '.join(group_contexts)
-            group_completion = my.completion_dict.get(group_label)
-            completion = my.get_group_completion(group_completion)
+            group_completion = self.completion_dict.get(group_label)
+            completion = self.get_group_completion(group_completion)
 
 
-            width = my.get_width()
+            width = self.get_width()
             bar_wdg = CompletionBarWdg(completion, width)
             label_div = FloatDivWdg('%s: ' %group_label)
             label_div.add_style('margin-right: 4px')
@@ -331,55 +331,55 @@ class TaskGroupCompletionWdg(TaskCompletionWdg):
             table.add_cell(label_div)
             table.add_cell(bar_wdg)
             #widget.add(HtmlElement.br())
-            completed_summary = my.total_completion_dict.get(group_label)
+            completed_summary = self.total_completion_dict.get(group_label)
             if not completed_summary:
                 completed_summary = 0
-	    my.total_completion_dict[group_label] = completion + completed_summary
-        my.num_sobjects += 1
+	    self.total_completion_dict[group_label] = completion + completed_summary
+        self.num_sobjects += 1
 
         return table
 
 
 class CompletionBarWdg(DivWdg):
 
-    def __init__(my, percent, length):
+    def __init__(self, percent, length):
         if not percent:
             percent = 0
-        my.percent = percent
-        #my.percent = 100
-        my.length = length
-        super(CompletionBarWdg, my).__init__()
+        self.percent = percent
+        #self.percent = 100
+        self.length = length
+        super(CompletionBarWdg, self).__init__()
 
-    def init(my):
-        #my.add_style("width", my.length + 50)
-        my.add_style("font-size", "0.8em")
+    def init(self):
+        #self.add_style("width", self.length + 50)
+        self.add_style("font-size", "0.8em")
 
-        width = int(my.length*(float(my.percent)/100))
+        width = int(self.length*(float(self.percent)/100))
         if width == 0:
             width = 1
 
-        percent_str = HtmlElement.span("%s%%&nbsp" % my.percent )
+        percent_str = HtmlElement.span("%s%%&nbsp" % self.percent )
         percent_str.add_style("float: right")
         percent_str.add_style("color: white")
 
         bar = FloatDivWdg()
         bar.add("&nbsp;")
         #bar.add_style("width", width)
-        bar.add_style("width", "%s%%" % (70*my.percent/100))
+        bar.add_style("width", "%s%%" % (70*self.percent/100))
         bar.add_style("border: 1px solid #aaa")
-        color_code = my._get_color_code(my.percent)
-        bar.add_class("completion %s" % my._get_bar_color_code(my.percent) )
+        color_code = self._get_color_code(self.percent)
+        bar.add_class("completion %s" % self._get_bar_color_code(self.percent) )
         bar.add_style("background-color", color_code)
         bar.add_style("float", "left")
 
-        my.add(bar)
-        percent = FloatDivWdg("%0.1f%%" % my.percent, css='larger')
+        self.add(bar)
+        percent = FloatDivWdg("%0.1f%%" % self.percent, css='larger')
         percent.add_style('padding', '2px 0 0 4px')
-        my.add( percent )
+        self.add( percent )
 
 
 
-    def _get_bar_color_code(my, percent):
+    def _get_bar_color_code(self, percent):
         ''' get a color code based on percentage of task completion '''
         color = "grey"
         if percent == 100:
@@ -393,7 +393,7 @@ class CompletionBarWdg(DivWdg):
         return color
 
 
-    def _get_color_code(my, percent):
+    def _get_color_code(self, percent):
         ''' get a color code based on percentage of task completion '''
         color = "#ddd"
         if percent == 100:
@@ -414,19 +414,19 @@ class CalendarBarWdg(BaseTableElementWdg):
     LEFT_MARGIN = 60
     CAL_INPUT = "calendar"
 
-    def __init__(my):
-        my.calendar = None
-        my.always_recal = False
-        my.user_defined_bound = True
-        my.show_days = False
-        my.valid_date = True
-        my.statuses = {}
+    def __init__(self):
+        self.calendar = None
+        self.always_recal = False
+        self.user_defined_bound = True
+        self.show_days = False
+        self.valid_date = True
+        self.statuses = {}
 
-        super(CalendarBarWdg, my).__init__()
+        super(CalendarBarWdg, self).__init__()
 
 
-    def get_text_value(my):
-        sobject = my.get_current_sobject()
+    def get_text_value(self):
+        sobject = self.get_current_sobject()
 
         """
         start_value = sobject.get_value("bid_start_date")
@@ -470,69 +470,69 @@ class CalendarBarWdg(BaseTableElementWdg):
 
 
   
-    def get_info(my):
+    def get_info(self):
         # when used strictly as a BaseTableElement, there is no need to recalculate
-        if not my.always_recal and hasattr(my, "start_year") and hasattr(my, "end_year"):
+        if not self.always_recal and hasattr(self, "start_year") and hasattr(self, "end_year"):
             return
 
         # create the calendar only if it is needed
         # create only if necessary since the on script is linked to the
         # cal_name of the CalendarInputWdg
-        if not my.calendar:
-            my.calendar = CalendarInputWdg(my.CAL_INPUT)
-            my.calendar.set_show_on_wdg(False)
-            my.calendar.set_show_value(False)
+        if not self.calendar:
+            self.calendar = CalendarInputWdg(self.CAL_INPUT)
+            self.calendar.set_show_on_wdg(False)
+            self.calendar.set_show_value(False)
         # if this is in ajax, then try to recreate the widget
         web = WebContainer.get_web()
 
 
         # TODO: this code should be put into an ajax class
         ajax_class = web.get_form_value("widget")
-        my.is_ajax = False
+        self.is_ajax = False
         is_tbody_swap = False
 
         if ajax_class and web.get_form_value("ajax") == "true":
             from pyasm.common import Common
             module, class_name = Common.breakup_class_path(ajax_class)
 
-            if class_name == my.__class__.__name__:
-                my.is_ajax = True
+            if class_name == self.__class__.__name__:
+                self.is_ajax = True
             elif class_name == 'TbodyWdg':
                 is_tbody_swap = True
 
-        if my.is_ajax:
+        if self.is_ajax:
             search_key = web.get_form_value("search_key")
             sobject = Search.get_by_search_key(search_key)
-            my.set_sobject(sobject)
-            my.actual_edit = web.get_form_value("actual_edit")
-            my.bid_edit = web.get_form_value("bid_edit")
+            self.set_sobject(sobject)
+            self.actual_edit = web.get_form_value("actual_edit")
+            self.bid_edit = web.get_form_value("bid_edit")
             
-            my.start_year = web.get_int_form_value("start_year")
-            my.end_year = web.get_int_form_value("end_year")
-            my.start_month = web.get_int_form_value("start_month")
-            my.end_month = web.get_int_form_value("end_month")
-            my.width = web.get_int_form_value("calendar_width")
-            my.cal_margin = web.get_int_form_value("calendar_margin")
+            self.start_year = web.get_int_form_value("start_year")
+            self.end_year = web.get_int_form_value("end_year")
+            self.start_month = web.get_int_form_value("start_month")
+            self.end_month = web.get_int_form_value("end_month")
+            self.width = web.get_int_form_value("calendar_width")
+            self.cal_margin = web.get_int_form_value("calendar_margin")
         else:
-            my.bid_edit = my.get_option("bid_edit")
-            my.actual_edit = my.get_option("actual_edit")
-            my.width = my.get_option("width")
+            self.bid_edit = self.get_option("bid_edit")
+            self.actual_edit = self.get_option("actual_edit")
+            self.width = self.get_option("width")
             
-            if my.width == "":
-                my.width = 400
+            if self.width == "":
+                self.width = 400
             else:
-                my.width = int(my.width)
+                self.width = int(self.width)
 
-            my.cal_margin = my.get_option("cal_margin")
-            if not my.cal_margin:
-                my.cal_margin = 1
+            self.cal_margin = self.get_option("cal_margin")
+            if not self.cal_margin:
+                self.cal_margin = 1
             else:     
-                my.cal_margin = int(my.cal_margin)
+                self.cal_margin = int(self.cal_margin)
 
             # determine date ranges
             start_date = None
             end_date = None
-            for sobject in my.sobjects:
+            for sobject in self.sobjects:
                 bid_start_date = str(sobject.get_value("bid_start_date"))
                 if bid_start_date != "":
                     if not start_date or bid_start_date < start_date:
@@ -564,72 +564,72 @@ class CalendarBarWdg(BaseTableElementWdg):
                         end_date = actual_end_date
             
                 
-            if start_date and end_date and my.sobjects:
+            if start_date and end_date and self.sobjects:
                 
                 start_date, time = str(start_date).split(" ")
-                my.start_year, my.start_month, tmp = [int(x) for x in start_date.split("-")]
+                self.start_year, self.start_month, tmp = [int(x) for x in start_date.split("-")]
                 end_date, time = str(end_date).split(" ")
-                my.end_year, my.end_month, tmp = [int(x) for x in end_date.split("-")]
+                self.end_year, self.end_month, tmp = [int(x) for x in end_date.split("-")]
 
             else:
-                my.start_year = datetime.date.today().year
-                my.start_month = 1
+                self.start_year = datetime.date.today().year
+                self.start_month = 1
 
-                my.end_year = datetime.date.today().year
-                my.end_month = 12
+                self.end_year = datetime.date.today().year
+                self.end_month = 12
 
             # the calendar boundaries can be overriden thru the left/right arrows control
             # this is not needed when it is part of the SObjectTaskTableElement
-            if my.user_defined_bound:
-                my.left_bound_hid = HiddenWdg('cal_left_control_hid')
-                my.left_bound_hid.set_persistence()
-                my.right_bound_hid = HiddenWdg('cal_right_control_hid')
-                my.right_bound_hid.set_persistence()
-                my.week_hid_wdg = HiddenWdg('cal_week_hid')
+            if self.user_defined_bound:
+                self.left_bound_hid = HiddenWdg('cal_left_control_hid')
+                self.left_bound_hid.set_persistence()
+                self.right_bound_hid = HiddenWdg('cal_right_control_hid')
+                self.right_bound_hid.set_persistence()
+                self.week_hid_wdg = HiddenWdg('cal_week_hid')
                  
-                left_bound = my.left_bound_hid.get_value()
-                right_bound = my.right_bound_hid.get_value()
+                left_bound = self.left_bound_hid.get_value()
+                right_bound = self.right_bound_hid.get_value()
                 if left_bound and re.match(r'\d{4}:\w{3}', left_bound):
                     left_bound = left_bound.split(':')
-                    my.start_year = int(left_bound[0])
-                    my.start_month = my.MONTHS.index(left_bound[1]) + 1
+                    self.start_year = int(left_bound[0])
+                    self.start_month = self.MONTHS.index(left_bound[1]) + 1
                 if right_bound and re.match(r'\d{4}:\w{3}', right_bound):
                     right_bound = right_bound.split(':')
-                    my.end_year = int(right_bound[0])
-                    my.end_month = my.MONTHS.index(right_bound[1]) + 1
+                    self.end_year = int(right_bound[0])
+                    self.end_month = self.MONTHS.index(right_bound[1]) + 1
        
         # determine the month range for tbody swap
         if is_tbody_swap:
             month_info = web.get_form_value('months_info')
-            my.num_months, my.first_month, my.left_year_bound = month_info.split(':') 
-            my.num_months = int(my.num_months)
-            my.left_year_bound = int(my.left_year_bound)
+            self.num_months, self.first_month, self.left_year_bound = month_info.split(':') 
+            self.num_months = int(self.num_months)
+            self.left_year_bound = int(self.left_year_bound)
             return 
      
-        my.week_hid = web.get_int_form_value("cal_week_hid")
-        # my.months store a list of (month, year) names to be drawn at the title area
-        my.months = []
-        left_month_bound = my.start_month - 1 - my.cal_margin
-        right_month_bound = my.end_month -1 + my.cal_margin
+        self.week_hid = web.get_int_form_value("cal_week_hid")
+        # self.months store a list of (month, year) names to be drawn at the title area
+        self.months = []
+        left_month_bound = self.start_month - 1 - self.cal_margin
+        right_month_bound = self.end_month -1 + self.cal_margin
        
-        # my.start_year is preserved for ajax while my.left_year_bound
+        # self.start_year is preserved for ajax while self.left_year_bound
         # is recalulated every time
-        my.left_year_bound =  my.start_year
-        my.right_year_bound = my.end_year + 1
+        self.left_year_bound =  self.start_year
+        self.right_year_bound = self.end_year + 1
         while left_month_bound < 0:
             left_month_bound += 12
-            my.left_year_bound -= 1
+            self.left_year_bound -= 1
         
         while right_month_bound > 11:
             right_month_bound -= 12
-            my.right_year_bound += 1
+            self.right_year_bound += 1
 
-        for year in range(my.left_year_bound, my.right_year_bound):
+        for year in range(self.left_year_bound, self.right_year_bound):
             
             for i in range(left_month_bound, len(CalendarBarWdg.MONTHS)):
                 month = CalendarBarWdg.MONTHS[i]
-                my.months.append((month, year))
-                if year == my.right_year_bound - 1 and i >= right_month_bound:
+                self.months.append((month, year))
+                if year == self.right_year_bound - 1 and i >= right_month_bound:
                     break
                 
 
@@ -637,68 +637,68 @@ class CalendarBarWdg(BaseTableElementWdg):
             left_month_bound = 0
 
         # prepare values used for calculating the bar width and start position
-        # my.left_year_bound above is one of them
-        if not my.months:
+        # self.left_year_bound above is one of them
+        if not self.months:
             for i in range(0,11):
-                my.months.append((CalendarBarWdg.MONTHS[i],2007))
-        my.num_months = len(my.months)
-        my.first_month = my.months[0][0] 
+                self.months.append((CalendarBarWdg.MONTHS[i],2007))
+        self.num_months = len(self.months)
+        self.first_month = self.months[0][0] 
 
-    def get_prefs(my):
+    def get_prefs(self):
         span = SpanWdg("width: ", css="med")
-        my.width_select = FilterSelectWdg("calendar_width")
-        my.width_select.set_option("values", "200|400|620|800|1000")
-        my.width_select.add_empty_option("default")
+        self.width_select = FilterSelectWdg("calendar_width")
+        self.width_select.set_option("values", "200|400|620|800|1000")
+        self.width_select.add_empty_option("default")
 
-        value = my.width_select.get_value()
+        value = self.width_select.get_value()
         if value != "":
-            my.set_option("width", value)
+            self.set_option("width", value)
            
         
-        span.add(my.width_select)
+        span.add(self.width_select)
         span.add("px")
 
        
         span2 = SpanWdg("margin: ", css='med')
-        my.margin_select = FilterSelectWdg("calendar_margin")
-        my.margin_select.set_option("values", "0|1|2|3|4")
+        self.margin_select = FilterSelectWdg("calendar_margin")
+        self.margin_select.set_option("values", "0|1|2|3|4")
 
-        value = my.margin_select.get_value()
+        value = self.margin_select.get_value()
         if value != "":
-            my.set_option("cal_margin", value)
-        span2.add(my.margin_select)
+            self.set_option("cal_margin", value)
+        span2.add(self.margin_select)
         span2.add('months')
         span.add(span2)
 
 
         pref_show_day = FilterCheckboxWdg('show_days', label='Show days')
         if pref_show_day.get_value():
-            my.show_days = True
+            self.show_days = True
 
         span.add(pref_show_day)
         return span
 
         
-    def get_calendar(my):
+    def get_calendar(self):
         '''this can be called to return a crucial component for this 
         widget to function if not used directly as a BaseTableElement'''
-        my.get_info()
+        self.get_info()
         widget = Widget() 
         hidden = HiddenWdg("calendar_column", "")
         widget.add(hidden)
-        widget.add(my.calendar)
+        widget.add(self.calendar)
         return widget
 
-    def set_always_recal(my, recal):
-        my.always_recal = recal
+    def set_always_recal(self, recal):
+        self.always_recal = recal
     
-    def set_user_defined_bound(my, bound):
-        my.user_defined_bound = bound
+    def set_user_defined_bound(self, bound):
+        self.user_defined_bound = bound
 
-    def _get_control_div(my, control_id, other_control_id, control_hidden, other_control_hidden,\
+    def _get_control_div(self, control_id, other_control_id, control_hidden, other_control_hidden,\
             bound):
         ''' get a control div to set the range of calendar to display '''
-        left_div = FloatDivWdg(width =my.LEFT_MARGIN, css='center_content')
+        left_div = FloatDivWdg(width =self.LEFT_MARGIN, css='center_content')
         
         left_div.add(control_hidden)
         control_name = control_hidden.get_input_name()
@@ -708,9 +708,9 @@ class CalendarBarWdg(BaseTableElementWdg):
         if not left_bound_val:
             default_value = ''
             if bound == 'left':
-                default_value = '%s:%s' %(my.months[0][1], my.months[0][0])
+                default_value = '%s:%s' %(self.months[0][1], self.months[0][0])
             else:
-                default_value = '%s:%s' %(my.months[-1][1], my.months[-1][0])
+                default_value = '%s:%s' %(self.months[-1][1], self.months[-1][0])
             left_bound_val = default_value
 
         left_info = DivWdg(left_bound_val, id=control_id, css='hand')
@@ -730,23 +730,23 @@ class CalendarBarWdg(BaseTableElementWdg):
 
         return left_div
 
-    def get_title(my):
+    def get_title(self):
         # initialtize
-        my.get_info() 
+        self.get_info() 
         
         # division round out error, 3px
         margin_error = 3.0
 
         main_div = FloatDivWdg()
        
-        main_width = my.width + (my.LEFT_MARGIN * 2) + margin_error
+        main_width = self.width + (self.LEFT_MARGIN * 2) + margin_error
         main_div.add_style("width", main_width)
 
         # add the left control
-        left_div = my._get_control_div('cal_left_control_id', 'cal_right_control_id', \
-            my.left_bound_hid, my.right_bound_hid, 'left')
+        left_div = self._get_control_div('cal_left_control_id', 'cal_right_control_id', \
+            self.left_bound_hid, self.right_bound_hid, 'left')
        
-        main_div.add(my.week_hid_wdg)
+        main_div.add(self.week_hid_wdg)
         main_div.add(left_div)
         
         # create the calendar label area
@@ -754,46 +754,46 @@ class CalendarBarWdg(BaseTableElementWdg):
 
         # this width seems irrelevant
         
-        div.add_style("width", my.width + margin_error)
+        div.add_style("width", self.width + margin_error)
         div.add_style("font-size: 0.8em")
         main_div.add(div)
         # write some hidden calendar info
-        div.add(my.get_calendar())
+        div.add(self.get_calendar())
 
         # add the right control
-        right_div = my._get_control_div('cal_right_control_id', 'cal_left_control_id',\
-            my.right_bound_hid, my.left_bound_hid, 'right')
+        right_div = self._get_control_div('cal_right_control_id', 'cal_left_control_id',\
+            self.right_bound_hid, self.left_bound_hid, 'right')
 
         main_div.add(right_div)
 
         # months_info is used for remembering what the calendar range is like
         # for tbody replacement
         div.add(HiddenWdg('months_info', '%s:%s:%s' \
-            %(my.num_months, my.first_month, my.left_year_bound)))
+            %(self.num_months, self.first_month, self.left_year_bound)))
 
         # draw year divs container
         year_main_div = Widget()
-        #year_main_div.add_stylcal_right_control_ide('width', my.width + margin_error)
+        #year_main_div.add_stylcal_right_control_ide('width', self.width + margin_error)
         div.add(year_main_div)
 
 
         div.add(HtmlElement.br())
    
-        # this is less stringent and different from my.is_ajax which is 
+        # this is less stringent and different from self.is_ajax which is 
         # used when the CalendarBarWdg is updated
         is_ajax = CalendarBarWdg.is_ajax(check_name=False)
         # draw months 
         year_widths = []
         year_width = 0
 
-        # NOTE: my.months is a list of tuple (month, year)
-        last_year = my.months[0][1]
-        for idx, month in enumerate(my.months):
+        # NOTE: self.months is a list of tuple (month, year)
+        last_year = self.months[0][1]
+        for idx, month in enumerate(self.months):
             
             year = month[1]
 
             # accurate decimals are necessary
-            month_width = '%.2f' %(float(my.width)/my.num_months)
+            month_width = '%.2f' %(float(self.width)/self.num_months)
             month_width = float(month_width)
 
             # collect the required year_div's width for later
@@ -802,7 +802,7 @@ class CalendarBarWdg(BaseTableElementWdg):
                 year_widths.append(year_width)
                 year_width = 0 
 
-            if idx == len(my.months) - 1:
+            if idx == len(self.months) - 1:
                 year_width += float(month_width)
                 year_widths.append(year_width)
 
@@ -819,7 +819,7 @@ class CalendarBarWdg(BaseTableElementWdg):
             month_span.add_class("hand")
 
             # add a little bit more space using part of the margin_error
-            month_span.add_style("width: %.1fpx" % (month_width + margin_error/len(my.months)/4))
+            month_span.add_style("width: %.1fpx" % (month_width + margin_error/len(self.months)/4))
             month_span.add_style("float: left")
             month_span.add_style("text-align: center")
             
@@ -830,21 +830,21 @@ class CalendarBarWdg(BaseTableElementWdg):
                 
             
             # draw weeks, days only if the user has chosen a very narrow boundary
-            if my.num_months <= 2 or my.show_days: 
-                my._draw_weeks(month_span, month_width, month, idx)
-            if my.num_months == 1 or (my.num_months == 2 and my.width >= 800)\
-                or my.show_days:
-                    my._draw_days(month_span, month_width, month, idx)
+            if self.num_months <= 2 or self.show_days: 
+                self._draw_weeks(month_span, month_width, month, idx)
+            if self.num_months == 1 or (self.num_months == 2 and self.width >= 800)\
+                or self.show_days:
+                    self._draw_days(month_span, month_width, month, idx)
             div.add(month_span)
 
             # add divider
             if not is_ajax:
-                divider = my._get_divider(idx * float(my.width)/my.num_months)
+                divider = self._get_divider(idx * float(self.width)/self.num_months)
                 div.add(divider)
         
         # add individual year div back into year_main_div
         year_index = 0
-        for year in xrange(my.left_year_bound, my.right_year_bound):
+        for year in xrange(self.left_year_bound, self.right_year_bound):
 
             year_span = SpanWdg(year)
 
@@ -864,21 +864,21 @@ class CalendarBarWdg(BaseTableElementWdg):
 
         # add the last divider
         if not is_ajax:
-            divider = my._get_divider(my.width)
+            divider = self._get_divider(self.width)
             div.add(divider)
         # readjust the lines on load both vertically and horizontally
-        ref_table_id = my.parent_wdg.table.get_id()
+        ref_table_id = self.parent_wdg.table.get_id()
         y_offset = 30
         
         AppServer.add_onload_script("TacticCalendarLabel.realign('calendar_divider','cal_label_area',"\
           "'%s', %s)" %(ref_table_id, y_offset))
         
         
-        script = my.get_show_cal_script()
+        script = self.get_show_cal_script()
         main_div.add(script)
         return main_div
    
-    def get_show_cal_script(my):
+    def get_show_cal_script(self):
         script = HtmlElement.script('''
         function show_task_cal(input_name, element, date_string, column, script ) {
             get_elements('calendar_column').set_value(column);
@@ -888,7 +888,7 @@ class CalendarBarWdg(BaseTableElementWdg):
         ''') 
         return script
 
-    def _get_divider(my, left_pos, css='calendar_divider'):
+    def _get_divider(self, left_pos, css='calendar_divider'):
         '''get divider for each week'''
         inside = DivWdg(css=css)
         #inside.set_attr('name', 'cal_divider')
@@ -903,13 +903,13 @@ class CalendarBarWdg(BaseTableElementWdg):
         return inside
 
 
-    def _get_month_days(my, year, week):
+    def _get_month_days(self, year, week):
         num_days_list = Calendar.get_monthday_time(year, week, month_digit=True)
         
         month_days = [ (int(i[0]), int(i[1])) for i in num_days_list ]
         return month_days
 
-    def _draw_weeks(my, div, width, monthyear, month_idx):
+    def _draw_weeks(self, div, width, monthyear, month_idx):
         month, year = monthyear[0], monthyear[1]
         month_digit = CalendarBarWdg.MONTHS.index(month) + 1
         week_width_list = [] 
@@ -917,7 +917,7 @@ class CalendarBarWdg(BaseTableElementWdg):
   
         num_days = Calendar.get_num_days(year, month_digit)
         
-        week = my.week_hid
+        week = self.week_hid
        
         db_date = '%s-%s-01' %(year, month_digit)
         date = Date(db_date=db_date)
@@ -960,7 +960,7 @@ class CalendarBarWdg(BaseTableElementWdg):
 
         div.add(HtmlElement.br())
 
-    def _draw_days(my, div, width, monthyear, month_idx):
+    def _draw_days(self, div, width, monthyear, month_idx):
         '''draw the days for each month'''
         div.add(HtmlElement.br())
         month, year = monthyear[0], monthyear[1]
@@ -968,13 +968,13 @@ class CalendarBarWdg(BaseTableElementWdg):
         
         num_days = Calendar.get_num_days(year, month_digit)
         day_range =  xrange(1, num_days + 1)
-        week = my.week_hid
+        week = self.week_hid
         if week:
             # handle the cross-year scenario
             if int(week) == 1 and month_digit == 12:
                 year += 1
             num_days_list = Calendar.get_monthday_time(year, week)
-            month_days = my._get_month_days(year, week)
+            month_days = self._get_month_days(year, week)
             day_range = month_days
         for day in day_range:
             if isinstance(day, tuple):
@@ -982,13 +982,13 @@ class CalendarBarWdg(BaseTableElementWdg):
             weekday = Calendar.get_weekday(year, month_digit, day)
             # show every day 
             # add divider for days
-            #divider = my._get_divider(day, float(width) / num_days)
+            #divider = self._get_divider(day, float(width) / num_days)
             #div.add(divider)
 
             # show divider every week
             if weekday == 6 and not week:
                 left_pos = float(width) / len(day_range) * day + width * month_idx
-                divider = my._get_divider( left_pos )
+                divider = self._get_divider( left_pos )
                 div.add(divider)
             
             day_div = FloatDivWdg(day, css='smaller')
@@ -1006,27 +1006,27 @@ class CalendarBarWdg(BaseTableElementWdg):
 
             div.add(day_div)
 
-    def get_display(my):
+    def get_display(self):
         # TODO: configure a different color for a different login
         color = "orange"
-        my.get_info()
-        sobject = my.get_current_sobject()
+        self.get_info()
+        sobject = self.get_current_sobject()
 
         # this changes depending on whether it is in ajax mode
         div = None
 
-        if not my.is_ajax:
+        if not self.is_ajax:
             div = DivWdg()
-            if my.user_defined_bound:
-                div.add_style('margin-left', my.LEFT_MARGIN)
+            if self.user_defined_bound:
+                div.add_style('margin-left', self.LEFT_MARGIN)
             div.set_id("calendar_range_%s" % sobject.get_id() )
             div.add_style("display: block")
         else:
             div = Widget()
-            div.add(HiddenWdg('cal_week_hid', my.week_hid))
+            div.add(HiddenWdg('cal_week_hid', self.week_hid))
 
         # until "hsl(120, 50%, 50%)" is supprted by all browsers, use literal color names
-        div1 = my.get_date_range_wdg("bid_start_date", "bid_end_date", color)
+        div1 = self.get_date_range_wdg("bid_start_date", "bid_end_date", color)
         if not div1:
             span = SpanWdg("<i>No Dates Set</i>")
             span.add_class("cal_in_bound")
@@ -1034,27 +1034,27 @@ class CalendarBarWdg(BaseTableElementWdg):
             return div
 
         div.add(div1)
-        if not my.valid_date:
+        if not self.valid_date:
             msg = HtmlElement.blink('invalid')
             msg.add_style('color', 'red')
             msg.add_class('small')
             div.add(SpanWdg(msg, css='small'))
             # reset it
-            my.valid_date = True
+            self.valid_date = True
 
-        if my.get_option("actual_display") == "true":
+        if self.get_option("actual_display") == "true":
             div.add(HtmlElement.br())
-            div.add(my.get_status_history_wdg(sobject))
+            div.add(self.get_status_history_wdg(sobject))
 
-        if my.get_option("checkin_display") == "true":
+        if self.get_option("checkin_display") == "true":
             div.add(HtmlElement.br())
-            div.add(my.get_checkin_history_wdg(sobject))
+            div.add(self.get_checkin_history_wdg(sobject))
 
         return div
 
 
 
-    def get_date_range_wdg(my,start_date_col,end_date_col,color):
+    def get_date_range_wdg(self,start_date_col,end_date_col,color):
 
         if start_date_col == "bid_start_date":
             type = "bid"
@@ -1062,20 +1062,20 @@ class CalendarBarWdg(BaseTableElementWdg):
             type = "actual"
 
         edit = True
-        if eval("my.%s_edit" % type)== "false":
+        if eval("self.%s_edit" % type)== "false":
             edit = False
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         start_date = sobject.get_value(start_date_col)
         end_date = sobject.get_value(end_date_col)
 
         if end_date and str(start_date) > str(end_date):
-            my.valid_date = False
+            self.valid_date = False
         # determine dependency: not very efficient!!!
-        if my.get_option("dependent_display") == "true":
+        if self.get_option("dependent_display") == "true":
             is_dependent = sobject.get_value("depend_id")
             has_dependents = False
-            for tmp_sobj in my.sobjects:
+            for tmp_sobj in self.sobjects:
                 if tmp_sobj == sobject:
                     continue
                 if tmp_sobj.get_value("depend_id") == sobject.get_id():
@@ -1129,15 +1129,15 @@ class CalendarBarWdg(BaseTableElementWdg):
         start_date, time = str(start_date).split(" ")
         end_date, time = str(end_date).split(" ")
 
-        info = my.calculate_widths(start_date, end_date)
+        info = self.calculate_widths(start_date, end_date)
         start_width, end_width = info.get('width')
         s_month_label, s_day = info.get('s_label')
         e_month_label, e_day = info.get('e_label')
 
         # create the labels
         if no_label_flag:
-            start_width = int(my.width / 2)
-            end_width = int(my.width / 2)
+            start_width = int(self.width / 2)
+            end_width = int(self.width / 2)
             start_label = SpanWdg("---&nbsp;")
             start_label.set_class("cal_in_bound")
             end_label = SpanWdg("&nbsp;---")
@@ -1148,15 +1148,15 @@ class CalendarBarWdg(BaseTableElementWdg):
             end_label = SpanWdg("&nbsp;%s-%s" %(e_month_label, e_day))
             end_label.set_class("cal_in_bound")
         # check for boundary
-        if start_width > my.width:
-            start_width = my.width
+        if start_width > self.width:
+            start_width = self.width
             start_label.set_class('cal_out_bound')
         elif start_width < 0:
             start_width = 0
             start_label.set_class('cal_out_bound')
         
-        if end_width > my.width:
-            end_width = my.width
+        if end_width > self.width:
+            end_width = self.width
             end_label.set_class('cal_out_bound')
         elif end_width < 0:
             end_width = 0
@@ -1267,27 +1267,27 @@ class CalendarBarWdg(BaseTableElementWdg):
         ajax.register_cmd("pyasm.widget.CalendarSetCmd")
         ajax.set_load_class("pyasm.widget.CalendarBarWdg")
         ajax.set_option("search_key", sobject.get_search_key() )
-        ajax.set_option("start_year", my.start_year)
-        ajax.set_option("end_year", my.end_year)
-        ajax.set_option("start_month", my.start_month)
-        ajax.set_option("end_month", my.end_month)
-        ajax.set_option("calendar_width", my.width)
-        ajax.set_option("calendar_margin", my.cal_margin)
-        ajax.set_option("bid_edit" , my.bid_edit)
-        ajax.set_option("actual_edit" , my.actual_edit)
-        ajax.set_option("cal_week_hid" , my.week_hid)
+        ajax.set_option("start_year", self.start_year)
+        ajax.set_option("end_year", self.end_year)
+        ajax.set_option("start_month", self.start_month)
+        ajax.set_option("end_month", self.end_month)
+        ajax.set_option("calendar_width", self.width)
+        ajax.set_option("calendar_margin", self.cal_margin)
+        ajax.set_option("bid_edit" , self.bid_edit)
+        ajax.set_option("actual_edit" , self.actual_edit)
+        ajax.set_option("cal_week_hid" , self.week_hid)
 
         ajax.add_element_name("calendar_column")
-        ajax.add_element_name(my.calendar.get_input_name())
+        ajax.add_element_name(self.calendar.get_input_name())
         on_script = Common.escape_quote(ajax.get_on_script())
 
 
         start_div.add_event("onclick", "show_task_cal('%s',this, '%s','%s','%s')" \
-            % ( my.CAL_INPUT, start_date, start_date_col, on_script) )
+            % ( self.CAL_INPUT, start_date, start_date_col, on_script) )
         start_div.add_event("onmouseover", "this.style.fontWeight = 'bold'" )
         start_div.add_event("onmouseout", "this.style.fontWeight = 'normal'" )
         end_div.add_event("onclick", "show_task_cal('%s', this, '%s','%s','%s')" \
-            % ( my.CAL_INPUT, end_date, end_date_col, on_script) )
+            % ( self.CAL_INPUT, end_date, end_date_col, on_script) )
         end_div.add_event("onmouseover", "this.style.fontWeight = 'bold'" )
         end_div.add_event("onmouseout", "this.style.fontWeight = 'normal'" )
 
@@ -1295,7 +1295,7 @@ class CalendarBarWdg(BaseTableElementWdg):
 
 
 
-    def calculate_widths(my, start_date, end_date):
+    def calculate_widths(self, start_date, end_date):
         '''calculate the pixel width for the dates, returns a dict of info
             ['width'], ['s_label'], ['e_label']'''
         if str(start_date).count(" "):
@@ -1303,43 +1303,43 @@ class CalendarBarWdg(BaseTableElementWdg):
         if str(end_date).count(" "):
             end_date, time = str(end_date).split(" ")
 
-        month_unit = float(my.width)/ my.num_months
+        month_unit = float(self.width)/ self.num_months
         leftmost_day = 1
        
         # in case a particular week is selected
-        week = my.week_hid
+        week = self.week_hid
         num_days = 30.5
         
         # calculate pixels
         s_year,s_month,s_day = [int(x) for x in str(start_date).split("-")]
         e_year,e_month,e_day = [int(x) for x in str(end_date).split("-")]
 
-        s_month_label = my.MONTHS[s_month-1]
-        leftmost_month = CalendarBarWdg.MONTHS.index(my.first_month) + 1
+        s_month_label = self.MONTHS[s_month-1]
+        leftmost_month = CalendarBarWdg.MONTHS.index(self.first_month) + 1
         
         # check if only 1 week is shown
-        s_diff_month = (s_year - my.left_year_bound) * 12 - leftmost_month
-        e_diff_month = (e_year - my.left_year_bound) * 12 - leftmost_month
+        s_diff_month = (s_year - self.left_year_bound) * 12 - leftmost_month
+        e_diff_month = (e_year - self.left_year_bound) * 12 - leftmost_month
 
         if week:
             num_days = 7.0
-            year = my.months[0][1] 
-            left_year_bound = my.left_year_bound
+            year = self.months[0][1] 
+            left_year_bound = self.left_year_bound
             first_adjust = False
             # handle the cross year scenario, when user clicks on the portion of 
             # week 1 of next year that spans a few days of the previous year
             if int(week) == 1 and leftmost_month == 12:
                 year += 1
                 first_adjust = True
-            leftmost_month, leftmost_day = my._get_month_days(year, week)[0] 
+            leftmost_month, leftmost_day = self._get_month_days(year, week)[0] 
           
             # must do it again with the updated leftmost_month
             # the user clicks on the first week of a new year that started in the
             # previous year
             if int(week) == 1 and leftmost_month == 12 and not first_adjust:
-                left_year_bound = my.left_year_bound - 1 
+                left_year_bound = self.left_year_bound - 1 
             
-            rightmost_month, rightmost_day =  my._get_month_days(year, week)[6]  
+            rightmost_month, rightmost_day =  self._get_month_days(year, week)[6]  
             s_date = Date(db_date=start_date)
             e_date = Date(db_date=end_date)
 
@@ -1369,7 +1369,7 @@ class CalendarBarWdg(BaseTableElementWdg):
         date = Date(db_date=start_date)
         
         date.add_days(31)
-        current_date = Date(db_date='%s-01-01' %my.left_year_bound)
+        current_date = Date(db_date='%s-01-01' %self.left_year_bound)
         recent = False
         if date.get_db_date() > current_date.get_db_date():
             recent = True
@@ -1387,7 +1387,7 @@ class CalendarBarWdg(BaseTableElementWdg):
         if s_month >= 0:
             start_width = float('%.1f' %(s_month*month_unit + (diff_day)*day_unit))
         
-        e_month_label = my.MONTHS[e_month-1]
+        e_month_label = self.MONTHS[e_month-1]
         end_width = -1
         e_month += e_diff_month
 
@@ -1409,43 +1409,43 @@ class CalendarBarWdg(BaseTableElementWdg):
 
     # handle status history display
 
-    def preprocess_status(my):
-        if not my.sobjects:
+    def preprocess_status(self):
+        if not self.sobjects:
             return
 
-        if my.statuses:
+        if self.statuses:
             return
 
         search = Search("sthpw/status_log")
-        search_type = my.sobjects[0].get_search_type()
+        search_type = self.sobjects[0].get_search_type()
         search.add_filter("search_type", search_type)
-        search.add_filters("search_id", SObject.get_values(my.sobjects, "id") )
+        search.add_filters("search_id", SObject.get_values(self.sobjects, "id") )
         search.add_order_by("timestamp")
         status_changes = search.get_sobjects()
 
         for status_change in status_changes:
             key = "%s|%s" % (status_change.get_value("search_type"), status_change.get_value("search_id") )
-            changes = my.statuses.get(key)
+            changes = self.statuses.get(key)
             if not changes:
                 changes = []
-                my.statuses[key] = changes
+                self.statuses[key] = changes
 
             changes.append(status_change)
 
 
 
-    def get_status_history_wdg(my,sobject):
+    def get_status_history_wdg(self,sobject):
 
-        my.preprocess_status()
+        self.preprocess_status()
 
-        mode = my.get_option("actual_mode")
+        mode = self.get_option("actual_mode")
         if not mode:
             #mode = "single"
             mode = "detail"
 
         widget = Widget()
 
-        status_changes = my.statuses.get( sobject.get_search_key() )
+        status_changes = self.statuses.get( sobject.get_search_key() )
         if not status_changes:
             widget.add("...")
             return widget
@@ -1502,14 +1502,14 @@ class CalendarBarWdg(BaseTableElementWdg):
 
             #to_status = process.get_name()
 
-            start_width, end_width = my.calculate_widths(start_date,end_date).get('width')
+            start_width, end_width = self.calculate_widths(start_date,end_date).get('width')
             if start_width < 0:
                 start_width = 0
-            elif start_width > my.width:
-                start_width = my.width
+            elif start_width > self.width:
+                start_width = self.width
 
-            if end_width > my.width:
-                end_width = my.width
+            if end_width > self.width:
+                end_width = self.width
 
             # set the spacer: used for either the first or all in detail mode
             if mode == "detail" or not count:
@@ -1561,7 +1561,7 @@ class CalendarBarWdg(BaseTableElementWdg):
 
 
 
-    def get_checkin_history_wdg(my,sobject):
+    def get_checkin_history_wdg(self,sobject):
 
         widget = Widget()
 
@@ -1577,15 +1577,15 @@ class CalendarBarWdg(BaseTableElementWdg):
             start_date = snapshot.get_value("timestamp")
             end_date = start_date
             # draw up all of the ranges
-            #start_width, end_width = my.calculate_widths(start_date,end_date).get('width')
-            start_width, end_width = my.calculate_widths(start_date,end_date).get('width')
+            #start_width, end_width = self.calculate_widths(start_date,end_date).get('width')
+            start_width, end_width = self.calculate_widths(start_date,end_date).get('width')
             if start_width < 0:
                 start_width = 0
-            elif start_width > my.width:
-                start_width = my.width
+            elif start_width > self.width:
+                start_width = self.width
 
-            if end_width > my.width:
-                end_width = my.width
+            if end_width > self.width:
+                end_width = self.width
 
             # set the spacer: used for either the first or all in detail mode
             spacer = DivWdg()
@@ -1624,25 +1624,25 @@ class CalendarBarWdg(BaseTableElementWdg):
 
 
 
-    def get_resource_usage_wdg(my,sobject):
+    def get_resource_usage_wdg(self,sobject):
 
-        month_unit = float(my.width)/ my.num_months
+        month_unit = float(self.width)/ self.num_months
         day_unit = month_unit / 30.5
         # calculate pixels
         
         s_year,s_month,s_day = [int(x) for x in str(start_date).split("-")]
         # get all of the tasks
-        tasks = my.sobjects
+        tasks = self.sobjects
 
         widget = Widget()
 
         # calculate all of the ranges and percentages
         for task in tasks:
-            bid_start_date = my.get_value("bid_start_date")
-            bid_end_date = my.get_value("bid_end_date")
+            bid_start_date = self.get_value("bid_start_date")
+            bid_end_date = self.get_value("bid_end_date")
 
         # draw up all of the ranges
-        #start_width, end_width = my.calculate_widths(start_date,end_date).get('width')
+        #start_width, end_width = self.calculate_widths(start_date,end_date).get('width')
 
 
 
@@ -1650,13 +1650,13 @@ class CalendarBarWdg(BaseTableElementWdg):
 from pyasm.command import Command, CommandExitException
 class CalendarSetCmd(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Set Task Date"
 
-    def check(my):
+    def check(self):
         return True
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         search_key = web.get_form_value("search_key")
         sobject = Search.get_by_search_key(search_key)
@@ -1688,7 +1688,7 @@ class CalendarSetCmd(Command):
         sobject.update_dependent_tasks()
 
 
-        my.description = "Set %s to '%s'" % (column, date)
+        self.description = "Set %s to '%s'" % (column, date)
 
 
 

@@ -28,48 +28,48 @@ class SObjectConfigException(Exception):
 
 class SObjectConfig(Base):
     "base class for all widgets that use the config file for parameters"""
-    def __init__(my, file_path):
-        my.xml = Xml()
-        my.xml.read_file(file_path)
+    def __init__(self, file_path):
+        self.xml = Xml()
+        self.xml.read_file(file_path)
 
     # search related functions
 
-    def get_order_by(my):
+    def get_order_by(self):
         xpath = "config/search/order-by"
-        return my.xml.get_value(xpath)
+        return self.xml.get_value(xpath)
 
-    def get_directory(my):
+    def get_directory(self):
         xpath = "config/search/directory"
-        return my.xml.get_value(xpath)
+        return self.xml.get_value(xpath)
 
 
-    def get_property(my, property):
+    def get_property(self, property):
         '''get arbitrary attributes'''
         xpath = "config/properties/%s" % property
-        return my.xml.get_value(xpath)
+        return self.xml.get_value(xpath)
 
 
 
     # attributes related functions
 
-    def get_attr_names(my):
+    def get_attr_names(self):
         xpath = "config/attrs/attr/@name"
-        attr_list = my.xml.get_values(xpath)
+        attr_list = self.xml.get_values(xpath)
         return attr_list
 
-    def _get_attr_options(my, attr_name):
+    def _get_attr_options(self, attr_name):
         xpath = "config/attrs/attr[@name='%s']/*" % attr_name
-        option_nodes = my.xml.get_nodes(xpath)
+        option_nodes = self.xml.get_nodes(xpath)
         return option_nodes
 
 
 
 
 
-    def create_attr(my, attr_name, sobject=None):
+    def create_attr(self, attr_name, sobject=None):
         """dynamically create the widget"""
         xpath = "config/attrs/attr[@name='%s']/@class" % attr_name
-        class_path = my.xml.get_value(xpath)
+        class_path = self.xml.get_value(xpath)
 
         if class_path == "":
             class_path = "SObjectAttr"
@@ -78,7 +78,7 @@ class SObjectConfig(Base):
         attr = Common.create_from_class_path(class_path, args)
 
         # get all of the options
-        option_nodes = my._get_attr_options(attr_name)
+        option_nodes = self._get_attr_options(attr_name)
         for node in option_nodes:
             option_name = Xml.get_node_name(node)
             option_value = Xml.get_node_value(node)
@@ -202,53 +202,53 @@ class SObjectConfig(Base):
 class SObjectAttr(Base):
     '''defines the base class for all attributes that sobjects contain'''
 
-    def __init__(my, name, sobject):
-        my.name = name
-        my.sobject = sobject
-        my.options = {}
+    def __init__(self, name, sobject):
+        self.name = name
+        self.sobject = sobject
+        self.options = {}
 
     
-    def init(my):
+    def init(self):
         '''initialization function called after all the options have been
         set.  Implementations should override this if needed'''
         pass
 
 
-    def set_name(my, name):
-        my.name = name
+    def set_name(self, name):
+        self.name = name
 
 
-    def set_sobject(my, sobject):
+    def set_sobject(self, sobject):
         '''all attributes know about their parent sobject and make use of
         the data as needed'''
-        my.sobject = sobject
+        self.sobject = sobject
 
 
-    def set_value(my, value):
-        my.sobject.set_value( my.name, value )
+    def set_value(self, value):
+        self.sobject.set_value( self.name, value )
 
-    def get_value(my):
-        return my.sobject.get_value( my.name )
+    def get_value(self):
+        return self.sobject.get_value( self.name )
 
-    def get_xml_value(my):
-        if my.sobject.has_value(my.name):
-            return my.sobject.get_xml_value( my.name )
+    def get_xml_value(self):
+        if self.sobject.has_value(self.name):
+            return self.sobject.get_xml_value( self.name )
         else:
             from pyasm.biz import Snapshot
             return Snapshot.get_latest_by_sobject(\
-                    my.sobject).get_xml_value( my.name )
+                    self.sobject).get_xml_value( self.name )
 
 
-    def get_web_display(my):
+    def get_web_display(self):
         '''function that gets display for viewing on the web'''
-        return my.get_value().capitalize()
+        return self.get_value().capitalize()
 
 
-    def set_option(my,name,value):
-        my.options[name] = value
+    def set_option(self,name,value):
+        self.options[name] = value
 
-    def get_option(my,name):
-        value = my.options.get(name)
+    def get_option(self,name):
+        value = self.options.get(name)
         if not value:
             return ""
         else:
@@ -256,7 +256,7 @@ class SObjectAttr(Base):
 
 
 
-    def check_security(my):
+    def check_security(self):
         return True
 
 
@@ -265,9 +265,9 @@ class SObjectAttr(Base):
 
 class DecoratorAttr(SObjectAttr):
 
-    def get_value(my):
-        original_attr_name = my.get_option("original")
-        attr = my.sobject.attr(original_attr_name)
+    def get_value(self):
+        original_attr_name = self.get_option("original")
+        attr = self.sobject.attr(original_attr_name)
         return attr.get_value()
 
 
@@ -275,8 +275,8 @@ class DecoratorAttr(SObjectAttr):
 
 class DateAttr(SObjectAttr):
 
-    def get_value(my):
-        timestamp = my.sobject.get_value(my.name)
+    def get_value(self):
+        timestamp = self.sobject.get_value(self.name)
         timestamp = str(timestamp)
         if not timestamp:
             return ""

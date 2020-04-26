@@ -32,19 +32,19 @@ import os, shutil
 
 class SyncSettingsWdg(BaseRefreshWdg):
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
         value = web.get_form_value(name)
         if not value:
-            value = my.kwargs.get(value)
+            value = self.kwargs.get(value)
         return value
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
 
-        is_refresh = my.kwargs.get("is_refresh")
+        is_refresh = self.kwargs.get("is_refresh")
 
         inner = DivWdg()
         top.add(inner)
@@ -58,7 +58,7 @@ class SyncSettingsWdg(BaseRefreshWdg):
         inner.add_color("background", "background")
 
 
-        server_code = my.get_value("server")
+        server_code = self.get_value("server")
 
         # get all of the defined servers
         search = Search("sthpw/sync_server")
@@ -100,8 +100,8 @@ class SyncSettingsWdg(BaseRefreshWdg):
             project_code = ""
 
 
-        inner.add( my.get_install_wdg(server_code, project_code) )
-        inner.add( my.get_dump_wdg(server_code, project_code) )
+        inner.add( self.get_install_wdg(server_code, project_code) )
+        inner.add( self.get_dump_wdg(server_code, project_code) )
 
         if is_refresh:
             return inner
@@ -109,7 +109,7 @@ class SyncSettingsWdg(BaseRefreshWdg):
             return top
 
 
-    def get_dump_wdg(my, server_code, project_code):
+    def get_dump_wdg(self, server_code, project_code):
 
         div = DivWdg()
         div.add_style("padding: 30px")
@@ -188,7 +188,7 @@ class SyncSettingsWdg(BaseRefreshWdg):
 
 
 
-    def get_install_wdg(my, server_code, project_code):
+    def get_install_wdg(self, server_code, project_code):
 
         div = DivWdg()
         div.add_style("padding: 30px")
@@ -287,28 +287,28 @@ class SyncSettingsWdg(BaseRefreshWdg):
 
 
 class SyncCreateTemplateCmd(Command):
-    def execute(my):
+    def execute(self):
 
         import datetime
         now = datetime.datetime.now()
         version = now.strftime("%Y%m%d_%H%M%S")
 
 
-        project_code = my.kwargs.get("project_code")
+        project_code = self.kwargs.get("project_code")
         if project_code:
             project = Project.get_by_code(project_code)
         else:
             project = Project.get()
         project_code = project.get_code()
 
-        server_code = my.kwargs.get("server")
+        server_code = self.kwargs.get("server")
         assert server_code
 
         if not isinstance(server_code, basestring):
             server_code = server_code.get_value("code")
 
 
-        base_dir = my.kwargs.get('base_dir')
+        base_dir = self.kwargs.get('base_dir')
         ticket = Environment.get_ticket()
         tmp_dir = "%s/sync_%s" % (Environment.get_tmp_dir(), ticket)
         if not os.path.exists(tmp_dir):
@@ -353,7 +353,7 @@ class SyncCreateTemplateCmd(Command):
 
         # create a manifest for all the data in the project.
         xml = Xml()
-        my.xml = xml
+        self.xml = xml
 
         xml.create_doc("manifest")
         manifest_node = xml.get_root_node()
@@ -442,11 +442,11 @@ class SyncCreateTemplateCmd(Command):
         shutil.rmtree(tmp_dir)
 
 
-        my.handle_manifest(base_dir, project_code, version)
+        self.handle_manifest(base_dir, project_code, version)
 
 
 
-    def handle_manifest(my, base_dir, project_code, version):
+    def handle_manifest(self, base_dir, project_code, version):
 
         import datetime
 
@@ -490,20 +490,20 @@ class SyncCreateTemplateCmd(Command):
 
 class SyncRemoteProjectCmd(Command):
 
-    def execute(my):
+    def execute(self):
         # This will go to a registered remote server and get the project
 
-        #server_code = my.kwargs.get("server")
+        #server_code = self.kwargs.get("server")
         #assert server_code
         ## get the registered server
         #server = Search.get_by_code("sthpw/sync_server", server_code)
         #assert server
 
 
-        project_code = my.kwargs.get("project_code")
+        project_code = self.kwargs.get("project_code")
         assert project_code
 
-        version = my.kwargs.get("version")
+        version = self.kwargs.get("version")
         if not version:
             version = "1.0.0"
 
@@ -526,7 +526,7 @@ class SyncRemoteProjectCmd(Command):
         sync_mode = "file"
 
         if sync_mode == "file":
-            base_dir = my.kwargs.get("base_dir")
+            base_dir = self.kwargs.get("base_dir")
 
             from_template_path = "%s/%s" % (base_dir, template_name)
             from_data_path = "%s/%s" % (base_dir, data_name)
@@ -601,7 +601,7 @@ class SyncRemoteProjectCmd(Command):
             # import from a plugin
             kwargs = {
                 #'base_dir': base_dir,
-                #'manifest': my.xml.to_string(),
+                #'manifest': self.xml.to_string(),
                 'code': "%s_data" % project_code,
                 'zip_path': to_data_path,
             }
@@ -625,8 +625,8 @@ class SyncRemoteProjectCmd(Command):
 
 
 
-        except Exception, e:
-            print "Error: ", str(e)
+        except Exception as e:
+            print("Error: ", str(e))
             raise
 
 
@@ -634,9 +634,9 @@ class SyncRemoteProjectCmd(Command):
 
 class SyncServerAddWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_color("background", "background")
         top.add_border()
         top.add_style("padding: 10px")
@@ -653,16 +653,16 @@ class SyncServerAddWdg(BaseRefreshWdg):
         top.add(wizard)
 
 
-        #wizard.add(my.get_local_wdg(), "Local")
-        wizard.add(my.get_info_wdg(), "Info")
-        wizard.add(my.get_sync_mode_wdg(), "Mode")
-        #wizard.add(my.get_export_wdg(), "Export")
-        #wizard.add(my.get_security_wdg(), "Security")
+        #wizard.add(self.get_local_wdg(), "Local")
+        wizard.add(self.get_info_wdg(), "Info")
+        wizard.add(self.get_sync_mode_wdg(), "Mode")
+        #wizard.add(self.get_export_wdg(), "Export")
+        #wizard.add(self.get_security_wdg(), "Security")
 
         return top
 
 
-    def get_local_wdg(my):
+    def get_local_wdg(self):
 
         div = DivWdg()
 
@@ -702,7 +702,7 @@ class SyncServerAddWdg(BaseRefreshWdg):
         return div
 
 
-    def get_info_wdg(my):
+    def get_info_wdg(self):
 
         div = DivWdg()
 
@@ -766,7 +766,7 @@ class SyncServerAddWdg(BaseRefreshWdg):
         return div
 
 
-    def get_security_wdg(my):
+    def get_security_wdg(self):
 
         div = DivWdg()
         div.add_class("spt_security")
@@ -801,7 +801,7 @@ class SyncServerAddWdg(BaseRefreshWdg):
 
 
 
-    def get_sync_mode_wdg(my):
+    def get_sync_mode_wdg(self):
 
         div = DivWdg()
         div.add_class("spt_sync_mode")
@@ -830,13 +830,13 @@ class SyncServerAddWdg(BaseRefreshWdg):
             '''
         } )
 
-        div.add( my.get_xmlrpc_mode_wdg() )
-        div.add( my.get_file_mode_wdg() )
+        div.add( self.get_xmlrpc_mode_wdg() )
+        div.add( self.get_file_mode_wdg() )
 
         return div
 
 
-    def get_xmlrpc_mode_wdg(my):
+    def get_xmlrpc_mode_wdg(self):
         div = DivWdg()
         div.add_style("margin-top: 15px")
         div.add_style("margin-bottom: 15px")
@@ -863,7 +863,7 @@ class SyncServerAddWdg(BaseRefreshWdg):
 
 
 
-    def get_file_mode_wdg(my):
+    def get_file_mode_wdg(self):
         div = DivWdg()
         div.add_style("margin-top: 15px")
         div.add_style("margin-bottom: 15px")
@@ -946,13 +946,13 @@ class SyncServerAddWdg(BaseRefreshWdg):
         text.add_style("width: 300px")
         encrypt_div.add(text)
 
-        #div.add(my.get_ticket_wdg())
+        #div.add(self.get_ticket_wdg())
 
 
         return div
 
 
-    def get_export_wdg(my):
+    def get_export_wdg(self):
 
         div = DivWdg()
 
@@ -969,7 +969,7 @@ class SyncServerAddWdg(BaseRefreshWdg):
 
         div.add("This will export out the current state of the project and can be reimported back in on a remote server<br/><br/>")
 
-        div.add( my.get_security_wdg() )
+        div.add( self.get_security_wdg() )
 
         export_div = DivWdg()
         div.add(export_div)
@@ -998,59 +998,59 @@ class SyncServerAddWdg(BaseRefreshWdg):
 
 class SyncServerAddCbk(Command):
 
-    def get_value(my, name):
-        value = my.kwargs.get(name)
+    def get_value(self, name):
+        value = self.kwargs.get(name)
         if value:
             return value[0]
         else:
             return ""
 
-    def execute(my):
+    def execute(self):
 
         # save prefix
-        local_prefix = my.get_value("local_prefix")
-        my.server_prefix = Config.get_value("install", "server")
+        local_prefix = self.get_value("local_prefix")
+        self.server_prefix = Config.get_value("install", "server")
 
-        if not local_prefix and not my.server_prefix:
+        if not local_prefix and not self.server_prefix:
             raise TacticException("Cannot have empty local server prefix")
 
-        if local_prefix and local_prefix != my.server_prefix:
+        if local_prefix and local_prefix != self.server_prefix:
             Config.set_value("install", "server", local_prefix)
 
             Config.save_config()
 
-        my.project_code = my.get_value("project")
-        if not my.project_code:
-            my.project_code = Project.get_project_code()
+        self.project_code = self.get_value("project")
+        if not self.project_code:
+            self.project_code = Project.get_project_code()
 
 
         # create a share
         share = SearchType.create("sthpw/sync_server")
-        my.handle_info(share)
-        my.handle_sync_mode(share)
+        self.handle_info(share)
+        self.handle_sync_mode(share)
 
         share.commit()
 
-        #my.handle_share_project(share)
-        #my.handle_manifest(share)
+        #self.handle_share_project(share)
+        #self.handle_manifest(share)
 
 
-    def handle_share_project(my, share):
+    def handle_share_project(self, share):
 
-        create_template = SyncCreateTemplateCmd(server=share,project_code=my.project_code)
+        create_template = SyncCreateTemplateCmd(server=share,project_code=self.project_code)
         create_template.execute()
 
 
 
-    def handle_info(my, share):
+    def handle_info(self, share):
 
-        code = my.get_value("code")
+        code = self.get_value("code")
         if not code:
             raise TacticException("Cannot have empty code")
         share.set_value("code", code)
 
 
-        description = my.get_value("description")
+        description = self.get_value("description")
         if description:
             share.set_value("description", description)
             
@@ -1058,7 +1058,7 @@ class SyncServerAddCbk(Command):
         share.set_value("state", "online")
 
 
-        project_code = my.get_value("project")
+        project_code = self.get_value("project")
         if not project_code or project_code == "__all__":
             project_code = "*"
 
@@ -1069,22 +1069,22 @@ class SyncServerAddCbk(Command):
 <rule group="project" code="%s" access="allow"/>
 <rule group="search_type" code="*" access="allow"/>
 </rules>
-        """ % my.project_code
+        """ % self.project_code
         share.set_value("access_rules", access_rules)
 
 
 
-    def handle_sync_mode(my, share):
+    def handle_sync_mode(self, share):
 
-        sync_mode = my.get_value("sync_mode")
+        sync_mode = self.get_value("sync_mode")
         share.set_value("sync_mode", sync_mode)
 
         if sync_mode == 'file':
-            ticket = my.get_value("encrypt_key")
+            ticket = self.get_value("encrypt_key")
             if not ticket:
                 ticket = "tactic"
 
-            sync_folder = my.get_value("sync_folder")
+            sync_folder = self.get_value("sync_folder")
             assert(sync_folder)
             share.set_value("base_dir", sync_folder)
 
@@ -1092,23 +1092,23 @@ class SyncServerAddCbk(Command):
             share.set_value("ticket", ticket)
         else:
 
-            host = my.get_value("host")
+            host = self.get_value("host")
             if not host:
                 raise TacticException("Must defined a host")
             share.set_value("host", host)
 
-            ticket = my.get_value("auth_ticket")
+            ticket = self.get_value("auth_ticket")
             if not ticket:
                 raise TacticException("Must defined a ticket")
 
             share.set_value("ticket", ticket)
 
 
-    def handle_manifest(my, share):
+    def handle_manifest(self, share):
 
         import datetime
 
-        sync_folder = my.get_value("sync_folder")
+        sync_folder = self.get_value("sync_folder")
         if not os.path.exists(sync_folder):
             os.makedirs(sync_folder)
 
@@ -1117,7 +1117,7 @@ class SyncServerAddCbk(Command):
 
         """
         # find the last transaction for this project
-        project_code = my.get_value("projects")
+        project_code = self.get_value("projects")
         search = Search("sthpw/transaction_log")
         search.add_filter("namespace", project_code)
         search.add_order_by("timestamp desc")
@@ -1139,8 +1139,8 @@ class SyncServerAddCbk(Command):
           #"last_transaction": transaction_code,
           "is_encrypted": "true",
           "date_created": datetime.datetime.now(),
-          "created_by": my.server_prefix,
-          "project": my.project_code
+          "created_by": self.server_prefix,
+          "project": self.project_code
         }
 
         from pyasm.common import jsondumps

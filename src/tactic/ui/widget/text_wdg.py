@@ -18,26 +18,26 @@ from tactic.ui.common import BaseRefreshWdg
 
 class LimitedTextWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             'length': 'how many charcters to show',
             'text': 'content'
             }
 
-    def init(my):
-        my.text = my.kwargs.get('text')
-        my.length = my.kwargs.get('length')
-        if not my.length:
-            my.length = 20
+    def init(self):
+        self.text = self.kwargs.get('text')
+        self.length = self.kwargs.get('length')
+        if not self.length:
+            self.length = 20
     
-    def get_display(my):
+    def get_display(self):
         span = SpanWdg()
-        if len(my.text) > my.length:
-            content = my.text[0:my.length]
+        if len(self.text) > self.length:
+            content = self.text[0:self.length]
             span.add('%s...' %content)
-            span.add_tip(my.text, my.text)
+            span.add_tip(self.text, self.text)
         else:
-            span.add(my.text)
+            span.add(self.text)
 
         return span
 

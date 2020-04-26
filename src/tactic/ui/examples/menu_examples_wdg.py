@@ -22,29 +22,29 @@ from base_example_wdg import BaseExampleWdg
 
 class AllMenuExamplesWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Menu and Smart Menu Examples"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "Here are a number of examples demonstrating the original context and drop-down menu " \
                 "implementations, along with the newer SmartMenu versions."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
         div = DivWdg()
 
         # ----------------------------- Smart Menu data ----------------------------------------------------------
 
-        menus = [ my.get_smart_menu_main_menu_details(),
-                  my.get_smart_menu_submenu_one_details(),
-                  my.get_smart_menu_submenu_two_details()
+        menus = [ self.get_smart_menu_main_menu_details(),
+                  self.get_smart_menu_submenu_one_details(),
+                  self.get_smart_menu_submenu_two_details()
                 ]
 
 
         # ----------------------------- Smart Context Menu example -----------------------------------------------
 
-        my.setup_next_example( div, "Smart Context Menu example ..." )
+        self.setup_next_example( div, "Smart Context Menu example ..." )
 
         ctx_click_div = DivWdg()
         ctx_click_div.add_styles("background: orange; color: white; border: 1px solid black; " \
@@ -56,14 +56,14 @@ class AllMenuExamplesWdg(BaseExampleWdg):
 
         # ----------------------------- Smart Drop-down Button Menu example --------------------------------------
 
-        my.setup_next_example( div, "Smart Drop-down Button Menu example ..." )
+        self.setup_next_example( div, "Smart Drop-down Button Menu example ..." )
 
         btn_dd = SmartMenu.get_smart_button_dropdown_wdg( "Hello", menus, 150 )
         div.add(btn_dd)
 
         # ----------------------------- Original Context Menu examples -------------------------------------------
 
-        my.setup_next_example( div, "Original Context Menu examples ..." )
+        self.setup_next_example( div, "Original Context Menu examples ..." )
 
         # Create the element to right click on for the given main context menu ...
         activator = DivWdg()
@@ -74,13 +74,13 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         activator.add_style( "text-align: center" )
         activator.add( "<br/>Right click on me!<br/>(this widget creates the context menus)" )
 
-        s_menu_2 = my.get_ctx_sub_menu_two_details()
+        s_menu_2 = self.get_ctx_sub_menu_two_details()
         s_menu_3 = {}
         s_menu_3.update( s_menu_2 )
         s_menu_3.update( { 'menu_id': "CtxMenu_Mike_Submenu_Three" } )
 
-        ctx_menu = my.get_ctx_menu_details()
-        menus = [ ctx_menu, my.get_ctx_sub_menu_details(), s_menu_2, s_menu_3 ]
+        ctx_menu = self.get_ctx_menu_details()
+        menus = [ ctx_menu, self.get_ctx_sub_menu_details(), s_menu_2, s_menu_3 ]
         attach_ctx_menu_wdg = AttachContextMenuWdg( activator_wdg=activator, menus=menus )
         div.add( attach_ctx_menu_wdg )
 
@@ -106,9 +106,9 @@ class AllMenuExamplesWdg(BaseExampleWdg):
 
         # -------------------- Drop-down Button Menu example ------------------------------------------------------
 
-        my.setup_next_example( div, "Original Drop-down Menu Button example ..." )
+        self.setup_next_example( div, "Original Drop-down Menu Button example ..." )
 
-        menus = [ my.get_dd_plain_menu(), my.get_dd_plain_submenu_1() ]
+        menus = [ self.get_dd_plain_menu(), self.get_dd_plain_submenu_1() ]
         dd_button = ButtonForDropdownMenuWdg( id="MikeDropDownBtn", title="LMB on Me For Menu", menus=menus,
                                                  width=150, match_width=True)
         div.add( dd_button )
@@ -118,7 +118,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
 
     # menu_tag_suffix is 'MAIN' or 'SUB1' or 'SUB2', etc
     #
-    def get_smart_menu_main_menu_details(my):
+    def get_smart_menu_main_menu_details(self):
         return { 'menu_tag_suffix': 'MAIN', 'width': 200, 'opt_spec_list': [
             { "type": "action", "label": "Launch JS Logger",
                     "bvr_cb": {'cbjs_action': "spt.js_log.show();"} },
@@ -156,7 +156,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         ] }
 
 
-    def get_smart_menu_submenu_one_details(my):
+    def get_smart_menu_submenu_one_details(self):
         return { 'menu_tag_suffix': 'SUB_1', 'width': 250, 'opt_spec_list': [
             { "type": "submenu", "label": "Nested Sub-menu", "submenu_tag_suffix": "SUB_2" },
 
@@ -182,7 +182,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         ] }
 
 
-    def get_smart_menu_submenu_two_details(my):
+    def get_smart_menu_submenu_two_details(self):
         return { 'menu_tag_suffix': 'SUB_2', 'width': 250, 'opt_spec_list': [
             { "type": "action", "label": "Make activator_el BLACK",
                     "bvr_cb": {'cbjs_action': "spt.smenu.get_activator(bvr).setStyle('background','#000000');"} },
@@ -198,7 +198,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
 
 
 
-    def get_ctx_menu_details(my):
+    def get_ctx_menu_details(self):
         return { 'menu_id': 'CtxMenu_Mike_Main', 'width': 200, 'opt_spec_list': [
             { "type": "action", "label": "Launch JS Logger",
                     "bvr_cb": {'cbjs_action': "spt.js_log.show();"} },
@@ -235,7 +235,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         ] }
 
 
-    def get_ctx_sub_menu_details(my):
+    def get_ctx_sub_menu_details(self):
         return { 'menu_id': 'CtxMenu_Mike_Submenu_One', 'width': 250, 'opt_spec_list': [
             { "type": "submenu", "label": "Nested Sub-menu", "submenu_id": "CtxMenu_Mike_Submenu_Two" },
             { "type": "separator" },
@@ -257,7 +257,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         ] }
 
 
-    def get_ctx_sub_menu_two_details(my):
+    def get_ctx_sub_menu_two_details(self):
         return { 'menu_id': 'CtxMenu_Mike_Submenu_Two', 'width': 250, 'opt_spec_list': [
             { "type": "action", "label": "Make activator_el BLACK",
                     "bvr_cb": {'cbjs_action': "spt.ctx_menu.get_activator(bvr).setStyle('background','#000000');"} },
@@ -272,7 +272,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         ] }
 
 
-    def get_dd_plain_menu(my):
+    def get_dd_plain_menu(self):
         return { 'menu_id': 'DropdownMenu_Plain', 'width': 200, 'opt_spec_list': [
             { "type": "action", "label": "New Window",
                     "bvr_cb": {'cbjs_action': "alert('File->New Window');"} },
@@ -310,7 +310,7 @@ class AllMenuExamplesWdg(BaseExampleWdg):
         ] }
 
 
-    def get_dd_plain_submenu_1(my):
+    def get_dd_plain_submenu_1(self):
         return { 'menu_id': 'DropdownMenu_Plain_Submenu_1', 'width': 250, 'opt_spec_list': [
             { "type": "title", "label": "A Nested Sub-menu" },
             { "type": "separator" },

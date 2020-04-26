@@ -17,27 +17,27 @@ from tactic_client_lib.interpreter import Handler
 
 
 class TestHandler(Handler):
-    def __init__(my):
-        my.company = None
-        super(TestHandler, my).__init__()
+    def __init__(self):
+        self.company = None
+        super(TestHandler, self).__init__()
 
-    def execute(my):
+    def execute(self):
         # set the output for this process if it is model
-        if my.get_process_name() == "model":
-            my.set_output_value("file", "test.txt")
+        if self.get_process_name() == "model":
+            self.set_output_value("file", "test.txt")
 
-        my.company = my.get_package_value('company')
-        my.set_status("complete")
+        self.company = self.get_package_value('company')
+        self.set_status("complete")
 
 
 
 class TestNextProcessHandler(TestHandler):
 
-    def execute(my):
-        my.add_next_process("extra1")
-        my.add_next_process("extra2")
+    def execute(self):
+        self.add_next_process("extra1")
+        self.add_next_process("extra2")
 
-        my.set_status("complete")
+        self.set_status("complete")
 
 
 

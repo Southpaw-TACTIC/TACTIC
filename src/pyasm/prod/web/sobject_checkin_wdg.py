@@ -34,29 +34,29 @@ class SObjectCheckinException(Exception):
 class SObjectCheckinWdg(Widget):
     '''General SObject snapshot checkin widget'''
 
-    def init(my):
-        my.register_cmd()
-        my.handle_introspect()
-        my.handle_filter()
-        my.handle_checkin()
+    def init(self):
+        self.register_cmd()
+        self.handle_introspect()
+        self.handle_filter()
+        self.handle_checkin()
 
-    def handle_filter(my):
+    def handle_filter(self):
         shot_navigator = ShotNavigatorWdg()
-        my.add(shot_navigator)
+        self.add(shot_navigator)
 
 
 
-    def register_cmd(my):
+    def register_cmd(self):
         '''register the command that will handle this widget'''
         WebContainer.register_cmd("pyasm.prod.web.SObjectCheckinCbk")
 
 
 
-    def handle_checkin(my):
+    def handle_checkin(self):
 
         shot = ProdContext.get_shot()
         if not shot:
-            my.add(DivWdg("No shot is defined"))
+            self.add(DivWdg("No shot is defined"))
             return
         search = Search("prod/layer")
         search.add_filter("shot_code", shot.get_code() )
@@ -64,13 +64,13 @@ class SObjectCheckinWdg(Widget):
         table = TableWdg("prod/layer", "checkin")
         table.set_search(search)
 
-        my.add(table)
+        self.add(table)
 
 
-    def handle_introspect(my):
+    def handle_introspect(self):
         button = IntrospectWdg()
         button.add_style("float", "right")
-        my.add(button)
+        self.add(button)
     
     
 
@@ -79,10 +79,10 @@ class SObjectCheckinWdg(Widget):
 
 class SObjectCheckinCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "SObject Checkin"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         if web.get_form_value(CheckboxCheckinWdg.PUBLISH_BUTTON) != "":
             search_key = web.get_form_value("search_key")
@@ -96,7 +96,7 @@ class SObjectCheckinCbk(Command):
             sobject_checkin = MayaSObjectCheckin(sobject)
             sobject_checkin.execute()
 
-            my.description = "Checkin in sobject [%s]" % sobject.get_code()
+            self.description = "Checkin in sobject [%s]" % sobject.get_code()
 
         else:
             return CommandExitException()
@@ -110,16 +110,16 @@ class SObjectCheckinCbk(Command):
 class CheckboxCheckinWdg(BaseTableElementWdg):
 
     PUBLISH_BUTTON = "Publish"
-    def get_title(my):
-        button = IconSubmitWdg(my.PUBLISH_BUTTON, long=True)
+    def get_title(self):
+        button = IconSubmitWdg(self.PUBLISH_BUTTON, long=True)
         button.add_style("height: 14px")
         button.add_style("padding: 3px 10px 3px 10px")
         button.set_attr("onclick", "return checkin_selected_sobjects()")
         return button
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         search_key = sobject.get_search_key()
 
@@ -132,9 +132,9 @@ class CheckboxCheckinWdg(BaseTableElementWdg):
 
 class DescriptionCheckinWdg(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_key = sobject.get_search_key()
 
         textarea = TextAreaWdg()

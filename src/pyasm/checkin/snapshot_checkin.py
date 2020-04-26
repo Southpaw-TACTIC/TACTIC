@@ -19,32 +19,32 @@ from checkin import CheckinException
 
 class SnapshotCheckin(FileCheckin):
     '''simple class to checkin a snapshot without files'''
-    def __init__(my, sobject, snapshot_xml, \
+    def __init__(self, sobject, snapshot_xml, \
             context="publish", column="snapshot", snapshot_type="file", \
             description=""):
 
         if isinstance(sobject, basestring):
             sobject = Search.get_by_search_key(sobject)
             
-        super(SnapshotCheckin,my).__init__(sobject, [], [], \
+        super(SnapshotCheckin,self).__init__(sobject, [], [], \
             context=context, column=column, snapshot_type=snapshot_type,\
             description=description)
 
-        my.snapshot_xml = snapshot_xml
+        self.snapshot_xml = snapshot_xml
 
 
-    def create_snapshot(my, file_paths):
-        return my.snapshot_xml
+    def create_snapshot(self, file_paths):
+        return self.snapshot_xml
 
 
 
-    def handle_system_commands(my, files, file_objects):
+    def handle_system_commands(self, files, file_objects):
         '''do nothing'''
         pass
 
 class SnapshotAppendCheckin(FileAppendCheckin):
     '''Append a file to an existing snapshot. The first arg is the snapshot sobject instead of snapshot_code'''
-    def __init__(my, sobject, file_paths, file_types, **kwargs):
+    def __init__(self, sobject, file_paths, file_types, **kwargs):
 
         snapshot = sobject
         existing_types = snapshot.get_all_file_types()
@@ -58,5 +58,5 @@ class SnapshotAppendCheckin(FileAppendCheckin):
         if keep_file_name != True:
             keep_file_name = False
 
-        super(SnapshotAppendCheckin,my).__init__(snapshot_code, file_paths, file_types, \
+        super(SnapshotAppendCheckin,self).__init__(snapshot_code, file_paths, file_types, \
                 mode=mode, keep_file_name=keep_file_name)

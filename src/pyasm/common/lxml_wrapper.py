@@ -42,23 +42,23 @@ class Xml(Base):
     get_xml_library = staticmethod(get_xml_library)
 
 
-    def __init__(my, string=None, file_path=None, doc=None, strip_cdata=True):
-        my.doc = None
-        my.uri = "XmlWrapper"
-        my.strip_cdata = strip_cdata
+    def __init__(self, string=None, file_path=None, doc=None, strip_cdata=True):
+        self.doc = None
+        self.uri = "XmlWrapper"
+        self.strip_cdata = strip_cdata
         if string:
-            my.read_string(string)
+            self.read_string(string)
         elif file_path:
-            my.read_file(file_path)
+            self.read_file(file_path)
         elif doc:
-            my.doc = doc
+            self.doc = doc
 
 
-        my.cache_xpath = {}
+        self.cache_xpath = {}
 
-    def read_file(my, file_path, cache=True):
-        #my.reader = PyExpat.Reader()
-        #my.doc = my.reader.fromUri(file_path)
+    def read_file(self, file_path, cache=True):
+        #self.reader = PyExpat.Reader()
+        #self.doc = self.reader.fromUri(file_path)
         # the xml library does not like windows style separators
         try:
             file_path = file_path.replace("\\", "/")
@@ -66,23 +66,23 @@ class Xml(Base):
             if not cache:
                 ##!!
                 parser = etree.XMLParser(remove_blank_text=True)
-                my.doc = etree.parse(file_path, parser)
+                self.doc = etree.parse(file_path, parser)
                 # we assume doc is the root node instead of the ElementTree
-                my.doc = my.doc.getroot()
+                self.doc = self.doc.getroot()
 
             else:
                 cur_mtime = os.path.getmtime(file_path)
-                cache_mtime = my.XML_FILE_MTIME.get(file_path)
+                cache_mtime = self.XML_FILE_MTIME.get(file_path)
 
                 if cur_mtime == cache_mtime:
-                    my.doc = my.XML_FILE_CACHE.get(file_path)
+                    self.doc = self.XML_FILE_CACHE.get(file_path)
                 else:
 
                     parser = etree.XMLParser(remove_blank_text=True)
-                    my.doc = etree.parse(file_path, parser)
-                    my.doc = my.doc.getroot()
+                    self.doc = etree.parse(file_path, parser)
+                    self.doc = self.doc.getroot()
 
-                    my.cache_xml(file_path, my.doc, cur_mtime)
+                    self.cache_xml(file_path, self.doc, cur_mtime)
 
 
 
@@ -102,13 +102,13 @@ class Xml(Base):
     cache_xml = classmethod(cache_xml)
 
 
-    def clear_xpath_cache(my):
-        my.cache_xpath = {}
+    def clear_xpath_cache(self):
+        self.cache_xpath = {}
 
 
     xmls = set()
     count = 0
-    def read_string(my, xml_string, print_error=True, remove_blank_text=True):
+    def read_string(self, xml_string, print_error=True, remove_blank_text=True):
 
         if type(xml_string) not in types.StringTypes:
             xml_string = str(xml_string)
@@ -122,10 +122,10 @@ class Xml(Base):
 
         try:
             
-            parser = etree.XMLParser(remove_blank_text=remove_blank_text, strip_cdata=my.strip_cdata)
+            parser = etree.XMLParser(remove_blank_text=remove_blank_text, strip_cdata=self.strip_cdata)
             if not xml_string:
                 raise XmlException('The input XML is empty.')
-            my.doc = etree.fromstring(xml_string, parser)
+            self.doc = etree.fromstring(xml_string, parser)
         except Exception, e:
             if print_error:
                 print "Error in xml: ", xml_string
@@ -133,25 +133,25 @@ class Xml(Base):
             raise XmlException(e)
 
 
-    def create_doc(my, root_name="snapshot"):
-        my.doc = etree.Element(root_name)
+    def create_doc(self, root_name="snapshot"):
+        self.doc = etree.Element(root_name)
         # since we assume the use of Element in most places, avoid using ElementTree here
-        #my.doc = etree.ElementTree(etree.Element(root_name))
-        return my.doc
+        #self.doc = etree.ElementTree(etree.Element(root_name))
+        return self.doc
     
-    def get_doc(my):
+    def get_doc(self):
         '''returns the document object'''
-        return my.doc
+        return self.doc
 
 
-    def get_root_node(my):
-        return my.doc
+    def get_root_node(self):
+        return self.doc
 
-    def import_node(my, element, deep=True):
-        #return my.doc.importNode(element, deep)
-        return my.doc.insert(0, element)
+    def import_node(self, element, deep=True):
+        #return self.doc.importNode(element, deep)
+        return self.doc.insert(0, element)
 
-    def create_element(my, name, node=None, attrs=None):
+    def create_element(self, name, node=None, attrs=None):
         '''create a new element with this document'''
         element = etree.Element(name)
 
@@ -164,9 +164,9 @@ class Xml(Base):
 
         return element
 
-    def create_text_element(my, name, text, node=None):
+    def create_text_element(self, name, text, node=None):
         '''create an element with a text node embedded'''
-        element = my.create_element(name)
+        element = self.create_element(name)
         element.text = str(text)
 
         if node is not None:
@@ -176,18 +176,18 @@ class Xml(Base):
 
 
     # !!! FIXME
-    def create_data_element(my, name, text):
+    def create_data_element(self, name, text):
         '''create an element with a text node embedded'''
-        #elem = my.create_element(name)
+        #elem = self.create_element(name)
         #elem.text = "<![CDATA[%s]]>" % text
 
         #parser = etree.XMLParser(strip_cdata=False)
         #elem = etree.XML('<%s><![CDATA[%s]]></%s>'%(name, text, name))
-        elem = my.create_element(name)
+        elem = self.create_element(name)
         elem.text = etree.CDATA(text)
         return elem
 
-    def create_comment(my, text):
+    def create_comment(self, text):
         '''create an element with a text node embedded'''
         comment_node = etree.Comment(text)
         #comment_node.text = text
@@ -229,7 +229,7 @@ class Xml(Base):
 
 
     def remove_child(cls, node, child):
-        #children = my.get_children(node)
+        #children = self.get_children(node)
         node.remove(child)
     remove_child = classmethod(remove_child)
   
@@ -238,14 +238,14 @@ class Xml(Base):
     replace_child = classmethod(replace_child)
   
  
-    def _evaluate(my, xpath, node=None):
+    def _evaluate(self, xpath, node=None):
         if node != None:
             result = node.xpath(xpath)
             return result
             
 
 
-        result = my.cache_xpath.get(xpath)
+        result = self.cache_xpath.get(xpath)
         if result:
             return result
         if result == []:
@@ -267,33 +267,33 @@ class Xml(Base):
         }
 
         if node == None:
-            result = my.doc.xpath(xpath, namespaces=namespaces)
+            result = self.doc.xpath(xpath, namespaces=namespaces)
         else:
             result = node.xpath(xpath, namespaces=namespaces)
             print "xpath: ", xpath
-        my.cache_xpath[xpath] = result
+        self.cache_xpath[xpath] = result
 
         return result
 
 
-    def get_nodes(my, xpath):
+    def get_nodes(self, xpath):
         '''get all of the nodes within the given xpath string'''
         try:
-            nodes = my._evaluate(xpath)
+            nodes = self._evaluate(xpath)
         except Exception, e:
             raise XmlException('XPath Error for [%s]: %s'% (xpath, e.message))
         return nodes
     
-    def get_nodes_attr(my, xpath, attr):
-        nodes = my.get_nodes(xpath)
+    def get_nodes_attr(self, xpath, attr):
+        nodes = self.get_nodes(xpath)
         value_list = []
         for node in nodes:
             value_list.append(Xml.get_attribute(node, attr))
         return value_list
 
-    def get_node(my, xpath):
+    def get_node(self, xpath):
         '''convenience function to get a single node'''
-        nodes = my.get_nodes(xpath)
+        nodes = self.get_nodes(xpath)
         if len(nodes) == 0:
             return None
         else:
@@ -301,11 +301,11 @@ class Xml(Base):
 
 
 
-    def get_values(my, xpath):
+    def get_values(self, xpath):
         values = []
-        for node in my._evaluate(xpath):
+        for node in self._evaluate(xpath):
             if not isinstance(node,basestring):
-                value = my.get_node_value(node)
+                value = self.get_node_value(node)
                 values.append(value)
             else:
                 try:
@@ -320,29 +320,29 @@ class Xml(Base):
 
 
 
-    def get_value(my, xpath):
-        values = my.get_values(xpath)
+    def get_value(self, xpath):
+        values = self.get_values(xpath)
         if len(values) == 0:
             return ""
         else:
             return values[0]
 
-    def get_xml(my):
+    def get_xml(self):
         '''returns a stringified version of the document'''
-        return etree.tostring(my.doc, pretty_print=True)
+        return etree.tostring(self.doc, pretty_print=True)
 
 
-    def to_string(my, node=None, pretty=True, tree=False, method='xml', xml_declaration=False):
+    def to_string(self, node=None, pretty=True, tree=False, method='xml', xml_declaration=False):
         '''returns a stringified version of the document
             method: xml, html, text'''
         if tree: # needed for adding comment before the root
             if node == None:
-                output = etree.ElementTree(my.doc)
+                output = etree.ElementTree(self.doc)
             else:
                 output = etree.ElementTree(node)
         else:
             if node == None:
-                output = my.doc 
+                output = self.doc 
             else:
                 output = node
        
@@ -352,9 +352,9 @@ class Xml(Base):
         return value
 
 
-    def dump(my):
+    def dump(self):
         '''print out the stringafied version'''
-        print my.to_string()
+        print self.to_string()
 
 
 
@@ -441,7 +441,7 @@ class Xml(Base):
             values[name] = text
 
             #for child_node in child_nodes:
-            #    child_values = my._process_node(child_node, child_values)
+            #    child_values = self._process_node(child_node, child_values)
             #name = node.nodeName
             #if child_values:
             #    value_dict[name] = child_values

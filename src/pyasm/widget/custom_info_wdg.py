@@ -23,30 +23,30 @@ from pyasm.widget import BaseTableElementWdg, BaseInputWdg, TextWdg, WidgetConfi
 
 class CustomInfoWdg(BaseTableElementWdg):
 
-    def __init__(my):
-        my.columns = []
-        super(CustomInfoWdg, my).__init__()
+    def __init__(self):
+        self.columns = []
+        super(CustomInfoWdg, self).__init__()
 
-    def preprocess(my):
-        sobject = my.get_current_sobject() 
+    def preprocess(self):
+        sobject = self.get_current_sobject() 
         if not sobject:
-            my.columns = []
+            self.columns = []
             return 
         search_type = sobject.get_search_type_obj()
         config = WidgetConfigView.get_by_search_type(search_type, "custom")
         if not config:
-            my.columns = []
+            self.columns = []
         else:
-            my.columns = config.get_element_names()
+            self.columns = config.get_element_names()
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject() 
+        sobject = self.get_current_sobject() 
 
 
-        if not my.columns:
+        if not self.columns:
             span = SpanWdg("None")
             span.add_style("color: #ccc")
             return span
@@ -57,7 +57,7 @@ class CustomInfoWdg(BaseTableElementWdg):
         table.add_style("width: 100%")
 
         values = []
-        for column in my.columns:
+        for column in self.columns:
 
             value = sobject.get_value(column, no_exception=True)
             #if not value:
@@ -76,28 +76,28 @@ class CustomInfoWdg(BaseTableElementWdg):
 
         return widget 
 
-    def get_simple_display(my):
-        return my.get_display()
+    def get_simple_display(self):
+        return self.get_display()
 
 class CustomConfigWdg(BaseConfigWdg):
-    def get_default_display_handler(my, element_name):
+    def get_default_display_handler(self, element_name):
         return "TextWdg"
 
  
 class CustomInfoInputWdg(BaseInputWdg):
 
-    def process_widget(my, idx, widget, sobject):
+    def process_widget(self, idx, widget, sobject):
         pass
 
-    def preprocess(my):
+    def preprocess(self):
         pass
 
-    def get_display(my):
-        my.preprocess()
+    def get_display(self):
+        self.preprocess()
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        view = my.get_option("view")
+        view = self.get_option("view")
         if not view:
             view = "custom_view"
 
@@ -124,7 +124,7 @@ class CustomInfoInputWdg(BaseInputWdg):
         table.set_max_width()
         for idx, widget in enumerate(base.widgets):
             # process the widget if necessary
-            my.process_widget(idx, widget, sobject)
+            self.process_widget(idx, widget, sobject)
             widget.set_sobjects([sobject])
 
             if isinstance(widget, HiddenWdg):
@@ -139,7 +139,7 @@ class CustomInfoInputWdg(BaseInputWdg):
             table.add_cell(widget)
 
             edit_all = widget.get_option("edit_all")
-            #if my.mode == "edit" and edit_all == 'true':
+            #if self.mode == "edit" and edit_all == 'true':
             if edit_all == 'true':
                 table.add_cell( EditAllWdg(widget), css="right_content" )
             else:
@@ -153,8 +153,8 @@ class CustomInfoInputWdg(BaseInputWdg):
 
 class CustomInfoAction(DatabaseAction):
 
-    def execute(my):
-        sobject = my.sobject
+    def execute(self):
+        sobject = self.sobject
 
 
         search_type = sobject.get_search_type_obj()
@@ -162,12 +162,12 @@ class CustomInfoAction(DatabaseAction):
         if not config:
             return
 
-        my.element_names = config.get_element_names()
+        self.element_names = config.get_element_names()
 
         # create all of the handlers
         action_handlers = []
 
-        for element_name in (my.element_names):
+        for element_name in (self.element_names):
             action_handler_class = \
                 config.get_action_handler(element_name)
 
@@ -195,10 +195,10 @@ class CustomInfoAction(DatabaseAction):
 
 class CustomTableWdg(Widget):
     '''Display a custom table using TableWdg'''
-    def get_display(my):
-        search_type = my.options.get("search_type")
-        view = my.options.get("view")
-        filter = my.options.get("filter")
+    def get_display(self):
+        search_type = self.options.get("search_type")
+        view = self.options.get("view")
+        filter = self.options.get("filter")
         if type(filter) in types.StringTypes:
             filters = [filter]
         elif not filter:
@@ -264,15 +264,15 @@ class PrefixParentCodeTrigger(Trigger):
     '''Changes the parent code of all the children of an sobject on change
     of the parent's code'''
 
-    def execute(my):
+    def execute(self):
 
         delimiter = "."
 
         # FIXME: how to find the child sobject
         child_search_type = "simple/page"
 
-        #sobject = my.get_sobject()
-        sobject = my.get_caller()
+        #sobject = self.get_sobject()
+        sobject = self.get_caller()
         prev_code = sobject.get_prev_value("code")
         code = sobject.get_code()
 

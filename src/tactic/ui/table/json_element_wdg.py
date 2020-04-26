@@ -18,6 +18,8 @@ from pyasm.common import TacticException, jsonloads
 from tactic.ui.common import SimpleTableElementWdg
 from pyasm.web import DivWdg
 
+import json
+
 
 class JsonElementWdg(SimpleTableElementWdg):
 
@@ -27,18 +29,18 @@ class JsonElementWdg(SimpleTableElementWdg):
     }
     }
 
-    def is_sortable(my):
+    def is_sortable(self):
         return False
 
-    def is_editable(my):
-        return False
+    def is_editable(self):
+        return True
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        height = my.get_option('height')
+        height = self.get_option('height')
         if not height:
             height = 300
 
@@ -47,16 +49,20 @@ class JsonElementWdg(SimpleTableElementWdg):
         inner.add_style("overflow-y: auto")
         inner.add_style("overflow-x: hidden")
         inner.add_style("min-width: 300px")
-        inner.add_style("max-width: 300px")
         inner.add_style("max-height: %s" % height)
         inner.add_style("margin-right: -3px")
+        inner.add_style("font-family: courier")
+        inner.add_style("white-space: pre")
         
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
-        data = sobject.get_json_value( my.get_name() )
-        if not data:
-            data = {}
+        data = sobject.get_json_value( self.get_name() )
+        if data:
+            value = json.dumps(data, indent=2, sort_keys=True)
+            inner.add(value)
 
+
+        """
         keys = data.keys()
         keys.sort()
 
@@ -64,8 +70,15 @@ class JsonElementWdg(SimpleTableElementWdg):
             value = data.get(key)
             inner.add("%s = %s<br/>"% (key, value))
 
+        """
+
 
 
         return top
+
+
+
+
+
 
 

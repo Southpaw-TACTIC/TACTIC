@@ -27,15 +27,15 @@ class UiPlaygroundPanelWdg(BaseRefreshWdg):
 
     '''Panel to test out UI widget prototypes'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {'get_example_chooser': 'if "true" then return example chooser content and not playground panel'}
 
 
-    def init(my):
-        my.get_example_chooser = my.kwargs.get('get_example_chooser')
+    def init(self):
+        self.get_example_chooser = self.kwargs.get('get_example_chooser')
 
 
-    def _get_example_widget_classes(my):
+    def _get_example_widget_classes(self):
         return [
             EfficientTableExampleWdg,
             SearchClassTagExamplesWdg,
@@ -54,10 +54,10 @@ class UiPlaygroundPanelWdg(BaseRefreshWdg):
         ]
 
 
-    def get_display(my):
+    def get_display(self):
 
-        if my.get_example_chooser == 'true':
-            return my.get_example_chooser_content()
+        if self.get_example_chooser == 'true':
+            return self.get_example_chooser_content()
 
         div = DivWdg()
         div.set_id("UiPlaygroundPanelWdg")
@@ -105,13 +105,13 @@ class UiPlaygroundPanelWdg(BaseRefreshWdg):
         return div
 
 
-    def get_example_chooser_content(my):
+    def get_example_chooser_content(self):
         choice_list_div = DivWdg()
         choice_list_div.set_id("UiExampleChoiceList")
         choice_list_div.add_styles( "background: #202020; color: #999999; border: 1px solid black; " \
                                     "border-top: 0px;" )
 
-        example_wdg_classes = my._get_example_widget_classes()
+        example_wdg_classes = self._get_example_widget_classes()
 
         choice_list_div.add( "<br/>" )
 

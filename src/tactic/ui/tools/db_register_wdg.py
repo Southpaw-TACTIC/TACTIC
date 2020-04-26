@@ -28,25 +28,25 @@ from tactic.ui.common import BaseRefreshWdg
 
 class DbRegisterWdg(BaseRefreshWdg):
 
-    def get_value(my, name):
+    def get_value(self, name):
         web = WebContainer.get_web()
         value = web.get_form_value(name)
         if not value:
             return value
-        return my.kwargs.get("value")
+        return self.kwargs.get("value")
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("padding: 20px")
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("width", "500px")
 
         top.add_class("spt_db_register_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
 
         inner = DivWdg()
@@ -54,7 +54,7 @@ class DbRegisterWdg(BaseRefreshWdg):
 
 
         # db resource
-        db_resource = my.get_value("db_resource")
+        db_resource = self.get_value("db_resource")
 
         db_resource_wdg = DivWdg()
         inner.add(db_resource_wdg)
@@ -109,7 +109,7 @@ class DbRegisterWdg(BaseRefreshWdg):
 
 
 
-        if my.kwargs.get('is_refresh') == 'true':
+        if self.kwargs.get('is_refresh') == 'true':
             return inner
         else:
             return top
@@ -121,7 +121,7 @@ class DbRegisterWdg(BaseRefreshWdg):
 
 class RegisterDbResourceCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         # create project if it exists
         project_code = "tims"
@@ -139,8 +139,8 @@ class RegisterDbResourceCmd(Command):
 
 
 
-        print "Found the following tables: ", tables
-        print
+        print("Found the following tables: ", tables)
+        print("\n")
 
         # register all of the tables
         search_types = []
@@ -172,13 +172,13 @@ class RegisterDbResourceCmd(Command):
             # check to see if this is actually registered
             search_type = "%s/%s" % (project_code, table)
             search_types.append(search_type)
-            print "search_type: ", search_type
+            print("search_type: ", search_type)
             search_type_obj = Search.get_by_code("sthpw/search_type", search_type)
             if search_type_obj:
-                print 'REGISTERED'
+                print('REGISTERED')
                 continue
 
-            print "Registering [%s] ..." % search_type
+            print("Registering [%s] ..." % search_type)
             search_type_obj = SearchType.create("sthpw/search_type")
             search_type_obj.set_value("namespace", project_code)
             search_type_obj.set_value("code", search_type)
@@ -197,7 +197,7 @@ class RegisterDbResourceCmd(Command):
             schema_xml.append('''<search_type name="%s"/>''' % search_type)
         schema_xml.append("</schema>")
         schema_xml = "\n".join(schema_xml)
-        print "schema: ", schema_xml
+        print("schema: ", schema_xml)
 
         schema = Search.get_by_code("sthpw/schema", project_code)
         if not schema:

@@ -125,8 +125,10 @@ function Connection()
             self.xmlHttpRequest.send( content );
         }
         catch(e) {
-            spt.error("Error connecting to TACTIC server.  Please contact the Administrator of this server." );
+            msg = "Error connecting to TACTIC server.  Please contact the Administrator of this server.";
+            spt.error(msg)
             spt.app_busy.hide();
+            spt.notify.show_message(msg);
             throw(e);
         }
         

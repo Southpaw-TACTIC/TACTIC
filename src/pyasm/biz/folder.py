@@ -22,13 +22,13 @@ class Folder(SObject):
     SEARCH_TYPE = "sthpw/folder"
 
 
-    def get_children(my):
+    def get_children(self):
         search = Search(Folder)
-        search.add_filter("parent_id", my.get_id() )
+        search.add_filter("parent_id", self.get_id() )
         return search.get_sobjects()
 
 
-    def create(my, parent, subdir, sobject):
+    def create(self, parent, subdir, sobject):
 
         folder = SearchType.create(Folder)
         if parent:

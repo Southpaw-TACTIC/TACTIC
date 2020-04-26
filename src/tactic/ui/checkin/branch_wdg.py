@@ -25,11 +25,11 @@ from scm_dir_list_wdg import get_onload_js as scm_get_onload_js
 class BranchWdg(BaseRefreshWdg):
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_branch_content")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
         top.add_color("color", "color")
         top.add_color("background", "background")
         #top.add_border()
@@ -52,7 +52,7 @@ class BranchWdg(BaseRefreshWdg):
         location = '//%s' % depot
 
 
-        branch = my.kwargs.get("branch")
+        branch = self.kwargs.get("branch")
         if not branch:
             branch = WidgetSettings.get_value_by_key("current_branch")
         else:
@@ -62,7 +62,7 @@ class BranchWdg(BaseRefreshWdg):
             branch = 'main'
 
 
-        branches = my.kwargs.get("branches")
+        branches = self.kwargs.get("branches")
         if not branches:
             branches = []
         elif isinstance(branches, basestring):
@@ -178,7 +178,7 @@ class BranchWdg(BaseRefreshWdg):
 
         inner.add("<hr/>")
 
-        if my.kwargs.get("branches") == None:
+        if self.kwargs.get("branches") == None:
             inner.add_behavior( {
             'type': 'load',
             'location': location,

@@ -26,14 +26,14 @@ from tactic.ui.panel import SideBarBookmarkMenuWdg
 
 class SectionManagerWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        my.search_type = my.kwargs.get('search_type')
-        my.view = my.kwargs.get('view')
+    def get_display(self):
+        self.search_type = self.kwargs.get('search_type')
+        self.view = self.kwargs.get('view')
 
-        return my.get_section_wdg(my.view)
+        return self.get_section_wdg(self.view)
 
 
-    def get_section_wdg(my, view, editable=True, default=False):
+    def get_section_wdg(self, view, editable=True, default=False):
 
         title = ""
         target_id = "sobject_relation"
@@ -43,7 +43,7 @@ class SectionManagerWdg(BaseRefreshWdg):
             edit_mode = 'read'
         kwargs = {
             'title': title,
-            'config_search_type': my.search_type,
+            'config_search_type': self.search_type,
             'view': view,
             'target_id': target_id,
             'width': '300',
@@ -77,14 +77,14 @@ class ViewSectionWdg(BaseSectionWdg):
         return config
 
 
-    def get_detail_class_name(my):
+    def get_detail_class_name(self):
         return "tactic.ui.manager.ElementDefinitionWdg"
 
     #
     # behavior functions
     #
-    def add_separator_behavior(my, separator_wdg, element_name, config, options):
-        if my.mode == 'edit':
+    def add_separator_behavior(self, separator_wdg, element_name, config, options):
+        if self.mode == 'edit':
             # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -97,15 +97,15 @@ class ViewSectionWdg(BaseSectionWdg):
 
 
 
-    def add_folder_behavior(my, folder_wdg, element_name, config, options):
+    def add_folder_behavior(self, folder_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a folder'''
 
         # determines whether the folder opens on click
-        recurse = my.kwargs.get("recurse")!= "false"
+        recurse = self.kwargs.get("recurse")!= "false"
 
         # edit behavior
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
             # IS EDITABLE ...
 
             # add the drag/drop behavior
@@ -120,7 +120,7 @@ class ViewSectionWdg(BaseSectionWdg):
                                                      'spt.side_bar.display_element_info_cbk(evt,bvr);'
             else:
                 behavior['cbjs_action_onnomotion'] = 'spt.side_bar.display_element_info_cbk(evt,bvr);'
-            behavior['class_name'] = my.get_detail_class_name()
+            behavior['class_name'] = self.get_detail_class_name()
            
             folder_wdg.add_behavior(behavior)
             folder_wdg.set_attr("SPT_ACCEPT_DROP", "manageSideBar")
@@ -135,11 +135,11 @@ class ViewSectionWdg(BaseSectionWdg):
 
 
 
-    def add_link_behavior(my, link_wdg, element_name, config, options):
+    def add_link_behavior(self, link_wdg, element_name, config, options):
         '''this method provides the changed to add behaviors to a link'''
 
         edit_allowed = True
-        if my.mode == 'edit' and edit_allowed:
+        if self.mode == 'edit' and edit_allowed:
                 # add the drag/drop behavior
             behavior = {
                 "type": 'drag',
@@ -147,7 +147,7 @@ class ViewSectionWdg(BaseSectionWdg):
                 "drop_code": 'manageSideBar',
                 "cb_set_prefix": 'spt.side_bar.pp',
                 'cbjs_action_onnomotion':  'spt.side_bar.display_element_info_cbk(evt,bvr);',
-                'class_name':   my.get_detail_class_name()
+                'class_name':   self.get_detail_class_name()
             }
 
             link_wdg.add_behavior(behavior)

@@ -18,7 +18,7 @@ from pyasm.widget import HiddenWdg
 
 class PyMayaInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
         div = DivWdg()
 
         # this is to prevent this function from being run in other tabs
@@ -101,7 +101,7 @@ class PyMayaInit(Widget):
 
 class PyFlashInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         html = Html()
@@ -129,7 +129,7 @@ class PyFlashInit(Widget):
 
 class PyHoudiniInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         user = WebContainer.get_user_name()
@@ -162,7 +162,7 @@ class PyHoudiniInit(Widget):
 
 class PyXSIInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         web = WebContainer.get_web()
         user = WebContainer.get_user_name()
@@ -198,7 +198,7 @@ class PyXSIInit(Widget):
 
 class PyRepoActionInit(Widget):
 
-    def get_display(my):
+    def get_display(self):
         html = Html()
         html.writeln("<script>var pyp4=new PyPerforce()</script>")
         

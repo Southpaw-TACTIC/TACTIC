@@ -26,18 +26,18 @@ import os
 
 class SObjectCopyCmd(Command):
 
-    def execute(my):
-        sobject = my.kwargs.get("sobject")
+    def execute(self):
+        sobject = self.kwargs.get("sobject")
         if sobject:
             sobjects = [sobject]
 
         else:
 
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             if search_key:
                 search_keys = [search_key]
             else:
-                search_keys = my.kwargs.get("search_keys")
+                search_keys = self.kwargs.get("search_keys")
 
             if search_keys:
                 sobjects = []
@@ -45,26 +45,26 @@ class SObjectCopyCmd(Command):
                     sobject = Search.get_by_search_key(search_key)
                     sobjects.append(sobject)
             else:
-                source = my.kwargs.get("source")
+                source = self.kwargs.get("source")
                 if source == 'clipboard':
                     sobjects = Clipboard.get_selected()
 
 
-        dst_search_type = my.kwargs.get("dst_search_type")
+        dst_search_type = self.kwargs.get("dst_search_type")
         if not dst_search_type:
             dst_search_type = sobjects[0].get_base_search_type()
 
 
 
-        context = my.kwargs.get("context")
+        context = self.kwargs.get("context")
         #if not context:
         #    context = "publish"
 
         for sobject in sobjects:
-            my.copy_sobject(sobject, dst_search_type, context)
+            self.copy_sobject(sobject, dst_search_type, context)
 
 
-    def copy_sobject(my, sobject, dst_search_type, context=None, checkin_mode='inplace'):
+    def copy_sobject(self, sobject, dst_search_type, context=None, checkin_mode='inplace'):
 
         new_sobject = SearchType.create(dst_search_type)
         search_type = SearchType.get(dst_search_type)
@@ -126,7 +126,7 @@ class SObjectCopyCmd(Command):
                 msgs.append('Post-process Check-in Error for %s: %s ' %(context, e.__str__()))
 
         if msgs:
-            my.info['error'] = msgs
+            self.info['error'] = msgs
 
         return new_sobject
 
@@ -134,21 +134,21 @@ class SObjectCopyCmd(Command):
 
 class SObjectReferenceCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
-        search_keys = my.kwargs.get("search_keys")
+        search_keys = self.kwargs.get("search_keys")
         if search_keys:
             sobjects = []
             for search_key in search_keys:
                 sobject = Search.get_by_search_key(search_key)
                 sobjects.append(sobject)
         else:
-            source = my.kwargs.get("source")
+            source = self.kwargs.get("source")
             if source == 'clipboard':
                 sobjects = Clipboard.get_selected()
 
 
-        dst_search_type = my.kwargs.get("dst_search_type")
+        dst_search_type = self.kwargs.get("dst_search_type")
 
 
 

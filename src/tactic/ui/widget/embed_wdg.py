@@ -12,7 +12,8 @@
 __all__ = ["EmbedWdg"]
 
 from pyasm.common import Environment
-from pyasm.biz import File
+from pyasm.biz import File, Snapshot
+from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -22,27 +23,39 @@ import urllib
 
 class EmbedWdg(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
             }
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
 
-    def add_class(my, name):
-        my.top.add_class(name)
+    def add_class(self, name):
+        self.top.add_class(name)
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
-        src = my.kwargs.get("src")
-        file = my.kwargs.get("file")
-        if file:
+        layout = self.kwargs.get("layout") or "landscape"
+
+        search_key = self.kwargs.get("search_key")
+        file = self.kwargs.get("file")
+
+        if search_key:
+            sobject = Search.get_by_search_key(search_key)
+            if sobject.get_base_search_type() == "sthpw/snapshot":
+                snapshot = sobject
+            else:
+                snapshot = Snapshot.get_latest_by_sobject(sobject)
+            src = snapshot.get_web_path_by_type()
+        elif file:
             src = file.get_web_path()
+        else:
+            src = self.kwargs.get("src")
 
         opacity = 1.0
         if not src:
@@ -50,12 +63,12 @@ class EmbedWdg(BaseRefreshWdg):
             opacity = 0.6
 
 
-        height = my.kwargs.get("height")
-        width = my.kwargs.get("width")
-        index = my.kwargs.get("index")
+        height = self.kwargs.get("height")
+        width = self.kwargs.get("width")
+        index = self.kwargs.get("index")
 
         if not height:
-            height = "auto"
+            height = "100%"
         if not width:
             width = "100%"
 
@@ -64,13 +77,14 @@ class EmbedWdg(BaseRefreshWdg):
         #height = "auto"
 
 
-        #div = DivWdg()
-        #top.add(div)
         div = top
         div.add_class("unselectable")
         div.add_style("opacity", opacity)
-        div.add_style("overflow-x: hidden")
-        div.add_style("overflow-y: hidden")
+
+        # Not sure what this is for??
+        #div.add_style("overflow-x: hidden")
+        #div.add_style("overflow-y: hidden")
+
         div.add_style("margin-left: auto")
         div.add_style("margin-right: auto")
         div.add_style("text-align: center")
@@ -84,26 +98,87 @@ class EmbedWdg(BaseRefreshWdg):
         ext = parts[1]
         ext = ext.lower()
 
-        click = my.kwargs.get("click")
+        click = self.kwargs.get("click")
         if click in [False, 'false']:
             click = False
         else:
             click = True
 
-        thumb_path = my.kwargs.get("thumb_path")
-        preload = my.kwargs.get("preload")
+        thumb_path = self.kwargs.get("thumb_path")
+        preload = self.kwargs.get("preload")
         if not preload:
             preload = "none"
 
         ext = ext.lstrip(".")
         if ext in File.IMAGE_EXT:
-            if isinstance(src, unicode):
-                src = src.encode("utf-8")
-            src = urllib.pathname2url(src)
 
-            embed = HtmlElement.img(src)
-            embed.add_style("width: 100%")
-            embed.add_style("height: auto")
+            embed = DivWdg()
+            embed.add_style("display: inline-block")
+            embed.add_style("vertical-align: top")
+
+            if layout == "landscape":
+                embed.add_style("width: auto")
+                embed.add_style("height: 100%")
+            elif layout == "fit":
+                embed.add_style("width: 100%")
+                embed.add_style("height: 100%")
+            else:
+                embed.add_style("width: 100%")
+                embed.add_style("height: auto")
+
+
+            if src.find("#") != -1:
+
+                file_range = self.kwargs.get("file_range")
+                for i in range(1, 16):
+                    expand = src.replace("####", "%0.4d" % i)
+                    item = HtmlElement.img(expand)
+                    embed.add(item)
+                    item.add_style("width: 25%")
+
+                embed.add_style("overflow-y: auto")
+                embed.add_style("text-align: left")
+
+                #embed.add_behavior( {
+                #    'type': 'load',
+                #    'cbjs_action': '''
+                #    new Scrollable(bvr.src_el)
+                #    '''
+                #} )
+
+
+            elif src.find("|") != -1:
+                paths = src.split("|")
+                for path in paths:
+                    item = HtmlElement.img(path)
+                    embed.add(item)
+                    item.add_style("width: 25%")
+
+                embed.add_style("overflow-y: auto")
+                embed.add_style("text-align: left")
+
+            else:
+
+                if isinstance(src, unicode):
+                    src = src.encode("utf-8")
+                src = urllib.pathname2url(src)
+
+
+                img = HtmlElement.img(src)
+                embed.add(img)
+
+                if layout == "landscape":
+                    img.add_style("width: auto")
+                    img.add_style("height: 100%")
+                elif layout == "fit":
+                    img.add_style("width: 100%")
+                    img.add_style("height: 100%")
+                    img.add_style("object-fit: contain")
+                else:
+                    img.add_style("width: 100%")
+                    img.add_style("height: auto")
+
+
         elif ext in File.VIDEO_EXT:
             from tactic.ui.widget import VideoWdg
             embed = DivWdg()
@@ -111,8 +186,7 @@ class EmbedWdg(BaseRefreshWdg):
 
             #if not thumb_path:
             #    thumb_path = "/context/icons/logo/tactic_sml.png"
-            controls = my.kwargs.get("controls")
-
+            controls = self.kwargs.get("controls")
 
             video_id = None
             sources = [src]
@@ -139,7 +213,11 @@ class EmbedWdg(BaseRefreshWdg):
             img.add_style("width: 50%")
             img.add_style("margin: 20px 20px")
             embed = DivWdg(img)
+
+
         div.add(embed)
+
+
 
         if click:
             embed.add_behavior( {
@@ -151,12 +229,7 @@ class EmbedWdg(BaseRefreshWdg):
             } )
             embed.add_class("hand")
 
-        #embed.add_style("width", "100%")
-        # NOTE: to keep true original aspect ratio, don't set this height
-        # and let GalleryWdg inner load script to take care of it on load
-        # that js portion needs uncommenting as well
-        #embed.add_style("height", "100%")
-        #embed.set_box_shadow("1px 1px 1px 1px")
+
         return top
 
     

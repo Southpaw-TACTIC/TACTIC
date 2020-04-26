@@ -19,7 +19,7 @@ __all__= ['ProdTaskFilter']
 class ProdTaskFilter(Widget):
     '''Filters tasks according to the user'''
 
-    def init(my):
+    def init(self):
         # look for groups that are relevant
         groups = Environment.get_security().get_groups()
         login = Environment.get_security().get_login()
@@ -35,18 +35,18 @@ class ProdTaskFilter(Widget):
 
             # group names <project>/<process>/<role>
             # iggy/roughDesign/artist
-            namespace, my.process, my.role = group_name.split("/")
+            namespace, self.process, self.role = group_name.split("/")
 
 
 
-    def get_role(my):
-        return my.role
+    def get_role(self):
+        return self.role
 
-    def get_process(my):
-        return my.process
+    def get_process(self):
+        return self.process
         
 
-    def postprocess_search(my, sobjects):
+    def postprocess_search(self, sobjects):
 
         new_sobjects = []
 

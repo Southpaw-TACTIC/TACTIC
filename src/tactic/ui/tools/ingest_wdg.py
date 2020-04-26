@@ -15,7 +15,7 @@ from pyasm.web import DivWdg, Table
 from pyasm.widget import IconWdg, TextWdg, SelectWdg, CheckboxWdg, RadioWdg, TextAreaWdg, HiddenWdg
 from pyasm.command import Command
 from pyasm.search import SearchType, Search
-from pyasm.biz import File, Project, FileGroup
+from pyasm.biz import File, Project, FileGroup, FileRange, Snapshot
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import DialogWdg
 from tactic.ui.widget import IconButtonWdg
@@ -29,7 +29,8 @@ import os
 import os.path
 import re
 import shutil
-__all__ = ['IngestUploadWdg', 'IngestUploadCmd']
+
+__all__ = ['IngestUploadWdg', 'IngestCheckCmd', 'IngestUploadCmd']
 
 
 class IngestUploadWdg(BaseRefreshWdg):
@@ -50,61 +51,146 @@ class IngestUploadWdg(BaseRefreshWdg):
         'library_mode': 'Mode to determine if Ingest should handle huge amounts of files',
         'dated_dirs': 'Determines update functionality, marked true if relative_dir is timestamped',
         'update_process': 'Determines the update process for snapshots when the update_mode is set to true and one sobject is found',
-        'ignore_path_keywords': 'Comma separated string of path keywords to be hidden'
+        'ignore_path_keywords': 'Comma separated string of path keywords to be hidden',
+        'project_code': 'Publish to another project',
+        'keyword_mode': 'Takes values "simplified" and "none". When "simplified", keywords will not be extracted from file name. When "none", keywords will notbe ingested into sobject.'
     }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.sobjects = my.kwargs.get("sobjects")
-        search_keys = my.kwargs.get("search_keys")
+        self.sobjects = self.kwargs.get("sobjects")
+
+        # if search_keys are passed in, then these are used to copy
+        search_keys = self.kwargs.get("search_keys")
+        # add a project to copy to.  Check that it is permitted
+        self.project_code = self.kwargs.get("project_code")
+
         if search_keys:
-            my.sobjects = Search.get_by_search_keys(search_keys)
+            self.sobjects = Search.get_by_search_keys(search_keys)
 
-        top = my.top
+            projects = Project.get_user_projects()
+            project_codes = [x.get_code() for x in projects]
+            if self.project_code not in project_codes:
+                self.project_code = None
+
+
+
+        asset_dir = Environment.get_asset_dir()
+
+        base_dir = self.kwargs.get("base_dir")
+        if base_dir:
+            if not base_dir.startswith(asset_dir):
+                raise Exception("Path needs to be in asset root")
+            else:
+                relative_dir = base_dir.replace(asset_dir, "")
+                relative_dir = relative_dir.strip("/")
+        else:
+            relative_dir = self.kwargs.get("relative_dir")
+
+        self.relative_dir = relative_dir
+
+
+        # This is used to check into a search key (not create a new sobject)
+        self.orig_sobject = None
+        self.search_key = self.kwargs.get("search_key") or ""
+        if self.search_key:
+            self.sobject = Search.get_by_search_key(self.search_key)
+
+            if self.kwargs.get("use_parent") in [True, 'true']:
+                self.orig_sobject = self.sobject
+                self.sobject = self.sobject.get_parent()
+                self.search_key = self.sobject.get_search_key()
+
+            self.search_type = self.sobject.get_search_type()
+
+            self.show_settings = self.kwargs.get("show_settings")
+            if self.show_settings in [False, 'false']:
+                self.show_settings = False
+            elif self.show_settings in [True, 'true']:
+                self.show_settings = True
+
+
+        else:
+            self.search_type = self.kwargs.get("search_type")
+            self.sobject = None
+            self.search_key = None
+
+            self.show_settings = self.kwargs.get("show_settings")
+            if self.show_settings == None or self.show_settings in [True, 'true']:
+                self.show_settings = True
+            elif self.show_settings in [False, 'false']:
+                self.show_settings = False
+
+
+        top = self.top
         top.add_class("spt_ingest_top")
+
+
+
+        hidden = HiddenWdg(name="parent_key")
+        #hidden = TextWdg(name="parent_key")
+        top.add(hidden)
+        hidden.add_class("spt_parent_key")
+
+        if self.search_key:
+            hidden.set_value(self.search_key)
+
+
+
 
         table = Table()
         top.add(table)
         table.add_row()
+        table.add_style("width: 100%")
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
+        left.add( self.get_content_wdg() )
 
-        middle = table.add_cell()
-        middle.add_style("height: 10") # not sure why we need this height
-        middle.add_style("padding: 30px 20px")
-        line = DivWdg()
-        middle.add(line)
-        line.add_style("height: 100%")
-        line.add_style("border-style: solid")
-        line.add_style("border-width: 0px 0px 0px 1px")
-        line.add_style("border-color: #DDD")
-        line.add(" ")
+        if not self.search_key or self.show_settings:
+            if False and self.show_settings:
+                middle = table.add_cell()
+                middle.add_style("height: 10") # not sure why we need this height
+                middle.add_style("padding: 30px 20px")
+                line = DivWdg()
+                middle.add(line)
+                line.add_style("height: 100%")
+                line.add_style("border-style: solid")
+                line.add_style("border-width: 0px 0px 0px 1px")
+                line.add_style("border-color: #DDD")
+                line.add(" ")
 
-        left.add( my.get_content_wdg() )
 
 
+            right = table.add_cell()
+            right.add_class("spt_right_content")
+            right.add_style("vertical-align: top")
+            right.add( self.get_settings_wdg() )
+            if self.show_settings in [False, 'false']:
+                right.add_style("display: none")
 
-        search_key = my.kwargs.get("search_key") or ""
-        if search_key:
-            my.show_settings = False
         else:
-            my.show_settings = my.kwargs.get("show_settings")
-            if my.show_settings == None:
-                my.show_settings = True
+            if self.orig_sobject and self.orig_sobject.column_exists("process"):
+                hidden = HiddenWdg(name="process")
+                top.add(hidden)
+                hidden.add_class("spt_process")
+                process = self.orig_sobject.get_value("process")
+                hidden.set_value(process)
 
-        right = table.add_cell()
-        right.add_style("vertical-align: top")
-        right.add( my.get_settings_wdg() )
-        
-        if my.show_settings in [False, 'false']:
-            right.add_style("display: none")
+            elif self.kwargs.get("process"):
+                process = self.kwargs.get("process")
+                hidden = HiddenWdg(name="process")
+                top.add(hidden)
+                hidden.add_class("spt_process")
+                hidden.set_value(process)
+
+
 
         return top
 
 
-    def get_file_wdg(my, sobject=None):
+    def get_file_wdg(self, sobject=None):
 
         # template for each file item
         file_template = DivWdg()
@@ -178,16 +264,43 @@ class IngestUploadWdg(BaseRefreshWdg):
         if sobject:
             from pyasm.common import FormatValue
             from tactic.ui.panel import ThumbWdg2
+
+
+            if sobject.get_base_search_type() != "sthpw/snapshot":
+                search_code = sobject.get_code()
+                search = Search("sthpw/snapshot")
+                search.add_filter("search_code", search_code)
+                search.add_filter("is_latest", True)
+                snapshot = search.get_sobject()
+            else:
+                snapshot = sobject
+
             thumb = ThumbWdg2()
             thumb_div.add(thumb)
-            thumb.set_sobject(sobject)
+            thumb.set_sobject(snapshot)
             lib_path = thumb.get_lib_path()
 
             name = os.path.basename(lib_path)
             name = re.sub(r"_v\d+", "", name)
+
+
+            if sobject.get_base_search_type() == "sthpw/snapshot":
+                if sobject.get("snapshot_type") == "sequence":
+                    paths = sobject.get_expanded_lib_paths()
+                    file_range = sobject.get_file_range()
+                    size = 0
+                    for path in paths:
+                        size += os.path.getsize(path)
+                    name = "%s (%s)" % (name, file_range.get_display())
+                else:
+                    size = os.path.getsize(lib_path)
+
+            else:
+                size = os.path.getsize(lib_path)
+
+
             name_div.add( name )
 
-            size = os.path.getsize(lib_path)
             size = FormatValue().get_format_value(size, "KB")
             size_div.add(size)
 
@@ -202,12 +315,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-    def get_settings_wdg(my):
+    def get_settings_wdg(self):
 
         div = DivWdg()
         div.add_style("width: 400px")
         div.add_style("padding: 20px")
-        
+
         title_wdg = DivWdg()
         div.add(title_wdg)
         title_wdg.add("Ingest Settings")
@@ -217,33 +330,44 @@ class IngestUploadWdg(BaseRefreshWdg):
         process_names = set()
         from pyasm.biz import Pipeline
         from pyasm.widget import SelectWdg
-        search_type_obj = SearchType.get(my.search_type)
+        search_type_obj = SearchType.get(self.search_type)
         base_type = search_type_obj.get_base_key()
 
+
         pipeline_search = Search("sthpw/pipeline")
-        pipeline_search.add_project_filter()
-        pipeline_search.add_filter("search_type", base_type)
+        if self.sobject and self.sobject.column_exists("pipeline_code"):
+            pipeline_code = self.sobject.get_value("pipeline_code")
+            if pipeline_code:
+                pipeline_search.add_filter("code", pipeline_code)
+            else:
+                pipeline_search.set_null_filter()
+        else:
+            pipeline_search.add_project_filter()
+            pipeline_search.add_filter("search_type", base_type)
+
         pipelines = pipeline_search.get_sobjects()
         for pipeline in pipelines:
             process_names.update(pipeline.get_process_names())
-  
-        selected_process = my.kwargs.get("process")
+
+        selected_process = self.kwargs.get("process")
         if selected_process:
-            process_names.add(selected_process) 
-        
+            process_names.add(selected_process)
+
         if process_names:
             process_names = list(process_names)
             process_names.sort()
         else:
             process_names = []
 
+        """
         if process_names:
             process_names.append("---")
         process_names.append("publish")
         process_names.append("icon")
+        """
 
 
-        hidden_options = my.kwargs.get("hidden_options").split(',')
+        hidden_options = self.kwargs.get("hidden_options").split(',')
 
         process_wdg = DivWdg()
         div.add(process_wdg)
@@ -259,115 +383,141 @@ class IngestUploadWdg(BaseRefreshWdg):
         select = SelectWdg("process")
         process_wdg.add(select)
         select.set_option("values", process_names)
-        select.add_empty_option("- Select Ingest Process -")
+        select.add_empty_option("- Select Process to ingest to-")
         if selected_process:
             select.set_option("default", selected_process)
 
         process_wdg.add("<br/>")
-        process_wdg.add("<hr/>")
-        if "process" in hidden_options:
+
+        if not process_names or "process" in hidden_options:
             process_wdg.set_style("display: none")
 
 
         # Metadata
-        title_wdg = DivWdg()
-        div.add(title_wdg)
-        title_wdg.add("Metadata")
-        title_wdg.add_style("margin-top: 20px")
-        title_wdg.add_style("font-size: 16px")
-        title_wdg.add_style("margin-bottom: 5px")
+        #hidden_options.append("metadata")
+        if "metadata" not in hidden_options:
+            process_wdg.add("<hr/>")
 
-        desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
-        desc_wdg.add_style("margin-bottom: 10px")
-        div.add(desc_wdg)
+            title_wdg = DivWdg()
+            div.add(title_wdg)
+            title_wdg.add("Metadata")
+            title_wdg.add_style("margin-top: 20px")
+            title_wdg.add_style("font-size: 16px")
+            title_wdg.add_style("margin-bottom: 5px")
 
-        from tactic.ui.panel import EditWdg
+            desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
+            desc_wdg.add_style("margin-bottom: 10px")
+            div.add(desc_wdg)
 
-        ingest_data_view = my.kwargs.get('ingest_data_view')
+            from tactic.ui.panel import EditWdg
 
-        sobject = SearchType.create(my.search_type)
-        
-        if my.show_settings: 
-            edit = EditWdg(
-                    search_key=sobject.get_search_key(),
-                    mode='view',
-                    view=ingest_data_view,
-                    show_header=False,
-                    width="auto",
-            )
-            
-            div.add(edit)
-        hidden = HiddenWdg(name="parent_key")
-        div.add(hidden)
-        hidden.add_class("spt_parent_key")
-        parent_key = my.kwargs.get("search_key") or ""
-        if parent_key:
-            hidden.set_value(parent_key)
+            ingest_data_view = self.kwargs.get('metadata_view')
+            if not ingest_data_view:
+                ingest_data_view = self.kwargs.get('ingest_data_view')
+
+            if self.search_key:
+                sobject = SearchType.create("sthpw/snapshot")
+            else:
+                sobject = SearchType.create(self.search_type)
+
+            metadata_element_names = self.kwargs.get("metadata_element_names")
+
+            if self.show_settings:
+                edit = EditWdg(
+                        search_key=sobject.get_search_key(),
+                        mode='view',
+                        view=ingest_data_view,
+                        element_names=metadata_element_names,
+                        show_header=False,
+                        width="100%",
+                        display_mode="single_cell",
+                        extra_data=self.kwargs.get("extra_data"),
+                        default=self.kwargs.get("default"),
+                )
+
+                div.add(edit)
 
 
-
-
-
-        div.add("<br/>")
-        div.add("<hr/>")
+            div.add("<br/>")
 
 
         # options
 
 
         # update mode
+        map_div = DivWdg()
+        div.add(map_div)
+        map_div.add("<hr/>")
+
         title_wdg = DivWdg()
-        div.add(title_wdg)
+
+        map_div.add(title_wdg)
         title_wdg.add("Mapping Files to Items")
         title_wdg.add_style("margin-top: 20px")
         title_wdg.add_style("font-size: 16px")
 
-        label_div = DivWdg()
-        label_div.add("Determine how the file maps to a particular item")
-        div.add(label_div)
-        label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 8px")
-
-        update_mode_option = my.kwargs.get("update_mode")
-        if not update_mode_option:
-            update_mode_option = "true"
-        update_mode = SelectWdg(name="update mode")
-        update_mode.add_class("spt_update_mode_select")
-        update_mode.set_option("values", ["false", "true", "sequence"])
-        update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update as a sequence"])
-        update_mode.set_option("default", update_mode_option)
-        update_mode.add_style("margin-top: -3px")
-        update_mode.add_style("margin-right: 5px")
-        div.add(update_mode)
+        if "map_option" in hidden_options:
+            map_div.add_style("display: none")
 
 
-        label_div = DivWdg()
-        label_div.add("Ignore File Extension")
-        div.add(label_div)
-        label_div.add_style("margin-top: 10px")
-        label_div.add_style("margin-bottom: 8px")
-
-        ignore_ext_option = my.kwargs.get("ignore_ext")
-        if not ignore_ext_option:
-            ignore_ext_option = "false"
-        ignore_ext = SelectWdg(name="update mode")
-        ignore_ext.add_class("spt_ignore_ext_select")
-        ignore_ext.set_option("values", ["true", "false"])
-        ignore_ext.set_option("labels", ["Yes", "No"])
-        ignore_ext.set_option("default", ignore_ext_option)
-        ignore_ext.add_style("margin-top: -3px")
-        ignore_ext.add_style("margin-right: 5px")
-        div.add(ignore_ext)
-
-
-        if "column_option" not in hidden_options:
+        if "update_option" not in hidden_options:
             label_div = DivWdg()
-            label_div.add("Map file name to column")
-            div.add(label_div)
+            label_div.add("Determine how the file maps to a particular item")
+            map_div.add(label_div)
             label_div.add_style("margin-top: 10px")
             label_div.add_style("margin-bottom: 8px")
 
-            column_option = my.kwargs.get("column")
+            update_mode_option = self.kwargs.get("update_mode")
+            if not update_mode_option:
+                update_mode_option = "true"
+            update_mode = SelectWdg(name="update mode")
+            update_mode.add_class("spt_update_mode_select")
+            update_mode.set_option("values", ["false", "true", "sequence"])
+            update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update groups as sequences"])
+            update_mode.set_option("default", update_mode_option)
+            update_mode.add_style("margin-top: -3px")
+            update_mode.add_style("margin-right: 5px")
+            map_div.add(update_mode)
+
+            update_mode.add_behavior( {
+                "type": "listen",
+                "event_name": "set_ingest_update_mode",
+                "cbjs_action": '''
+                var value = bvr.firing_data.value;
+                bvr.src_el.value = value;
+                '''
+            } )
+
+
+
+        if not self.search_key and "ext_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Ignore File Extension")
+            map_div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
+
+            ignore_ext_option = self.kwargs.get("ignore_ext")
+            if not ignore_ext_option:
+                ignore_ext_option = "false"
+            ignore_ext = SelectWdg(name="update mode")
+            ignore_ext.add_class("spt_ignore_ext_select")
+            ignore_ext.set_option("values", ["true", "false"])
+            ignore_ext.set_option("labels", ["Yes", "No"])
+            ignore_ext.set_option("default", ignore_ext_option)
+            ignore_ext.add_style("margin-top: -3px")
+            ignore_ext.add_style("margin-right: 5px")
+            map_div.add(ignore_ext)
+
+
+        if not self.search_key and "column_option" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("Map file name to column")
+            map_div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
+
+            column_option = self.kwargs.get("column")
             if not column_option:
                 column_option = "name"
             column_select = SelectWdg(name="update mode")
@@ -377,24 +527,46 @@ class IngestUploadWdg(BaseRefreshWdg):
             column_select.set_option("default", column_option)
             column_select.add_style("margin-top: -3px")
             column_select.add_style("margin-right: 5px")
-            div.add(column_select)
+            map_div.add(column_select)
 
 
 
-        if "context_mode" not in hidden_options:
-            div.add("<br/>")
-            div.add("<hr/>")
+        if "zip_mode" not in hidden_options:
+            label_div = DivWdg()
+            label_div.add("When checking in zipped files:")
+            map_div.add(label_div)
+            label_div.add_style("margin-top: 10px")
+            label_div.add_style("margin-bottom: 8px")
+
+            column_option = self.kwargs.get("column")
+            if not column_option:
+                column_option = "name"
+            column_select = SelectWdg(name="zip mode")
+            column_select.add_class("spt_zip_mode_select")
+            column_select.set_option("values", ["single", "unzip"])
+            column_select.set_option("labels", ["Check-in as a single zipped file", "Unzip and check-in each file"])
+            column_select.set_option("default", "single")
+            column_select.add_style("margin-top: -3px")
+            column_select.add_style("margin-right: 5px")
+            map_div.add(column_select)
+
+
+
+
+        if not self.search_key and "context_mode" not in hidden_options:
+            map_div.add("<br/>")
+            map_div.add("<hr/>")
 
             title_wdg = DivWdg()
-            div.add(title_wdg)
+            map_div.add(title_wdg)
             title_wdg.add("Context Mode")
             title_wdg.add_style("font-size: 16px")
 
-            div.add("<br/>")
+            map_div.add("<br/>")
 
-            context_mode_option = my.kwargs.get("context_mode")
+            context_mode_option = self.kwargs.get("context_mode")
             if not context_mode_option:
-                context_mode_option = "case_insensitive"
+                context_mode_option = "case_sensitive"
             context_mode = SelectWdg(name="context_mode")
             context_mode.add_class("spt_context_mode_select")
             context_mode.set_option("values", "case_insensitive|case_sensitive")
@@ -402,11 +574,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             context_mode.set_option("default", context_mode_option)
             context_mode.add_style("margin-top: -3px")
             context_mode.add_style("margin-right: 5px")
-            div.add(context_mode)
-                
+            map_div.add(context_mode)
 
 
-        extra_data = my.kwargs.get("extra_data")
+
+
+        extra_data = self.kwargs.get("extra_data")
         if not isinstance(extra_data, basestring):
             extra_data = jsondumps(extra_data)
 
@@ -425,11 +598,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-    def get_content_wdg(my):
+    def get_content_wdg(self):
 
+        """
         asset_dir = Environment.get_asset_dir()
 
-        base_dir = my.kwargs.get("base_dir")
+        base_dir = self.kwargs.get("base_dir")
         if base_dir:
             if not base_dir.startswith(asset_dir):
                 raise Exception("Path needs to be in asset root")
@@ -437,9 +611,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 relative_dir = base_dir.replace(asset_dir, "")
                 relative_dir = relative_dir.strip("/")
         else:
-            relative_dir = my.kwargs.get("relative_dir")
+            relative_dir = self.kwargs.get("relative_dir")
 
-        my.relative_dir = relative_dir
+        self.relative_dir = relative_dir
+        """
 
         div = DivWdg()
         div.add_style("width: auto")
@@ -450,11 +625,40 @@ class IngestUploadWdg(BaseRefreshWdg):
         header_div = DivWdg()
         div.add(header_div)
 
-        title = my.kwargs.get("title")
+
+        if self.show_settings:
+            button_div = DivWdg()
+            header_div.add(button_div)
+            button = IconButtonWdg(title="Expand Options", icon="BS_MENU_HAMBURGER")
+            button_div.add(button)
+            button_div.add_style("float: right")
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var top = bvr.src_el.getParent(".spt_ingest_top");
+                var right = top.getElement(".spt_right_content");
+                spt.toggle_show_hide(right);
+
+                '''
+            } )
+
+
+        title = self.kwargs.get("title")
         if not title:
-            title = "Ingest Files"
-        title_description = "Drag files into the box or click 'Add Files'"
-       
+            if self.project_code:
+                project_title = Project.get_by_code(self.project_code).get_value("title")
+                title = "Copy files to '%s'" % project_title
+                title_description = "These will be copied to the asset library"
+            else:
+                title = "Ingest Files"
+                title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
+        else:
+            title_description = "Either drag files into the queue box or click 'Add Files to Queue'"
+
+        description = self.kwargs.get("description")
+        if description in ["none", ""]:
+            title_description = ""
+
         title_wdg = DivWdg()
         header_div.add(title_wdg)
         title_wdg.add("<span style='font-size: 25px'>%s</span>" % title)
@@ -463,8 +667,9 @@ class IngestUploadWdg(BaseRefreshWdg):
         title_wdg.add_style("display", "inline-block")
 
         # create the help button
-        show_help = my.kwargs.get("show_help") or True
-        if my.kwargs.get("show_help") not in ['false', False]:
+        is_admin_site = Project.get().is_admin()
+        show_help = self.kwargs.get("show_help") or True
+        if self.kwargs.get("show_help") not in ['false', False] and is_admin_site:
             help_button_wdg = DivWdg()
             header_div.add(help_button_wdg)
             help_button_wdg.add_styles("float: right; margin-top: 11px;")
@@ -482,45 +687,84 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(shelf_div)
         shelf_div.add_style("margin-bottom: 10px")
 
-        my.search_key = my.kwargs.get("search_key")
-        if my.search_key:
-            my.sobject = Search.get_by_search_key(my.search_key)
-            my.search_type = my.sobject.get_search_type()
-        else: 
-            my.search_type = my.kwargs.get("search_type")
-            my.sobject = None
-            my.search_key = None
-
-        if my.search_key:
-            div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % my.search_key)
+        if self.search_key:
+            div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % self.search_key)
         else:
             div.add("<input class='spt_input' type='hidden' name='search_key' value=''/>")
 
 
-        if not my.search_type:
+        if not self.search_type:
             div.add("No search type specfied")
             return div
 
-        if relative_dir:
+        if self.relative_dir:
             folder_div = DivWdg()
             shelf_div.add(folder_div)
-            folder_div.add("Folder: %s" % relative_dir)
+            folder_div.add("Folder: %s" % self.relative_dir)
             folder_div.add_style("opacity: 0.5")
             folder_div.add_style("font-style: italic")
             folder_div.add_style("margin-bottom: 10px")
 
         # update_process
-        my.update_process = my.kwargs.get("update_process") or ""
+        self.update_process = self.kwargs.get("update_process") or ""
 
         # ignore_path_keywords
-        my.ignore_path_keywords = my.kwargs.get("ignore_path_keywords") or ""
+        self.ignore_path_keywords = self.kwargs.get("ignore_path_keywords") or ""
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
         shelf_div.add(upload)
 
+
+
+        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
+        #button.add_style("float: right")
+        button.add_style("display: inline-block")
+        button.add_style("margin-top: -3px")
+        shelf_div.add(button)
+
+        button.add_behavior( {
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+        } )
+
+        button.add_behavior( {
+            'type': 'click',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.ingest.select_files(top, files, bvr.normal_ext);
+            }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
+         '''
+         } )
+
+
+
+
         button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
+        #button.add_style("float: right")
+        button.add_style("display: inline-block")
         button.add_style("margin-top: -3px")
         shelf_div.add(button)
         button.add_behavior( {
@@ -538,7 +782,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             var button = top.getElement(".spt_upload_file_button");
             button.setStyle("display", "none");
 
-        
+
             //clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
@@ -554,62 +798,15 @@ class IngestUploadWdg(BaseRefreshWdg):
          '''
          } )
 
-        button = ActionButtonWdg(title="Add Files")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        shelf_div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'normal_ext': File.NORMAL_EXT,
-            'cbjs_action': '''
-
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var files_el = top.getElement(".spt_to_ingest_files");
-            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-        
-            //clear upload progress
-            var upload_bar = top.getElement('.spt_upload_progress');
-            if (upload_bar) {
-                upload_bar.setStyle('width','0%');
-                upload_bar.innerHTML = '';
-            }
-            var onchange = function (evt) {
-                var files = spt.html5upload.get_files();
-                var delay = 0; 
-                for (var i = 0; i < files.length; i++) {
-                    var size = files[i].size;
-                    var file_name = files[i].name;
-                    var is_normal = regex.test(file_name);
-                    if (size >= 10*1024*1024 || is_normal) {
-                        spt.drag.show_file(files[i], files_el, 0, false);
-                    }
-                    else {
-                        spt.drag.show_file(files[i], files_el, delay, true);
-
-                        if (size < 100*1024)       delay += 50;
-                        else if (size < 1024*1024) delay += 500;
-                        else if (size < 10*1024*1024) delay += 1000;
-                    }
-                }
-            }
-
-            spt.html5upload.clear();
-            spt.html5upload.set_form( top );
-            spt.html5upload.select_file( onchange );
-
-         '''
-         } )
-
-
-
-        upload_div = DivWdg()
-        shelf_div.add(upload_div)
-        upload_div.add_class("spt_upload_file_button")
-        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
-        upload_div.add(button)
-        upload_div.add_style("display: none")
+        ingest = self.get_ingest_button()
+        shelf_div.add(ingest)
+        ingest.add_style("float: right")
 
         shelf_div.add("<br clear='all'/>")
+
+
+        progress_wdg = self.get_progress_div()
+        shelf_div.add(progress_wdg)
 
         border_color_light = div.get_color("background2", 8)
         border_color_dark = div.get_color("background2", -15)
@@ -629,7 +826,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         files_div.add_style("border: 3px dashed %s" % border_color_light)
         #files_div.add_style("border-radius: 20px 20px 20px 20px")
         files_div.add_style("z-index: 1")
-        files_div.add_style("width", "586px")
+        files_div.add_style("margin: 5px 0px")
+        #files_div.add_style("width", "586px")
         #files_div.add_style("display: none")
 
         bgcolor = div.get_color("background")
@@ -640,7 +838,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         background = DivWdg()
         background.add_class("spt_files_background")
         files_div.add(background)
-        if my.sobjects:
+        if self.sobjects:
             background.add_style("display: none")
 
         background.add_style("text-align: center")
@@ -671,10 +869,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             bvr.src_el.setStyle("border", "3px dashed %s")
             bvr.src_el.setStyle("background","%s")
             ''' % (border_color_light, background_mouseout)
-        } ) 
+        } )
 
 
-        background.add( my.get_select_files_button() )
+        #background.add( self.get_select_files_button() )
 
 
 
@@ -722,7 +920,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             //var loadingImage = loadImage(
             setTimeout( function() {
                 var draw_empty_icon = function() {
-                        var img = $(document.createElement("div"));
+                        var img = document.id(document.createElement("div"));
                         img.setStyle("width", "58");
                         img.setStyle("height", "34");
                         //img.innerHTML = "MP4";
@@ -737,11 +935,11 @@ class IngestUploadWdg(BaseRefreshWdg):
                                 thumb_el.appendChild(img);
                             else
                                 draw_empty_icon();
-                                
+
                             },
                             {maxWidth: 80, maxHeight: 60, canvas: true, contain: true}
                         );
-                        
+
                 }
                 else {
                     draw_empty_icon();
@@ -781,14 +979,14 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
             reader.readAsDataURL(file);
             */
-         
+
             clone.getElement(".spt_name").innerHTML = file.name;
             clone.getElement(".spt_size").innerHTML = size + " KB";
             clone.inject(top);
         }
 
         spt.drag.noop = function(evt, el) {
-            var top = $(el).getParent(".spt_ingest_top");
+            var top = document.id(el).getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             evt.stopPropagation();
             evt.preventDefault();
@@ -814,6 +1012,51 @@ class IngestUploadWdg(BaseRefreshWdg):
                 }
 
             }
+
+            // get all of the current filenames
+            var filenames = []
+            var items = top.getElements(".spt_upload_file");
+            for (var i = 0; i < items.length; i++) {
+                var file = items[i].file;
+                filenames.push(file.name);
+            }
+
+
+            // check if this is a sequence or zip
+            var server = TacticServerStub.get();
+            var cmd = 'tactic.ui.tools.IngestCheckCmd';
+            var kwargs = {
+                file_names: filenames
+            };
+            var ret_val = server.execute_cmd(cmd, kwargs);
+            var info = ret_val.info;
+
+            var num_sequences = 0;
+            for (var i = 0; i < info.length; i++) {
+                if (info[i].is_sequence) {
+                    num_sequences += 1;
+                }
+            }
+
+            var ok = function() {
+                var upload_button = top.getElement(".spt_upload_files_top");
+                upload_button.setStyle("display", "");
+            }
+
+            if (num_sequences > 0) {
+                spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
+                    spt.named_events.fire_event("set_ingest_update_mode", {
+                        options: {
+                            value: 'sequence'
+                        }
+                    } );
+                });
+            }
+
+            ok();
+
+
+
         }
         '''
         } )
@@ -848,6 +1091,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             if (els.length == 0) {
                 var background = top.getElement(".spt_files_background");
                 background.setStyle("display", "");
+
+
+                var upload_button = top.getElement(".spt_upload_files_top");
+                upload_button.setStyle("display", "none");
             }
 
             '''
@@ -874,64 +1121,53 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         # add the passed in sobject files
-        for sobject in my.sobjects:
-            files_div.add( my.get_file_wdg(sobject) )
+        for sobject in self.sobjects:
+            files_div.add( self.get_file_wdg(sobject) )
 
-        
+
         # add the template
-        files_div.add( my.get_file_wdg() )
+        files_div.add( self.get_file_wdg() )
 
 
         div.add("<br/>")
 
 
+        #upload_wdg = self.get_ingest_button()
+        #div.add(upload_wdg)
 
-        info = DivWdg()
-        div.add(info)
-        info.add_class("spt_upload_info")
+        return div
 
 
-        progress_div = DivWdg()
-        progress_div.add_class("spt_upload_progress_top")
-        div.add(progress_div)
-        progress_div.add_style("width: 595px")
-        progress_div.add_style("height: 15px")
-        progress_div.add_style("margin-bottom: 10px")
-        progress_div.add_border()
-        #progress_div.add_style("display: none")
 
-        progress = DivWdg()
-        progress_div.add(progress)
-        progress.add_class("spt_upload_progress")
-        progress.add_style("width: 0px")
-        progress.add_style("visibility: hidden")
-        progress.add_style("height: 100%")
-        progress.add_gradient("background", "background3", -10)
-        progress.add_style("text-align: right")
-        progress.add_style("overflow: hidden")
-        progress.add_style("padding-right: 3px")
+    def get_ingest_button(self):
 
-        library_mode = my.kwargs.get("library_mode") or False
-        dated_dirs = my.kwargs.get("dated_dirs") or False
- 
-        from tactic.ui.app import MessageWdg
-        progress.add_behavior( {
-            'type': 'load',
-            'cbjs_action': MessageWdg.get_onload_js()
-        } )
+        div = DivWdg()
+
+        library_mode = self.kwargs.get("library_mode") or False
+        dated_dirs = self.kwargs.get("dated_dirs") or False
+
+
 
 
 
         # NOTE: files variable is passed in automatically
 
         upload_init = '''
-        server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         var info_el = top.getElement(".spt_upload_info");
         info_el.innerHTML = "Uploading ...";
 
-        progress_el = top.getElement(".spt_upload_progress");
-        progress_el.setStyle("visibility", "visible");
 
+        // start the upload
+        var progress_el = top.getElement(".spt_upload_progress");
+        var progress_top = top.getElement(".spt_upload_progress_top");
+
+        setTimeout( function() {
+            progress_el.setStyle("visibility", "visible");
+            progress_top.setStyle("margin-top", "0px");
+        }, 0);
+
+
+        server.start( {description: "Upload and check-in of ["+files.length+"] files"} );
         '''
 
         upload_progress = '''
@@ -940,81 +1176,73 @@ class IngestUploadWdg(BaseRefreshWdg):
         var percent = Math.round(evt.loaded * 100 / evt.total);
         progress_el.setStyle("width", percent + "%");
         progress_el.innerHTML = String(percent) + "%";
-
-
+        progress_el.setStyle("background", "#f0ad4e");
         '''
-        
-        oncomplete_script_path = my.kwargs.get("oncomplete_script_path")
-        oncomplete_script = ''
+
+
+
+        oncomplete_script = '''
+        spt.notify.show_message("Ingest Completed");
+        server.finish();
+
+        var file_els = top.getElements(".spt_upload_file");
+        for ( var i = 0; i < file_els.length; i++) {
+            spt.behavior.destroy( file_els[i] );
+        };
+        var background = top.getElement(".spt_files_background");
+        background.setStyle("display", "");
+
+        spt.message.stop_interval(message_key);
+
+        var info_el = top.getElement(".spt_upload_info");
+        info_el.innerHTML = '';
+
+        var progress_el = top.getElement(".spt_upload_progress");
+        var progress_top = top.getElement(".spt_upload_progress_top");
+
+        setTimeout( function() {
+            progress_el.setStyle("visibility", "hidden");
+            progress_top.setStyle("margin-top", "-30px");
+        }, 0);
+
+        spt.panel.refresh(top);
+        '''
+
+        script_found = True
+        oncomplete_script_path = self.kwargs.get("oncomplete_script_path")
         if oncomplete_script_path:
             script_folder, script_title = oncomplete_script_path.split("/")
-            oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)    
+            oncomplete_script_expr = "@GET(config/custom_script['folder','%s']['title','%s'].script)" %(script_folder,script_title)
             server = TacticServerStub.get()
             oncomplete_script_ret = server.eval(oncomplete_script_expr, single=True)
-            
+
             if oncomplete_script_ret:
-                oncomplete_script = '''var top = bvr.src_el.getParent(".spt_ingest_top");
-                var file_els = top.getElements(".spt_upload_file");
-                for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-
-                
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = ''; 
-                progress_el = top.getElement(".spt_upload_progress");
-                progress_el.setStyle("visibility", "hidden");
-
-
-                };''' + oncomplete_script_ret
-                script_found = True
+                oncomplete_script = oncomplete_script + oncomplete_script_ret
             else:
                 script_found = False
                 oncomplete_script = "alert('Error: oncomplete script not found');"
 
-        if not oncomplete_script:
-            oncomplete_script = '''
-            var click_action = function() {
-                var fade = true;
-                var pop = spt.popup.get_popup(top)
-                spt.popup.close(pop, fade); 
-            }
-            spt.info("Ingest Completed", {click: click_action});
-            server.finish();
 
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            spt.message.stop_interval(key);
-
-            var info_el = top.getElement(".spt_upload_info");
-            info_el.innerHTML = ''; 
-            progress_el = top.getElement(".spt_upload_progress");
-            progress_el.setStyle("visibility", "hidden");
+        if self.kwargs.get("oncomplete_script"):
+            oncomplete_script = self.kwargs.get("oncomplete_script")
+        if self.kwargs.get("on_complete"):
+            oncomplete_script = self.kwargs.get("on_complete")
 
 
-            if (spt.table)
-            {
-                spt.table.run_search();
-            }
-            
-            spt.panel.refresh(top);
-            '''
-            script_found = True
-        
+
+
         on_complete = '''
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
-      
+
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
+        progress_el.setStyle("background", "#337ab7");
+
 
         var info_el = top.getElement(".spt_upload_info");
-        
+
         var search_type = bvr.kwargs.search_type;
         var relative_dir = bvr.kwargs.relative_dir;
         var context = bvr.kwargs.context;
@@ -1022,20 +1250,41 @@ class IngestUploadWdg(BaseRefreshWdg):
         var ignore_path_keywords = bvr.kwargs.ignore_path_keywords;
 
         var library_mode = bvr.kwargs.library_mode;
+        var keyword_mode = bvr.kwargs.keyword_mode;
         var dated_dirs = bvr.kwargs.dated_dirs;
+        var project_code = bvr.kwargs.project_code;
+        if (!project_code) {
+            project_code = null;
+        }
 
         // Data comes from Ingest Settings
         var context_mode_select = top.getElement(".spt_context_mode_select");
         var context_mode = context_mode_select ? context_mode_select.value : bvr.kwargs.context_mode;
- 
+
+        // settings
+        var update_mode = null;
+        var ignore_ext = null;
+        var column = null;
+        var zip_mode = null;
+
         var update_mode_select = top.getElement(".spt_update_mode_select");
-        var update_mode = update_mode_select.value;
+        if (update_mode_select)
+            update_mode = update_mode_select.value;
 
         var ignore_ext_select = top.getElement(".spt_ignore_ext_select");
-        var ignore_ext = ignore_ext_select.value;
+        if (ignore_ext_select)
+            ignore_ext = ignore_ext_select.value;
 
         var column_select = top.getElement(".spt_column_select");
-        var column = column_select ? column_select.value : bvr.kwargs.column;
+        if (column_select)
+            column = column_select ? column_select.value : bvr.kwargs.column;
+
+        var zip_mode_select = top.getElement(".spt_zip_mode_select");
+        if (zip_mode_select)
+            zip_mode = zip_mode_select.value;
+
+
+
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
@@ -1048,7 +1297,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
         }
 
-        var key = spt.message.generate_key();
+
         var values = spt.api.get_input_values(top);
         //var category = values.category[0];
 
@@ -1066,7 +1315,12 @@ class IngestUploadWdg(BaseRefreshWdg):
         var search_key = values.search_key[0];
 
         var convert_el = top.getElement(".spt_image_convert")
-        var convert = spt.api.get_input_values(convert_el);
+        if (convert_el) {
+            convert = spt.api.get_input_values(convert_el);
+        }
+        else {
+            convert = null;
+        }
 
         var processes = values.process;
         if (processes) {
@@ -1080,15 +1334,21 @@ class IngestUploadWdg(BaseRefreshWdg):
         }
 
         var return_array = false;
-        // non-existent when my.show_settings is False
+        // non-existent when self.show_settings is False
         var update_data = update_data_top ? spt.api.get_input_values(update_data_top, null, return_array): {};
+
+
+        var message_key = spt.message.generate_key();
+        message_key = "IngestUploadCmd|" + search_key + "|" + message_key;
+
+
 
         var kwargs = {
             search_key: search_key,
             search_type: search_type,
             relative_dir: relative_dir,
             filenames: filenames,
-            key: key,
+            message_key: message_key,
             parent_key: parent_key,
             //category: category,
             keywords: keywords,
@@ -1103,98 +1363,94 @@ class IngestUploadWdg(BaseRefreshWdg):
             ignore_ext: ignore_ext,
             column: column,
             library_mode: library_mode,
+            keyword_mode: keyword_mode,
             dated_dirs: dated_dirs,
-            context_mode: context_mode
+            context_mode: context_mode,
+            zip_mode: zip_mode,
+            project_code: project_code,
         }
+
         on_complete = function(rtn_data) {
 
         ''' + oncomplete_script + '''
 
         };
 
+
         var class_name = bvr.action_handler;
-        // TODO: make the async_callback return throw an e so we can run 
+        // TODO: make the async_callback return throw an e so we can run
         // server.abort
-        server.execute_cmd(class_name, kwargs, null, {on_complete:on_complete});
-        
-        
+        server.execute_cmd(class_name, kwargs, {}, {on_complete:on_complete});
+
         on_progress = function(message) {
+
             msg = JSON.parse(message.message);
             var percent = msg.progress;
             var description = msg.description;
+            var error = msg.error;
             info_el.innerHTML = description;
-
             progress_el.setStyle("width", percent+"%");
             progress_el.innerHTML = percent + "%";
+
+            if (error) {
+                progress_el.setStyle("background", "#F00");
+                spt.message.stop_interval(message_key);
+            }
+
         }
-        spt.message.set_interval(key, on_progress, 2000);
+        spt.message.set_interval(message_key, on_progress, 500, bvr.src_el);
 
         '''
 
 
-        button = ActionButtonWdg(title="Clear")
-        button.add_style("float: right")
-        button.add_style("margin-top: -3px")
-        div.add(button)
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_ingest_top");
-            var file_els = top.getElements(".spt_upload_file");
-            for ( var i = 0; i < file_els.length; i++) {
-                spt.behavior.destroy( file_els[i] );
-            };
-
-            var background = top.getElement(".spt_files_background");
-            background.setStyle("display", "");
-
-            //clear upload progress
-            var upload_bar = top.getElement('.spt_upload_progress');
-            if (upload_bar) {
-                upload_bar.setStyle('width','0%');
-                upload_bar.innerHTML = '';
-                upload_bar.setStyle("visibility", "hidden");
-
-                var info_el = top.getElement(".spt_upload_info");
-                info_el.innerHTML = "";
-
-            }
-
-         '''
-         } )
 
         upload_div = DivWdg()
+
+
+        search_keys = self.kwargs.get("search_keys")
+        if not search_keys:
+            upload_div.add_style("display: none")
+
+
+        upload_div.add_class("spt_upload_files_top")
         div.add(upload_div)
-        button = ActionButtonWdg(title="Ingest Files", width=200, color="primary")
+        if self.sobjects:
+            button = ActionButtonWdg(title="Copy Files", width=200, color="primary")
+        else:
+            button = ActionButtonWdg(title="Upload Files", width=200, color="primary")
         upload_div.add(button)
-        button.add_style("float: right")
-        upload_div.add_style("margin-bottom: 15px")
+        #button.add_style("float: right")
+        #upload_div.add_style("margin-bottom: 20px")
 
 
 
         upload_div.add("<br clear='all'/>")
 
 
-        action_handler = my.kwargs.get("action_handler")
+        action_handler = self.kwargs.get("action_handler")
         if not action_handler:
             action_handler = 'tactic.ui.tools.IngestUploadCmd';
 
-        context = my.kwargs.get("context")
-        context_mode = my.kwargs.get("context_mode")
+        context = self.kwargs.get("context")
+        context_mode = self.kwargs.get("context_mode")
+        keyword_mode = self.kwargs.get("keyword_mode")
+
 
         button.add_behavior( {
             'type': 'click_up',
             'action_handler': action_handler,
             'kwargs': {
-                'search_type': my.search_type,
-                'relative_dir': relative_dir,
+                'search_type': self.search_type,
+                'relative_dir': self.relative_dir,
                 'script_found': script_found,
                 'context': context,
                 'library_mode': library_mode,
                 'dated_dirs' : dated_dirs,
                 'context_mode': context_mode,
-                'update_process': my.update_process,
-                'ignore_path_keywords': my.ignore_path_keywords,
+                'update_process': self.update_process,
+                'ignore_path_keywords': self.ignore_path_keywords,
+                'project_code': self.project_code,
+                'keyword_mode': keyword_mode
             },
             'cbjs_action': '''
 
@@ -1205,8 +1461,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
-           
+
             var file_els = top.getElements(".spt_upload_file");
+            var num_files = file_els.length;
+            var files_top = top.getElement(".spt_to_ingest_files")
+
+            spt.notify.show_message("Ingesting "+num_files+" Files");
 
             // get the server that will be used in the callbacks
             var server = TacticServerStub.get();
@@ -1224,7 +1484,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             }
             if (files.length == 0) {
-                alert("Either click 'Add' or drag some files over to ingest.");
+                spt.alert("Either click 'Add' or drag some files over to ingest.");
                 return;
             }
 
@@ -1239,7 +1499,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var upload_complete = function(evt) {
             %s;
-            spt.app_busy.hide();
             }
 
 
@@ -1250,7 +1509,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_progress: upload_progress
             };
             if (bvr.ticket)
-               upload_file_kwargs['ticket'] = bvr.ticket; 
+               upload_file_kwargs['ticket'] = bvr.ticket;
 
             %s;
 
@@ -1264,184 +1523,58 @@ class IngestUploadWdg(BaseRefreshWdg):
         return div
 
 
-    def get_data_wdg(my):
+
+    def get_progress_div(self):
+
         div = DivWdg()
+        div.add_style("overflow-y: hidden")
 
-        from pyasm.biz import Pipeline
-        from pyasm.widget import SelectWdg
-        search_type_obj = SearchType.get(my.search_type)
-        base_type = search_type_obj.get_base_key()
-        search = Search("sthpw/pipeline")
-        search.add_filter("search_type", base_type)
-        pipelines = search.get_sobjects()
-        if pipelines:
-            pipeline = pipelines[0]
+        inner = DivWdg()
+        div.add(inner)
+        inner.add_class("spt_upload_progress_top")
+        inner.add_style("margin-top: -30px")
 
-            process_names = pipeline.get_process_names()
-            if process_names:
-                table = Table()
-                div.add(table)
-                table.add_row()
-                table.add_cell("Process: ")
-                select = SelectWdg("process")
-                table.add_cell(select)
-                process_names.append("---")
-                process_names.append("publish")
-                process_names.append("icon")
-                select.set_option("values", process_names)
-        
+        info = DivWdg()
+        inner.add(info)
+        info.add_class("spt_upload_info")
 
 
-        ####
-        buttons = Table()
-        div.add(buttons)
-        buttons.add_row()
+        progress_div = DivWdg()
+        progress_div.add_class("spt_upload_progress_top")
+        inner.add(progress_div)
+        progress_div.add_style("width: 595px")
+        progress_div.add_style("height: 15px")
+        progress_div.add_style("margin-bottom: 10px")
+        progress_div.add_border()
+        #progress_div.add_style("display: none")
 
+        progress = DivWdg()
+        progress_div.add(progress)
+        progress.add_class("spt_upload_progress")
+        progress.add_style("width: 0px")
+        progress.add_style("visibility: hidden")
+        progress.add_style("height: 100%")
+        progress.add_gradient("background", "background3", -10)
+        progress.add_style("text-align: right")
+        progress.add_style("overflow: hidden")
+        progress.add_style("padding-right: 3px")
 
-        #button = IconButtonWdg(title="Fill in Data", icon=IconWdg.EDIT)
-        button = ActionButtonWdg(title="Metadata")
-        button.add_style("float: left")
-        button.add_style("margin-top: -3px")
-        buttons.add_cell(button)
-
-        select_label = DivWdg("Update mode");
-        select_label.add_style("float: left")
-        select_label.add_style("margin-top: -3px")
-        select_label.add_style("margin-left: 20px")
-        buttons.add_cell(select_label)
-        
-        update_mode_option = my.kwargs.get("update_mode")
-        if not update_mode_option:
-            update_mode_option = "true"
-        update_mode = SelectWdg(name="update mode")
-        update_mode.add_class("spt_update_mode_select")
-        update_mode.set_option("values", ["false", "true", "sequence"])
-        update_mode.set_option("labels", ["Off", "On", "Sequence"])
-        update_mode.set_option("default", update_mode_option)
-        update_mode.add_style("float: left")
-        update_mode.add_style("margin-top: -3px")
-        update_mode.add_style("margin-left: 5px")
-        update_mode.add_style("margin-right: 5px")
-        buttons.add_cell(update_mode)
-
-        update_info = DivWdg()
-        update_info.add_class("glyphicon")
-        update_info.add_class("glyphicon-info-sign")
-        update_info.add_style("float: left")
-        update_info.add_style("margin-top: -3px")
-        update_info.add_style("margin-left: 10px")
-        update_info.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            spt.info("When update mode is on, if a file shares the name of one other file in the asset library, the file will update on ingest. If more than one file shares the name of an ingested asset, a new asset is created.<br> If sequence mode is selected, the system will update the sobject on ingest if a file sequence sharing the same name already exists.", {type: 'html'});
-            '''
+        from tactic.ui.app import MessageWdg
+        progress.add_behavior( {
+            'type': 'load',
+            'cbjs_action': MessageWdg.get_onload_js()
         } )
-        buttons.add_cell(update_info);
- 
-        dialog = DialogWdg(display="false", show_title=False)
-        div.add(dialog)
-        dialog.set_as_activator(button, offset={'x':-10,'y':10})
-
-        dialog_data_div = DivWdg()
-        dialog_data_div.add_color("background", "background")
-        dialog_data_div.add_style("padding", "20px")
-        dialog.add(dialog_data_div)
-
-
-        # Order folders by date
-        name_div = DivWdg()
-        dialog_data_div.add(name_div)
-        name_div.add_style("margin: 15px 0px")
-
-        if SearchType.column_exists(my.search_type, "relative_dir"):
-
-            category_div = DivWdg()
-            name_div.add(category_div)
-            checkbox = RadioWdg("category")
-            checkbox.set_option("value", "none")
-            category_div.add(checkbox)
-            category_div.add(" No categories")
-            category_div.add_style("margin-bottom: 5px")
-            checkbox.set_option("checked", "true")
-
-
-            category_div = DivWdg()
-            name_div.add(category_div)
-            checkbox = RadioWdg("category")
-            checkbox.set_option("value", "by_day")
-            category_div.add(checkbox)
-            category_div.add(" Categorize files by Day")
-            category_div.add_style("margin-bottom: 5px")
-
-
-            category_div = DivWdg()
-            name_div.add(category_div)
-            checkbox = RadioWdg("category")
-            checkbox.set_option("value", "by_week")
-            category_div.add(checkbox)
-            category_div.add(" Categorize files by Week")
-            category_div.add_style("margin-bottom: 5px")
-
-
-            category_div = DivWdg()
-            name_div.add(category_div)
-            checkbox = RadioWdg("category")
-            checkbox.set_option("value", "by_year")
-            category_div.add(checkbox)
-            category_div.add(" Categorize files by Year")
-            category_div.add_style("margin-bottom: 5px")
-
-
-            """
-            checkbox = RadioWdg("category")
-            checkbox.set_option("value", "custom")
-            name_div.add(checkbox)
-            name_div.add(" Custom")
-            """
-
-            name_div.add("<br/>")
-
-
-
-        # edit
-        from tactic.ui.panel import EditWdg
-
-        ingest_data_view = my.kwargs.get('ingest_data_view')
-
-        sobject = SearchType.create(my.search_type)
-        edit = EditWdg(search_key =sobject.get_search_key(), mode='view', view=ingest_data_view )
-        
-        dialog_data_div.add(edit)
-        hidden = HiddenWdg(name="parent_key")
-        dialog_data_div.add(hidden)
-        hidden.add_class("spt_parent_key")
-        parent_key = my.kwargs.get("parent_key") or ""
-        if parent_key:
-            hidden.set_value(parent_key)
-
-
-        extra_data = my.kwargs.get("extra_data")
-        if not isinstance(extra_data, basestring):
-            extra_data = jsondumps(extra_data)
-
-        if extra_data and extra_data != "null":
-            # it needs a TextArea instead of Hidden because of JSON data
-            text = TextAreaWdg(name="extra_data")
-            text.add_style('display: none')
-            text.set_value(extra_data)
-            dialog_data_div.add(text)
-
-
 
         return div
 
 
 
 
-    def get_select_files_button(my):
+
+    def get_select_files_button(self):
 
 
-        button = ActionButtonWdg(title="Add Files")
+        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="warning")
 
         from tactic.ui.input import Html5UploadWdg
         upload = Html5UploadWdg(multiple=True)
@@ -1451,23 +1584,64 @@ class IngestUploadWdg(BaseRefreshWdg):
         button.add_style("margin: 30px auto")
 
         button.add_behavior( {
+            'type': 'load',
+            'cbjs_action': self.get_onload_js()
+        } )
+
+
+        button.add_behavior( {
             'type': 'click_up',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files = spt.html5upload.get_files();
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+
+            // clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.ingest.select_files(top, files, bvr.normal_ext);
+            }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
+            '''
+        } )
+
+        button.add_behavior( {
+            'type': 'click_upX',
             'normal_ext': File.NORMAL_EXT,
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-        
-            //clear upload progress
+
+            // clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
             if (upload_bar) {
                 upload_bar.setStyle('width','0%');
                 upload_bar.innerHTML = '';
             }
-        var onchange = function (evt) {
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
-                var delay = 0; 
+                var delay = 0;
                 for (var i = 0; i < files.length; i++) {
                     var size = files[i].size;
                     var file_name = files[i].name;
@@ -1483,7 +1657,9 @@ class IngestUploadWdg(BaseRefreshWdg):
                         else if (size < 10*1024*1024) delay += 1000;
                     }
                 }
-        }
+
+                upload_button.setStyle("display", "");
+            }
 
             spt.html5upload.clear();
             spt.html5upload.set_form( top );
@@ -1496,68 +1672,196 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
+    def get_onload_js(self):
+
+        return r'''
+
+spt.ingest = {};
+
+spt.ingest.select_files = function(top, files, normal_ext) {
+
+    var files_el = top.getElement(".spt_to_ingest_files");
+
+    var regex = new RegExp('(' + normal_ext.join('|') + ')$', 'i');
+
+    var delay = 0;
+    var skip = false;
+    for (var i = 0; i < files.length; i++) {
+        var size = files[i].size;
+        var file_name = files[i].name;
+        var is_normal = regex.test(file_name);
+        if (size >= 10*1024*1024 || is_normal) {
+            spt.drag.show_file(files[i], files_el, 0, false);
+        }
+        else {
+            spt.drag.show_file(files[i], files_el, delay, true);
+
+            if (size < 100*1024)       delay += 50;
+            else if (size < 1024*1024) delay += 500;
+            else if (size < 10*1024*1024) delay += 1000;
+        }
+
+    }
+
+    // get all of the current filenames
+    var filenames = []
+    var items = top.getElements(".spt_upload_file");
+    for (var i = 0; i < items.length; i++) {
+        var file = items[i].file;
+        filenames.push(file.name);
+    }
+
+
+    // check if this is a sequence or zip
+    var server = TacticServerStub.get();
+    var cmd = 'tactic.ui.tools.IngestCheckCmd';
+    var kwargs = {
+        file_names: filenames
+    };
+    var ret_val = server.execute_cmd(cmd, kwargs);
+    var info = ret_val.info;
+
+    var num_sequences = 0;
+    for (var i = 0; i < info.length; i++) {
+        if (info[i].is_sequence) {
+            num_sequences += 1;
+        }
+    }
+
+    var ok = function() {
+        var upload_button = top.getElement(".spt_upload_files_top");
+        upload_button.setStyle("display", "");
+    }
+
+    if (num_sequences > 0) {
+        spt.confirm(num_sequences + " Sequences detected.  Do you wish to group these files as sequences?", function() {
+            spt.named_events.fire_event("set_ingest_update_mode", {
+                options: {
+                    value: 'sequence'
+                }
+            } );
+        });
+    }
+
+    ok();
+}
+
+    '''
+
+
+
+
+class IngestCheckCmd(Command):
+
+    def execute(self):
+
+        from pyasm.biz import FileRange
+
+        file_names = self.kwargs.get("file_names")
+
+
+        info = FileRange.get_sequences(file_names)
+
+        #info = FileRange.check(file_names)
+        self.info = info
+
+
+
+
+
 
 class IngestUploadCmd(Command):
 
     # FOLDER_LIMIT can be adjusted as desired.
     FOLDER_LIMIT = 500
 
-    def execute(my):
+    def get_server(self):
 
-        library_mode = my.kwargs.get("library_mode")
+        if not self.server:
+            project_code = self.kwargs.get("project_code")
+            if not project_code:
+                self.server = TacticServerStub.get()
+
+            else:
+                self.server = TacticServerStub(protocol="local")
+                self.server.set_project(project_code)
+
+        return self.server
+
+    def execute(self):
+
+        self.server = None
+
+        self.message_key = self.kwargs.get("message_key")
+        try:
+            return self._execute()
+        except Exception as e:
+            if self.message_key:
+                msg = {
+                    'progress': 100,
+                    'error': '%s' % e,
+                    'description': 'Error: %s' % e
+                }
+
+                server = self.get_server()
+                server.log_message(self.message_key, msg, status="in progress")
+
+                raise
+
+
+    def _execute(self):
+
+        library_mode = self.kwargs.get("library_mode")
         current_folder = 0
 
-        dated_dirs = my.kwargs.get("dated_dirs")
-        
-        filenames = my.kwargs.get("filenames")
-        relative_dir = my.kwargs.get("relative_dir")
+        dated_dirs = self.kwargs.get("dated_dirs")
 
-        base_dir = my.kwargs.get("base_dir")
+        filenames = self.kwargs.get("filenames")
+        relative_dir = self.kwargs.get("relative_dir")
+
+        base_dir = self.kwargs.get("base_dir")
         if not base_dir:
             upload_dir = Environment.get_upload_dir()
             base_dir = upload_dir
 
-        context_mode = my.kwargs.get("context_mode")
+        context_mode = self.kwargs.get("context_mode")
         if not context_mode:
-            context_mode = "case_insensitive"
-        update_mode = my.kwargs.get("update_mode")
-        ignore_ext = my.kwargs.get("ignore_ext")
-        column = my.kwargs.get("column")
+            context_mode = "case_sensitive"
+        update_mode = self.kwargs.get("update_mode")
+        ignore_ext = self.kwargs.get("ignore_ext")
+        column = self.kwargs.get("column")
         if not column:
             column = "name"
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
-            my.sobject = Search.get_by_search_key(search_key)
-            search_type = my.sobject.get_search_key()
+            self.sobject = Search.get_by_search_key(search_key)
+            search_type = self.sobject.get_base_search_type()
         else:
-            search_type = my.kwargs.get("search_type")
-            my.sobject = None
+            search_type = self.kwargs.get("search_type")
+            self.sobject = None
 
 
-        message_key = my.kwargs.get("key")        
-        message_key = "IngestUploadCmd|%s|%s"%(search_key, message_key)
-        
         if not relative_dir:
             project_code = Project.get_project_code()
             search_type_obj = SearchType.get(search_type)
             table = search_type_obj.get_table()
             relative_dir = "%s/%s" % (project_code, table)
 
-        server = TacticServerStub.get()
+        server = self.get_server()
 
-        parent_key = my.kwargs.get("parent_key")
-        category = my.kwargs.get("category")
-        keywords = my.kwargs.get("keywords")
-        update_process = my.kwargs.get("update_process")
-        ignore_path_keywords = my.kwargs.get("ignore_path_keywords")
+        parent_key = self.kwargs.get("parent_key")
+        category = self.kwargs.get("category")
+        keywords = self.kwargs.get("keywords")
+        update_process = self.kwargs.get("update_process")
+        ignore_path_keywords = self.kwargs.get("ignore_path_keywords")
         if ignore_path_keywords:
             ignore_path_keywords = ignore_path_keywords.split(",")
             ignore_path_keywords = [x.strip() for x in ignore_path_keywords]
 
-        update_data = my.kwargs.get("update_data")
-        extra_data = my.kwargs.get("extra_data")
+        update_data = self.kwargs.get("update_data")
+        extra_data = self.kwargs.get("extra_data")
         if extra_data:
             extra_data = jsonloads(extra_data)
         else:
@@ -1565,7 +1869,7 @@ class IngestUploadCmd(Command):
 
         update_sobject_found = False
         # TODO: use this to generate a category
-        category_script_path = my.kwargs.get("category_script_path")
+        category_script_path = self.kwargs.get("category_script_path")
         """
         ie:
             from pyasm.checkin import ExifMetadataParser
@@ -1576,67 +1880,89 @@ class IngestUploadCmd(Command):
             return date.split(" ")[0]
         """
 
-        if not SearchType.column_exists(search_type, column):
-            raise TacticException('The Ingestion puts the file name into the "%s" column which is the minimal requirement. Please first create a "%s" column for this sType.' % (column, column))
+
+        # remap the filenames for sequences
+        if update_mode == "sequence":
+            sequences = FileRange.get_sequences(filenames)
+            filenames = []
+            for sequence in sequences:
+                
+                if sequence.get('is_sequence'):
+                    filename = sequence.get("template")
+                else:
+                    filename = sequence.get("filenames")[0]
+                filenames.append(filename)
+
+
 
         input_prefix = update_data.get('input_prefix')
         non_seq_filenames = []
 
-        # For sequence mode, take all filenames, and regenerate the filenames based on the function "find_sequences"
-        if update_mode == "sequence":
-            
-            non_seq_filenames_dict, seq_digit_length = my.find_sequences(filenames)
-            # non_seq_filenames is a list of filenames that are stored in the None key,
-            # which are the filenames that are not part of a sequence, or does not contain
-            # a sequence pattern.
-            non_seq_filenames = non_seq_filenames_dict[None]
-            
-            # delete the None key from list so filenames can be used in the latter for loop
-            del non_seq_filenames_dict[None]
-            filenames = non_seq_filenames_dict.keys()
-            if filenames == []:
-                raise TacticException('No sequences are found in files. Please follow the pattern of [filename] + [digits] + [file extension (optional)]. Examples: [abc_1001.png, abc_1002.png] [abc.1001.mp3, abc.1002.mp3] [abc_100_1001.png, abc_100_1002.png]')
 
         if library_mode:
             relative_dir = "%s/001" % relative_dir
 
+
+        snapshots = []
+
         for count, filename in enumerate(filenames):
-        # Check if files should be updated. 
+        # Check if files should be updated.
         # If so, attempt to find one to update.
         # If more than one is found, do not update.
 
+    
+          
+            if filename.endswith("/"):
+                # this is a folder:
+                    continue
 
+            new_keywords = keywords
+ 
             if filename.startswith("search_key:"):
                 mode = "search_key"
                 tmp, search_key = filename.split("search_key:")
                 snapshot = Search.get_by_search_key(search_key)
-                if snapshot.get_search_type() == "sthpw/snapshot":
+                
+                source_keywords = snapshot.get_value("keywords", no_exception=True)
+                if source_keywords:
+                    new_keywords = "%s %s" % (new_keywords, source_keywords)
+
+                if snapshot.get_base_search_type() == "sthpw/snapshot":
                     lib_path = snapshot.get_lib_path_by_type()
                     filename = os.path.basename(lib_path)
                     new_filename = re.sub(r"_v\d+", "", filename)
                 else:
+                    snapshot = Snapshot.get_latest_by_sobject(snapshot, process="publish")
+                    lib_path = snapshot.get_lib_path_by_type()
+                    filename = os.path.basename(lib_path)
+                    new_filename = re.sub(r"_v\d+", "", filename)
+
+                if not snapshot:
                     raise Exception("Must pass in snapshot search_key")
+                
+                
 
             else:
                 mode = "multi"
                 new_filename = filename
 
             if library_mode:
-                
+
                 # get count of number of files in the current asset ingest dir
                 import glob
                 abs_path = Environment.get_asset_dir() + "/" + relative_dir + "/*"
 
-                if len(glob.glob(abs_path)) > my.FOLDER_LIMIT:
+                if len(glob.glob(abs_path)) > self.FOLDER_LIMIT:
                     current_folder = current_folder + 1
                     relative_dir = "%s/%03d" % (relative_dir[:-4], current_folder)
 
 
-            unzip = my.kwargs.get("unzip")
-            if unzip in ["true", True] and filename.endswith(".zip"):
+            unzip = self.kwargs.get("unzip")
+            zip_mode = self.kwargs.get("zip_mode")
+            if zip_mode in ['unzip'] or unzip in ["true", True] and filename.endswith(".zip"):
                 from pyasm.common import ZipUtil
+                unzip_dir = Environment.get_upload_dir()
 
-                unzip_dir = "/tmp/xxx"
                 if not os.path.exists(unzip_dir):
                     os.makedirs(unzip_dir)
 
@@ -1645,21 +1971,20 @@ class IngestUploadCmd(Command):
 
                 paths = ZipUtil.get_file_paths(zip_path)
 
-
-                new_kwargs = my.kwargs.copy()
+                new_kwargs = self.kwargs.copy()
                 new_kwargs['filenames'] = paths
                 new_kwargs['base_dir'] = unzip_dir
+                new_kwargs['zip_mode'] = "single"
                 ingest = IngestUploadCmd(**new_kwargs)
                 ingest.execute()
 
                 continue
 
 
+            if self.sobject:
+                sobject = self.sobject
 
-            if my.sobject:
-                sobject = my.sobject
-
-            elif update_mode in ["true", True]:
+            elif update_mode in ["true", True, "update"]:
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 # ingested files into search type applies filename without i.e. _v001 suffix
@@ -1668,7 +1993,9 @@ class IngestUploadCmd(Command):
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
                         search.add_filter("relative_dir", relative_dir)
+
                 sobjects = search.get_sobjects()
+
                 if len(sobjects) > 1:
                     sobject = None
                 elif len(sobjects) == 1:
@@ -1678,8 +2005,10 @@ class IngestUploadCmd(Command):
                     sobject = None
 
             elif update_mode == "sequence":
-                if not FileGroup.is_sequence(filename):
-                    raise TacticException('Please modify sequence naming to have at least three digits.')
+                # This check is not needed anymore as the sequence analyzer
+                # can handle a mix of sequence and non sequences
+                #if not FileGroup.is_sequence(filename):
+                #    raise TacticException('Please modify sequence naming to have at least three digits [%s].' % filename)
                 search = Search(search_type)
                 search.add_filter(column, filename)
 
@@ -1693,15 +2022,15 @@ class IngestUploadCmd(Command):
                     sobject = None
 
             else:
-                sobject = None 
+                sobject = None
 
 
             # Create a new entry
             if not sobject:
-                if update_mode not in ['true', True]:
+                if update_mode not in ['true', True, "update"]:
                     sobjects = []
 
-                my.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
+                self.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
 
                 sobject = SearchType.create(search_type)
 
@@ -1724,6 +2053,28 @@ class IngestUploadCmd(Command):
                 path = "%s/%s" % (relative_dir, filename)
             else:
                 path = filename
+            
+            # Handle update data
+            # for some unknown reason, this input prefix is ignored
+            new_data = {}
+            for name, value in update_data.items():
+                if name == "input_prefix":
+                    continue
+
+                name = name.replace("%s|"%input_prefix, "")
+                new_data[name] = value
+          
+            if new_data:
+                from tactic.ui.panel import EditCmd
+
+                cmd = EditCmd(
+                        view="edit",
+                        sobject=sobject,
+                        data=new_data,
+                        commit="false",
+                )
+                cmd.execute()
+
 
             # Don't want the keywords being extracted from lib_path, extract the relative dir path instead
             # Using new_filename because it is the filename without version numbers
@@ -1732,9 +2083,14 @@ class IngestUploadCmd(Command):
             else:
                 path_for_keywords = new_filename
 
-            file_keywords = Common.extract_keywords_from_path(path_for_keywords)            
-            
-            # Extract keywords from the path to be added to keywords_data, 
+            cmd_keyword_mode = self.kwargs.get("keyword_mode")
+
+            if cmd_keyword_mode == "simplified":
+                file_keywords = []
+            else:
+                file_keywords = Common.extract_keywords_from_path(path_for_keywords)
+
+            # Extract keywords from the path to be added to keywords_data,
             # if ignore_path_keywords is found, remove the specified keywords
             # from the path keywords
 
@@ -1746,23 +2102,39 @@ class IngestUploadCmd(Command):
             file_keywords.append(filename.lower())
             file_keywords = " ".join(file_keywords)
 
+
             new_file_keywords = ""
 
+            # handle setting keywords to parent
             if SearchType.column_exists(search_type, "keywords"):
-                if keywords:
-                    new_file_keywords = "%s %s" % (keywords, file_keywords)
+
+                old_keywords = sobject.get_value("keywords")
+
+                if new_keywords:
+                    new_file_keywords = "%s %s" % (new_keywords, file_keywords)
                 else:
                     new_file_keywords = file_keywords
 
-                sobject.set_value("keywords", new_file_keywords)
+                if new_file_keywords:
+                    new_file_keywords = "%s %s" % (old_keywords, new_file_keywords)
+
+                # remove duplicated
+                new_file_keywords = set( new_file_keywords.split(" ") )
+                new_file_keywords = " ".join(new_file_keywords)
+ 
+                if not cmd_keyword_mode == "none":
+                    sobject.set_value("keywords", new_file_keywords)
+
 
             if SearchType.column_exists(search_type, "user_keywords"):
-                if keywords:
-                    sobject.set_value("user_keywords", keywords)
+                if new_keywords:
+                    if not cmd_keyword_mode == "none":
+                        sobject.set_value("user_keywords", new_keywords)
+
 
             if SearchType.column_exists(search_type, "keywords_data"):
                 data = sobject.get_json_value("keywords_data", {})
-                data['user'] = keywords
+                data['user'] = new_keywords
                 data['path'] = file_keywords
                 sobject.set_json_value("keywords_data", data)
 
@@ -1771,9 +2143,9 @@ class IngestUploadCmd(Command):
             # extract metadata
             #file_path = "%s/%s" % (base_dir, File.get_filesystem_name(filename))
             if update_mode == "sequence":
-                first_filename = non_seq_filenames_dict.get(filename)[0]
-                last_filename = non_seq_filenames_dict.get(filename)[-1]
-                file_path = "%s/%s" % (base_dir, first_filename)
+                sequence = sequences[count]
+                file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
+
             elif mode == "search_key":
                 file_path = path
             else:
@@ -1782,17 +2154,18 @@ class IngestUploadCmd(Command):
             """
             # TEST: convert on upload
             try:
-                convert = my.kwargs.get("convert")
+                convert = self.kwargs.get("convert")
                 if convert:
                     message_key = "IngestConvert001"
                     cmd = ConvertCbk(**convert)
                     cmd.execute()
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
             """
 
 
-            if not os.path.exists(file_path):
+            # check if the file exists
+            if mode != "search_key" and not os.path.exists(file_path):
                 raise Exception("Path [%s] does not exist" % file_path)
 
             # get the metadata from this image
@@ -1812,7 +2185,7 @@ class IngestUploadCmd(Command):
                         date_str = parts[0].replace(":", "-")
                         date_str = "%s %s" % (date_str, parts[1])
 
-                        from dateutil import parser 
+                        from dateutil import parser
                         orig_date = parser.parse(date_str)
 
                         if category == "by_day":
@@ -1824,9 +2197,9 @@ class IngestUploadCmd(Command):
 
                     full_relative_dir = "%s/%s" % (relative_dir, date_str)
                     sobject.set_value("relative_dir", full_relative_dir)
-           
+
             # Add parent sObject
-            if parent_key:
+            if parent_key and parent_key != search_key:
                 parent = Search.get_by_search_key(parent_key)
                 if parent:
                     try:
@@ -1834,15 +2207,8 @@ class IngestUploadCmd(Command):
                     except:
                         pass
 
-            for key, value in update_data.items():
-                if input_prefix:
-                    key = key.replace('%s|'%input_prefix, '')
-                if SearchType.column_exists(search_type, key):
-                    if value:
-                        sobject.set_value(key, value)
 
-
-
+            # Handle extra_data
             for key, value in extra_data.items():
                 if SearchType.column_exists(search_type, key):
                     sobject.set_value(key, value)
@@ -1863,17 +2229,17 @@ class IngestUploadCmd(Command):
             sobject.commit()
             search_key = sobject.get_search_key()
 
+            status = sobject.get_value("status", no_exception=True)
+            is_verified = status in ['Verified']
+
             # use API to check in file
 
-            process = my.kwargs.get("process")
+            process = self.kwargs.get("process")
             if not process:
                 process = "publish"
 
 
-            if update_process and update_sobject_found:
-                process = update_process
-
-            context = my.kwargs.get("context")
+            context = self.kwargs.get("context")
             if not context:
                 context = process
 
@@ -1883,78 +2249,96 @@ class IngestUploadCmd(Command):
                 context = "%s/%s" % (context, filename)
 
             if context_mode == "case_insensitive":
-                context = context.lower()                
-            
+                context = context.lower()
+
+
+            version = None
+            if not is_verified and update_process and update_sobject_found:
+                process = update_process
+
+                # find what the version number should be
+                search = Search("sthpw/snapshot")
+                search.add_parent_filter(sobject)
+                search.add_filter("context", context)
+                search.add_order_by("version desc")
+                max_snapshot = search.get_sobject()
+                version = max_snapshot.get_value("version")
+                if not version:
+                    version = 1
+                else:
+                    version += 1
+
+
             if update_mode == "sequence":
 
-                pattern_expr = re.compile('^.*(\d{%d})\..*$'%seq_digit_length)
-                
-                m_first = re.match(pattern_expr, first_filename)
-                m_last = re.match(pattern_expr, last_filename)
-                # for files without extension
-                # abc_1001, abc.1123_1001
-                if not m_first: 
-                    no_ext_expr = re.compile('^.*(\d{%d})$'%seq_digit_length)
-                    m_first = re.match(no_ext_expr, first_filename)
-                    m_last = re.match(no_ext_expr, last_filename)
+                file_range = sequence.get("range")
+                if file_range == "":
+                    raise Exception("Error: %s" % sequence.get("error"))
 
-                # using second last index , to grab the set right before file type
-                groups_first = m_first.groups()
-                if groups_first:
-                    range_start = int(m_first.groups()[0])
-                    
-                groups_last = m_last.groups()
-                if groups_last:
-                    range_end = int(m_last.groups()[0])
+                if sequence.get("is_sequence"):
+                    file_path = "%s/%s" % (base_dir, sequence.get("template"))
+                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='move', version=version)
+                else:
+                    file_path = "%s/%s" % (base_dir, sequence.get("filenames")[0])
+                    snapshot = server.simple_checkin(search_key, context, file_path, mode='uploaded', version=version)
 
-                file_range = '%s-%s' % (range_start, range_end)
+            elif mode == "search_key":
 
-                file_path = "%s/%s" % (base_dir, filename)
-                server.group_checkin(search_key, context, file_path, file_range, mode='uploaded')
-            else: 
-                
-                if mode == "search_key":
+                if lib_path.find("##") != -1:
+                    file_range = snapshot.get_file_range().get_display
+                    file_path = lib_path
+                    snapshot = server.group_checkin(search_key, context, file_path, file_range, mode='copy')
+                else:
                     # copy the file to a temporary location
                     tmp_dir = Environment.get_tmp_dir()
                     tmp_path = "%s/%s" % (tmp_dir, new_filename)
                     shutil.copy(file_path, tmp_path)
                     # auto create icon
-                    server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
-                    
-                elif my.kwargs.get("base_dir"):
-                    # auto create icon
-                    server.simple_checkin(search_key, context, file_path, process=process, mode='move')
-                    
-                else:
-                    server.simple_checkin(search_key, context, filename, process=process, mode='uploaded')
+                    snapshot = server.simple_checkin(search_key, context, tmp_path, process=process, mode='move')
 
+            elif self.kwargs.get("base_dir"):
+                # auto create icon
+                snapshot = server.simple_checkin(search_key, context, file_path, process=process, mode='move', version=version)
+
+            else:
+                snapshot = server.simple_checkin(search_key, context, filename, process=process, mode='uploaded', version=version)
+
+
+            snapshots.append(snapshot)
+
+            #server.update(snapshot, {"user_keywords": "abc 123"} )
 
             percent = int((float(count)+1) / len(filenames)*100)
-            print "checking in: ", filename, percent
 
+
+            if self.message_key:
+                msg = {
+                    'progress': percent,
+                    'description': 'Checking in file [%s]' % filename,
+                }
+
+                server.log_message(self.message_key, msg, status="in progress")
+
+
+            if self.info.get("snapshots"):
+                self.info["snapshots"].append(snapshot)
+            else:
+                self.info["snapshots"] = [snapshot]
+
+
+
+        if self.message_key:
             msg = {
-                'progress': percent,
-                'description': 'Checking in file [%s]' % filename,
+                'progress': '100',
+                'description': 'Check-ins complete'
             }
-
-            server.log_message(message_key, msg, status="in progress")
-
+            server.log_message(self.message_key, msg, status="complete")
 
 
+        return
 
 
-
-        msg = {
-            'progress': '100',
-            'description': 'Check-ins complete'
-        }
-        server.log_message(message_key, msg, status="complete")
-
-        my.info = non_seq_filenames
-        return non_seq_filenames
-
-
-    def check_existing_file(my, search_type, new_filename, relative_dir, update_mode, sobjects):
+    def check_existing_file(self, search_type, new_filename, relative_dir, update_mode, sobjects):
         project_code = Project.get_project_code()
         file_search_type = SearchType.build_search_type(search_type, project_code)
 
@@ -1973,16 +2357,18 @@ class IngestUploadCmd(Command):
         elif file_sobjects:
             raise TacticException('A file with the same name as "%s" already exists in the file table with path "%s". Please rename the file and ingest again.' % (new_filename, relative_dir))
 
-    def natural_sort(my,l):
+    def natural_sort(self,l):
         '''
-        natural sort will makesure a list of names passed in is 
+        natural sort will makesure a list of names passed in is
         sorted in an order of 1000 to be after 999 instead of right after 101
         '''
-        convert = lambda text: int(text) if text.isdigit() else text.lower() 
-        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
         return sorted(l, key = alphanum_key)
 
-    def find_sequences(my, filenames):
+
+    """
+    def find_sequences(self, filenames):
         '''
         Parse a list of filenames into a dictionary of sequences.  Filenames not
         part of a sequence are returned in the None key
@@ -1998,14 +2384,14 @@ class IngestUploadCmd(Command):
         # sort the files (by natural order) so we always generate a pattern
         # based on the first potential file in a sequence
 
-        local_filenames = my.natural_sort(local_filenames)
+        local_filenames = self.natural_sort(local_filenames)
 
         for filename in local_filenames:
             count = re.findall('\d+', filename)
 
             if not count:
                 raise TacticException("Please ingest sequences only.")
-            
+
             base, file_ext = os.path.splitext(filename)
 
             if file_ext:
@@ -2015,8 +2401,8 @@ class IngestUploadCmd(Command):
             # because common.get_dir_info only works with 3 of more digits
             if len(count[-1]) <= 1 and file_ext.isalpha():
                 raise TacticException('Please modify sequence naming to have at least three digits.')
-            
-            
+
+
             # if file extension found, and contains a number in the extension (but also not completely numbers)
             # grab the second last set of digits
             # ie. .mp3, .mp4, .23p
@@ -2036,10 +2422,10 @@ class IngestUploadCmd(Command):
                 except:
                     sequences[None].append(filename)
                     continue
-            
+
             # then for regular filenames, try grabbing filenames by looking at the digits before the last dot
             # for files with extensions:
-            # abc.0001.png, abc.0001.mp3, abc0001.mp3, 
+            # abc.0001.png, abc.0001.mp3, abc0001.mp3,
             else:
                 try:
                     pattern_expr = re.compile('^(.*)(\d{%d})(\..*)$'%seq_digit_length)
@@ -2047,7 +2433,7 @@ class IngestUploadCmd(Command):
                     sequences[None].append(filename)
                     continue
 
-            
+
             pound_length = seq_digit_length
             pounds = "#" * pound_length
 
@@ -2097,3 +2483,4 @@ class IngestUploadCmd(Command):
             sequences[None] += filenames
 
         return sequences, seq_digit_length
+    """

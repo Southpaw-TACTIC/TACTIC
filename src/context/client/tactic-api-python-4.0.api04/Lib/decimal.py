@@ -3518,7 +3518,7 @@ class Decimal(object):
 
     def __copy__(self):
         if type(self) == Decimal:
-            return self     # I'm immutable; therefore I am my own clone
+            return self     # I'm immutable; therefore I am self own clone
         return self.__class__(str(self))
 
     def __deepcopy__(self, memo):

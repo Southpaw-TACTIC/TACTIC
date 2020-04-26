@@ -31,8 +31,8 @@ class Note(SObject):
         return ['search_type', 'search_id', 'context', 'note', 'login','project_code', 'timestamp']
     get_required_columns = staticmethod(get_required_columns)
 
-    def get_defaults(my):
-        context = my.get_value("context")
+    def get_defaults(self):
+        context = self.get_value("context")
         defaults = {
             "process": context,
             "project_code": Project.get_project_code()
@@ -59,54 +59,54 @@ class Note(SObject):
         #print search.get_statement()
     alter_search = staticmethod(alter_search)
 
-    def get_login(my):
-        return my.get_value('login')
+    def get_login(self):
+        return self.get_value('login')
 
-    def get_status(my):
-        return my.get_value('status')
+    def get_status(self):
+        return self.get_value('status')
 
-    def get_parent_id(my):
-        return my.get_value('parent_id')
+    def get_parent_id(self):
+        return self.get_value('parent_id')
 
-    def get_process(my):
-        note_process = my.get_value('process')
+    def get_process(self):
+        note_process = self.get_value('process')
         if not note_process:
-            note_process = my.get_value('context')
+            note_process = self.get_value('context')
         return note_process
 
-    def get_child_notes(my):
+    def get_child_notes(self):
         '''get all the child notes'''
         search = Search( Note.SEARCH_TYPE )
-        search.add_filter('parent_id', my.get_id())
+        search.add_filter('parent_id', self.get_id())
         return search.get_sobjects()
 
-    def copy_note(my, new_sobj_parent, parent=None):
+    def copy_note(self, new_sobj_parent, parent=None):
         '''copy this note to a new parent
             @new_sobj_parent: the sobject this note relates to
             @parent: the parent note if applicable'''
-        value = my.get_value('note')
-        context = my.get_value('context')
-        process = my.get_value('process')
+        value = self.get_value('note')
+        context = self.get_value('context')
+        process = self.get_value('process')
         time = ''
         
         parent_id = ''
         if parent:
             parent_id = parent.get_id()
-            time = my.get_value('timestamp')
+            time = self.get_value('timestamp')
         note = Note.create( new_sobj_parent, value, context=context,\
                 process=process,  parent_id=parent_id, time=time )
         return note
 
-    def build_update_description(my, is_insert=True):
+    def build_update_description(self, is_insert=True):
         '''This is asked for by the edit widget and possibly other commands'''
         if is_insert:
             action = "Inserted"
         else:
             action = "Updated"
-        title = my.get_search_type_obj().get_title()
+        title = self.get_search_type_obj().get_title()
 
         # we are interested in the parent
-        parent = my.get_parent()
+        parent = self.get_parent()
         code = ''
         if parent:
             code = "%s-%s" %(parent.get_search_type_obj().get_title(), \

@@ -19,8 +19,8 @@ from pyasm.widget import *
 class CameraInfoWdg(BaseTableElementWdg):
 
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         table = Table()
         table.add_style("width: 400px")

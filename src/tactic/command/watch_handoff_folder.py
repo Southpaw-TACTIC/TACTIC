@@ -29,22 +29,22 @@ from scheduler import SchedulerTask, Scheduler
 
 class WatchServerFolderTask(SchedulerTask):
 
-    #def __init__(my):
-    #    super(WatchServerFolderTask, my).__init__()
+    #def __init__(self):
+    #    super(WatchServerFolderTask, self).__init__()
 
 
 
-    def execute(my):
+    def execute(self):
         Batch()
 
         # get all of the file servers
         search = Search("sthpw/sync_server")
         search.add_filter("state", "online")
         search.add_filter("sync_mode", "file")
-        my.servers = search.get_sobjects()
+        self.servers = search.get_sobjects()
 
-        my.tasks = []
-        for server in my.servers:
+        self.tasks = []
+        for server in self.servers:
             base_dir = server.get_value("base_dir")
             if not base_dir:
                 continue
@@ -53,7 +53,7 @@ class WatchServerFolderTask(SchedulerTask):
 
             ticket = server.get_value("ticket")
             task = WatchFolderTask(base_dir=transaction_dir, ticket=ticket)
-            my.tasks.append(task)
+            self.tasks.append(task)
 
 
         # close all the database connections
@@ -64,10 +64,10 @@ class WatchServerFolderTask(SchedulerTask):
         while 1:
             #start = time.time()
 
-            for task in my.tasks:
+            for task in self.tasks:
                 try:
                     task.execute()
-                except Exception, e:
+                except Exception as e:
                     print "WARNING: error executing task:"
                     print "Reported Error: ", str(e)
 
@@ -100,26 +100,26 @@ class WatchServerFolderTask(SchedulerTask):
 
 class WatchFolderTask(SchedulerTask):
 
-    def __init__(my, **kwargs):
-        my.last_md5 = None
-        my.last_dir_set = None
+    def __init__(self, **kwargs):
+        self.last_md5 = None
+        self.last_dir_set = None
 
-        my.base_dir = kwargs.get("base_dir")
+        self.base_dir = kwargs.get("base_dir")
 
-        my.ticket = kwargs.get("ticket")
+        self.ticket = kwargs.get("ticket")
 
-        super(WatchFolderTask, my).__init__()
+        super(WatchFolderTask, self).__init__()
 
         # find out all of the jobs in the queue that are not in the
         # database
-        #my.init()
+        #self.init()
 
-        my.iterations = 0
+        self.iterations = 0
 
 
-    def init(my):
+    def init(self):
 
-        base_dir = my.base_dir
+        base_dir = self.base_dir
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
 
@@ -190,19 +190,19 @@ class WatchFolderTask(SchedulerTask):
 
 
             try:
-                if not my.verify_dir(path):
+                if not self.verify_dir(path):
                     continue
 
                 # see if this is encrypted
                 if dirname.endswith(".zip") or dirname.endswith(".enc"):
-                    if not my.ticket:
+                    if not self.ticket:
                         raise Exception("Could not decrypt encrypted transaction due to missing ticket for [%s]" % path)
                     base_dir = os.path.dirname(path)
-                    my.handle_encrypted(base_dir, transaction_code, dirname)
+                    self.handle_encrypted(base_dir, transaction_code, dirname)
                 else:
                     print "Running transaction: [%s]" % transaction_code
-                    my.handle_transaction(base_dir, transaction_code, transaction_code)
-            except Exception, e:
+                    self.handle_transaction(base_dir, transaction_code, transaction_code)
+            except Exception as e:
                 print "... ERROR: could not process transaction [%s]" % transaction_code
                 print str(e)
                 print
@@ -211,31 +211,31 @@ class WatchFolderTask(SchedulerTask):
             time.sleep(interval)
 
 
-    def execute(my):
+    def execute(self):
 
-        base_dir = my.base_dir
+        base_dir = self.base_dir
         if not base_dir:
             print "WARNING: No base dir defined."
             return
 
         # every 10 iterations, compare to the database and rerun
-        #if my.iterations % 10 == 0: 
-        if my.iterations == 0:
-            my.init()
+        #if self.iterations % 10 == 0: 
+        if self.iterations == 0:
+            self.init()
         else:
-            my.handle_base_dir(base_dir)
-        my.iterations += 1
+            self.handle_base_dir(base_dir)
+        self.iterations += 1
 
 
-    def handle_base_dir(my, base_dir):
+    def handle_base_dir(self, base_dir):
 
-        #md5 = my.get_folder_md5(base_dir)
+        #md5 = self.get_folder_md5(base_dir)
         #print md5
-        #if my.last_md5 != None and md5 != my.last_md5:
+        #if self.last_md5 != None and md5 != self.last_md5:
         #    print "There is a change"
-        #my.last_md5 = md5
+        #self.last_md5 = md5
 
-        diff = my.get_new_dirs(base_dir)
+        diff = self.get_new_dirs(base_dir)
         if not diff:
             return
 
@@ -248,16 +248,16 @@ class WatchFolderTask(SchedulerTask):
 
             # see if this is encrypted
             if dirname.endswith(".enc") or dirname.endswith(".zip"):
-                my.handle_encrypted(base_dir, transaction_code, dirname)
+                self.handle_encrypted(base_dir, transaction_code, dirname)
 
             else:
-                my.handle_transaction(base_dir, transaction_code, dirname)
+                self.handle_transaction(base_dir, transaction_code, dirname)
 
 
 
-    def handle_encrypted(my, base_dir, transaction_code, encrypted):
+    def handle_encrypted(self, base_dir, transaction_code, encrypted):
 
-        key = my.ticket
+        key = self.ticket
 
         from_path = "%s/%s" % (base_dir, encrypted)
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
@@ -286,11 +286,11 @@ class WatchFolderTask(SchedulerTask):
         dirname = dirname.replace(".zip", "")
 
         print "Running transaction: [%s]" % transaction_code
-        my.handle_transaction(to_dir, transaction_code, dirname)
+        self.handle_transaction(to_dir, transaction_code, dirname)
 
 
 
-    def handle_transaction(my, base_dir, transaction_code, dirname):
+    def handle_transaction(self, base_dir, transaction_code, dirname):
 
         import time
 
@@ -347,14 +347,14 @@ class WatchFolderTask(SchedulerTask):
             status = "complete"
 
         # May need special handing
-        #except MissingItemException, e:
+        #except MissingItemException as e:
         #    print "WARNING: Could not run transaction [%s]" % transaction_code
         #    print "Error reported: ", str(e)
         #    search = SearchType.create("sthpw/sync_error")
 
 
 
-        except Exception, e:
+        except Exception as e:
             print "WARNING: Could not run transaction [%s]" % transaction_code
             print "Error reported: ", str(e)
             status = "error"
@@ -388,7 +388,7 @@ class WatchFolderTask(SchedulerTask):
 
 
 
-    def get_folder_md5(my, base):
+    def get_folder_md5(self, base):
         m = hashlib.md5()
         for root, dirs, files in os.walk(base):
             #print root
@@ -400,14 +400,14 @@ class WatchFolderTask(SchedulerTask):
                     stat = os.stat(path)
                     m.update(path)
                     m.update(str(stat))
-                except Exception, e:
+                except Exception as e:
                     print e
         md5 = m.hexdigest()
         return md5
 
 
 
-    def get_new_dirs(my, base):
+    def get_new_dirs(self, base):
 
         dirs = os.listdir(base)
         dir_set = set(dirs)
@@ -420,21 +420,21 @@ class WatchFolderTask(SchedulerTask):
         dirs = list(dir_set)
 
 
-        if my.last_dir_set != None:
-            diff = dir_set.difference(my.last_dir_set)
+        if self.last_dir_set != None:
+            diff = dir_set.difference(self.last_dir_set)
 
 
             for dirname in diff.copy():
 
                 # verify the all the files have arrived
-                if not my.verify_dir("%s/%s" % (base, dirname)):
+                if not self.verify_dir("%s/%s" % (base, dirname)):
                     diff.remove(dirname)
                     dir_set.remove(dirname)
 
             if diff:
                 print "... found new files: ", diff
 
-            removed_diff = my.last_dir_set.difference(dir_set)
+            removed_diff = self.last_dir_set.difference(dir_set)
 
 
         else:
@@ -443,7 +443,7 @@ class WatchFolderTask(SchedulerTask):
 
         # use the original list to make sure that dirs aren't handled more
         # once
-        my.last_dir_set = set(dirs)
+        self.last_dir_set = set(dirs)
 
         #print "time: ", time.time() - start
         if removed_diff:
@@ -455,7 +455,7 @@ class WatchFolderTask(SchedulerTask):
         return diff
 
 
-    def verify_dir(my, base):
+    def verify_dir(self, base):
 
         # ignore transactions that a derived from this server
         server_code = Config.get_value("install", "server")
@@ -546,7 +546,7 @@ class WatchFolderTask(SchedulerTask):
 __all__.append("DumpTransactionCodesCmd")
 class DumpTransactionCodesCmd(Command):
 
-    def execute(my):
+    def execute(self):
         project = Project.get()
 
         search = Search("sthpw/transaction_log")

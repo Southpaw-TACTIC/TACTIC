@@ -20,17 +20,17 @@ from pyasm.widget import BaseTableElementWdg, ThumbWdg, PublishLinkWdg, IconButt
 
 class BinTableElementWdg(BaseTableElementWdg):
     ''' a wdg that shows bin type and bin code '''
-    def get_title(my):
+    def get_title(self):
         return "Bin"
 
-    def get_simple_display(my):
-        return my.get_display()
+    def get_simple_display(self):
+        return self.get_display()
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         bins = sobject.get_bins()
         widget = Widget()
@@ -38,20 +38,20 @@ class BinTableElementWdg(BaseTableElementWdg):
         widget.add( bins_str )
         return widget
 
-    def get_simple_display(my):
-        return my.get_display()
+    def get_simple_display(self):
+        return self.get_display()
 
 
 class ThumbPublishWdg(ThumbWdg):
     ''' A ThumbWdg with a publish link '''
     
-    def get_display(my):
+    def get_display(self):
         widget = Widget()
         
-        thumb = super(ThumbPublishWdg, my).get_display()
+        thumb = super(ThumbPublishWdg, self).get_display()
 
         widget.add(thumb)
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
 
@@ -83,9 +83,9 @@ class ThumbPublishWdg(ThumbWdg):
 
 class InstancePublishWdg(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         instances = SObjectInstance.get_by_sobject(sobject, "prod/asset")
 
         widget = Widget()

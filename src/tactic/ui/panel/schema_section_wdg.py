@@ -24,7 +24,7 @@ from tactic.ui.container import LabeledHidableWdg, RoundedCornerDivWdg
 class SchemaSectionWdg(BaseRefreshWdg):
     '''Widget that displays the schema'''
 
-    def get_display(my):
+    def get_display(self):
         from pyasm.biz import Project
 
         security = Environment.get_security()
@@ -33,7 +33,7 @@ class SchemaSectionWdg(BaseRefreshWdg):
 
 
         section_div = LabeledHidableWdg(label="Schema Views")
-        section_div.set_attr('spt_class_name', Common.get_full_class_name(my) )
+        section_div.set_attr('spt_class_name', Common.get_full_class_name(self) )
 
         palette = Palette.get()
         color = palette.color("background3")
@@ -52,19 +52,19 @@ class SchemaSectionWdg(BaseRefreshWdg):
         # get project type schema
         schema = Schema.get_by_code(project_code)
         if schema:
-            div.add( my.get_schema_wdg(schema) )
+            div.add( self.get_schema_wdg(schema) )
         #if not project_type:
         #    raise SetupException("Project type not found for this [%s]" %project_code)
         if project_type:
             schema = Schema.get_predefined_schema(project_type)
             if schema:
-                div.add( my.get_schema_wdg(schema) )
+                div.add( self.get_schema_wdg(schema) )
 
         schema = Schema.get_predefined_schema('config')
-        div.add( my.get_schema_wdg(schema) )
+        div.add( self.get_schema_wdg(schema) )
 
         schema = Schema.get_admin_schema()
-        div.add( my.get_schema_wdg(schema) )
+        div.add( self.get_schema_wdg(schema) )
 
         return section_div
 
@@ -93,14 +93,14 @@ class SchemaSectionWdg(BaseRefreshWdg):
         schema = SearchType.create("sthpw/schema")
         schema.set_value("code", "table")
         schema.set_value("schema", schema_xml)
-        #div.add( my.get_schema_wdg(schema) )
+        #div.add( self.get_schema_wdg(schema) )
 
 
 
         return section_div
 
 
-    def get_schema_wdg(my, schema):
+    def get_schema_wdg(self, schema):
         web = WebContainer.get_web()
 
         div = DivWdg()
@@ -160,7 +160,7 @@ class SchemaSectionWdg(BaseRefreshWdg):
                 'view': 'table',
                 'schema_default_view': 'true',
             }
-            link = my.get_link_wdg("schema", "main_body", title, options)
+            link = self.get_link_wdg("schema", "main_body", title, options)
 
 
             # walk up the tree
@@ -183,7 +183,7 @@ class SchemaSectionWdg(BaseRefreshWdg):
         return div
 
 
-    def get_link_wdg(my, section_id, target_id, title, options):
+    def get_link_wdg(self, section_id, target_id, title, options):
         view_link_wdg = SpanWdg(css="hand")
         view_link_wdg.add_class("SPT_DTS")
         view_link_wdg.add_style("color: #292929")

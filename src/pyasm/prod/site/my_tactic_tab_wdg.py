@@ -26,19 +26,19 @@ from tactic.ui.common import BaseRefreshWdg
 class MyTacticTabWdg(BaseTabWdg):
 
 
-    def init(my):
+    def init(self):
         help = HelpItemWdg('My Tactic', 'My Tactic area lets users view tasks of interest to him on a weekly/monthly basis, fill in time cards, review notifications and set preferences.')
-        my.add(help)
-        my.setup_tab("my_tactic_tab", css=TabWdg.SMALL)
+        self.add(help)
+        self.setup_tab("self_tactic_tab", css=TabWdg.SMALL)
 
 
-    def handle_tab(my, tab):
-        tab.add(my.get_tasks_wdg, _("Tasks") )
-        #tab.add(my.get_summary_wdg, _("Summary") )
-        tab.add( my.get_watchlist_wdg, _("Watch Lists" ) )
-        tab.add(my.get_notification_wdg, _("Notifications") )
+    def handle_tab(self, tab):
+        tab.add(self.get_tasks_wdg, _("Tasks") )
+        #tab.add(self.get_summary_wdg, _("Summary") )
+        tab.add( self.get_watchlist_wdg, _("Watch Lists" ) )
+        tab.add(self.get_notification_wdg, _("Notifications") )
         tab.add( WorkHourSummaryWdg, _("Work Hours" ) )
-        tab.add( my.get_clipboard_wdg, _("Clipboards" ) )
+        tab.add( self.get_clipboard_wdg, _("Clipboards" ) )
         tab.add( PreferenceWdg, _("Preferences" ) )
 
         #from pyasm.admin.creator import SObjectCreatorWdg
@@ -48,7 +48,7 @@ class MyTacticTabWdg(BaseTabWdg):
 
 
 
-    def get_summary_wdg(my):
+    def get_summary_wdg(self):
 
         widget = Widget()
 
@@ -57,14 +57,14 @@ class MyTacticTabWdg(BaseTabWdg):
         search = Search(Project)
         projects = search.get_sobjects()
 
-        table = TableWdg("sthpw/project", "mytactic")
+        table = TableWdg("sthpw/project", "selftactic")
         #table.set_sobject(project)
         table.set_sobjects(projects)
         widget.add(table)
 
         return widget
 
-    def get_week_filter(my):
+    def get_week_filter(self):
         ''' a convenience week filter '''
         week_filter = FilterSelectWdg('week_filter', label='Preset Time: ', css='med')
         # don't store this value in db since the CalendarBarWdg takes precedence
@@ -100,7 +100,7 @@ class MyTacticTabWdg(BaseTabWdg):
         
         return week_filter
 
-    def get_tasks_wdg(my):
+    def get_tasks_wdg(self):
         widget = Widget()
         help = HelpItemWdg('Tasks', 'Tasks tab lets users view tasks assigned to him from multiple projects. For convenience, you can select a Time Preset like [this week] or [this month] to view what tasks fall within the chosen time range. Alternatively, you can click on the year, month, or week labels of the calendar to set a time range.')
         widget.add(help)
@@ -111,7 +111,7 @@ class MyTacticTabWdg(BaseTabWdg):
         div = DivWdg(css="filter_box")
         div = FilterboxWdg()
 
-        week_filter = my.get_week_filter()
+        week_filter = self.get_week_filter()
         div.add(week_filter)
        
         range_checkbox = FilterCheckboxWdg("all_tasks", label="Show All Assigned Tasks")
@@ -216,7 +216,7 @@ class MyTacticTabWdg(BaseTabWdg):
 
 
 
-        table = TableWdg("sthpw/task", "my_task")
+        table = TableWdg("sthpw/task", "self_task")
         sobjects = search.get_sobjects()
         sorted_tasks = Task.sort_tasks(sobjects)
         table.set_sobjects(sorted_tasks)
@@ -229,7 +229,7 @@ class MyTacticTabWdg(BaseTabWdg):
 
 
 
-    def get_notification_wdg(my):
+    def get_notification_wdg(self):
 
         widget = Widget()
 
@@ -267,7 +267,7 @@ class MyTacticTabWdg(BaseTabWdg):
 
 
 
-    def get_watchlist_wdg(my):
+    def get_watchlist_wdg(self):
 
         widget = Widget()
         WebContainer.register_cmd("pyasm.widget.ClipboardMoveToCategoryCbk")
@@ -308,7 +308,7 @@ class MyTacticTabWdg(BaseTabWdg):
         return widget
 
 
-    def get_clipboard_wdg(my):
+    def get_clipboard_wdg(self):
 
         widget = Widget()
 
@@ -326,7 +326,7 @@ class MyTacticTabWdg(BaseTabWdg):
 class WorkHourSummaryWdg(BaseRefreshWdg):
 
 
-    def _has_user_wdg_access(my):
+    def _has_user_wdg_access(self):
         ''' check if the user can see this user filter wdg '''
         security = Environment.get_security()
         key = 'UserFilterWdg'
@@ -335,11 +335,11 @@ class WorkHourSummaryWdg(BaseRefreshWdg):
         return False
 
     """
-    def _get_filter_box(my, search):
+    def _get_filter_box(self, search):
         div = DivWdg(css='filter_box')
         login_filter = None
 
-        if my._has_user_wdg_access():
+        if self._has_user_wdg_access():
             login_filter = UserFilterWdg()
             login_filter.navigator.set_submit_onchange()
     
@@ -387,14 +387,14 @@ class WorkHourSummaryWdg(BaseRefreshWdg):
 
     """ 
 
-    def get_display(my):
+    def get_display(self):
         widget = DivWdg()
 
-        my.set_as_panel(widget, class_name='spt_view_panel spt_panel')
+        self.set_as_panel(widget, class_name='spt_view_panel spt_panel')
  
         # create a table widget and set the sobjects to it
         table_id = "main_body_table" 
-        filter = my.kwargs.get('filter')
+        filter = self.kwargs.get('filter')
         table = TableLayoutWdg(table_id=table_id, search_type="sthpw/timecard", \
                 view="table", inline_search=True, filter=filter, search_view='search' ) 
 
@@ -422,10 +422,10 @@ class WorkHourSummaryWdg(BaseRefreshWdg):
 
 class MyNotificationLogWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
-        my.set_as_panel(widget, class_name='spt_view_panel spt_panel')
+        self.set_as_panel(widget, class_name='spt_view_panel spt_panel')
 
         # create a table widget and set the sobjects to it
         table_id = "main_body_table" 

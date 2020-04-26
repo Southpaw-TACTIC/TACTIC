@@ -19,14 +19,14 @@ from pyasm.prod.service import ApiException
 
 class UnittestTrigger(Handler):
 
-    def execute(my):
+    def execute(self):
         server = TacticServerStub.get()
         server.start("Starting city insert trigger", "On inserting seoul, insert incheon")
 
         try:
             
-            city_key = my.get_input_value("search_key")
-            mode = my.get_input_value("mode")
+            city_key = self.get_input_value("search_key")
+            mode = self.get_input_value("mode")
             if mode == 'delete':
                 return
             city  = server.get_by_search_key(city_key)

@@ -20,11 +20,11 @@ from pyasm.web import AppServer
 class Error404(AppServer):
     ''' this should be displaying the error status and message, not necessarily 404'''
 
-    def __init__(my):
-        my.status = 404
-        my.message = ''
+    def __init__(self):
+        self.status = 404
+        self.message = ''
 
-    def get_page_widget(my):
+    def get_page_widget(self):
 
         return("""
 <html>
@@ -42,5 +42,5 @@ class Error404(AppServer):
 </body>
 </html>
 
-        """ %(my.status, my.message))
+        """ %(self.status, self.message))
 

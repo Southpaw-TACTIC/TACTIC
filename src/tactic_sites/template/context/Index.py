@@ -16,7 +16,7 @@ exec( get_site_import(__file__) )
 
 class Index(SitePage):
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         return IndexWdg()
 
 

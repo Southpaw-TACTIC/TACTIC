@@ -24,7 +24,7 @@ from pyasm.biz import PrefSetting
 
 class PreferenceWdg(Widget):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = Widget()
          
@@ -49,8 +49,8 @@ class PreferenceWdg(Widget):
 
 class PreferenceEditWdg(BaseTableElementWdg):
     
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         key = sobject.get_value("key")
         options = sobject.get_value("options")
         type = sobject.get_value("type")
@@ -67,7 +67,7 @@ class PreferenceEditWdg(BaseTableElementWdg):
 
         div = DivWdg()
 
-        element_name = "%s_%s" % (my.get_name(), sobject.get_id() )
+        element_name = "%s_%s" % (self.get_name(), sobject.get_id() )
       
         script = '''var server = TacticServerStub.get();
                 var value = bvr.src_el.value;
@@ -111,8 +111,8 @@ class PreferenceEditWdg(BaseTableElementWdg):
 
 class PreferenceDescriptionWdg(BaseTableElementWdg):
     '''Preference description with help bubble if applicable'''
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         title = sobject.get_value("title")
         widget = Widget()
         widget.add(sobject.get_description())
@@ -147,19 +147,19 @@ class PreferenceDescriptionWdg(BaseTableElementWdg):
 
 class SetPreferenceCmd(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Set Preference"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         #element_name = web.get_form_value("element_name")
         #key = web.get_form_value("key")
-        key = my.kwargs.get('key')
-        value = my.kwargs.get('value')
+        key = self.kwargs.get('key')
+        value = self.kwargs.get('value')
 
         PrefSetting.create(key,value)
 
-        my.description = "Set Preference '%s' to '%s'" % (key,value)
+        self.description = "Set Preference '%s' to '%s'" % (key,value)
 
 
 

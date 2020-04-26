@@ -23,72 +23,72 @@ class RenderPackage(Base):
     '''A package that is delivered to render submissions which contains
     all the information needed to render'''
 
-    def __init__(my, policy=None):
-        my.sobject = None
-        my.snapshot = None
-        my.policy = policy
+    def __init__(self, policy=None):
+        self.sobject = None
+        self.snapshot = None
+        self.policy = policy
 
-        my.options = {}
+        self.options = {}
 
         # by default, just render the first frame
-        my.frame_range = FrameRange(1,1,1)
+        self.frame_range = FrameRange(1,1,1)
 
 
-    def set_policy(my, policy):
-        my.policy = policy
+    def set_policy(self, policy):
+        self.policy = policy
 
-    def get_policy(my):
-        return my.policy
+    def get_policy(self):
+        return self.policy
 
-    def set_sobject(my, sobject):
+    def set_sobject(self, sobject):
         '''set the sobject that is being rendered'''
-        my.sobject = sobject
+        self.sobject = sobject
 
-    def get_sobject(my):
-        return my.sobject
+    def get_sobject(self):
+        return self.sobject
 
 
-    def set_snapshot(my, snapshot):
+    def set_snapshot(self, snapshot):
         '''set the snapshot that is being rendered'''
-        my.snapshot = snapshot
+        self.snapshot = snapshot
 
-    def get_snapshot(my):
-        return my.snapshot
+    def get_snapshot(self):
+        return self.snapshot
 
 
-    def set_option(my, name, value):
-        my.options[name] = str(value)
+    def set_option(self, name, value):
+        self.options[name] = str(value)
 
-    def get_option(my, name, no_exception=False):
-        value = my.options.get(name)
+    def get_option(self, name, no_exception=False):
+        value = self.options.get(name)
         if not no_exception and not value:
             raise TacticException("Mandatory option [%s] not found in render package" % name)
 
         return value
         
-    def set_options(my, options):
-        my.options = options
+    def set_options(self, options):
+        self.options = options
 
-    def get_options(my):
-        return my.options
+    def get_options(self):
+        return self.options
 
 
 
-    def set_frame_range(my, frame_range):
-        my.frame_range = frame_range
+    def set_frame_range(self, frame_range):
+        self.frame_range = frame_range
 
         # if the policy sets a frame by, then use it
-        frame_by = my.policy.get_value("frame_by")
+        frame_by = self.policy.get_value("frame_by")
         if frame_by:
-            my.frame_range.set_frame_by(int(frame_by))
+            self.frame_range.set_frame_by(int(frame_by))
             
 
-    def set_frame_range_values(my, start, end, by):
+    def set_frame_range_values(self, start, end, by):
         frame_range = FrameRange(start, end, by)
-        my.set_frame_range(frame_range)
+        self.set_frame_range(frame_range)
             
-    def get_frame_range(my):
-        return my.frame_range
+    def get_frame_range(self):
+        return self.frame_range
 
 
 

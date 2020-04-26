@@ -22,16 +22,16 @@ from pyasm.widget import ButtonWdg
 
 class HelpPopupWdg(BaseRefreshWdg):
 
-    def init(my):
+    def init(self):
         pass
 
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_display(my):
+    def get_display(self):
         popup = PopupWdg( id="HelpPopupWdg", allow_page_activity=True, width="600px" )
         popup.add("TACTIC&trade; Help", "title")
 

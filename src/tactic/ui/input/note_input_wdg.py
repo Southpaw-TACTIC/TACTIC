@@ -27,19 +27,19 @@ from tactic.ui.common import BaseRefreshWdg
 class NoteInputWdg(BaseInputWdg):
     '''This will display the latest note with a text area below it'''
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
-        name = my.get_name()
+        name = self.get_name()
         top.add_class("spt_note_input_top")
 
-        context = my.get_option("context")
+        context = self.get_option("context")
         if not context:
             context = name
 
-        sobject = my.get_option("sobject")
+        sobject = self.get_option("sobject")
         if not sobject:
-            search_key = my.get_option("search_key")
+            search_key = self.get_option("search_key")
             sobject = Search.get_by_search_key(search_key)
         else:
             search_key = sobject.get_search_key()
@@ -47,7 +47,7 @@ class NoteInputWdg(BaseInputWdg):
         if search_key or (sobject and not sobject.is_insert()):
 
             search = Search("sthpw/note") 
-            #search.add_relationship_filters(my.filtered_parents, type='hierarchy')
+            #search.add_relationship_filters(self.filtered_parents, type='hierarchy')
             search.add_parent_filter(sobject)
             search.add_filter("context", context)
             search.add_order_by("process")
@@ -150,7 +150,7 @@ class NoteInputWdg(BaseInputWdg):
 
 
 
-        name = my.get_input_name()
+        name = self.get_input_name()
         text = TextAreaWdg(name)
         top.add(text)
         text.add_style("width: 100%")
@@ -169,10 +169,10 @@ class NoteInputWdg(BaseInputWdg):
 
 class NoteHistoryWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.set_unique_id()
         top.add_style("min-width: 600px")
         top.add_style("max-height: 600px")
@@ -181,19 +181,19 @@ class NoteHistoryWdg(BaseRefreshWdg):
         top.add_color("background", "background")
         top.add_color("color", "color")
 
-        sobject = my.kwargs.get("sobject")
+        sobject = self.kwargs.get("sobject")
         if not sobject:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             sobject = Search.get_by_search_key(search_key)
         else:
             search_key = sobject.get_search_key()
 
 
-        context = my.kwargs.get("context")
+        context = self.kwargs.get("context")
 
 
         search = Search("sthpw/note") 
-        #search.add_relationship_filters(my.filtered_parents, type='hierarchy')
+        #search.add_relationship_filters(self.filtered_parents, type='hierarchy')
         search.add_parent_filter(sobject)
         search.add_order_by("process")
         search.add_order_by("context")
@@ -212,7 +212,7 @@ class NoteHistoryWdg(BaseRefreshWdg):
 
             note_div = DivWdg()
             top.add( note_div )
-            note_div.add( my.get_note_wdg(note) )
+            note_div.add( self.get_note_wdg(note) )
 
             if i % 2 == 0:
                 note_div.add_color("background", "background", -3)
@@ -232,7 +232,7 @@ class NoteHistoryWdg(BaseRefreshWdg):
         return top
 
 
-    def get_note_wdg(my, note):
+    def get_note_wdg(self, note):
 
         div = DivWdg()
         div.add_class("spt_note")
@@ -255,16 +255,16 @@ class NoteHistoryWdg(BaseRefreshWdg):
 
 class NoteInputAction(DatabaseAction):
 
-    def execute(my):
+    def execute(self):
 
-        name = my.get_name()
-        value = my.get_value()
+        name = self.get_name()
+        value = self.get_value()
         if not value:
             return
 
         context = name
 
-        sobject = my.sobject
+        sobject = self.sobject
 
         # create a new note
         note = SearchType.create("sthpw/note")

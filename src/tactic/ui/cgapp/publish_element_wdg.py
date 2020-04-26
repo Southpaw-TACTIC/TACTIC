@@ -30,7 +30,7 @@ class PublishElementWdg(BaseTableElementWdg):
     '''Snapshot publish for any search type'''
     
 
-    def get_display(my):
+    def get_display(self):
 
         top = DivWdg()
 

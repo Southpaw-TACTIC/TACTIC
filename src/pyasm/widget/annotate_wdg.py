@@ -27,14 +27,14 @@ from icon_wdg import *
 
 class AnnotateLink(BaseTableElementWdg):
 
-    def get_annotate_wdg_class(my):
+    def get_annotate_wdg_class(self):
         return "AnnotateWdg"
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
 
         url = WebContainer.get_web().get_widget_url()
-        url.set_option("widget", my.get_annotate_wdg_class() )
+        url.set_option("widget", self.get_annotate_wdg_class() )
         url.set_option("search_type", sobject.get_search_type() )
         url.set_option("search_id", sobject.get_id() )
 
@@ -52,41 +52,41 @@ class AnnotateLink(BaseTableElementWdg):
 
 class AnnotatePage(Widget):
 
-    def init(my):
+    def init(self):
 
         WebContainer.register_cmd("pyasm.widget.AnnotateCbk")
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         if not sobject:
-            if not my.__dict__.has_key("search_type"):
+            if not self.__dict__.has_key("search_type"):
                 web = WebContainer.get_web()
-                my.search_type = web.get_form_value("search_type")
-                my.search_id = web.get_form_value("search_id")
+                self.search_type = web.get_form_value("search_type")
+                self.search_id = web.get_form_value("search_id")
 
-            if not my.search_type:
-                my.add("No search type")
+            if not self.search_type:
+                self.add("No search type")
                 return
 
-            search = Search(my.search_type)
-            search.add_id_filter(my.search_id)
+            search = Search(self.search_type)
+            search.add_id_filter(self.search_id)
             sobject = search.get_sobject()
 
-        my.add("<h3>Design Review: Annotation</h3>")
-        table = TableWdg(my.search_type)
+        self.add("<h3>Design Review: Annotation</h3>")
+        table = TableWdg(self.search_type)
         table.set_sobject(sobject)
-        my.add(table)
+        self.add(table)
 
         url = WebContainer.get_web().get_widget_url()
         url.set_option("widget", "AnnotateWdg")
-        url.set_option("search_type", my.search_type)
-        url.set_option("search_id", my.search_id)
+        url.set_option("search_type", self.search_type)
+        url.set_option("search_id", self.search_id)
         src = url.to_string()
 
-        my.add("<h3>Click on image to add an annotation</h3>")
-        my.add("The annotation will be located where you clicked on the image")
+        self.add("<h3>Click on image to add an annotation</h3>")
+        self.add("The annotation will be located where you clicked on the image")
         
-        my.add( """
+        self.add( """
         <iframe id="annotate_frame" scrolling="no" src="%s" style='width: 800; height: 450; margin-left: 30px; border: none;">
         WARNING: iframes are not supported
         </iframe>
@@ -98,32 +98,32 @@ class AnnotatePage(Widget):
 class AnnotateWdg(Widget):
 
 
-    def set_search_type(my, search_type):
-        my.search_type = search_type
+    def set_search_type(self, search_type):
+        self.search_type = search_type
 
-    def set_search_id(my, search_id):
-        my.search_id = search_id
+    def set_search_id(self, search_id):
+        self.search_id = search_id
 
 
-    def init(my):
+    def init(self):
 
         WebContainer.register_cmd("pyasm.widget.AnnotateCbk")
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
 
         if not sobject:
-            if not my.__dict__.has_key("search_type"):
+            if not self.__dict__.has_key("search_type"):
                 web = WebContainer.get_web()
-                my.search_type = web.get_form_value("search_type")
-                my.search_id = web.get_form_value("search_id")
+                self.search_type = web.get_form_value("search_type")
+                self.search_id = web.get_form_value("search_id")
 
-            if not my.search_type:
-                my.add("No search type")
+            if not self.search_type:
+                self.add("No search type")
                 return
 
 
-            search = Search(my.search_type)
-            search.add_id_filter(my.search_id)
+            search = Search(self.search_type)
+            search.add_id_filter(self.search_id)
             sobject = search.get_sobject()
 
 
@@ -140,12 +140,12 @@ class AnnotateWdg(Widget):
 
         # add the annotate js object
         script = HtmlElement.script("annotate = new Annotate()")
-        my.add(script)
+        self.add(script)
 
 
         # add the image
 
-        my.add("<h3>Image Annotations</h3>")
+        self.add("<h3>Image Annotations</h3>")
 
         width = 600
         img = HtmlElement.img(path)
@@ -157,7 +157,7 @@ class AnnotateWdg(Widget):
         img.add_style("z-index: 1")
         img.add_style("width", width)
         img.add_event("onmouseup", "annotate.add_new(event)")
-        my.add(img)
+        self.add(img)
 
 
 
@@ -166,7 +166,7 @@ class AnnotateWdg(Widget):
         if version != 1:
             last_version = version - 1
             snapshot = Snapshot.get_by_version( \
-                my.search_type, my.search_id, version=last_version )
+                self.search_type, self.search_id, version=last_version )
 
             snapshot_xml = snapshot.get_xml_value("snapshot")
             file_code = snapshot_xml.get_value("snapshot/file[@type='web']/@file_code")
@@ -183,18 +183,18 @@ class AnnotateWdg(Widget):
             img.add_style("z-index: 0")
             img.add_style("width", width)
             img.add_event("onmouseup", "annotate.add_new(event)")
-            my.add(img)
+            self.add(img)
 
 
             #script = HtmlElement.script("align_element('%s','%s')" % \
             #    ("annotate_image", "annotate_image_alt") )
-            #my.add(script)
+            #self.add(script)
 
             div = DivWdg()
             div.add_style("position: absolute")
             div.add_style("left: 620")
             div.add_style("top: 300")
-            my.add(div)
+            self.add(div)
 
             button = IconButtonWdg("Switch", IconWdg.REFRESH, True)
             button.add_event("onclick", "annotate.switch_alt()")
@@ -238,7 +238,7 @@ class AnnotateWdg(Widget):
 
         new_annotation_div.add_style("display: none")
         new_annotation_div.add_style("position: absolute")
-        my.add(new_annotation_div)
+        self.add(new_annotation_div)
 
         # get all of the stored annotations for this image
         search = Search("sthpw/annotation")
@@ -267,7 +267,7 @@ class AnnotateWdg(Widget):
 
             count = 0
             for annotation in annotations:
-                my.add( my.get_annotate_wdg(annotation,count) )
+                self.add( self.get_annotate_wdg(annotation,count) )
                 count += 1
 
 
@@ -293,23 +293,23 @@ class AnnotateWdg(Widget):
 
             table.add_cell(button)
 
-        my.add(table)
+        self.add(table)
 
 
         # add form elements
         hidden = HiddenWdg("mouse_xpos")
-        my.add(hidden)
+        self.add(hidden)
         hidden = HiddenWdg("mouse_ypos")
-        my.add(hidden)
+        self.add(hidden)
         hidden = HiddenWdg("file_code", file_code)
-        my.add(hidden)
+        self.add(hidden)
 
         # move the rest below
-        my.add("<div style='height:300'>&nbsp</div>")
+        self.add("<div style='height:300'>&nbsp</div>")
 
 
 
-    def get_annotate_wdg(my, annotation, count):
+    def get_annotate_wdg(self, annotation, count):
 
         # get information from annotation
         x_pos = annotation.get_value("xpos")
@@ -359,10 +359,10 @@ class AnnotateWdg(Widget):
 
 class AnnotateCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Annotate Image"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         if web.get_form_value("Add Annotation") == "":
             return
@@ -386,7 +386,7 @@ class AnnotateCbk(Command):
         annotate.set_value("file_code", file_code)
         annotate.commit()
 
-        my.description = "Added annotation '%s'" % annotate_msg
+        self.description = "Added annotation '%s'" % annotate_msg
 
 
 

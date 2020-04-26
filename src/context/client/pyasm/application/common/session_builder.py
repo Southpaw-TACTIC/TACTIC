@@ -22,60 +22,60 @@ from application import AppException
 class SessionBuilder(object):
     '''builds a session from an execute xml document'''
 
-    def __init__(my):
-        my.env = AppEnvironment.get()
-        my.app = my.env.get_app()
+    def __init__(self):
+        self.env = AppEnvironment.get()
+        self.app = self.env.get_app()
 
-        my.node_data = {}
-        my.load_mode = ''
-
-
-    def get_tmpdir(my):
-        return my.env.get_tmpdir()
-
-    def get_sandbox_dir(my):
-        return my.env.get_sandbox_dir()
+        self.node_data = {}
+        self.load_mode = ''
 
 
+    def get_tmpdir(self):
+        return self.env.get_tmpdir()
 
-    def import_file(my, node_name, path, instantiation='import'):
+    def get_sandbox_dir(self):
+        return self.env.get_sandbox_dir()
+
+
+
+    def import_file(self, node_name, path, instantiation='import'):
         raise Exception("Implement import_file")
 
 
-    def import_anim(my, instance, path, created_node=""):
+    def import_anim(self, instance, path, created_node=""):
         raise Exception("Implement import_anim")
 
-    def load_file(my, path, node_name):
-        my.app.load(path)
+    def load_file(self, path, node_name):
+        self.app.load(path)
 
-    def check_existence(my, tactic_node_name):
+    def check_existence(self, tactic_node_name):
         ''' check if this node exist '''
-        if not my.app.node_exists(tactic_node_name):
+        if not self.app.node_exists(tactic_node_name):
             info = BaseAppInfo.get()
             info.report_warning('opened node name missing', \
                 '[%s] cannot be found in the scene, which could '\
                 'cause invalid TacticNodeData.\n' %tactic_node_name)
 
-    def handle_mel(my, cmd_str):
+    def handle_mel(self, cmd_str):
         cmds = cmd_str.split("\n")
         for cmd in cmds:
             if cmd == "":
                 continue
-            my.app.mel(cmd)
+            self.app.mel(cmd)
 
 
-    def publish_file(my, asset_code, node_name):
+    def publish_file(self, asset_code, node_name):
         raise Exception("Implement publish_file")
 
 
-    def set_attr(my, node_name, node, current_node_name):
+    def set_attr(self, node_name, node, current_node_name):
         '''set attribute for the current app'''
         attr = node.getAttribute("attr")
         value = node.getAttribute("value")
         attr_type = node.getAttribute("type")
-        my.app.set_attr(node_name,attr,value,attr_type)
+        self.app.set_attr(node_name,attr,value,attr_type)
 
-    def execute(my, xml):
+    def execute(self, xml):
         '''executes a series of commands as dictated execute xml string'''
 
         info = BaseAppInfo.get()
@@ -84,7 +84,7 @@ class SessionBuilder(object):
         nodes = root.childNodes
 
         # initialize applicaton object
-        my.app.set_verbose()
+        self.app.set_verbose()
 
         current_path = None
         current_node_name = None
@@ -111,7 +111,7 @@ class SessionBuilder(object):
 
                 # if the file is from the web, then download
                 if url.startswith("http://"):
-                    current_path = my.env.download(url, to, md5_checksum)
+                    current_path = self.env.download(url, to, md5_checksum)
                 elif connection == "perforce":
 
                     version = node.getAttribute("version")
@@ -134,7 +134,7 @@ class SessionBuilder(object):
                 sandbox_dir = node.getAttribute("sandbox_dir")
 
 
-                my.env.set_sandbox_dir(sandbox_dir)
+                self.env.set_sandbox_dir(sandbox_dir)
 
             elif node_name == "reference":
                 namespace = node.getAttribute('namespace')
@@ -149,14 +149,14 @@ class SessionBuilder(object):
                 if set:
                     node_name = set
                 else:
-                    node_naming = my.app.get_node_naming()
+                    node_naming = self.app.get_node_naming()
                     node_naming.set_asset_code(asset_code)
                     node_naming.set_namespace(namespace)
                     node_name = node_naming.build_node_name()
 
                 # NOTE: this only works in some situations
                 unique = node.getAttribute("unique")
-                if unique == "true" and my.app.node_exists(node_name):
+                if unique == "true" and self.app.node_exists(node_name):
                     info.report_warning(node_name, \
                         "WARNING: Node [%s] already exists, skipping" % node_name, type='urgent')
                     current_node_naming = None
@@ -164,7 +164,7 @@ class SessionBuilder(object):
                     continue
 
                 # remember the real node naming
-                current_node_name = my.import_file(node_name, current_path, 'reference')
+                current_node_name = self.import_file(node_name, current_path, 'reference')
                 
 
                 # check if tactic_node_name with namespace exists, if so, make it current
@@ -172,12 +172,12 @@ class SessionBuilder(object):
                 '''
                 tactic_node_name = '%s:%s' %(namespace, tactic_node_name)
 
-                if my.app.node_exists(tactic_node_name):
+                if self.app.node_exists(tactic_node_name):
                     current_node_name = tactic_node_name
                 '''
-                current_node_naming = my.app.get_node_naming(current_node_name)
+                current_node_naming = self.app.get_node_naming(current_node_name)
                 # tracks the state of this loading
-                my.load_mode = "reference"
+                self.load_mode = "reference"
 
             elif node_name == "replace":
                 '''replace instance with the current file'''
@@ -195,21 +195,21 @@ class SessionBuilder(object):
                 elif replacee:
                     node_name = replacee
                 else:
-                    node_naming = my.app.get_node_naming()
+                    node_naming = self.app.get_node_naming()
                     node_naming.set_asset_code(asset_code)
                     node_naming.set_namespace(namespace)
                     node_name = node_naming.build_node_name()
 
-                if not my.app.node_exists(node_name):
+                if not self.app.node_exists(node_name):
                     raise TacticException("Error: node [%s] does not exist in session" % node_name)
 
                 # remember the real node naming
-                rtn_path = my.app.replace_reference(node_name, current_path)
+                rtn_path = self.app.replace_reference(node_name, current_path)
                 if rtn_path != current_path:
                     info.report_warning('Update failed', \
                         '[%s] failed to load and replace reference.\n' %current_path)
                 current_node_name = node_name
-                current_node_naming = my.app.get_node_naming(current_node_name)
+                current_node_naming = self.app.get_node_naming(current_node_name)
 
 
             elif node_name == "import" or node_name == "import_media":
@@ -231,14 +231,14 @@ class SessionBuilder(object):
                 elif is_shot:
                     node_name = asset_code
                 else:
-                    node_naming = my.app.get_node_naming()
+                    node_naming = self.app.get_node_naming()
                     node_naming.set_asset_code(asset_code)
                     node_naming.set_namespace(namespace)
                     node_name = node_naming.build_node_name()
 
                 
                 unique = node.getAttribute("unique")
-                if unique == "true" and my.app.node_exists(node_name):
+                if unique == "true" and self.app.node_exists(node_name):
                     info.report_warning(node_name, 'Node [%s] already exists, skipping.' %node_name, type='urgent')
                     #print "WARNING: node '%s' already exists" % node_name
 
@@ -254,42 +254,42 @@ class SessionBuilder(object):
                     use_namespace = False
 
                 # import the file
-                current_node_name = my.import_file(node_name, current_path, \
+                current_node_name = self.import_file(node_name, current_path, \
                     instantiation_mode, use_namespace=use_namespace)
                
                 # on very first checkin which uses plain asset code, this is not true
-                if my.app.node_exists(tactic_node_name):
+                if self.app.node_exists(tactic_node_name):
                     current_node_name = tactic_node_name
 
 
-                my.app.message("current node name: %s" % current_node_name)
+                self.app.message("current node name: %s" % current_node_name)
 
                 # remember the real node naming
-                current_node_naming = my.app.get_node_naming(current_node_name)
+                current_node_naming = self.app.get_node_naming(current_node_name)
 
             elif node_name == "open":
                 tactic_node_name = node.getAttribute("node_name") 
                 asset_code = node.getAttribute("asset_code")
-                my.load_file(current_path, asset_code)
+                self.load_file(current_path, asset_code)
                 
                 if tactic_node_name:
-                    node_naming = my.app.get_node_naming()
+                    node_naming = self.app.get_node_naming()
                     node_naming.set_node_name(tactic_node_name)
                    
                 else:
                     #namespace = node.getAttribute("namespace")
-                    node_naming = my.app.get_node_naming()
+                    node_naming = self.app.get_node_naming()
                     node_naming.set_asset_code(asset_code)
                     # open mode has no namespace
                     #node_naming.set_namespace(namespace)
                     tactic_node_name = node_naming.build_node_name() 
 
                 # set the user environment
-                sandbox_dir = my.get_sandbox_dir()
+                sandbox_dir = self.get_sandbox_dir()
                 basename = os.path.basename(current_path)
-                my.app.set_user_environment(sandbox_dir, basename)
+                self.app.set_user_environment(sandbox_dir, basename)
         
-                my.check_existence(tactic_node_name)
+                self.check_existence(tactic_node_name)
 
                 
                 # remember the real node naming
@@ -302,13 +302,13 @@ class SessionBuilder(object):
                 orig_instance = node.getAttribute("instance")
                 asset_code = current_node_naming.get_asset_code()
 
-                node_naming = my.app.get_node_naming()
+                node_naming = self.app.get_node_naming()
                 node_naming.set_instance(orig_instance)
                 node_naming.set_asset_code(asset_code)
                 node_name = node_naming.build_node_name()
 
 
-                my.import_anim(node_name, current_path, current_node_name)
+                self.import_anim(node_name, current_path, current_node_name)
 
             elif node_name == "add_attr":
                 node_name = node.getAttribute("node")
@@ -321,14 +321,14 @@ class SessionBuilder(object):
                 elif use_namespace == "false":
                     pass
                 # shot snapshot uses the node_name as is with namespace probably
-                elif snap_type == 'shot' and my.load_mode != "reference":
+                elif snap_type == 'shot' and self.load_mode != "reference":
                     pass
                 else:
                     # build the full node name
                     instance = ''
                     if current_node_naming:
                         instance = current_node_naming.get_instance()
-                    node_naming = my.app.get_node_naming()
+                    node_naming = self.app.get_node_naming()
                     node_naming.set_instance(instance)
                     node_naming.set_asset_code(node_name)
 
@@ -338,8 +338,8 @@ class SessionBuilder(object):
                 value = node.getAttribute("value")
                 attr_type = node.getAttribute("type")
                 try:
-                    my.app.add_attr(node_name,attr,attr_type)
-                    my.set_attr(node_name, node, current_node_name)
+                    self.app.add_attr(node_name,attr,attr_type)
+                    self.set_attr(node_name, node, current_node_name)
                 except AppException, e:
                     info.report_warning('MEL Script Error', str(e))
                     continue
@@ -348,7 +348,7 @@ class SessionBuilder(object):
                 asset_code = node.getAttribute("asset_code")
                 namespace = node.getAttribute("namespace")
                 
-                node_naming = my.app.get_node_naming()
+                node_naming = self.app.get_node_naming()
                 node_naming.set_namespace(namespace)
                 node_naming.set_asset_code(asset_code)
 
@@ -363,15 +363,15 @@ class SessionBuilder(object):
                     node_name = current_node_name
                 if not node_name:
                     continue
-                if my.node_data.has_key(node_name):
-                    node_data = my.node_data[node_name]
+                if self.node_data.has_key(node_name):
+                    node_data = self.node_data[node_name]
                 else:
-                    node_data = my.app.get_node_data(node_name)
+                    node_data = self.app.get_node_data(node_name)
                     # clears it for the first time if it is not in append_attr mode
                     # in case the user added some junk data in it
                     if not append_attr:
                         node_data.clear()
-                    my.node_data[node_name] = node_data
+                    self.node_data[node_name] = node_data
                 name = node.getAttribute("name")
                 attr = node.getAttribute("attr")
                 value = node.getAttribute("value")
@@ -388,7 +388,7 @@ class SessionBuilder(object):
                 name = node.getAttribute("name")
                 type = node.getAttribute("type")
 
-                my.app.add_node(type, name)
+                self.app.add_node(type, name)
 
 
             elif node_name == "add_to_set":
@@ -399,18 +399,18 @@ class SessionBuilder(object):
                 # use set_item if it is defined
                 if set_item:
                     node_name = set_item
-                my.app.create_set(set_name)
+                self.app.create_set(set_name)
                 if node_name:
-                    my.app.add_to_set(set_name, node_name)
+                    self.app.add_to_set(set_name, node_name)
            
  
             elif node_name == "mel":
                 child = node.firstChild
                 cmd = child.nodeValue
-                my.handle_mel(cmd)
+                self.handle_mel(cmd)
 
             elif node_name == "save":
-                my.app.save_file()
+                self.app.save_file()
 
             elif node_name == "warning":
                 info = BaseAppInfo.get()
@@ -424,5 +424,5 @@ class SessionBuilder(object):
             elif node_name == "publish":
                 code = node.getAttribute("asset_code")
                 node_name = node.getAttribute("node")
-                my.publish_file(code, node_name)
+                self.publish_file(code, node_name)
 

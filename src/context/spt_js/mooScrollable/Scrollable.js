@@ -58,19 +58,33 @@ var Scrollable = new Class({
 
 			this.element.addEvents({
 				'mouseenter': function() {
+                    var scrollbars = document.body.scrollbars;
+                    if (!scrollbars) {
+                        scrollbars = [];
+                        document.body.scrollbars = scrollbars;
+                    }
+                    scrollbars.push(this);
+                    //this.setStyle("border", "solid 1px red");
 					if (this.scrollHeight > this.offsetHeight) {
 						scrollable.showContainer();
 					}
 					scrollable.reposition();
 				},
 				'mouseleave': function(e) {
+                    this.setStyle("border", "none");
+                    document.body.scrollbars.pop();
+
 					if (!scrollable.isInside(e) && !scrollable.active) {
 						scrollable.hideContainer();
 					}
 				},
 					// Making the element scrollable via mousewheel
 				'mousewheel': function(event) {
+
 					event.preventDefault();	// Stops the entire page from scrolling when mouse is located over the element
+                    var scrollbars = document.body.scrollbars;
+                    if (scrollbars[scrollbars.length-1] != this) return;
+
 					if ((event.wheel < 0 && this.scrollTop < (this.scrollHeight - this.offsetHeight)) || (event.wheel > 0 && this.scrollTop > 0)) {
 						this.scrollTop = this.scrollTop - (event.wheel * 30);
 						scrollable.reposition();
@@ -117,13 +131,22 @@ var Scrollable = new Class({
 		// Repositions the scrollbar by rereading the container element's dimensions/position
 		(function() {
 			this.size = this.element.getComputedSize();
+			this.xsize = this.element.getSize();
 			this.position = this.element.getPosition();
 			var containerSize = this.container.getSize();
 
-			this.container.setStyle('height', this.size['height']).setPosition({
-				x: (this.position.x+this.size['totalWidth']-containerSize.x),
-				y: (this.position.y+this.size['computedTop'])
+
+			this.container.setStyle('height', this.size['height'])
+            this.container.setPosition({
+				x: (this.position.x+this.xsize.x-containerSize.x),
+				y: (this.position.y)
 			});
+            // it is better to use the right css attribute than left so that it is dynamic
+            // on resize
+            if (this.options.justify == "right") {
+                this.container.setStyle("left", "");
+                this.container.setStyle("right", "0px");
+            }
 			this.slider.autosize();
 		}).bind(this).delay(50);
 

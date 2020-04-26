@@ -23,16 +23,16 @@ from tactic.ui.container import PopWindowWdg, ResizeScrollWdg
 
 class DevSandbox03Wdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         # UI prototype sandbox for Mike
         return "::: Developer UI Sandbox 03 - Mike :::"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "This is a prototyping and testing sandbox widget container (#3) for Mike."
 
 
-    def get_simple_div(my, text, bg_color):
+    def get_simple_div(self, text, bg_color):
         div = DivWdg()
         if bg_color:
             div.add_styles("background-color: %s; color: black; padding: 10px; border: solid 1px black;" % bg_color)
@@ -42,7 +42,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
         return div
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
         div.add_styles("background: grey; padding: 10px; width: 450px;")
@@ -55,7 +55,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
                                    # max_content_w=500, max_content_h=400,
                                    set_max_to_content_size=True,
                                    min_content_w=100, min_content_h=50 )
-        rs0_wdg.add( my.get_popwin_oversize_content() )
+        rs0_wdg.add( self.get_popwin_oversize_content() )
 
         rc_wdg.add( rs0_wdg )
         div.add( rc_wdg )
@@ -64,7 +64,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
 
         div.add( "<p style='color: black;'>Resize/Scroll Widget example ...</p>" )
         rs_wdg = ResizeScrollWdg( width=300, height=200, scroll_bar_size_str='thin', scroll_expansion='inside' )
-        rs_wdg.add( my.get_popwin_oversize_content() )
+        rs_wdg.add( self.get_popwin_oversize_content() )
         div.add( rs_wdg )
 
         div.add( "<br/><br/>" )
@@ -73,7 +73,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
                  " (just scroll bars) ...</p>" )
         rs2_wdg = ResizeScrollWdg( width=300, height=200, scroll_bar_size_str='thin', scroll_expansion='inside',
                                   no_resize=True )
-        rs2_wdg.add( my.get_popwin_oversize_content() )
+        rs2_wdg.add( self.get_popwin_oversize_content() )
         div.add( rs2_wdg )
 
         div.add( "<br/><br/>" )
@@ -81,7 +81,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
         popwin_id = "NewPopupWindowTest"
         popwin_title = "New Popup Window Widget Test"
         popwin = PopWindowWdg(top_id=popwin_id, title=popwin_title, width=150, height=150)
-        popwin.add( my.get_popwin_oversize_content() )
+        popwin.add( self.get_popwin_oversize_content() )
         div.add( popwin )
         pwin_launch = DivWdg()
 
@@ -113,14 +113,14 @@ class DevSandbox03Wdg(BaseExampleWdg):
         test_div.add( "<br/><br/>" )
         tmp_div = DivWdg()
         tmp_div.add_styles("width: 200px; background-color: green; color: black; padding: 10px;")
-        tmp_div.add("I am a DIV without my margins set")
+        tmp_div.add("I am a DIV without self margins set")
         test_div.add(tmp_div)
 
         test_div.add( "<br/><br/>" )
         tmp_div = DivWdg()
         tmp_div.add_styles("width: 200px; background-color: green; color: black; padding: 10px;")
         tmp_div.center()
-        tmp_div.add("I am a DIV with my margins<br/>set using HtmlElement.center()")
+        tmp_div.add("I am a DIV with self margins<br/>set using HtmlElement.center()")
         test_div.add(tmp_div)
 
         test_div.add( "<br/><br/>" )
@@ -163,7 +163,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
         div.add( "<br/><br/>" )
         div.add( "<br/><br/>" )
 
-        d1 = my.get_simple_div( "Drop Zone (runs cbjs_action of drag-drop element on drop)", None )
+        d1 = self.get_simple_div( "Drop Zone (runs cbjs_action of drag-drop element on drop)", None )
         d1.set_attr("SPT_ACCEPT_DROP","Qweejibo")
         d1.add_behavior( { 'type': 'hover', 'mod_styles': 'background-color: green;' } )
 
@@ -178,8 +178,8 @@ class DevSandbox03Wdg(BaseExampleWdg):
         #td.add_behavior( { 'type': 'hover', 'mod_styles': 'background-color: green;' } )
         div.add(table1)
 
-        # d2 = my.get_simple_div( "Pick Up!", "white" )
-        d2 = my.get_simple_div( "Override with 'accept_drop' behavior!", None )
+        # d2 = self.get_simple_div( "Pick Up!", "white" )
+        d2 = self.get_simple_div( "Override with 'accept_drop' behavior!", None )
         d2.add_looks("menu");
 
         # NOTE: with 'accept_drop' behavior you do not need to set the "SPT_ACCEPT_DROP" attribute on the
@@ -325,7 +325,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
         return div
 
 
-    def get_popwin_oversize_content(my):
+    def get_popwin_oversize_content(self):
 
         div = DivWdg()
         div.add_styles("background-color: orange; color: black; padding: 20px; width: 600px;")
@@ -340,7 +340,7 @@ class DevSandbox03Wdg(BaseExampleWdg):
 Give me excess of it, that, surfeiting,
 The appetite may sicken, and so die.
 That strain again! it had a dying fall:
-O, it came o'er my ear like the sweet sound,
+O, it came o'er self ear like the sweet sound,
 That breathes upon a bank of violets,
 Stealing and giving odour! Enough; no more:
 'Tis not so sweet now as it was before.
@@ -354,7 +354,7 @@ That it alone is high fantastical.</p>
 
 <h2>CURIO</h2>
 
-<p>Will you go hunt, my lord?</p>
+<p>Will you go hunt, self lord?</p>
 
 <h2>DUKE ORSINO</h2>
 
@@ -370,7 +370,7 @@ That it alone is high fantastical.</p>
 O, when mine eyes did see Olivia first,
 Methought she purged the air of pestilence!
 That instant was I turn'd into a hart;
-And my desires, like fell and cruel hounds,
+And self desires, like fell and cruel hounds,
 E'er since pursue me.</p>
 
 <p><i>Enter VALENTINE</i><p>
@@ -379,7 +379,7 @@ E'er since pursue me.</p>
 
 <h2>VALENTINE</h2>
 
-<p>So please my lord, I might not be admitted;
+<p>So please self lord, I might not be admitted;
 But from her handmaid do return this answer:
 The element itself, till seven years' heat,
 Shall not behold her face at ample view;

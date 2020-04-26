@@ -11,12 +11,12 @@ from pyasm.search import Search
 class ModTaskCmd(Command):
 
 
-    def get_title(my):
+    def get_title(self):
         ''' this is just for show for now'''
         return "Mod Task"
 
-    def execute(my):
-        my.add_description("Set task's context to match process if empty")
+    def execute(self):
+        self.add_description("Set task's context to match process if empty")
         search = Search('sthpw/task')
         search.add_filter('context', None)
         tasks = search.get_sobjects()

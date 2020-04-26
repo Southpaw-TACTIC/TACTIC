@@ -50,10 +50,10 @@ class OverlayStatsWdg(BaseTableElementWdg):
 
     }
 
-    def get_display(my):
-        expr = my.kwargs.get('expr')
-        sobject = my.kwargs.get('sobject')
-        bg_color = my.kwargs.get('bg_color')
+    def get_display(self):
+        expr = self.kwargs.get('expr')
+        sobject = self.kwargs.get('sobject')
+        bg_color = self.kwargs.get('bg_color')
         bg_colors = bg_color.split(',')
         bg_colors = [ x.strip() for x in bg_colors ]
 

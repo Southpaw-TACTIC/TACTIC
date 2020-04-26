@@ -34,11 +34,11 @@ class ChartWdgOld(BaseRefreshWdg):
 
     }
 
-    def get_display(my):
+    def get_display(self):
 
-        chart_data = my.kwargs.get('chart')
-        data_file = my.kwargs.get('data_file')
-        width = my.kwargs.get('width')
+        chart_data = self.kwargs.get('chart')
+        data_file = self.kwargs.get('data_file')
+        width = self.kwargs.get('width')
         if not width:
             width = '100%'
 
@@ -137,7 +137,7 @@ class ChartWdgOld(BaseRefreshWdg):
             swfobject.embedSWF(ofc_url, bvr.chart_id, width, height, "9.0.0", "expressInstall.swf", flashvars, params, attrs);
 
             window.addEvent('domready', function(){
-                    $(bvr.chart_id).makeResizable();
+                    document.id(bvr.chart_id).makeResizable();
             });
 
             '''

@@ -20,33 +20,33 @@ from tactic.ui.common import BaseRefreshWdg
 
 
 class TableActionWdg(Widget):
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.target_id = kwargs.get("target_id")
+        self.handle_args(kwargs)
+        self.target_id = kwargs.get("target_id")
 
         # FIXME: this is very tenous!!!
-        my.table_id = "%s_table" % my.target_id
+        self.table_id = "%s_table" % self.target_id
 
     #
     # Define a standard format for widgets
     #
     # Get it from web_form_values()
-    def get_args_keys(my):
+    def get_args_keys(self):
         '''external settings which populate the widget'''
         return {
         'target_id': 'Dom element target to replace the views',
         }
 
-    def handle_args(my, kwargs):
+    def handle_args(self, kwargs):
         # verify the args
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in kwargs.keys():
             if not args_keys.has_key(key):
                 raise WidgetException("Key [%s] not in accepted arguments" % key)
 
         web = WebContainer.get_web()
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in args_keys.keys():
             if not kwargs.has_key(key):
                 value = web.get_form_value(key)
@@ -55,7 +55,7 @@ class TableActionWdg(Widget):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
         # add a view action
         view_div = DivWdg()
@@ -67,40 +67,40 @@ class TableActionWdg(Widget):
         view_div.add_style("float: right")
         view_div.add(view_select)
 
-        #view_select.add_event("onchange", "spt.dg_table.retire_selected_cbk('%s')" % my.target_id)
-        view_select.add_event("onchange", "spt.dg_table.table_action_cbk(this,'%s')" % my.table_id )
+        #view_select.add_event("onchange", "spt.dg_table.retire_selected_cbk('%s')" % self.target_id)
+        view_select.add_event("onchange", "spt.dg_table.table_action_cbk(this,'%s')" % self.table_id )
 
         return view_div
 
 
 class ViewActionWdg(Widget):
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         # get the them from cgi
-        my.handle_args(kwargs)
-        my.target_id = kwargs.get("target_id")
+        self.handle_args(kwargs)
+        self.target_id = kwargs.get("target_id")
 
         # FIXME: this is very tenous!!!
-        my.table_id = "%s_table" % my.target_id
+        self.table_id = "%s_table" % self.target_id
 
     #
     # Define a standard format for widgets
     #
     # Get it from web_form_values()
-    def get_args_keys(my):
+    def get_args_keys(self):
         '''external settings which populate the widget'''
         return {
         'target_id': 'Dom element target to replace the views',
         }
 
-    def handle_args(my, kwargs):
+    def handle_args(self, kwargs):
         # verify the args
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in kwargs.keys():
             if not args_keys.has_key(key):
                 raise WidgetException("Key [%s] not in accepted arguments" % key)
 
         web = WebContainer.get_web()
-        args_keys = my.get_args_keys()
+        args_keys = self.get_args_keys()
         for key in args_keys.keys():
             if not kwargs.has_key(key):
                 value = web.get_form_value(key)
@@ -109,7 +109,7 @@ class ViewActionWdg(Widget):
 
 
 
-    def get_display(my):
+    def get_display(self):
         # add a view action
         view_div = DivWdg()
         view_select = SelectWdg("action|view_action")
@@ -120,7 +120,7 @@ class ViewActionWdg(Widget):
         view_div.add_style("float: right")
         view_div.add(view_select)
 
-        view_select.add_event("onchange", "spt.dg_table.view_action_cbk(this,'%s')" % my.table_id)
+        view_select.add_event("onchange", "spt.dg_table.view_action_cbk(this,'%s')" % self.table_id)
 
         return view_div
 

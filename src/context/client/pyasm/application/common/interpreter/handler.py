@@ -20,29 +20,29 @@ from pyasm.application.common import AppEnvironment
 
 class Handler(object):
 
-    def __init__(my):
-        my.env = AppEnvironment.get()
-        my.app = my.env.get_app()
-        my.server = None
-        my.input = {}
-        my.output = {}
+    def __init__(self):
+        self.env = AppEnvironment.get()
+        self.app = self.env.get_app()
+        self.server = None
+        self.input = {}
+        self.output = {}
 
-    def set_package(my, package):
-        my.package = package
+    def set_package(self, package):
+        self.package = package
 
-    def set_server(my, server):
+    def set_server(self, server):
         '''holds a reference to the Tactic server stub'''
-        my.server = server
+        self.server = server
 
-    def get_server(my):
-        return my.server
-
-
+    def get_server(self):
+        return self.server
 
 
-    def get_value(my, path):
+
+
+    def get_value(self, path):
         parts = path.split("/")
-        current = my.package
+        current = self.package
         for part in parts:
             current = current.get(part)
             # explict None comparison: empty string should go through
@@ -59,11 +59,11 @@ class Handler(object):
         else:
             return current
 
-    def get_output(my):
-        return my.output
+    def get_output(self):
+        return self.output
 
-    def set_input(my, input):
-        my.input = input
+    def set_input(self, input):
+        self.input = input
 
 
     #
@@ -77,28 +77,28 @@ class Handler(object):
     # Data accessor methods
     #
 
-    def get_input_value(my, name):
-        return my.input.get(name)
+    def get_input_value(self, name):
+        return self.input.get(name)
 
-    def set_output_value(my, name, value):
-        my.output[name] = value
+    def set_output_value(self, name, value):
+        self.output[name] = value
 
-    def get_output_value(my, name):
-        return my.output.get(name)
+    def get_output_value(self, name):
+        return self.output.get(name)
 
-    def get_package_value(my, path):
-        return my.get_value(path)
+    def get_package_value(self, path):
+        return self.get_value(path)
 
 
     #
     # Implmentation method
     #
 
-    def execute(my):
+    def execute(self):
         '''method that does all of the work'''
         pass
 
-    def undo(my):
+    def undo(self):
         '''method that undos what execute just did'''
         pass
 

@@ -15,9 +15,12 @@ __all__ = ['TriggerToolWdg', 'TriggerDetailWdg',
 'PythonScriptTriggerEditWdg', 'PythonClassTriggerEditWdg',
 'StatusTriggerEditCbk', 'NotificationTriggerEditCbk',
 'PythonScriptTriggerEditCbk', 'PythonClassTriggerEditCbk',
+'TriggerParentStatusEditWdg', 'TriggerParentStatusEditCbk',
+
 'TriggerCreateWdg', 'TriggerCreateCbk',
 'TriggerCompleteWdg', 'TriggerCompleteCbk',
 'TriggerDateWdg', 'TriggerDateCbk',
+
 'EventTriggerEditWdg'
 ]
 
@@ -42,9 +45,9 @@ class TriggerToolWdg(BaseRefreshWdg):
     
     FOLDER_PREFIX  = '_triggers'
 
-    def get_display(my):
+    def get_display(self):
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if not search_key:
             web = WebContainer.get_web()
             search_key = web.get_form_value("search_key")
@@ -55,42 +58,42 @@ class TriggerToolWdg(BaseRefreshWdg):
 
 
         # pipeline mode is default
-        my.mode = my.kwargs.get("mode")
-        if not my.mode:
-            my.mode = 'pipeline'
+        self.mode = self.kwargs.get("mode")
+        if not self.mode:
+            self.mode = 'pipeline'
 
-        #my.mode = "pipeline"
+        #self.mode = "pipeline"
 
         top = DivWdg()
         top.add_class("spt_trigger_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         inner = DivWdg()
         top.add(inner)
 
-        if my.mode == 'pipeline':
-            my.pipeline_code = my.kwargs.get("pipeline_code")
-            my.process = my.kwargs.get("process")
+        if self.mode == 'pipeline':
+            self.pipeline_code = self.kwargs.get("pipeline_code")
+            self.process = self.kwargs.get("process")
             # Is this necessary?
-            if my.process:
-                top.add_attr("spt_process", my.process)
+            if self.process:
+                top.add_attr("spt_process", self.process)
 
-            top.add_attr("spt_pipeline_code", my.pipeline_code)
-            my.title = my.process
-            my.search_type = my.kwargs.get("search_type")
+            top.add_attr("spt_pipeline_code", self.pipeline_code)
+            self.title = self.process
+            self.search_type = self.kwargs.get("search_type")
 
             search = Search("config/process")
-            search.add_filter("pipeline_code", my.pipeline_code)
-            search.add_filter("process", my.process)
-            my.process_sobj = search.get_sobject()
+            search.add_filter("pipeline_code", self.pipeline_code)
+            search.add_filter("process", self.process)
+            self.process_sobj = search.get_sobject()
 
 
         else:
-            my.pipeline_code = ''
-            my.process =''
-            my.search_type = my.kwargs.get("search_type")
-            top.add_attr("spt_search_type", my.search_type)
-            my.title = my.search_type
+            self.pipeline_code = ''
+            self.process =''
+            self.search_type = self.kwargs.get("search_type")
+            top.add_attr("spt_search_type", self.search_type)
+            self.title = self.search_type
 
 
         table = ResizableTableWdg()
@@ -124,10 +127,10 @@ class TriggerToolWdg(BaseRefreshWdg):
         add_button.add_behavior( {
         'type': 'click_up',
         'kwargs': {
-            'mode': my.mode,
-            'search_type': my.search_type,
-            'pipeline_code': my.pipeline_code,
-            'process': my.process
+            'mode': self.mode,
+            'search_type': self.search_type,
+            'pipeline_code': self.pipeline_code,
+            'process': self.process
         },
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_trigger_top");
@@ -152,21 +155,21 @@ class TriggerToolWdg(BaseRefreshWdg):
         triggers_div.add_style("min-height: 400px")
         left.add_color("background", "background", -3)
         
-        my.process_code = ''
+        self.process_code = ''
         # find the triggers
         search = Search("config/trigger")
-        if my.mode == 'pipeline':
-            if my.process_sobj:
+        if self.mode == 'pipeline':
+            if self.process_sobj:
                 search.add_op('begin')
-            search.add_filter("process", my.process)
-            if my.process_sobj:
-                my.process_code = my.process_sobj.get_code()
-                search.add_filter("process", my.process_code)
+            search.add_filter("process", self.process)
+            if self.process_sobj:
+                self.process_code = self.process_sobj.get_code()
+                search.add_filter("process", self.process_code)
                 search.add_op("or")
         else:
             search.add_op('begin')
-            search.add_filter("event", "%%|%s" % my.search_type, op='like')
-            search.add_filter("search_type", my.search_type)
+            search.add_filter("event", "%%|%s" % self.search_type, op='like')
+            search.add_filter("search_type", self.search_type)
             search.add_op("or")
 
 
@@ -177,7 +180,7 @@ class TriggerToolWdg(BaseRefreshWdg):
             cur_trigger = triggers[0]
 
             for i, trigger in enumerate(triggers):
-                trigger_div = my.get_trigger_wdg(trigger, i+1)
+                trigger_div = self.get_trigger_wdg(trigger, i+1)
                 triggers_div.add(trigger_div)
                 trigger_div.add("<br clear='all'/>")
         else:
@@ -189,22 +192,24 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         triggers_div.add("<b>Notifications</b><hr/>")
         search = Search("sthpw/notification")
-        if my.mode == 'pipeline':
-            if my.process_sobj:
+        if self.mode == 'pipeline':
+            if self.process_sobj:
                 search.add_op('begin')
-            search.add_filter("process", my.process)
-            if my.process_sobj:
-                search.add_filter("process", my.process_sobj.get_code())
+            search.add_filter("process", self.process)
+            if self.process_sobj:
+                search.add_filter("process", self.process_sobj.get_code())
                 search.add_op("or")
         else:
             search.add_op('begin')
-            search.add_filter("event", "%%|%s" % my.search_type, op='like')
-            search.add_filter("search_type", my.search_type)
+            search.add_filter("event", "%%|%s" % self.search_type, op='like')
+            search.add_filter("search_type", self.search_type)
             search.add_op("or")
+
         search.add_project_filter()
         triggers = search.get_sobjects()
+
         for i, trigger in enumerate(triggers):
-            trigger_div = my.get_trigger_wdg(trigger, i+1)
+            trigger_div = self.get_trigger_wdg(trigger, i+1)
             triggers_div.add(trigger_div)
             trigger_div.add("<br clear='all'/>")
 
@@ -217,7 +222,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         search = Search("sthpw/trigger")
         triggers = search.get_sobjects()
         for trigger in triggers:
-            trigger_div = my.get_trigger_wdg(trigger)
+            trigger_div = self.get_trigger_wdg(trigger)
             triggers_div.add(trigger_div)
             trigger_div.add("<br clear='all'/>")
         if not triggers:
@@ -240,11 +245,11 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         if current_trigger:
             kwargs = {
-                'mode': my.mode,
+                'mode': self.mode,
                 'trigger': current_trigger,
-                'pipeline_code': my.pipeline_code,
-                'process': my.process,
-                'search_type': my.search_type,
+                'pipeline_code': self.pipeline_code,
+                'process': self.process,
+                'search_type': self.search_type,
             }
 
             right.add( TriggerDetailWdg(**kwargs) )
@@ -266,14 +271,14 @@ class TriggerToolWdg(BaseRefreshWdg):
             div.add("<b>No Triggers Selected</b>")
 
 
-        if my.kwargs.get("is_refresh") in [True, 'true']:
+        if self.kwargs.get("is_refresh") in [True, 'true']:
             return inner
         else:
             return top
 
 
 
-    def get_trigger_wdg(my, trigger, index=1):
+    def get_trigger_wdg(self, trigger, index=1):
         trigger_div = DivWdg()
         trigger_div.add_style("padding: 3px 3px 3px 12px")
         trigger_div.add_class("hand")
@@ -308,7 +313,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         #trigger_div.add(checkbox)
         trigger_div.add("%s. %s" % (index, title))
 
-        if trigger.get_value("process") == my.process:
+        if trigger.get_value("process") == self.process:
             trigger_div.add(" <i style='opacity: 0.5'>(global)</i>")
         else:
             trigger_div.add(" <i style='opacity: 0.5'>(local)</i>")
@@ -318,11 +323,11 @@ class TriggerToolWdg(BaseRefreshWdg):
         trigger_div.add_behavior( {
         'type': 'click_up',
         'kwargs': {
-            'mode': my.mode,
-            'search_type': my.search_type,
+            'mode': self.mode,
+            'search_type': self.search_type,
             'search_key': search_key,
-            'pipeline_code': my.pipeline_code,
-            'process': my.process
+            'pipeline_code': self.pipeline_code,
+            'process': self.process
         },
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_trigger_top");
@@ -338,68 +343,68 @@ class TriggerToolWdg(BaseRefreshWdg):
 
 class TriggerDetailWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        my.search_key = my.kwargs.get("search_key")
-        if my.search_key:
-            trigger = Search.get_by_search_key(my.search_key)
+    def get_display(self):
+        self.search_key = self.kwargs.get("search_key")
+        if self.search_key:
+            trigger = Search.get_by_search_key(self.search_key)
         else:
-            trigger = my.kwargs.get("trigger")
+            trigger = self.kwargs.get("trigger")
 
 
         # Determine the mode for this widget. 
-        my.mode = my.kwargs.get("mode")
-        assert my.mode
+        self.mode = self.kwargs.get("mode")
+        assert self.mode
 
 
         # get some info about where this trigger should be defined
-        if my.mode == 'pipeline':
-            my.pipeline_code = my.kwargs.get("pipeline_code")
-            my.process = my.kwargs.get("process")
+        if self.mode == 'pipeline':
+            self.pipeline_code = self.kwargs.get("pipeline_code")
+            self.process = self.kwargs.get("process")
 
-            my.pipeline = Pipeline.get_by_code(my.pipeline_code)
+            self.pipeline = Pipeline.get_by_code(self.pipeline_code)
 
-            if my.process:
-                my.process_obj = my.pipeline.get_process(my.process)
+            if self.process:
+                self.process_obj = self.pipeline.get_process(self.process)
             else:
-                my.process_obj = None
+                self.process_obj = None
 
-            if my.process_obj:
-                process_type = my.process_obj.get_type()
+            if self.process_obj:
+                process_type = self.process_obj.get_type()
             else:
                 process_type = None
 
 
             search = Search("config/process")
-            search.add_filter("pipeline_code", my.pipeline_code)
-            search.add_filter("process", my.process)
-            my.process_sobj = search.get_sobject()
+            search.add_filter("pipeline_code", self.pipeline_code)
+            search.add_filter("process", self.process)
+            self.process_sobj = search.get_sobject()
 
 
-            #my.search_type = ""
-            my.search_type = my.kwargs.get("search_type")
-            if not my.search_type:
-                my.search_type = my.pipeline.get_value("search_type")
+            #self.search_type = ""
+            self.search_type = self.kwargs.get("search_type")
+            if not self.search_type:
+                self.search_type = self.pipeline.get_value("search_type")
 
         else:
-            my.pipeline = None
+            self.pipeline = None
             # search_type is process from schema editor ...
-            my.search_type = my.kwargs.get("search_type")
-            my.pipeline_code = ""
-            my.process = None
-            my.pipeline = None
-            my.process_obj = None
-            my.process_sobj = None
+            self.search_type = self.kwargs.get("search_type")
+            self.pipeline_code = ""
+            self.process = None
+            self.pipeline = None
+            self.process_obj = None
+            self.process_sobj = None
 
 
         top = DivWdg()
         top.add_class("spt_trigger_detail_top")
 
-        top.add( my.get_add_trigger_wdg(trigger) )
+        top.add( self.get_add_trigger_wdg(trigger) )
 
         return top
 
 
-    def get_add_trigger_wdg(my, trigger):
+    def get_add_trigger_wdg(self, trigger):
 
         div = DivWdg()
 
@@ -456,8 +461,8 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
         if not trigger:
-            if my.process:
-                div.add("<b>Add a new trigger for process [%s]</b><hr/>" % my.process)
+            if self.process:
+                div.add("<b>Add a new trigger for process [%s]</b><hr/>" % self.process)
             else:
                 div.add("<b>Add a new trigger</b><hr/>" )
             event = ''
@@ -477,12 +482,12 @@ class TriggerDetailWdg(BaseRefreshWdg):
             title = trigger.get_value("title", no_exception=True)
 
 
-            if my.process:
-                div.add("<b>Edit existing trigger for process [%s]</b><hr/>" % my.process)
+            if self.process:
+                div.add("<b>Edit existing trigger for process [%s]</b><hr/>" % self.process)
             else:
                 div.add("<b>Edit existing trigger</b><hr/>")
 
-            if trigger.get_value("process") == my.process:
+            if trigger.get_value("process") == self.process:
                 scope = "global"
             else:
                 scope = "local"
@@ -509,14 +514,19 @@ class TriggerDetailWdg(BaseRefreshWdg):
             script_path = trigger.get_value("script_path")
 
             data = trigger.get_json_value("data")
-            if data:
+            if data and isinstance(data,dict):
                 class_path = data.get("class_path")
                 if class_path:
                     class_name = class_path
+            else:
+                class_name = None
+                class_path = None
 
             # TODO: should use trigger_type in database
             if class_name == 'tactic.command.PipelineTaskStatusTrigger' and not script_path:
                 trigger_type = 'task_status'
+            elif class_name == 'tactic.command.PipelineParentStatusTrigger' and not script_path:
+                trigger_type = 'parent_status'
             elif class_name == 'tactic.command.PipelineTaskStatusTrigger' and script_path:
                 trigger_type = 'custom_script'
             elif class_name == 'tactic.command.PipelineTaskCreateTrigger':
@@ -581,7 +591,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         # TODO: not sure if this is necessary ... maybe should always be local
         # unless you create it from scratch in the TableLayout
-        if my.mode == "pipeline":
+        if self.mode == "pipeline":
             tr, td = table.add_row_cell()
             td.add("Scope:<br/>")
             radio = RadioWdg("scope")
@@ -595,7 +605,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
             if scope == "global":
                 radio.set_checked()
             td.add(radio)
-            td.add(' All "%s" processes<br/>' % my.process)
+            td.add(' All "%s" processes<br/>' % self.process)
             td.add("<br/>")
 
 
@@ -608,7 +618,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
         # Higher level triggers
-        if my.mode == 'pipeline':
+        if self.mode == 'pipeline':
             event_labels = [
                 'A new note is added',
                 'A task status is changed',
@@ -624,9 +634,9 @@ class TriggerDetailWdg(BaseRefreshWdg):
                 'change|sthpw/task|assigned',
                 'change|sthpw/note'
             ]
-            if my.search_type:
+            if self.search_type:
                 event_labels.append('Files are checked in')
-                event_values.append("checkin|%s"%my.search_type)
+                event_values.append("checkin|%s"%self.search_type)
         else:
             event_labels = [
                 'An item is added',
@@ -640,14 +650,14 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
             event_values = [
-                'insert|%s' % my.search_type,
-                'update|%s' % my.search_type,
+                'insert|%s' % self.search_type,
+                'update|%s' % self.search_type,
                 'insert|sthpw/note',
                 'change|sthpw/task|status',
                 'change|sthpw/task|assigned',
             ]
-            event_values.append('checkin|%s' % my.search_type)
-            #event_values.append('checkout|%s' % my.search_type)
+            event_values.append('checkin|%s' % self.search_type)
+            #event_values.append('checkout|%s' % self.search_type)
 
 
 
@@ -683,10 +693,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
         select.add_behavior( {
         'type': 'change',
         'kwargs': {
-            'mode': my.mode,
-            'pipeline_code': my.pipeline_code,
-            'process': my.process,
-            'search_type': my.search_type,
+            'mode': self.mode,
+            'pipeline_code': self.pipeline_code,
+            'process': self.process,
+            'search_type': self.search_type,
         },
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_trigger_detail_top");
@@ -707,7 +717,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
         #tr, td = table.add_row_cell()
-        #td.add("Search Type (from pipeline): %s" % my.search_type)
+        #td.add("Search Type (from pipeline): %s" % self.search_type)
 
         event_div = DivWdg()
         event_div.add_style("width: 100%")
@@ -719,7 +729,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         #event_div.add_style("padding: 5px")
         #event_div.add_style("margin: 10px")
 
-        kwargs = my.kwargs.copy()
+        kwargs = self.kwargs.copy()
         kwargs['trigger'] = trigger
         kwargs['event'] = event
         kwargs['custom_event'] = custom_event
@@ -731,15 +741,17 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
         # Handle the action
-        if my.mode == 'pipeline':
+        if self.mode == 'pipeline':
             trigger_labels = [
                 'Send a notification',
+                'Update parent status',
                 'Update another task status',
                 'Create another task',
                 'Set actual task date',
             ]
             trigger_values = [
                 'notification',
+                'parent_status',
                 'task_status',
                 'task_create',
                 'task_date',
@@ -832,14 +844,14 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
         # get the process sobject
         search = Search("config/process")
-        search.add_filter("pipeline_code", my.pipeline_code)
-        search.add_filter("process", my.process)
+        search.add_filter("pipeline_code", self.pipeline_code)
+        search.add_filter("process", self.process)
         process_sobj = search.get_sobject()
         
         # you can't always get a process_sobj
-        my.process_code = ''
+        self.process_code = ''
         if process_sobj:
-            my.process_code = process_sobj.get_code()
+            self.process_code = process_sobj.get_code()
 
         select.add_empty_option("-- Choose action --")
         td.add(select)
@@ -851,9 +863,9 @@ class TriggerDetailWdg(BaseRefreshWdg):
         select.add_behavior( {
         'type': 'change',
         'kwargs': {
-            'pipeline_code': my.pipeline_code,
-            'process': my.process,
-            'process_code': my.process_code,
+            'pipeline_code': self.pipeline_code,
+            'process': self.process,
+            'process_code': self.process_code,
             'search_key': trigger_sk
         },
         'cbjs_action': '''
@@ -871,6 +883,11 @@ class TriggerDetailWdg(BaseRefreshWdg):
             trigger_wdg = 'tactic.ui.tools.NotificationTriggerEditWdg';
             trigger_cbk = 'tactic.ui.tools.NotificationTriggerEditCbk';
         }
+        else if (trigger_type == "parent_status") {
+            trigger_wdg = 'tactic.ui.tools.TriggerParentStatusEditWdg';
+            trigger_cbk = 'tactic.ui.tools.TriggerParentStatusEditCbk';
+        }
+
         else if (trigger_type == "task_status") {
             trigger_wdg = 'tactic.ui.tools.StatusTriggerEditWdg';
             trigger_cbk = 'tactic.ui.tools.StatusTriggerEditCbk';
@@ -917,7 +934,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
         #trigger_div.add_color("background", "background", -5)
         #trigger_div.add_style("margin: 10px")
 
-        kwargs = my.kwargs.copy()
+        kwargs = self.kwargs.copy()
         kwargs['trigger'] = trigger
 
 
@@ -925,6 +942,10 @@ class TriggerDetailWdg(BaseRefreshWdg):
         if trigger_type == "notification":
             trigger_wdg = NotificationTriggerEditWdg(**kwargs)
             trigger_cbk = "tactic.ui.tools.NotificationTriggerEditCbk"
+
+        elif trigger_type == "parent_status":
+            trigger_wdg = TriggerParentStatusEditWdg(**kwargs)
+            trigger_cbk = "tactic.ui.tools.TriggerParentStatusEditCbk"
 
         elif trigger_type == "task_status":
             trigger_wdg = StatusTriggerEditWdg(**kwargs)
@@ -1004,7 +1025,7 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 
 
-    def get_trigger_context_menu(my):
+    def get_trigger_context_menu(self):
         menu = Menu(width=180)
         menu.set_allow_icons(False)
         menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
@@ -1029,32 +1050,32 @@ class TriggerDetailWdg(BaseRefreshWdg):
 
 class BaseTriggerEditWdg(BaseRefreshWdg):
 
-    def get_trigger_type(my):
+    def get_trigger_type(self):
         pass
 
-    def get_display_class(my):
-        return Common.get_full_class_name(my)
+    def get_display_class(self):
+        return Common.get_full_class_name(self)
 
-    def get_callback_class(my):
+    def get_callback_class(self):
         pass
 
-    def get_display(my):
+    def get_display(self):
         return "No Display Defined"
 
 
 
 class TaskCompleteTestWdg(BaseTriggerEditWdg):
 
-    def get_trigger_type(my):
+    def get_trigger_type(self):
         return "task_complete"
 
-    #def get_display_class(my):
+    #def get_display_class(self):
     #    return 'tactic.ui.tools.TriggerCompleteWdg'
 
-    def get_callback_class(my):
+    def get_callback_class(self):
         return 'tactic.ui.tools.TriggerCompleteCbk'
 
-    def get_display(my):
+    def get_display(self):
         return "TaskCompleteTestWdg"
 
 
@@ -1062,12 +1083,12 @@ class TaskCompleteTestWdg(BaseTriggerEditWdg):
 
 class EventTriggerEditWdg(BaseRefreshWdg):
     ''' This class displays options for a chosen event'''
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        process = my.kwargs.get("process")
-        pipeline_code = my.kwargs.get("pipeline_code")
-        search_type = my.kwargs.get("search_type")
+        process = self.kwargs.get("process")
+        pipeline_code = self.kwargs.get("pipeline_code")
+        search_type = self.kwargs.get("search_type")
 
         if search_type:
             search = Search("sthpw/pipeline")
@@ -1083,13 +1104,13 @@ class EventTriggerEditWdg(BaseRefreshWdg):
                 return top
 
 
-        event = my.kwargs.get("event")
+        event = self.kwargs.get("event")
         if not event:
             return top
 
 
 
-        trigger = my.kwargs.get("trigger")
+        trigger = self.kwargs.get("trigger")
         if trigger:
             data = trigger.get_value("data", no_exception=True)
             if data:
@@ -1109,7 +1130,7 @@ class EventTriggerEditWdg(BaseRefreshWdg):
             text = TextInputWdg(name="custom_event")
             top.add(text)
 
-            custom_event = my.kwargs.get("custom_event")
+            custom_event = self.kwargs.get("custom_event")
             if custom_event:
                 text.set_value(custom_event)
 
@@ -1221,33 +1242,36 @@ class EventTriggerEditWdg(BaseRefreshWdg):
 
 class StatusTriggerEditWdg(BaseRefreshWdg):
 
-    def get_display(my):
-        trigger = my.kwargs.get("trigger")
+    def get_display(self):
+        trigger = self.kwargs.get("trigger")
         if trigger:
-            my.data = trigger.get_value("data")
-            if not my.data:
-                my.data = {}
+            self.data = trigger.get_value("data")
+            if not self.data:
+                self.data = {}
             else:
-                my.data = jsonloads(my.data)
-            if isinstance(my.data, dict):
-                my.data = [my.data]
+                try:
+                    self.data = jsonloads(self.data)
+                except:
+                    self.data = {}
+            if isinstance(self.data, dict):
+                self.data = [self.data]
         else:
-            my.data = []
+            self.data = []
 
         status_div = DivWdg()
 
 
-        process = my.kwargs.get("process")
-        pipeline_code = my.kwargs.get("pipeline_code")
-        my.pipeline = Pipeline.get_by_code(pipeline_code)
+        process = self.kwargs.get("process")
+        pipeline_code = self.kwargs.get("pipeline_code")
+        self.pipeline = Pipeline.get_by_code(pipeline_code)
 
-        processes = my.pipeline.get_process_names()
+        processes = self.pipeline.get_process_names()
 
 
 
         #use_parent = True
-        #search_type = my.pipeline.get_value("search_type")
-        #print "search_type: ", search_type
+        #search_type = self.pipeline.get_value("search_type")
+        #print("search_type: ", search_type)
         #from pyasm.biz import Schema
         #schema = Schema.get()
         #related_types  = schema.get_related_search_types(search_type)
@@ -1256,13 +1280,13 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
 
 
-        outputs = my.pipeline.get_output_processes(process)
+        outputs = self.pipeline.get_output_processes(process)
         outputs = [x.get_name() for x in outputs]
-        inputs = my.pipeline.get_input_processes(process)
+        inputs = self.pipeline.get_input_processes(process)
         inputs = [x.get_name() for x in inputs]
 
         status_div.add("This process<br/>")
-        process_div = my.get_process_div(process)
+        process_div = self.get_process_div(process)
         status_div.add(process_div)
         if process in processes:
             processes.remove(process)
@@ -1272,7 +1296,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
         if inputs:
             status_div.add("<br/>Inputs:<br/>")
         for input in inputs:
-            process_div = my.get_process_div(input)
+            process_div = self.get_process_div(input)
             status_div.add(process_div)
             if input in processes:
                 processes.remove(input)
@@ -1280,7 +1304,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
         if outputs:
             status_div.add("<br/>Outputs:<br/>")
         for output in outputs:
-            process_div = my.get_process_div(output)
+            process_div = self.get_process_div(output)
             status_div.add(process_div)
             if output in processes:
                 processes.remove(output)
@@ -1288,7 +1312,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
         if processes:
             status_div.add("<br/>Others:<br/>")
         for process in processes:
-            process_div = my.get_process_div(process)
+            process_div = self.get_process_div(process)
             status_div.add(process_div)
 
 
@@ -1301,7 +1325,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
 
 
-    def get_process_div(my, process):
+    def get_process_div(self, process):
         process_div = DivWdg()
         process_div.add_style("padding: 8px 5px")
 
@@ -1312,7 +1336,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
         is_checked = False
         dst_status = ''
-        for data in my.data:
+        for data in self.data:
             if data.get('dst_process') == process:
                 checkbox.set_checked()
                 dst_status = data.get('dst_status')
@@ -1323,7 +1347,7 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
 
         task_pipeline = None
-        process_obj = my.pipeline.get_process(process)
+        process_obj = self.pipeline.get_process(process)
         if process_obj:
             task_pipeline_code = process_obj.get_task_pipeline()
             task_pipeline = Pipeline.get_by_code(task_pipeline_code)
@@ -1360,28 +1384,28 @@ class StatusTriggerEditWdg(BaseRefreshWdg):
 
 class BaseTriggerEditCbk(Command):
 
-    def get_trigger(my):
+    def get_trigger(self):
         # Create the trigger from the options
 
 
-        scope = my.kwargs.get("scope")
+        scope = self.kwargs.get("scope")
 
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
 
-        event = my.kwargs.get("event")
+        event = self.kwargs.get("event")
         if event == '__custom__':
-            event = my.kwargs.get("custom_event")
+            event = self.kwargs.get("custom_event")
 
 
-        pipeline_code = my.kwargs.get("pipeline_code")
-        process = my.kwargs.get("process")
-        listen_process = my.kwargs.get("listen_process")
-        search_type = my.kwargs.get("search_type")
+        pipeline_code = self.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+        listen_process = self.kwargs.get("listen_process")
+        search_type = self.kwargs.get("search_type")
 
-        code = my.kwargs.get("code")
-        title = my.kwargs.get("title")
-        description = my.kwargs.get("description") 
+        code = self.kwargs.get("code")
+        title = self.kwargs.get("title")
+        description = self.kwargs.get("description") 
 
 
 
@@ -1404,7 +1428,7 @@ class BaseTriggerEditCbk(Command):
 
         if process:
             if scope == "local":
-                pipeline_code = my.kwargs.get("pipeline_code")
+                pipeline_code = self.kwargs.get("pipeline_code")
                 search = Search("config/process")
                 search.add_filter("pipeline_code", pipeline_code)
                 search.add_filter("process", process)
@@ -1425,7 +1449,7 @@ class BaseTriggerEditCbk(Command):
 
 
 
-        class_name = my.get_class_name()
+        class_name = self.get_class_name()
         if class_name:
             trigger.set_value("class_name", class_name)
             trigger.set_value("script_path", "")
@@ -1447,35 +1471,35 @@ class BaseTriggerEditCbk(Command):
 class StatusTriggerEditCbk(BaseTriggerEditCbk):
 
 
-    def get_class_name(my): 
+    def get_class_name(self): 
         class_name = 'tactic.command.PipelineTaskStatusTrigger'
         return class_name
 
 
-    def execute(my):
+    def execute(self):
 
 
-        my.process = my.kwargs.get("process")
-        my.src_status = my.kwargs.get("src_status")
+        self.process = self.kwargs.get("process")
+        self.src_status = self.kwargs.get("src_status")
         
-        dst_statuses = my.kwargs.get("dst_status")
-        dst_processes = my.kwargs.get("dst_process")
-        my.dst_statuses = []
-        my.dst_processes = []
+        dst_statuses = self.kwargs.get("dst_status")
+        dst_processes = self.kwargs.get("dst_process")
+        self.dst_statuses = []
+        self.dst_processes = []
         for tmp_status, tmp_process in zip(dst_statuses, dst_processes):
             if tmp_process:
-                my.dst_statuses.append(tmp_status)
-                my.dst_processes.append(tmp_process)
+                self.dst_statuses.append(tmp_status)
+                self.dst_processes.append(tmp_process)
                 
 
         # Build a data structure for this.  Use a very simple one-to-one
         # rule/action setup
         data_list = []
-        for i, dst_process in enumerate(my.dst_processes):
-            dst_status = my.dst_statuses[i]
+        for i, dst_process in enumerate(self.dst_processes):
+            dst_status = self.dst_statuses[i]
             data = {
-                "src_process": my.process,
-                "src_status": my.src_status,
+                "src_process": self.process,
+                "src_status": self.src_status,
                 "dst_process": dst_process,
                 "dst_status": dst_status
             }
@@ -1484,7 +1508,7 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
         data = jsondumps(data_list)
 
 
-        trigger = my.get_trigger()
+        trigger = self.get_trigger()
 
 
         trigger.set_value("data", str(data))
@@ -1492,18 +1516,88 @@ class StatusTriggerEditCbk(BaseTriggerEditCbk):
 
 
         search_key = SearchKey.get_by_sobject(trigger)
-        my.info['search_key'] = search_key
+        self.info['search_key'] = search_key
+
+
+
+
+
+class TriggerParentStatusEditWdg(BaseRefreshWdg):
+
+    def get_display(self):
+        div = DivWdg()
+
+        process = self.kwargs.get("process")
+
+        column_values = []
+        trigger = self.kwargs.get("trigger")
+        if trigger:
+            data = trigger.get_value("data")
+            data = jsonloads(data)
+        else:
+            data = {}
+
+
+        dst_status = data.get("dst_status") or ""
+
+        labels = ['Pending', 'In Progress', 'Complete', 'Approved']
+        values = labels
+
+        div.add("To Status:")
+        select = SelectWdg("dst_status")
+        div.add(select)
+        select.set_option("labels", labels)
+        select.set_option("values", values)
+        select.set_value(dst_status)
+        div.add("<br/>")
+
+
+        return div
+
+
+
+
+
+class TriggerParentStatusEditCbk(BaseTriggerEditCbk):
+
+    def get_class_name(self): 
+        class_name = 'tactic.command.PipelineParentStatusTrigger'
+        return class_name
+
+
+    def execute(self):
+
+        self.process = self.kwargs.get("process")
+        dst_status = self.kwargs.get("dst_status")
+
+        data = {
+            'dst_status': dst_status
+        }
+
+
+        trigger = self.get_trigger()
+
+        trigger.set_value("data", jsondumps(data))
+        trigger.commit()
+
+
+        search_key = SearchKey.get_by_sobject(trigger)
+        self.info['search_key'] = search_key
+
+
+
+
 
 
 
 
 class TriggerCreateWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        process = my.kwargs.get("process")
-        pipeline_code = my.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+        pipeline_code = self.kwargs.get("pipeline_code")
         outputs =[]
         
         #in case there is no pipeline_code or process passed in
@@ -1513,7 +1607,7 @@ class TriggerCreateWdg(BaseRefreshWdg):
                 outputs = pipeline.get_output_processes(process)
             outputs = [x.get_name() for x in outputs]
 
-        trigger = my.kwargs.get("trigger")
+        trigger = self.kwargs.get("trigger")
         output_values = []
         if trigger:
             data = trigger.get_value("data")
@@ -1544,13 +1638,15 @@ class TriggerCreateWdg(BaseRefreshWdg):
         return top
 
 
+
+
 class TriggerCompleteWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        process = my.kwargs.get("process")
-        pipeline_code = my.kwargs.get("pipeline_code")
+        process = self.kwargs.get("process")
+        pipeline_code = self.kwargs.get("pipeline_code")
 
         top.add(pipeline_code)
         return top
@@ -1560,7 +1656,7 @@ class TriggerCompleteWdg(BaseRefreshWdg):
         outputs = pipeline.get_output_processes(process)
         outputs = [x.get_name() for x in outputs]
 
-        trigger = my.kwargs.get("trigger")
+        trigger = self.kwargs.get("trigger")
         output_values = []
         if trigger:
             data = trigger.get_value("data")
@@ -1593,19 +1689,25 @@ class TriggerCompleteWdg(BaseRefreshWdg):
 
 
 class TriggerCompleteCbk(BaseTriggerEditCbk):
-    def execute(my):
+    def execute(self):
         pass
+
+
+
+
+
+
        
 
 class TriggerDateWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
 
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
 
         column_values = []
-        trigger = my.kwargs.get("trigger")
+        trigger = self.kwargs.get("trigger")
         if trigger:
             data = trigger.get_value("data")
             data = jsonloads(data)
@@ -1640,18 +1742,18 @@ class TriggerDateWdg(BaseRefreshWdg):
 
 class TriggerDateCbk(BaseTriggerEditCbk):
 
-    def get_class_name(my): 
+    def get_class_name(self): 
         class_name = 'tactic.command.PipelineTaskDateTrigger'
         return class_name
 
 
 
-    def execute(my):
+    def execute(self):
 
-        src_status = my.kwargs.get("src_status")
-        column = my.kwargs.get("column")
+        src_status = self.kwargs.get("src_status")
+        column = self.kwargs.get("column")
 
-        trigger = my.get_trigger()
+        trigger = self.get_trigger()
 
         data = {
             'src_status': src_status,
@@ -1662,21 +1764,28 @@ class TriggerDateCbk(BaseTriggerEditCbk):
         trigger.commit()
 
         search_key = SearchKey.get_by_sobject(trigger)
-        my.info['search_key'] = search_key
+        self.info['search_key'] = search_key
+
+
+
+
+
+
+
 
 
 
 class TriggerCreateCbk(BaseTriggerEditCbk):
 
-    def get_class_name(my): 
+    def get_class_name(self): 
         class_name = 'tactic.command.PipelineTaskCreateTrigger'
         return class_name
 
 
 
-    def execute(my):
+    def execute(self):
 
-        outputs = my.kwargs.get("output")
+        outputs = self.kwargs.get("output")
         if isinstance(outputs, basestring) and outputs:
             outputs = [outputs]
         elif isinstance(outputs, list):
@@ -1688,24 +1797,24 @@ class TriggerCreateCbk(BaseTriggerEditCbk):
             'output': outputs
         }
         
-        src_status =  my.kwargs.get("src_status")
+        src_status =  self.kwargs.get("src_status")
         if src_status:
             data["src_status"] = src_status
         
-        trigger = my.get_trigger()
+        trigger = self.get_trigger()
         trigger.set_value("data", jsondumps(data))
         trigger.commit()
 
         search_key = SearchKey.get_by_sobject(trigger)
-        my.info['search_key'] = search_key
+        self.info['search_key'] = search_key
 
 
 
 class NotificationTriggerEditWdg(BaseRefreshWdg):
-    def get_display(my):
-        trigger = my.kwargs.get("trigger")
+    def get_display(self):
+        trigger = self.kwargs.get("trigger")
         if not trigger:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             if search_key:
                 trigger = Search.get_by_search_key(search_key)
 
@@ -1715,6 +1824,8 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
             message = trigger.get_value("message")
             mail_to = trigger.get_value("mail_to")
             mail_cc = trigger.get_value("mail_cc")
+
+            data = trigger.get_json_value("data") or {}
         else:
             event = ''
             subject = ''
@@ -1722,8 +1833,10 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
             mail_to = ''
             mail_cc = ''
 
+            data = {}
+
         # search of the notification object
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
 
 
         notification_div = DivWdg()
@@ -1888,6 +2001,17 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
         cc_text.add_style("width: 100%")
         notification_div.add(cc_text)
 
+
+        notification_div.add("<br/>")
+
+        notification_div.add("Generate Temporary Login Ticket: &nbsp;")
+        checkbox = CheckboxWdg("login_ticket_create")
+        notification_div.add(checkbox)
+
+        if data.get("login_ticket_create"):
+            checkbox.set_option("checked", "true")
+
+
         return notification_div
 
 
@@ -1896,10 +2020,10 @@ class NotificationTriggerEditWdg(BaseRefreshWdg):
 __all__.append("NotificationGetTemplateCbk")
 class NotificationGetTemplateCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        event = my.kwargs.get("event")
-        search_type = my.kwargs.get("search_type")
+        event = self.kwargs.get("event")
+        search_type = self.kwargs.get("search_type")
 
         if event.startswith("insert|")and not event.startswith("insert|sthpw/"):
             event = "insert"
@@ -1926,41 +2050,43 @@ class NotificationGetTemplateCbk(Command):
                 'message': ''
             }
 
-        my.info = mail
+        self.info = mail
 
 
 
 
 class NotificationTriggerEditCbk(Command):
 
-    def execute(my):
+    def execute(self):
         notification = None
 
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
             notification = Search.get_by_search_key(search_key) 
             # verify if this is a trigger search_key or notification search_key
             # it could be a trigger search_key when editing an existing trigger
             if not isinstance(notification, Notification):
                 notification = None
-        process = my.kwargs.get("process")
-        scope = my.kwargs.get("scope")
-        listen_process = my.kwargs.get("listen_process")
-        search_type = my.kwargs.get("search_type")
-        use_default = my.kwargs.get("default") == 'on'
+        process = self.kwargs.get("process")
+        scope = self.kwargs.get("scope")
+        listen_process = self.kwargs.get("listen_process")
+        search_type = self.kwargs.get("search_type")
+        use_default = self.kwargs.get("default") == 'on'
 
-        title = my.kwargs.get("title")
-        description = my.kwargs.get('description')
+        login_ticket_create = self.kwargs.get("login_ticket_create") == "on"
 
-        event = my.kwargs.get("event")
+        title = self.kwargs.get("title")
+        description = self.kwargs.get('description')
+
+        event = self.kwargs.get("event")
 
         if event == '__custom__':
-            event = my.kwargs.get("custom_event")
+            event = self.kwargs.get("custom_event")
         assert event
-        subject = my.kwargs.get("subject")
-        message = my.kwargs.get("body")
-        mail_to = my.kwargs.get("mail_to")
-        mail_cc = my.kwargs.get("mail_cc")
+        subject = self.kwargs.get("subject")
+        message = self.kwargs.get("body")
+        mail_to = self.kwargs.get("mail_to")
+        mail_cc = self.kwargs.get("mail_cc")
 
         project_code = Project.get_project_code()
 
@@ -1975,7 +2101,7 @@ class NotificationTriggerEditCbk(Command):
             notification.set_value("process", listen_process)
         elif process:
             if scope == "local":
-                pipeline_code = my.kwargs.get("pipeline_code")
+                pipeline_code = self.kwargs.get("pipeline_code")
                 search = Search("config/process")
                 search.add_filter("pipeline_code", pipeline_code)
                 search.add_filter("process", process)
@@ -2001,9 +2127,12 @@ class NotificationTriggerEditCbk(Command):
         notification.set_value("mail_cc", mail_cc)
         notification.set_value("project_code", project_code)
 
+
+        data = notification.get_json_value("data") or {}
+
         # unfortunately, notifications have a different filter method than
         # normal triggers ... this needs to made all consistent at some point
-        src_status = my.kwargs.get("src_status")
+        src_status = self.kwargs.get("src_status")
         if src_status:
             rules = '''<rules>
 <rule>@GET(.status) == '%s'</rule>
@@ -2012,22 +2141,28 @@ class NotificationTriggerEditCbk(Command):
 
             # Build a data structure for this.  Use a very simple one-to-one
             # rule/action setup
-            data = {
-                "src_process": process,
-                "src_status": src_status,
-            }
-            data = jsondumps(data)
-            notification.set_value("data", data)
+            data["src_process"] = process
+            data["src_status"] = src_status
+
+
+
+        data["login_ticket_create"] = login_ticket_create;
+        notification.set_json_value("data", data)
 
 
         notification.commit()
 
         search_key = SearchKey.get_by_sobject(notification)
-        my.info['search_key'] = search_key
+        self.info['search_key'] = search_key
+
+
+
+
+
 
 class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
         
      
         is_admin = Environment.get_security().is_admin()
@@ -2046,16 +2181,16 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
         web = WebContainer.get_web()
         div = DivWdg()
         div.add_class("spt_python_script_trigger_top")
-        trigger = my.kwargs.get("trigger")
+        trigger = self.kwargs.get("trigger")
 
         event = None
         trigger_code = ''
         if not trigger:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             # event from web takes precedence
             event = web.get_form_value('event')
             if not event:
-                event = my.kwargs.get("event")
+                event = self.kwargs.get("event")
 
             if search_key and search_key !='null':
                 trigger = Search.get_by_search_key(search_key)
@@ -2067,7 +2202,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             # only get it from the trigger sobj as a last resort
             if not event:
                 event = trigger.get_value("event")
-            script_path = my.kwargs.get("script_path")
+            script_path = self.kwargs.get("script_path")
             if not script_path:
                 script_path = trigger.get_value("script_path", no_exception=True)
             script_sobj = None
@@ -2087,7 +2222,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script = ''
 
      
-        my.add_script_wdg(div, script_path, is_admin, trigger_code, language)
+        self.add_script_wdg(div, script_path, is_admin, trigger_code, language)
 
 
         edit_button = ActionButtonWdg(title="Script Editor", tip="Open Script Editor")
@@ -2109,7 +2244,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
         return div
 
 
-    def add_script_wdg(my, div, script_path, is_admin, trigger_code, language):
+    def add_script_wdg(self, div, script_path, is_admin, trigger_code, language):
 
 
         if is_admin:
@@ -2158,20 +2293,20 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
 class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
 
-    def get_class_name(my): 
+    def get_class_name(self): 
         return None
 
 
 
-    def execute(my):
+    def execute(self):
 
-        scope = my.kwargs.get("scope")
-        language = my.kwargs.get("language")
+        scope = self.kwargs.get("scope")
+        language = self.kwargs.get("language")
 
-        trigger = my.get_trigger()
+        trigger = self.get_trigger()
 
         # Get the trigger code
-        trigger_code = my.kwargs.get('code')
+        trigger_code = self.kwargs.get('code')
         if not trigger_code:
             trigger_code = trigger.get_value("code")
             if not trigger_code:
@@ -2179,18 +2314,18 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
                 trigger.commit()
                 trigger_code = trigger.get_value("code")
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
 
-        script = my.kwargs.get("script")
+        script = self.kwargs.get("script")
         script_path = ''
         # Get the script path or script
-        script_path_folder = my.kwargs.get("script_path_folder")
-        script_path_title = my.kwargs.get("script_path_title")
+        script_path_folder = self.kwargs.get("script_path_folder")
+        script_path_title = self.kwargs.get("script_path_title")
         if script_path_folder and script_path_title:
             script_path = '%s/%s'%(script_path_folder, script_path_title)
         elif not script:
             # saving from Create New
-            script = my.kwargs.get('script_new')
+            script = self.kwargs.get('script_new')
         
         
         if not script:
@@ -2222,10 +2357,10 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         # Update the trigger
         trigger.set_value("code", trigger_code)
 
-        event = my.kwargs.get("event")
+        event = self.kwargs.get("event")
         if event == "change|sthpw/task|status":
-            src_status = my.kwargs.get("src_status")
-            src_process = my.kwargs.get("process")
+            src_status = self.kwargs.get("src_status")
+            src_process = self.kwargs.get("process")
             data = {
                 'src_status': src_status,
                 'src_process': src_process
@@ -2242,13 +2377,13 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
         trigger.commit()
         
         search_key = SearchKey.get_by_sobject(trigger)
-        my.info['search_key'] = search_key
+        self.info['search_key'] = search_key
 
 
 
 class PythonClassTriggerEditWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         is_admin = Environment.get_security().is_admin()
         """
@@ -2268,9 +2403,9 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_class("spt_python_class_top")
 
-        trigger = my.kwargs.get("trigger")
+        trigger = self.kwargs.get("trigger")
         if not trigger:
-            search_key = my.kwargs.get("search_key")
+            search_key = self.kwargs.get("search_key")
             if search_key:
                 trigger = Search.get_by_search_key(search_key)
 
@@ -2279,7 +2414,7 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
             class_name = trigger.get_value("class_name")
             if class_name == "tactic.command.PipelineTaskStatusTrigger":
                 data = trigger.get_json_value("data")
-                if data:
+                if data and isinstance(data, dict):
                     class_path = data.get("class_path")
                     if class_path:
                         class_name = class_path
@@ -2331,20 +2466,20 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
 
 class PythonClassTriggerEditCbk(BaseTriggerEditCbk):
 
-    def get_class_name(my):
+    def get_class_name(self):
         return None
 
-    def execute(my):
+    def execute(self):
 
-        trigger = my.get_trigger()
+        trigger = self.get_trigger()
 
-        class_path = my.kwargs.get("class_path")  
-        event = my.kwargs.get("event")
+        class_path = self.kwargs.get("class_path")  
+        event = self.kwargs.get("event")
         
         if event == "change|sthpw/task|status":
             data = {'class_path': class_path}
-            src_status = my.kwargs.get("src_status")
-            src_process = my.kwargs.get("process")
+            src_status = self.kwargs.get("src_status")
+            src_process = self.kwargs.get("process")
             if src_status:
                 data['src_status'] = src_status
             if src_process:
@@ -2358,5 +2493,5 @@ class PythonClassTriggerEditCbk(BaseTriggerEditCbk):
         trigger.commit()
         
         search_key = SearchKey.get_by_sobject(trigger)
-        my.info['search_key'] = search_key
+        self.info['search_key'] = search_key
 

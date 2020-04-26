@@ -34,18 +34,18 @@ from pyasm.web import TacticMonitor
 
 class WinService(object):
 
-    def __init__(my):
-        my.monitor = TacticMonitor()
+    def __init__(self):
+        self.monitor = TacticMonitor()
 
    
 
-    def init(my):
-        my.monitor.mode = "init"
-        my.monitor.execute()
+    def init(self):
+        self.monitor.mode = "init"
+        self.monitor.execute()
 
-    def run(my):
-        my.monitor.mode = "monitor"
-        my.monitor.execute()
+    def run(self):
+        self.monitor.mode = "monitor"
+        self.monitor.execute()
     
 def write_stop_monitor():
     '''write a stop.monitor file to notify TacticMonitor to exit'''

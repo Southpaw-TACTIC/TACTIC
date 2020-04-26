@@ -23,12 +23,12 @@ class SearchTypeHasTableElementWdg(SimpleTableElementWdg):
     '''Shows a red or green dot depending of there table is present in this
     project or not'''
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
         widget.add_style("text-align: center")
 
-        search_type = my.get_current_sobject()
+        search_type = self.get_current_sobject()
 
         project_code = search_type.get_value("database")
         if project_code == "{project}":

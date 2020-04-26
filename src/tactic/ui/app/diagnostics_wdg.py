@@ -28,9 +28,9 @@ class DiagnosticsWdg(BaseRefreshWdg):
     }
 
 
-    def get_display(my):
+    def get_display(self):
         top = DivWdg()
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         title_div = DivWdg()
         title_div.add_class("maq_search_bar")
@@ -63,8 +63,8 @@ class DiagnosticsWdg(BaseRefreshWdg):
         server_title_div.add("Server")
         server_content_div = DivWdg()
         server_content_div.add_style("padding: 10px")
-        server_content_div.add(my.get_ping_wdg())
-        server_content_div.add(my.get_load_balance_wdg())
+        server_content_div.add(self.get_ping_wdg())
+        server_content_div.add(self.get_load_balance_wdg())
         content.add(server_content_div)
 
 
@@ -74,7 +74,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
         database_title_div.add("Database")
         database_content_div = DivWdg()
         database_content_div.add_style("padding: 10px")
-        database_content_div.add(my.get_database_wdg())
+        database_content_div.add(self.get_database_wdg())
         content.add(database_content_div)
 
 
@@ -84,8 +84,8 @@ class DiagnosticsWdg(BaseRefreshWdg):
         checkin_title_div.add("Database")
         checkin_content_div = DivWdg()
         checkin_content_div.add_style("padding: 10px")
-        checkin_content_div.add(my.get_asset_dir_wdg() )
-        checkin_content_div.add(my.get_asset_management_wdg())
+        checkin_content_div.add(self.get_asset_dir_wdg() )
+        checkin_content_div.add(self.get_asset_management_wdg())
         content.add(checkin_content_div)
 
  
@@ -93,7 +93,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
         return top
 
 
-    def get_ping_wdg(my):
+    def get_ping_wdg(self):
         div = DivWdg()
         div.add_class("spt_diagnostics_ping")
 
@@ -130,7 +130,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
 
 
 
-    def get_asset_dir_wdg(my):
+    def get_asset_dir_wdg(self):
         div = DivWdg()
 
         asset_dir_div = DivWdg()
@@ -141,7 +141,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
         asset_dir_div.add("Test Asset Directory")
 
 
-        status = my.test_asset_dir()
+        status = self.test_asset_dir()
 
         status_div = DivWdg()
         status_div.add_class("spt_diagnostics_asset_dir")
@@ -153,7 +153,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
 
 
 
-    def test_asset_dir(my):
+    def test_asset_dir(self):
         asset_dir = "/home/apache/assets"
 
         status = 'OK'
@@ -171,14 +171,14 @@ class DiagnosticsWdg(BaseRefreshWdg):
             f = open(path)
             f.write("test.txt", 'w')
             f.close()
-        except Exception, e:
+        except Exception as e:
             status = "Error: can't write to asset folder"
 
         return status
 
 
 
-    def get_database_wdg(my):
+    def get_database_wdg(self):
         div = DivWdg()
 
         database_div = DivWdg()
@@ -198,7 +198,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
         return div
 
 
-    def get_load_balance_wdg(my):
+    def get_load_balance_wdg(self):
         div = DivWdg()
         div.add_class("spt_diagnostics_load_balance")
 
@@ -243,7 +243,7 @@ class DiagnosticsWdg(BaseRefreshWdg):
 
 
 
-    def get_asset_management_wdg(my):
+    def get_asset_management_wdg(self):
         div = DivWdg()
         div.add_class("spt_diagnostics_dam")
 
@@ -291,9 +291,9 @@ class DiagnosticsWdg(BaseRefreshWdg):
 
 class DiagnosticsHandoffDirTestCmd(Command):
 
-    def execute(my):
-        handoff_dir = my.kwargs.get("handoff_dir")
-        filename = my.kwargs.get("filename")
+    def execute(self):
+        handoff_dir = self.kwargs.get("handoff_dir")
+        filename = self.kwargs.get("filename")
         client_path = "%s/%s" % (handoff_dir, filename)
 
         web = WebContainer.get_web()

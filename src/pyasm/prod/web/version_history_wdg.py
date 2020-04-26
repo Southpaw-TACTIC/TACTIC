@@ -22,12 +22,12 @@ from pyasm.widget import BaseTableElementWdg, IconWdg
 
 class VersionHistoryWdg(BaseTableElementWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         widget = DivWdg()
         widget.add_style("height: 100%")
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if isinstance(sobject, Render):
             session_xml = sobject.get_xml_value("session")
         else:

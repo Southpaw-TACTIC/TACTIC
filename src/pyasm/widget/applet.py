@@ -26,7 +26,7 @@ class GeneralAppletWdg(Widget):
 
 
 
-    def init(my):
+    def init(self):
         #print "DEPRECATED"
         #raise TacticException("Use of GeneralAppletWdg is Deprecated")
 
@@ -37,17 +37,17 @@ class GeneralAppletWdg(Widget):
         context_url = WebContainer.get_web().get_context_url()
         
         print "-"*20
-        print my.APPLET_CLASS
+        print self.APPLET_CLASS
 
 
         # create applet
         applet = HtmlElement("applet")
-        applet.set_attr("code", my.APPLET_CLASS)
+        applet.set_attr("code", self.APPLET_CLASS)
         applet.set_attr("codebase", "%s/java" % context_url.get_url() )
-        applet.set_attr("archive", my.APPLET_JAR)
+        applet.set_attr("archive", self.APPLET_JAR)
         applet.set_attr("width", "1")
         applet.set_attr("height", "1")
-        applet.set_attr("id", my.APPLET_ID)
+        applet.set_attr("id", self.APPLET_ID)
     
         # create param for applet
         param = HtmlElement("param")
@@ -56,10 +56,10 @@ class GeneralAppletWdg(Widget):
 
         applet.add(param)
         
-        my.add(applet)
+        self.add(applet)
         #ticket = WebContainer.get_security().get_ticket_key()
-        #my.add(HtmlElement.script("document.%s.set_ticket('%s')" \
-        #    %(my.APPLET_ID, ticket)) )
+        #self.add(HtmlElement.script("document.%s.set_ticket('%s')" \
+        #    %(self.APPLET_ID, ticket)) )
 
 
 

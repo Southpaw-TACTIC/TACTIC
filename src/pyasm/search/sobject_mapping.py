@@ -18,20 +18,20 @@ from pyasm.common import Base
 class SObjectMapping(Base):
     '''Base class for remappaing search types for generic programming'''
 
-    def __init__(my):
-        my.mapping = {}
+    def __init__(self):
+        self.mapping = {}
 
 
-    def get_mapping(my, search_key):
+    def get_mapping(self, search_key):
         try:
-            return my.mapping[search_key]
+            return self.mapping[search_key]
         except:
             return search_key
 
 
 
-    def get_parent(my, search_key):
-        for parent, child in my.mapping.items():
+    def get_parent(self, search_key):
+        for parent, child in self.mapping.items():
             if child == search_key:
                 return parent
         return search_key

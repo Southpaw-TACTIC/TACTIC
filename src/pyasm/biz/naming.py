@@ -33,10 +33,10 @@ class Naming(SObject):
     # not enforce what people think are correct file names for whatever
     # purpose they happen to need it for.
 
-    def validate(my):
+    def validate(self):
 
-        sandbox_dir_naming = my.get_value('sandbox_dir_naming', no_exception=True)
-        dir_naming = my.get_value('dir_naming', no_exception=True)
+        sandbox_dir_naming = self.get_value('sandbox_dir_naming', no_exception=True)
+        dir_naming = self.get_value('dir_naming', no_exception=True)
 
         if sandbox_dir_naming and sandbox_dir_naming.endswith('/'):
             raise TacticException('sandbox_dir_naming should not end with /')
@@ -44,7 +44,7 @@ class Naming(SObject):
         if dir_naming and dir_naming.endswith('/'):
             raise TacticException('dir_naming should not end with /')
             
-        #file_name = my.get_value('file_naming')
+        #file_name = self.get_value('file_naming')
         #p = re.compile('.*\.({ext}|\w+)$')
         #if not p.match(file_name):
         #    raise TacticException('file_naming has to end with .{ext} or .xxx')
@@ -275,7 +275,7 @@ class NamingUtil(object):
     #
     # try a new naming language which makes use of simple expression language
     #
-    def naming_to_file(my, template, sobject, snapshot, file=None, ext=None, file_type=None):
+    def naming_to_file(self, template, sobject, snapshot, file=None, ext=None, file_type=None):
         '''
         # chr001_model_v004_00001.ext
         '''
@@ -457,6 +457,8 @@ class NamingUtil(object):
                     else:
                         base, ext = os.path.splitext(file_name)
                         value = base
+
+
                 elif attr == "ext":
                     if not ext:
                         file_name = file.get_value("file_name")
@@ -526,11 +528,11 @@ class NamingUtil(object):
         return result
 
              
-    def _get_timestamp(my, sobject):
+    def _get_timestamp(self, sobject):
         '''get the portion yyyy-mm-dd'''
         return sobject.get_value('timestamp')[0:10]
 
-    def naming_to_dir(my, template, sobject, snapshot, file=None, file_type=None):
+    def naming_to_dir(self, template, sobject, snapshot, file=None, file_type=None):
         '''
         # shot/SEQ001/shot_001
         '''
@@ -544,6 +546,7 @@ class NamingUtil(object):
 
 
         from pyasm.biz import ExpressionParser
+        ExpressionParser.clear_cache()
         xp = ExpressionParser()
         ''' 
         # if nothing is found, then just return parse through an expression
@@ -585,7 +588,7 @@ class NamingUtil(object):
                     'snapshot': snapshot,
                     'file': file
                 }
-                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True)
+                value = xp.eval("{%s}" % part, sobject, env_sobjects=env_sobjects, single=True, use_cache=False)
             
             elif part.find(".") != -1:
                 # explict declarasions
@@ -597,21 +600,22 @@ class NamingUtil(object):
                     index = int(index.rstrip("]"))
                 if object == "sobject":
                     if attr == "timestamp":
-                        value = my._get_timestamp(sobject)
+                        value = self._get_timestamp(sobject)
                     else:
                         value = sobject.get_value(attr)
                 elif object == "snapshot":
                     if not snapshot:
-                        continue
-                    if attr == "timestamp":
-                        value = my._get_timestamp(snapshot)
+                        value = ""
                     else:
-                        value = snapshot.get_value(attr)
-                    if attr in ['version', 'revision']:
-                        if value:
-                            value = version_expr % int(value)
+                        if attr == "timestamp":
+                            value = self._get_timestamp(snapshot)
                         else:
-                            value = "0"*version_padding
+                            value = snapshot.get_value(attr)
+                        if attr in ['version', 'revision']:
+                            if value:
+                                value = version_expr % int(value)
+                            else:
+                                value = "0"*version_padding
                 elif object == "search_type":
                     search_type_obj = sobject.get_search_type_obj()
                     value = search_type_obj.get_value(attr)
@@ -621,7 +625,7 @@ class NamingUtil(object):
                         value = "NO_PARENT"
                     else:
                         if attr == 'timestamp':
-                            value = my._get_timestamp(parent)
+                            value = self._get_timestamp(parent)
                         else:
                             value = parent.get_value(attr)
                 elif object == "project":
@@ -681,6 +685,45 @@ class NamingUtil(object):
                 elif attr.startswith("id"):
                     value = "%0.5d" % sobject.get_id()
 
+                elif attr == "basefile":
+
+                    if file:
+                        file_name = file.get_value("file_name")
+                        base_type = file.get_value("base_type")
+                        if base_type =='directory':
+                            value = file_name
+                        else:
+                            base, ext = os.path.splitext(file_name)
+                            value = base
+
+                        # Remove # signs as they cause problems
+                        index = value.find("#")
+                        if index != -1:
+                            if value[index-1] in '-._':
+                                value = value[:index-1] + value[index+1:]
+                            value = value.replace("#", "")
+
+                    else:
+                        value = ""
+
+
+
+                elif attr == "ext":
+                    if not ext:
+                        file_name = file.get_value("file_name")
+                        base_type = file.get_value("base_type")
+                        if base_type =='directory':
+                            value = ''
+                        else:
+                            base, ext = os.path.splitext(file_name)
+                            value = ext.lstrip(".")
+                    else:
+                        # external ext starts with a .
+                        ext = ext.lstrip(".")
+                        value = ext
+
+
+
                 elif attr in ["login","user"]:
                     login = Environment.get_login()
                     value = login.get_value("login")
@@ -692,7 +735,7 @@ class NamingUtil(object):
                         value = 'main'
                 else:
                     if attr == "timestamp":
-                        value = my._get_timestamp(sobject)
+                        value = self._get_timestamp(sobject)
                     else:
                         value = sobject.get_value(attr)
 
@@ -724,7 +767,7 @@ class NamingUtil(object):
 
 
  
-    def build_naming(my, sample_name):
+    def build_naming(self, sample_name):
         separators = ['/','\\','.', '_', '-']
 
         # build a naming convention ui

@@ -27,18 +27,18 @@ class AppServerException(Exception):
 
 class FakeSecurity(object):
     # TODO: for now, TACTIC needs a security class, so create a fake one
-    def check_access(my, *args):
+    def check_access(self, *args):
         return True
 
-    def get_user_name(my):
+    def get_user_name(self):
         return ""
 
 
 class SimpleAppServer(BaseAppServer):
     '''A simple application server without security restrictions.'''
 
-    def execute(my):
-        my.buffer = cStringIO.StringIO()
+    def execute(self):
+        self.buffer = cStringIO.StringIO()
         try:
             # clear the main containers
             Container.create()
@@ -46,20 +46,20 @@ class SimpleAppServer(BaseAppServer):
             WebContainer.clear_buffer()
 
             # initialize the web environment object and register it
-            adapter = my.get_adapter()
+            adapter = self.get_adapter()
             WebContainer.set_web(adapter)
            
             # get the display
-            my._get_display()
+            self._get_display()
         finally:
-            WebContainer.get_buffer().write( my.buffer.getvalue() )
+            WebContainer.get_buffer().write( self.buffer.getvalue() )
 
 
 
-    def _get_display(my):
+    def _get_display(self):
         WebContainer.set_security(FakeSecurity())
 
-        page = my.get_page_widget()
+        page = self.get_page_widget()
 
         # create some singletons and store in container
         cmd_delegator = WebContainer.get_cmd_delegator()
@@ -71,7 +71,7 @@ class SimpleAppServer(BaseAppServer):
 
         top = TopWdg()
         bottom = BottomWdg()
-        page = my.get_page_widget()
+        page = self.get_page_widget()
 
         web = WebContainer.get_web()
   
@@ -79,7 +79,7 @@ class SimpleAppServer(BaseAppServer):
         widget = Widget()
         widget.add( top )
         widget.add( page )
-        #widget.add( my.get_form_wdg() )
+        #widget.add( self.get_form_wdg() )
         widget.add( bottom )
 
         #widget.add(warning_report)
@@ -91,7 +91,7 @@ class SimpleAppServer(BaseAppServer):
         return web_app.get_display(widget)
 
 
-    def get_form_wdg(my):
+    def get_form_wdg(self):
         web = WebContainer.get_web()
         from pyasm.web import Table
         table = Table()

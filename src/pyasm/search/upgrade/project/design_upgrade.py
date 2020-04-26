@@ -22,8 +22,8 @@ class DesignUpgrade(BaseUpgrade):
 
  
 
-    def upgrade_20070530(my):
+    def upgrade_20070530(self):
         pass
-        #my.run_sql('''
+        #self.run_sql('''
         #''')
 

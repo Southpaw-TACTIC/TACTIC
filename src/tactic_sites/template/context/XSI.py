@@ -23,14 +23,14 @@ from pyasm.widget import HeaderWdg
 
 class XSI(SitePage):
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         return XSIPage()
 
 
 class XSIPage(Widget):
 
-    def init(my):
-        my.add( HeaderWdg() )
-        my.add( MayaTabWdg() )
+    def init(self):
+        self.add( HeaderWdg() )
+        self.add( MayaTabWdg() )
 
 

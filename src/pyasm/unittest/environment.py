@@ -24,22 +24,22 @@ from tactic.ui.tools import DeleteProjectCmd
 
 class UnittestEnvironment(object):
 
-    def __init__(my, **kwargs):
-        my.project_code = kwargs.get('project_code')
-        if not my.project_code:
-            my.project_code = 'unittest'
+    def __init__(self, **kwargs):
+        self.project_code = kwargs.get('project_code')
+        if not self.project_code:
+            self.project_code = 'unittest'
 
-    def create(my):
+    def create(self):
 
-        project = Project.get_by_code(my.project_code)
+        project = Project.get_by_code(self.project_code)
         if project:
 
-            my.delete()
+            self.delete()
 
         print "Setting up clean Unittest project"
 
         # create the project
-        create_cmd = CreateProjectCmd(project_code=my.project_code, project_title="Unittest") #, project_type="unittest")
+        create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Unittest") #, project_type="unittest")
         create_cmd.execute()
 
         # install the unittest plugin
@@ -48,10 +48,10 @@ class UnittestEnvironment(object):
 
 
 
-    def delete(my):
+    def delete(self):
         print "Deleting existing Unittest project"
         related_types = ["sthpw/schema", "sthpw/task","sthpw/snapshot", "sthpw/file"]
-        delete_cmd = DeleteProjectCmd(project_code=my.project_code, related_types=related_types)
+        delete_cmd = DeleteProjectCmd(project_code=self.project_code, related_types=related_types)
         delete_cmd.execute()
 
 
@@ -60,23 +60,23 @@ class UnittestEnvironment(object):
 
 class Sample3dEnvironment(UnittestEnvironment):
 
-    def __init__(my, **kwargs):
-        my.project_code = kwargs.get('project_code')
-        if not my.project_code:
-            my.project_code = 'sample3d'
+    def __init__(self, **kwargs):
+        self.project_code = kwargs.get('project_code')
+        if not self.project_code:
+            self.project_code = 'sample3d'
 
 
-    def create(my):
+    def create(self):
 
-        project = Project.get_by_code(my.project_code)
+        project = Project.get_by_code(self.project_code)
         if project:
 
-            my.delete()
+            self.delete()
 
         print "Setting up a basic Sample3d project"
 
         # create the project
-        create_cmd = CreateProjectCmd(project_code=my.project_code, project_title="Sample 3D") #, project_type="unittest")
+        create_cmd = CreateProjectCmd(project_code=self.project_code, project_title="Sample 3D") #, project_type="unittest")
         create_cmd.execute()
 
         # install the unittest plugin

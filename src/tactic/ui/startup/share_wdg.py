@@ -34,11 +34,11 @@ class ShareWdg(BaseRefreshWdg):
     '''
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_share_top")
-        my.set_as_panel(top)
+        self.set_as_panel(top)
 
         top.add_color("background", "background")
 
@@ -70,7 +70,7 @@ class ShareWdg(BaseRefreshWdg):
         left.add_style("height: 400px")
         left.add_color("background", "background3")
 
-        left.add(my.get_share_wdg() )
+        left.add(self.get_share_wdg() )
 
         right = table.add_cell()
         right.add_border()
@@ -91,7 +91,7 @@ class ShareWdg(BaseRefreshWdg):
 
 
 
-    def get_share_wdg(my):
+    def get_share_wdg(self):
 
         div = DivWdg()
         div.add_style("padding: 20px")
@@ -234,7 +234,7 @@ class ShareWdg(BaseRefreshWdg):
 
 
         # add in a context menu
-        menu = my.get_context_menu()
+        menu = self.get_context_menu()
         menus = [menu.get_data()]
         menus_in = {
             'SHARE_ITEM_CTX': menus,
@@ -295,7 +295,7 @@ class ShareWdg(BaseRefreshWdg):
 
 
 
-    def get_context_menu(my):
+    def get_context_menu(self):
 
         menu = Menu(width=180)
         menu.set_allow_icons(False)
@@ -334,10 +334,10 @@ class ShareWdg(BaseRefreshWdg):
 
 class LocalItemWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
 
 
 
@@ -355,12 +355,12 @@ class LocalItemWdg(BaseRefreshWdg):
         from tactic.ui.container import TabWdg
         tab = TabWdg(selected="Info", show_add=False)
         top.add(tab)
-        tab.add(my.get_info_wdg())
+        tab.add(self.get_info_wdg())
 
         return top
 
 
-    def get_info_wdg(my):
+    def get_info_wdg(self):
 
         div = DivWdg()
         div.set_name("Info")
@@ -381,7 +381,7 @@ class LocalItemWdg(BaseRefreshWdg):
 
         table.add_row()
 
-        #if my.mode == 'insert':
+        #if self.mode == 'insert':
         #    read_only = False
         #else:
         #    read_only = True
@@ -405,33 +405,33 @@ class LocalItemWdg(BaseRefreshWdg):
 
 class ShareItemWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        my.set_as_panel(top)
+        top = self.top
+        self.set_as_panel(top)
         top.add_class("spt_share_item")
 
-        my.server_code = my.kwargs.get("server_code")
-        if not my.server_code:
+        self.server_code = self.kwargs.get("server_code")
+        if not self.server_code:
             top.add("No server selected")
             return top
 
 
 
-        my.server = Search.get_by_code("sthpw/sync_server", my.server_code)
-        my.base_dir = my.server.get_value("base_dir")
+        self.server = Search.get_by_code("sthpw/sync_server", self.server_code)
+        self.base_dir = self.server.get_value("base_dir")
 
 
         title_wdg = DivWdg()
         top.add( title_wdg )
-        title_wdg.add( my.server_code )
+        title_wdg.add( self.server_code )
         title_wdg.add_style("padding: 10px")
         title_wdg.add_color("background", "background", -10)
         title_wdg.add_border()
         title_wdg.add_style("margin: -6px -6px 10px -6px")
         title_wdg.add_style("font-weight: bold")
 
-        description = my.server.get_value("description")
+        description = self.server.get_value("description")
         title_wdg.add(" &nbsp; <i style='font-size: 9px; opacity: 0.5'>( %s )</i>" % description )
 
 
@@ -440,16 +440,16 @@ class ShareItemWdg(BaseRefreshWdg):
         from tactic.ui.container import TabWdg
         tab = TabWdg(selected="Info", show_add=False)
         top.add(tab)
-        tab.add(my.get_info_wdg())
-        tab.add(my.get_files_wdg())
+        tab.add(self.get_info_wdg())
+        tab.add(self.get_files_wdg())
 
-        tab.add( my.get_tools_wdg() )
+        tab.add( self.get_tools_wdg() )
 
         return top
 
 
 
-    def get_info_wdg(my):
+    def get_info_wdg(self):
 
         div = DivWdg()
         div.set_name("Info")
@@ -469,14 +469,14 @@ class ShareItemWdg(BaseRefreshWdg):
         table.add_smart_style("spt_table_element", "vertical-align", "top")
 
 
-        #if my.mode == 'insert':
+        #if self.mode == 'insert':
         #    read_only = False
         #else:
         #    read_only = True
         read_only = False
 
-        code = my.server.get_code() or ""
-        description = my.server.get_value("description") or ""
+        code = self.server.get_code() or ""
+        description = self.server.get_value("description") or ""
 
         table.add_row()
 
@@ -510,7 +510,7 @@ class ShareItemWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_class("spt_table_element")
         td.add(text)
-        text.set_value(my.base_dir)
+        text.set_value(self.base_dir)
 
 
 
@@ -518,7 +518,7 @@ class ShareItemWdg(BaseRefreshWdg):
 
 
 
-    def get_files_wdg(my):
+    def get_files_wdg(self):
 
         div = DivWdg()
         div.set_name("Files")
@@ -534,10 +534,10 @@ class ShareItemWdg(BaseRefreshWdg):
         shelf_wdg.add_style("margin: 0px -11px 10px -11px")
 
         project_code = Project.get_project_code()
-        share_code = my.server.get_code()
+        share_code = self.server.get_code()
 
         # NOT supported yet
-        base_dir = my.server.get_value("base_dir")
+        base_dir = self.server.get_value("base_dir")
         imports_dir = "%s/imports" % base_dir
         #import datetime
         #now = datetime.datetime.now()
@@ -573,9 +573,9 @@ class ShareItemWdg(BaseRefreshWdg):
 
 
         from tactic.ui.app import PluginDirListWdg
-        dir_list = PluginDirListWdg(base_dir=my.base_dir, location="server")
+        dir_list = PluginDirListWdg(base_dir=self.base_dir, location="server")
         #from tactic.ui.widget import DirListWdg
-        #dir_list = DirListWdg(base_dir=my.base_dir, location="server")
+        #dir_list = DirListWdg(base_dir=self.base_dir, location="server")
         div.add(dir_list)
 
 
@@ -584,7 +584,7 @@ class ShareItemWdg(BaseRefreshWdg):
 
 
 
-    def get_tools_wdg(my):
+    def get_tools_wdg(self):
 
         div = DivWdg()
         div.set_name("Tools")
@@ -596,7 +596,7 @@ class ShareItemWdg(BaseRefreshWdg):
         div.add(button)
         button.add_behavior( {
             'type': 'click_up',
-            'server': my.server_code,
+            'server': self.server_code,
             'cbjs_action': '''
             var class_name = 'tactic.ui.sync.SyncCreateTemplateCmd';
             var kwargs = {
@@ -621,16 +621,16 @@ class ShareItemWdg(BaseRefreshWdg):
 
 class ShareItemCbk(Command):
 
-    def execute(my):
+    def execute(self):
 
-        action = my.kwargs.get("action")
+        action = self.kwargs.get("action")
         if action == "delete":
-            my.delete()
+            self.delete()
 
 
-    def delete(my):
+    def delete(self):
 
-        code = my.kwargs.get("code")
+        code = self.kwargs.get("code")
         assert code
 
         server = Search.get_by_code("sthpw/sync_server", code)

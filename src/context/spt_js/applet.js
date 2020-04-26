@@ -11,6 +11,10 @@
  */ 
 
 
+// DEPRECATED: this is largely deprecated because of the discontinued support of Java applets
+// on all major browsers
+
+
 
 /*
  * Javascript wrapper around the General Applet.  The gernal Applet is a thin
@@ -879,6 +883,10 @@ spt.Applet.get = function() {
         }
     }
 
+
+
+    // NOTE: The Java applet is no longer practically supported by any of the
+    // browsers.
 
     var applet;
     if (spt.browser.is_IE()) {

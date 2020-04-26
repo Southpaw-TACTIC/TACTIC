@@ -39,12 +39,15 @@
     <element name='process'/>
     <element name='search_type'/>
     <element name='sort_order'/>
+    <element name="color"/>
+    <element name="workflow"/>
+    <!--
     <element name='checkin_mode'/>
     <element name='checkin_validate_script_path'/>
-    <element name="color"/>
     <element name='context_options'/>
     <element name='subcontext_options'/>
     <element name='checkin_options_view'/>
+    -->
 </table>
 
 

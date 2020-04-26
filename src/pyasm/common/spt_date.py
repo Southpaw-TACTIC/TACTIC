@@ -17,6 +17,7 @@ __all__ = ['SPTDate']
 from datetime import datetime, timedelta
 from dateutil import parser
 from dateutil.tz import *
+from dateutil.rrule import DAILY, rrule, MO, TU, WE, TH, FR
 
 TZLOCAL = tzlocal()
 TZUTC = tzutc()
@@ -46,6 +47,31 @@ class SPTDate(object):
     start_of_today = classmethod(start_of_today)
 
 
+    def strip_time(cls, date):
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        date = datetime(date.year, date.month, date.day)
+        return date
+    strip_time = classmethod(strip_time)
+
+
+    def strip_timezone(cls, date):
+        if isinstance(date, basestring):
+            date = parser.parse(date)
+
+        date = date.replace(tzinfo=None)
+        return date
+    strip_timezone = classmethod(strip_timezone)
+
+
+    def set_noon(cls, date):
+        date = datetime(date.year, date.month, date.day, hour=12, minute=0, second=0)
+        return date
+    set_noon = classmethod(set_noon)
+
+
+
     def timedelta(cls, **kwargs):
         delta = timedelta(**kwargs)
         return delta
@@ -57,6 +83,113 @@ class SPTDate(object):
         return date
     parse = classmethod(parse)
 
+
+
+    def is_weekday(cls, date):
+        if date.weekday() in (5,6):
+            return False
+        else:
+            return True
+
+    is_weekday = classmethod(is_weekday)
+
+
+
+    def add_business_days(cls, from_date, add_days, holidays=[]):
+        business_days_to_add = add_days
+        current_date = from_date
+        
+        while business_days_to_add >= 0:
+            if business_days_to_add > 1:
+                current_date += timedelta(days=1)
+                weekday = current_date.weekday()
+                if weekday >= 5: # sunday = 6
+                    continue
+                if current_date in holidays:
+                    continue
+                business_days_to_add -= 1
+                if business_days_to_add == 0:
+                    break
+            else:
+                current_date +=timedelta(days=business_days_to_add)
+                weekday = current_date.weekday()
+                if weekday >= 5 or current_date in holidays:
+                    current_date += timedelta(days=1)
+                else:
+                    break
+                business_days_to_add = 0
+
+        return current_date
+    add_business_days = classmethod(add_business_days)
+
+
+    def subtract_business_days(cls, from_date, sub_days, holidays=[]): 
+        business_days_to_sub = sub_days
+        current_date = from_date
+
+        while business_days_to_sub >= 0:
+            if business_days_to_sub > 1:
+                current_date -= timedelta(days=1)
+                weekday = current_date.weekday()
+                if weekday >= 5: # sunday = 6
+                    continue
+                if current_date in holidays:
+                    continue
+                business_days_to_sub -= 1
+                if business_days_to_sub == 0:
+                    break
+            else:
+                current_date -=timedelta(days=business_days_to_sub)
+                weekday = current_date.weekday()
+                if weekday >= 5 or current_date in holidays:
+                    current_date -= timedelta(days=1)
+                else:
+                    break
+                business_days_to_sub = 0
+
+        return current_date
+    subtract_business_days = classmethod(subtract_business_days)
+
+
+    def get_business_days_duration(cls, start_date, end_date):
+        if isinstance(start_date, basestring):
+            start_date = parser.parse(start_date)
+        if isinstance(end_date, basestring):
+            end_date = parser.parse(end_date)
+
+
+        # intraday
+        if (end_date - start_date).days == 0:
+            return (end_date - start_date).total_seconds() / (60 * 60 * 24) 
+
+
+        # first and last days are handled separately
+        s = start_date + timedelta(days=1)
+        s = s.date()
+        e = end_date - timedelta(days=1)
+        e = e.date()
+        days = rrule(DAILY, dtstart=s, until=e, byweekday=(MO,TU,WE,TH,FR))
+
+
+        first_day_minute = float(start_date.minute) / 60
+        end_day_minute = float(end_date.minute) / 60
+
+        if start_date.weekday() not in (5,6):
+            first_day = (24 - (float(start_date.hour) + first_day_minute)) / 24.0
+        else:
+            first_day = 0
+
+
+        if end_date.weekday() not in (5,6):
+            last_day = (float((end_date.hour) + end_day_minute) / 24.0)
+        else:
+            last_day = 0
+
+        result = days.count() + first_day + last_day
+        return result
+
+
+    get_business_days_duration = classmethod(get_business_days_duration)
 
 
     def convert_to_local(cls, date):
@@ -78,7 +211,7 @@ class SPTDate(object):
         #NOTE: it errors out on time before epoch
         try:    
             local = date.astimezone(TZLOCAL)
-        except:
+        except Exception as e:
             local = date.replace(tzinfo=None)
 
         return local
@@ -203,18 +336,61 @@ class SPTDate(object):
     has_timezone = classmethod(has_timezone)
  
 
-    def get_display_date(cls, date):
-        '''convert to local timezone'''
-        pass
+    def get_display_date(cls, date, date_format=None, timezone=None, include_time=False):
+        '''Given a datetime value, convert to timezone, and convert to date format.'''
+        from pyasm.biz import PrefSetting, ProjectSetting
+
+        if not timezone:
+            timezone = PrefSetting.get_value_by_key('timezone')
+            if not timezone:
+                timezone = ProjectSetting.get_value_by_key("timezone")
+
+        if timezone in [None, "local", '']:
+            value = SPTDate.convert_to_local(date)
+        else:
+            value = SPTDate.convert_to_timezone(date, timezone)
+        
+        setting = "date_format"
+        if include_time:
+            setting = "datetime_format"
+        
+        
+        if not date_format:
+            date_format = PrefSetting.get_value_by_key(setting)
+            if not date_format:
+                date_format = ProjectSetting.get_value_by_key(setting)
+
+        if not date_format:
+            date_format = "%Y %m %d"
+            if include_time:
+                date_format = "%Y %m %d %H:%M"
+
+        try:
+            encoding = locale.getlocale()[1]		
+            value = value.strftime(date_format).decode(encoding)
+        except:
+            value = value.strftime(date_format)
+           
+        return value
+   
+    get_display_date = classmethod(get_display_date)
 
 
 
-    def get_time_ago(cls, date):
+    def get_time_ago(cls, date, convert=False, start=None):
 
         if isinstance(date, basestring):
             date = parser.parse(date)
 
-        now = cls.now()
+        if convert:
+            date = cls.convert(date)
+        else:
+            date = cls.strip_timezone(date)
+
+        if start:
+            now = start
+        else:
+            now = cls.now()
 
         diff = now - date
         if diff.days < 0:
@@ -224,7 +400,7 @@ class SPTDate(object):
             txt = "ago"
 
         if diff.days >= 7:
-            value = date.strftime("%b %d at %I:%m %p")
+            value = date.strftime("%b %d at %I:%M %p")
 
         elif diff.days == 1:
             value = "1 day %s" % txt
@@ -264,9 +440,12 @@ class SPTDate(object):
 if __name__ == '__main__':
 
 
-    date = SPTDate.now() - timedelta(minutes=500.23)
+    date1 = SPTDate.now()
+    date2 = SPTDate.now()
 
-    print SPTDate.get_time_ago(date)
+    #print("Date 1 :" , date1 , " Date 2: ", date2)
+
+    #print(SPTDate.get_business_days_duration(date1, date2))
 
 
 

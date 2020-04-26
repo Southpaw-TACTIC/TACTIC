@@ -21,18 +21,18 @@ import os
 
 class PythonRestHandler(BaseRefreshWdg):
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         }
 
 
-    def get_display(my):
+    def get_display(self):
 
-        script_path = my.kwargs.get("script_path")
+        script_path = self.kwargs.get("script_path")
         if not script_path:
             return {}
 
-        python_cmd = PythonCmd(**my.kwargs)
+        python_cmd = PythonCmd(**self.kwargs)
 
         ret_val = python_cmd.execute()
 

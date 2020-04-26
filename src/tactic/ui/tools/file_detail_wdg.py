@@ -19,6 +19,7 @@ from pyasm.search import Search, SearchType, SearchKey
 from pyasm.biz import Snapshot
 from pyasm.widget import TextAreaWdg
 from tactic.ui.panel import TableLayoutWdg
+from pyasm.widget import IconWdg
 
 from pyasm.widget import ThumbWdg
 
@@ -28,10 +29,12 @@ import os
 class FileDetailWdg(BaseRefreshWdg):
     '''Single File Widget'''
 
-    def get_display(my):
+    def get_display(self):
 
-        my.search_key = my.kwargs.get("search_key")
-        sobject = Search.get_by_search_key(my.search_key)
+        parser = self.kwargs.get("parser")
+
+        self.search_key = self.kwargs.get("search_key")
+        sobject = Search.get_by_search_key(self.search_key)
 
         if sobject.get_base_search_type() == "sthpw/snapshot":
             snapshot = sobject
@@ -39,7 +42,7 @@ class FileDetailWdg(BaseRefreshWdg):
             # if it is a file object
             snapshot = sobject.get_parent()
         else:
-            snapshots = Snapshot.get_by_sobject(sobject)
+            snapshots = Snapshot.get_by_sobject(sobject, is_latest=True)
             snapshot = snapshots[0]
 
         # Extension determine UI class for preview
@@ -60,7 +63,8 @@ class FileDetailWdg(BaseRefreshWdg):
         
         #parent = snapshot.get_parent()
 
-        top = my.top
+        top = self.top
+        self.set_as_panel(top)
 
         if ext == "pdf":
             iframe = HtmlElement.iframe()
@@ -141,12 +145,56 @@ class FileDetailWdg(BaseRefreshWdg):
             content_div.add_style("height", "100%")
  
         elif ext in File.IMAGE_EXT or ext == "gif":
-            if ext == "gif":
-                img = HtmlElement.img(src=src)
+            if lib_path.find("#") != -1:
+                img = DivWdg()
+
+                file_range = snapshot.get_file_range()
+                file_range_div = DivWdg()
+                file_range_div.add("File Range: %s" % file_range.get_display())
+                img.add(file_range_div)
+                file_range_div.add_style("font-size: 1.4em")
+                file_range_div.add_style("margin: 15px 0px")
+
+                """
+                left_chevron = IconWdg("Previous", "BS_CHEVRON_LEFT")
+                file_range_div.add(left_chevron)
+                right_chevron = IconWdg("Next", "BS_CHEVRON_RIGHT")
+                file_range_div.add(right_chevron)
+                """
+
+
+                expanded_paths = snapshot.get_expanded_web_paths()
+                lib_paths = snapshot.get_expanded_lib_paths()
+                lib_path = lib_paths[0]
+
+                items_div = DivWdg()
+                img.add(items_div)
+                items_div.add_style("width: auto")
+
+                for path in expanded_paths:
+                    item = HtmlElement.img(src=path)
+                    items_div.add(item)
+                    item.add_style("max-height: 300px")
+                    item.add_style("height: auto")
+                    item.add_style("width: 32%")
+                    item.add_style("margin: 2px")
+                    item.add_style("display: inline-block")
+                    #item.add_class("spt_resizable")
+
+                img.add_style("margin: 20px")
+                img.add_style("max-height: 400px")
+                img.add_style("overflow-y: auto")
+                img.add_style("overflow-hidden: auto")
+                img.add_style("text-align: left")
+
+                    
             else:
-                img = HtmlElement.img(src=web_src)
-            img.add_style("height: inherit")
-            img.add_style("width: auto")
+                if ext == "gif":
+                    img = HtmlElement.img(src=src)
+                else:
+                    img = HtmlElement.img(src=web_src)
+                img.add_style("height: inherit")
+                img.add_style("width: auto")
             td.add(img)
         elif ext in File.VIDEO_EXT:
             embed_wdg = EmbedWdg(src=src, thumb_path=thumb_path, preload="auto", controls=True)
@@ -190,6 +238,35 @@ class FileDetailWdg(BaseRefreshWdg):
         from tactic.ui.checkin import PathMetadataWdg
         from tactic.ui.checkin import SnapshotMetadataWdg
 
+        from pyasm.widget import SelectWdg
+        select = SelectWdg(name="parser")
+        select.add_style("width: 125px")
+        select.add_style("margin-top: 0px")
+        select.add_style("margin-right: 10px")
+        select.add_empty_option("-- Metadata --")
+        td.add(select)
+        select.add_style("float: right")
+        select.set_option("values", ["IPTC","EXIF","XMP","XMP Keywords", "ImageMagick","PIL"])
+        select.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var parser = bvr.src_el.value;
+            spt.panel.refresh_element(bvr.src_el, {parser: parser})
+            '''
+        } )
+        if parser:
+            select.set_value(parser)
+
+
+
+        title_div = DivWdg()
+        td.add(title_div)
+        title_div.add("<div style='font-size: 16px'>File Metadata</div>")
+        title_div.add("<div>Metadata extracted directly from the file</div>")
+        title_div.add("<hr/>")
+        title_div.add_style("text-align: left")
+        title_div.add_style("margin: 0px 10px")
+
 
         metadata_div = DivWdg()
         td.add(metadata_div)
@@ -199,24 +276,13 @@ class FileDetailWdg(BaseRefreshWdg):
         metadata_div.add_style("margin: 20px 0px 20px 10px")
         metadata_div.add_style("text-align: left")
 
-        metadata_div.add("<div style='font-size: 16px'>File Metadata</div>")
-        metadata_div.add("<div>Metadata extracted directly from the file</div>")
-        metadata_div.add("<hr/>")
+        use_tactic_tags = self.kwargs.get("use_tactic_tags")
 
-        parser = my.kwargs.get("parser")
-        use_tactic_tags = my.kwargs.get("use_tactic_tags")
-
-        file_type = "main"
-        server_src = snapshot.get_lib_path_by_type(file_type)
+        server_src = lib_path
 
         # get it dynamically by path
-        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags)
+        metadata_wdg = PathMetadataWdg(path=server_src, parser=parser, use_tactic_tags=use_tactic_tags, search_key=self.search_key)
         metadata_div.add(metadata_wdg)
-
-        #else:
-        #    metadata_wdg = SnapshotMetadataWdg(snapshot=snapshot)
-        #    metadata_div.add(metadata_wdg)
-
 
         top.add("<br/>")
 

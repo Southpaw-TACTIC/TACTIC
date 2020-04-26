@@ -20,16 +20,16 @@ from base_example_wdg import BaseExampleWdg
 
 class SearchClassTagExamplesWdg(BaseExampleWdg):
 
-    def get_example_title(my):
+    def get_example_title(self):
         return "Javascript Search Clas Tag Examples"
 
 
-    def get_example_description(my):
+    def get_example_description(self):
         return "These are a number of examples showing how to use the numerous 'spt.' convenience wrappers " \
                 "that provide functionality for searching for elements by class tag."
 
 
-    def get_example_display(my):
+    def get_example_display(self):
 
         div = DivWdg()
         div.add_class("SPT_SEARCH_CLASS_TAG_EXAMPLE")

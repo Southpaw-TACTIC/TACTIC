@@ -106,7 +106,7 @@ spt.validation.check = function( new_value, validation_bvr_list, display_target_
 
 spt.validation.has_invalid_entries = function( start_el, top_mt_search_str )
 {
-    var top_el = $(start_el).getParent( top_mt_search_str );
+    var top_el = document.id(start_el).getParent( top_mt_search_str );
     if( ! top_el ) {
         return false;
     }

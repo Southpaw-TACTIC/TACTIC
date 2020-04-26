@@ -28,7 +28,7 @@ from pyasm.search import Search
 
 class WidgetTest(unittest.TestCase):
 
-    def test_all(my):
+    def test_all(self):
         # start batch environment
         Batch(login_code='admin')
 
@@ -38,11 +38,11 @@ class WidgetTest(unittest.TestCase):
 
        
         try:
-            my._test_csv_export()
+            self._test_csv_export()
         finally:
             test_env.delete()
 
-    def _test_url(my):
+    def _test_url(self):
 
         base = "http://www.yahoo.com"
         url = Url( base )
@@ -51,10 +51,10 @@ class WidgetTest(unittest.TestCase):
         
         url_str = url.get_url()
 
-        my.assertEquals("%s?widget=EditWdg&args=person" % base, url_str)
+        self.assertEquals("%s?widget=EditWdg&args=person" % base, url_str)
 
 
-    def _test_state(my):
+    def _test_state(self):
 
         # set the state
         state = WebState.get()
@@ -67,9 +67,9 @@ class WidgetTest(unittest.TestCase):
 
         url_str = url.to_string()
 
-        my.assertEquals("%s?episode_code=TF01A&scene=TF01A-003" % base, url_str)
+        self.assertEquals("%s?episode_code=TF01A&scene=TF01A-003" % base, url_str)
 
-    def _test_csv_export(my):
+    def _test_csv_export(self):
         from tactic.ui.widget import CsvExportWdg
         view = 'table'
         search_type ='sthpw/task'
@@ -99,9 +99,9 @@ class WidgetTest(unittest.TestCase):
         expected_count = Search.eval(expr, single=True)
         
         rtn = jsonloads(rtn)
-        my.assertEquals(expected_columns, rtn.get('columns'))
-        my.assertEquals(expected_sql, rtn.get('sql'))
-        my.assertEquals(expected_count, rtn.get('count'))
+        self.assertEquals(expected_columns, rtn.get('columns'))
+        self.assertEquals(expected_sql, rtn.get('sql'))
+        self.assertEquals(expected_count, rtn.get('count'))
 
 
         mode = 'export_displayed'
@@ -113,8 +113,8 @@ class WidgetTest(unittest.TestCase):
         
         expected_count = 3
         rtn = jsonloads(rtn)
-        my.assertEquals(expected_columns, rtn.get('columns'))
-        my.assertEquals(expected_count, rtn.get('count'))
+        self.assertEquals(expected_columns, rtn.get('columns'))
+        self.assertEquals(expected_count, rtn.get('count'))
         
         
 

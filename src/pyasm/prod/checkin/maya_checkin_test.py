@@ -22,10 +22,10 @@ from maya_checkin import *
 
 class MayaCheckinTest(unittest.TestCase):
 
-    def setUp(my):
+    def setUp(self):
         batch = Batch()
 
-    def test_all(my):
+    def test_all(self):
 
         # create a scene that will be checked in
         asset_code = "prp101"

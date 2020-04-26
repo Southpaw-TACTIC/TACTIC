@@ -23,12 +23,12 @@ from tactic.ui.common import BaseRefreshWdg
 
 class ContentBoxWdg(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
 
         from tactic.ui.panel import CustomLayoutWdg
 
-        top = my.top
+        top = self.top
         top.add_class("spt_content_box")
         top.add_class("spt_content_box_inline")
         top.add_style("min-width: 200px")
@@ -117,7 +117,7 @@ class ContentBoxWdg(BaseRefreshWdg):
         ''' % colors)
 
 
-        top.add(my.get_title_wdg())
+        top.add(self.get_title_wdg())
 
         inner = DivWdg()
         top.add(inner)
@@ -127,7 +127,7 @@ class ContentBoxWdg(BaseRefreshWdg):
 
 
         # handle the shelf
-        shelf_view = my.kwargs.get("shelf_view")
+        shelf_view = self.kwargs.get("shelf_view")
         if shelf_view:
             shelf_div = DivWdg()
             inner.add(shelf_div)
@@ -146,37 +146,37 @@ class ContentBoxWdg(BaseRefreshWdg):
         inner.add(content_div)
         content_div.add_style("width: auto")
 
-        content_height = my.kwargs.get("content_height")
+        content_height = self.kwargs.get("content_height")
         if content_height:
             content_div.add_style("height: %s" % content_height)
         content_div.add_style("overflow-x: auto")
 
-        content_view = my.kwargs.get("content_view")
+        content_view = self.kwargs.get("content_view")
         #content_div.add(content_view)
         if content_view:
             layout = CustomLayoutWdg(view=content_view)
             content_div.add(layout)
 
-            content_margin = my.kwargs.get("content_margin")
+            content_margin = self.kwargs.get("content_margin")
             if content_margin:
                 layout.add_style("margin", content_margin)
 
-        config_xml = my.kwargs.get("config_xml")
+        config_xml = self.kwargs.get("config_xml")
         if config_xml:
             config = WidgetConfig.get(view="tab", xml=config_xml)
             layout = config.get_display_widget("content")
             content_div.add(layout)
 
 
-        content_wdg = my.get_widget("content")
-        if not content_wdg and my.widgets:
-            content_wdg = my.widgets[0]
+        content_wdg = self.get_widget("content")
+        if not content_wdg and self.widgets:
+            content_wdg = self.widgets[0]
         if content_wdg:
             content_div.add(content_wdg)
 
 
         # handle the footer
-        footer_view = my.kwargs.get("footer_view")
+        footer_view = self.kwargs.get("footer_view")
         if footer_view:
             footer_div = DivWdg()
             inner.add(footer_div)
@@ -190,20 +190,20 @@ class ContentBoxWdg(BaseRefreshWdg):
 
 
 
-    def get_title_wdg(my):
+    def get_title_wdg(self):
 
         from tactic.ui.widget import IconButtonWdg
-        title = my.kwargs.get("title")
+        title = self.kwargs.get("title")
         if not title:
-            widget = my.get_widget("title")
-            if not widget and my.widgets:
-                widget = my.widgets[0]
+            widget = self.get_widget("title")
+            if not widget and self.widgets:
+                widget = self.widgets[0]
                 title = widget.get_name().title()
         if not title:
             title = "No Title"
 
 
-        icon = my.kwargs.get("icon")
+        icon = self.kwargs.get("icon")
         if not icon:
             icon = "G_FOLDER"
 
@@ -223,7 +223,7 @@ class ContentBoxWdg(BaseRefreshWdg):
 
 
         # icon on the right
-        show_gear = my.kwargs.get("show_gear")
+        show_gear = self.kwargs.get("show_gear")
         if show_gear in [True, 'true']:
             icon_div = DivWdg()
             title_div.add(icon_div)

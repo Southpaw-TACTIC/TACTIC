@@ -25,120 +25,120 @@ class Checkin(object):
     # class that creates the necessary files for checkin and uploads them
     # to a server
 
-    def __init__(my):
+    def __init__(self):
 
-        my.env = AppEnvironment.get()
+        self.env = AppEnvironment.get()
 
-        my.info = TacticInfo.get()
-        my.impl = my.info.get_app_implementation()
+        self.info = TacticInfo.get()
+        self.impl = self.info.get_app_implementation()
 
-        my.app = my.env.get_app()
-        my.app.set_namespace()
+        self.app = self.env.get_app()
+        self.app.set_namespace()
 
-        my.texture_paths = []
-        my.texture_nodes = []
-        my.texture_attrs = []
-        my.texture_file_codes = []
-        my.texture_md5_list = []
+        self.texture_paths = []
+        self.texture_nodes = []
+        self.texture_attrs = []
+        self.texture_file_codes = []
+        self.texture_md5_list = []
 
-        my.geo_info = []
+        self.geo_info = []
 
         # DEPRECATED
-        my.houdini_refs = []
+        self.houdini_refs = []
 
-        my.generated_paths = []
-        my.upload_paths = []
+        self.generated_paths = []
+        self.upload_paths = []
 
-        my.options = {}
-        my.handlers = {}
-        my.handoff_dir = ''
+        self.options = {}
+        self.handlers = {}
+        self.handoff_dir = ''
        
         
-        #my.clean_up()
+        #self.clean_up()
 
-    def clean_up(my):
-        ticket = my.env.get_ticket()
-        project_code = my.env.get_project_code()
+    def clean_up(self):
+        ticket = self.env.get_ticket()
+        project_code = self.env.get_project_code()
 
         # clear the upload dir first
         from pyasm.application.common.interpreter.tactic_client_lib import * 
         client_server = TacticServerStub(setup=False)
-        server_name = my.env.get_server()
+        server_name = self.env.get_server()
         client_server.set_server(server_name)
         client_server.set_project(project_code)
         client_server.set_ticket(ticket)
         client_server.clear_upload_dir()
 
-    def set_options(my, options_str):
+    def set_options(self, options_str):
         exprs = options_str.split("|")
         for expr in exprs:
             name, value = expr.split("=")
-            my.options[name] = value
+            self.options[name] = value
         
-    def set_option(my, name, value):
-        my.options[name] = value
+    def set_option(self, name, value):
+        self.options[name] = value
 
-    def get_option(my, name):
-        if my.options.has_key(name):
-            return my.options[name]
+    def get_option(self, name):
+        if self.options.has_key(name):
+            return self.options[name]
         else:
             return ""
 
-    def set_handlers(my, handlers_str):
+    def set_handlers(self, handlers_str):
         exprs = handlers_str.split("|")
         for expr in exprs:
             name, value = expr.split("=")
-            my.handlers[name] = value
+            self.handlers[name] = value
 
-    def get_handler(my, name):
-        if my.handlers.has_key(name):
-            return my.handlers[name]
+    def get_handler(self, name):
+        if self.handlers.has_key(name):
+            return self.handlers[name]
         else:
             return ""
 
 
 
-    def add_path(my, path):
-        my.generated_paths.append(path)
+    def add_path(self, path):
+        self.generated_paths.append(path)
 
-    def upload_files(my):
-        upload_paths = Common.get_unique_list(my.generated_paths)
+    def upload_files(self):
+        upload_paths = Common.get_unique_list(self.generated_paths)
         for path in upload_paths:
-            my.env.upload(path)
+            self.env.upload(path)
 
-        for path in my.upload_paths:
-            my.env.upload(path)
+        for path in self.upload_paths:
+            self.env.upload(path)
             # remove upload files
             #os.unlink(path)
 
         
 
-    def handoff_files(my):
-        dir = my.handoff_dir
-        for path in my.generated_paths:
+    def handoff_files(self):
+        dir = self.handoff_dir
+        for path in self.generated_paths:
             file_name = os.path.basename(path)
             file_name = Common.get_filesystem_name(file_name)
             new_file_path = '%s/%s' %(dir, file_name)
             print "copying to: ", new_file_path
             shutil.copy(path, new_file_path)
 
-        for path in my.upload_paths:
-            my.env.upload(path)
+        for path in self.upload_paths:
+            self.env.upload(path)
 
-    def dump_nodes(my, asset_code, node_list):
+    def dump_nodes(self, asset_code, node_list):
         ''' exports non-tactic nodes'''
         for node_name in node_list:
-            my._check_existence(node_name)
+            self._check_existence(node_name)
 
         
-        path = my._export_node(node_list,  preserve_ref=False)
+        path = self._export_node(node_list,  preserve_ref=False)
         # dump out the reference file
-        return my.dump_file(asset_code, path, append=True)
+        return self.dump_file(asset_code, path, append=True)
       
 
-    def dump_node(my, node_name, instance=None):
+    def dump_node(self, node_name, instance=None):
         '''exports a node and everything under it'''
-        namespace = my._check_existence(node_name)
+        namespace = self._check_existence(node_name)
         
         # NOTE: Even an asset does not really have an instance, we must set
         # it using the asset_name in checkin_asset, since the server checkin 
@@ -148,26 +148,26 @@ class Checkin(object):
             instance = namespace
 
         # create the node data attribute if it doesn't exist
-        node_data = my.app.get_node_data(node_name)
+        node_data = self.app.get_node_data(node_name)
         node_data.create()
        
         use_filename = True
-        if  my.get_option('use_filename')=='false':
+        if  self.get_option('use_filename')=='false':
             use_filename = False
-        my._export_node(node_name, use_filename=use_filename)
+        self._export_node(node_name, use_filename=use_filename)
 
         # dump out the reference file
-        return my.dump_ref(instance, [node_name])
+        return self.dump_ref(instance, [node_name])
 
 
-    def _check_existence(my, node_name):
+    def _check_existence(self, node_name):
         # use naming to extract info
-        naming = my.app.get_node_naming(node_name)
+        naming = self.app.get_node_naming(node_name)
         namespace = naming.get_namespace()
         asset_code = naming.get_asset_code()
 
         # check whether node is in session
-        is_present = my.app.node_exists(node_name)
+        is_present = self.app.node_exists(node_name)
         if not is_present:
             msg = "Error: Node '%s' is not in the session" % node_name
             raise TacticException(msg)
@@ -175,18 +175,18 @@ class Checkin(object):
         return namespace
 
 
-    def _export_node(my, node_name, preserve_ref=True, use_filename=True):
+    def _export_node(self, node_name, preserve_ref=True, use_filename=True):
 
         # NOTE: node_name can be a list ... should make this clearer
 
-        file_type = my.get_option("file_type")
-        context = my.get_option('context')
-        instance = my.get_option('instance')
+        file_type = self.get_option("file_type")
+        context = self.get_option('context')
+        instance = self.get_option('instance')
         filename = ''
 
 
-        export_method = my.get_option("export_method")
-        handler_cls = my.get_handler("checkin/create")
+        export_method = self.get_option("export_method")
+        handler_cls = self.get_handler("checkin/create")
         if export_method == "Pipeline" and handler_cls:
             handler = AppEnvironment.create_from_class_path(handler_cls)
             input = {'node_name': node_name}
@@ -195,53 +195,53 @@ class Checkin(object):
             path = handler.get_output_value("path")
         elif export_method == "Save":
             # get the last saved file name and use it by default
-            old_path = my.app.get_file_path()
+            old_path = self.app.get_file_path()
             if use_filename and old_path:
                 filename = os.path.basename(old_path)
-                path = my.app.save("%s/%s" % (my.info.get_save_dir(), filename) )
+                path = self.app.save("%s/%s" % (self.info.get_save_dir(), filename) )
             else:
-                path = my.app.save_node(node_name, my.env.get_tmpdir(), type=file_type )
+                path = self.app.save_node(node_name, self.env.get_tmpdir(), type=file_type )
         else:
-            old_path = my.app.get_file_path()
+            old_path = self.app.get_file_path()
             if use_filename:
                 filename = os.path.basename(old_path)
             
-            path = my.app.export_node(node_name, context, my.env.get_tmpdir(), \
+            path = self.app.export_node(node_name, context, self.env.get_tmpdir(), \
                 type=file_type, preserve_ref=preserve_ref, filename=filename,\
                 instance=instance)
 
         # now that the file is exported, allow an handler to process the file
-        handler_cls = my.get_handler("checkin/process")
+        handler_cls = self.get_handler("checkin/process")
         if handler_cls:
             handler = AppEnvironment.create_from_class_path(handler_cls)
             handler.set_input({"path" : path})
             handler.execute()
 
 
-        my.generated_paths.append(path)
+        self.generated_paths.append(path)
 
 
         # handle the dependencies in the old manner
-        if my.app.APPNAME == "maya":
+        if self.app.APPNAME == "maya":
             md5_list = []
-            dependent_paths = my.handle_dependencies(path, node_name)
+            dependent_paths = self.handle_dependencies(path, node_name)
             for dependent_path in dependent_paths:
-                my.generated_paths.append(dependent_path)
+                self.generated_paths.append(dependent_path)
                 md5_list.append(Common.get_md5(dependent_path))
-            my.texture_md5_list = md5_list 
+            self.texture_md5_list = md5_list 
         return path
 
 
 
-    def handle_dependencies(my, path="", node_name=None):
+    def handle_dependencies(self, path="", node_name=None):
         '''record all the dependencies for a given session/app file'''
 
         dependent_paths = []
-        if my.get_option('handle_texture_dependency')=='false':
+        if self.get_option('handle_texture_dependency')=='false':
             return dependent_paths
 
         # now that the file is exported, allow an handler to process the file
-        handler_cls = my.get_handler("checkin/dependency")
+        handler_cls = self.get_handler("checkin/dependency")
         if handler_cls:
             handler = AppEnvironment.create_from_class_path(handler_cls)
             input = {"path":path, "node_name": node_name}
@@ -251,36 +251,36 @@ class Checkin(object):
 
 
         # find all of the textures in the extracted file
-        if my.app.APPNAME == "maya":
+        if self.app.APPNAME == "maya":
             
             if path.endswith(".ma"):
                 # handle the textures
-                my.texture_nodes, my.texture_paths, my.texture_attrs = \
-                    my.impl.get_textures_from_path(path)
+                self.texture_nodes, self.texture_paths, self.texture_attrs = \
+                    self.impl.get_textures_from_path(path)
                 # remember all of the geo paths
-                my.geo_info = my.impl.get_geo_from_session(node_name)
-                for info in my.geo_info:
+                self.geo_info = self.impl.get_geo_from_session(node_name)
+                for info in self.geo_info:
                     geo_path = info[1]
                     dependent_paths.append(geo_path)
             else:
-                my.texture_nodes, my.texture_paths, my.texture_attrs = \
-                    my.impl.get_textures_from_session(node_name)
+                self.texture_nodes, self.texture_paths, self.texture_attrs = \
+                    self.impl.get_textures_from_session(node_name)
 
-        elif my.app.APPNAME == "houdini":
-            my.texture_nodes, my.texture_paths, my.texture_attrs = \
-                my.app.get_textures_from_session(node_name)
+        elif self.app.APPNAME == "houdini":
+            self.texture_nodes, self.texture_paths, self.texture_attrs = \
+                self.app.get_textures_from_session(node_name)
 
-        elif my.app.APPNAME == "xsi":
+        elif self.app.APPNAME == "xsi":
             if path.endswith(".xsi"):
-                my.texture_nodes, my.texture_paths, my.texture_attrs = \
-                    my.impl.get_textures_from_path(path)
+                self.texture_nodes, self.texture_paths, self.texture_attrs = \
+                    self.impl.get_textures_from_path(path)
             elif path.endswith(".emdl"):
-                my.texture_nodes, my.texture_paths, my.texture_attrs = \
-                    my.app.get_textures_from_session(node_name)
+                self.texture_nodes, self.texture_paths, self.texture_attrs = \
+                    self.app.get_textures_from_session(node_name)
 
 
         # add all of the texture paths
-        for texture_path in my.texture_paths:
+        for texture_path in self.texture_paths:
             # FIXME: all of the texture paths are uploaded!!!, even if
             # they are identical
             dependent_paths.append(texture_path)
@@ -289,7 +289,7 @@ class Checkin(object):
 
 
 
-    def read_file(my, file_path):
+    def read_file(self, file_path):
         try:
             file_path = file_path.replace("\\", "/")
             doc = parse(file_path)
@@ -299,7 +299,7 @@ class Checkin(object):
             raise Exception(e)
 
        
-    def dump_file(my, instance, ref_path, append=False):
+    def dump_file(self, instance, ref_path, append=False):
         '''dumps a file node in the ...ref.xml'''
         # get all of the selected nodes
         # This matches File.get_filesystem_name(instance)
@@ -308,12 +308,12 @@ class Checkin(object):
         filename = filename.replace(":", "__")
         filename = filename.replace("?", "__")
         filename = filename.replace("=", "__")
-        path = "%s/%s-ref.xml" % (my.env.get_tmpdir(), filename)
+        path = "%s/%s-ref.xml" % (self.env.get_tmpdir(), filename)
         # dump info to send to the server
         impl = getDOMImplementation()
         doc = None
         if append:
-            doc = my.read_file(path)
+            doc = self.read_file(path)
         else:
             doc = impl.createDocument(None, "session", None)
         root = doc.documentElement
@@ -335,18 +335,18 @@ class Checkin(object):
         return path
 
 
-    def dump_ref(my, instance, node_names, append=False):
+    def dump_ref(self, instance, node_names, append=False):
         '''dumps all of the references in the group'''
         # get all of the selected nodes
         # This matches File.get_search_key(key)
         file_name = Common.get_filesystem_name(instance)
-        path = "%s/%s-ref.xml" % (my.env.get_tmpdir(), file_name)
+        path = "%s/%s-ref.xml" % (self.env.get_tmpdir(), file_name)
 
         # dump info to send to the server
         impl = getDOMImplementation()
         doc = None
         if append:
-            doc = my.read_file(path)
+            doc = self.read_file(path)
         else:
             doc = impl.createDocument(None, "session", None)
         root = doc.documentElement
@@ -358,11 +358,11 @@ class Checkin(object):
 
             if node_name:
 
-                node_naming = my.app.get_node_naming(node_name)
+                node_naming = self.app.get_node_naming(node_name)
                 instance = node_naming.get_instance()
 
-                asset_snapshot_code = my.impl.get_snapshot_code(node_name,"asset")
-                anim_snapshot_code = my.impl.get_snapshot_code(node_name,"anim")
+                asset_snapshot_code = self.impl.get_snapshot_code(node_name,"asset")
+                anim_snapshot_code = self.impl.get_snapshot_code(node_name,"anim")
 
                 # add these assertions because if these are None, pretty print
                 # fails and it is difficult to find out where the error occured
@@ -376,30 +376,30 @@ class Checkin(object):
                 top_node.setAttribute("node_name", node_name)
 
             # add in a path
-            if my.generated_paths:
-                assert my.generated_paths[0] != None
-                top_node.setAttribute("path", my.generated_paths[0])
-                top_node.setAttribute("handoff_dir", my.handoff_dir)
+            if self.generated_paths:
+                assert self.generated_paths[0] != None
+                top_node.setAttribute("path", self.generated_paths[0])
+                top_node.setAttribute("handoff_dir", self.handoff_dir)
                 # only generate for xsi as maya file may change on parsing
-                if my.app.name == 'xsi':
-                    top_node_md5 = Common.get_md5(my.generated_paths[0])
+                if self.app.name == 'xsi':
+                    top_node_md5 = Common.get_md5(self.generated_paths[0])
                     top_node.setAttribute("md5", top_node_md5)
             # add this top node
             root.appendChild(top_node)
 
 
             # get all of the tactic sub references.
-            sub_refs = my.app.get_reference_nodes(node_name)
+            sub_refs = self.app.get_reference_nodes(node_name)
             for sub_ref in sub_refs:
 
-                node_naming2 = my.app.get_node_naming(sub_ref)
+                node_naming2 = self.app.get_node_naming(sub_ref)
                 instance2 = node_naming2.get_instance()
 
-                sub_path = my.app.get_reference_path(sub_ref)
+                sub_path = self.app.get_reference_path(sub_ref)
                 # remove maya's weird {#} at the end
                 sub_path = re.sub('{\d+}','', sub_path)
-                sub_asset_snapshot_code = my.impl.get_snapshot_code(sub_ref,"asset")
-                sub_anim_snapshot_code = my.impl.get_snapshot_code(sub_ref,"anim")
+                sub_asset_snapshot_code = self.impl.get_snapshot_code(sub_ref,"asset")
+                sub_anim_snapshot_code = self.impl.get_snapshot_code(sub_ref,"anim")
                 sub_node = doc.createElement("ref")
                 sub_node.setAttribute("asset_snapshot_code", sub_asset_snapshot_code)
                 sub_node.setAttribute("anim_snapshot_code", sub_anim_snapshot_code)
@@ -411,13 +411,13 @@ class Checkin(object):
 
 
             # add in all of the textures
-            texture_nodes = my.texture_nodes
-            texture_paths = my.texture_paths
-            texture_attrs = my.texture_attrs
-            texture_file_codes = my.texture_file_codes
-            texture_md5_list = my.texture_md5_list
+            texture_nodes = self.texture_nodes
+            texture_paths = self.texture_paths
+            texture_attrs = self.texture_attrs
+            texture_file_codes = self.texture_file_codes
+            texture_md5_list = self.texture_md5_list
 
-            use_namespace = my.get_option('use_namespace')
+            use_namespace = self.get_option('use_namespace')
 
             for i in range(0, len(texture_paths)):
                 file_node = doc.createElement("file")
@@ -453,7 +453,7 @@ class Checkin(object):
 
 
             # add in the geo caches
-            for info in my.geo_info:
+            for info in self.geo_info:
                 geo_node, geo_path = info
                 file_node = doc.createElement("file")
                 file_node.setAttribute("type", "geo")
@@ -464,8 +464,8 @@ class Checkin(object):
 
 
             # record the layers
-            if my.app.APPNAME == "maya":
-                layers = my.app.get_all_layers()
+            if self.app.APPNAME == "maya":
+                layers = self.app.get_all_layers()
                 for layer in layers:
                     file_node = doc.createElement("layer")
                     file_node.setAttribute("name", layer)
@@ -476,7 +476,7 @@ class Checkin(object):
             """
             # Houdini references
             # FIXME: I don't think this is necessary anymore.
-            for info in my.houdini_refs:
+            for info in self.houdini_refs:
                 houdini_node = info[0]
                 houdini_attr = info[1]
                 houdini_path = info[2]
@@ -499,28 +499,28 @@ class Checkin(object):
         file.write( doc.toprettyxml(encoding='utf-8'))
         file.close()
 
-        #my.generated_paths.append(path)
+        #self.generated_paths.append(path)
         # only this ref xml is uploaded
-        my.upload_paths.append(path)
+        self.upload_paths.append(path)
         return path
 
 
 
 
-    def dump_group(my, group_name, group_asset_code):
+    def dump_group(self, group_name, group_asset_code):
 
         nodes = []
-        if my.get_option("selected") == "false":
-            '''nodes = my.app.get_top_nodes()
+        if self.get_option("selected") == "false":
+            '''nodes = self.app.get_top_nodes()
             if not nodes:
                 msg = "No assets in session"
                 raise TacticException(msg)
             '''
-            nodes = my.app.get_nodes_in_set(group_name)
+            nodes = self.app.get_nodes_in_set(group_name)
         
         else:
             # get all of the selected nodes
-            nodes = my.app.get_selected_top_nodes()
+            nodes = self.app.get_selected_top_nodes()
             if not nodes:
                 msg = "No assets selected"
                 raise TacticException(msg)
@@ -529,13 +529,13 @@ class Checkin(object):
         tactic_nodes = []
         for node_name in nodes:
             # dump the arbitrary nodes included in a set if any
-            if not my.app.is_tactic_node(node_name):
+            if not self.app.is_tactic_node(node_name):
                 non_tactic_nodes.append(node_name)
             else:
                 tactic_nodes.append(node_name)
         
         # dump out the reference file
-        my.dump_ref(group_asset_code, tactic_nodes)
+        self.dump_ref(group_asset_code, tactic_nodes)
         
         # dump out the animation for each interface
         first = True
@@ -543,38 +543,38 @@ class Checkin(object):
        
 
         for node_name in tactic_nodes:
-            path = my._dump_interface(group_asset_code, node_name, first)
+            path = self._dump_interface(group_asset_code, node_name, first)
             first = False
 
         if non_tactic_nodes:
-            my.dump_nodes(group_asset_code, non_tactic_nodes)
+            self.dump_nodes(group_asset_code, non_tactic_nodes)
 
         return path
 
 
 
-    def _dump_interface(my, basename, node_name, create=True):
+    def _dump_interface(self, basename, node_name, create=True):
         '''dump the animation: use animImport, but tag it with comments
         so that multiple imports can be stored in the same file and 
         accessed non-linearly'''
 
-        node_naming = my.app.get_node_naming(node_name)
+        node_naming = self.app.get_node_naming(node_name)
         instance = node_naming.get_instance()
 
         # dump the animation file
-        node_anim_path = my.impl.dump_interface(node_name)
+        node_anim_path = self.impl.dump_interface(node_name)
 
        
         #base, ext = os.path.splitext(node_anim_path)
         ext = ".anim"
 
-        out_anim_file = "%s/%s%s" % (my.env.get_tmpdir(),basename,ext)
+        out_anim_file = "%s/%s%s" % (self.env.get_tmpdir(),basename,ext)
         src_files = {}
         src_files[node_anim_path] = 'ANIM'
 
-        if my.app.APPNAME == "maya":
+        if self.app.APPNAME == "maya":
             # dump the static file for Maya
-            node_static_path = my.impl.dump_interface(node_name, mode='static')
+            node_static_path = self.impl.dump_interface(node_name, mode='static')
             src_files[node_static_path] = 'STATIC'
             
         # copy into the master file
@@ -584,12 +584,12 @@ class Checkin(object):
                 file2 = open(out_anim_file, "w")
                 create = False
                 # remember the created file
-                my.upload_paths.append(out_anim_file)
+                self.upload_paths.append(out_anim_file)
                 
             else:
                 file2 = open(out_anim_file, "a")
 
-            if my.app.APPNAME == "houdini":
+            if self.app.APPNAME == "houdini":
                 file2.write("#------------------\n")
                 file2.write("#START_%s=%s\n" % (src_file_type, instance))
                 file2.write("#------------------\n")
@@ -602,11 +602,11 @@ class Checkin(object):
             file2.write("\n")
             for line in file.readlines():
                 # comment out the opadd for houdini
-                if my.app.APPNAME == "houdini" and line.startswith("opadd -n"):
+                if self.app.APPNAME == "houdini" and line.startswith("opadd -n"):
                     line = "#%s" % line
                 file2.write(line)
 
-            if my.app.APPNAME == "houdini":
+            if self.app.APPNAME == "houdini":
                 file2.write("#------------------\n")
                 file2.write("#END_%s=%s\n" % (src_file_type, instance))
                 file2.write("#------------------\n\n")
@@ -623,17 +623,17 @@ class Checkin(object):
         return out_anim_file
 
 
-    def dump_anim(my, node_name):
+    def dump_anim(self, node_name):
         '''dump out the animation of a node'''
 
-        node_naming = my.app.get_node_naming(node_name)
+        node_naming = self.app.get_node_naming(node_name)
         instance_name = node_naming.get_instance()
 
         # dump out the reference file
-        my.dump_ref(instance_name, [node_name])
+        self.dump_ref(instance_name, [node_name])
 
         # dump out the animation for each interface
-        out_file = my._dump_interface(instance_name, node_name, True)
+        out_file = self._dump_interface(instance_name, node_name, True)
         return out_file
 
 

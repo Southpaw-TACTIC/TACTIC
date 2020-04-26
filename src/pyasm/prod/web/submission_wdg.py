@@ -32,10 +32,10 @@ from tactic.ui.common import BaseRefreshWdg
 
 class SubmissionWdg(EditWdg):
 
-    #def __init__(my, search_type,base_config="submit", input_prefix='edit'):
-    #    super(SubmissionWdg,my).__init__(search_type,base_config, input_prefix)
+    #def __init__(self, search_type,base_config="submit", input_prefix='edit'):
+    #    super(SubmissionWdg,self).__init__(search_type,base_config, input_prefix)
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {
         "search_type": "search_type to be operated on",
         "parent_search_type": "parent search_type for this submission",
@@ -47,16 +47,16 @@ class SubmissionWdg(EditWdg):
         "base_config": "the view to get the widgets from"
         }
     
-    def init(my):
-        super(SubmissionWdg, my).init()
-        my.mode = 'Submit'
+    def init(self):
+        super(SubmissionWdg, self).init()
+        self.mode = 'Submit'
 
 
-    def add_header(my, table, title):
+    def add_header(self, table, title):
         table.add_style('width', '50em')
         
-        parent_st = my.kwargs.get('parent_search_type')
-        parent_sid =  my.kwargs.get('parent_search_id')
+        parent_st = self.kwargs.get('parent_search_type')
+        parent_sid =  self.kwargs.get('parent_search_id')
         parent_context = ''
         parent_version = ''
 
@@ -86,14 +86,14 @@ class SubmissionWdg(EditWdg):
             hidden = HiddenWdg('parent_search_key', SearchKey.get_by_sobject(sobj) )
             th.add(hidden)
         
-    def get_action_html(my):
-        search_key = SearchKey.get_by_sobject(my.sobjects[0], use_id=True)
+    def get_action_html(self):
+        search_key = SearchKey.get_by_sobject(self.sobjects[0], use_id=True)
         behavior_submit = {
             'type': 'click_up',
             'cb_fire_named_event': 'submit_pressed',
-            'element_names': my.element_names,
+            'element_names': self.element_names,
             'search_key': search_key,
-            'input_prefix': my.input_prefix
+            'input_prefix': self.input_prefix
 
         }
         behavior_cancel = {
@@ -101,7 +101,7 @@ class SubmissionWdg(EditWdg):
             'cb_fire_named_event': 'preclose_edit_popup',
             'cbjs_postaction': "spt.popup.destroy( spt.popup.get_popup( $('edit_popup') ) );"
         }
-        button_list = [{'label':  "%s/Close" % my.mode.capitalize(),
+        button_list = [{'label':  "%s/Close" % self.mode.capitalize(),
             'bvr': behavior_submit},
             {'label':  "Cancel", 'bvr': behavior_cancel}]        
         edit_close = TextBtnSetWdg( buttons=button_list, spacing =6, size='large', \
@@ -122,9 +122,9 @@ class SubmissionWdg(EditWdg):
 
 class RenderSubmissionWdg(EditWdg):
 
-    #def __init__(my,search_type,base_config="submit", input_prefix='edit'):
-    #    super(RenderSubmissionWdg,my).__init__(search_type,base_config, input_prefix)
-    def get_args_keys(my):
+    #def __init__(self,search_type,base_config="submit", input_prefix='edit'):
+    #    super(RenderSubmissionWdg,self).__init__(search_type,base_config, input_prefix)
+    def get_args_keys(self):
         return {
         "search_type": "search_type to be operated on",
         "view": "the view to get the widgets from",
@@ -137,17 +137,17 @@ class RenderSubmissionWdg(EditWdg):
 
 
 
-    def add_header(my, table, title):
+    def add_header(self, table, title):
         table.add_style('width', '50em')
         th = table.add_header( "Add Render Submission" )
         th.set_attr("colspan", "2")
         
-    def get_action_html(my):
+    def get_action_html(self):
         from pyasm.prod.site import EditorialTabWdg, MainTabWdg, ClientTabWdg
 
         #edit = SubmitWdg("do_edit", "Submit/Next" )
         edit_continue = SubmitWdg("do_edit", "Submit/Close" )
-        edit_continue.add_event("onclick", "document.form.%s.value='true'"%my.CLOSE_WDG) 
+        edit_continue.add_event("onclick", "document.form.%s.value='true'"%self.CLOSE_WDG) 
         
         # call an edit event
         #event = WebContainer.get_event("sthpw:submit")
@@ -172,14 +172,14 @@ class BinSelectWdg(SelectWdg):
     ''' a select of bins'''
     DEFAULT_LIMIT = 10
     SELECT_NAME = 'dailies_bin_select'
-    def __init__(my,  name=SELECT_NAME, label='', type='dailies'):
-        my.display_limit = my.DEFAULT_LIMIT
-        my.add_category = False
-        my.sub_type = type
-        super(BinSelectWdg, my).__init__(name, label=label)
+    def __init__(self,  name=SELECT_NAME, label='', type='dailies'):
+        self.display_limit = self.DEFAULT_LIMIT
+        self.add_category = False
+        self.sub_type = type
+        super(BinSelectWdg, self).__init__(name, label=label)
         
     
-    def _get_bins(my):
+    def _get_bins(self):
         
         search = Search(Bin)
 
@@ -193,7 +193,7 @@ class BinSelectWdg(SelectWdg):
         select.set_option('persist', 'true')
         display_limit = select.get_value()
         if display_limit:
-            my.display_limit = display_limit
+            self.display_limit = display_limit
 
         # by default, get 10 for each type
         joined_statements = []
@@ -203,12 +203,12 @@ class BinSelectWdg(SelectWdg):
             select.add_filter("type", type)
             select.set_show_retired(False)
             select.add_order_by("code")
-            select.add_limit(my.display_limit)
+            select.add_limit(self.display_limit)
             statement = select.get_statement()
             joined_statements.append(statement)
 
             #joined_statements.append("select * from \"bin\" where \"type\" ='%s' and (\"s_status\" != 'retired' or \"s_status\" is NULL)" \
-            #    " order by \"code\" desc limit %s" % (type, my.display_limit))
+            #    " order by \"code\" desc limit %s" % (type, self.display_limit))
 
         if len(joined_statements) > 1:
             joined_statements = ["(%s)"%x for x in joined_statements]
@@ -222,37 +222,37 @@ class BinSelectWdg(SelectWdg):
     
         return Bin.get_by_statement(statement)
     
-    def _add_options(my):
-        bins = my._get_bins()
+    def _add_options(self):
+        bins = self._get_bins()
         type = None
         for bin in bins:
-            if my.add_category and type != bin.get_type():
-                my.append_option('<< %s >>' %bin.get_type(), '')
+            if self.add_category and type != bin.get_type():
+                self.append_option('<< %s >>' %bin.get_type(), '')
                 type = bin.get_type()
-            my.append_option(bin.get_label(), bin.get_id())
+            self.append_option(bin.get_label(), bin.get_id())
             
-        #my.add_empty_option(label='-- Select a bin --')
-        my.add_behavior({'type': 'change', \
+        #self.add_empty_option(label='-- Select a bin --')
+        self.add_behavior({'type': 'change', \
             "cbjs_action:" : "if (this.value =='') alert('Please choose a valid bin.')"})
 
-    def set_label(my, label):
-        my.label = label
+    def set_label(self, label):
+        self.label = label
         
-    def set_category_display(my, display):
-        my.add_category = display
+    def set_category_display(self, display):
+        self.add_category = display
 
-    #def init(my):
+    #def init(self):
         
-    def get_display(my):
-        my._add_options()     
+    def get_display(self):
+        self._add_options()     
        
-        return super(BinSelectWdg, my).get_display()
+        return super(BinSelectWdg, self).get_display()
 
 class BinFilterSelectWdg(BinSelectWdg):
     ''' A SelectWdg used in Dailies Tab thru BinFilterWdg''' 
-    def _get_bins(my):
+    def _get_bins(self):
         search = Search(Bin)
-        search.add_filter('type', my.sub_type)
+        search.add_filter('type', self.sub_type)
         search.add_order_by('code desc')
         return search.get_sobjects()
 
@@ -260,19 +260,19 @@ class BinSelectionWdg(BaseRefreshWdg, BaseInputWdg):
     ''' a select of bins and a choice of creating a new one'''
   
 
-    def init(my):
-        my.input_name = my.kwargs.get('input_name')
+    def init(self):
+        self.input_name = self.kwargs.get('input_name')
 
-    def get_display(my):
-        if not my.input_name:
-            my.input_name = my.get_input_name()
+    def get_display(self):
+        if not self.input_name:
+            self.input_name = self.get_input_name()
         
         # the limit has to be calculated first to determine how many bins are to be displayed
         # by the BinSelectWdg
         div = DivWdg()
         div.add_class('spt_panel')
         div.set_attr('spt_class_name', 'pyasm.prod.web.BinSelectionWdg')
-        div.set_attr('spt_input_name', my.input_name)
+        div.set_attr('spt_input_name', self.input_name)
         limit_sel = FilterSelectWdg('display_limit', label = 'limit / type: ')
         limit_sel.set_option('values', '5|10|20|100')
         limit_sel.set_option('default', '%s' %BinSelectWdg.DEFAULT_LIMIT)
@@ -287,9 +287,9 @@ class BinSelectionWdg(BaseRefreshWdg, BaseInputWdg):
                     
         #set_bin_script.append("Submission.set_bin('%s', this.value, true)" \
         #        %BinSelectWdg.SELECT_NAME)
-        #my.add_event('onchange', ';'.join(set_bin_script))
+        #self.add_event('onchange', ';'.join(set_bin_script))
             
-        select = BinSelectWdg(my.input_name)
+        select = BinSelectWdg(self.input_name)
         select.set_category_display(True)
         select.add_empty_option(label='-- Select a bin --')
         div.add(select)
@@ -306,55 +306,55 @@ class BinSelectionWdg(BaseRefreshWdg, BaseInputWdg):
         
 class BinLabelFilterSelectWdg(FilterSelectWdg):
     ''' a select of different labels for bin '''
-    def __init__(my,  name='bin_label_select', label='Label: ', css='med'):
-        super(BinLabelFilterSelectWdg, my).__init__(name, label)
+    def __init__(self,  name='bin_label_select', label='Label: ', css='med'):
+        super(BinLabelFilterSelectWdg, self).__init__(name, label)
         
-    def init(my):
+    def init(self):
         search = Search(Bin)
         
         search.add_column('label')
         search.add_group_by('label')
-        my.set_search_for_options(search, 'label','label')
-        my.add_empty_option('-- Any --')
+        self.set_search_for_options(search, 'label','label')
+        self.add_empty_option('-- Any --')
 
 class BinTypeFilterSelectWdg(FilterSelectWdg):
     ''' a select of different types for bin '''
-    def __init__(my,  name='bin_type_select', label='Type: ', css='med'):
-        super(BinTypeFilterSelectWdg, my).__init__(name, label)
+    def __init__(self,  name='bin_type_select', label='Type: ', css='med'):
+        super(BinTypeFilterSelectWdg, self).__init__(name, label)
         
-    def init(my):
+    def init(self):
         search = Search(Bin)
         
         search.add_column('type')
         search.add_group_by('type')
-        my.set_search_for_options(search, 'type','type')
-        my.add_empty_option('-- Any --')
+        self.set_search_for_options(search, 'type','type')
+        self.add_empty_option('-- Any --')
 
 
 class SubmissionOptionsWdg(BaseInputWdg):
     ''' add the submission options here '''
     TO_DAILY = "go_to_daily"
     TO_CLIENT = "go_to_client"
-    def get_display(my):
+    def get_display(self):
 
-        cb = CheckboxWdg(my.TO_DAILY)
+        cb = CheckboxWdg(self.TO_DAILY)
         span = SpanWdg(cb)
         span.add('Go to Dailies tab')
-        my.add(span)
+        self.add(span)
 
-        if my.get_option("show_client") == 'true':
-            cb = CheckboxWdg(my.TO_CLIENT)
+        if self.get_option("show_client") == 'true':
+            cb = CheckboxWdg(self.TO_CLIENT)
             span = SpanWdg(cb, css='large')
             span.add('Go to Client Review tab')
-            my.add(span)
+            self.add(span)
 
        
 
-        super(SubmissionOptionsWdg, my).get_display()
+        super(SubmissionOptionsWdg, self).get_display()
 
 class SubmissionDescriptionWdg(TextAreaWdg):
     '''Pulls in a description from the parent sobject'''
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
         parent_search_type = web.get_form_value("parent_search_type")
         parent_search_id = web.get_form_value("parent_search_id")
@@ -367,9 +367,9 @@ class SubmissionDescriptionWdg(TextAreaWdg):
             else:
                 value = parent.get_name()
 
-        my.set_value(value)
+        self.set_value(value)
 
-        return super(SubmissionDescriptionWdg,my).get_display()
+        return super(SubmissionDescriptionWdg,self).get_display()
 
 
 
@@ -377,17 +377,17 @@ class SubmissionDescriptionWdg(TextAreaWdg):
 
 class SubmissionInfo(object):
     ''' info of the sobject that a submission is made for '''
-    def __init__(my, sobjects):
-        my.sobjs = sobjects
+    def __init__(self, sobjects):
+        self.sobjs = sobjects
         
-    def get_info(my):
+    def get_info(self):
         # check if the sobj type is the same
-        search_types = SObject.get_values(my.sobjs, 'search_type', unique=True)
-        search_ids = SObject.get_values(my.sobjs, 'search_id', unique=False)
+        search_types = SObject.get_values(self.sobjs, 'search_type', unique=True)
+        search_ids = SObject.get_values(self.sobjs, 'search_id', unique=False)
       
         infos = []
         # this doesn't really work if the same asset is submitted multiple times
-        if len(search_types) == 1 and len(search_ids) == len(my.sobjs):
+        if len(search_types) == 1 and len(search_ids) == len(self.sobjs):
             assets = []
             if search_types[0]:
                 assets = Search.get_by_id(search_types[0], search_ids)
@@ -403,7 +403,7 @@ class SubmissionInfo(object):
         else:
             # TODO: this is a bit database intensive, mixed search_types not
             # recommended
-            search_types = SObject.get_values(my.sobjs, 'search_type',\
+            search_types = SObject.get_values(self.sobjs, 'search_type',\
                 unique=False)
             for idx in xrange(0, len(search_types)):
                 search_type = search_types[idx]
@@ -436,18 +436,18 @@ class SubmissionInfo(object):
 
 class SubmissionDataTableElement(AuxDataWdg):
 
-    def handle_tr(my, tr):
-        aux_data = my.get_current_aux_data()
+    def handle_tr(self, tr):
+        aux_data = self.get_current_aux_data()
         if aux_data:
             search_key = aux_data.get('search_key')
             tr.set_attr('search_key', search_key)
             # this is used in EditorialTabWdg
             tr.set_attr('name', 'sub_row')
 
-    def get_display(my):
+    def get_display(self):
         table = Table()
-        sobject = my.get_current_sobject()
-        aux_data = my.get_current_aux_data()
+        sobject = self.get_current_sobject()
+        aux_data = self.get_current_aux_data()
         if aux_data:
             info = aux_data.get('info')
             if info:
@@ -471,9 +471,9 @@ class SubmissionDataTableElement(AuxDataWdg):
             table.add_blank_cell()
         return table
 
-    def get_simple_display(my):
-        sobject = my.get_current_sobject()
-        aux_data = my.get_current_aux_data()
+    def get_simple_display(self):
+        sobject = self.get_current_sobject()
+        aux_data = self.get_current_aux_data()
         if aux_data:
             info = aux_data.get('info')
         else:
@@ -490,10 +490,10 @@ class SubmissionDataTableElement(AuxDataWdg):
 
 class DailiesLink(BaseTableElementWdg):
 
-    def preprocess(my):
-        my.redirect_tab = my.get_option('dailies_tab')
+    def preprocess(self):
+        self.redirect_tab = self.get_option('dailies_tab')
 
-    def get_hidden(my):
+    def get_hidden(self):
         widget = Widget()
         hidden = HiddenWdg(BinSelectWdg.SELECT_NAME)
         widget.add(hidden)
@@ -501,12 +501,12 @@ class DailiesLink(BaseTableElementWdg):
         widget.add(hidden)
         return widget
 
-    def get_display(my):
-        sobject = my.get_current_sobject()
+    def get_display(self):
+        sobject = self.get_current_sobject()
         
         widget = Widget()
 
-        if sobject.get_value('type') == my.redirect_tab:
+        if sobject.get_value('type') == self.redirect_tab:
             #from pyasm.prod.site import EditorialTabWdg
             #location = {EditorialTabWdg.TAB_KEY: EditorialTabWdg.DAILIES_TAB}
             #redirect = [TabWdg.get_redirect_script(location, is_child=False)]
@@ -547,17 +547,17 @@ class DailiesLink(BaseTableElementWdg):
 
 class SubmissionTableWdg(Widget):
 
-    def init(my):
+    def init(self):
         web = WebContainer.get_web()
         args = web.get_form_args()
         # get the args in the URL
-        my.search_type = args.get('search_type')
-        my.search_id = args.get('search_id')
-        if not my.search_type:
-            my.search_type = web.get_form_value("search_type")
-            my.search_id = web.get_form_value("search_id")
+        self.search_type = args.get('search_type')
+        self.search_id = args.get('search_id')
+        if not self.search_type:
+            self.search_type = web.get_form_value("search_type")
+            self.search_id = web.get_form_value("search_id")
 
-    def get_display(my):
+    def get_display(self):
         div_id = "SubmissionTableWdg_top"
         ajax = AjaxLoader(div_id)
         if ajax.is_refresh():
@@ -570,11 +570,11 @@ class SubmissionTableWdg(Widget):
         
 
         search = Search("prod/submission")
-        widget.add(my.get_filter_wdg(search, my.search_type, my.search_id, div_id))
+        widget.add(self.get_filter_wdg(search, self.search_type, self.search_id, div_id))
 
         
-        search.add_filter("search_type", my.search_type)
-        search.add_filter("search_id", my.search_id)
+        search.add_filter("search_type", self.search_type)
+        search.add_filter("search_id", self.search_id)
         # hide client submissions
         # TODO: this is EXTREMELY inefficient.  Is there any reason why we need 
         # a many to many relationship for submissions to bins?
@@ -590,7 +590,7 @@ class SubmissionTableWdg(Widget):
         dailies_table = TableWdg("prod/submission", "table",\
             css='table')
         dailies_table.set_show_property(False)
-        dailies_table.set_id('sthpw/dailies_%s' % my.search_id)
+        dailies_table.set_id('sthpw/dailies_%s' % self.search_id)
         dailies_table.set_sobjects(sobjects)
         dailies_table.set_aux_data(aux_data)
         dailies_div.add(dailies_table)
@@ -599,7 +599,7 @@ class SubmissionTableWdg(Widget):
 
         return widget
 
-    def get_filter_wdg(my, search, search_type, search_id, div_id):
+    def get_filter_wdg(self, search, search_type, search_id, div_id):
         
         ajax = AjaxLoader()
         ajax.set_option("search_type", search_type)
@@ -616,7 +616,7 @@ class SubmissionTableWdg(Widget):
         #ajax.add_element_name("shot_id")
         ajax.set_display_id(div_id)
 
-        cls = my.__class__
+        cls = self.__class__
         class_path = '%s.%s' %(cls.__module__, cls.__name__)
         ajax.set_load_class( class_path )
         refresh_script = ajax.get_refresh_script(show_progress=False)
@@ -696,23 +696,23 @@ class SubmissionTableWdg(Widget):
 
 class SubmissionItemFilterWdg(SelectWdg):
 
-    def __init__(my, sobjs, name='item_filter', label='Item Filter: ', css='med'):
+    def __init__(self, sobjs, name='item_filter', label='Item Filter: ', css='med'):
         info = SubmissionInfo(sobjs)
         aux_data = info.get_info()
-        my.aux_data = aux_data
-        my.sobjs = sobjs
-        super(SubmissionItemFilterWdg, my).__init__(name=name, label=label, css=css)
+        self.aux_data = aux_data
+        self.sobjs = sobjs
+        super(SubmissionItemFilterWdg, self).__init__(name=name, label=label, css=css)
 
-    def get_display(my):
+    def get_display(self):
         # add an asset select filter
         filter_labels = []
-        for x in my.aux_data:
+        for x in self.aux_data:
             info = x.get('info') 
             if info not in filter_labels:
                 filter_labels.append(info)
 
         filter_values = []
-        for x in my.sobjs:
+        for x in self.sobjs:
             search_type = x.get_value('search_type')
             value = ''
             if search_type:
@@ -721,15 +721,15 @@ class SubmissionItemFilterWdg(SelectWdg):
             if value not in filter_values:
                 filter_values.append(value)
        
-        my.add_empty_option('-- Show all submission items --')
-        my.set_option('values', '|'.join(filter_values))
-        my.set_option('labels', '|'.join(filter_labels))
+        self.add_empty_option('-- Show all submission items --')
+        self.set_option('values', '|'.join(filter_values))
+        self.set_option('labels', '|'.join(filter_labels))
         
-        return super(SubmissionItemFilterWdg, my).get_display()
+        return super(SubmissionItemFilterWdg, self).get_display()
 
     
 
-    def alter_search(my, search, item_value):
+    def alter_search(self, search, item_value):
         if item_value:
             search_type, search_id = item_value.split(':', 1)
             search.add_filter('search_type', search_type)

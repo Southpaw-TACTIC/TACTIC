@@ -11,25 +11,25 @@ from pyasm.search import Search
 
 class AddShotCmd(Command):
 
-    def __init__(my, seq_code):
-        my.seq_code = seq_code
-        super(AddShotCmd, my).__init__()
+    def __init__(self, seq_code):
+        self.seq_code = seq_code
+        super(AddShotCmd, self).__init__()
 
-    def get_title(my):
+    def get_title(self):
         ''' this is just for show for now'''
         return "Add Shot"
 
-    def execute(my):
-        my.add_description('Add shots in bulk')
+    def execute(self):
+        self.add_description('Add shots in bulk')
         # add from shot 00001 to 00050 if they do not exist already
         count = 0
         for x in xrange(1, 51):
-            shot_code = '%s_%0.3d'%(my.seq_code, x)
+            shot_code = '%s_%0.3d'%(self.seq_code, x)
             shot = Shot.get_by_code(shot_code)
             if not shot:
                 print "[%s] to be created." %shot_code
                 shot = Shot.create(shot_code, 'Shot %s' %shot_code)
-                shot.set_value('sequence_code', my.seq_code)
+                shot.set_value('sequence_code', self.seq_code)
                 # assuming this is one of the values in project settings
                 # shot_status
                 shot.set_value('status', 'online')
@@ -42,8 +42,8 @@ class AddShotCmd(Command):
         print "%d shot(s) created." %count
        
 class Usage(Exception):
-    def __init__(my, msg):
-        my.msg = msg
+    def __init__(self, msg):
+        self.msg = msg
 
 
 

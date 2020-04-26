@@ -20,18 +20,18 @@ class MayaAnimFile:
     generated from the mayaImport/mayaExport plugin that is shipped with Maya
     '''
 
-    def __init__(my, path):
-        my.path = path
-        my.buffers = {}
-        my.static_buffers = {}
+    def __init__(self, path):
+        self.path = path
+        self.buffers = {}
+        self.static_buffers = {}
 
-    def parse(my):
-        my.parse_v01()
-        my.parse_v01('STATIC')
+    def parse(self):
+        self.parse_v01()
+        self.parse_v01('STATIC')
 
 
-    def parse_v01(my, file_type='ANIM'):
-        file = open(my.path, "r")
+    def parse_v01(self, file_type='ANIM'):
+        file = open(self.path, "r")
         buffer = None
         instance = None
 
@@ -51,9 +51,9 @@ class MayaAnimFile:
                     instance, tmp = instance.split(":",1)
                 
                 if file_type=='STATIC':
-                    my.static_buffers[instance] = buffer
+                    self.static_buffers[instance] = buffer
                 else:
-                    my.buffers[instance] = buffer
+                    self.buffers[instance] = buffer
             
             #if line.startswith("// POS:  <tx>34.43</tx><ty>
 
@@ -69,7 +69,7 @@ class MayaAnimFile:
         file.close()
 
 
-    def write_v01(my, buffer):
+    def write_v01(self, buffer):
         pass
 
 
@@ -77,17 +77,17 @@ class MayaAnimFile:
 
 
 
-    def get_anim(my, instance):
+    def get_anim(self, instance):
 
         try:
-            return my.buffers[instance].getvalue()
+            return self.buffers[instance].getvalue()
         except KeyError, e:
             return ""
 
-    def get_static(my, instance):
+    def get_static(self, instance):
 
         try:
-            return my.static_buffers[instance].getvalue()
+            return self.static_buffers[instance].getvalue()
         except KeyError, e:
             return ""
          

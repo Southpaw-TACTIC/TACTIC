@@ -22,7 +22,7 @@ from pyasm.biz import Task, Pipeline, Project
 
 class ShotPipelineWdg(BaseInputWdg):
 
-    def get_display(my):
+    def get_display(self):
 
         div = DivWdg()
         div.add_style("padding: 10px 0px 10px 0px")
@@ -35,12 +35,12 @@ class ShotPipelineWdg(BaseInputWdg):
 
 
         project_code = None
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         if sobject:
             project_code = sobject.get_project_code()
         project_filter = Project.get_project_filter(project_code)
 
-        query_filter = my.get_option("query_filter")
+        query_filter = self.get_option("query_filter")
         if not query_filter:
             # try getting it from the search_type
             web = WebContainer.get_web()
@@ -56,11 +56,11 @@ class ShotPipelineWdg(BaseInputWdg):
         else:
             query_filter = project_filter
 
-        my.set_option("query_filter", query_filter)
+        self.set_option("query_filter", query_filter)
 
         select = SelectWdg()
         select.add_empty_option("-- Select --")
-        select.copy(my)
+        select.copy(self)
 
         select.add_event("onchange", "alert('cow')")
         div.add(select)
@@ -103,18 +103,18 @@ class ShotPipelineWdg(BaseInputWdg):
 class ShotTaskCreatorAction(DatabaseAction):
     '''creates the tasks that are part of the pipeline'''
 
-    def execute(my):
-        my.is_edit = not my.sobject.is_insert()
-        super(ShotTaskCreatorAction,my).execute()
+    def execute(self):
+        self.is_edit = not self.sobject.is_insert()
+        super(ShotTaskCreatorAction,self).execute()
 
 
-    def postprocess(my):
+    def postprocess(self):
         web = WebContainer.get_web()
         add_initial_tasks = web.get_form_value("add_initial_tasks")
 
         if add_initial_tasks != "on":
             return
 
-        Task.add_initial_tasks(my.sobject)
+        Task.add_initial_tasks(self.sobject)
 
 

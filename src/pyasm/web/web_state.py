@@ -34,7 +34,7 @@ Usage:
     # common usage would be for a widget to only define states in the
     # get_display method.  This ensures proper hierarchical propogation of
     # the state
-    def get_display(my):
+    def get_display(self):
         state = {}
         web_state.push(state)
 
@@ -56,52 +56,52 @@ from pyasm.common import Container
 
 class WebState(object):
 
-    def __init__(my):
-        my.states = []
-        my.push()
+    def __init__(self):
+        self.states = []
+        self.push()
 
 
-    def push(my, state=None):
+    def push(self, state=None):
         if state:
-            my.current_state = state
+            self.current_state = state
         else:
-            my.current_state = {}
-        my.states.append( my.current_state )
+            self.current_state = {}
+        self.states.append( self.current_state )
 
 
-    def get_current(my):
-        return my.current_state
+    def get_current(self):
+        return self.current_state
 
 
-    def pop(my):
-        my.current_state = my.states.pop()
-        return my.states.pop()
+    def pop(self):
+        self.current_state = self.states.pop()
+        return self.states.pop()
 
 
-    def set_value(my, name, value):
-        my.current_state[name] = value
+    def set_value(self, name, value):
+        self.current_state[name] = value
 
 
-    def get_value(my, name):
-        return my.current_state.get(name)
-
-
-    # DEPRECATED
-    def add_state(my, name, value):
-        my.current_state[name] = value
+    def get_value(self, name):
+        return self.current_state.get(name)
 
 
     # DEPRECATED
-    def get_state(my, name):
-        if my.current_state.has_key(name):
-            return my.current_state[name]
+    def add_state(self, name, value):
+        self.current_state[name] = value
+
+
+    # DEPRECATED
+    def get_state(self, name):
+        if self.current_state.has_key(name):
+            return self.current_state[name]
         else:
             return ""
             
     # DEPRECATED
-    def add_state_to_url(my, url):
+    def add_state_to_url(self, url):
         # add all of the states to a link
-        for name, value in my.current_state.items():
+        for name, value in self.current_state.items():
             url.set_option(name, value)
 
 

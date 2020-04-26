@@ -20,14 +20,14 @@ class Base(object):
     """The base class for all classes in the framework"""
     __timing = 0
 
-    def start_timer(my, name="top"):
+    def start_timer(self, name="top"):
         from container import Container
         if not Container.has("Base:total:%s" % name):
             Container.put("Base:total:%s" % name, 0)
         start = time.time()
         Container.put("Base:start:%s" % name, start)
 
-    def end_timer(my, name="top"):
+    def end_timer(self, name="top"):
         end = time.time()
         from container import Container
         start = Container.get("Base:start:%s" % name)
@@ -40,7 +40,7 @@ class Base(object):
         return total
 
 
-    def error(my, msg):
+    def error(self, msg):
         sys.stderr.write(msg)
         sys.stderr.write("\n")
         sys.stderr.flush()

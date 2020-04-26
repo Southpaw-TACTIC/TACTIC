@@ -10,7 +10,7 @@
 #
 #
 
-import os, sys
+import os, sys, datetime
 
 # set up environment
 os.environ['TACTIC_APP_SERVER'] = "cherrypy"
@@ -26,7 +26,7 @@ tactic_site_dir = tacticenv.get_site_dir()
 sys.path.insert(0, "%s/src" % tactic_install_dir)
 sys.path.insert(0, "%s/tactic_sites" % tactic_install_dir)
 sys.path.insert(0, tactic_site_dir)
-sys.path.insert(0, "%s/3rd_party/CherryPy" % tactic_install_dir)
+
 
 
 def startup(port, server=""):
@@ -67,7 +67,12 @@ def startup(port, server=""):
     
 
     import cherrypy
-    if cherrypy.__version__.startswith("3."):
+    try:
+        cherrypy_major_version = int(cherrypy.__version__.split('.')[0])
+    except:
+        cherrypy_major_version = 3
+
+    if cherrypy_major_version >= 3:
         if not thread_count:
             thread_count = 50
         else: 
@@ -124,16 +129,22 @@ def startup(port, server=""):
     startup.set_config('global', 'server.socket_host', server)
 
 
-
-
-
-    # send the stdout and stdin out to files
+    # set the stdout and stdin out ouput
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    sys.stdout = open('%s/stdout.log' % log_dir,'a')
-    sys.stderr = open('%s/stderr.log' % log_dir,'a')
 
-
+    log_type = Config.get_value("install", "log_type")
+    if log_type == "file_with_date":
+        # Prefix date to file
+        sys.stdout = open('{}/{}_stdout.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")), 'a')
+        sys.stderr = open('{}/{}_stderr.log'.format(log_dir, datetime.datetime.now().strftime("%Y-%m-%d")), 'a')
+    elif log_type == "stream":
+        # Leave output streams as they are, useful for systemd service and journalctl
+        pass
+    else:
+        # Default to simple files
+        sys.stdout = open('{}/stdout.log'.format(log_dir), 'a')
+        sys.stderr = open('{}/stderr.log'.format(log_dir), 'a')
 
     startup.execute()
 

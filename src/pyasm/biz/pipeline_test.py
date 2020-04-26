@@ -15,28 +15,45 @@ __all__ = ["ProcessTest"]
 import tacticenv
 
 from pyasm.security import Batch
-from pyasm.search import Search, SearchType
+from pyasm.search import Search, SearchType, Transaction
+from pyasm.biz import Project
 
 from pipeline import *
+
+from pyasm.unittest import UnittestEnvironment
+
 
 import unittest
 
 class ProcessTest(unittest.TestCase):
 
 
-    def setUp(my):
+
+    def test_all(self):
+
         Batch()
 
+        test_env = UnittestEnvironment()
+        test_env.create()
+
+        Project.set_project("unittest")
 
 
+        self.transaction = Transaction.get(create=True)
+        try:
 
-    def test_all(my):
+            self._test_process()
+            self._test_version()
 
-        my._test_process()
+        finally:
+            self.transaction.rollback()
+            Project.set_project('unittest')
 
+            test_env.delete()
 
+ 
 
-    def _test_process(my):
+    def _test_process(self):
 
 
         pipeline_xml = '''
@@ -60,36 +77,36 @@ class ProcessTest(unittest.TestCase):
 
         # outputs
         processes = pipeline.get_output_processes("a")
-        my.assertEquals(1, len(processes))
+        self.assertEquals(1, len(processes))
 
         processes = pipeline.get_output_processes("b")
-        my.assertEquals(3, len(processes))
-        my.assertEquals("c", processes[0].get_name())
-        my.assertEquals("d", processes[1].get_name())
+        self.assertEquals(3, len(processes))
+        self.assertEquals("c", processes[0].get_name())
+        self.assertEquals("d", processes[1].get_name())
 
         # inputs
         processes = pipeline.get_input_processes("b")
-        my.assertEquals("a", processes[0].get_name())
+        self.assertEquals("a", processes[0].get_name())
 
 
         # output with attr
         processes = pipeline.get_output_processes("b", from_attr="success")
-        my.assertEquals(1, len(processes))
-        my.assertEquals("c", processes[0].get_name())
+        self.assertEquals(1, len(processes))
+        self.assertEquals("c", processes[0].get_name())
 
         processes = pipeline.get_output_processes("b", from_attr="fail")
-        my.assertEquals(2, len(processes))
-        my.assertEquals("d", processes[0].get_name())
+        self.assertEquals(2, len(processes))
+        self.assertEquals("d", processes[0].get_name())
 
 
         # input with attr
         processes = pipeline.get_input_processes("e", to_attr="revise")
-        my.assertEquals("b", processes[0].get_name())
+        self.assertEquals("b", processes[0].get_name())
 
 
 
 
-    def _test_pipeline(my):
+    def _test_pipeline(self):
 
         pipeline = Pipeline()
 
@@ -122,7 +139,86 @@ class ProcessTest(unittest.TestCase):
             print process
 
 
-        
+
+
+    def _test_version(self):
+              
+        city = SearchType.create("unittest/city")
+        city.set_value("code", "los_angeles")
+        city.set_value("name", "LA")
+        city.set_value("country_code", "USA")
+        city.commit()
+
+
+        pipeline_xml = '''
+        <pipeline>
+          <process type="process" name="a"/>
+          <process type="process" name="b"/>
+          <connect from="a" to="b"/>
+        </pipeline>
+        '''
+
+
+        pipeline = SearchType.create("sthpw/pipeline")
+        pipeline.set_value("name", "my_pipeline")
+        pipeline.set_pipeline(pipeline_xml)
+        pipeline.commit()
+
+        pipeline_code = pipeline.get_code()
+        city.set_value("pipeline_code", pipeline_code)j
+        city.commit()
+
+
+        # When a pipeline is saved, it overrites the current definition.  Most often, the
+        # versionless will be saved. All sobjects pointing to a pipeline will have te newly
+        # saved version
+        pipeline_xml = '''
+        <pipeline>
+          <process type="process" name="a"/>
+          <process type="process" name="b"/>
+          <connect from="a" to="b"/>
+        </pipeline>
+        '''
+        pipeline.set_pipeline(pipeline_xml)
+        pipeline.commit()
+
+
+        # However, if an sobject is pointing to a versioned pipeline, then since that definition
+        # will likely never change, the sobject will point to a locked version
+
+
+
+        pipeline1 = pipeline.save_version()
+        version1 = pipeline1.get_value("version")
+        self.assertEquals(version1, 1)
+
+        pipeline2 = pipeline.save_version()
+        version2 = pipeline2.get_value("version")
+        self.assertEquals(version2, 2)
+
+        """
+        # an sobject can point to the latest version
+        pipeline.set_sobject_to_latest(city)
+
+        # or it can point to the versionless (which can change definition)
+        pipeline.set_sobject_to_versionless(city)
+
+        # or point to a specific version
+        pipeline.set_sobject_to_version(city, 2)
+
+
+        # the versionless pipeline can revert back to an older version
+        pipeline.revert_to_version(1)
+        """
+
+
+
+
+
+
+
+
+
 
 
 

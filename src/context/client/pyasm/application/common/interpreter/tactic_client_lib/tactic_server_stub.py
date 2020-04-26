@@ -28,7 +28,7 @@ class TacticServerStub(object):
     '''
         Constructor: TacticServerStub
     '''
-    def __init__(my, login=None, setup=True, protocol=None, server=None, project=None, ticket=None, user=None, password=""):
+    def __init__(self, login=None, setup=True, protocol=None, server=None, project=None, ticket=None, user=None, password=""):
         '''Function: __init__(login=None, setup=True, protocol=None, server=None, project=None, ticket=None, user=None, password="")
         Initialize the TacticServerStub
 
@@ -46,15 +46,15 @@ class TacticServerStub(object):
         # initialize some variables
         if user:
             login = user
-        my.login = login
-        my.project_code = None
-        my.server = None
-        my.has_server = False
-        my.server_name = None
+        self.login = login
+        self.project_code = None
+        self.server = None
+        self.has_server = False
+        self.server_name = None
 
-        my.ticket = None                # the ticket sent to the server
-        my.login_ticket = None
-        my.transaction_ticket = None
+        self.ticket = None                # the ticket sent to the server
+        self.login_ticket = None
+        self.transaction_ticket = None
 
 
 
@@ -71,129 +71,129 @@ class TacticServerStub(object):
                         protocol = 'local'
             except ImportError:
                 pass
-        my.protocol = protocol
+        self.protocol = protocol
 
         # if all of the necessary parameters are set, then
         if server and (ticket or login) and project:
-            my.set_server(server)
+            self.set_server(server)
 
-            my.set_project(project)
+            self.set_project(project)
             if ticket:
-                my.set_ticket(ticket)
+                self.set_ticket(ticket)
             elif login:
                 # else try with no password (api_require_password)
-                ticket = my.get_ticket(login, password)
-                my.set_ticket(ticket)
+                ticket = self.get_ticket(login, password)
+                self.set_ticket(ticket)
 
 
         elif setup:
-            my._setup(protocol)
+            self._setup(protocol)
 
         # cached handoff dir
-        my.handoff_dir = None
+        self.handoff_dir = None
 
     
 
     '''if the function does not exist, call this and make an attempt
     '''
-    def _call_missing_method(my, *args):
+    def _call_missing_method(self, *args):
         # convert from tuple to sequence
         args = [x for x in args]
-        args.insert(0, my.ticket)
-        return my.server.missing_method(my.missing_method_name, args)
+        args.insert(0, self.ticket)
+        return self.server.missing_method(self.missing_method_name, args)
 
     ''' DISABLING for now
-    def __getattr__(my, attr):
-        my.missing_method_name = attr
-        return my._call_missing_method
+    def __getattr__(self, attr):
+        self.missing_method_name = attr
+        return self._call_missing_method
     '''
 
-    def test_error(my):
-        return my.server.test_error(my.ticket)
+    def test_error(self):
+        return self.server.test_error(self.ticket)
 
-    def get_protocol(my):
+    def get_protocol(self):
         '''Function: get_protocol() 
            
         @return: 
            string - local or xmlrpc'''
-        return my.protocol
+        return self.protocol
 
 
-    def set_protocol(my, protocol):
+    def set_protocol(self, protocol):
         '''Function: get_protocol() 
        
         @params
            string - local or xmlrpc'''
-        my.protocol = protocol
+        self.protocol = protocol
 
 
-    def set_ticket(my, ticket):
+    def set_ticket(self, ticket):
         '''set the login ticket'''
-        my.set_login_ticket(ticket)
+        self.set_login_ticket(ticket)
 
-    def set_login_ticket(my, ticket):
+    def set_login_ticket(self, ticket):
         '''Function: set_login_ticket(ticket)
            Set the login ticket with the ticket key'''
-        my.login_ticket = ticket
-        my.set_transaction_ticket(ticket)
+        self.login_ticket = ticket
+        self.set_transaction_ticket(ticket)
 
 
-    def set_transaction_ticket(my, ticket):
-        if my.project_code:
-            #my.ticket = "%s:%s" % (my.project_code, ticket)
-            my.ticket = {
+    def set_transaction_ticket(self, ticket):
+        if self.project_code:
+            #self.ticket = "%s:%s" % (self.project_code, ticket)
+            self.ticket = {
                 'ticket': ticket,
-                'project': my.project_code,
+                'project': self.project_code,
                 'language': 'python'
             }
         else:
             raise TacticApiException("No project has been set. Please set a project using method TacticServerStub.set_project()")
-            #my.ticket = ticket
+            #self.ticket = ticket
 
-        my.transaction_ticket = ticket
-
-
-    def get_transaction_ticket(my):
-        return my.transaction_ticket
-
-    def get_login_ticket(my):
-        return my.login_ticket
-
-    def get_login(my):
-        return my.login
+        self.transaction_ticket = ticket
 
 
-    def set_server(my, server_name):
+    def get_transaction_ticket(self):
+        return self.transaction_ticket
+
+    def get_login_ticket(self):
+        return self.login_ticket
+
+    def get_login(self):
+        return self.login
+
+
+    def set_server(self, server_name):
         '''Function: set_server(server_name)
            Set the server name for this XML-RPC server'''
-        my.server_name = server_name
-        if my.protocol == "local":
+        self.server_name = server_name
+        if self.protocol == "local":
             from pyasm.prod.service import ApiXMLRPC
-            my.server = ApiXMLRPC()
-            my.server.set_protocol('local')
-            my.has_server = True
+            self.server = ApiXMLRPC()
+            self.server.set_protocol('local')
+            self.has_server = True
             return
             
 
-        if my.server_name.startswith("http://") or my.server_name.startswith("https://"):
-            url = "%s/tactic/default/Api/" % my.server_name
+        if self.server_name.startswith("http://") or self.server_name.startswith("https://"):
+            url = "%s/tactic/default/Api/" % self.server_name
         else:
-            url = "http://%s/tactic/default/Api/" % my.server_name
+            url = "http://%s/tactic/default/Api/" % self.server_name
         #url = "http://localhost:8081/"
 
         # TODO: Not implmeneted: This is needed for isolation of transactions
-        #if my.transaction_ticket:
-        #    url = '%s%s' % (url, my.transaction_ticket)
-        my.server = xmlrpclib.Server(url, allow_none=True)
+        #if self.transaction_ticket:
+        #    url = '%s%s' % (url, self.transaction_ticket)
+        self.server = xmlrpclib.Server(url, allow_none=True)
 
         try:
             pass
-            #print my.server.test(my.ticket)
+            #print self.server.test(self.ticket)
         except httplib.InvalidURL:
             raise TacticApiException("You have supplied an invalid server name [%s]" % \
-                my.server_name)
+                self.server_name)
             
-        my.has_server = True
+        self.has_server = True
         # WARNING: this is changing code in the xmlrpclib library.  This
         # library is not sending a proper user agent.  Hacking it in
         # so that at least the OS is sent
@@ -204,23 +204,23 @@ class TacticServerStub(object):
         xmlrpclib.Transport.user_agent = user_agent
 
         
-    def get_server_name(my):
-        return my.server_name
+    def get_server_name(self):
+        return self.server_name
 
-    def get_server(my):
-        return my.server
+    def get_server(self):
+        return self.server
 
-    def set_project(my, project_code):
+    def set_project(self, project_code):
         '''Function: set_project(project_code)
            Set the project code'''
-        my.project_code = project_code
-        #my.set_project_state(project_code)
+        self.project_code = project_code
+        #self.set_project_state(project_code)
 
         # switch the project code on the ticket
-        my.set_transaction_ticket(my.transaction_ticket)
+        self.set_transaction_ticket(self.transaction_ticket)
 
-    def get_project(my):
-        return my.project_code
+    def get_project(self):
+        return self.project_code
 
     #-----------------------------------
     # API FUNCTIONS
@@ -231,7 +231,7 @@ class TacticServerStub(object):
     #
     # Building earch type functions
     #
-    def build_search_type(my, search_type, project_code=None):
+    def build_search_type(self, search_type, project_code=None):
         '''API Function: build_search_type(search_type, project_code=None)
         Convenience method to build a search type from its components.  It is
         a simple method that build the proper format for project scoped search
@@ -257,12 +257,12 @@ class TacticServerStub(object):
         if search_type.startswith('sthpw/'):
             return search_type
         if not project_code:
-            project_code = my.project_code
+            project_code = self.project_code
         assert project_code
         return "%s?project=%s" % (search_type, project_code)
 
 
-    def build_search_key(my, search_type, code, project_code=None, column='code'):
+    def build_search_key(self, search_type, code, project_code=None, column='code'):
         '''API Function: build_search_key(search_type, code, project_code=None, column='code')
         Convenience method to build a search key from its components.  A
         search_key uniquely indentifies a specific sobject.  This string
@@ -301,7 +301,7 @@ class TacticServerStub(object):
         '''
         if not project_code:
             if not search_type.startswith("sthpw/"):
-                project_code = my.project_code
+                project_code = self.project_code
                 assert project_code
         
         if search_type.find('?') == -1:
@@ -314,7 +314,7 @@ class TacticServerStub(object):
 
         return search_key
 
-    def split_search_key(my, search_key):
+    def split_search_key(self, search_key):
         '''API Function: split_search_key(search_key)
         Convenience method to split a search_key in into its search_type and search_code/id components. Note: only accepts the new form prod/asset?project=sample3d&code=chr001
 
@@ -334,7 +334,7 @@ class TacticServerStub(object):
         assert len(codes) == 2;
         return search_type, codes[1]
 
-    def get_home_dir(my):
+    def get_home_dir(self):
         '''API Function: get_home_dir()
         OS independent method to Get the home directory of the current user.
 
@@ -351,7 +351,7 @@ class TacticServerStub(object):
         return os.path.expanduser('~')
 
 
-    def create_resource_path(my, login=None):
+    def create_resource_path(self, login=None):
         '''DEPRECATED: use create_resource_paths() or get_resource_path()
            Create the resource path'''
         # get the current user
@@ -360,7 +360,7 @@ class TacticServerStub(object):
         filename = "%s.tacticrc" % login
 
         # first check home directory
-        dir = my.get_home_dir()
+        dir = self.get_home_dir()
         is_dir_writeable = os.access(dir, os.W_OK) and os.path.isdir(dir)
         
         # if the home directory is not existent or writable,
@@ -392,7 +392,7 @@ class TacticServerStub(object):
         path = "%s/%s" % (dir,filename)
         return path
 
-    def create_resource_paths(my, login=None):
+    def create_resource_paths(self, login=None):
         '''Get the 1 or possiblly 2 the resource paths for creation'''
 
         # get the current user
@@ -403,7 +403,7 @@ class TacticServerStub(object):
         filename2 = "%s.tacticrc" % os_login
 
         # first check home directory
-        dir = my.get_home_dir()
+        dir = self.get_home_dir()
         is_dir_writeable = os.access(dir, os.W_OK) and os.path.isdir(dir)
         
         # if the home directory is not existent or writable,
@@ -441,7 +441,7 @@ class TacticServerStub(object):
 
 
 
-    def get_resource_path(my, login=None):
+    def get_resource_path(self, login=None):
         '''API Function: get_resource_path(login=None)
         Get the resource path of the current user. It differs from 
         create_resource_paths() which actually create dir. The resource path
@@ -477,7 +477,7 @@ class TacticServerStub(object):
         filename = "%s.tacticrc" % login
 
         # first check home directory
-        dir = my.get_home_dir()
+        dir = self.get_home_dir()
 
         is_dir_writeable = os.access(dir, os.W_OK) and os.path.isdir(dir)
         path = "%s/.tactic/etc/%s" % (dir,filename)
@@ -496,7 +496,7 @@ class TacticServerStub(object):
 
 
 
-    def get_ticket(my, login, password):
+    def get_ticket(self, login, password):
         '''API Function: get_ticket(login, password)
         Get an authentication ticket based on a login and password.
         This function first authenticates the user and the issues a ticket.
@@ -509,11 +509,11 @@ class TacticServerStub(object):
         @return:
         string - ticket key  
         '''
-        return my.server.get_ticket(login, password)
+        return self.server.get_ticket(login, password)
 
 
 
-    def get_info_from_user(my, force=False):
+    def get_info_from_user(self, force=False):
         '''API Function: get_info_from_user(force=False)
         Get input from the user about the users environment.  Questions
         asked pertain to the location of the tactic server, the project worked
@@ -524,13 +524,13 @@ class TacticServerStub(object):
         force - if set to True, it will always ask for new infomation from the 
         command prompt again
         '''
-        if my.protocol == "local":
+        if self.protocol == "local":
             return
 
-        old_server_name = my.server_name
-        old_project_code = my.project_code
-        old_ticket = my.login_ticket
-        old_login = my.login
+        old_server_name = self.server_name
+        old_project_code = self.project_code
+        old_ticket = self.login_ticket
+        old_login = self.login
 
         default_login = getpass.getuser()
         if not force and old_server_name and old_project_code:
@@ -560,20 +560,20 @@ class TacticServerStub(object):
         if not project_code:
             project_code = old_project_code
 
-        my.set_server(server_name)
+        self.set_server(server_name)
 
 
         # do the actual work
         if login != old_login or password:
-            ticket = my.get_ticket(login, password)
+            ticket = self.get_ticket(login, password)
             print "Got ticket [%s] for [%s]" % (ticket, login)
         else:
             ticket = old_ticket
 
         # commit info to a file
-        paths = my.create_resource_paths(login)
+        paths = self.create_resource_paths(login)
         # this is needed when running get_ticket.py
-        my.login = login
+        self.login = login
 
         for path in paths:
             file = open(path, 'w')
@@ -587,7 +587,7 @@ class TacticServerStub(object):
             print "Saved to [%s]" % path
 
         # set up the server with the new information
-        my._setup(my.protocol)
+        self._setup(self.protocol)
 
 
 
@@ -595,33 +595,33 @@ class TacticServerStub(object):
     #
     # Simple Ping Test
     #
-    def ping(my):
-        return my.server.ping(my.ticket)
+    def ping(self):
+        return self.server.ping(self.ticket)
 
-    def fast_ping(my):
-        return my.server.fast_ping(my.ticket)
+    def fast_ping(self):
+        return self.server.fast_ping(self.ticket)
 
-    def fast_query(my, search_type, filters=[], limit=None):
-        results = my.server.fast_query(my.ticket, search_type, filters, limit)
+    def fast_query(self, search_type, filters=[], limit=None):
+        results = self.server.fast_query(self.ticket, search_type, filters, limit)
         return eval(results)
 
 
 
-    def test_speed(my):
-        return my.server.test_speed(my.ticket)
+    def test_speed(self):
+        return self.server.test_speed(self.ticket)
 
 
 
 
-    def get_connection_info(my):
+    def get_connection_info(self):
         '''simple test to get connection info'''
-        return my.server.get_connection_info(my.ticket)
+        return self.server.get_connection_info(self.ticket)
 
 
     #
     # Logging facilities
     #
-    def log(my, level, message, category="default"):
+    def log(self, level, message, category="default"):
         '''API Function: log(level, message, category="default")
         Log a message in the logging queue.  It is often difficult to see output
         of a trigger unless you are running the server in debug mode.  In
@@ -641,32 +641,32 @@ class TacticServerStub(object):
         category - a label for the type of message being logged.
             It defaults to "default"
         '''
-        return my.server.log(my.ticket, level,message, category)
+        return self.server.log(self.ticket, level,message, category)
 
 
     #
     # Transaction methods
     #
-    def set_state(my, name, value):
+    def set_state(self, name, value):
         '''Set a state for this transaction
        
         @params
         name: name of state variable
         value: value of state variable
         '''
-        return my.server.set_state(my.ticket, name, value)
+        return self.server.set_state(self.ticket, name, value)
 
 
-    def set_project_state(my, project):
+    def set_project_state(self, project):
         '''Covenience function to set the project state
 
         @params
         project: code of the project to set the state to
         '''
-        return my.set_state("project", project)
+        return self.set_state("project", project)
 
 
-    def start(my, title='', description=''):
+    def start(self, title='', description=''):
         '''API Function: start(title, description='')
         Start a transaction.  All commands using the client API are bound
         in a transaction.  The combination of start(), finish() and abort()
@@ -695,33 +695,33 @@ class TacticServerStub(object):
             server.finish("10 shots added")
         [/code]
         '''
-        my.get_info_from_user()
+        self.get_info_from_user()
 
-        if not my.has_server:
+        if not self.has_server:
             raise TacticApiException("No server connected.  If running a command line script, please execute get_ticket.py")
 
-        ticket = my.server.start(my.login_ticket, my.project_code, \
+        ticket = self.server.start(self.login_ticket, self.project_code, \
             title, description)
-        my.set_transaction_ticket(ticket)
+        self.set_transaction_ticket(ticket)
 
-        #client_version = my.get_client_version()
-        #server_version = my.get_server_version()
+        #client_version = self.get_client_version()
+        #server_version = self.get_server_version()
 
         # Switch to using api versions
-        client_api_version = my.get_client_api_version()
-        server_api_version = my.get_server_api_version()
+        client_api_version = self.get_client_api_version()
+        server_api_version = self.get_server_api_version()
         if client_api_version != server_api_version:
             raise TacticApiException("Server version [%s] does not match client api version [%s]" % (server_api_version, client_api_version) )
 
-        my.set_server(my.server_name)
+        self.set_server(self.server_name)
         # clear the handoff dir
-        my.handoff_dir = None
+        self.handoff_dir = None
 
         return ticket
 
 
 
-    def finish(my, description=''):
+    def finish(self, description=''):
         '''API Function: finish()
         End the current transaction and cleans it up
         
@@ -744,17 +744,17 @@ class TacticServerStub(object):
         [/code]
        
         '''
-        if my.protocol == "local":
+        if self.protocol == "local":
             return
 
-        result = my.server.finish(my.ticket, description)
-        my.set_login_ticket(my.login_ticket)
-        #my.ticket = None
-        #my.transaction_ticket = None
+        result = self.server.finish(self.ticket, description)
+        self.set_login_ticket(self.login_ticket)
+        #self.ticket = None
+        #self.transaction_ticket = None
         return result
 
 
-    def abort(my, ignore_files=False):
+    def abort(self, ignore_files=False):
         '''API Function: abort(ignore_files=False)
         Abort the transaction.  This undos all commands that occurred
         from the beginning of the transactions
@@ -779,17 +779,17 @@ class TacticServerStub(object):
             server.finish("10 shots added")
         [/code]
         '''
-        if my.protocol == "local":
+        if self.protocol == "local":
             return
-        result = my.server.abort(my.ticket, ignore_files)
-        my.ticket = None
-        my.transaction_ticket = None
+        result = self.server.abort(self.ticket, ignore_files)
+        self.ticket = None
+        self.transaction_ticket = None
         return result
 
 
 
     # FIXME: have to fix these because these are post transaction!!
-    def undo(my, transaction_ticket=None, transaction_id=None, ignore_files=False):
+    def undo(self, transaction_ticket=None, transaction_id=None, ignore_files=False):
         '''API Function: undo(transaction_ticket=None, transaction_id=None, ignore_files=False)
         undo an operation.  If no transaction id is given, then the last
         operation of this user on this project is undone
@@ -800,13 +800,13 @@ class TacticServerStub(object):
         ignore_files - flag which determines whether the files should
             also be undone.  Useful for large preallcoated checkins.
         '''
-        if my.protocol == "local":
+        if self.protocol == "local":
             return
-        return my.server.undo(my.ticket, transaction_ticket, transaction_id, ignore_files)
+        return self.server.undo(self.ticket, transaction_ticket, transaction_id, ignore_files)
 
 
 
-    def redo(my, transaction_ticket=None, transaction_id=None):
+    def redo(self, transaction_ticket=None, transaction_id=None):
         '''API Function: redo(transaction_ticket=None, transaction_id=None)
         Redo an operation.  If no transaction id is given, then the last
         undone operation of this user on this project is redone
@@ -815,16 +815,16 @@ class TacticServerStub(object):
         transaction_ticket - explicitly redo a specific transaction
         transaction_id - explicitly redo a specific transaction by id
         '''
-        if my.protocol == "local":
+        if self.protocol == "local":
             return
-        return my.server.redo(my.ticket, transaction_ticket, transaction_id)
+        return self.server.redo(self.ticket, transaction_ticket, transaction_id)
 
 
 
     #
     # Low Level Database methods
     #
-    def get_column_info(my, search_type):
+    def get_column_info(self, search_type):
         '''API Function: get_column_info(search_type)
         Get column information of the table given a search type
 
@@ -836,10 +836,10 @@ class TacticServerStub(object):
         @return - a dictionary of info for each column
 
         '''
-        results = my.server.get_column_info(my.ticket, search_type)
+        results = self.server.get_column_info(self.ticket, search_type)
         return results
 
-    def get_related_types(my, search_type):
+    def get_related_types(self, search_type):
         '''API Function: get_related_types(search_type)
         Get related search types given a search type
 
@@ -851,10 +851,10 @@ class TacticServerStub(object):
         @return - list of search_types 
 
         '''
-        results = my.server.get_related_types(my.ticket, search_type)
+        results = self.server.get_related_types(self.ticket, search_type)
         return results
 
-    def query(my, search_type, filters=[], columns=[], order_bys=[], show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
+    def query(self, search_type, filters=[], columns=[], order_bys=[], show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False):
         '''API Function: query(search_type, filters=[], columns=[], order_bys=[], show_retired=False, limit=None, offset=None, single=False, distinct=None, return_sobjects=False) 
         General query for sobject information
 
@@ -900,14 +900,14 @@ class TacticServerStub(object):
         (value)                     -> where value
         [/code]
         '''
-        #return my.server.query(my.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, return_sobjects)
-        results = my.server.query(my.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
+        #return self.server.query(self.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, return_sobjects)
+        results = self.server.query(self.ticket, search_type, filters, columns, order_bys, show_retired, limit, offset, single, distinct, return_sobjects)
         if not return_sobjects:
             results = eval(results)
         return results
 
         
-    def insert(my, search_type, data, metadata={}, parent_key=None,  info={}, use_id=False, triggers=True):
+    def insert(self, search_type, data, metadata={}, parent_key=None,  info={}, use_id=False, triggers=True):
         '''API Function: insert(search_type, data, metadata={}, parent_key=None,  info={}, use_id=False, triggers=True)
         General insert for creating a new sobject
 
@@ -969,10 +969,10 @@ class TacticServerStub(object):
         server.insert( search_type, data, triggers=False )
         [/code]
         '''
-        return my.server.insert(my.ticket, search_type, data, metadata, parent_key, info, use_id, triggers)
+        return self.server.insert(self.ticket, search_type, data, metadata, parent_key, info, use_id, triggers)
 
 
-    def update(my, search_key, data={}, metadata={}, parent_key=None, info={}, use_id=False, triggers=True):
+    def update(self, search_key, data={}, metadata={}, parent_key=None, info={}, use_id=False, triggers=True):
         '''API Function: update(search_key, data={}, metadata={}, parent_key=None, info={}, use_id=False, triggers=True)
 
         General update for updating sobject
@@ -999,10 +999,10 @@ class TacticServerStub(object):
         dictionary - represent the sobject with its current data.
             If search_key is an array, This will be an array of dictionaries
         '''
-        return my.server.update(my.ticket, search_key, data, metadata, parent_key, info, use_id, triggers)
+        return self.server.update(self.ticket, search_key, data, metadata, parent_key, info, use_id, triggers)
 
         
-    def update_multiple(my, data, triggers=True):
+    def update_multiple(self, data, triggers=True):
         '''API Function: update_multiple(data, triggers=True)
         
         Update for several sobjects in one function call.  The
@@ -1031,11 +1031,11 @@ class TacticServerStub(object):
         @return:
         None
         '''
-        return my.server.update_multiple(my.ticket, data, trigger)
+        return self.server.update_multiple(self.ticket, data, trigger)
 
 
 
-    def insert_update(my, search_key, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True):
+    def insert_update(self, search_key, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True):
         '''API Function: insert_update(search_key, data, metadata={}, parent_key=None, info={}, use_id=False, triggers=True)
 
         Insert if the entry does not exist, update otherwise
@@ -1056,10 +1056,10 @@ class TacticServerStub(object):
         @return:
         dictionary - represent the sobject with its current data.
         '''
-        return my.server.insert_update(my.ticket, search_key, data, metadata, parent_key, info, use_id, triggers)
+        return self.server.insert_update(self.ticket, search_key, data, metadata, parent_key, info, use_id, triggers)
 
 
-    def get_unique_sobject(my, search_type, data={}):
+    def get_unique_sobject(self, search_type, data={}):
         '''API Function: get_unique_sobject(search_type, data={})
 
         This is a special convenience function which will query for an
@@ -1075,11 +1075,11 @@ class TacticServerStub(object):
         @return:
         sobject - unique sobject matching the critieria in data
         '''
-        results = my.server.get_unique_sobject(my.ticket, search_type, data)
+        results = self.server.get_unique_sobject(self.ticket, search_type, data)
         return results
 
 
-    def get_column_names(my, search_type):
+    def get_column_names(self, search_type):
         '''API Function: get_column_names(search_type)
         This method will get all of the column names associated with a search
         type
@@ -1090,7 +1090,7 @@ class TacticServerStub(object):
         @return
         list of columns names
         '''
-        return my.server.get_column_names(my.ticket, search_type)
+        return self.server.get_column_names(self.ticket, search_type)
 
 
 
@@ -1098,7 +1098,7 @@ class TacticServerStub(object):
     #
     # Expression methods
     #
-    def eval(my, expression, search_keys=[], mode=None, single=False, vars={}, show_retired=False):
+    def eval(self, expression, search_keys=[], mode=None, single=False, vars={}, show_retired=False):
         '''API Function: eval(expression, search_keys=[], mode=None, single=False, vars={}, show_retired=False)
         
         Evaluate the expression.  This expression uses the TACTIC expression
@@ -1132,8 +1132,8 @@ class TacticServerStub(object):
         examples on how to use the expression language.
 
         '''
-        #return my.server.eval(my.ticket, expression, search_keys, mode, single, vars)
-        results = my.server.eval(my.ticket, expression, search_keys, mode, single, vars, show_retired)
+        #return self.server.eval(self.ticket, expression, search_keys, mode, single, vars)
+        results = self.server.eval(self.ticket, expression, search_keys, mode, single, vars, show_retired)
         try:
             return eval(results)
         except:
@@ -1144,7 +1144,7 @@ class TacticServerStub(object):
     #
     # Higher Level Object methods
     #
-    def create_search_type(my, search_type, title, description="", has_pipeline=False):
+    def create_search_type(self, search_type, title, description="", has_pipeline=False):
         '''API Function: create_search_type(search_type, title, description="", has_pipeline=False)
         Create a new search type
 
@@ -1161,11 +1161,11 @@ class TacticServerStub(object):
             string - the newly created search type
 
         '''
-        return my.server.create_search_type(my.ticket, search_type, title, description, has_pipeline)
+        return self.server.create_search_type(self.ticket, search_type, title, description, has_pipeline)
 
 
 
-    def add_column_to_search_type(my, search_type, column_name, column_type):
+    def add_column_to_search_type(self, search_type, column_name, column_type):
         '''Adds a new column to the search type
         
         @params
@@ -1177,11 +1177,11 @@ class TacticServerStub(object):
         True if column was created, False if column exists
         '''
 
-        return my.server.add_column_to_search_type(my.ticket, search_type, column_name, column_type)
+        return self.server.add_column_to_search_type(self.ticket, search_type, column_name, column_type)
 
 
 
-    def get_by_search_key(my, search_key):
+    def get_by_search_key(self, search_key):
         '''API Function: get_by_search_key(search_key)
         Get the info on an sobject based on search key
         @param:
@@ -1193,11 +1193,11 @@ class TacticServerStub(object):
             list of dictionary - sobjects that represent values of the sobject in the
                 form of name:value pairs
         '''
-        return my.server.get_by_search_key(my.ticket, search_key)
+        return self.server.get_by_search_key(self.ticket, search_key)
 
 
 
-    def delete_sobject(my, search_key):
+    def delete_sobject(self, search_key):
         '''API Function: delete_sobject(search_key)
         Invoke the delete method.  Note: this function may fail due
         to dependencies.  Tactic will not cascade delete.  This function
@@ -1213,11 +1213,11 @@ class TacticServerStub(object):
             form name:value pairs
         '''
 
-        return my.server.delete_sobject(my.ticket, search_key)
+        return self.server.delete_sobject(self.ticket, search_key)
 
 
 
-    def retire_sobject(my, search_key):
+    def retire_sobject(self, search_key):
         '''API Function: retire_sobject(search_key)
         Invoke the retire method. This is preferred over delete_sobject if 
         you are not sure whether other sobjects has dependency on this.
@@ -1229,11 +1229,11 @@ class TacticServerStub(object):
             dictionary - sobject that represents values of the sobject in the
             form name:value pairs
         '''
-        return my.server.retire_sobject(my.ticket, search_key)
+        return self.server.retire_sobject(self.ticket, search_key)
 
 
 
-    def reactivate_sobject(my, search_key):
+    def reactivate_sobject(self, search_key):
         '''API Function: reactivate_sobject(search_key)
         Invoke the reactivate method.
 
@@ -1244,12 +1244,12 @@ class TacticServerStub(object):
         dictionary - sobject that represents values of the sobject in the
             form name:value pairs
         '''
-        return my.server.reactivate_sobject(my.ticket, search_key)
+        return self.server.reactivate_sobject(self.ticket, search_key)
 
 
 
 
-    def get_parent(my, search_key, columns=[]):
+    def get_parent(self, search_key, columns=[]):
         '''API Function: get_parent(search_key, columns=[]) 
         Get the parent of an sobject.
 
@@ -1262,11 +1262,11 @@ class TacticServerStub(object):
         @return:
         dictionary - the parent sobject
         '''
-        return my.server.get_parent(my.ticket, search_key, columns)
+        return self.server.get_parent(self.ticket, search_key, columns)
 
 
 
-    def get_all_children(my, search_key, child_type, filters=[], columns=[]):
+    def get_all_children(self, search_key, child_type, filters=[], columns=[]):
         '''API Function: get_all_children(search_key, child_type, columns=[])
         Get all children of a particular child type of an sobject
 
@@ -1283,11 +1283,11 @@ class TacticServerStub(object):
             list of dictionary - a list of sobjects dictionaries
         '''
         #filters = []
-        return my.server.get_all_children(my.ticket, search_key, child_type, filters, columns)
+        return self.server.get_all_children(self.ticket, search_key, child_type, filters, columns)
 
 
 
-    def get_parent_type(my, search_key):
+    def get_parent_type(self, search_key):
         '''API Function: get_parent_type(search_key)
         Get of the parent search type
 
@@ -1297,10 +1297,10 @@ class TacticServerStub(object):
         @return:
             list - a list of child search_types
         '''
-        return my.server.get_parent_type(my.ticket, search_key)
+        return self.server.get_parent_type(self.ticket, search_key)
 
 
-    def get_child_types(my, search_key):
+    def get_child_types(self, search_key):
         '''API Function: get_child_types(search_key)
         Get all the child search types
 
@@ -1310,11 +1310,11 @@ class TacticServerStub(object):
         @return:
             list - the child search types
         '''
-        return my.server.get_child_types(my.ticket, search_key)
+        return self.server.get_child_types(self.ticket, search_key)
 
 
 
-    def get_types_from_instance(my, instance_type):
+    def get_types_from_instance(self, instance_type):
         '''API Function: gets the connector types from an instance type
 
         @param:
@@ -1326,12 +1326,12 @@ class TacticServerStub(object):
                 the connector type and the parent type is the search type of the
                 parent of the instance
         '''
-        return my.server.get_types_from_instance(my.ticket, instance_type)
+        return self.server.get_types_from_instance(self.ticket, instance_type)
 
 
 
 
-    def connect_sobjects(my, src_sobject, dst_sobject, context='default'):
+    def connect_sobjects(self, src_sobject, dst_sobject, context='default'):
         '''connect two sobjects together
 
         @params
@@ -1342,7 +1342,7 @@ class TacticServerStub(object):
         @return
         the connection sobject
         '''
-        return my.server.create(my.ticket, src_sobject, dst_sobject, context)
+        return self.server.create(self.ticket, src_sobject, dst_sobject, context)
 
 
 
@@ -1353,8 +1353,8 @@ class TacticServerStub(object):
     #
     # upload/download methods
     #
-    def download(my, url, to_dir=".", filename='', md5_checksum=""):
-        '''API Function: download(my, url, to_dir=".", filename='', md5_checksum="")
+    def download(self, url, to_dir=".", filename='', md5_checksum=""):
+        '''API Function: download(self, url, to_dir=".", filename='', md5_checksum="")
         Download a file from a given url
 
         @param:
@@ -1375,7 +1375,7 @@ class TacticServerStub(object):
 
         # download to temp_dir
         #if not to_dir:
-        #    to_dir = my.get_tmpdir()
+        #    to_dir = self.get_tmpdir()
 
 
         # make sure the directory exists
@@ -1389,7 +1389,7 @@ class TacticServerStub(object):
         if os.path.exists(to_path):
             # if it exists, check the MD5 checksum
             if md5_checksum:
-                if my._md5_check(to_path, md5_checksum):
+                if self._md5_check(to_path, md5_checksum):
                     print "skipping '%s', already exists" % to_path
                     return to_path
             else:
@@ -1405,7 +1405,7 @@ class TacticServerStub(object):
 
         # check for downloaded file
         # COMMENTED OUT for now since it does not work well with icons
-        #if md5_checksum and not my._md5_check(to_path, md5_checksum):
+        #if md5_checksum and not self._md5_check(to_path, md5_checksum):
         #    raise TacticException('Downloaded file [%s] in local repo failed md5 check. This file may be missing on the server or corrupted.'%to_path)
 
         """
@@ -1437,7 +1437,7 @@ class TacticServerStub(object):
 
 
 
-    def upload_file(my, path):
+    def upload_file(self, path):
         '''API Function: upload_file(path)
         Use http protocol to upload a file through http
 
@@ -1447,11 +1447,11 @@ class TacticServerStub(object):
         '''
         from pyasm.application.common import UploadMultipart
         upload = UploadMultipart()
-        upload.set_ticket(my.transaction_ticket)
-        if my.server_name.startswith("http://") or my.server_name.startswith("https://"):
-            upload_server_url = "%s/tactic/default/UploadServer/" % my.server_name
+        upload.set_ticket(self.transaction_ticket)
+        if self.server_name.startswith("http://") or self.server_name.startswith("https://"):
+            upload_server_url = "%s/tactic/default/UploadServer/" % self.server_name
         else:
-            upload_server_url = "http://%s/tactic/default/UploadServer/" % my.server_name
+            upload_server_url = "http://%s/tactic/default/UploadServer/" % self.server_name
 
 
         upload.set_upload_server(upload_server_url)
@@ -1462,10 +1462,10 @@ class TacticServerStub(object):
         #file = open(path, 'rb')
         #data = xmlrpclib.Binary( file.read() )
         #file.close()
-        #return my.server.upload_file(my.transaction_ticket, filename, data)
+        #return self.server.upload_file(self.transaction_ticket, filename, data)
 
 
-    def upload_group(my, path, file_range):
+    def upload_group(self, path, file_range):
         '''uses http protocol to upload a sequences of files through HTTP
 
         @params
@@ -1483,10 +1483,10 @@ class TacticServerStub(object):
         # TODO: add full range functionality here
         for frame in range(start, end+1):
             full_path = path % frame
-            my.upload_file(full_path)
+            self.upload_file(full_path)
 
     # file group functions
-    def _get_file_range(my, file_range):
+    def _get_file_range(self, file_range):
         '''get the file_range'''
         frame_by = 1
         if file_range.find("/") != -1:
@@ -1498,13 +1498,13 @@ class TacticServerStub(object):
         frame_end = int(frame_end)
         return frame_start, frame_end, frame_by
 
-    def _expand_paths(my, file_path, file_range):
+    def _expand_paths(self, file_path, file_range):
         '''expands the file paths, replacing # as specified in the file_range
            @param - file_path with #### or %0.4d notation
            @file_range - a tuple'''
         file_paths = []
         
-        frame_start, frame_end, frame_by = my._get_file_range(file_range)
+        frame_start, frame_end, frame_by = self._get_file_range(file_range)
         # support %0.4d notation
         if file_path.find('#') == -1:
             for i in range(frame_start, frame_end+1, frame_by):
@@ -1522,7 +1522,7 @@ class TacticServerStub(object):
     #
     # Checkin/out methods
     #
-    def create_snapshot(my, search_key, context, snapshot_type="file",
+    def create_snapshot(self, search_key, context, snapshot_type="file",
             description="No description", is_current=True, level_key=None,
             is_revision=False ):
         '''API Function: create_snapshot(search_key, context, snapshot_type="file", description="No description", is_current=True, level_key=None, is_revision=False )
@@ -1545,13 +1545,13 @@ class TacticServerStub(object):
         @return:
         dictionary - representation of the snapshot created for this checkin
         '''
-        return my.server.create_snapshot(my.ticket, search_key, context, snapshot_type, description, is_current, level_key, is_revision)
+        return self.server.create_snapshot(self.ticket, search_key, context, snapshot_type, description, is_current, level_key, is_revision)
         
 
 
 
 
-    def simple_checkin(my, search_key, context, file_path,
+    def simple_checkin(self, search_key, context, file_path,
             snapshot_type="file", description="No description",
             use_handoff_dir=False, file_type="main", is_current=True,
             level_key=None, breadcrumb=False, metadata={}, mode='upload',
@@ -1601,9 +1601,9 @@ class TacticServerStub(object):
                 raise TacticApiException('Mode must be in %s' % mode_options)
 
             if mode == 'upload':
-                my.upload_file(file_path)
+                self.upload_file(file_path)
             elif mode in ['copy', 'move']:
-                handoff_dir = my.get_handoff_dir()
+                handoff_dir = self.get_handoff_dir()
                 use_handoff_dir = True
                 # make sure that handoff dir is empty
                 try:
@@ -1627,17 +1627,17 @@ class TacticServerStub(object):
                 pass
 
         # check in the file to the server
-        snapshot = my.server.simple_checkin(my.ticket, search_key, context, file_path, snapshot_type, description, use_handoff_dir, file_type, is_current, level_key, metadata, mode, is_revision, info, keep_file_name, create_icon, checkin_cls, context_index_padding, checkin_type, source_path)
+        snapshot = self.server.simple_checkin(self.ticket, search_key, context, file_path, snapshot_type, description, use_handoff_dir, file_type, is_current, level_key, metadata, mode, is_revision, info, keep_file_name, create_icon, checkin_cls, context_index_padding, checkin_type, source_path)
 
         if mode == 'local':
             # get the naming conventions and move the file to the local repo
-            files = my.server.eval(my.ticket, "@SOBJECT(sthpw/file)", snapshot)
+            files = self.server.eval(self.ticket, "@SOBJECT(sthpw/file)", snapshot)
 
             # FIXME: this only works on the python implementation
             files = eval(files)
 
             # TODO: maybe cache this??
-            base_dirs = my.server.get_base_dirs(my.ticket)
+            base_dirs = self.server.get_base_dirs(self.ticket)
             if os.name == 'nt':
                 client_repo_dir = base_dirs.get("win32_local_repo_dir")
                 # DEPRECATED
@@ -1664,7 +1664,7 @@ class TacticServerStub(object):
         # leave a breadcrumb
         if breadcrumb:
             snapshot_code = snapshot.get('code')
-            full_snapshot_xml = my.get_full_snapshot_xml(snapshot_code)
+            full_snapshot_xml = self.get_full_snapshot_xml(snapshot_code)
 
             snapshot_path = "%s.snapshot" % file_path
             file = open(snapshot_path, 'wb')
@@ -1674,7 +1674,7 @@ class TacticServerStub(object):
         return snapshot
 
 
-    def group_checkin(my, search_key, context, file_path, file_range, snapshot_type="sequence", description="", file_type='main', metadata={}, mode=None, is_revision=False , info={} ):
+    def group_checkin(self, search_key, context, file_path, file_range, snapshot_type="sequence", description="", file_type='main', metadata={}, mode=None, is_revision=False , info={} ):
         '''API Function: group_checkin(search_key, context, file_path, file_range, snapshot_type="sequence", description="", file_type='main', metadata={}, mode=None, is_revision=False, info={} )
 
         Check in a range of files.  A range of file is defined as any group
@@ -1716,23 +1716,23 @@ class TacticServerStub(object):
             # brute force method
             
             if mode == 'move':
-                handoff_dir = my.get_handoff_dir()
-                expanded_paths = my._expand_paths(file_path, file_range)
+                handoff_dir = self.get_handoff_dir()
+                expanded_paths = self._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
             elif mode == 'copy':
-                handoff_dir = my.get_handoff_dir()
-                expanded_paths = my._expand_paths(file_path, file_range)
+                handoff_dir = self.get_handoff_dir()
+                expanded_paths = self._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
             elif mode == 'upload':
-                expanded_paths = my._expand_paths(file_path, file_range)
+                expanded_paths = self._expand_paths(file_path, file_range)
                 for path in expanded_paths:
-                    my.upload_file(path)
+                    self.upload_file(path)
                 use_handoff_dir = False
             elif mode == 'inplace':
                 use_handoff_dir = False
@@ -1741,11 +1741,11 @@ class TacticServerStub(object):
                 file_path = os.path.abspath(file_path)
 
 
-        return my.server.group_checkin(my.ticket, search_key, context, file_path, file_range, snapshot_type, description, file_type, metadata, mode, is_revision, info )
+        return self.server.group_checkin(self.ticket, search_key, context, file_path, file_range, snapshot_type, description, file_type, metadata, mode, is_revision, info )
 
 
 
-    def directory_checkin(my, search_key, context, dir, snapshot_type="directory", description="No description", file_type='main', is_current=True, level_key=None, metadata={}, mode="copy", is_revision=False):
+    def directory_checkin(self, search_key, context, dir, snapshot_type="directory", description="No description", file_type='main', is_current=True, level_key=None, metadata={}, mode="copy", is_revision=False):
         '''API Function: directory_checkin(search_key, context, dir, snapshot_type="directory", description="No description", file_type='main', is_current=True, level_key=None, metadata={}, mode="copy", is_revision=False)
 
         Check in a directory of files.  This informs TACTIC to treat the 
@@ -1779,7 +1779,7 @@ class TacticServerStub(object):
         if mode not in ['copy', 'move', 'inplace', 'local']:
             raise TacticApiException('mode must be either [move] or [copy]')
 
-        handoff_dir = my.get_handoff_dir()
+        handoff_dir = self.get_handoff_dir()
         # make sure that handoff dir is empty
         try:
             shutil.rmtree(handoff_dir)
@@ -1802,19 +1802,19 @@ class TacticServerStub(object):
             shutil.copytree(dir, "%s/%s" % (handoff_dir, basename))
 
         use_handoff_dir = True
-        snapshot = my.server.simple_checkin(my.ticket, search_key, context,
+        snapshot = self.server.simple_checkin(self.ticket, search_key, context,
             dir, snapshot_type, description, use_handoff_dir, file_type,
             is_current, level_key, metadata, mode, is_revision)
 
         if mode == 'local':
             # get the naming conventions and move the file to the local repo
-            files = my.server.eval(my.ticket, "@SOBJECT(sthpw/file)", snapshot)
+            files = self.server.eval(self.ticket, "@SOBJECT(sthpw/file)", snapshot)
 
             # FIXME: this only works on the python implementation
             files = eval(files)
             for file in files:
                 rel_path = "%s/%s" %( file.get('relative_dir'), file.get('file_name'))
-                base_dirs = my.server.get_base_dirs(my.ticket)
+                base_dirs = self.server.get_base_dirs(self.ticket)
                 if os.name == 'nt':
                     client_repo_dir = base_dirs.get("win32_local_base_dir")
                 else:
@@ -1832,7 +1832,7 @@ class TacticServerStub(object):
 
 
 
-    def add_dependency(my, snapshot_code, file_path, type='ref', tag='main'):
+    def add_dependency(self, snapshot_code, file_path, type='ref', tag='main'):
         '''API Function: add_dependency(snapshot_code, file_path, type='ref')
        
         This method will append a dependency referent to an existing checkin.
@@ -1858,9 +1858,9 @@ class TacticServerStub(object):
         @return:
         dictionary - the resulting snapshot
         '''
-        return my.server.add_dependency(my.ticket, snapshot_code, file_path, type, tag)
+        return self.server.add_dependency(self.ticket, snapshot_code, file_path, type, tag)
 
-    def add_dependency_by_code(my, to_snapshot_code, from_snapshot_code, type='ref', tag='main'):
+    def add_dependency_by_code(self, to_snapshot_code, from_snapshot_code, type='ref', tag='main'):
         '''API Function: add_dependency_by_code(to_snapshot_code, from_snapshot_code, type='ref')
 
         Append a dependency reference to an existing checkin.  This dependency
@@ -1881,10 +1881,10 @@ class TacticServerStub(object):
         @return:
         dictionary - the resulting snapshot
         '''
-        return my.server.add_dependency_by_code(my.ticket, to_snapshot_code, from_snapshot_code, type, tag)
+        return self.server.add_dependency_by_code(self.ticket, to_snapshot_code, from_snapshot_code, type, tag)
 
 
-    def add_file(my, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming='', file_naming=''):
+    def add_file(self, snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False, dir_naming='', file_naming=''):
         '''API Function: add_file(snapshot_code, file_path, file_type='main', use_handoff_dir=False, mode=None, create_icon=False)
         Add a file to an already existing snapshot.  This method is used in
         piecewise checkins.  A blank snapshot can be created using
@@ -1980,7 +1980,7 @@ class TacticServerStub(object):
         mode_options = ['upload', 'copy', 'move', 'preallocate','inplace']
         if mode:
             if mode in ['copy', 'move']:
-                handoff_dir = my.get_handoff_dir()
+                handoff_dir = self.get_handoff_dir()
                 use_handoff_dir = True
                 # make sure that handoff dir is empty
                 try:
@@ -1996,7 +1996,7 @@ class TacticServerStub(object):
                     raise TacticApiException('Mode must be in %s' % mode_options)
 
                 if mode == 'upload':
-                    my.upload_file(file_path)
+                    self.upload_file(file_path)
                     use_handoff_dir = False
                 elif mode in ['copy', 'move']:
                     # copy or move the tree
@@ -2006,15 +2006,15 @@ class TacticServerStub(object):
                     elif mode == 'copy':
                         shutil.copy(file_path, "%s/%s" % (handoff_dir, basename))
 
-        return my.server.add_file(my.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming)
+        return self.server.add_file(self.ticket, snapshot_code, file_paths, file_types, use_handoff_dir, mode, create_icon, dir_naming, file_naming)
 
 
-    def remove_file(my, snapshot_code, file_type):
-        return my.server.remove_file(my.ticket, snapshot_code, file_type)
+    def remove_file(self, snapshot_code, file_type):
+        return self.server.remove_file(self.ticket, snapshot_code, file_type)
         
 
 
-    def add_group(my, snapshot_code, file_path, file_type, file_range, use_handoff_dir=False, mode=None):
+    def add_group(self, snapshot_code, file_path, file_type, file_range, use_handoff_dir=False, mode=None):
         '''API Function: add_group(snapshot_code, file_path, file_type, file_range, use_handoff_dir=False, mode=None)
         Add a file range to an already existing snapshot
 
@@ -2038,30 +2038,30 @@ class TacticServerStub(object):
                 raise TacticApiException('Mode must be in %s' % mode_options)
 
             #dir = os.path.dirname(file_path)
-            handoff_dir = my.get_handoff_dir()
+            handoff_dir = self.get_handoff_dir()
             if mode == 'move':
-                expanded_paths = my._expand_paths(file_path, file_range)
+                expanded_paths = self._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.move(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
             elif mode == 'copy':
-                expanded_paths = my._expand_paths(file_path, file_range)
+                expanded_paths = self._expand_paths(file_path, file_range)
                 for path in expanded_paths:
                     basename = os.path.basename(path)
                     shutil.copy(path, '%s/%s' %(handoff_dir, basename))
                 use_handoff_dir = True
             elif mode == 'upload':
-                my.upload_group(file_path, file_range)
+                self.upload_group(file_path, file_range)
                 use_handoff_dir = False
             elif mode == 'preallocate':
                 use_handoff_dir = True
 
-        return my.server.add_group(my.ticket, snapshot_code, file_path, file_type, file_range, use_handoff_dir, mode)
+        return self.server.add_group(self.ticket, snapshot_code, file_path, file_type, file_range, use_handoff_dir, mode)
 
 
 
-    def add_directory(my, snapshot_code, dir, file_type='main', mode="copy"):
+    def add_directory(self, snapshot_code, dir, file_type='main', mode="copy"):
         '''API Function: add_directory(snapshot_code, dir, file_type='main', mode="copy")
         Add a full directory to an already existing checkin.
         This informs TACTIC to treat the entire directory as single entity
@@ -2090,19 +2090,19 @@ class TacticServerStub(object):
         
         [code]
         dir = 'C:/images'
-        handoff_dir = my.server.get_handoff_dir()
+        handoff_dir = self.server.get_handoff_dir()
         shutil.copytree('%s/subfolder' %dir, '%s/images/subfolder' %handoff_dir)
 
-        snapshot_dict = my.server.create_snapshot(search_key, context='render')
+        snapshot_dict = self.server.create_snapshot(search_key, context='render')
         snapshot_code = snapshot_dict.get('code')
-        my.server.add_directory(snapshot_code, dir, file_type='dir', mode='manual')
+        self.server.add_directory(snapshot_code, dir, file_type='dir', mode='manual')
         [/code]
         '''
         if mode not in ['copy', 'move', 'preallocate', 'manual', 'inplace']:
             raise TacticApiException('Mode must be one of [move, copy, preallocate]')
 
         if mode in ['copy', 'move']:
-            handoff_dir = my.get_handoff_dir()
+            handoff_dir = self.get_handoff_dir()
             # make sure that handoff dir is empty
             try:
                 shutil.rmtree(handoff_dir)
@@ -2120,13 +2120,13 @@ class TacticServerStub(object):
 
 
         use_handoff_dir = True
-        return my.server.add_file(my.ticket, snapshot_code, dir, file_type, use_handoff_dir, mode )
+        return self.server.add_file(self.ticket, snapshot_code, dir, file_type, use_handoff_dir, mode )
  
 
 
 
 
-    def checkout(my, search_key, context, version=-1, file_type='main', to_dir=".", level_key=None, to_sandbox_dir=False, mode='copy'):
+    def checkout(self, search_key, context, version=-1, file_type='main', to_dir=".", level_key=None, to_sandbox_dir=False, mode='copy'):
         '''API Function: checkout(search_key, context, version=-1, file_type='main', dir='', level_key=None, to_sandbox_dir=False, mode='copy')
         Check out files defined in a snapshot from the repository.  This
         will copy files to a particular directory so that a user can work
@@ -2155,8 +2155,8 @@ class TacticServerStub(object):
             raise TacticApiException("[%s] does not exist or is not a directory" % to_dir)
 
         to_dir = to_dir.replace("\\","/")
-        #repo_paths = my.server.checkout(my.ticket, search_key, context, version, file_type, level_key)
-        paths = my.server.checkout(my.ticket, search_key, context, version, file_type, level_key)
+        #repo_paths = self.server.checkout(self.ticket, search_key, context, version, file_type, level_key)
+        paths = self.server.checkout(self.ticket, search_key, context, version, file_type, level_key)
 
         client_lib_paths = paths['client_lib_paths']
         sandbox_paths = paths['sandbox_paths']
@@ -2190,14 +2190,14 @@ class TacticServerStub(object):
 
             elif mode == 'download':
                 web_path = web_paths[i]
-                my.download(web_path, to_dir=to_dir, filename=filename)
+                self.download(web_path, to_dir=to_dir, filename=filename)
             else:
                 raise TacticApiException("Checkout mode [%s] not supported" % mode)
 
         return to_paths
 
  
-    def lock_sobject(my, search_key, context):
+    def lock_sobject(self, search_key, context):
         '''Locks the context for checking in and out.  Locking a context
         prevents the ability to checkout or checkin to that context for a
         particular sobject.
@@ -2209,10 +2209,10 @@ class TacticServerStub(object):
         @return
         None
         '''
-        return my.server.lock_sobject(my.ticket, search_key, context)
+        return self.server.lock_sobject(self.ticket, search_key, context)
 
  
-    def unlock_sobject(my, search_key, context):
+    def unlock_sobject(self, search_key, context):
         '''Unocks the context for checking in and out.  Locking a context
         prevents the ability to checkout or checkin to that context for a
         particular sobject.
@@ -2225,11 +2225,11 @@ class TacticServerStub(object):
         None
  
         '''
-        return my.server.unlock_sobject(my.ticket, search_key, context)
+        return self.server.unlock_sobject(self.ticket, search_key, context)
 
 
 
-    def query_snapshots(my, filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False):
+    def query_snapshots(self, filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False):
         '''API Function:  query_snapshots(filters=None, columns=None, order_bys=[], show_retired=False, limit=None, offset=None, single=False, include_paths=False, include_full_xml=False, include_paths_dict=False, include_parent=False, include_files=False)
 
         thin wrapper around query, but is specific to querying snapshots
@@ -2258,11 +2258,11 @@ class TacticServerStub(object):
         @return:
         list of snapshots
         '''
-        return my.server.query_snapshots(my.ticket, filters, columns, order_bys, show_retired, limit, offset, single, include_paths, include_full_xml, include_paths_dict, include_parent, include_files)
+        return self.server.query_snapshots(self.ticket, filters, columns, order_bys, show_retired, limit, offset, single, include_paths, include_full_xml, include_paths_dict, include_parent, include_files)
 
 
 
-    def get_snapshot(my, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False):
+    def get_snapshot(self, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False):
         '''API Function:  get_snapshot(search_key, context="publish", version='-1', level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False)
 
         Method to retrieve an sobject's snapshot
@@ -2296,12 +2296,12 @@ class TacticServerStub(object):
             snapshot = server.get_snapshot(search_key, context='icon', include_files=True)
         [/code]
         '''
-        return my.server.get_snapshot(my.ticket, search_key, context, version, revision, level_key, include_paths, include_full_xml, include_paths_dict, include_files, include_web_paths_dict, versionless)
+        return self.server.get_snapshot(self.ticket, search_key, context, version, revision, level_key, include_paths, include_full_xml, include_paths_dict, include_files, include_web_paths_dict, versionless)
 
 
 
 
-    def get_full_snapshot_xml(my, snapshot_code):
+    def get_full_snapshot_xml(self, snapshot_code):
         '''API Function: get_full_snapshot_xml(snapshot_code)
         
         Retrieve a full snapshot xml.  This snapshot definition
@@ -2313,10 +2313,10 @@ class TacticServerStub(object):
         @return:
         string - the resulting snapshot xml
         '''
-        return my.server.get_full_snapshot_xml(my.ticket, snapshot_code)
+        return self.server.get_full_snapshot_xml(self.ticket, snapshot_code)
 
 
-    def set_current_snapshot(my, snapshot_code):
+    def set_current_snapshot(self, snapshot_code):
         '''API Function: set_current_snapshot(snapshot_code)
 
         Set this snapshot as a "current" snapshot
@@ -2327,10 +2327,10 @@ class TacticServerStub(object):
         @return:
         string - the resulting snapshot xml
         '''
-        return my.server.set_current_snapshot(my.ticket, snapshot_code)
+        return self.server.set_current_snapshot(self.ticket, snapshot_code)
 
 
-    def get_dependencies(my, snapshot_code, mode='explicit', tag='main', include_paths=False, include_paths_dict=False, include_files=False, repo_mode='client_repo', show_retired=False):
+    def get_dependencies(self, snapshot_code, mode='explicit', tag='main', include_paths=False, include_paths_dict=False, include_files=False, repo_mode='client_repo', show_retired=False):
         '''API Function: get_dependencies(snapshot_code, mode='explicit', tag='main', include_paths=False, include_paths_dict=False, include_files=False, repo_mode='client_repo', show_retired=False):
         
         Return the dependent snapshots of a certain tag
@@ -2357,10 +2357,10 @@ class TacticServerStub(object):
         @return:
         a list of snapshots
         '''
-        return my.server.get_dependencies(my.ticket, snapshot_code, mode, tag, include_paths, include_paths_dict, include_files, repo_mode)
+        return self.server.get_dependencies(self.ticket, snapshot_code, mode, tag, include_paths, include_paths_dict, include_files, repo_mode)
 
 
-    def get_all_dependencies(my, snapshot_code, mode='explicit', type='ref', include_paths=False,  include_paths_dict=False, include_files=False, repo_mode='client_repo'):
+    def get_all_dependencies(self, snapshot_code, mode='explicit', type='ref', include_paths=False,  include_paths_dict=False, include_files=False, repo_mode='client_repo'):
         '''API Function: get_all_dependencies(snapshot_code, mode='explicit', type='ref', include_paths=False, include_paths_dict=False, include_files=False, repo_mode='client_repo')
         
         Retrieve the latest dependent snapshots of the given snapshot
@@ -2387,7 +2387,7 @@ class TacticServerStub(object):
         @return:
         list - snapshots
         '''
-        return my.server.get_all_dependencies(my.ticket, snapshot_code, mode, type,\
+        return self.server.get_all_dependencies(self.ticket, snapshot_code, mode, type,\
                 include_paths, include_paths_dict, include_files, repo_mode)
 
 
@@ -2395,7 +2395,7 @@ class TacticServerStub(object):
     #
     # Task methods
     #
-    def create_task(my, search_key, process="publish", subcontext=None, description=None, bid_start_date=None, bid_end_date=None, bid_duration=None, assigned=None):
+    def create_task(self, search_key, process="publish", subcontext=None, description=None, bid_start_date=None, bid_end_date=None, bid_duration=None, assigned=None):
         '''API Function:  create_task(search_key, process="publish", subcontext=None, description=None, bid_start_date=None, bid_end_date=None, bid_duration=None, assigned=None)
         Create a task for a particular sobject
 
@@ -2416,11 +2416,11 @@ class TacticServerStub(object):
         dictionary - task that was created
         ''' 
 
-        return my.server.create_task(my.ticket, search_key, process, subcontext, description, bid_start_date, bid_end_date, bid_duration, assigned)
+        return self.server.create_task(self.ticket, search_key, process, subcontext, description, bid_start_date, bid_end_date, bid_duration, assigned)
 
 
 
-    def add_initial_tasks(my, search_key, pipeline_code=None, processes=[]):
+    def add_initial_tasks(self, search_key, pipeline_code=None, processes=[]):
         '''API Function: add_initial_tasks(search_key, pipeline_code=None, processes=[])
         
         Add initial tasks to an sobject
@@ -2436,13 +2436,13 @@ class TacticServerStub(object):
         @return:
         list - tasks created
         '''
-        return my.server.add_initial_tasks(my.ticket, search_key, pipeline_code, processes)
+        return self.server.add_initial_tasks(self.ticket, search_key, pipeline_code, processes)
         
 
     #
     # Pipeline methods
     #
-    def get_pipeline_xml(my, search_key):
+    def get_pipeline_xml(self, search_key):
         '''API Function: get_pipeline_xml(search_key)
         DEPRECATED: use get_pipeline_xml_info()
 
@@ -2455,9 +2455,9 @@ class TacticServerStub(object):
         @return:
         dictionary - xml and the optional hierarachy info
         '''
-        return my.server.get_pipeline_xml(my.ticket, search_key)
+        return self.server.get_pipeline_xml(self.ticket, search_key)
 
-    def get_pipeline_processes(my, search_key, recurse=False):
+    def get_pipeline_processes(self, search_key, recurse=False):
         '''API Function: get_pipeline_processes(search_key, recurse=False)
         DEPRECATED: use get_pipeline_processes_info()
 
@@ -2472,9 +2472,9 @@ class TacticServerStub(object):
         @return:
         list - process names of the pipeline 
         '''
-        return my.server.get_pipeline_processes(my.ticket, search_key, recurse)
+        return self.server.get_pipeline_processes(self.ticket, search_key, recurse)
 
-    def get_pipeline_xml_info(my, search_key, include_hierarchy=False):
+    def get_pipeline_xml_info(self, search_key, include_hierarchy=False):
         '''API Function: get_pipeline_xml_info(search_key, include_hierarchy=False)
 
         Retrieve the pipeline of a specific sobject.  The pipeline
@@ -2489,9 +2489,9 @@ class TacticServerStub(object):
         @return:
         dictionary - xml and the optional hierarachy info
         '''
-        return my.server.get_pipeline_xml_info(my.ticket, search_key, include_hierarchy)
+        return self.server.get_pipeline_xml_info(self.ticket, search_key, include_hierarchy)
 
-    def get_pipeline_processes_info(my, search_key, recurse=False, related_process=None):
+    def get_pipeline_processes_info(self, search_key, recurse=False, related_process=None):
         '''API Function: get_pipeline_processes_info(search_key, recurse=False, related_process=None)
 
         Retrieve the pipeline processes information of a specific sobject. It provides information from the perspective of a particular process if related_process is specified.
@@ -2506,9 +2506,9 @@ class TacticServerStub(object):
         @return:
         dictionary - process names of the pipeline or a dictionary if related_process is specified
         '''
-        return my.server.get_pipeline_processes_info(my.ticket, search_key, recurse, related_process)
+        return self.server.get_pipeline_processes_info(self.ticket, search_key, recurse, related_process)
 
-    def execute_pipeline(my, pipeline_xml, package):
+    def execute_pipeline(self, pipeline_xml, package):
         '''API Function:  execute_pipeline(pipeline_xml, package)
 
         Spawn an execution of a pipeline as delivered from
@@ -2525,14 +2525,14 @@ class TacticServerStub(object):
         # execute the pipeline
         from interpreter import PipelineInterpreter
         interpreter = PipelineInterpreter(pipeline_xml)
-        interpreter.set_server(my)
+        interpreter.set_server(self)
         interpreter.set_package(package)
         interpreter.execute()
 
         return interpreter
 
 
-    def commit_session(my, session_xml, pid):
+    def commit_session(self, session_xml, pid):
         '''Takes a session xml and commits it.  Also handles transfer to old
         style xml data.  Generally, this is executed through the application
         package: tactic_client_lib/application/common/introspect.py. However,
@@ -2552,13 +2552,13 @@ class TacticServerStub(object):
           <ref search_key="prod/shot?project=bar&code=joe" context="model" version="3" revision="2" tactic_node="tactic_joe"/>
         </session>
         '''
-        return my.server.commit_session(my.ticket, session_xml, pid)
+        return self.server.commit_session(self.ticket, session_xml, pid)
 
 
     #
     # Directory methods
     #
-    def get_paths(my, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False):
+    def get_paths(self, search_key, context="publish", version=-1, file_type='main', level_key=None, single=False):
         '''API Function: get_paths( search_key, context="publish", version=-1, file_type='main', level_key=None)
         Get paths from an sobject
 
@@ -2580,18 +2580,18 @@ class TacticServerStub(object):
  
 
         '''
-        return my.server.get_paths(my.ticket, search_key, context, version, file_type, level_key, single)
+        return self.server.get_paths(self.ticket, search_key, context, version, file_type, level_key, single)
 
 
 
 
-    def get_base_dirs(my):
+    def get_base_dirs(self):
         '''get all of the base directories defined on the server'''
-        return my.server.get_base_dirs(my.ticket)
+        return self.server.get_base_dirs(self.ticket)
 
 
 
-    def get_handoff_dir(my):
+    def get_handoff_dir(self):
         '''API Function: get_handoff_dir()
         
         Return a temporary path that files can be copied to
@@ -2600,19 +2600,19 @@ class TacticServerStub(object):
         string - the directory to copy a file to handoff to Tactic without having to
         go through http protocol
         '''
-        if my.handoff_dir:
-            return my.handoff_dir
+        if self.handoff_dir:
+            return self.handoff_dir
 
-        handoff_dir = my.server.get_handoff_dir(my.ticket)
+        handoff_dir = self.server.get_handoff_dir(self.ticket)
         if not os.path.exists(handoff_dir):
             os.makedirs(handoff_dir)
 
-        my.handoff_dir = handoff_dir
+        self.handoff_dir = handoff_dir
         return handoff_dir
 
 
 
-    def clear_upload_dir(my):
+    def clear_upload_dir(self):
         '''API Function: clear_upload_dir()
         
         Clears the upload directory to ensure clean checkins
@@ -2626,11 +2626,11 @@ class TacticServerStub(object):
         @return:
         None
         '''
-        return my.server.clear_upload_dir(my.ticket)
+        return self.server.clear_upload_dir(self.ticket)
 
 
 
-    def get_client_dir(my, snapshot_code, file_type='main', mode='client_repo'):
+    def get_client_dir(self, snapshot_code, file_type='main', mode='client_repo'):
         '''API Function: get_client_dir(snapshot_code, file_type='main', mode='client_repo')
         
         Get a dir segment from a snapshot
@@ -2675,9 +2675,9 @@ class TacticServerStub(object):
         [/code]
         
         '''
-        return my.server.get_client_dir(my.ticket, snapshot_code, file_type, mode)
+        return self.server.get_client_dir(self.ticket, snapshot_code, file_type, mode)
 
-    def get_path_from_snapshot(my, snapshot_code, file_type='main', mode='client_repo'):
+    def get_path_from_snapshot(self, snapshot_code, file_type='main', mode='client_repo'):
         '''API Function: get_path_from_snapshot(snapshot_code, file_type='main')
         
         Get a full path from a snapshot
@@ -2717,7 +2717,7 @@ class TacticServerStub(object):
         server.get_path_from_snapshot(snapshot.get('code'))
 
         # in a trigger
-        snapshot_key = my.get_input_value("search_key")
+        snapshot_key = self.get_input_value("search_key")
         server.get_path_from_snapshot(snapshot_key)
         [/code]
 
@@ -2727,10 +2727,10 @@ class TacticServerStub(object):
         [/code]
 
         '''
-        return my.server.get_path_from_snapshot(my.ticket, snapshot_code, file_type, mode)
+        return self.server.get_path_from_snapshot(self.ticket, snapshot_code, file_type, mode)
 
 
-    def get_expanded_paths_from_snapshot(my, snapshot_code, file_type='main'):
+    def get_expanded_paths_from_snapshot(self, snapshot_code, file_type='main'):
         '''API Function: get_expanded_paths_from_snapshot(snapshot_code, file_type='main')
         
         Return the expanded path of a snapshot (used for 
@@ -2746,12 +2746,12 @@ class TacticServerStub(object):
         @return:
         string - path
         '''
-        return my.server.get_expanded_paths_from_snapshot(my.ticket, snapshot_code, file_type)
+        return self.server.get_expanded_paths_from_snapshot(self.ticket, snapshot_code, file_type)
 
 
 
 
-    def get_all_paths_from_snapshot(my, snapshot_code, mode='client_repo', expand_paths=False, filename_mode=''):
+    def get_all_paths_from_snapshot(self, snapshot_code, mode='client_repo', expand_paths=False, filename_mode=''):
         '''API Function: get_all_paths_from_snapshot(snapshot_code, mode='client_repo', expand_paths=False, filename_mode='')
         
         Get all paths from snapshot
@@ -2780,10 +2780,10 @@ class TacticServerStub(object):
         list - paths
         '''
 
-        return my.server.get_all_paths_from_snapshot(my.ticket, snapshot_code, mode, expand_paths, filename_mode)
+        return self.server.get_all_paths_from_snapshot(self.ticket, snapshot_code, mode, expand_paths, filename_mode)
 
 
-    def get_preallocated_path(my, snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext=''):
+    def get_preallocated_path(self, snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext=''):
         '''API Function: get_preallocated_path(snapshot_code, file_type='main', file_name='', mkdir=True, protocol='client_repo', ext='')
         
         Get the preallocated path for this snapshot.  It assumes that
@@ -2817,27 +2817,27 @@ class TacticServerStub(object):
         it saves time if you get the path and copy it to the final destination first. 
 
         [code]
-        snapshot = my.server.create_snapshot(search_key, context)
+        snapshot = self.server.create_snapshot(search_key, context)
         snapshot_code = snapshot.get('code')
         file_name = 'input_file_name.txt'
         orig_path = 'C:/input_file_name.txt'
-        path = my.server.get_preallocated_path(snapshot_code, file_type, file_name)
+        path = self.server.get_preallocated_path(snapshot_code, file_type, file_name)
 
         # the path where it is supposed to go is generated
         new_dir = os.path.dirname(path)
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
         shutil.copy(orig_path, path)
-        my.server.add_file(snapshot_code, path, file_type, mode='preallocate')
+        self.server.add_file(snapshot_code, path, file_type, mode='preallocate')
         [/code]
            
         '''
-        return my.server.get_preallocated_path(my.ticket, snapshot_code, file_type, file_name, mkdir, protocol, ext)
+        return self.server.get_preallocated_path(self.ticket, snapshot_code, file_type, file_name, mkdir, protocol, ext)
 
 
 
 
-    def get_virtual_snapshot_path(my, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext=''):
+    def get_virtual_snapshot_path(self, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext=''):
         '''API Function: get_virtual_snapshot_path(search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='')
         Create a virtual snapshot and returns a path that this snapshot
         would generate through the naming conventions.  This is most useful
@@ -2876,14 +2876,14 @@ class TacticServerStub(object):
         @return:
             string - path as determined by the naming conventions
         '''
-        return my.server.get_virtual_snapshot_path(my.ticket, search_key, context, snapshot_type, level_key, file_type, file_name, mkdirs, protocol, ext)
+        return self.server.get_virtual_snapshot_path(self.ticket, search_key, context, snapshot_type, level_key, file_type, file_name, mkdirs, protocol, ext)
 
 
 
     # NOTE: this is very specific to the Maya tools and can be considered
     # deprecated
 
-    def get_md5_info(my, md5_list, new_paths, parent_code, texture_cls, file_group_dict, project_code, mode):
+    def get_md5_info(self, md5_list, new_paths, parent_code, texture_cls, file_group_dict, project_code, mode):
         '''API Function: get_md5_info(md5_list, texture_codes, new_paths, parent_code, texture_cls, file_group_dict, project_code)
         Get md5 info for a given list of texture paths, mainly returning if this md5 is a match or not
         @param: 
@@ -2898,12 +2898,12 @@ class TacticServerStub(object):
         @return:
             dictionary - a dictionary of path and a subdictionary of is_match, repo_file_code, repo_path, repo_file_range
         '''
-        return my.server.get_md5_info(my.ticket, md5_list, new_paths, parent_code, texture_cls, file_group_dict, project_code, mode )
+        return self.server.get_md5_info(self.ticket, md5_list, new_paths, parent_code, texture_cls, file_group_dict, project_code, mode )
 
     #
     # UI methods
     #
-    def get_widget(my, class_name, args={}, values={}):
+    def get_widget(self, class_name, args={}, values={}):
         '''API Function: get_widget(class_name, args={}, values={})
         Get a defined widget
 
@@ -2927,11 +2927,11 @@ class TacticServerStub(object):
 
         widget = server.get_widget(class_name, args))
         '''
-        return my.server.get_widget(my.ticket, class_name, args)
+        return self.server.get_widget(self.ticket, class_name, args)
 
 
 
-    def class_exists(my, class_path):
+    def class_exists(self, class_path):
         '''determines if a class exists on the server
        
         @params
@@ -2940,11 +2940,11 @@ class TacticServerStub(object):
         @return
         boolean: true if class exists and can be seen
         '''
-        return my.server.class_exists(my.ticket, class_path)
+        return self.server.class_exists(self.ticket, class_path)
 
 
 
-    def execute_python_script(my, script_path):
+    def execute_python_script(self, script_path):
         '''API Function: execute_python_script(class_name, args={}, values={}) 
         Execute a command
 
@@ -2955,10 +2955,10 @@ class TacticServerStub(object):
         @return:
             dictionary - returned data structure
         '''
-        return my.server.execute_python_script(my.ticket, script_path)
+        return self.server.execute_python_script(self.ticket, script_path)
 
 
-    def execute_cmd(my, class_name, args={}, values={}):
+    def execute_cmd(self, class_name, args={}, values={}):
         '''API Function: execute_cmd(class_name, args={}, values={}) 
         Execute a command
 
@@ -2972,14 +2972,14 @@ class TacticServerStub(object):
         @return:
             string - description of command
         '''
-        return my.server.execute_cmd(my.ticket, class_name, args, values)
+        return self.server.execute_cmd(self.ticket, class_name, args, values)
 
 
 
     #
     # Widget Config methods
     #
-    def get_config_definition(my, search_type, view, element_name, personal=False):
+    def get_config_definition(self, search_type, view, element_name, personal=False):
         '''API Function: get_config_definition(search_type, view, element_name)
         Get the widget configuration definition for an element
 
@@ -2994,9 +2994,9 @@ class TacticServerStub(object):
         @return:
             string - xml of the configuration
         '''
-        return my.server.get_config_definition(my.ticket, search_type, view, element_name, personal)
+        return self.server.get_config_definition(self.ticket, search_type, view, element_name, personal)
 
-    def update_config(my, search_type, view, element_names):
+    def update_config(self, search_type, view, element_names):
         '''API Function: update_config(search_type, view, element_names)
         Update the widget configuration like ordering for a view
 
@@ -3008,9 +3008,9 @@ class TacticServerStub(object):
         @return:
             string - updated config xml snippet
         '''
-        return my.server.update_config(my.ticket, search_type, view, element_names)
+        return self.server.update_config(self.ticket, search_type, view, element_names)
 
-    def add_config_element(my, search_type, view, name, class_name=None, display_options={}, action_class_name=None, action_options={}, element_attrs={},login=None,  unique=True, auto_unique_name=False, auto_unique_view=False):
+    def add_config_element(self, search_type, view, name, class_name=None, display_options={}, action_class_name=None, action_options={}, element_attrs={},login=None,  unique=True, auto_unique_name=False, auto_unique_view=False):
 
         '''API Function: add_config_element(search_type, view, name, class_name=None, display_options={},  action_class_name=None, action_options={}, element_attrs={},login=None,  unique=True, auto_unique_name=False, auto_unique_view=False)
 
@@ -3054,10 +3054,10 @@ class TacticServerStub(object):
         [/code]
 
         '''
-        return my.server.add_config_element(my.ticket, search_type, view, name,\
+        return self.server.add_config_element(self.ticket, search_type, view, name,\
                 class_name, display_options, action_class_name, action_options, element_attrs, login, unique, auto_unique_name, auto_unique_view)
 
-    def _setup(my, protocol="xmlrpc"):
+    def _setup(self, protocol="xmlrpc"):
 
         # if this is being run in the tactic server, have the option
         # to use TACTIC code directly
@@ -3076,32 +3076,32 @@ class TacticServerStub(object):
 
             # set the project
             project_code = Project.get_project_code()
-            my.set_project(project_code)
+            self.set_project(project_code)
 
             # set the ticket
             ticket = security.get_ticket_key()
-            my.set_ticket(ticket)
+            self.set_ticket(ticket)
 
             # set the protocol to local for the api class
             # note ticket has to be set first
-            my.server = ApiXMLRPC()
-            my.server.set_protocol(protocol)
+            self.server = ApiXMLRPC()
+            self.server.set_protocol(protocol)
 
 
             # if server name has already been set, use that one
-            if my.server_name:
-                my.has_server = True
+            if self.server_name:
+                self.has_server = True
                 return
 
             web = WebContainer.get_web()
             if web:
-                my.server_name = web.get_http_host()
-                if my.server_name:
-                    my.has_server = True
+                self.server_name = web.get_http_host()
+                if self.server_name:
+                    self.has_server = True
             else:
                 # else guess that it is localhost
-                my.server_name = "localhost"
-                my.has_server = True
+                self.server_name = "localhost"
+                self.has_server = True
             return
 
 
@@ -3120,9 +3120,9 @@ class TacticServerStub(object):
 
                 # need to scope by user
                 # this is dealt with in get_resource_path already
-                #if not my.login:
-                #    my.login = getpass.getuser()
-                file_path = my.get_resource_path()
+                #if not self.login:
+                #    self.login = getpass.getuser()
+                file_path = self.get_resource_path()
                 if not os.path.exists(file_path):
                     msg = "[%s] does not exist yet.  There is not enough information to authenticate the server. Either set the appropriate environment variables or run get_ticket.py" %file_path
                     raise TacticApiException(msg)
@@ -3142,86 +3142,86 @@ class TacticServerStub(object):
                         continue
                     name, value = line.split("=")
                     if name == "server":
-                        #my.set_server(value)
+                        #self.set_server(value)
                         rc_server = value
                     elif name == "ticket":
-                        #my.set_ticket(value)
+                        #self.set_ticket(value)
                         rc_ticket = value
                     elif name == "project":
-                        #my.set_project(value)
+                        #self.set_project(value)
                         rc_project = value
                     elif name == "login":
-                        #my.set_project(value)
+                        #self.set_project(value)
                         rc_login = value
 
 
                 # these have to be issued in the correct order
                 if rc_server:
-                    my.set_server(rc_server)
+                    self.set_server(rc_server)
                 if rc_project:
-                    my.set_project(rc_project)
+                    self.set_project(rc_project)
                 if rc_ticket:
                     # get the project
-                    project = my.get_project()
+                    project = self.get_project()
                     # set a default if one does not exist
                     if not project:
-                        my.set_project("admin")
-                    my.set_ticket(rc_ticket)
+                        self.set_project("admin")
+                    self.set_ticket(rc_ticket)
                 if rc_login:
-                    my.login = rc_login
+                    self.login = rc_login
 
 
             # override with any environment variables that are set
             if env_server:
-                my.set_server(env_server)
+                self.set_server(env_server)
             if env_project:
-                my.set_project(env_project)
+                self.set_project(env_project)
             if env_user:
                 # try to get a ticket with a set password
-                ticket = my.get_ticket(env_user, env_password)
-                my.set_ticket(ticket)
+                ticket = self.get_ticket(env_user, env_password)
+                self.set_ticket(ticket)
             if env_ticket:
-                my.set_ticket(env_ticket)
+                self.set_ticket(env_ticket)
 
-            #my.server.set_protocol(protocol)
+            #self.server.set_protocol(protocol)
 
 
     #
     # Doc methods
     #
 
-    def get_doc_link(my, alias):
-        return my.server.get_doc_link(my.ticket, alias);
+    def get_doc_link(self, alias):
+        return self.server.get_doc_link(self.ticket, alias);
 
 
 
     #
     # API/Server Version functions
     #
-    def get_release_version(my):
+    def get_release_version(self):
         # DEPRECATED
         print "WARNING: Deprecated function 'get_release_version'"
-        return my.server.get_release_version(my.ticket)
+        return self.server.get_release_version(self.ticket)
 
-    def get_server_version(my):
+    def get_server_version(self):
         '''API Function: get_server_version()
         
         @return: 
             string - server version'''
-        return my.server.get_server_version(my.ticket)
+        return self.server.get_server_version(self.ticket)
 
 
-    def get_server_api_version(my):
+    def get_server_api_version(self):
         '''API Function: get_server_api_version()
         
         @return: 
             string - server API version'''
-        version = my.server.get_server_api_version(my.ticket)
+        version = self.server.get_server_api_version(self.ticket)
         return version
 
 
 
-    def get_client_version(my):
+    def get_client_version(self):
         '''API Function: get_client_version()
         
         @return: 
@@ -3245,7 +3245,7 @@ class TacticServerStub(object):
         return version
 
 
-    def get_client_api_version(my):
+    def get_client_api_version(self):
         '''API Function: get_client_api_version()
         
         @return: 
@@ -3313,23 +3313,23 @@ class TacticServerStub(object):
 
 
 class Command(object):
-    def get_description(my):
+    def get_description(self):
         return "No description"
 
-    def execute_cmd(my):
-        my.server = TacticServerStub()
-        my.server.start(my.get_description())
+    def execute_cmd(self):
+        self.server = TacticServerStub()
+        self.server.start(self.get_description())
         try:
-            my.execute()
+            self.execute()
         except Exception, e:
-            my.server.abort()
+            self.server.abort()
             raise
         else:
-            my.server.finish()
+            self.server.finish()
 
 
-    def execute(my):
-        my.execute()
+    def execute(self):
+        self.execute()
 
 
 
@@ -3340,8 +3340,8 @@ class Search(object):
 
 
 class SObject(dict):
-    def get_search_key(my):
-        return my['__search_key__']
+    def get_search_key(self):
+        return self['__search_key__']
 
 
 

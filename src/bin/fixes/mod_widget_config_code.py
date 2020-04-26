@@ -10,7 +10,7 @@ from pyasm.search import Search
 
 class ModCodeCmd(Command):
 
-    def execute(my):
+    def execute(self):
 
         search = Search('config/widget_config')
         sobjects = search.get_sobjects()
@@ -28,7 +28,7 @@ class ModCodeCmd(Command):
             sobject.set_value("code", new_code )
             sobject.commit(triggers=False)
 
-        my.add_description('Batch-update widget config code')
+        self.add_description('Batch-update widget config code')
 
 if __name__ == '__main__':
     

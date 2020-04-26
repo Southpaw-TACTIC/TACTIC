@@ -67,30 +67,30 @@ class AppShotPanelWdg(BaseRefreshWdg):
     }
     
 
-    def init(my):
-        my.view = my.kwargs.get('view')
-        my.simple_search_view = my.kwargs.get('simple_search_view')
-        my.search_type = my.kwargs.get('search_type')
-        my.asset_search_type = my.kwargs.get('asset_search_type')
-        if not my.asset_search_type:
-            my.asset_search_type = 'prod/asset'
-        my.instance_search_type = my.kwargs.get('instance_search_type')
-        if not my.instance_search_type:
-            my.instance_search_type = 'prod/shot_instance'
+    def init(self):
+        self.view = self.kwargs.get('view')
+        self.simple_search_view = self.kwargs.get('simple_search_view')
+        self.search_type = self.kwargs.get('search_type')
+        self.asset_search_type = self.kwargs.get('asset_search_type')
+        if not self.asset_search_type:
+            self.asset_search_type = 'prod/asset'
+        self.instance_search_type = self.kwargs.get('instance_search_type')
+        if not self.instance_search_type:
+            self.instance_search_type = 'prod/shot_instance'
 
-        #my.load_script = my.kwargs.get('load_script')
-        #my.load_script_path = my.kwargs.get('load_script_path')
-        my.is_refresh = my.kwargs.get('is_refresh')=='true'
-        my.state = Container.get_full_dict("global_state")
-        my.process = my.state.get("process")
+        #self.load_script = self.kwargs.get('load_script')
+        #self.load_script_path = self.kwargs.get('load_script_path')
+        self.is_refresh = self.kwargs.get('is_refresh')=='true'
+        self.state = Container.get_full_dict("global_state")
+        self.process = self.state.get("process")
 
         values = FilterData.get().get_values_by_index('shot_filter', 0)
-        my.shot_code = values.get('shot_code')
-        #my.shot_code = None
+        self.shot_code = values.get('shot_code')
+        #self.shot_code = None
     
    
 
-    def get_display(my):
+    def get_display(self):
 
         # just refresh the whole thing 
         widget = DivWdg()
@@ -102,18 +102,18 @@ class AppShotPanelWdg(BaseRefreshWdg):
             'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)',
             'override_class_name': 'tactic.ui.cgapp.AppShotPanelWdg',
             'override_target': 'bvr.src_el.getParent(".spt_app_shot_panel")',
-            'extra_args': {'instance_search_type': my.instance_search_type,
-                        'asset_search_type': my.asset_search_type}
+            'extra_args': {'instance_search_type': self.instance_search_type,
+                        'asset_search_type': self.asset_search_type}
             #'panel_id':     'main_body_search'
             
         }
 
         # WARNING: this is made just for main search box and  won't be compatible with the simple search wdg
-        search_wdg = SearchWdg(search_type=my.search_type, custom_search_view='search_shot_loader', parent_key='', filter=''\
+        search_wdg = SearchWdg(search_type=self.search_type, custom_search_view='search_shot_loader', parent_key='', filter=''\
             , display='block', custom_filter_view='', state=None, run_search_bvr=search_bvr)
 
         #from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        #search_wdg = SimpleSearchWdg(search_type=my.search_type, search_view=my.simple_search_view, state=None, run_search_bvr=search_bvr)
+        #search_wdg = SimpleSearchWdg(search_type=self.search_type, search_view=self.simple_search_view, state=None, run_search_bvr=search_bvr)
         search_div.add( HtmlElement.spacer_div(1,10) )
         search_div.add(search_wdg)
 
@@ -122,17 +122,17 @@ class AppShotPanelWdg(BaseRefreshWdg):
         shots = search.get_sobjects()
 
         # avoid getting a shot when no shot is selected
-        if not my.shot_code and len(shots) == 1:
-            my.shot_code = shots[0].get_code()
+        if not self.shot_code and len(shots) == 1:
+            self.shot_code = shots[0].get_code()
         
         outer_widget.add(search_div)
 
-        my.set_as_panel(outer_widget, class_name='spt_panel spt_view_panel spt_app_shot_panel')
+        self.set_as_panel(outer_widget, class_name='spt_panel spt_view_panel spt_app_shot_panel')
         #show_shot_panel = False
         #if show_shot_panel:
-        panel = ViewPanelWdg( search_type=my.search_type, \
-                 inline_search=True, show_search='false', show_refresh='false', view=my.view, \
-                run_search_bvr=search_bvr, simple_search_view=my.simple_search_view)
+        panel = ViewPanelWdg( search_type=self.search_type, \
+                 inline_search=True, show_search='false', show_refresh='false', view=self.view, \
+                run_search_bvr=search_bvr, simple_search_view=self.simple_search_view)
         panel.set_sobjects(shots)
 
         widget.add(panel)
@@ -140,9 +140,9 @@ class AppShotPanelWdg(BaseRefreshWdg):
         show_instances_in_shot = ProdSetting.get_value_by_key("show_instances_in_shot_panel")
         if show_instances_in_shot != "false":
 
-            widget.add(HtmlElement.h3("Asset Instances in Shot [%s]" %my.shot_code))
+            widget.add(HtmlElement.h3("Asset Instances in Shot [%s]" %self.shot_code))
             widget.add(HtmlElement.br(2))
-            asset_inst_panel = AppAssetInstancePanelWdg(search_type=my.search_type, instance_search_type=my.instance_search_type, asset_search_type=my.asset_search_type, shot_code=my.shot_code, show_search='false')
+            asset_inst_panel = AppAssetInstancePanelWdg(search_type=self.search_type, instance_search_type=self.instance_search_type, asset_search_type=self.asset_search_type, shot_code=self.shot_code, show_search='false')
             widget.add(asset_inst_panel)
         outer_widget.add(widget)
         return outer_widget
@@ -190,31 +190,31 @@ class AppAssetInstancePanelWdg(BaseRefreshWdg):
     }
    
 
-    def init(my):
-        shot_code = my.kwargs.get('shot_code')
-        my.search_type = my.kwargs.get('search_type')
-        my.asset_search_type = my.kwargs.get('asset_search_type')
-        my.instance_search_type = my.kwargs.get('instance_search_type')
+    def init(self):
+        shot_code = self.kwargs.get('shot_code')
+        self.search_type = self.kwargs.get('search_type')
+        self.asset_search_type = self.kwargs.get('asset_search_type')
+        self.instance_search_type = self.kwargs.get('instance_search_type')
        
             #shot_code = web.get_form_value('shot_code')
-        my.shot = None
+        self.shot = None
         if shot_code:
-            search = Search(my.search_type)
+            search = Search(self.search_type)
             search.add_filter('code', shot_code)
-            my.shot = search.get_sobject()
+            self.shot = search.get_sobject()
 
-        my.show_search = my.kwargs.get('show_search') != 'false'
+        self.show_search = self.kwargs.get('show_search') != 'false'
 
-        my.is_refresh = my.kwargs.get('is_refresh')=='true'
+        self.is_refresh = self.kwargs.get('is_refresh')=='true'
     
-    def get_display(my):
+    def get_display(self):
         
         widget = DivWdg()
-        my.set_as_panel(widget, class_name='spt_view_panel spt_panel spt_app_asset_inst_panel')
+        self.set_as_panel(widget, class_name='spt_view_panel spt_panel spt_app_asset_inst_panel')
         
-        parent_search_type= my.search_type
+        parent_search_type= self.search_type
         
-        if my.show_search:
+        if self.show_search:
             # Have to limit this search to just its parent.. cuz if the target is prod/shot_instance
             # and its parent search is ShotFilterWdg, it's hard to isolate what shot has been selected
             search_bvr = {
@@ -234,24 +234,24 @@ class AppAssetInstancePanelWdg(BaseRefreshWdg):
             search = search_wdg.get_search()
             shots = search.get_sobjects()
             
-            if not my.shot and len(shots) == 1:
-                my.shot= shots[0]
+            if not self.shot and len(shots) == 1:
+                self.shot= shots[0]
 
         # create the asset table
         table_id = "main_body_asset_instance_table" 
               
-        if not my.shot:
+        if not self.shot:
             return widget
         # get any parent shots
-        parent_code = my.shot.get_value("parent_code")
-        shot_code = my.shot.get_code()
+        parent_code = self.shot.get_value("parent_code")
+        shot_code = self.shot.get_code()
 
         # add the search make sure set elements are not shown
-        search = Search(my.instance_search_type)
+        search = Search(self.instance_search_type)
         if parent_code != "":
-            search.add_filters(my.shot.get_foreign_key(), [shot_code,parent_code] )
+            search.add_filters(self.shot.get_foreign_key(), [shot_code,parent_code] )
         else:
-            search.add_filter(my.shot.get_foreign_key(), shot_code )
+            search.add_filter(self.shot.get_foreign_key(), shot_code )
 
         search.add_where("\"type\" in ('set_item', 'asset')")
         search.add_order_by('asset_code')
@@ -271,12 +271,12 @@ class AppAssetInstancePanelWdg(BaseRefreshWdg):
         # TODO: just add asset name to the ShotInstance table
         # get the original asset names
 
-        aux_data = ShotInstance.get_aux_data(top_instances, my.asset_search_type)
+        aux_data = ShotInstance.get_aux_data(top_instances, self.asset_search_type)
 
         values = FilterData.get().get_values_by_index('view_action_option', 0)
         state = {}
         
-        if not my.show_search:
+        if not self.show_search:
             if values:
                 state['process'] = values.get('load_%s_process'% parent_search_type)
             else:
@@ -286,13 +286,13 @@ class AppAssetInstancePanelWdg(BaseRefreshWdg):
         Container.put("global_state", state)
         
         from tactic.ui.cgapp import CGAppLoaderWdg
-        cg_wdg = CGAppLoaderWdg(view='load', search_type=my.instance_search_type)
+        cg_wdg = CGAppLoaderWdg(view='load', search_type=self.instance_search_type)
         widget.add(cg_wdg)
 
         if not top_instances:
             widget.add('No Asset Instances in Shot.')
         else:
-            asset_table = TableLayoutWdg(table_id = table_id, search_type=my.instance_search_type,\
+            asset_table = TableLayoutWdg(table_id = table_id, search_type=self.instance_search_type,\
                 view="load", inline_search=False, aux_info = aux_data, mode='simple')
 
             #asset_table = ViewPanelWdg( search_type=search_type,  inline_search=False, \
@@ -303,10 +303,10 @@ class AppAssetInstancePanelWdg(BaseRefreshWdg):
 
             shot_inst_names = [inst.get_code() for inst in instances]
             
-            my.add_unassigned_instances(widget, shot_inst_names)
+            self.add_unassigned_instances(widget, shot_inst_names)
         return widget
 
-    def add_unassigned_instances(my, widget, shot_inst_names):
+    def add_unassigned_instances(self, widget, shot_inst_names):
         ''' add the unassigned instances into a SwapDisplayWdg '''
         info = []
         session = SessionContents.get()

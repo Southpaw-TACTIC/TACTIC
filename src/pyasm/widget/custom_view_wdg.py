@@ -34,42 +34,42 @@ def get_template_view():
 class CustomViewWdg(Widget):
 
     '''Provides the ability to create custom view for sobjects'''
-    def __init__(my, search_type):
-        my.search_type = search_type
-        my.mode = "admin"
-        super(CustomViewWdg,my).__init__()
+    def __init__(self, search_type):
+        self.search_type = search_type
+        self.mode = "admin"
+        super(CustomViewWdg,self).__init__()
 
-    def set_mode(my, mode):
-        my.mode = mode
+    def set_mode(self, mode):
+        self.mode = mode
 
 
-    def get_display(my):
-        if not my.search_type:
+    def get_display(self):
+        if not self.search_type:
             return "No search type found"
 
         web = WebContainer.get_web()
-        my.view = web.get_form_value("view")
-        if not my.view:
-            my.view = web.get_form_value("filter|view")
-        if not my.view:
-            my.view = get_template_view()
+        self.view = web.get_form_value("view")
+        if not self.view:
+            self.view = web.get_form_value("filter|view")
+        if not self.view:
+            self.view = get_template_view()
 
         widget = Widget()
 
-        widget.add( HiddenWdg("search_type", my.search_type) )
+        widget.add( HiddenWdg("search_type", self.search_type) )
 
         element_names = []
 
         # see if there is an override
-        search_type_obj = SearchType.get(my.search_type)  
-        config = WidgetConfigView.get_by_search_type(my.search_type,"browser_list")
+        search_type_obj = SearchType.get(self.search_type)  
+        config = WidgetConfigView.get_by_search_type(self.search_type,"browser_list")
         if config:
             element_names = config.get_element_names()
 
 
         search = Search("sthpw/widget_config")
-        search.add_filter("search_type", my.search_type)
-        search.add_filter("view", my.view)
+        search.add_filter("search_type", self.search_type)
+        search.add_filter("view", self.view)
         widget_config = search.get_sobject()
         if widget_config:
             edit_link_wdg = EditLinkWdg("sthpw/widget_config", widget_config.get_id(), text="Edit XML", long=True)
@@ -77,13 +77,13 @@ class CustomViewWdg(Widget):
             widget.add(edit_link_wdg)
 
 
-        custom_config = WidgetConfigView.get_by_search_type(my.search_type,my.view)
+        custom_config = WidgetConfigView.get_by_search_type(self.search_type,self.view)
         custom_element_names = custom_config.get_element_names()
 
 
         # get the custom properties
         search = Search("prod/custom_property")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         custom_properties = search.get_sobjects()
 
 
@@ -110,7 +110,7 @@ class CustomViewWdg(Widget):
 
         # get all of the columns
         else:
-            search_type_obj = SearchType.get(my.search_type)
+            search_type_obj = SearchType.get(self.search_type)
             element_names = search_type_obj.get_columns()
 
             for element_name in element_names:
@@ -118,7 +118,7 @@ class CustomViewWdg(Widget):
                     action_popup.add( " %s" % element_name, "add|%s" % element_name )
 
             # add some standard properties
-            if my.view in ["edit", "insert"]:
+            if self.view in ["edit", "insert"]:
                 for element_name in PREDEFINED_EDIT_ELEMENTS:
                     if element_name not in custom_element_names:
                         action_popup.add( " %s" % element_name, "add|%s" % element_name )
@@ -137,8 +137,8 @@ class CustomViewWdg(Widget):
         iframe = WebContainer.get_iframe()
         url = WebContainer.get_web().get_widget_url()
         url.set_option("widget", "pyasm.widget.CustomAddPropertyWdg")
-        url.set_option("search_type", my.search_type)
-        url.set_option("view", my.view)
+        url.set_option("search_type", self.search_type)
+        url.set_option("view", self.view)
         action = iframe.get_on_script(url.to_string() )
         span.add_event("onclick", action)
         action_popup.add( span )
@@ -161,15 +161,15 @@ class CustomViewWdg(Widget):
         #widget.add(save)
 
         # add the add property button
-        if my.mode == "admin":
-            add = CustomAddPropertyLinkWdg(my.search_type, my.view)
+        if self.mode == "admin":
+            add = CustomAddPropertyLinkWdg(self.search_type, self.view)
             widget.add(add)
-            #add_element = CustomAddElementLinkWdg(my.search_type, my.view)
+            #add_element = CustomAddElementLinkWdg(self.search_type, self.view)
             #widget.add(add_element)
 
 
         # add the clear button
-        if my.mode == "admin" or my.view.startswith("custom_"):
+        if self.mode == "admin" or self.view.startswith("custom_"):
             clear = IconSubmitWdg("Clear", IconWdg.DELETE, True)
             widget.add(clear)
 
@@ -185,10 +185,10 @@ class CustomViewWdg(Widget):
 
 class CustomViewAction(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Custom View"
 
-    def execute(my):
+    def execute(self):
 
         web = WebContainer.get_web()
         actions = web.get_form_values("table_action_hidden")
@@ -253,7 +253,7 @@ class CustomViewAction(Command):
                 #edit_config.append_display_element(elem_name)
                 #edit_config.commit_config()
 
-                my.description = "Added [%s] to [%s] view" % (elem_name, view)
+                self.description = "Added [%s] to [%s] view" % (elem_name, view)
 
             elif action == "remove":
                 elem_name = parts[1]
@@ -263,7 +263,7 @@ class CustomViewAction(Command):
                 #edit_config.remove_display_element(elem_name)
                 #edit_config.commit_config()
 
-                my.description = "Removed [%s] from [%s] view" % (elem_name, view)
+                self.description = "Removed [%s] from [%s] view" % (elem_name, view)
 
             elif action == "clear":
                 config.clear()
@@ -271,20 +271,20 @@ class CustomViewAction(Command):
 
                 # TODO: not sure what to do about the edit config on clear??
 
-                my.description = "Cleared view [%s]" % (view)
+                self.description = "Cleared view [%s]" % (view)
 
 
             elif action == "move_left":
                 elem_name = parts[1]
                 config.move_element_left(elem_name)
                 config.commit_config()
-                my.description = "Removed [%s] to the left" % elem_name
+                self.description = "Removed [%s] to the left" % elem_name
 
             elif action == "move_right":
                 elem_name = parts[1]
                 config.move_element_right(elem_name)
                 config.commit_config()
-                my.description = "Removed [%s] to the right" % elem_name
+                self.description = "Removed [%s] to the right" % elem_name
 
 
             elif action == "order_by":
@@ -293,7 +293,7 @@ class CustomViewAction(Command):
 
 
 class CustomAddPropertyWdg(BaseInputWdg):
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         if web.get_form_value("Insert/Exit"):
@@ -327,12 +327,12 @@ class CustomAddPropertyWdg(BaseInputWdg):
         # show current custom
         widget.add("<h3>Add Property for [%s]</h3>" % search_type)
 
-        widget.add( my.get_new_custom_widget(view) )
+        widget.add( self.get_new_custom_widget(view) )
 
         return widget
 
 
-    def get_new_custom_widget(my, view):
+    def get_new_custom_widget(self, view):
 
         custom_table = Table(css="table")
         name_text = TextWdg("new_custom_name")
@@ -453,10 +453,10 @@ class CustomAddPropertyWdg(BaseInputWdg):
 
 class CustomAddPropertyCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Custom Add Property"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         if not web.get_form_value("Insert/Next") and not web.get_form_value("Insert/Exit"):
             return
@@ -546,13 +546,13 @@ class CustomAddPropertyCbk(Command):
         sobject.commit()
 
 
-        my.description = "Added Property [%s] of type [%s] to [%s]" % \
+        self.description = "Added Property [%s] of type [%s] to [%s]" % \
             (name, type, search_type)
 
 
 
 class CustomAddElementWdg(BaseInputWdg):
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         if web.get_form_value("Insert/Exit"):
@@ -586,12 +586,12 @@ class CustomAddElementWdg(BaseInputWdg):
         # show current custom
         widget.add("<h3>Add Element for [%s]</h3>" % search_type)
 
-        widget.add( my.get_new_custom_widget(view) )
+        widget.add( self.get_new_custom_widget(view) )
 
         return widget
 
 
-    def get_new_custom_widget(my, view):
+    def get_new_custom_widget(self, view):
 
         custom_table = Table(css="table")
         name_text = TextWdg("new_custom_name")
@@ -711,10 +711,10 @@ class CustomAddElementWdg(BaseInputWdg):
 
 class CustomCreateViewCbk(Command):
 
-    def get_title(my):
+    def get_title(self):
         return "Custom Create View"
 
-    def execute(my):
+    def execute(self):
         web = WebContainer.get_web()
         view = web.get_form_value("create_view_name")
         if not view:
@@ -767,12 +767,12 @@ class CustomCreateViewCbk(Command):
             if not edit_config:
                 edit_config = WidgetDbConfig.create(search_type, "edit") 
 
-        my.description = "Created view [%s] for search_type [%s]" % (view, search_type)
+        self.description = "Created view [%s] for search_type [%s]" % (view, search_type)
 
 class CsvDownloadWdg(BaseRefreshWdg):
     '''Dynamically generates a csv file to download'''
 
-    def get_args_keys(my):
+    def get_args_keys(self):
         return {'table_id': 'Table Id', 'search_type': 'Search Type', \
                 'close_cbfn': 'Cbk function', \
                 'view': 'View of search type',\
@@ -782,32 +782,32 @@ class CsvDownloadWdg(BaseRefreshWdg):
                 'search_type': 'Selected Search Keys',
                 'include_id': 'Include an id in export'}     
 
-    def init(my):
-        my.filename = my.kwargs.get("filename")
-        my.column_names = my.kwargs.get('column_names')
-        my.view = my.kwargs.get('view')
-        my.search_type = my.kwargs.get('search_type')
-        my.close_cbfn = my.kwargs.get('close_cbfn')
-        my.include_id = my.kwargs.get('include_id')
-        my.search_keys = my.kwargs.get('search_keys')
-        #if my.search_keys:
-        #    my.search_keys = my.search_keys.split(',')
+    def init(self):
+        self.filename = self.kwargs.get("filename")
+        self.column_names = self.kwargs.get('column_names')
+        self.view = self.kwargs.get('view')
+        self.search_type = self.kwargs.get('search_type')
+        self.close_cbfn = self.kwargs.get('close_cbfn')
+        self.include_id = self.kwargs.get('include_id')
+        self.search_keys = self.kwargs.get('search_keys')
+        #if self.search_keys:
+        #    self.search_keys = self.search_keys.split(',')
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
       
-        column_names = my.column_names
+        column_names = self.column_names
         column_names = [ x for x in column_names if x ]
         # create the file path
         tmp_dir = web.get_upload_dir()
-        file_path = "%s/%s" % (tmp_dir, my.filename)
+        file_path = "%s/%s" % (tmp_dir, self.filename)
 
         from pyasm.command import CsvExportCmd
-        cmd = CsvExportCmd(my.search_type, my.view, column_names, file_path)
-        if my.search_keys:
-            cmd.set_search_keys(my.search_keys)
+        cmd = CsvExportCmd(self.search_type, self.view, column_names, file_path)
+        if self.search_keys:
+            cmd.set_search_keys(self.search_keys)
 
-        cmd.set_include_id(my.include_id)
+        cmd.set_include_id(self.include_id)
         try:
             cmd.execute()
         except Exception, e:
@@ -818,7 +818,7 @@ class CsvDownloadWdg(BaseRefreshWdg):
 
 class CsvGenerator(Widget):
     ''' A simple class that takes the csv file (filepath) generated and serves it back '''
-    def get_display(my):
+    def get_display(self):
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
         context_dir = web.get_context_dir()
@@ -828,7 +828,7 @@ class CsvGenerator(Widget):
         # set the header properly
         web.set_csv_download(file_path) 
 
-        content = my.get_content(file_path)
+        content = self.get_content(file_path)
         try:
             os.unlink(file_path)
         except IOError, e:
@@ -836,7 +836,7 @@ class CsvGenerator(Widget):
 
         return content
 
-    def get_content(my, file_path):
+    def get_content(self, file_path):
         file = open(file_path)
         content = file.read()
         file.close()
@@ -845,7 +845,7 @@ class CsvGenerator(Widget):
 __all__.append('PicLensRssWdg')
 class PicLensRssWdg(Widget):
     '''Dynamically generates a csv file to download'''
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
 
         search_type = web.get_form_value("search_type")
@@ -913,17 +913,17 @@ class PicLensRssWdg(Widget):
 
 
 class CustomAddPropertyLinkWdg(Widget):
-    def __init__(my, search_type, view):
-        my.search_type = search_type
-        my.view = view
+    def __init__(self, search_type, view):
+        self.search_type = search_type
+        self.view = view
 
-    def get_display(my):
+    def get_display(self):
         # add the add property button
         iframe = WebContainer.get_iframe()
         url = WebContainer.get_web().get_widget_url()
         url.set_option("widget", "pyasm.widget.CustomAddPropertyWdg")
-        url.set_option("search_type", my.search_type)
-        url.set_option("view", my.view)
+        url.set_option("search_type", self.search_type)
+        url.set_option("view", self.view)
         action = iframe.get_on_script(url.to_string() )
         add = IconButtonWdg("Add Property", IconWdg.INSERT, True)
 
@@ -939,33 +939,33 @@ class CustomAddPropertyLinkWdg(Widget):
 
 
 class CustomEditViewPopupWdg(Widget):
-    def __init__(my, search_type, view):
-        my.search_type = search_type
-        my.view = view
-        my.action_popup = PopupMenuWdg("table_action", multi=True, width='11em')
-        super(CustomEditViewPopupWdg,my).__init__()
+    def __init__(self, search_type, view):
+        self.search_type = search_type
+        self.view = view
+        self.action_popup = PopupMenuWdg("table_action", multi=True, width='11em')
+        super(CustomEditViewPopupWdg,self).__init__()
 
-    def get_on_script(my):
-        return my.action_popup.get_on_script()
+    def get_on_script(self):
+        return self.action_popup.get_on_script()
 
-    def get_display(my):
+    def get_display(self):
         web = WebContainer.get_web()
-        if not my.view:
-            my.view = web.get_form_value("view")
-        if not my.view:
-            my.view = get_template_view()
+        if not self.view:
+            self.view = web.get_form_value("view")
+        if not self.view:
+            self.view = get_template_view()
 
         widget = Widget()
-        widget.add( HiddenWdg("search_type", my.search_type) )
+        widget.add( HiddenWdg("search_type", self.search_type) )
 
         # get a list of all of the element names possible
-        search_type_obj = SearchType.get(my.search_type)  
-        config = WidgetConfigView.get_by_search_type(my.search_type,DEFAULT_VIEW)
+        search_type_obj = SearchType.get(self.search_type)  
+        config = WidgetConfigView.get_by_search_type(self.search_type,DEFAULT_VIEW)
         if config:
             element_names = config.get_element_names()
 
         # FIXME: also get those from the default (not sure about this)
-        config = WidgetConfigView.get_by_search_type(my.search_type,"default")
+        config = WidgetConfigView.get_by_search_type(self.search_type,"default")
         if config:
             element_names.extend( config.get_element_names() )
 
@@ -974,7 +974,7 @@ class CustomEditViewPopupWdg(Widget):
 
 
         # get the custom element names from config
-        custom_config = WidgetConfigView.get_by_search_type(my.search_type,my.view)
+        custom_config = WidgetConfigView.get_by_search_type(self.search_type,self.view)
         custom_element_names = custom_config.get_element_names()
 
 
@@ -982,12 +982,12 @@ class CustomEditViewPopupWdg(Widget):
 
         # get the custom properties
         search = Search("prod/custom_property")
-        search.add_filter("search_type", my.search_type)
+        search.add_filter("search_type", self.search_type)
         custom_properties = search.get_sobjects()
 
 
         # action popup
-        action_popup = my.action_popup
+        action_popup = self.action_popup
         action_popup.set_auto_hide(False)
         action_popup.set_submit(False)
         action_popup.add( HtmlElement.href("Add ...", "javascript:document.form.submit()") )
@@ -1003,7 +1003,7 @@ class CustomEditViewPopupWdg(Widget):
                 action_popup.add( " %s" % element_name, "add|%s" % element_name )
 
         # add some standard properties
-        if my.view in ["edit", "insert"]:
+        if self.view in ["edit", "insert"]:
             for element_name in PREDEFINED_EDIT_ELEMENTS:
                 if element_name not in custom_element_names:
                     action_popup.add( " %s" % element_name, "add|%s" % element_name )
@@ -1022,8 +1022,8 @@ class CustomEditViewPopupWdg(Widget):
         iframe = WebContainer.get_iframe()
         url = WebContainer.get_web().get_widget_url()
         url.set_option("widget", "pyasm.widget.CustomAddPropertyWdg")
-        url.set_option("search_type", my.search_type)
-        url.set_option("view", my.view)
+        url.set_option("search_type", self.search_type)
+        url.set_option("view", self.view)
         action = iframe.get_on_script(url.to_string() )
         span.add_event("onclick", action)
         action_popup.add( span )
@@ -1036,17 +1036,17 @@ class CustomEditViewPopupWdg(Widget):
 
 
 class CustomAddElementLinkWdg(Widget):
-    def __init__(my, search_type, view):
-        my.search_type = search_type
-        my.view = view
+    def __init__(self, search_type, view):
+        self.search_type = search_type
+        self.view = view
 
-    def get_display(my):
+    def get_display(self):
         # add the add property button
         iframe = WebContainer.get_iframe()
         url = WebContainer.get_web().get_widget_url()
         url.set_option("widget", "pyasm.widget.CustomAddElementWdg")
-        url.set_option("search_type", my.search_type)
-        url.set_option("view", my.view)
+        url.set_option("search_type", self.search_type)
+        url.set_option("view", self.view)
         action = iframe.get_on_script(url.to_string() )
         add = IconButtonWdg("Add Element", IconWdg.INSERT, True)
 

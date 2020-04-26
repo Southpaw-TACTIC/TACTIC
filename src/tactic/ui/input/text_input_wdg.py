@@ -80,65 +80,84 @@ class TextInputWdg(BaseInputWdg):
 
 
 
-    def set_value(my, value, set_form_value=False):
-        my.text.set_value(value, set_form_value=set_form_value)
+    def set_value(self, value, set_form_value=False):
+        self.text.set_value(value, set_form_value=set_form_value)
 
-    def get_value(my):
-        return my.text.get_value()
+    def get_value(self):
+        return self.text.get_value()
  
  
-    def add_behavior(my, behavior):
-        my.text.add_behavior(behavior)
+    def add_behavior(self, behavior):
+        self.text.add_behavior(behavior)
  
  
-    def get_text(my):
-        return my.text
+    def get_text(self):
+        return self.text
+
+
+    def get_input_group_wdg(self):
+        input_group = DivWdg()
+        input_group.add_style("width: %s" % self.width)
+        input_group.add_style("height: %s" % self.height)
+        input_group.add_style("margin-right: 5px")
+
+        return input_group
  
 
-    def __init__(my, **kwargs):
-        my.kwargs = kwargs
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-        my.name = my.kwargs.get("name")
-        name = my.name
+        self.name = self.kwargs.get("name")
+        name = self.name
 
-        my.password = kwargs.get("password")
-        if my.password in [True, 'true']:
-            my.password = True
+        self.password = kwargs.get("password")
+        if self.password in [True, 'true']:
+            self.password = True
 
-        if my.password:
-            my.text = PasswordWdg(name)
+        input_type = kwargs.get("type")
+
+        if self.password:
+            self.text = PasswordWdg(name)
+        elif input_type:
+            self.text = TextWdg(name)
+            self.text.set_option("type", input_type)
         else:
-            my.text = TextWdg(name)
+            self.text = TextWdg(name)
 
-        my.text.set_attr('autocomplete','off')
+        self.text.set_attr('autocomplete','off')
+
+        ignore = self.kwargs.get("ignore")
+        if ignore in [True, 'true']:
+            self.text.remove_class("spt_input")
+
 
         class_name = kwargs.get("class")
         if class_name:
-            my.text.add_class(class_name)
+            self.text.add_class(class_name)
 
-        my.readonly = kwargs.get("read_only")
-        if my.readonly in [True, 'true']:
-            my.set_readonly(True)
-            bgcolor = my.text.add_color("background", "background", [-10, -10, -10])
+        self.readonly = kwargs.get("read_only")
+        if self.readonly in [True, 'true']:
+            self.set_readonly(True)
+            bgcolor = self.text.add_color("background", "background", [-10, -10, -10])
         else:
-            my.readonly = False
-            bgcolor = my.text.get_color("background")
-            my.text.add_style("background", bgcolor)
+            self.readonly = False
+            bgcolor = self.text.get_color("background")
+            self.text.add_style("background", bgcolor)
 
-        my.icon_wdg = SpanWdg()
-
-
-        my.border_color = my.text.get_color("border")
-
-        my.text.add_class("spt_text_input")
-        #my.text.add_style("padding: 4px")
+        self.icon_wdg = SpanWdg()
 
 
-        bgcolor2 = my.text.get_color("background", -10)
-        if not my.readonly:
+        self.border_color = self.text.get_color("border")
+
+        self.text.add_class("spt_text_input")
+        #self.text.add_style("padding: 4px")
+
+
+        bgcolor2 = self.text.get_color("background", -10)
+        if not self.readonly:
 
             # TODO: replace with bootstrap error classes
-            my.text.add_behavior( {
+            self.text.add_behavior( {
                 'type': 'blur',
                 'bgcolor': bgcolor,
                 'bgcolor2': bgcolor2,
@@ -153,7 +172,7 @@ class TextInputWdg(BaseInputWdg):
                     bvr.src_el.setStyle("background", bvr.bgcolor);
                 }
                 else if (!last_value && last_value != value) {
-                    bvr.src_el.setStyle("background", bvr.bgcolor2);
+                    //bvr.src_el.setStyle("background", bvr.bgcolor2);
                 }
                 else {
                     bvr.src_el.setStyle("background", bvr.bgcolor);
@@ -166,44 +185,78 @@ class TextInputWdg(BaseInputWdg):
                     spt.input.set_error(bvr.src_el);
                 '''
                 } )
+
+
+        custom_cbk = self.kwargs.get("custom_cbk")
+        if custom_cbk:
+            self.text.add_behavior( {
+                'type': 'keyup',
+                'custom': custom_cbk,
+                'cbjs_action': '''
+                var key = evt.key;
+                var custom;
+                try {
+                    if (key == 'enter') {
+                        var custom = bvr.custom.enter;
+                    } else if (key == 'tab') {
+                        var custom = bvr.custom.tab;
+                    }
+
+                    if (custom) {
+                        eval(custom);
+                    }
+ 
+                }
+                catch(e) {
+                }
+                '''
+            } )
+
+
+        onblur = self.kwargs.get("onblur")
+        if onblur:
+            self.text.add_behavior( {
+                'type': 'blur',
+                'cbjs_action': onblur
+            } )
  
        
-        my.top = DivWdg()
+        self.top = DivWdg()
 
 
 
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if height:
             height = height.replace("px", "")
             height = int(height)
         else:
             height = 35
 
-        my.height = height
+        self.height = height
 
 
-        super(TextInputWdg, my).__init__()
+        super(TextInputWdg, self).__init__()
 
-        my.icon = my.kwargs.get("icon")
-        my.icon_pos = my.kwargs.get("icon_pos")
-        if not my.icon_pos:
-            my.icon_pos = "left"
-        if my.icon:
-            my.icon_div = DivWdg()
+        self.icon = self.kwargs.get("icon")
+        self.icon_pos = self.kwargs.get("icon_pos")
+        if not self.icon_pos:
+            self.icon_pos = "left"
+        if self.icon:
+            self.icon_div = DivWdg()
 
 
-        my.width = my.kwargs.get("width")
-        if not my.width:
-            my.width = 230
+        self.width = self.kwargs.get("width")
+        if not self.width:
+            self.width = 230
         else:
-            my.width = str(my.width).replace("px", "")
-            if not my.width.endswith("%"):
-                my.width = int(my.width)
+            self.width = str(self.width).replace("px", "")
+            if not self.width.endswith("%"):
+                self.width = int(self.width)
 
-        my.text.add_style("width: %s" % my.width)
+        self.text.add_style("width: %s" % self.width)
 
 
-    def add_style(my, name, value=None):
+    def add_style(self, name, value=None):
         if not name:
             return
 
@@ -211,46 +264,46 @@ class TextInputWdg(BaseInputWdg):
             name, value = re.split(":\ ?", name)
 
         if name == 'width':
-            my.width = value
-            my.text.add_style(name, value)
+            self.width = value
+            self.text.add_style(name, value)
         elif name == 'float':
-            my.top.add_style(name, value)
+            self.top.add_style(name, value)
         else:
-            my.text.add_style(name, value)
+            self.text.add_style(name, value)
 
 
-    def add_behavior(my, behavior):
-        my.text.add_behavior(behavior)
+    def add_behavior(self, behavior):
+        self.text.add_behavior(behavior)
 
 
-    def get_icon_wdg(my):
-        return my.icon_wdg
+    def get_icon_wdg(self):
+        return self.icon_wdg
 
 
 
 
 
-    def set_readonly(my, flag=True):
-        my.readonly = flag
-        my.text.set_attr("readonly", "readonly")
+    def set_readonly(self, flag=True):
+        self.readonly = flag
+        self.text.set_attr("readonly", "readonly")
 
-    def add_class(my, class_name):
-        my.text.add_class(class_name)
+    def add_class(self, class_name):
+        self.text.add_class(class_name)
 
-    def add_color(my, name, palette_key, modifier=0, default=None):
-        my.text.add_color(name, palette_key, modifier, default)
+    def add_color(self, name, palette_key, modifier=0, default=None):
+        self.text.add_color(name, palette_key, modifier, default)
 
-    def set_attr(my, name, value):
-        my.text.set_attr(name, value)
+    def set_attr(self, name, value):
+        self.text.set_attr(name, value)
 
-    def set_value(my, value, set_form_value=False):
-        my.text.set_value(value, set_form_value=set_form_value)
+    def set_value(self, value, set_form_value=False):
+        self.text.set_value(value, set_form_value=set_form_value)
 
-    def set_name(my, name):
-        my.name = name
-        my.text.set_name(name)
+    def set_name(self, name):
+        self.name = name
+        self.text.set_name(name)
 
-    def is_datetime_col(my, sobject, name):
+    def is_datetime_col(self, sobject, name):
         '''get_column_info call datetime as timestamp, which is the time tactic_type'''
         tactic_type = SearchType.get_tactic_type(sobject.get_search_type(), name)
         if tactic_type == 'time':
@@ -258,24 +311,24 @@ class TextInputWdg(BaseInputWdg):
         else:
             return False
 
-    def fill_data(my):
+    def fill_data(self):
 
-        if not my.name:
-            my.name = my.kwargs.get("name")
-        name = my.get_input_name()
-        my.text.set_name(name)
-        value = my.kwargs.get("value")
+        if not self.name:
+            self.name = self.kwargs.get("name")
+        name = self.get_input_name()
+        self.text.set_name(name)
+        value = self.kwargs.get("value")
         # value always overrides
         if value:
-             my.text.set_value(value)
+             self.text.set_value(value)
              return
 
         # fill in the values
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         
-        if search_key and search_key != "None" or my.sobjects:
-            if my.sobjects:
-                sobject = my.sobjects[0]
+        if search_key and search_key != "None" or self.sobjects:
+            if self.sobjects:
+                sobject = self.sobjects[0]
             else:
                 sobject = Search.get_by_search_key(search_key)
 
@@ -283,41 +336,41 @@ class TextInputWdg(BaseInputWdg):
             # look at the current sobject for the data
                 display = ""
                 if not sobject.is_insert():
-                    column = my.kwargs.get("column")
+                    column = self.kwargs.get("column")
                     if not column:
-                        column = my.name
+                        column = self.name
                     
                     display = sobject.get_value(column, no_exception=True)
-                if display and my.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
+                if display and self.is_datetime_col(sobject, column) and not SObject.is_day_column(column):
                     display = SPTDate.convert_to_local(display)
                     
                 if isinstance(display, str):
                     # this could be slow, but remove bad characters
                     display = unicode(display, errors='ignore').encode('utf-8')
 
-                format_str = my.get_option("display_format")
+                format_str = self.get_option("display_format")
                 if format_str:
                     format = FormatValue()
                     display = format.get_format_value( display, format_str )
-                my.text.set_value(display)
+                self.text.set_value(display)
 
-        default = my.kwargs.get("default")
-        if default and not my.text.value:
-            my.text.set_value(default)
+        default = self.kwargs.get("default")
+        if default and not self.text.value:
+            self.text.set_value(default)
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        my.fill_data()
+        self.fill_data()
 
-        top = my.top
+        top = self.top
         top.add_style("position: relative")
         top.add_class("spt_text_top")
         top.add_class("spt_input_text_top")
 
 
-        if my.kwargs.get("required") in [True, 'true']:
+        if self.kwargs.get("required") in [True, 'true']:
             required_div = DivWdg("*")
             required_div.add_style("position: absolute")
             required_div.add_style("font-size: 1.0em")
@@ -326,8 +379,8 @@ class TextInputWdg(BaseInputWdg):
             required_div.add_style("margin-left: -10px")
             top.add_class("spt_required")
 
-        validation_js = my.kwargs.get("validation_js")
-        validation_scheme = my.kwargs.get("validation_scheme")
+        validation_js = self.kwargs.get("validation_js")
+        validation_scheme = self.kwargs.get("validation_scheme")
         if validation_js or validation_scheme:
             from tactic.ui.app import ValidationUtil
             if validation_js:
@@ -339,8 +392,8 @@ class TextInputWdg(BaseInputWdg):
             validation_bvr = v_util.get_validation_bvr()
             validation_change_bvr = v_util.get_input_onchange_bvr()
             if validation_bvr:
-                my.text.add_behavior(validation_bvr)
-                my.text.add_behavior(validation_change_bvr)
+                self.text.add_behavior(validation_bvr)
+                self.text.add_behavior(validation_change_bvr)
         
                 #v_div = DivWdg()
                 #v_div.add_class("spt_validation_%s" % name)
@@ -352,15 +405,15 @@ class TextInputWdg(BaseInputWdg):
         else:
             is_admin = False
 
-        search_type = my.kwargs.get("search_type")
+        search_type = self.kwargs.get("search_type")
         # FIXME: this should only show up if asked
-        show_edit = my.kwargs.get("show_edit")
+        show_edit = self.kwargs.get("show_edit")
         if show_edit in [True, 'true']:
             show_edit = True
         else:
             show_edit = False
 
-        if show_edit and is_admin and not my.readonly and search_type:
+        if show_edit and is_admin and not self.readonly and search_type:
             from pyasm.widget import IconButtonWdg
 
             edit_div = DivWdg()
@@ -368,7 +421,7 @@ class TextInputWdg(BaseInputWdg):
             edit_div.add_style("font-size: 18px")
             top.add(edit_div)
             edit_div.add_color("color", "color", [50, 0, 0])
-            edit_div.add_style("margin-left: %s" % my.width)
+            edit_div.add_style("margin-left: %s" % self.width)
 
             try:
                 search_type_obj = SearchType.get(search_type)
@@ -389,8 +442,8 @@ class TextInputWdg(BaseInputWdg):
 
 
 
-            except Exception, e:
-                print "WARNING: ", e
+            except Exception as e:
+                print("WARNING: ", e)
                 icon = IconButtonWdg(name="Error: %s" % str(e), icon=IconWdg.ERROR)
 
             edit_div.add(icon)
@@ -407,67 +460,64 @@ class TextInputWdg(BaseInputWdg):
             div.add(label)
             label_wdg.add_class("control-label")
             label_wdg.add_attr("for", "inputSuccess1")
-            label_wdg.add(my.name)
+            label_wdg.add(self.name)
 
 
-        input_group = DivWdg()
+        input_group = self.get_input_group_wdg()
+
         div.add(input_group)
+        self.text.add_style("height: %s" % self.height)
 
-        input_group.add_style("width: %s" % my.width)
-        input_group.add_style("height: %s" % my.height)
-        input_group.add_style("margin-right: 5px")
-        my.text.add_style("height: %s" % my.height)
+        icon_styles = self.kwargs.get("icon_styles")
+        icon_class = self.kwargs.get("icon_class")
 
-        icon_styles = my.kwargs.get("icon_styles")
-        icon_class = my.kwargs.get("icon_class")
-
-        if my.icon and my.icon_pos == "left":
+        if self.icon and self.icon_pos == "left":
             input_group.add_class("input-group")
-            if isinstance(my.icon, basestring):
-                if len(my.icon) > 1:
-                    icon = IconWdg(title="", icon=my.icon, width=16, opacity=1.0)
+            if isinstance(self.icon, basestring):
+                if len(self.icon) > 1:
+                    icon = IconWdg(title="", icon=self.icon, width=16, opacity=1.0)
                 else:
-                    icon = my.icon
+                    icon = self.icon
             else:
-                icon = my.icon
-            input_group.add(my.icon_wdg)
-            my.icon_wdg.add_class("input-group-addon")
-            my.icon_wdg.add(icon)
+                icon = self.icon
+            input_group.add(self.icon_wdg)
+            self.icon_wdg.add_class("input-group-addon")
+            self.icon_wdg.add(icon)
             if icon_styles:
-                my.icon_wdg.add_styles(icon_styles)
+                self.icon_wdg.add_styles(icon_styles)
             if icon_class:
-                my.icon_wdg.add_class(icon_class)
+                self.icon_wdg.add_class(icon_class)
 
 
-        input_group.add(my.text)
-        my.text.add_class("form-control")
-        my.text.add_style('color', div.get_color('color')) 
-        text_class = my.kwargs.get("text_class")
+        input_group.add(self.text)
+        self.text.add_class("form-control")
+        self.text.add_style('color', div.get_color('color')) 
+        text_class = self.kwargs.get("text_class")
         if text_class:
-            my.text.add_class(text_class)
+            self.text.add_class(text_class)
 
-        if my.icon and my.icon_pos == "right":
+        if self.icon and self.icon_pos == "right":
             input_group.add_class("input-group")
-            if isinstance(my.icon, basestring):
-                if len(my.icon) > 1:
-                    icon = IconWdg(title="", icon=my.icon, width=16, opacity=1.0)
+            if isinstance(self.icon, basestring):
+                if len(self.icon) > 1:
+                    icon = IconWdg(title="", icon=self.icon, width=16, opacity=1.0)
                 else:
-                    icon = my.icon
+                    icon = self.icon
             else:
-                icon = my.icon
-            input_group.add(my.icon_wdg)
-            my.icon_wdg.add_class("input-group-addon")
-            my.icon_wdg.add(icon)
+                icon = self.icon
+            input_group.add(self.icon_wdg)
+            self.icon_wdg.add_class("input-group-addon")
+            self.icon_wdg.add(icon)
             if icon_styles:
-                my.icon_wdg.add_styles(icon_styles)
+                self.icon_wdg.add_styles(icon_styles)
             if icon_class:
-                my.icon_wdg.add_class(icon_class)
+                self.icon_wdg.add_class(icon_class)
 
             # Below is added only for collection search icon
             # Adding the same custom_cbk from Collections to icon click_up
-            is_collection = my.kwargs.get("is_collection")
+            is_collection = self.kwargs.get("is_collection")
             if is_collection:
-                custom_cbk = my.kwargs.get("custom_cbk")
+                custom_cbk = self.kwargs.get("custom_cbk")
                 icon.add_behavior( {
                     'type': 'mouseover',
                     'cbjs_action': '''
@@ -499,7 +549,7 @@ class TextInputWdg(BaseInputWdg):
 
         # Example validation
         """
-        my.text.add_behavior( {
+        self.text.add_behavior( {
             'type': 'blur',
             'cbjs_action': '''
             var value = bvr.src_el.value;
@@ -519,15 +569,15 @@ class TextInputWdg(BaseInputWdg):
         """
 
 
-        default = my.kwargs.get("value")
+        default = self.kwargs.get("value")
         if not default:
-            default = my.kwargs.get("default")
+            default = self.kwargs.get("default")
         if default:
-            my.text.set_value(default)
+            self.text.set_value(default)
 
-        if not my.text.value:
-            hint_text = my.kwargs.get("hint_text")
-            color = my.text.get_color('color')
+        if not self.text.value:
+            hint_text = self.kwargs.get("hint_text")
+            color = self.text.get_color('color')
             # lower the visibility of the hint text according to color of palette
             if color > '#999': 
                 # case where background too dark
@@ -564,17 +614,17 @@ class TextInputWdg(BaseInputWdg):
 
                     ''' % (new_color,new_color,new_color,new_color))
 
-                my.text.add_attr('placeholder', hint_text)
-                my.text.add_style("text-overflow: ellipsis")
-                my.text.add_style("overflow: hidden")
-                my.text.add_style("white-space: nowrap")
+                self.text.add_attr('placeholder', hint_text)
+                self.text.add_style("text-overflow: ellipsis")
+                self.text.add_style("overflow: hidden")
+                self.text.add_style("white-space: nowrap")
 
-        if not my.readonly:
+        if not self.readonly:
             # DISABLE for now
             pass
             """
             icon_wdg = DivWdg()
-            my.text.add(icon_wdg)
+            self.text.add(icon_wdg)
             #icon_wdg.add_style("top: 0px")
             icon_wdg.add_style("float: right")
             icon_wdg.add_style("position: relative")
@@ -608,7 +658,7 @@ class TextInputWdg(BaseInputWdg):
             '''
             })
 
-            if my.password:
+            if self.password:
                 input_type ='password'
             else:
                 input_type = 'text'
@@ -636,14 +686,14 @@ class TextInputWdg(BaseInputWdg):
 
 
 class PasswordInputWdg(TextInputWdg):
-    def __init__(my, **kwargs):
+    def __init__(self, **kwargs):
         kwargs['password'] = True
-        super(PasswordInputWdg, my).__init__(**kwargs)
+        super(PasswordInputWdg, self).__init__(**kwargs)
 
 
-    def set_value(my, value, set_form_value=False):
+    def set_value(self, value, set_form_value=False):
         '''Password handles the value like an attr'''
-        my.text.set_attr('value', value)
+        self.text.set_attr('value', value)
 
 
 
@@ -664,44 +714,55 @@ class LookAheadTextInputWdg(TextInputWdg):
     })
     
 
-    def set_name(my, name):
-        my.name = name
-        my.text.set_name(name)
-        my.hidden.set_name(name)
+    def set_name(self, name):
+        self.name = name
+        self.text.set_name(name)
+        self.hidden.set_name(name)
+
+
+    def get_styles(self):
+
+        styles = HtmlElement.style("")
+
+        return styles
 
 
 
-    def init(my):
-        my.text.add_attr("autocomplete", "off")
+    def init(self):
+        self.text.add_attr("autocomplete", "off")
 
-        my.search_type = my.kwargs.get("search_type")
-        filter_search_type = my.kwargs.get("filter_search_type")
+        self.search_type = self.kwargs.get("search_type")
+        filter_search_type = self.kwargs.get("filter_search_type")
 
         event_name = ''
         if filter_search_type:
             base_st = SearchKey.extract_base_search_type(filter_search_type)
-            event_name = '%s|%s'%(my.RESULT_SELECT_EVENT, base_st) 
+            event_name = '%s|%s'%(self.RESULT_SELECT_EVENT, base_st) 
 
-        if not my.search_type:
-            my.search_type = 'sthpw/sobject_list'
-        column = my.kwargs.get("column")
-        relevant = my.kwargs.get("relevant")
+        if not self.search_type:
+            self.search_type = 'sthpw/sobject_list'
+        column = self.kwargs.get("column")
+        relevant = self.kwargs.get("relevant")
         
         if not column:
             column = 'keywords'
     
-        case_sensitive  = my.kwargs.get("case_sensitive") in ['true',True]
+        case_sensitive  = self.kwargs.get("case_sensitive") in ['true',True]
 
-        value_column = my.kwargs.get("value_column")
-        validate = my.kwargs.get("validate") in ['true', None]
+        value_column = self.kwargs.get("value_column")
+        validate = self.kwargs.get("validate") in ['true', None]
         if not validate:
-            my.top.add_class('spt_no_validate')
+            self.top.add_class('spt_no_validate')
         
-        do_search = my.kwargs.get("do_search")
+        do_search = self.kwargs.get("do_search")
         if not do_search:
             do_search = 'true'
 
-        my.add_behavior( {
+        results_on_blur = self.kwargs.get("results_on_blur")
+        if not results_on_blur:
+            results_on_blur = "none"
+
+        self.add_behavior( {
             'type': 'load',
             'cbjs_action': '''
 spt.text_input = {}
@@ -723,7 +784,7 @@ spt.text_input.run_client_trigger = function(bvr, event_name, display, value) {
 }
     
 // async validate when value_column is defined
-spt.text_input.async_validate = function(src_el, search_type, column, display_value, value_column, kwargs) {
+spt.text_input.async_validate = function(src_el, search_type, column, display_value, value_column, value, kwargs) {
     if (!display_value) 
         return;
     if (!kwargs)  kwargs = {};
@@ -734,21 +795,21 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         spt.text_input.run_client_trigger(bvr2, kwargs.event_name, display_value, kwargs.hidden_value);
         return;
     }
-
     var cbk = function(data) {
         var top = src_el.getParent(".spt_input_text_top");
         var hidden_el = top.getElement(".spt_text_value");
-       
+
         if (!data && data != 0) {
             hidden_el.value = '';
             if (kwargs.validate != false) {
-                src_el.setStyle("background", "#A99");
+                //src_el.setStyle("background", "#A99");
                 src_el.addClass("spt_invalid");
             }
         }
         else {
-            hidden_el.value = data;
+            // This should not attempt to "correct" the data
             src_el.removeClass("spt_invalid");
+            hidden_el.value = data;
         }
 
        // run client trigger
@@ -761,12 +822,21 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
         return;
     }
 
+/*
     if (display_value.test(/"/))
         value_expr = "'" + display_value + "'";
     else
         value_expr = '"' + display_value + '"';
-        
-    var expr = '@GET(' + search_type + '["'  + column +'",' + value_expr + '].' + value_column + ')'; 
+*/
+    value_expr = display_value;
+       
+
+    if (value) {
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "']['" +value_column+ "','" +value+ "'].code)";
+    }
+    else {
+        var expr = "@GET(" +search_type+ "['" +column+ "','" +value_expr+ "'].code)";
+    }
     var kw = {
         single: true,
         cbjs_action: cbk
@@ -785,15 +855,16 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 };
             '''
         } )
-        if not my.readonly:
-            my.text.add_behavior( {
+        if not self.readonly:
+            self.text.add_behavior( {
             'type': 'blur',
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'column': column,
             'value_column': value_column,
             'event_name': event_name,
             'validate': str(validate),
             'do_search': do_search,
+            'results_on_blur': results_on_blur,
             'cbjs_action': '''
           
             // put a delay in here so that a click in the results
@@ -803,7 +874,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             setTimeout( function() {
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
-                el.setStyle("display", "none");
+                el.setStyle("display", bvr.results_on_blur);
 
                 spt.text_input.last_index = 0;
                 spt.text_input.index = -1;
@@ -813,8 +884,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     var hidden_el = top.getElement(".spt_text_value");
                     if (bvr.src_el.value) {
                         var display_value = bvr.src_el.value;
+                        var value = hidden_el.value;
                         var kwargs = {'validate': validate, 'do_search': do_search, 'event_name': bvr.event_name, 'hidden_value': hidden_el.value};
-                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, kwargs);
+                        spt.text_input.async_validate(bvr.src_el, bvr.search_type, bvr.column, display_value, bvr.value_column, value, kwargs);
                     } else {
                         hidden_el.value ='';
                     }
@@ -825,28 +897,27 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
-        my.hidden = HiddenWdg(my.name)
-        #my.hidden = TextWdg(my.name)
-        my.top.add(my.hidden)
-        my.hidden.add_class("spt_text_value")
+        self.hidden = HiddenWdg(self.name)
+        self.top.add(self.hidden)
+        self.hidden.add_class("spt_text_value")
 
 
-        class_name = my.kwargs.get("class")
+        class_name = self.kwargs.get("class")
         if class_name:
-            my.hidden.add_class("%s" % class_name)
-            my.hidden.add_class("%s_value" % class_name)
+            self.hidden.add_class("%s" % class_name)
+            self.hidden.add_class("%s_value" % class_name)
 
 
 
-        if my.readonly:
+        if self.readonly:
             return
 
-        results_class_name = my.kwargs.get("results_class_name")
+        results_class_name = self.kwargs.get("results_class_name")
         if not results_class_name:
             results_class_name = 'tactic.ui.input.TextInputResultsWdg';
 
 
-        custom_cbk = my.kwargs.get("custom_cbk")
+        custom_cbk = self.kwargs.get("custom_cbk")
         if not custom_cbk:
             custom_cbk = {}
 
@@ -872,32 +943,42 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 }
                 spt.tab.set_main_body_tab();
                 spt.tab.add_new("Search", "Search", class_name, kwargs);
-            ''' % (my.search_type, filter_search_type)
+            ''' % (self.search_type, filter_search_type)
         """
  
-        mode = my.kwargs.get("mode")
+        mode = self.kwargs.get("mode")
+        keyword_mode = self.kwargs.get("keyword_mode")
 
-        filters = my.kwargs.get("filters")
-        script_path = my.kwargs.get("script_path")
-        bgcolor = my.text.get_color("background3")
+        filters = self.kwargs.get("filters")
+        script_path = self.kwargs.get("script_path")
+        bgcolor = self.text.get_color("background3")
+
+        postaction = self.kwargs.get("postaction")
+        if not postaction:
+            postaction = self.get_postaction()
+
+        default_show = self.kwargs.get("default_show")
        
 
-        my.top.add_relay_behavior( {
+        self.top.add_relay_behavior( {
             'type': 'keyup',
             'bvr_match_class': "spt_text_input",
             'custom': custom_cbk,
             'do_search': do_search,
-            'search_type': my.search_type,
+            'search_type': self.search_type,
             'filter_search_type': filter_search_type,
             'script_path': script_path,
             'filters': filters,
             'column': column,
             'mode': mode,
+            'keyword_mode': keyword_mode,
             'relevant': relevant,
             'case_sensitive': case_sensitive,
             'value_column': value_column,
             'results_class_name': results_class_name,
             'bg_color': bgcolor,
+            'postaction': postaction,
+            'default_show': default_show,
             'cbjs_action': '''
             var key = evt.key;
             try {
@@ -957,7 +1038,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     if (key == 'enter') {
                         var custom = bvr.custom.enter;
                     } else {
-                        alert("tab");
                         var custom = bvr.custom.tab;
                     }
 
@@ -994,7 +1074,7 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             }
 
             var value = bvr.src_el.value;
-            if (value == '') {
+            if (value == '' && !bvr.default_show) {
                 return;
             }
 
@@ -1004,9 +1084,17 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 var top = bvr.src_el.getParent(".spt_input_text_top");
                 var el = top.getElement(".spt_input_text_results");
                 el.setStyle("display", "");
-                el.innerHTML = html;
+                //el.innerHTML = html;
+                spt.behavior.replace_inner_html(el, html);
 
                 spt.text_input.is_on = false;
+
+                if (bvr.postaction) {
+                    postaction_cbk = function(el) {
+                        eval(bvr.postaction);
+                    }
+                    postaction_cbk(el);
+                }
             }
             var kwargs = {
                 args: {
@@ -1020,7 +1108,8 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                     do_search: bvr.do_search,
                     case_sensitive: bvr.case_sensitive,
                     value: value,
-                    mode: bvr.mode
+                    mode: bvr.mode,
+                    keyword_mode: bvr.keyword_mode
                 },
                 cbjs_action: cbk,
             }
@@ -1033,22 +1122,103 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
+        if default_show:
+            self.top.add_behavior({
+                'type': 'load',
+                'custom': custom_cbk,
+                'do_search': do_search,
+                'search_type': self.search_type,
+                'filter_search_type': filter_search_type,
+                'script_path': script_path,
+                'filters': filters,
+                'column': column,
+                'mode': mode,
+                'keyword_mode': keyword_mode,
+                'relevant': relevant,
+                'case_sensitive': case_sensitive,
+                'value_column': value_column,
+                'results_class_name': results_class_name,
+                'bg_color': bgcolor,
+                'postaction': postaction,
+                'cbjs_action': '''
 
+                var class_name = bvr.results_class_name;
+
+                var cbk = function(html) {
+                    var el = bvr.src_el.getElement(".spt_input_text_results");
+                    //el.innerHTML = html;
+                    spt.behavior.replace_inner_html(el, html);
+
+                    if (bvr.postaction) {
+                       postaction_cbk = function(el) {
+                           eval(bvr.postaction);
+                       }
+                       postaction_cbk(el);
+                    }
+                }
+                var kwargs = {
+                    args: {
+                        search_type: bvr.search_type,
+                        filter_search_type: bvr.filter_search_type,
+                        filters: bvr.filters,
+                        column: bvr.column,
+                        value_column: bvr.value_column,
+                        relevant: bvr.relevant,
+                        script_path: bvr.script_path,
+                        do_search: bvr.do_search,
+                        case_sensitive: bvr.case_sensitive,
+                        value: "",
+                        mode: bvr.mode,
+                        keyword_mode: bvr.keyword_mode
+                    },
+                    cbjs_action: cbk,
+                }
+
+                var server = TacticServerStub.get();
+                server.async_get_widget(class_name, kwargs);
+                '''
+                })
+
+
+
+        results_div = self.get_results_div()
+        self.top.add(results_div)
+
+        
+        exp = "@SOBJECT(config/client_trigger['event','%s'])" %event_name 
+        client_triggers = Search.eval(exp)
+        for client_trigger in client_triggers:
+            results_div.add_behavior( {
+                'type': 'listen',
+                'unique' : True,
+                'event_name': event_name,
+                'script_path': client_trigger.get_value('callback'),
+                'cbjs_action': '''
+
+                var input = bvr.firing_data;
+                input.firing_element = bvr.firing_element; 
+                // 2nd arg is the args for this script
+                spt.CustomProject.run_script_by_path(bvr.script_path, input);
+                '''
+                })
+
+        self.top.add(self.get_styles())
+
+
+    def get_results_div(self):
 
         results_div = DivWdg()
-        my.top.add(results_div)
         results_div.add_style("display: none")
         results_div.add_style("position: absolute")
         #results_div.add_style("top: 25px")
-        results_div.add_style("top: %spx" % (my.height - 10))
+        results_div.add_style("top: %spx" % (self.height))
         results_div.add_style("left: 0px")
         results_div.add_color("background", "background")
         results_div.add_color("color", "color")
         results_div.add_style("padding: 5px 10px 10px 5px")
         results_div.add_style("min-width: 220px")
         results_div.add_style("z-index: 1000")
-        results_div.add_style("font-size: 16px")
-        results_div.add_style("font-weight: bold")
+        results_div.add_style("font-size: 14px")
         results_div.add_border()
         results_div.set_box_shadow()
         results_div.add_class("spt_input_text_results")
@@ -1070,7 +1240,6 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
-        
         # this is when the user clicks on a result item
         # it doesn't do a search right away, it fires the lookahead|<sType> event
         results_div.add_relay_behavior( {
@@ -1098,49 +1267,33 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             '''
         } )
 
-        
-        exp = "@SOBJECT(config/client_trigger['event','%s'])" %event_name 
-        client_triggers = Search.eval(exp)
-        for client_trigger in client_triggers:
-            results_div.add_behavior( {
-                'type': 'listen',
-                'unique' : True,
-                'event_name': event_name,
-                'script_path': client_trigger.get_value('callback'),
-                'cbjs_action': '''
+        return results_div
 
-                var input = bvr.firing_data;
-                input.firing_element = bvr.firing_element; 
-                // 2nd arg is the args for this script
-                spt.CustomProject.run_script_by_path(bvr.script_path, input);
-                '''
-                })
-        
 
-    def fill_data(my):
+    def fill_data(self):
 
-        default = my.kwargs.get("default")
+        default = self.kwargs.get("default")
 
         # have to set the name with prefix if applicable
-        name = my.get_input_name()
+        name = self.get_input_name()
         if name:
-            my.text.set_name(name)
-            my.hidden.set_name(name)
+            self.text.set_name(name)
+            self.hidden.set_name(name)
 
         # fill in the values
-        search_key = my.kwargs.get("search_key")
-        value_key = my.kwargs.get("value_key")
+        search_key = self.kwargs.get("search_key")
+        value_key = self.kwargs.get("value_key")
 
-        current_value_column = my.kwargs.get("current_value_column")
+        current_value_column = self.kwargs.get("current_value_column")
         if not current_value_column:
-            current_value_column = my.name
+            current_value_column = self.name
 
 
 
         if value_key:
-            column = my.kwargs.get("column")
-            column_expr = my.kwargs.get("column_expr")
-            value_column = my.kwargs.get("value_column")
+            column = self.kwargs.get("column")
+            column_expr = self.kwargs.get("column_expr")
+            value_column = self.kwargs.get("value_column")
 
             sobject = Search.get_by_search_key(value_key)
 
@@ -1148,20 +1301,20 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
             value = sobject.get_value(value_column, auto_convert=False)
 
             
-            my.text.set_value(display)
+            self.text.set_value(display)
             if value != None:
-                my.hidden.set_value(value)
+                self.hidden.set_value(value)
 
 
         elif search_key and search_key != "None":
             sobject = Search.get_by_search_key(search_key)
             if sobject:
 
-                column = my.kwargs.get("column")
-                column_expr = my.kwargs.get("column_expr")
-                value_column = my.kwargs.get("value_column")
+                column = self.kwargs.get("column")
+                column_expr = self.kwargs.get("column_expr")
+                value_column = self.kwargs.get("value_column")
 
-                #expression = "@SOBJECT(%s)" % my.search_type
+                #expression = "@SOBJECT(%s)" % self.search_type
                 #related = Search.eval(expression, sobject)
 
                 related = None
@@ -1170,9 +1323,9 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
                 value = sobject.get_value(current_value_column, auto_convert=False)
                 if value not in ['', None] and value_column:
                     if value_column == "id":
-                        related = Search.get_by_id(my.search_type, value)
+                        related = Search.get_by_id(self.search_type, value)
                     else:
-                        search = Search(my.search_type)
+                        search = Search(self.search_type)
                         search.add_filter(value_column, value)
                         related = search.get_sobject()
 
@@ -1193,10 +1346,13 @@ spt.text_input.async_validate = function(src_el, search_type, column, display_va
 
                 display = display or "" 
               
-                my.text.set_value(display)
+                self.text.set_value(display)
                 if value != None:
-                    my.hidden.set_value(value)
+                    self.hidden.set_value(value)
 
+    # postaction script runs after the result wdg is loaded
+    def get_postaction(self):
+        return ""
 
 
 
@@ -1204,26 +1360,29 @@ __all__.append("TextInputResultsWdg")
 class TextInputResultsWdg(BaseRefreshWdg):
 
     # search LIMIT, even if we display only 10, the right balance is to set a limit to 80 to get more diverse results back
-    LIMIT = 80
     DISPLAY_LENGTH = 35
 
-    def is_number(my, value):
+    def is_number(self, value):
         if has_numbers_module:
             return isinstance(value, numbers.Number)
         else:
             return isinstance(value, int) or isinstance(value, long) or isinstance(value, float) 
 
-    def init(my):
-        my.do_search = True
-        if my.kwargs.get('do_search') == 'false':
-            my.do_search = False
+    def get_limit(self):
+        return 80
 
-    def draw_result(my, top, value):
-        max = my.DISPLAY_LENGTH
+    def init(self):
+        self.do_search = True
+        if self.kwargs.get('do_search') == 'false':
+            self.do_search = False
+        
+
+    def draw_result(self, top, value):
+        max = self.DISPLAY_LENGTH
         # assuming it's a list
-        results = my.kwargs.get('results')
+        results = self.kwargs.get('results')
         if not results:
-            script_path = my.kwargs.get('script_path')
+            script_path = self.kwargs.get('script_path')
             if not script_path:
                 return
             try:
@@ -1232,8 +1391,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 cmd = PythonCmd(script_path=script_path, **kwargs)
                 Command.execute_cmd(cmd)
         
-            except Exception, e:
-                print e
+            except Exception as e:
+                print(e)
                 raise
 
             else:
@@ -1254,30 +1413,34 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 raise TacticException("The length of value list and display list needs to match in [%s]" %script_path)
 
         for idx, keywords in enumerate(display_results):
-            div = DivWdg()
+            div = self.get_result_wdg(keywords)
             top.add(div)
-            div.add_style("padding: 3px")
-            
-            if isinstance(keywords, str):
-                keywords = unicode(keywords, errors='ignore')
-
-            if isinstance(keywords, basestring) and  len(keywords) > max:
-                display = "%s..." % keywords[:max-3]
-            else:
-                display = keywords
-
-            div.add(display)
-            div.add_class("spt_input_text_result")
             value = value_results[idx]
             div.add_attr("spt_value", value)
+
             # turn off cache to prevent ascii error
             keywords = HtmlElement.get_json_string(keywords, use_cache=False)
             div.add_attr("spt_display", keywords)
 
 
+    def get_result_wdg(self, keywords):
+        div = DivWdg()
+        div.add_style("padding: 3px")
+        div.add_class("spt_input_text_result")
+
+        if isinstance(keywords, str):
+            keywords = unicode(keywords, errors='ignore')
+
+        if isinstance(keywords, basestring) and  len(keywords) > max:
+            display = "%s..." % keywords[:max-3]
+        else:
+            display = keywords
+        div.add(display)
+
+        return div
 
 
-    def get_icon_result_wdg(my, results, values, labels):
+    def get_icon_result_wdg(self, results, values, labels):
         from tactic.ui.panel import ThumbWdg2
 
         top = DivWdg()
@@ -1285,6 +1448,17 @@ class TextInputResultsWdg(BaseRefreshWdg):
         top.add_style("width: 300px")
         top.add_style("margin: 3px 0px")
         top.add_style("padding: 0px 0px")
+
+        first_column = self.kwargs.get("value_column")
+        if not first_column:
+            first_column = self.kwargs.get("column")
+
+        if first_column == "name":
+            second_column = "code"
+        elif first_column == "code":
+            second_column = "name"
+        else:
+            second_column = "code"
 
         # display only the first 8 (arbitrary)
         results = results[:8]
@@ -1315,13 +1489,17 @@ class TextInputResultsWdg(BaseRefreshWdg):
             info_div.add_style("white-space: nowrap")
             #info_div.add_style("width: 250px")
             info_div.add_style("vertical-align: middle")
+            info_div.add_style("max-width: 225px")
 
 
 
-            name = result.get_value("name")
-            if name:
+            second_value = result.get_value(second_column)
+            second_value = result.get_value("title")
+            if second_value == display:
+                pass
+            elif second_value:
                 info_div.add("<br/>")
-                info_div.add("<span style='opacity: 0.5; font-size: 10px;'>%s</span>" % name)
+                info_div.add("<span style='opacity: 0.5; font-size: 10px;'>%s</span>" % second_value)
 
 
             div.add_class("spt_input_text_result")
@@ -1348,18 +1526,12 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
 
-    def get_results_wdg(my, results, values, labels):
+    def get_results_wdg(self, results, values, labels):
         top = DivWdg()
 
         for i, result in enumerate(results):
             display = labels[i]
-            div = DivWdg()
-            div.add(display)
-            div.add_style("padding: 3px")
-            div.add_class("spt_input_text_result")
-            # turn off cache to prevent ascii error
-            display = HtmlElement.get_json_string(display, use_cache=False)
-            div.add_attr("spt_display", display)
+            div = self.get_result_wdg(display)
             div.add_attr("spt_value", values[i])
             top.add(div)
         if not results:
@@ -1372,20 +1544,20 @@ class TextInputResultsWdg(BaseRefreshWdg):
         return top
 
 
-    def get_display(my):
-        top = my.top
-        orig_value = my.kwargs.get("value")
-        case_sensitive = my.kwargs.get("case_sensitive") in ['true',True]
+    def get_display(self):
+        top = self.top
+        orig_value = self.kwargs.get("value")
+        case_sensitive = self.kwargs.get("case_sensitive") in ['true',True]
 
-        if not my.do_search:
-            my.draw_result(top, orig_value)
+        if not self.do_search:
+            self.draw_result(top, orig_value)
             return top
 
         if not case_sensitive:
             orig_value = orig_value.lower()
 
         # can only support 1 right now
-        relevant = my.kwargs.get("relevant") == 'true'
+        relevant = self.kwargs.get("relevant") == 'true'
         connected_col = None
         rel_values = []
 
@@ -1395,12 +1567,13 @@ class TextInputResultsWdg(BaseRefreshWdg):
             last_word_complete = False
 
         # TODO: rename this as top_sType
-        search_type = my.kwargs.get("search_type")
-        filter_search_type = my.kwargs.get("filter_search_type")
-        filters = my.kwargs.get("filters")
+        search_type = self.kwargs.get("search_type")
+        filter_search_type = self.kwargs.get("filter_search_type")
+        filters = self.kwargs.get("filters")
         
-        column = my.kwargs.get("column")
-        value_column = my.kwargs.get("value_column")
+        column = self.kwargs.get("column")
+        value_column = self.kwargs.get("value_column")
+        keyword_mode = self.kwargs.get("keyword_mode") or "startswith"
 
         if not search_type:
             search_type = "sthpw/sobject_list"
@@ -1409,7 +1582,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
 
         if isinstance(column, basestring):
-            columns = [column]
+            columns = column.split(",")
         else:
             columns = column
 
@@ -1419,14 +1592,13 @@ class TextInputResultsWdg(BaseRefreshWdg):
         # TODO:  This may apply to normal keyword search as well. to treat the whole phrase as 1 word
         if value_column and value.find(' ') != -1:
             values = [value]
-        else:
+        elif keyword_mode == "contains":
             values = Common.extract_keywords(value, lower=not case_sensitive)
-            # allow words with speical characters stripped out by Common.extract_keywords to be searched
-            # FIXME: THIS CAUSES PROBLEMS and is disabled for now
-            #if value.lower() not in values:
-            #    values.append(value.lower())
-        # why is this done?
-        # so the auto suggestion list the items in the same order as they are typed in
+        else:
+            values = value.split(" ")
+
+
+        # reverse so the auto suggestion list the items in the same order as they are typed in
         values.reverse()
 
         project_code = Project.get_project_code()
@@ -1460,7 +1632,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
         result_list = []
 
-        top_sType = my.kwargs.get("search_type")
+        top_sType = self.kwargs.get("search_type")
         top_sType = Project.extract_base_search_type(top_sType)
         schema = Schema.get()
 
@@ -1470,15 +1642,18 @@ class TextInputResultsWdg(BaseRefreshWdg):
             # relevant is ON, then only search for stuff that is relevant in the current table
            
 
-            #search.add_text_search_filter(column, values)
             if search_type == 'sthpw/sobject_list':
                 search.add_filter("project_code", project_code)
 
-            if search_type == 'sthpw/sobject_list' and filter_search_type and filter_search_type != 'None':
+            if search_type == 'sthpw/sobject_list' and filter_search_type and filter_search_type != 'None' and filter_search_type != 'sthpw/sobject_list':
                 search.add_filter("search_type", filter_search_type)
+
             if filters:
-                search.add_op_filters(filters)
-            
+                if isinstance(filters, basestring):
+                    import json
+                    search.add_op_filters(json.loads(filters))
+                else:
+                    search.add_op_filters(filters)
             search.add_op("begin")
 
             search_type_obj = SearchType.get(search_type)
@@ -1510,32 +1685,37 @@ class TextInputResultsWdg(BaseRefreshWdg):
             if not single_col:
                 search_op = 'or'
             for col in col_list:
-                #info = column_info.get(column)
-                #if info and info.get("data_type") == 'integer':
-                #    search.add_filter(column,values[0], op='=')
-                #else:
-                #    search.add_startswith_keyword_filter(column, values)
-                search.add_startswith_keyword_filter(col, values, \
-                   case_sensitive=case_sensitive)
+                if keyword_mode == "contains":
+                    search.add_keyword_filter(col, values, case_sensitive=case_sensitive)
+                else:
+                    search.add_startswith_keyword_filter(col, values,
+                       case_sensitive=case_sensitive)
                
-            
-            
             search.add_op(search_op)
+
+
             if connected_col:
                 search.add_filters(connected_col, rel_values, op='in')
-            search.add_limit(my.LIMIT)
+
+            limit = self.get_limit()
+            if limit:
+                search.add_limit(limit)
+
             results = search.get_sobjects()
+
             info_dict['results'] = results
-   
-        mode = my.kwargs.get("mode")
+  
+
+
+        mode = self.kwargs.get("mode")
         if mode == "icon":
 
             results = search_dict.get(search_type).get('results')
 
-            labels = [x.get_value(column) for x in results]
-            values = [x.get_value(value_column) for x in results]
+            labels = [x.get_value(column) or "" for x in results]
+            values = [x.get_value(value_column) or "" for x in results]
 
-            widget = my.get_icon_result_wdg(results, values, labels )
+            widget = self.get_icon_result_wdg(results, values, labels )
             top.add(widget)
             return top
 
@@ -1546,10 +1726,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
 
             results = search_dict.get(search_type).get('results')
 
-            labels = [x.get_value(column) for x in results]
+            display_column = column.split(",")[0]
+            labels = [x.get_value(display_column) for x in results]
             values = [x.get_value(value_column) for x in results]
 
-            widget = my.get_results_wdg(results, values, labels)
+            widget = self.get_results_wdg(results, values, labels)
             top.add(widget)
             return top
 
@@ -1586,7 +1767,7 @@ class TextInputResultsWdg(BaseRefreshWdg):
                     
                     # this result could be a join of columns from 2 tables 
                     value = result.get_value(column)
-                    if my.is_number(value): 
+                    if self.is_number(value): 
                         value = str(value)
                     keywords.append(value)
                
@@ -1597,8 +1778,17 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 # use comprehension to handle the lower() function
                 keywords = " ".join(keywords)
 
-                # show the keyword that matched first
+                # split again
                 keywords = keywords.split(" ")
+
+                import string
+                for i, k in enumerate(keywords):
+                    leftovers = set(k) - set(string.ascii_letters+string.digits)
+                    if leftovers:
+                        k2 = k.strip("".join(leftovers))
+                        keywords[i] = k2
+
+                # show the keyword that matched first
                 if case_sensitive: 
                     keywords = [x.strip() for x in keywords if x]
                 else:
@@ -1643,7 +1833,9 @@ class TextInputResultsWdg(BaseRefreshWdg):
                 first = " ".join(first)
 
                 # add the first word filtered
-                if first.startswith(orig_value) and first not in first_filtered:
+                if keyword_mode == "contains" and orig_value in first:
+                    first_filtered.append(first)
+                elif first.startswith(orig_value) and first not in first_filtered:
                     first_filtered.append(first)
                 
                 # get all the other keywords
@@ -1652,8 +1844,11 @@ class TextInputResultsWdg(BaseRefreshWdg):
                         continue
                     
                     key = "%s %s" % (first, second)
-                    if not key.startswith(orig_value):
+                    if keyword_mode == "contains" and orig_value not in key:
                         continue
+                    elif not key.startswith(orig_value):
+                        continue
+
                     if key not in second_filtered:
                         second_filtered.append(key)
 
@@ -1665,16 +1860,17 @@ class TextInputResultsWdg(BaseRefreshWdg):
         filtered = filtered[0:10]
 
         for keywords in filtered:
-            #print "keywords: ", keywords
+            #print("keywords: ", keywords)
             div = DivWdg()
             top.add(div)
             div.add_style("padding: 3px")
+            div.add_style("cursor: pointer")
             
             if isinstance(keywords, str):
                 keywords = unicode(keywords, errors='ignore')
 
-            if len(keywords) > my.DISPLAY_LENGTH:
-                display = "%s..." % keywords[:my.DISPLAY_LENGTH-3]
+            if len(keywords) > self.DISPLAY_LENGTH:
+                display = "%s..." % keywords[:self.DISPLAY_LENGTH-3]
             else:
                 display = keywords
 
@@ -1714,14 +1910,14 @@ class GlobalSearchWdg(BaseRefreshWdg):
     }
  
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
 
         # DISABLED for now.  The search is on sobject_list which does not
         # display the icon correctly in tile view
-        layout = my.kwargs.get("layout")
+        layout = self.kwargs.get("layout")
         if not layout:
             layout = ''
         layout = ''
@@ -1757,7 +1953,7 @@ class GlobalSearchWdg(BaseRefreshWdg):
             }
          ''' % layout
 
-        hint_text = my.kwargs.get("hint_text")
+        hint_text = self.kwargs.get("hint_text")
         if not hint_text:
             hint_text = "Search"
 
@@ -1768,7 +1964,7 @@ class GlobalSearchWdg(BaseRefreshWdg):
         text.add_class("spt_main_search")
         search_wdg.add(text)
 
-        show_button = my.kwargs.get("show_button")
+        show_button = self.kwargs.get("show_button")
         if show_button in [True, 'true']:
             button = HtmlElement.button("GO")
             search_wdg.add(button)

@@ -23,12 +23,12 @@ from pyasm.widget import HeaderWdg
 
 class Maya(SitePage):
 
-    def get_page_widget(my):
+    def get_page_widget(self):
         return MayaPage()
 
 
 class MayaPage(Widget):
 
-    def init(my):
-        my.add( HeaderWdg() )
-        my.add( MayaTabWdg() )
+    def init(self):
+        self.add( HeaderWdg() )
+        self.add( MayaTabWdg() )

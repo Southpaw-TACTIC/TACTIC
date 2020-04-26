@@ -21,7 +21,7 @@ from pyasm.widget import CmdReportWdg
 class BaseSthpwWdg(Widget):
     '''This is actually the widget server ... named a long time ago'''
 
-    def init(my):
+    def init(self):
         
         web = WebContainer.get_web()
 
@@ -48,7 +48,7 @@ class BaseSthpwWdg(Widget):
         # tell the widget that it is the top widget
         widget.set_as_top()
 
-        my.add(widget)
+        self.add(widget)
 
 
 

@@ -48,47 +48,47 @@ class BaseAppInfo(object):
     Use the "AppEnvironment" classes to access this information
     '''
 
-    def __init__(my, app_name=None):
-        my.xmlrpc_server = None
-        my.app = None
+    def __init__(self, app_name=None):
+        self.xmlrpc_server = None
+        self.app = None
 
-        my.app_name = app_name
+        self.app_name = app_name
         
-        my.sandbox_dir = None
-        my.project_code = None
-        my.server = None
-        my.tmpdir = None
-        my.save_dir = None
-        my.ticket = None
-        my.user = None
+        self.sandbox_dir = None
+        self.project_code = None
+        self.server = None
+        self.tmpdir = None
+        self.save_dir = None
+        self.ticket = None
+        self.user = None
         # set this as the singleton
-        BaseAppInfo.set(my)
+        BaseAppInfo.set(self)
 
-    def get_app_name(my):
-        return my.app_name
+    def get_app_name(self):
+        return self.app_name
 
 
-    def set_up_maya(my, init=False):
+    def set_up_maya(self, init=False):
         # set up application environment
         from pyasm.application.maya import MayaEnvironment
-        MayaEnvironment.set_up(my)
+        MayaEnvironment.set_up(self)
 
 
-    def set_up_houdini(my, port=None):
+    def set_up_houdini(self, port=None):
         from pyasm.application.houdini import HoudiniEnvironment
-        HoudiniEnvironment.set_up(my)
+        HoudiniEnvironment.set_up(self)
 
 
-    def set_up_xsi(my, xsi, tool):
+    def set_up_xsi(self, xsi, tool):
         # set up application environment
         from pyasm.application.xsi import XSIEnvironment
-        XSIEnvironment.set_up(my, xsi, tool)
+        XSIEnvironment.set_up(self, xsi, tool)
 
 
-    def set_up_flash(my):
+    def set_up_flash(self):
         # set up application environment
         from pyasm.application.flash import FlashEnvironment
-        my.env = FlashEnvironment.set_up(my)
+        self.env = FlashEnvironment.set_up(self)
 
 
 
@@ -96,14 +96,14 @@ class BaseAppInfo(object):
 
 
 
-    def close_houdini(my):
+    def close_houdini(self):
         '''close the socket to houdini'''
-        socket = my.app.get_socket()
+        socket = self.app.get_socket()
         if socket:
             socket.close()
 
 
-    def close_xsi(my):
+    def close_xsi(self):
         '''
         var prefs = Application.Preferences;
         var originalsetting = prefs.GetPreferenceValue( "scripting.cmdlog" );
@@ -124,84 +124,84 @@ class BaseAppInfo(object):
         
 
 
-    def get_builder(my):
-        if my.app_name == "houdini":
+    def get_builder(self):
+        if self.app_name == "houdini":
             from pyasm.application.houdini import HoudiniBuilder
             return HoudiniBuilder()
-        elif my.app_name == "maya":
+        elif self.app_name == "maya":
             from pyasm.application.maya import MayaBuilder
             return MayaBuilder()
-        elif my.app_name == "xsi":
+        elif self.app_name == "xsi":
             from pyasm.application.xsi import XSIBuilder
             return XSIBuilder()
-        elif my.app_name == "flash":
+        elif self.app_name == "flash":
             from pyasm.application.flash import FlashBuilder
             return FlashBuilder()
         
 
-    def get_app_implementation(my):
-        if my.app_name == "houdini":
+    def get_app_implementation(self):
+        if self.app_name == "houdini":
             from pyasm.application.houdini import HoudiniImpl
             return HoudiniImpl()
-        elif my.app_name == "maya":
+        elif self.app_name == "maya":
             from pyasm.application.maya import MayaImpl
             return MayaImpl()
-        elif my.app_name == "xsi":
+        elif self.app_name == "xsi":
             from pyasm.application.xsi import XSIImpl
             return XSIImpl()
         
 
 
-    def get_app(my):
-        return my.app
+    def get_app(self):
+        return self.app
 
-    def get_ticket(my):
-        return my.ticket
+    def get_ticket(self):
+        return self.ticket
 
-    def set_ticket(my, ticket):
-        my.ticket = ticket
+    def set_ticket(self, ticket):
+        self.ticket = ticket
 
 
-    def set_user(my, user):
-        my.user = user
+    def set_user(self, user):
+        self.user = user
 
-    def get_user(my):
-        return my.user
+    def get_user(self):
+        return self.user
 
-    def get_project_code(my):
-        return my.project_code
+    def get_project_code(self):
+        return self.project_code
 
-    def get_server(my):
-        return my.server
+    def get_server(self):
+        return self.server
 
-    def set_tmpdir(my, tmpdir):
+    def set_tmpdir(self, tmpdir):
         from app_environment import AppEnvironment
         env = AppEnvironment.get()
         env.set_tmpdir(tmpdir)
-        my.tmpdir = tmpdir
+        self.tmpdir = tmpdir
 
-    def get_tmpdir(my):
-        return my.tmpdir
+    def get_tmpdir(self):
+        return self.tmpdir
 
-    def get_save_dir(my):
-        impl = my.get_app_implementation()
+    def get_save_dir(self):
+        impl = self.get_app_implementation()
 
         return impl.get_save_dir()
 
-    def get_sandbox_dir(my):
-        return my.sandbox_dir
+    def get_sandbox_dir(self):
+        return self.sandbox_dir
 
-    def set_sandbox_dir(my, sandbox_dir):
-        my.sandbox_dir = sandbox_dir
+    def set_sandbox_dir(self, sandbox_dir):
+        self.sandbox_dir = sandbox_dir
 
 
-    def get_xmlrpc_server(my):
+    def get_xmlrpc_server(self):
         raise Exception("Not implemented")
 
 
-    def report_msg(my, label, msg):
+    def report_msg(self, label, msg):
         '''this is for debugging only'''
-        path = "%s/msg.txt" % my.get_tmpdir()
+        path = "%s/msg.txt" % self.get_tmpdir()
         file = open(path, "a")
         
         msg = '%s: %s\n' %(label, msg)
@@ -209,20 +209,20 @@ class BaseAppInfo(object):
         file.write(msg)
         file.close()
 
-    def report_error(my, exception):
+    def report_error(self, exception):
         print "Error: ", exception
-        path = "%s/error.txt" % my.get_tmpdir()
+        path = "%s/error.txt" % self.get_tmpdir()
         file = open(path, "w")
         
         msg = str(exception)
 
         file.write(msg)
         file.close()
-        my.upload(path)
+        self.upload(path)
         
-    def report_warning(my, label, warning, upload=False, type=''):
+    def report_warning(self, label, warning, upload=False, type=''):
         print "warning: ", warning
-        path = "%s/warning.txt" % my.get_tmpdir()
+        path = "%s/warning.txt" % self.get_tmpdir()
         if label and warning:
             file = open(path, "a")
             
@@ -232,20 +232,20 @@ class BaseAppInfo(object):
             file.close()
         
         if upload and os.path.exists(path):
-            my.upload(path)
+            self.upload(path)
 
 
-    def get_upload_server(my):
+    def get_upload_server(self):
         return None
 
 
-    def upload(my, from_path):
+    def upload(self, from_path):
 
         print "DEPRECATED"
         print "uploading: ", from_path
 
-        ticket = my.get_ticket()
-        upload_server = my.get_upload_server()
+        ticket = self.get_ticket()
+        upload_server = self.get_upload_server()
 
         upload = UploadMultipart()
         upload.set_ticket(ticket)
@@ -272,7 +272,7 @@ class BaseAppInfo(object):
             else:
                 buffer.write("action=append\n")
 
-            ticket = my.get_ticket()
+            ticket = self.get_ticket()
             buffer.write("ticket=%s\n" % ticket)
             buffer.write("EOF\n")
             buffer.write(contents)
@@ -291,7 +291,7 @@ class BaseAppInfo(object):
 
 
 
-    def download(my, url, to_dir="", md5_checksum=""):
+    def download(self, url, to_dir="", md5_checksum=""):
 
         print "DEPRECATED"
 
@@ -299,7 +299,7 @@ class BaseAppInfo(object):
 
         # download to the current project
         if not to_dir:
-            to_dir = my.get_tmpdir()
+            to_dir = self.get_tmpdir()
 
         # make sure the directory exists
         if not os.path.exists(to_dir):

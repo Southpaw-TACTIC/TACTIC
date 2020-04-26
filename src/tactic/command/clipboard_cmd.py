@@ -21,24 +21,24 @@ from pyasm.checkin import FileCheckin
 
 class ClipboardAddCmd(Command):
 
-    def execute(my):
-        search_keys = my.kwargs.get("search_keys")
+    def execute(self):
+        search_keys = self.kwargs.get("search_keys")
         Clipboard.add_to_selected(search_keys)
 
 
 
 class ClipboardCopyCmd(Command):
 
-    def execute(my):
-        search_keys = my.kwargs.get("search_keys")
+    def execute(self):
+        search_keys = self.kwargs.get("search_keys")
         Clipboard.clear_selected()
         Clipboard.add_to_selected(search_keys)
 
 
 class ClipboardConnectCmd(Command):
 
-    def execute(my):
-        search_keys = my.kwargs.get("search_keys")
+    def execute(self):
+        search_keys = self.kwargs.get("search_keys")
         print "search_keys: ", search_keys
         for search_key in search_keys:
             sobject = Search.get_by_search_key(search_key)

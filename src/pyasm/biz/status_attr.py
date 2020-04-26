@@ -27,7 +27,7 @@ class StatusAttrException(Exception):
 
 class StatusAttr(Base):
 
-    def __init__(my, status_xml, pipeline):
+    def __init__(self, status_xml, pipeline):
 
         assert status_xml != None
 
@@ -39,28 +39,28 @@ class StatusAttr(Base):
         if status_xml == "":
             status_xml = "<status/>"
 
-        my.status = Xml()
-        my.status.read_string(status_xml)
-        my.pipeline = pipeline
+        self.status = Xml()
+        self.status.read_string(status_xml)
+        self.pipeline = pipeline
 
 
-    def clear_status(my):
+    def clear_status(self):
         status_xml = "<status/>"
-        my.status = Xml()
-        my.status.read_string(status_xml)
+        self.status = Xml()
+        self.status.read_string(status_xml)
 
 
-    def get_value(my):
-        return my.status.get_xml()
+    def get_value(self):
+        return self.status.get_xml()
  
 
-    def get_web_display(my):
-        current = my.get_current_process()
+    def get_web_display(self):
+        current = self.get_current_process()
         return current.get_name().capitalize()
 
 
-    def get_pipeline(my):
-        return my.pipeline
+    def get_pipeline(self):
+        return self.pipeline
 
 
 
@@ -68,36 +68,36 @@ class StatusAttr(Base):
     # function make this behave like a serial process
     #
 
-    def get_current_process(my):
-        return my.pipeline.get_process(my.get_value() )
+    def get_current_process(self):
+        return self.pipeline.get_process(self.get_value() )
 
 
-    def set_status(my, status):
-        my.clear_status()
-        my.set_process_status(status, StatusEnum.IN_PROGRESS)
+    def set_status(self, status):
+        self.clear_status()
+        self.set_process_status(status, StatusEnum.IN_PROGRESS)
 
 
 
-    def push_status_forward(my, process ):
+    def push_status_forward(self, process ):
 
         # set process to complete
-        my.set_process_status(process, StatusEnum.COMPLETE )
+        self.set_process_status(process, StatusEnum.COMPLETE )
 
         # get forward processes
-        forwards = my.pipeline.get_forward_processes(process)
+        forwards = self.pipeline.get_forward_processes(process)
         for forward in forwards:
-            my.set_process_status(forward, StatusEnum.IN_PROGRESS )
+            self.set_process_status(forward, StatusEnum.IN_PROGRESS )
 
 
-    def push_status_backward(my, process ):
+    def push_status_backward(self, process ):
 
         # set process to complete
-        my.set_process_status(process, StatusEnum.PENDING )
+        self.set_process_status(process, StatusEnum.PENDING )
 
         # get forward processes
-        backwards = my.pipeline.get_backward_processes(process)
+        backwards = self.pipeline.get_backward_processes(process)
         for backward in backwards:
-            my.set_process_status(backward, StatusEnum.IN_PROGRESS )
+            self.set_process_status(backward, StatusEnum.IN_PROGRESS )
 
 
 
@@ -106,12 +106,12 @@ class StatusAttr(Base):
     # more generic process functions
     #
 
-    def find_process(my, status_enum):
+    def find_process(self, status_enum):
 
         status = StatusEnum.get(status_enum)
 
         # get the nodes
-        process_names = my.status.get_values( \
+        process_names = self.status.get_values( \
             "status/process[@value='%s']/@name" % status )
 
         if len(process_names) > 1:
@@ -119,47 +119,47 @@ class StatusAttr(Base):
 
         # if this process is not there, get the first one in the pipeline
         if len(process_names) == 0:
-            first_process = my.pipeline.get_processes()[0]
-            my.add_process(first_process)
+            first_process = self.pipeline.get_processes()[0]
+            self.add_process(first_process)
             return first_process
         else:
-            process = my.pipeline.get_process( process_names[0] )
+            process = self.pipeline.get_process( process_names[0] )
             return process
 
 
-    def add_process(my, process):
-        process_node = my.status.create_element("process")
+    def add_process(self, process):
+        process_node = self.status.create_element("process")
         Xml.set_attribute( process_node, "name", process)
-        root = my.status.get_root_node()
+        root = self.status.get_root_node()
         root.appendChild(process_node)
         return process_node
 
 
 
 
-    def set_process_status(my, process, status_enum):
+    def set_process_status(self, process, status_enum):
         # check if this process is in the pipeline
-        if my.pipeline.get_process(process) == "":
+        if self.pipeline.get_process(process) == "":
             raise StatusError( "Process [%s] does not exist" % process )
 
-        process_node = my._get_process_node(process)
+        process_node = self._get_process_node(process)
 
         # if there is no process node then dynamically create one.
         if process_node == None:
-            process_node = my.add_process(process)
+            process_node = self.add_process(process)
 
         Xml.set_attribute( process_node, "value", StatusEnum.get(status_enum))
 
 
 
-    def get_status(my, process):
-        process_node = my._get_process_node(process)
+    def get_status(self, process):
+        process_node = self._get_process_node(process)
         if process_node == None:
             return "invalid"
         return Xml.get_attribute( process_node, "value")
 
-    def get_status_enum(my, process):
-        process_node = my._get_process_node(process)
+    def get_status_enum(self, process):
+        process_node = self._get_process_node(process)
         if process_node == None:
             return StatusEnum.INVALID
         value = Xml.get_attribute( process_node, "value")
@@ -169,16 +169,16 @@ class StatusAttr(Base):
 
 
     # the following completion code assume a serial process
-    def get_completion(my):
+    def get_completion(self):
         '''finds the completion of this status. Returns a number from 0 to 1'''
         # find the in_progress widget to determine the current status
-        context = my.find_process( StatusEnum.IN_PROGRESS )
+        context = self.find_process( StatusEnum.IN_PROGRESS )
         completion = context.get_completion()
         if completion != "":
             return float(completion)/100
 
         # calculate the completion of the asset
-        processes = my.pipeline.get_processes()
+        processes = self.pipeline.get_processes()
         percent = 0.0
         for process in processes:
             percent += 1.0
@@ -190,23 +190,23 @@ class StatusAttr(Base):
         return percent
 
 
-    def get_percent_completion(my):
-        return int(my.get_completion() * 100)
+    def get_percent_completion(self):
+        return int(self.get_completion() * 100)
 
 
 
-    def _get_process_node(my, process):
+    def _get_process_node(self, process):
         xpath = "status/process[@name='%s']" % process
-        process_node = my.status.get_node(xpath)
+        process_node = self.status.get_node(xpath)
         return process_node
 
 
-    def get_xml(my):
-        return my.status.get_xml()
+    def get_xml(self):
+        return self.status.get_xml()
 
 
-    def dump(my):
-        my.status.dump()
+    def dump(self):
+        self.status.dump()
 
 
 
@@ -278,17 +278,17 @@ class StatusEnum:
 
 class StatusAttr2(StatusAttr,SObjectAttr):
 
-    def __init__(my, name, sobject):
-        SObjectAttr.__init__(my, name, sobject)
+    def __init__(self, name, sobject):
+        SObjectAttr.__init__(self, name, sobject)
 
 
-    def init(my):
-        status_xml = my.sobject.get_value(my.name)
+    def init(self):
+        status_xml = self.sobject.get_value(self.name)
 
-        pipeline_type = my.get_option("pipeline")
+        pipeline_type = self.get_option("pipeline")
         pipeline = Pipeline.get_by_name(pipeline_type)
 
-        StatusAttr.__init__(my, status_xml, pipeline)
+        StatusAttr.__init__(self, status_xml, pipeline)
 
 
 

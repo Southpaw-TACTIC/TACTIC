@@ -38,9 +38,9 @@ class SampleBarChartWdg(BaseRefreshWdg):
 
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
 
         #top.add_gradient("background", "background", 5, -20)
         top.add_color("background", "background", -5)
@@ -68,10 +68,10 @@ class SampleBarChartWdg(BaseRefreshWdg):
         labels = ['week 1', 'week 2', 'week 3', 'week 4', 'week 5', 'week 6', 'week 7', 'week 8']
         values = [1,2,4,5,6,7,8]
 
-        width = my.kwargs.get("width")
+        width = self.kwargs.get("width")
         if not width:
             width = '800px'
-        height = my.kwargs.get("height")
+        height = self.kwargs.get("height")
         if not height:
             height = '500px'
 
@@ -151,34 +151,34 @@ class ChartWdg(BaseRefreshWdg):
     'width': 'Width of the canvas',
     }
 
-    def init(my):
-        top = my.top
+    def init(self):
+        top = self.top
         #top.add_gradient("background", "background", -5)
 
-    def add_style(my, name, value):
-        my.top.add_style(name, value)
+    def add_style(self, name, value):
+        self.top.add_style(name, value)
 
-    def add_color(my, name, value):
-        my.top.add_color(name, value)
+    def add_color(self, name, value):
+        self.top.add_color(name, value)
 
-    def add_gradient(my, name, value, offset=0, gradient=-10):
-        my.top.add_gradient(name, value, offset, gradient)
+    def add_gradient(self, name, value, offset=0, gradient=-10):
+        self.top.add_gradient(name, value, offset, gradient)
 
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("position: relative")
 
-        labels = my.kwargs.get("labels")
+        labels = self.kwargs.get("labels")
         if not labels:
             labels = []
-        label_values = my.kwargs.get("label_values")
+        label_values = self.kwargs.get("label_values")
 
-        width = my.kwargs.get("width")
-        height = my.kwargs.get("height")
+        width = self.kwargs.get("width")
+        height = self.kwargs.get("height")
 
-        default_chart_type = my.kwargs.get("chart_type")
+        default_chart_type = self.kwargs.get("chart_type")
         if not default_chart_type:
             default_chart_type = 'bar'
 
@@ -197,7 +197,7 @@ class ChartWdg(BaseRefreshWdg):
 
         bar_chart_index = 0
         num_bar_charts = 0
-        for widget in my.widgets:
+        for widget in self.widgets:
             # count the number of bar charts
             chart_type = widget.get_chart_type()
             if not chart_type:
@@ -214,7 +214,7 @@ class ChartWdg(BaseRefreshWdg):
         xmax = 1
         ymax = 0
 
-        for widget in my.widgets:
+        for widget in self.widgets:
 
             # count the number of bar charts
             chart_type = widget.get_chart_type()
@@ -269,14 +269,15 @@ class ChartWdg(BaseRefreshWdg):
 
 
         # draw the grid
-        rotate_x_axis = my.kwargs.get("rotate_x_axis")
-        grid = ChartGrid(labels=labels, label_values=label_values, rotate_x_axis=rotate_x_axis)
+        rotate_x_axis = self.kwargs.get("rotate_x_axis")
+        y_axis_mode = self.kwargs.get("y_axis_mode")
+        grid = ChartGrid(labels=labels, label_values=label_values, rotate_x_axis=rotate_x_axis, mode=y_axis_mode)
         top.add(grid)
 
 
         # draw a legend
-        if my.kwargs.get("legend"):
-            legend = ChartLegend(labels=my.kwargs.get('legend'))
+        if self.kwargs.get("legend"):
+            legend = ChartLegend(labels=self.kwargs.get('legend'))
             legend.add_style("position: absolute")
             legend.add_style("left: %s" % 50)
             legend.add_style("top: %s" % 10)
@@ -288,32 +289,34 @@ class ChartWdg(BaseRefreshWdg):
 
 class ChartGrid(BaseRefreshWdg):
 
-    def get_display(my):
+    def get_display(self):
 
 
-        labels = my.kwargs.get("labels")
+        labels = self.kwargs.get("labels")
         if not labels:
             labels = None
 
-        xmax = my.kwargs.get("xmax")
-        ymax = my.kwargs.get("ymax")
+        xmax = self.kwargs.get("xmax")
+        ymax = self.kwargs.get("ymax")
 
-        #mode = 'integer'
-        mode = 'float'
+        mode = self.kwargs.get("mode")
+        if not mode:
+            #mode = 'integer'
+            mode = 'float'
 
 
-        my.label_values = my.kwargs.get("label_values")
-        if not my.label_values:
-            my.label_values = [0]
+        self.label_values = self.kwargs.get("label_values")
+        if not self.label_values:
+            self.label_values = [0]
 
-        top = my.top
+        top = self.top
 
         font_color = top.get_color("color")
         #font = '12px san-serif';
         font = '12px arial';
         grid_color = top.get_color("border")
 
-        rotate_x_axis = my.kwargs.get("rotate_x_axis") 
+        rotate_x_axis = self.kwargs.get("rotate_x_axis") 
         if rotate_x_axis in [True, 'true']:
             rotate_x_axis = True
         else:
@@ -327,7 +330,7 @@ class ChartGrid(BaseRefreshWdg):
             'grid_color': grid_color,
             'rotate_x_axis': rotate_x_axis,
             'labels': labels,
-            'label_values': my.label_values,
+            'label_values': self.label_values,
             'cbjs_action': '''
 
             var size = spt.chart.get_size();
@@ -394,7 +397,10 @@ class ChartGrid(BaseRefreshWdg):
                     var length = (label+"").length;
                     //var offset = length * 2;
                     var offset_x = 5;
-                    var offset_y = 10;
+                    if (bvr.rotate_x_axis)
+                        var offset_y = 5;
+                    else
+                        var offset_y = 10;
                     
 
                     ctx.save();
@@ -444,12 +450,15 @@ class ChartGrid(BaseRefreshWdg):
                     break;
                 }
             }
-            interval.y = interval.y * multiplier;
 
             if (bvr.mode == 'integer') {
                 multiplier = parseInt(multiplier);
             }
+            if (multiplier == 0) {
+                multiplier = 1;
+            }
 
+            interval.y = interval.y * multiplier;
 
             var color2 = 'rgba(240, 240, 240, 0.5)';
             for (var i = 0; ; i++) {
@@ -491,68 +500,68 @@ class ChartGrid(BaseRefreshWdg):
 
 class ChartData(BaseRefreshWdg):
 
-    def init(my):
-        my.index = 0
-        my.total_index = 0
+    def init(self):
+        self.index = 0
+        self.total_index = 0
 
-    def get_chart_type(my):
-        return my.chart_type
+    def get_chart_type(self):
+        return self.chart_type
 
-    def set_chart_type(my, chart_type):
-        my.chart_type = chart_type
-
-
-    def get_data(my):
-        return my.data
-
-    def set_data(my, data):
-        my.data = data
-
-    def get_xdata(my):
-        return my.x_data
-
-    def set_index(my, index, total_index):
-        my.index = index
-        my.total_index = total_index
+    def set_chart_type(self, chart_type):
+        self.chart_type = chart_type
 
 
-    def init(my):
-        my.chart_type = my.kwargs.get("chart_type")
-        my.index = my.kwargs.get("index")
-        my.data = my.kwargs.get("data")
-        my.x_data = my.kwargs.get("x_data")
+    def get_data(self):
+        return self.data
 
-        if my.chart_type == 'function':
-            my.data = my.handle_func(my.data)
-            my.chart_type = 'line'
-        elif my.chart_type == 'polynomial':
-            my.data = my.handle_polynomial(my.data)
-            my.chart_type = 'line'
+    def set_data(self, data):
+        self.data = data
 
+    def get_xdata(self):
+        return self.x_data
 
-    def get_display(my):
-
-        labels = my.kwargs.get("labels")
-        color = my.kwargs.get("color")
-
-        if not my.chart_type:
-            my.chart_type = 'bar'
+    def set_index(self, index, total_index):
+        self.index = index
+        self.total_index = total_index
 
 
-        my.x_data = my.kwargs.get("x_data")
-        if not my.x_data:
-            my.x_data = [0]
+    def init(self):
+        self.chart_type = self.kwargs.get("chart_type")
+        self.index = self.kwargs.get("index")
+        self.data = self.kwargs.get("data")
+        self.x_data = self.kwargs.get("x_data")
 
-        top = my.top
+        if self.chart_type == 'function':
+            self.data = self.handle_func(self.data)
+            self.chart_type = 'line'
+        elif self.chart_type == 'polynomial':
+            self.data = self.handle_polynomial(self.data)
+            self.chart_type = 'line'
+
+
+    def get_display(self):
+
+        labels = self.kwargs.get("labels")
+        color = self.kwargs.get("color")
+
+        if not self.chart_type:
+            self.chart_type = 'bar'
+
+
+        self.x_data = self.kwargs.get("x_data")
+        if not self.x_data:
+            self.x_data = [0]
+
+        top = self.top
 
         top.add_behavior( {
         'type': 'load',
         'color': color,
-        'index': str(my.index),
-        'total_index': str(my.total_index),
-        'chart_type': my.chart_type,
-        'data': my.data,
-        'x_data': my.x_data,
+        'index': str(self.index),
+        'total_index': str(self.total_index),
+        'chart_type': self.chart_type,
+        'data': self.data,
+        'x_data': self.x_data,
         'cbjs_action': '''
         var size = spt.chart.get_size();
         var index = parseInt(bvr.index);
@@ -618,7 +627,7 @@ class ChartData(BaseRefreshWdg):
 
 
 
-    def handle_func(my, data):
+    def handle_func(self, data):
         # take the data and fit it?
         """
         data = [10, 8, 5, 3, 1.5]
@@ -656,7 +665,7 @@ class ChartData(BaseRefreshWdg):
         return data
 
 
-    def handle_polynomial(my, data):
+    def handle_polynomial(self, data):
         func = 'a*x*x + b*x *c'
 
         # find b: this isn't so necessary here because we have point 0
@@ -683,19 +692,19 @@ class ChartData(BaseRefreshWdg):
 
 class ChartLegend(BaseRefreshWdg):
 
-    def add_style(my, name, value=None):
-        my.top.add_style(name, value)
+    def add_style(self, name, value=None):
+        self.top.add_style(name, value)
 
-    def set_labels(my, labels):
-        my.kwargs['labels'] = labels
+    def set_labels(self, labels):
+        self.kwargs['labels'] = labels
 
-    def set_colors(my, colors):
-        my.kwargs['colors'] = colors
+    def set_colors(self, colors):
+        self.kwargs['colors'] = colors
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
-        labels = my.kwargs.get("labels")
+        top = self.top
+        labels = self.kwargs.get("labels")
         if not labels:
             return top
 
@@ -708,7 +717,7 @@ class ChartLegend(BaseRefreshWdg):
         top.add_border()
 
 
-        colors = my.kwargs.get("colors")
+        colors = self.kwargs.get("colors")
 
 
         # draw a legend

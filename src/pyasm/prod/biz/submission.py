@@ -22,14 +22,14 @@ class Submission(SObject):
         return ['artist', 'description', 'status', 'search_type']
     get_search_columns = staticmethod(get_search_columns)
 
-    def build_update_description(my, is_insert):
+    def build_update_description(self, is_insert):
         if is_insert:
             action = "Inserted"
         else:
             action = "Updated"
-        title = my.get_search_type_obj().get_title()
+        title = self.get_search_type_obj().get_title()
 
-        parent = my.get_parent()
+        parent = self.get_parent()
         code = ''
         name = ''
         parent_title = ''
@@ -50,10 +50,10 @@ class Submission(SObject):
         return description
 
 
-    def get_bins(my):
+    def get_bins(self):
         '''get all of the bins for this submission'''
-        id = my.get_id()
-        search = Search(Bin, project_code=my.get_project_code() )
+        id = self.get_id()
+        search = Search(Bin, project_code=self.get_project_code() )
         search.set_show_retired(True)
         search.add_where("\"id\" in (select \"bin_id\" from \"submission_in_bin\" where \"submission_id\" = '%s')" % id )
 
@@ -96,16 +96,16 @@ class Bin(SObject):
         return ['code', 'type', 'label']
     get_search_columns = staticmethod(get_search_columns)
 
-    def get_label(my):
-        type = my.get_value('type')
-        if my.get_value('label'):
-            return "%s (%s) - %s" %(my.get_value('code'), \
-                my.get_value('label'), type)
+    def get_label(self):
+        type = self.get_value('type')
+        if self.get_value('label'):
+            return "%s (%s) - %s" %(self.get_value('code'), \
+                self.get_value('label'), type)
         else:
-            return "%s - %s" %(my.get_value('code'), type)
+            return "%s - %s" %(self.get_value('code'), type)
 
-    def get_type(my):
-        return my.get_value('type')
+    def get_type(self):
+        return self.get_value('type')
 
 
 

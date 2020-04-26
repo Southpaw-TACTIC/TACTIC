@@ -30,7 +30,7 @@ WARNING = False
 
 class FixRelativeDirCmd(Command):
 
-    def execute(my):
+    def execute(self):
         search = Search("sthpw/file")
         search.add_limit(1000)
         search.add_where("relative_dir is NULL")

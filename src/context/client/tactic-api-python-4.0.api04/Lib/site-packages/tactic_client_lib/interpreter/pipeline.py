@@ -25,22 +25,22 @@ class Pipeline(object):
     '''class that stores the data structure of the a pipeline.  Internally,
     this is stored as a linked list'''
 
-    def __init__(my, pipeline_xml):
+    def __init__(self, pipeline_xml):
         if IMPORT_ERROR:
             print IMPORT_ERROR
             return
-        my.doc = Sax2.FromXml(pipeline_xml)
+        self.doc = Sax2.FromXml(pipeline_xml)
 
 
-    def get_first_process_name(my):
+    def get_first_process_name(self):
         # for now, just assume the first process
-        nodes = xpath.Evaluate("/pipeline/process", my.doc)
+        nodes = xpath.Evaluate("/pipeline/process", self.doc)
         node = nodes[0]
         return node.getAttribute('name')
 
 
-    def get_process_info(my, process_name):
-        processes = xpath.Evaluate("/pipeline/process[@name='%s']" % process_name, my.doc)
+    def get_process_info(self, process_name):
+        processes = xpath.Evaluate("/pipeline/process[@name='%s']" % process_name, self.doc)
         if not processes:
             return {}
         process = processes[0]
@@ -52,19 +52,19 @@ class Pipeline(object):
 
 
 
-    def get_output_process_names(my, process_name):
-        attrs = xpath.Evaluate("/pipeline/connect[@from='%s']/@to" % process_name, my.doc)
+    def get_output_process_names(self, process_name):
+        attrs = xpath.Evaluate("/pipeline/connect[@from='%s']/@to" % process_name, self.doc)
         return [x.value for x in attrs]
 
 
-    def get_input_process_names(my, process_name):
+    def get_input_process_names(self, process_name):
 
-        attrs = xpath.Evaluate("/pipeline/connect[@to='%s']/@from" % process_name, my.doc)
+        attrs = xpath.Evaluate("/pipeline/connect[@to='%s']/@from" % process_name, self.doc)
         return [x.value for x in attrs]
 
 
-    def get_handler_class(my, process_name):
-        nodes = xpath.Evaluate("/pipeline/process[@name='%s']/action" % process_name, my.doc)
+    def get_handler_class(self, process_name):
+        nodes = xpath.Evaluate("/pipeline/process[@name='%s']/action" % process_name, self.doc)
         if not nodes:
             return ""
 
@@ -73,9 +73,9 @@ class Pipeline(object):
         return action_class
 
 
-    def get_action_options(my, process_name):
+    def get_action_options(self, process_name):
         options = {}
-        nodes = xpath.Evaluate("/pipeline/process[@name='%s']/action" % process_name, my.doc)
+        nodes = xpath.Evaluate("/pipeline/process[@name='%s']/action" % process_name, self.doc)
         if not nodes:
             return options
 
@@ -85,7 +85,7 @@ class Pipeline(object):
             name = node.nodeName
             if name == "#text":
                 continue
-            value = my._get_node_value(node)
+            value = self._get_node_value(node)
             options[name] = value
 
         return options

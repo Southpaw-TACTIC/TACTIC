@@ -26,33 +26,33 @@ class XSIParser(MayaParser):
     ENDLINE_DELIMITER = '}'
 
 
-    def __init__(my, file_path):
-        my.file_path = file_path
+    def __init__(self, file_path):
+        self.file_path = file_path
 
-        my.filters = []
-        my.read_only_flag = True
+        self.filters = []
+        self.read_only_flag = True
 
-        my.current_node = None
-        my.current_node_type = None
+        self.current_node = None
+        self.current_node_type = None
 
-        my.app = None
+        self.app = None
 
-    def set_app(my, app):
-        my.app = app
+    def set_app(self, app):
+        self.app = app
 
 
-    def get_file_path(my):
-        return my.file_path
+    def get_file_path(self):
+        return self.file_path
 
 
     
-    def parse(my):
+    def parse(self):
  
         # find all of the textures in the extracted file
-        file = open(my.file_path, "r")
+        file = open(self.file_path, "r")
 
-        if not my.read_only_flag:
-            file2 = open(my.file_path+".tmp", "w")
+        if not self.read_only_flag:
+            file2 = open(self.file_path+".tmp", "w")
 
         current_node = None
         full_line = []
@@ -67,14 +67,14 @@ class XSIParser(MayaParser):
             line = line.rstrip()
             line = line.lstrip()
             if line.startswith("//"):
-                if not my.read_only_flag:
+                if not self.read_only_flag:
                     file2.write(line)
                     file2.write("\n")
                 continue
 
             # handle multi lines
             full_line.append(line)
-            if line.endswith(my.ENDLINE_DELIMITER):
+            if line.endswith(self.ENDLINE_DELIMITER):
                 # remove \n
                 line = "\n".join(full_line)
                 full_line = []
@@ -89,31 +89,31 @@ class XSIParser(MayaParser):
             # match lines starting with createNode ...
             if cmp_line.startswith("SI_") or cmp_line.startswith("XSI_"):
                 expr = r'(\w+)\ +([\w-]+)\ +{'
-                values = my._extract_values(expr, line)
+                values = self._extract_values(expr, line)
                 if values:
-                    my.current_node_type = values[0]
-                    my.current_node = values[1]
+                    self.current_node_type = values[0]
+                    self.current_node = values[1]
                 else:
                     expr = r'(\w+)\ +{'
-                    values = my._extract_values(expr, line)
+                    values = self._extract_values(expr, line)
                     if values:
-                        my.current_node_type = values[0]
+                        self.current_node_type = values[0]
 
 
             # go through the filters
-            for filter in my.filters:
+            for filter in self.filters:
                 new_line = filter.process(line)
                 if new_line:
                     line = new_line
 
-            if not my.read_only_flag:
+            if not self.read_only_flag:
                 file2.write(line)
                 file2.write("\n")
 
         file.close()
-        if not my.read_only_flag:
+        if not self.read_only_flag:
             file2.close()
-            shutil.move("%s.tmp" % my.file_path, my.file_path)
+            shutil.move("%s.tmp" % self.file_path, self.file_path)
 
 
 
@@ -121,18 +121,18 @@ class XSIParser(MayaParser):
 
 class XSIParserFilter(object):
 
-    def __init__(my):
-        my.parser = None
-        my.app = None
+    def __init__(self):
+        self.parser = None
+        self.app = None
 
 
-    def set_parser(my, parser):
-        my.parser = parser
-        my.app = parser.app
+    def set_parser(self, parser):
+        self.parser = parser
+        self.app = parser.app
 
 
 
-    def _extract_values(my, expr, line):
+    def _extract_values(self, expr, line):
         p = re.compile(expr, re.DOTALL)
         m = p.search(line)
         if not m:
@@ -144,8 +144,8 @@ class XSIParserFilter(object):
 
 
 
-    def _extract_value(my, expr, line):
-        values = my._extract_values(expr, line)
+    def _extract_value(self, expr, line):
+        values = self._extract_values(expr, line)
         if values:
             return values[0]
         else:
@@ -159,36 +159,36 @@ class XSIParserFilter(object):
 
 class XSIParserTextureFilter(XSIParserFilter):
 
-    def __init__(my):
-        my.parser = None
+    def __init__(self):
+        self.parser = None
 
-        my.global_dirs = ['C:']
-        my.texture_nodes = []
-        my.texture_paths = []
-        my.texture_attrs = []
+        self.global_dirs = ['C:']
+        self.texture_nodes = []
+        self.texture_paths = []
+        self.texture_attrs = []
 
 
-    def message(my, msg):
-        if my.app:
-            my.app.message(msg)
+    def message(self, msg):
+        if self.app:
+            self.app.message(msg)
         else:
             print msg
 
-    def set_global_dirs(my, dir_list):
-        my.global_dirs = dir_list
+    def set_global_dirs(self, dir_list):
+        self.global_dirs = dir_list
 
 
-    def get_textures(my):
-        return my.texture_nodes, my.texture_paths, my.texture_attrs
+    def get_textures(self):
+        return self.texture_nodes, self.texture_paths, self.texture_attrs
 
 
-    def process(my, line):
+    def process(self, line):
 
-        current_node = my.parser.current_node
+        current_node = self.parser.current_node
         if not current_node:
             return
             
-        current_node_type = my.parser.current_node_type
+        current_node_type = self.parser.current_node_type
         if current_node_type not in ['XSI_Image']:
             return
 
@@ -201,34 +201,34 @@ class XSIParserTextureFilter(XSIParserFilter):
             if m:
                 results = m.groups()
                 attr = ""
-                my.message( "Texture: %s %s %s" % (current_node, results[0], attr) )
-                my._add_texture(current_node, results[0], attr)
+                self.message( "Texture: %s %s %s" % (current_node, results[0], attr) )
+                self._add_texture(current_node, results[0], attr)
 
 
 
-    def _add_texture(my, current_node, path, attr=""):
+    def _add_texture(self, current_node, path, attr=""):
 
         # By default, dotXSI files will dump out the texture in the same path
         # as the .xsi file. 
         if not os.path.exists(path):
-            xsi_path = my.parser.get_file_path()
+            xsi_path = self.parser.get_file_path()
             dir = os.path.dirname(xsi_path)
             path = "%s/%s" % (dir, path)
 
         if os.path.exists(path):
-            my.texture_nodes.append( current_node )
-            my.texture_paths.append( path )
+            self.texture_nodes.append( current_node )
+            self.texture_paths.append( path )
             if not attr:
                 attr = "ftn"
-            my.texture_attrs.append( attr )
+            self.texture_attrs.append( attr )
         else:
-            my.message("WARNING: texture_path '%s' does not exist" % path)
+            self.message("WARNING: texture_path '%s' does not exist" % path)
 
 
 
 class XSIParserTextureEditFilter(XSIParserTextureFilter):
 
-    def process(my, line):
+    def process(self, line):
         key = 'setAttr ".ed" -type "dataReferenceEdits"'
         if not line.startswith(key):
             return
@@ -248,9 +248,9 @@ class XSIParserTextureEditFilter(XSIParserTextureFilter):
 
             path = match[2]
 
-            my.texture_nodes.append( current_node )
-            my.texture_paths.append( path )
-            my.texture_attrs.append( attr )
+            self.texture_nodes.append( current_node )
+            self.texture_paths.append( path )
+            self.texture_attrs.append( attr )
 
 
 

@@ -24,35 +24,35 @@ class LoaderButtonWdg(Widget):
 
     LOAD_BUTTON_ID = "load_id"
 
-    def init(my):
-        my.load_script = ""
-        my.smart_menu_data = None
+    def init(self):
+        self.load_script = ""
+        self.smart_menu_data = None
 
-    def set_load_script(my, load_script):
-        my.load_script = load_script
+    def set_load_script(self, load_script):
+        self.load_script = load_script
 
-    def set_smart_menu(my, data):
-        my.smart_menu_data = data
+    def set_smart_menu(self, data):
+        self.smart_menu_data = data
 
-    def get_display(my):
-        assert my.load_script
+    def get_display(self):
+        assert self.load_script
 
         widget = DivWdg()
         widget.add_style('float', 'right')
 
         load_button = TextOptionBtnWdg(label='   Load   ', size='medium')
         load_button.get_top_el().add_style('float', 'left')
-        load_button.get_top_el().set_id(my.LOAD_BUTTON_ID)
+        load_button.get_top_el().set_id(self.LOAD_BUTTON_ID)
         load_button.add_behavior(
                 {'type': "click_up",
                 "cbjs_action":
-                "setTimeout(function() {%s}, 200) "% my.load_script
+                "setTimeout(function() {%s}, 200) "% self.load_script
                 })
         widget.add(load_button)
         arrow_button = load_button.get_option_widget()
         #widget.add(arrow_button)
         suffix = "ASSET_LOADER_FUNCTIONS"
-        menus_in = [ my.smart_menu_data ]
+        menus_in = [ self.smart_menu_data ]
 
 
         SmartMenu.add_smart_menu_set( arrow_button,  menus_in)
