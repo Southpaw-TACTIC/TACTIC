@@ -1114,9 +1114,18 @@ class ExpressionValueElementWdg(SimpleTableElementWdg):
 
         # assume the value is an expression
         try:
-            value = Search.eval(value)
+            #value = Search.eval(value)
+
+            env_sobjects = {
+                'sobject': sobject
+            }
+            parser = ExpressionParser()
+            parser.clear_cache()
+            value = parser.eval(value, env_sobjects=env_sobjects)
+            
         except Exception as e:
-            print(e.message)
+            print e.message
+
             value = "Error [%s]" % value
 
         return "%s" % value
