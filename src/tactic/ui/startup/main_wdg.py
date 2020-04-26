@@ -245,7 +245,7 @@ class MainWdg(BaseRefreshWdg):
         security = Environment.get_security()
         view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
         if view_side_bar:
-            button = IconButtonWdg(title="Side Bar", icon=IconWdg.ARROW_LEFT)
+            button = IconButtonWdg(title="Side Bar", icon="FA_ANGLE_LEFT")
             button_div.add(button)
             shelf.add("Toggle Side Bar")
             shelf.add_attr("title", "Toggle Side Bar (or press '1')")

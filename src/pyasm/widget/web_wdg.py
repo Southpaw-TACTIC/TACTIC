@@ -10,13 +10,14 @@
 #
 
 __all__ = [
-#'TopWdg',
+# DEPRECATED: these really haven't been used in a long time
 'PyMayaInit', 'PyFlashInit', 'PyPerforceInit', 'PyHoudiniInit', 'PyXSIInit',
+##
+
 'BottomWdg', 'DynTopWdg', 'DynBottomWdg', 'EditLinkWdg', 'ProdSettingLinkWdg', 'SubmissionLinkWdg', 'RenderLinkWdg', 'FileAppendLinkWdg',
 'InsertLinkWdg', 'IframeInsertLinkWdg', 'DeleteLinkWdg', 'RetireLinkWdg',
 'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg', 'WebLoginWdg2', 'BaseSignInWdg',
 'WebLoginCmd', 'WebLicenseWdg', 'TacticLogoWdg',
-#'ChangePasswordWdg', 'ChangePasswordLinkWdg',
 'SignOutLinkWdg', 'UndoButtonWdg', 'RedoButtonWdg',
 'CmdReportWdg', 'WarningReportWdg', 'MessageWdg', 'HintWdg', 'HelpMenuWdg',
 'HelpItemWdg', 'WarningMenuWdg', 'FloatMenuWdg', 'ExtraInfoWdg', 'UserExtraInfoWdg',

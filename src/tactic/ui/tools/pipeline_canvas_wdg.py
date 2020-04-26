@@ -1572,7 +1572,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
-        label.add_color("color", "color")
+        label.add_color("color", "#000") # we want a dark color here
 
         label.add_style("width: %spx" % width)
         if node_type == "hierarchy":
@@ -3242,9 +3242,9 @@ spt.pipeline.select_node = function(node) {
     if (box_shadow) {
         outer.setStyle("box-shadow", box_shadow);
     } else {
-        outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
+        outer.setStyle("box-shadow", "0px 0px 10px rgba(128,128,128,1.0)");
     }
-    outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
+    outer.setStyle("border", "solid 1px rgba(64,64,64,1.0)");
     outer.setStyle("opacity", "0.8");
 
 
@@ -3273,7 +3273,7 @@ spt.pipeline.unselect_node = function(node) {
     else {
         var outer = node.getElement(".spt_content");
     }
-    var border_color = outer.getAttribute("spt_border_color");
+    var border_color = outer.getAttribute("spt_border_color") || "#000";
     var box_shadow = outer.getAttribute("spt_box_shadow");
     outer.setStyle("box-shadow", box_shadow);
     outer.setStyle("border", "solid 1px " + border_color);

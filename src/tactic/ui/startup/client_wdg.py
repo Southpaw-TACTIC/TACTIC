@@ -139,7 +139,7 @@ class ClientWdg(BaseRefreshWdg):
             button_div.add_style("float: left")
             button_div.add_style("margin-top: -3px")
 
-            button = IconButtonWdg(title="Side Bar", icon=IconWdg.ARROW_LEFT)
+            button = IconButtonWdg(title="Side Bar", icon="FA_ANGLE_LEFT")
             button_div.add(button)
             shelf.add("Toggle Side Bar")
             button.add_behavior( {
