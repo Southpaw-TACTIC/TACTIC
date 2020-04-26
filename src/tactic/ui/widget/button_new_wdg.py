@@ -859,9 +859,11 @@ class ActionButtonWdgOldX(DivWdg):
         if size == 'm':
             top_width = 83
             self.add_style("width: %spx"%top_width)
-        if size == 'l':
+        elif size == 'l':
             top_width = 127
             self.add_style("width: %spx"%top_width)
+        elif size:
+            self.add_style("width: %spx"%size)
 
         self.add(self.table)
         td = self.td
@@ -1048,8 +1050,12 @@ class BootstrapButtonWdg(BaseRefreshWdg):
             "type": "load",
             "cbjs_action": '''
                 $(bvr.src_el).bmdRipples();
-            '''
+           '''
         } )
+
+        size = self.kwargs.get("size")
+        if size:
+            self.button_wdg.add_style("width", "%spx" % size)
 
         
         top.add(self.collapsible_wdg)

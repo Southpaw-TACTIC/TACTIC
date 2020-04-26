@@ -3591,9 +3591,8 @@ class ExceptionWdg(Widget):
         table.add_style("margin: 0px 20px 0px 20px")
         table.add_style("min-width: 200px")
 
-        # FIXME: this module is not in the source code
-        from spt.modules.workflow import Workflow
-        if Workflow.is_tactic_admin() or Workflow.is_admin():
+        security = WebContainer.get_security()
+        if security.is_admin():
             # show stack trace
             button = ActionButtonWdg(title="Stack Trace")
             button.add_style("white-space: nowrap")

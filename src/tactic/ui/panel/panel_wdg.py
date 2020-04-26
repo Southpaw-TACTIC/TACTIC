@@ -2250,7 +2250,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             try:
                 span.add( IconWdg(title, eval("IconWdg.%s" % icon) ) )
             except:
-                pass
+                span.add( IconWdg(title, icon) )
 
 
         span.add(title)
