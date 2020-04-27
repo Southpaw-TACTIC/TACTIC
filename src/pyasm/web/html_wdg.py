@@ -1055,15 +1055,15 @@ class HtmlElement(Widget):
 
         # use a non-random key
         seed = jsondumps(inputs)
-        key = "$%s%s%s" % (ticket, cmd, seed)
+        key = "%s%s%s" % (ticket, cmd, seed)
         hash_object = hashlib.sha512(key.encode())
-        key = hash_object.hexdigest()[:12]
+        key = "$%s" % hash_object.hexdigest()[:12]
         #key = "$"+Common.generate_random_key()
 
         filename = "key_" + key.lstrip("$") + ".txt"
         path = "%s/%s" % (tmp_dir, filename)
         if os.path.exists(path):
-            return
+            return key
 
         f = open(path, "w")
         data = {
@@ -1099,9 +1099,9 @@ class HtmlElement(Widget):
 
         # use a non-random key
         seed = jsondumps(inputs)
-        key = "$%s%s%s" % (ticket, api_name, seed)
+        key = "%s%s%s" % (ticket, api_name, seed)
         hash_object = hashlib.sha512(key.encode())
-        key = hash_object.hexdigest()[:12]
+        key = "$%s" % hash_object.hexdigest()[:12]
         #key = "$"+Common.generate_random_key()
 
         if attr:
@@ -1113,7 +1113,7 @@ class HtmlElement(Widget):
         filename = "api_key_" + key.lstrip("$") + ".txt"
         path = "%s/%s" % (tmp_dir, filename)
         if os.path.exists(path):
-            return
+            return key
 
         f = open(path, 'w')
         args = {
@@ -1128,7 +1128,7 @@ class HtmlElement(Widget):
         return key
     
 
-    def generate_widget_key(self, class_name, inputs={}, ticket=None, attr=""):
+    def generate_widget_key(self, class_name, inputs={}, ticket=None, attr="", unique=False):
 
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
@@ -1146,13 +1146,16 @@ class HtmlElement(Widget):
 
         login = Environment.get_user_name()
 
+        #unique = True
+        if unique:
+            key = "$"+Common.generate_random_key()
+        else:
+            # use a non-random key
+            seed = jsondumps(inputs)
+            key = "%s%s%s" % (ticket, class_name, seed)
 
-        # use a non-random key
-        seed = jsondumps(inputs)
-        key = "$%s%s%s" % (ticket, class_name, seed)
-        hash_object = hashlib.sha512(key.encode())
-        key = hash_object.hexdigest()[:12]
-        #key = "$"+Common.generate_random_key()
+            hash_object = hashlib.sha512(key.encode())
+            key = "$%s" % hash_object.hexdigest()[:12]
 
         if attr:
             self.add_attr("SPT_%s_WIDGET_KEY" % attr.capitalize(), key)
@@ -1163,7 +1166,7 @@ class HtmlElement(Widget):
         filename = "widget_key_" + key.lstrip("$") + ".txt"
         path = "%s/%s" % (tmp_dir, filename)
         if os.path.exists(path):
-            return
+            return key
 
         f = open(path, "w")
         args = {

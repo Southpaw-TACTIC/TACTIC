@@ -1703,7 +1703,7 @@ class Marshaller:
                 raise
                 #raise Exception("%s: %s" % (class_name, e.__str__()))
         except Exception as e:
-            print("%s: %s" % (class_name, e.__str__()))
+            print("ERROR: %s: %s" % (class_name, e.__str__()))
             raise
 
         # go through each option and set it explicitly

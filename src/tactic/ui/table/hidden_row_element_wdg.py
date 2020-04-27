@@ -66,13 +66,14 @@ class HiddenRowElementWdg(BaseTableElementWdg):
 
         class_name = self.get_option("dynamic_class")
         if not class_name:
-            class_name = "tactic.ui.panel.table_layout_wdg.FastTableLayoutWdg"
+            class_name = "tactic.ui.panel.TableLayoutWdg"
+
+        self.layout.generate_widget_key(class_name, self.kwargs)
 
         kwargs = jsondumps(self.kwargs)
 
         name = self.get_name()
         
-        self.layout.generate_widget_key(class_name)
         self.layout.add_relay_behavior( {
         'type': 'click',
         'col_name': name,
