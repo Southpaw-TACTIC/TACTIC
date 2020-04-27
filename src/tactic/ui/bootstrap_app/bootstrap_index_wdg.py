@@ -213,7 +213,6 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 s_link_div.add(icon_wdg)
             except:
                 pass
-
         s_link_div.add(title)
 
         # create the content of the link div
