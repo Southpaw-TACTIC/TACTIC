@@ -2689,9 +2689,13 @@ spt.tab.view_definition = function(bvr) {
                     kwargs['count'] = count
                 kwargs_str = Common.convert_to_json(kwargs)
                 header.add_attr("spt_kwargs", kwargs_str)
-            
-            widget_key = header.generate_widget_key(class_name, inputs=kwargs)
-            header.add_attr("spt_class_name", widget_key)
+           
+            # Disable widget key for now
+            #widget_key = header.generate_widget_key(class_name, inputs=kwargs)
+            #header.add_attr("spt_class_name", widget_key)
+            header.add_attr("spt_class_name", class_name)
+
+            # For viewing definition with widget_key
             header.add_attr("spt_class_name_decoded", class_name)
 
         else:

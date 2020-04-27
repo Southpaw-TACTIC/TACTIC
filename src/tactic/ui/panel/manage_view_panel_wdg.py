@@ -1195,7 +1195,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         content = DivWdg()
-        content.add_style('width','600px')
+        content.add_style('width','100%')
 
         group_wdg = DivWdg()
         group_wdg.add_border()

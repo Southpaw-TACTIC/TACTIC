@@ -213,6 +213,7 @@ class AddTaskWdg(BaseRefreshWdg):
             if not name:
                 name = pipeline.get_code()
             span = SpanWdg("Pipeline: %s" % name)
+
             span.add_style('font-weight: bold')
             v_div = FloatDivWdg(span)
             v_div.add_style('margin: 20px')
@@ -223,6 +224,7 @@ class AddTaskWdg(BaseRefreshWdg):
 
             cb_name = '%s|task_process'  %pipeline.get_code()
             master_cb = CheckboxWdg('master_control')
+            master_cb.add_style("margin-right: 5px")
             master_cb.set_checked()
             master_cb.add_behavior({'type': 'click_up',
                 'propagate_evt': True,
@@ -232,6 +234,7 @@ class AddTaskWdg(BaseRefreshWdg):
                         inputs[i].checked = bvr.src_el.checked;
                         ''' %cb_name})
             toggle_div = DivWdg()
+            toggle_div.add_style("display: flex")
             toggle_div.add(SpanWdg(master_cb, css='small'))
             label = HtmlElement.i('toggle all')
             label.add_style('color: #888')
@@ -269,45 +272,111 @@ class AddTaskWdg(BaseRefreshWdg):
                     process_labels.append(process_label)
 
                 for idx, context in enumerate(contexts):
+                    item_div = DivWdg()
+                    v_div.add(item_div)
+                    item_div.add_style("display: flex")
+                    item_div.add_style("margin: 5px 0px")
+
                     cb = CheckboxWdg(cb_name)
+                    cb.add_style("margin-right: 5px")
                     cb.set_checked()
                     cb.set_option('value', context)
-                    v_div.add(SpanWdg(cb, css='small'))
+                    item_div.add(SpanWdg(cb, css='small'))
                     if mode == 'context':
                         span = SpanWdg(process_name, css='med')
                         #span.add_color('color','color')
-                        v_div.add(span)
-                    v_div.add(SpanWdg(labels[idx]))
+                        item_div.add(span)
+                    item_div.add(SpanWdg(labels[idx]))
                     process_label = process_labels[idx]
                     if process_label:
-                        v_div.add(SpanWdg("(%s)" %process_label, css='small'))
-                    v_div.add(HtmlElement.br())
+                        item_div.add(SpanWdg("(%s)" %process_label, css='small'))
         
        
         content_div.add("<br clear='all'/>")
 
         skipped = [] 
 
-        if True:
-            div.add("<br/>")
-            btn = ActionButtonWdg(title='Add Tasks')
-            btn.add_behavior({'type' : 'click_up',
-            'post_event': 'search_table_%s'% self.table_id,
-            'cbjs_action': '''
-            spt.dg_table.add_task_selected(bvr);
-            ''',
-            'search_key_list': self.search_key_list
-            })
-            cb = CheckboxWdg('skip_duplicated', label='Skip Duplicates')
-            cb.set_checked()
-            option_div =DivWdg(cb)
-            option_div.add_style('width', '130px')
-            option_div.add_style('align: left')
-            div.add(option_div)
-            div.add(HtmlElement.br())
-            btn.add_style("float: right")
-            div.add(btn)
-            div.add(HtmlElement.br(clear="all"))
+        div.add("<br/>")
+        btn = ActionButtonWdg(title='Add Tasks')
+        btn.add_behavior( {
+        'type' : 'click_up',
+        'search_key_list': self.search_key_list,
+        'post_event': 'search_table_%s'% self.table_id,
+        'cbjs_action': r'''
+        //spt.dg_table.add_task_selected(bvr);
+
+        var search_keys = bvr.search_key_list;
+        var num = search_keys.length;
+        if (num == 0) {
+            spt.alert("Nothing selected to create task for");
+            return;
+        }
+
+
+        var add_task_cancel = function() {
+             spt.app_busy.hide();
+        }
+
+        var add_task_ok = function() {
+            var aborted = false;
+            var server = TacticServerStub.get();
+            var title = 'Add Tasks:';
+            var refresh_event = bvr.post_event;
+
+            var msg = 'Adding tasks to  ' + num + ' items ...';
+
+            spt.app_busy.show( title, msg );
+            server.start({title: "Adding task to ["+num+"] items"});
+
+            on_complete = function() {
+                server.finish();
+                if (!aborted) {
+                    spt.notify.show_message("Task creation completed.");
+                    spt.named_events.fire_event(refresh_event, {});
+                }
+            };
+
+            try {
+                var cmd = 'tactic.ui.app.AddTaskCbk';
+                var options = {
+                        'search_key_list': bvr.search_key_list};
+                var values = spt.api.Utility.get_input_values(bvr.src_el.getParent('.spt_add_task_panel'))
+                rtn = server.execute_cmd(cmd, options, values,{on_complete:on_complete});
+
+                //spt.alert(rtn.description);
+            }
+            catch(e) {
+                var error_str = spt.exception.handler(e);
+                error_str = error_str.replace('\n','<br>');
+                spt.app_busy.hide()
+                spt.alert( '"Add Task to Selected" aborted "' +
+                        error_str + '"' );
+                server.abort();
+                aborted = true;
+            }
+
+            spt.app_busy.hide()
+            //server.finish();
+            spt.popup.close(bvr.src_el.getParent('.spt_popup'));
+
+
+        }
+        var msg = "Are you sure you wish to add tasks to [" + num + "] items?";
+        //spt.confirm(msg, add_task_ok, add_task_cancel);
+        add_task_ok();
+        ''',
+        })
+        cb = CheckboxWdg('skip_duplicated', label='Skip Duplicates')
+        cb.set_checked()
+        cb.add_style("margin-right: 5px")
+        option_div =DivWdg(cb)
+        option_div.add_style('width', '130px')
+        option_div.add_style('align: left')
+        div.add(option_div)
+        div.add(HtmlElement.br())
+        btn.add_style("float: right")
+        div.add(btn)
+        div.add(HtmlElement.br(clear="all"))
 
 
         if skipped:
