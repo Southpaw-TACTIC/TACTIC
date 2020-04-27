@@ -1060,6 +1060,8 @@ class HtmlElement(Widget):
         key = "$%s" % hash_object.hexdigest()[:12]
         #key = "$"+Common.generate_random_key()
 
+        self.add_attr("SPT_CMD_KEY", key)
+
         filename = "key_" + key.lstrip("$") + ".txt"
         path = "%s/%s" % (tmp_dir, filename)
         if os.path.exists(path):
@@ -1074,8 +1076,6 @@ class HtmlElement(Widget):
         }
         f.write(jsondumps(data))
         f.close()
-
-        self.add_attr("SPT_CMD_KEY", key)
 
         return key
 
