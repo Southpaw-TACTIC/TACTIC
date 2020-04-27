@@ -1269,18 +1269,19 @@ class GanttElementWdg(BaseTableElementWdg):
         if self.kwargs.get("date_mode") == "none" or not self.overlap:
             widget.add(start_div)
         start_div.add_style("float: left")
-        start_div.add_style("margin-left: -42px")
+        start_div.add_style("margin-left: -32px")
         start_div.add_style('text-decoration: none')
         start_div.add_class("spt_gantt_start unselectable")
         #start_div.add_behavior( { 'type': 'hover', 'mod_styles': 'text-decoration: underline;' } )
         start_div.add(start_display_date)
         start_div.set_attr("spt_input_value", start_date_str)
 
+        start_div.add_style("font-size", "0.8em")
+        start_div.add_color("color", "color3")
         start_div.add_color("background", "background3")
         #start_div.add_style("margin-top: 3px")
         start_div.add_border()
         start_div.set_round_corners(10, ["TL", "BL"])
-        start_div.add_style("opacity: 0.4")
 
         start_div.add_class("spt_start_date")
         if self.kwargs.get("date_mode") == 'hover':
@@ -1391,9 +1392,9 @@ class GanttElementWdg(BaseTableElementWdg):
         end_div.add(end_display_date)
 
 
+        end_div.add_style("font-size", "0.8em")
+        end_div.add_color("color", "color3")
         end_div.add_color("background", "background3")
-        #end_div.add_style("margin-top: 3px")
-        end_div.add_style("opacity: 0.4")
         end_div.add_border()
         end_div.set_round_corners(10, ["TR", "BR"])
 

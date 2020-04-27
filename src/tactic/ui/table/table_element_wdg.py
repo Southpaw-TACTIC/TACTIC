@@ -464,6 +464,10 @@ class CheckinButtonElementWdg(ButtonElementWdg):
             else:
                 self.set_option('icon', "PUBLISH")
 
+
+        self.set_option("icon", "FA_UPLOAD")
+
+
         transfer_mode = self.get_option('transfer_mode')
         checkin_ui_options = self.get_option('checkin_ui_options')
         if not checkin_ui_options:
