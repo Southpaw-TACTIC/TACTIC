@@ -1054,7 +1054,7 @@ class HtmlElement(Widget):
         login = Environment.get_user_name()
 
         # use a non-random key
-        seed = jsondumps(inputs)
+        seed = jsondumps(kwargs)
         key = "%s%s%s" % (ticket, cmd, seed)
         hash_object = hashlib.sha512(key.encode())
         key = "$%s" % hash_object.hexdigest()[:12]
