@@ -591,7 +591,14 @@ spt.smenu._show_action = function( evt, menu, activation_type, activator_bvr )
         var entry_el = activator_bvr.src_el;
         var abs_offset = spt.get_absolute_offset(entry_el);
 
-        menu.setStyle("left", (abs_offset.x + entry_el.clientWidth + nudge_horiz));
+        var left = abs_offset.x + entry_el.clientWidth + nudge_horiz;
+        if (left >= window.innerWidth - entry_el.clientWidth) {
+            left = window.innerWidth - entry_el.clientWidth - 235;
+            //nudge_vert += 25;
+        }
+        console.log(left)
+
+        menu.setStyle("left", left);
         menu.setStyle("top" , (abs_offset.y + nudge_vert));
     }
     else {
