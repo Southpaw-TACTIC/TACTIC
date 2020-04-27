@@ -3,7 +3,7 @@ import six
 from pyasm.biz import Project
 from pyasm.common import Environment, Common
 from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg, Palette
-from pyasm.widget import WidgetConfig
+from pyasm.widget import WidgetConfig, IconWdg
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ButtonNewWdg, ActionButtonWdg, BootstrapButtonRowWdg
@@ -129,6 +129,8 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         div.add_class("spt_side_bar_separator")
         div.add_attr("spt_element_name", element_name)
         div.add_class("dropdown-divider")
+        div.add_style("margin: 3px 30px 3px 20px")
+        div.add_style("opacity: 0.5")
         
         options = config.get_display_options(element_name)
         self.add_separator_behavior(div, element_name, config, options)
@@ -202,18 +204,15 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         content_id = s_content_div.set_unique_id()
         s_link_div.set_attr("href", "#%s" % content_id)
 
-        """
         # add an icon if applicable
         icon = attributes.get("icon")
         if icon:
             icon = icon.upper()
-            from pyasm.widget import IconWdg
             try:
-                icon_wdg =  IconWdg(title, eval("IconWdg.%s" % icon) )
+                icon_wdg =  IconWdg(title, icon)
                 s_link_div.add(icon_wdg)
             except:
                 pass
-        """
 
         s_link_div.add(title)
 
@@ -268,6 +267,8 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
         link_wdg = HtmlElement.li()
+
+
         if self.mode == 'edit' and attributes.get("is_visible") == "false":
             link_wdg.add_style("opacity: 0.5")
 
@@ -295,6 +296,21 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         span = HtmlElement("a")
         span.add_class("spt_side_bar_title")
         span.add_class("nav-link")
+
+
+        # add an icon if applicable
+        icon = attributes.get("icon")
+        if icon:
+            icon = icon.upper()
+            try:
+                icon_wdg =  IconWdg(title, icon)
+                span.add(icon_wdg)
+            except:
+                pass
+
+
+
+
 
         icon = attributes.get("sb_icon")
         if icon:
