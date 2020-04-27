@@ -1529,7 +1529,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if browser == 'Qt' and os.name != 'nt':
             height = "38px"
         elif scale != 1:
-            xx.add_style("position: absolute")
+            #xx.add_style("position: absolute")
             xx.add_color("backgroud","background")
             xx.set_scale(scale)
             xx.add_style("float: left")

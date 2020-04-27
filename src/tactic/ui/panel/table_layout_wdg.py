@@ -4685,25 +4685,22 @@ spt.table.hide_selected = function() {
 
 
 spt.table.add_hidden_row = function(row, class_name, kwargs) {
-    //var clone = spt.behavior.clone(row);
     var clone = document.createElement("tr");
     clone.addClass("spt_hidden_row");
-    //clone.setStyle("background", bvr.hidden_row_color);
-    //var color = row.getStyle("background-color");
     var color = row.getAttribute("spt_hover_background");
     clone.setStyle("background", color);
 
     var children = row.getChildren();
     var num_children = children.length;
     var html = '<img src="/context/icons/common/indicator_snake.gif" border="0"/>';
-    clone.innerHTML = "<td class='spt_hidden_row_cell' colspan='"+num_children+"'>"+html+" Loading ...</td>";
+    clone.innerHTML = "<td class='spt_hidden_row_cell' colspan='"+num_children+"'> "+html+" Loading ...</td>";
     clone.inject(row, "after");
 
     var hidden_row = clone.getElement(".spt_hidden_row_cell");
     hidden_row.setStyle("height", "50px");
-    //hidden_row.setStyle("padding", "5px");
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
+    hidden_row.setStyle("padding-bottom", "10px");
 
     // position the arrow
     var src_el = kwargs.src_el;
@@ -4711,36 +4708,17 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     var pos = src_el.getPosition(row);
     var dx = pos.x - 30;
 
-
-
     var server = TacticServerStub.get();
 
-    var kwargs_old = {
-      'args': kwargs,
-      'cbjs_action': function(widget_html) {
-        hidden_row.setStyle("padding-left", "32px");
-        hidden_row.setStyle("font-size", "12px");
-        hidden_row.setStyle("font-weight", "normal");
-        spt.behavior.replace_inner_html(hidden_row, widget_html);
-        var child = hidden_row.firstChild;
-        if (child) {
-            hidden_row.setStyle("overflow", "hidden");
-            var size = child.getSize();
-            child.setStyle("margin-top", -size.y-100);
-            new Fx.Tween(child, {duration: "short"}).start('margin-top', "0px");
-        }
-      }
-    }
     if (spt.table.last_table.hasOwnProperty('hidden_zindex'))
         spt.table.last_table.hidden_zindex += 1;
     else
         spt.table.last_table.hidden_zindex = 100;
 
 
+
     // New popup test
-    var kwargs = {
-      'args': kwargs,
-      'cbjs_action': function(widget_html) {
+    var on_complete = function(widget_html) {
         hidden_row.setStyle("padding-left", "32px");
         hidden_row.setStyle("font-size", "12px");
         hidden_row.setStyle("font-weight", "normal");
@@ -4748,7 +4726,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
 
         var shadow_color = spt.table.shadow_color;
 
-        var border_color = "#777";
+        var border_color = "var(--spt_palette_table_border)";
 
         // test make the hidden row sit on top of the table
         widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; box-shadow: 0px 0px 15px "+shadow_color+"; background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
@@ -4756,7 +4734,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><img src='/context/icons/custom/popup_close.png'/></div>" +
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><i class='hand fa fa-remove'> </i></div>" +
           "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
@@ -4766,6 +4744,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         spt.behavior.replace_inner_html(hidden_row, widget_html);
 
         var top = hidden_row.getElement(".spt_hidden_content_top");
+
         var pointer = hidden_row.getElement(".spt_hidden_content_pointer");
         var child = hidden_row.getElement(".spt_hidden_content");
         if (child) {
@@ -4788,10 +4767,12 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
                 top.setStyle("margin-left", pos_pointer.x-top_size.x+5);
             }
         }
-      }
     }
+    //}
 
-    server.async_get_widget(class_name, kwargs);
+    //server.async_get_widget(class_name, kwargs);
+    var class_name = kwargs.dynamic_class;
+    server.get_widget(class_name, {args: kwargs}, on_complete);
 }
 
 
