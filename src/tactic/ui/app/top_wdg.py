@@ -1046,18 +1046,42 @@ class TopWdg(Widget):
         
         css_library = ProjectSetting.get_value_by_key("feature/css_library") or "bootstrap_material"
 
+
         widget.add('''
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        ''')
+
+        # JQuery
+        """
+        widget.add('''
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        ''')
+        """
+        widget.add('''
+<script src="/context/spt_js/jquery/jquery-3.4.1.min.js"></script>
+<script src="/context/spt_js/jquery/jquery-ui.min.js"></script>
+<script src="/context/spt_js/jquery/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        ''')
+ 
 
+        # add form io
+        """
+        widget.add('''
 <!-- Form builder -->
 <link rel='stylesheet' href='https://unpkg.com/formiojs@latest/dist/formio.full.min.css'>
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
+        ''')
+        """
+        widget.add('''
+<!-- Form builder -->
+<link rel='stylesheet' href='/context/spt_js/formio/formio.full.min.css'>
+<script src='/context/spt_js/formio/formio.full.min.js'></script>
+        ''')
+ 
 
-''')
 
         if ui_library == "bootstrap":
             widget.add('''
@@ -1065,13 +1089,16 @@ class TopWdg(Widget):
 ''')
 
         else:
+            """
+<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+            """
 
             widget.add('''
 <!-- Material Design for Bootstrap fonts and icons -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
 
 <!-- Material Design for Bootstrap JS -->
-<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+<script src="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 
 
 
@@ -1087,15 +1114,23 @@ class TopWdg(Widget):
             Container.append_seq("Page:css", "%s/spt_js/bootstrap/css/bootstrap.min.css?ver=%s" % (context_url, version))
             
         elif css_library == "bootstrap":
-            widget.add("""
+            widget.add('''
 <!-- Bootstrap CSS -->
 <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
-""")
+            ''')
         
         elif css_library == "bootstrap_material":
-            widget.add("""
+            """
+            widget.add('''
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
-""")
+            ''')
+            """
+            widget.add('''
+<link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+            ''')
+
+
+
         
         else:
             Container.append_seq("Page:css", css_library)

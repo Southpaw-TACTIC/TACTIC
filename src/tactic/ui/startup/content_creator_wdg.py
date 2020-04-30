@@ -279,8 +279,7 @@ class ToolsWdg(BaseRefreshWdg):
         # create a bunch of panels
         table = Table()
         table.add_color("color", "color")
-        table.add_style("margin-bottom: 20px")
-        table.center()
+        table.add_style("margin: 20px auto")
         top.add(table)
         table.add_row()
 

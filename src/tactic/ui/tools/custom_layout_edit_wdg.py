@@ -1408,7 +1408,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     '''
                 } )
 
-                # This breaks the beahviors into separate intefaces
+                # This breaks the behaviors into separate intefaces
                 behavior_div.add_color("background", "background", -5)
                 table = Table()
                 table.add_style("width: 100%")

@@ -109,21 +109,30 @@ class PipelineToolWdg(BaseRefreshWdg):
 
     def get_styles(self):
 
-        styles = HtmlElement.style('''
+        styles = HtmlElement.style()
+        background = styles.get_color("background")
+        color = styles.get_color("color")
+        colors = {
+                "color": color,
+                "background": background,
+                "border": styles.get_color("table_border")
+        }
+
+        styles.add('''
 
             .spt_pipeline_tool_left {
                 width: 200px;
-                height: 100%;
+                height: 100%%;
                 position: absolute;
                 left: 0px;
                 transition: .25s;
-                border: 1px solid #ccc;
+                border: 1px solid %(border)s;
                 border-width: 0px 1px 1px 1px;
             }
 
             .spt_pipeline_tool_right {
-                width: calc(100% - 200px);
-                height: 100%;
+                width: calc(100%% - 200px);
+                height: 100%%;
                 padding: 0 2px;
                 overflow-x: hidden;
                 overflow-y: auto;
@@ -133,8 +142,8 @@ class PipelineToolWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_editor_start {
-                height: 100%;
-                width: 100%;
+                height: 100%%;
+                width: 100%%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -147,10 +156,10 @@ class PipelineToolWdg(BaseRefreshWdg):
                 transition: 0.25s;
                 top: 33px;
                 bottom: 0px;
-                border: 1px solid #ccc;
+                border: 1px solid %(border)s;
                 padding: 20px 0;
                 border-width: 1px 0px 1px 1px;
-                background: white;
+                background: %(background)s;
                 overflow-y: auto;
                 z-index: 150;
             }
@@ -160,8 +169,8 @@ class PipelineToolWdg(BaseRefreshWdg):
                 right: 9;
                 height: 144px;
                 width: 163px;
-                background: white;
-                border: 1px solid #ccc;
+                background: %(background)s;
+                border: 1px solid %(border)s;
                 box-shadow: 0px 2px 4px 0px #ccc;
                 z-index: 1000;
                 top: 29;
@@ -169,9 +178,9 @@ class PipelineToolWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_tool_top .search-result {
-                width: 100%;
+                width: 100%%;
                 height: 32px;
-                border-bottom: 1px solid #ccc;
+                border-bottom: 1px solid %(border)s;
                 display: flex;
                 align-items: center;
                 padding: 7px 6px;
@@ -209,9 +218,9 @@ class PipelineToolWdg(BaseRefreshWdg):
                 position: absolute;
                 width: 200px;
                 height: 60px;
-                background: white;
+                background: %(background)s;
                 box-shadow: 0px 2px 4px 0px #ccc;
-                border: 1px solid #ccc;
+                border: 1px solid %(border)s;
                 border-radius: 3px;
                 padding: 5px;
                 font-size: 10px;
@@ -219,7 +228,7 @@ class PipelineToolWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_tool_top .spt_pipeline_toolbar {
-                border: 1px solid #ccc;
+                border: 1px solid %(border)s;
                 border-width: 0 0 1 0;
                 height: 33px;
 
@@ -229,8 +238,8 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             .spt_pipeline_tool_top .spt_hide_sidebar {
                 padding: 5px;
-                height: 100%;
-                border-right: 1px solid #ccc;
+                height: 100%%;
+                border-right: 1px solid %(border)s;
             }
 
             .spt_pipeline_tool_top .toolbar-icon:hover {
@@ -250,19 +259,19 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             .spt_pipeline_tool_top .spt_show_sidebar {
                 height: 26px;
-                border: 1px solid #ccc;
+                border: 1px solid %(border)s;
                 position: absolute;
                 left: 3px;
                 top: 1px;
-                background: white;
+                background: %(background)s;
             }
 
             .spt_pipeline_tool_top .spt_pipeline_type_search {
                 border: 0px;
-                height: 100%;
+                height: 100%%;
                 padding: 6px 8px;
-                width: 100%;
-                border-right: 1px solid #ccc;
+                width: 100%%;
+                border-right: 1px solid %(border)s;
             }
 
             .spt_pipeline_tool_top .spt_toolbar_content:not(.selected) {
@@ -276,33 +285,33 @@ class PipelineToolWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_tool_top .floating-icon {
-                background: white;
+                background: %(background)s;
                 color: grey;
                 border-radius: 2px;
-                border: 1px solid #ccc;
+                border: 1px solid %(border)s;
             }
 
             .spt_pipeline_tool_top_container {
                 display: flex;
-                height: 100%;
-                width: 100%;
+                height: 100%%;
+                width: 100%%;
                 overflow: hidden;
-                background: #FFFFFF;
+                background: %(background)s;
                 position: relative;
             }
 
             .spt_pipeline_list_top {
-                height: calc(100% - 33px);
+                height: calc(100%% - 33px);
                 overflow-y: auto;
 
             }
 
             .spt_pipeline_nodes {
                 overflow-y: auto;
-                height: calc(100% - 33px);
+                height: calc(100%% - 33px);
             }
 
-            ''')
+            ''' % colors)
 
         return styles
 
@@ -3631,6 +3640,8 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
         if setting in ["true"]:
+
+            # FIXME: this does not belong here
 
             from spt.modules.workflow import TaskButtonDetailSettingWdg, TaskDetailSettingWdg
             #detail_wdg = TaskDetailSettingWdg(

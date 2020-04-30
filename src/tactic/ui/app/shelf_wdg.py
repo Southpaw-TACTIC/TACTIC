@@ -1004,7 +1004,7 @@ class AceEditorWdg(BaseRefreshWdg):
             bottom_div.add_style("padding: 2px")
             # bottom_div.add_style("height: 20px")
 
-            bottom_title = "Script Editor"
+            bottom_title = "Script Editor "
             bottom_div.add(bottom_title)
 
             hidden = TextWdg("size")
