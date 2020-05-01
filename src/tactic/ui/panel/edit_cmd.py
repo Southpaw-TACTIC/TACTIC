@@ -150,13 +150,15 @@ class EditCmd(Command):
             last_sobject = self._execute_single(code, name=name)
 
             last_code = last_sobject.get_value("code", no_exception=True)
-            last_name = last_sobject.get_value("name", no_exception=True)
 
-            if index == 0 and self.multiplier > 1:
-                name = Common.get_next_code(last_name)
-                last_sobject.set_value("name", name)
-                last_sobject.commit()
+            if last_sobject.column_exists("name"):
                 last_name = last_sobject.get_value("name", no_exception=True)
+
+                if index == 0 and self.multiplier > 1:
+                    name = Common.get_next_code(last_name)
+                    last_sobject.set_value("name", name)
+                    last_sobject.commit()
+                    last_name = last_sobject.get_value("name", no_exception=True)
 
 
 
@@ -341,7 +343,6 @@ class EditCmd(Command):
 
         # set the sobject for each action handler
         for action_handler in action_handlers:
-
             action_handler.set_sobject(sobject)
             if action_handler.check():
                 if self.parent_key:

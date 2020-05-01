@@ -1125,9 +1125,18 @@ class TopWdg(Widget):
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
             ''')
             """
-            widget.add('''
-<link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
-            ''')
+
+            theme = "DARK"
+            if theme == "DARK":
+                bootstrap_material_css = "/plugins/spt/modules/workflow/project_management/assets/bmd-bs-tactic-project.css"
+                widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
+            elif theme == "LIGHT":
+                bootstrap_material_css = "/plugins/spt/modules/workflow/project_management/assets/bmd-bs-tactic-project.css"
+                widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
+            else:
+                widget.add('''
+                <link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+                ''')
 
 
 
@@ -1198,11 +1207,12 @@ class JavascriptImportWdg(BaseRefreshWdg):
         Container.append_seq("Page:js", "%s/moment.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/moment-timezone.min.js" % spt_js_url)
         Container.append_seq("Page:js", "%s/html2canvas.js" % spt_js_url)
-        
+       
+        # TESTING
         # viewer.js from pdfjs may not be needed in the future. For now,
         # it was added for KYC, which requires this. (added 2019-02)
-        Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
-        Container.append_seq("Page:js", "/plugins/pdfjs/web/viewer.js")
+        #Container.append_seq("Page:js", "/plugins/pdfjs/build/pdf.js")
+        #Container.append_seq("Page:js", "/plugins/pdfjs/web/viewer.js")
 
         if not web.is_admin_page():
             use_require = ProjectSetting.get_value_by_key("js_libraries/require")
