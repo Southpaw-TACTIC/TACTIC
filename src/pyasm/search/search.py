@@ -728,7 +728,7 @@ class Search(Base):
         related_type = sobject.get_search_type()
         
         if search_type == related_type:
-            print("WARNING: related type and search type are the same for [%s]" % search_type)
+            #print("WARNING: related type and search type are the same for [%s]" % search_type)
             self.add_id_filter(sobject.get_id())
             return
 
@@ -3110,7 +3110,10 @@ class SObject(object):
             return value
 
         if value:
-            value = parser.parse(value)
+            try:
+                value = parser.parse(value)
+            except ValueError, e:
+                value = None
         else:
             value = None
         return value
