@@ -3616,7 +3616,8 @@ class ExceptionWdg(Widget):
         div.add(pre)
 
 
-        if Workflow.is_tactic_admin():
+        security = WebContainer.get_security()
+        if security.is_admin():
             # show system info
             button = ActionButtonWdg(title="System Info")
             button.add_style("white-space: nowrap")
