@@ -973,7 +973,7 @@ class AceEditorWdg(BaseRefreshWdg):
 
 
 
-        self.text_area.add_border()
+        # self.text_area.add_border()
         editor_div.add(self.text_area)
 
 
@@ -998,31 +998,32 @@ class AceEditorWdg(BaseRefreshWdg):
             bottom_div = DivWdg()
             top.add(bottom_div)
             bottom_div.add_color("background", "background3")
-            bottom_div.add_border()
+            bottom_div.add_style("position", "relative")
+            # bottom_div.add_border()
             bottom_div.add_style("text-align: center")
             bottom_div.add_style("padding: 2px")
-            bottom_div.add_style("height: 20px")
+            # bottom_div.add_style("height: 20px")
 
-            bottom_title = "Script Editor"
+            bottom_title = "Script Editor "
             bottom_div.add(bottom_title)
-
-            icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
-            bottom_div.add(icon)
-            icon.add_style("float: right")
-            icon.add_style("margin-right: -4px")
-            icon.add_style("cursor: se-resize")
-            icon.add_behavior( {
-                'type': 'drag',
-                "cb_set_prefix": 'spt.ace_editor.drag_resize',
-            } )
 
             hidden = TextWdg("size")
             bottom_div.add(hidden)
             hidden.add_style("width: 85px")
             hidden.add_style("text-align: center")
-            hidden.add_style("float: right")
             hidden.add_class("spt_size")
             hidden.set_value("%s,%s" % (width, height))
+
+            icon = IconWdg("Resize Editor", IconWdg.RESIZE_CORNER)
+            icon.add_style("position", "absolute")
+            icon.add_style("right", "3px")
+            icon.add_style("bottom", "3px")
+            bottom_div.add(icon)
+            icon.add_style("cursor: se-resize")
+            icon.add_behavior( {
+                'type': 'drag',
+                "cb_set_prefix": 'spt.ace_editor.drag_resize',
+            } )
 
         theme = top.get_theme()
         if theme == 'dark':

@@ -443,13 +443,15 @@ class IconWdg(DivWdg):
             if not self.opacity:
                 self.opacity = 0.6
 
-        elif icon_path.startswith("FA_"):
+        elif icon_path.startswith("FA_") or icon_path.startswith("FAR_") or icon_path.startswith("FAS_"):
             icon = HtmlElement.i()
-            icon.add_class("fa")
-            part = icon_path.replace("FA_", "")
-            part = part.lower()
-            part = part.replace("_","-")
-            icon.add_class("fa-%s" % part)
+            parts = icon_path.split("_")
+            prefix = icon_path.split("_")[0].lower()
+            icon.add_class(prefix)
+
+            base = "-".join(parts[1:])
+            base = base.lower()
+            icon.add_class("fa-%s" % base)
 
             if not self.size:
                 self.size = "16px"
@@ -572,6 +574,10 @@ class IconButtonWdg(HtmlElement):
         if self.icon_path.startswith("BS_"):
             icon = IconWdg(self.name, self.icon_path, size=size)
         elif self.icon_path.startswith("FA_"):
+            icon = IconWdg(self.name, self.icon_path, size=size)
+        elif self.icon_path.startswith("FAR_"):
+            icon = IconWdg(self.name, self.icon_path, size=size)
+        elif self.icon_path.startswith("FAS_"):
             icon = IconWdg(self.name, self.icon_path, size=size)
         else:
             icon_path = IconWdg.get_icon_path(self.icon_path)

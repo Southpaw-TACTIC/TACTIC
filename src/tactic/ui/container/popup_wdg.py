@@ -376,7 +376,7 @@ class PopupWdg(BaseRefreshWdg):
             close_wdg = DivWdg()
             close_wdg.add_class("spt_popup_close")
 
-            close_btn = ButtonNewWdg(title="Close", icon="FA_WINDOW_CLOSE")
+            close_btn = ButtonNewWdg(title="Close", icon="FAS_WINDOW_CLOSE")
             close_wdg.add(close_btn)
 
             close_wdg.add_behavior({
@@ -390,11 +390,11 @@ class PopupWdg(BaseRefreshWdg):
             minimize_wdg = DivWdg()
             minimize_wdg.add_class("spt_popup_min")
             
-            minimize_btn = ButtonNewWdg(title="Minimize", icon="FA_WINDOW_MINIMIZE")
+            minimize_btn = ButtonNewWdg(title="Minimize", icon="FAS_WINDOW_MINIMIZE")
             minimize_btn.add_class("spt_minimize", redirect=False)
            
             maximum_wdg = DivWdg()
-            maximize_btn = ButtonNewWdg(title="Maximize", icon="FA_WINDOW_MAXIMIZE")
+            maximize_btn = ButtonNewWdg(title="Maximize", icon="FAS_WINDOW_MAXIMIZE")
             maximize_btn.add_class("spt_maximize", redirect=False)
             maximize_btn.add_style("display: none")
 
@@ -1036,10 +1036,7 @@ spt.popup.get_widget = function( evt, bvr )
     if( ! popup ) {
         // get the common popup, clone it and fill it in
         var popup_template = document.id("popup_template");
-        // var popup = spt.behavior.clone(popup_template);  // PREVIOUS (doesn't work well in IE)
-        //var popup = spt.behavior.duplicate_element(popup_template);
         var popup = spt.behavior.clone(popup_template);
-
 
         if( popup_id ) {
             popup.set("id", popup_id);
@@ -1154,6 +1151,9 @@ spt.popup.get_widget = function( evt, bvr )
         popup.setStyle("left", xpos);
         popup.setStyle("margin-left", 0);
         popup.setStyle("position", "fixed");
+
+        spt.z_index.bring_forward( spt.z_index.get_z_el(popup) )
+
 
         var content_size = content_wdg.getSize();
         var window_size = document.id(window).getSize();

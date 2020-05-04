@@ -178,7 +178,7 @@ class SwitchLayoutMenu(object):
                 return;
             }
 
-          
+
             var table_top = top.getElement(".spt_table_top");
             
 
@@ -200,6 +200,7 @@ class SwitchLayoutMenu(object):
 
             
             top.setAttribute("spt_layout", bvr.layout);
+
             var last_view = top.getAttribute("spt_view");
             top.setAttribute("spt_last_view", last_view);
             top.setAttribute("spt_view", bvr.view);
@@ -343,7 +344,7 @@ class CellEditWdg(BaseRefreshWdg):
 
             if layout_version == '1':
                 self.add_edit_behavior(self.display_wdg)
-			
+
 
         # find the type of this element
         self.element_type = self.config.get_type(element_name)
@@ -360,16 +361,16 @@ class CellEditWdg(BaseRefreshWdg):
                 self.element_type = self.display_wdg.get_type()
             except AttributeError as e:
                 pass
-                
+
 
         # otherwise, base it on the database type
         if not self.element_type:
             self.element_type = SearchType.get_tactic_type(search_type, element_name)
 
-        
+
 
     def add_edit_behavior(cls, widget):
-        '''this is only applicable in the old TableLayoutWdg''' 
+        '''this is only applicable in the old TableLayoutWdg'''
         # add some special behavior for certain widgets ... custom ones will
         # have to implement their own
         from pyasm.widget import SelectWdg
@@ -378,12 +379,12 @@ class CellEditWdg(BaseRefreshWdg):
         # click contexxt menu in order to be able to copy, cut and paste using right click menu ...
         #
         widget.force_default_context_menu()
-        
+
 
         if (isinstance(widget, SelectWdg) or isinstance(widget, DynByFoundValueSmartSelectWdg)):
             web = WebContainer.get_web()
-            
-             
+
+
             if web.is_IE():
                 # TODO: the click event does not work for IE8.  There is still
                 # an issue that select the previous value selects.  This
@@ -415,7 +416,7 @@ class CellEditWdg(BaseRefreshWdg):
                'kbd_handler_name': 'DgTableMultiLineTextEdit'
            }
            widget.add_behavior( behavior )
-          
+
         elif (isinstance(widget, TextWdg)):
            behavior = {
                'type': 'keyboard',
@@ -469,10 +470,10 @@ class CellEditWdg(BaseRefreshWdg):
             print("WARNING in CellEditWdg: ", e)
             self.display_wdg = TextWdg(element_name)
             self.display_wdg.set_value('Error in widget')
-          
+
             display = self.display_wdg.get_buffer_display()
             div.add(display)
-            
+
 
         # NOTE: this seems redundant, buffer display is already called at
         # this point
@@ -517,9 +518,9 @@ class CellEditWdg(BaseRefreshWdg):
         if not column:
             column = element_name
         return column
-        
 
-        
+
+
 class CellWdg(BaseRefreshWdg):
 
     def get_display(self):
@@ -647,7 +648,7 @@ class RowSelectWdg(BaseTableElementWdg):
         sobject = self.get_current_sobject()
 
         row_id_str = "%s_select_td_%s" % (self.table_id, str(i+1))
-        
+
         # prevent insert/edit rows getting selected for select all functions
         if sobject.is_insert():
             td.add_class( 'SPT_ROW_NO_SELECT')
@@ -873,7 +874,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             }
             access_key1 = {
                 'search_type': search_type,
-                'key': element_name, 
+                'key': element_name,
                 'project': project_code
 
             }
@@ -916,7 +917,6 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             menu_item.add_attr("title", full_title)
 
             
-
             target = self.kwargs.get("target") or None
 
             #menu_item.add_attr("title", full_title)
@@ -1280,8 +1280,8 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
         """
 
 
- 
- 
+
+
 
         # check to see if the user is allowed to add db_columns
         default = "deny"
@@ -1297,7 +1297,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             columns.sort()
             context_menu.add( self.get_columns_wdg("Database Columns", columns) )
 
- 
+
         #popup_wdg.add(context_menu, "content")
         #return popup_wdg
 
@@ -1323,7 +1323,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
             if (!spt.help) return;
             spt.help.set_top();
             var menu = spt.table.get_edit_menu(bvr.src_el);
-            var activator = menu.activator_el; 
+            var activator = menu.activator_el;
             var help_alias = activator.getAttribute("spt_help");
             spt.help.load_alias(help_alias);
             '''
@@ -1337,7 +1337,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
         return widget, menu
 
- 
+
 
 
 
@@ -1364,7 +1364,7 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
         for name, value in self.kwargs.items():
             widget.add_attr("spt_%s" % name, value)
 
-       
+
 
 
     def init(self):
@@ -1377,18 +1377,18 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
 
         search_type = self.kwargs.get("search_type")
         view = self.kwargs.get("view")
-        
+
         element_name = self.kwargs.get("element_name")
         refresh = self.kwargs.get("refresh")
 
-      
 
-        widget = DivWdg()   
+
+        widget = DivWdg()
         # get the definition of the config element
         # try the db first
         config_view = WidgetConfigView.get_by_search_type(search_type, view)
-        node = config_view.get_element_node(element_name, True) 
-       
+        node = config_view.get_element_node(element_name, True)
+
         if not node:
             config_string = "<No definition>"
         else:
@@ -1446,7 +1446,7 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
         #switch.add("Switch all others [%s] columns?" % element_name)
         #content_wdg.add(switch)
         content_wdg.add( HtmlElement.hr() )
-        
+
         behavior_edit = {
             'type': 'click_up',
             'cbjs_action': 'spt.dg_table_action.edit_definition_cbk(evt, bvr)',
@@ -1456,7 +1456,7 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
             }
             #'values': "spt.api.Utility.get_input(spt.popup.get_popup(bvr.src_el) , 'save_view');"
 
-           
+
 
         }
         behavior_cancel = {
@@ -1464,11 +1464,11 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
             'cbjs_action': "spt.popup.destroy( spt.popup.get_popup( bvr.src_el ) );"
         }
         button_list = [{'label':  "Save" , 'bvr': behavior_edit},
-                {'label':  "Cancel", 'bvr': behavior_cancel}]        
+                {'label':  "Cancel", 'bvr': behavior_cancel}]
         edit_close = TextBtnSetWdg( buttons=button_list, spacing =6, size='large', \
                 align='center',side_padding=10)
 
-       
+
         default_view = 'definition'
         select=  SelectWdg('save_view', label='Save for: ')
         select.set_persist_on_submit()
@@ -1488,7 +1488,7 @@ class EditColumnDefinitionWdg(BaseRefreshWdg):
         if refresh:
             return content_wdg
 
-        
+
         widget.add(content_wdg)
 
         return widget
@@ -1539,16 +1539,16 @@ class EditColumnDefinitionCbk(Command):
             xml.append_child(root, view_node)
 
             config.set_value("config", xml.to_string())
-            
+
             config._init()
 
 
         # update the definition
         config.append_xml_element(element_name, display_config)
-            
+
         config.commit_config()
 
-        self.add_description("Saved column definition [%s] for [%s] in view [%s]" %(element_name, search_type, save_view)) 
+        self.add_description("Saved column definition [%s] for [%s] in view [%s]" %(element_name, search_type, save_view))
         # update the edit definition
         #edit_definition = web.get_form_value("edit_definition")
         #edit_view = "edit_definition"
@@ -1568,7 +1568,7 @@ class EditColumnDefinitionCbk(Command):
         search.add_filter("view", view)
         config = search.get_sobject()
         if not config:
-            
+
 
             config = SearchType.create(config_search_type)
             config.set_value("search_type", search_type )

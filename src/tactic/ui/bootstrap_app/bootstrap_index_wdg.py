@@ -13,7 +13,7 @@ from tactic.ui.container import SmartMenu
 from .bootstrap_tab_wdg import *
 
 
-__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg', 'BootstrapTopNavWdg', 'BootstrapProjectSelectWdg']
+__all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg', 'BootstrapTopNavWdg', 'BootstrapProjectSelectWdg', 'BootstrapPortalTopNavWdg', 'BootstrapPortalIndexWdg']
 
 
 from tactic.ui.panel import SideBarPanelWdg, SideBarBookmarkMenuWdg
@@ -83,7 +83,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 if view_item.startswith("self_view_"):
                     tt = "My Views"
                 else:
-                    tt = view_item.replace("_", " ");
+                    tt = view_item.replace("_", " ")
                 tt = tt.capitalize()
 
             title_label = HtmlElement("a")
@@ -94,7 +94,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             content_div.add( title )
             if sortable:
                 title.add_behavior({'type': 'click_up',
-                    'cbjs_action': "spt.panel.refresh('ManageSideBarBookmark_%s')" % view_item});
+                    'cbjs_action': "spt.panel.refresh('ManageSideBarBookmark_%s')" % view_item})
             info = { 'counter' : 10, 'view': view_item, 'level': 1 }
 
             ret_val = self.generate_section( config, content_div, info, personal=is_personal )
@@ -123,17 +123,17 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
 
     def get_separator_wdg(self, element_name, config, options):
-            div = DivWdg()
-            div.add_attr("spt_view", config.get_view() )
-            div.add_class("spt_side_bar_element")
-            div.add_class("spt_side_bar_separator")
-            div.add_attr("spt_element_name", element_name)
-            div.add_class("dropdown-divider")
-            
-            options = config.get_display_options(element_name)
-            self.add_separator_behavior(div, element_name, config, options)
+        div = DivWdg()
+        div.add_attr("spt_view", config.get_view() )
+        div.add_class("spt_side_bar_element")
+        div.add_class("spt_side_bar_separator")
+        div.add_attr("spt_element_name", element_name)
+        div.add_class("dropdown-divider")
+        
+        options = config.get_display_options(element_name)
+        self.add_separator_behavior(div, element_name, config, options)
 
-            return div
+        return div
 
 
 
@@ -191,6 +191,10 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         s_link_div.add_attr("aria-expanded", "false")
         s_link_div.add_class("dropdown-toggle")
         s_link_div.add_class("nav-link")
+
+        icon = attributes.get("sb_icon")
+        if icon:
+            s_link_div.add('<i class="%s"></i>' % icon)
         
         
         s_content_div = HtmlElement.ul()
@@ -292,23 +296,20 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         span.add_class("spt_side_bar_title")
         span.add_class("nav-link")
 
-        """
-        # add an icon
-        icon = attributes.get("icon")
-        if not icon:
-            icon = "VIEW"
-
+        icon = attributes.get("sb_icon")
         if icon:
-            icon = icon.upper()
-            from pyasm.widget import IconWdg
-            try:
-                span.add( IconWdg(title, eval("IconWdg.%s" % icon) ) )
-            except:
-                pass
-        """
+            span.add('<i class="%s"></i>' % icon)
 
         span.add(title)
         link_wdg.add(span)
+
+        inputs = options
+        inputs['element_name'] = element_name
+        inputs['title'] = title
+        inputs["widget_key"] = "__WIDGET_UNKNOWN__"
+
+        widget_key = link_wdg.generate_widget_key(options["class_name"], inputs=options)
+        options["widget_key"] = widget_key
 
 
         self.add_link_behavior(link_wdg, element_name, config, options)
@@ -380,14 +381,12 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 }
 
 .spt_bs_left_sidebar.active ul li a i {
-    margin-right: 0;
-    display: block;
-    font-size: 1.8em;
-    margin-bottom: 5px;
+    margin-right: 15px;
+    font-size: 1.5em;
 }
 
-.spt_bs_left_sidebar.active ul ul a {
-    padding: 10px !important;
+.spt_bs_left_sidebar.active ul ul ul a {
+    padding-left: 90px !important;
 }
 
 .spt_bs_left_sidebar.active .dropdown-toggle::after {
@@ -417,7 +416,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     margin-right: 10px;
 }
 
-.spt_bs_left_sidebar ul li.active>a, a[aria-expanded="true"] {
+.spt_bs_left_sidebar ul li .nav-link[aria-expanded="true"] {
     background: var(--spt_palette_md_primary_dark);
 }
 
@@ -435,8 +434,8 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 
 /* Submenu */
 .spt_bs_left_sidebar ul ul a {
-    font-size: 0.9em !important;
-    padding-left: 20px !important;
+    font-size: 0.9rem !important;
+    //padding-left: 20px !important;
     background: var(--spt_palette_md_primary_dark);
 }
 
@@ -444,14 +443,13 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 .spt_bs_left_sidebar ul ul .dropdown-divider {
     margin: 0rem 0rem;
     padding: .5rem 0rem;
-    background: var(--spt_palette_md_primary_dark);
 }
 
 
 /* Sub-sub-menu style */
 .spt_bs_left_sidebar ul ul ul a {
-    font-size: 0.9em !important;
-    padding-left: 40px !important;
+    font-size: 0.9rem !important;
+    //padding-left: 40px !important;
     background: var(--spt_palette_md_primary_dark);
 }
 
@@ -474,7 +472,14 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     background: var(--spt_palette_md_primary_dark);
 }
 
+.spt_side_bar_element .nav-link {
+    text-transform: none;
+}
 
+.spt_side_bar_element .spt_side_bar_title {
+    display: flex;
+    align-items: center;
+}
 
 
 @media (max-width: 768px) {
@@ -558,30 +563,48 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         if is_admin_page:
 
             style.add('''
-/* REMKO (for admin site) */
+/* (for admin site) */
 .spt_bs_left_sidebar.active ul li a {
     background: var(--spt_palette_md_primary);
     padding: 10px 0px;
     padding-left: 50px;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 300;
     text-align: left;
+}
+
+
+.spt_bs_left_sidebar.active ul ul li a {
+    padding-left: 70px;
 }
 
 .spt_bs_left_sidebar .nav-link h6 {
     margin-left: -35px;
     margin-top: 15px;
     padding-left: 10px;
-    border-bottom: solid 1px #999;
+    border-bottom: solid 1px #e9ecef;
+    font-weight: bold;
+    font-size: 1.2rem;
 }
+
+
+.spt_bs_left_sidebar .dropdown-toggle::after {
+    top: 50%;
+    right: 15px;
+}
+.spt_bs_left_sidebar.active .dropdown-toggle::after {
+    top: 50%;
+    right: 15px;
+}
+
+
+
             ''')
 
 
-
-
-
-
         return style
+
+
 
     def get_subdisplay(self, views):
 
@@ -759,7 +782,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
                 'type': 'load',
                 'cbjs_action': '''
                     let app_top = bvr.src_el.getParent(".spt_bootstrap_top");
-                    let left_sidebar = app_top.getElement(".spt_bs_left_sidebar"); 
+                    let left_sidebar = app_top.getElement(".spt_bs_left_sidebar");
                     let sidebar_content = left_sidebar.getElement(".spt_side_bar_content");
                     let mobile_sidebar = spt.behavior.clone(sidebar_content);
 
@@ -1036,6 +1059,389 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         return tab_div
 
 
+class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
+
+    def get_logo_div(self):
+        from tactic_client_lib import TACTIC
+
+        server = TACTIC.get()
+        plugin_path = server.get_plugin_dir("spt/modules/portal/user_project")
+        portal_logo_path = "%s/media/portal-logo.png" % plugin_path
+
+        brand_div = DivWdg()
+        brand_div.add_class("spt_logo")
+       
+        palette = Palette()
+
+        brand_div.add("""<a><img src="%s"/></a>""" % portal_logo_path)
+
+        style = HtmlElement.style("""
+            .spt_bs_top_nav .spt_logo {
+                display: flex;
+                align-items: center;
+            }
+
+            .spt_bs_top_nav .spt_logo img { 
+                height: 16px;
+            }
+        """)
+        brand_div.add(style)
+        
+        return brand_div
+    
+
+    def get_left_wdg(self):
+        style = HtmlElement.style('''
+        .spt_portal_header_btn_div {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 550px) {
+            .spt_portal_header_left_top {
+                display: none !important;
+            }
+        }
+        ''')
+        left_wdg = DivWdg()
+        left_wdg.add(style)
+        left_wdg.add_class("spt_portal_header_left_top d-flex")
+
+        
+        # start_div.add("<div>Start New Project</div>")
+
+        invite_div = DivWdg()
+        invite_div.add_class("spt_portal_header_btn_div")
+        left_wdg.add(invite_div)
+
+        invite_btn = ButtonNewWdg(
+            icon="FA_USER_PLUS",
+            title="Invite Members",
+            btn_class="btn bmd-btn-icon",
+            opacity="1.0",
+        )
+
+        invite_btn.add_class("ml-1 spt_nav_icon")
+        invite_div.add_attr("value", "Invite")
+        invite_div.add_attr("target", "spt_header_top.spt_home_content")
+        invite_div.add_attr("view", "user.site.members")
+        invite_div.add_class("tactic_load")
+        
+        
+        invite_div.add(invite_btn)
+        # invite_div.add("<div>Invite Members</div>")
+
+        roles_div = DivWdg()
+        roles_div.add_class("spt_portal_header_btn_div")
+        left_wdg.add(roles_div)
+
+        roles_btn = ButtonNewWdg(
+            icon="FA_USERS_COG",
+            title="Assign Roles",
+            btn_class="btn bmd-btn-icon",
+            opacity="1.0",
+        )
+
+        roles_btn.add_class("ml-1 spt_nav_icon")
+        roles_div.add_attr("value", "Collaborate")
+        roles_div.add_attr("target", "spt_header_top.spt_home_content")
+        roles_div.add_attr("view", "user.project.list")
+        roles_div.add_class("tactic_load")
+        
+        roles_div.add(roles_btn)
+        # roles_div.add("<div>Assign Roles</div>")
+        
+
+        return left_wdg
+    
+
+    def get_right_wdg(self):
+        style = HtmlElement.style('''
+            .spt_bell_orange_dot{
+                width: 12px;
+                height: 12px;
+                border-radius:50%;
+                background-color: #000;
+                margin-left:-8px;
+                margin-top:-20px;
+                font-size: 9px;
+                color: black;
+            }
+
+            .spt_invite_update {
+                text-align: center;
+                margin-top: 0px;
+                margin-left: 0px;
+                width: 100%;
+                font-weight: bold;
+            }
+
+            .spt_bell_icon{
+                font-size: 1.5em;
+                margin-top: -5px;
+                margin-right: 10px;
+                -webkit-transform: rotate(-20deg); 
+                -moz-transform: rotate(-20deg);  
+                filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=5); /*for IE*/
+                -o-transform: rotate(-20deg);
+            }
+        ''')
+
+        right_wdg = DivWdg()
+        right_wdg.add(style)
+        right_wdg.add_class("d-flex")
+        right_wdg.add_style("align-items", "center")
+
+        from pyasm.search import Search
+
+        invite_count = Search.eval("@COUNT(portal/invite['login',$LOGIN]['status','pending']['type','site'])")
+
+        start_div = DivWdg()
+        start_div.add_class("spt_portal_header_btn_div")
+
+        start_btn = ButtonNewWdg(
+            icon="FA_FOLDER_PLUS",
+            title="Start New Project",
+            title2="Start New Project",
+            btn_class="btn bmd-btn-icon",
+            opacity="1.0",
+        )
+
+        start_btn.add_class("ml-1 spt_nav_icon")
+        start_div.add_attr("value", "Start")
+        start_div.add_attr("target", "spt_header_top.spt_home_content")
+        start_div.add_attr("view", "user.project.select_product")
+        start_div.add_class("tactic_load")
+
+        start_div.add(start_btn)
+
+        right_wdg.add(start_div)
+
+        load_div = DivWdg()
+        load_div.add_class("tactic_load")
+        load_div.add_attr("target", "spt_header_top.spt_home_content")
+        load_div.add_attr("view", "user.invite.list")
+        load_div.add('<i class="fas fa-bell spt_bell_icon"></i>')
+        badge_div = DivWdg()
+        load_div.add(badge_div)
+        badge_div.add_class("spt_bell_orange_dot")
+        count_div = DivWdg(invite_count)
+        count_div.add_class("spt_invite_update")
+        count_div.add_behavior({
+            "type": "load",
+            "cbjs_action": '''
+                if (parseInt(bvr.src_el.innerHTML, 10) > 0)
+                bvr.src_el.getParent().setStyle('background', '#f59d1f');
+                spt.update.add( bvr.src_el, {
+                    expression: "@COUNT(portal/invite['login',$LOGIN]['status','pending']['type','site'])",
+                    cbjs_action: "var count = bvr.value; var parent = bvr.src_el.getParent(); if (count > 0) {  parent.setStyle('background', '#f59d1f');} else { count = ''; parent.setStyle('background','transparent');} bvr.src_el.innerHTML = count; ",
+                    interval: 3
+                } );
+            '''
+        })
+        badge_div.add(count_div)
+
+        load_div.add_class("ml-1 spt_nav_icon")
+
+        right_wdg.add(load_div)
+
+        user_wdg = self.get_user_wdg()
+        right_wdg.add(user_wdg)
+        
+        return right_wdg
+
+
+    def get_user_wdg(self):
+        styles = HtmlElement.style('''
+            .spt_header_top {
+                color: var(--spt_palette_color3);
+            }
+
+            .spt_header_menu_top{
+                position: absolute;
+                display: none; 
+                z-index: 100; 
+                font-size: 12px; 
+                width: 175px; 
+                top: 10px; 
+                right: 20px; 
+                color: #000; 
+                text-align: center;
+                margin-top: -4px;
+            }
+
+            .spt_popup_pointer{
+                margin-top:30px;
+                z-index:10;
+            }
+
+            .spt_first_arrow_div{
+                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ddd;
+                top: -15px;
+                z-index: 1;
+                border-width: 0 15px 15px;
+                height: 0;
+                width: 0;
+                border-style: dashed dashed solid;
+                margin-top: 30px;
+                margin-left: 95px;
+                left: 15px;
+            }
+
+            .spt_second_arrow_div{
+                border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #fff;
+                z-index: 1;
+                border-width: 0 15px 15px;
+                height: 0;
+                width: 0;
+                border-style: dashed dashed solid;
+                margin-top: -14px;
+                margin-left: 95px;
+                position: absolute;
+            }
+
+
+            .spt_drop_down_cell{
+                border: solid 1px #ddd;
+                background-color:#fff;
+                padding: 10px;
+            }
+
+            .spt_drop_down_cell:hover{
+                background-color:#eee;
+            }
+
+            .spt_portal_header_user_top {
+                display: flex;
+                align-items: center;
+            }
+
+            @media (max-width: 600px) {
+                .spt_portal_header_user_top .spt_user_name {
+                    display: none;
+                }
+            }
+        ''')
+
+        user_wdg = DivWdg()
+        user_wdg.add(styles)
+        user_wdg.add_class("spt_portal_header_user_top")
+
+        login = Environment.get_login()
+        display_name = login.get_full_name()
+        if not display_name:
+            display_name = login.get_login()
+       
+        from pyasm.biz import Snapshot
+        snapshot = Snapshot.get_latest_by_sobject(login)
+        if snapshot:
+            path = snapshot.get_web_path_by_type()
+ 
+            user_wdg.add(HtmlElement.style("""
+                .spt_hit_wdg.spt_nav_user_btn {                
+                    background-image: url(%s);
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                } 
+            """ % path))
+
+            icon = "FA_USERX"
+        else:
+            icon = "FA_USER"
+
+        title = "Logged in as %s" % display_name
+        
+        btn_class = "btn bmd-btn-icon"
+        user_btn = ButtonNewWdg(
+            icon=icon, 
+            title=title, 
+            btn_class=btn_class,
+            opacity="1.0"
+        )
+
+        user_btn.add_behavior({
+            "type": "click", 
+            "cbjs_action": '''
+                var el = document.id(document.body).getElement(".spt_header_menu_top");
+                el.setStyle("display", "block");
+                spt.body.add_focus_element(el);
+            '''
+        })
+
+        
+        user_wdg.add(user_btn)
+        name_wdg = DivWdg(display_name)
+        name_wdg.add_class("spt_user_name")
+        user_wdg.add(name_wdg)
+
+        user_btn.add_class("ml-1 spt_nav_user_btn spt_nav_icon")
+        user_btn.get_collapsible_wdg().add_class("dropdown-toggle")
+
+        user_wdg.add(user_btn)
+        user_btn.add_class("ml-1 spt_nav_user_btn spt_nav_icon")
+
+        user_menu = DivWdg()
+        user_menu.add_class("spt_header_menu_top")
+
+        menu_pointer = DivWdg()
+        menu_pointer.add_class("spt_popup_pointer")
+
+        left_pointer = DivWdg()
+        left_pointer.add_class("spt_first_arrow_div")
+        menu_pointer.add(left_pointer)
+        right_pointer = DivWdg()
+        right_pointer.add_class("spt_second_arrow_div")
+        menu_pointer.add(right_pointer)
+
+        user_menu.add(menu_pointer)
+
+
+        menu_option1 = DivWdg("Dashboard")
+        menu_option1.add_class("hand tactic_load spt_drop_down_cell tactic_load")
+        menu_option1.add_attr("target", "spt_header_top.spt_home_content")
+        menu_option1.add_attr("view", "user.home.dashboard")
+        user_menu.add(menu_option1)
+
+        menu_option2 = DivWdg("My Profile")
+        menu_option2.add_class("hand tactic_load spt_drop_down_cell tactic_load")
+        menu_option2.add_attr("target", "spt_header_top.spt_home_content")
+        menu_option2.add_attr("view", "user.profile.main")
+        user_menu.add(menu_option2)
+
+        menu_option3 = DivWdg("Generate API Keys")
+        menu_option3.add_class("hand tactic_load spt_drop_down_cell tactic_load")
+        menu_option3.add_attr("target", "spt_header_top.spt_home_content")
+        menu_option3.add_attr("view", "user.api.main")
+        user_menu.add(menu_option3)
+
+        menu_option4 = DivWdg("Sign Out")
+        menu_option4.add_class("hand sign_out spt_drop_down_cell")
+        data = {"login": display_name}
+        menu_option4.generate_command_key("SignOutCmd", data)
+        menu_option4.add_behavior({
+            'type': 'click',
+            'cbjs_action': '''
+                var ok = function() {
+                    var server = TacticServerStub.get();
+                    var cmd_key = bvr.src_el.getAttribute("SPT_CMD_KEY");
+                    server.execute_cmd(cmd_key);
+                    var href = document.location.href;
+                    var parts = href.split("#");
+                    window.location.href=parts[0] + "default/user/sign_in";
+                }
+                spt.confirm("Are you sure you wish to sign out?", ok );
+            '''
+        })
+        user_menu.add(menu_option4)
+
+        user_wdg.add(user_menu)
+
+        
+        return user_wdg
+
+
+
 class BootstrapIndexWdg(PageNavContainerWdg):
   
     def _get_tab_save_state(self):
@@ -1215,7 +1621,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             @media (max-width: 575.98px) {
 
                 .spt_bs_content {
-                    padding-top: 56px;
+                    padding-top: 49px;
                 }
                 
             }
@@ -1401,6 +1807,56 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         return main_body_panel
 
 
+
+class BootstrapPortalIndexWdg(BootstrapIndexWdg):
+    def _get_top_nav_xml(self):
+        return """
+        <element name="top_nav">
+              <display class="tactic.ui.bootstrap_app.BootstrapPortalTopNavWdg">
+              </display>
+        </element>"""
+    
+    def _get_tab_save_state(self):
+        return "portal_tab_state"
+    
+    def _get_startup_xml(self):
+
+         return """
+            <element name="main_body">
+                <display class="tactic.ui.panel.CustomLayoutWdg">
+                    <view>spt02_theme.tabs</view>
+                </display>
+            </element>
+         """
+    
+    def get_content_wdg(self):
+        from tactic.ui.panel import CustomLayoutWdg
+
+        main_body_panel = DivWdg()
+        main_body_panel.set_id("main_body")
+        main_body_panel.add_class("spt_main_panel")
+        main_body_panel.add_class("spt_bs_content")
+
+        config = WidgetConfig.get(xml=self.config_xml, view="application")
+        top_nav_handler = config.get_display_handler("top_nav")
+        top_nav_options = config.get_display_options("top_nav")
+        top_nav_options['view_side_bar'] = self.view_side_bar
+        top_nav_wdg = Common.create_from_class_path(top_nav_handler, [], top_nav_options)
+
+        main_body_panel.add(top_nav_wdg)
+
+
+        custom_layout_div = CustomLayoutWdg(view="spt02_theme.tabs")
+        footer = CustomLayoutWdg(view="spt02_theme.footer", name="web_footer")
+        footer.add_style("position", "fixed")
+        footer.add_style("bottom", "0px")
+        footer.add_style("width", "100%")
+
+        main_body_panel.add(custom_layout_div)
+        main_body_panel.add(footer)
+
+        return main_body_panel
+    
 
 
 from tactic.ui.widget import PageHeaderGearMenuWdg

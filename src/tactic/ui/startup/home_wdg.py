@@ -191,7 +191,6 @@ class HomeWdg(BaseRefreshWdg):
         element_names = config.get_element_names()
 
         for element_name in element_names:
-            print("element_name: ", element_name)
             attrs = config.get_element_attributes(element_name)
             report_data = {}
             kwargs = config.get_display_options(element_name)
@@ -313,7 +312,6 @@ class HomeWdg(BaseRefreshWdg):
             title = report.get("title")
             description = report.get("description")
 
-            #image = "<img src='/context/images/getting_started_schema.png'/>"
             image = "<img src='/context/images/getting_started_pipeline.png'/>"
 
 

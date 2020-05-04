@@ -23,6 +23,9 @@ from tactic.ui.common import BaseRefreshWdg
 from .text_input_wdg import TextInputWdg
 
 
+# DEPRECATED: because the browsers have a sufficiently good one built in
+
+
 class ColorWdg(Widget):
     '''This is drawn once in the page to reuse by repositioning it'''
     def get_display(self):

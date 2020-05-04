@@ -223,12 +223,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
     def get_title_wdg(self, title, content_id=None, is_on=True):
         title_wdg = DivWdg()
-        title_wdg.add_style("margin: 0 -1 -1 0")
-        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("height: 30px")
 
         title_wdg.add_color("background", "background", -10)
-        title_wdg.add_styles("padding: 5px")
-        title_wdg.add_border()
+        title_wdg.add_style("padding: 5px")
+        title_wdg.add_style("display: flex")
+        title_wdg.add_style("align-items: center")
 
 
         table = DivWdg()
@@ -240,7 +240,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         hint = None
 
         if title == "Behaviors":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
             data = '''<behavior class="custom_css_class">
                     { "type": "click_up", 
                     "cbjs_action": "spt.alert('clicked')"}
@@ -249,7 +249,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
     
           
         elif title == "Styles":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
             data = '''
 .frame_container {
             border: 1px solid #000000;
@@ -261,7 +261,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 }
 '''
         elif title == "Options":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
             data = '''
     This is where you can define options for your Custom Layout with Type set to column:
 
@@ -277,7 +277,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
            
             
         elif title == "HTML":
-            hint = IconButtonWdg(title="Show Example", icon="FA_QUESTION_CIRCLE_O")
+            hint = IconButtonWdg(title="Show Example", icon="FAR_QUESTION_CIRCLE")
 
             data = '''<div><div><b>Layout Title</b></div><br/>
 <%
@@ -338,7 +338,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("margin: -1px")
+
         inner.add_class("spt_custom_layout_inner")
             
         
@@ -467,15 +467,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             view = ""
             cur_config = None
 
-
-
-        table.add_border()
-        #table.add_style("height: 500px")
-
-
-        #table.add_row()
-        #left = table.add_cell()
-        #right = table.add_cell()
         left = DivWdg()
         table.add(left)
         right = DivWdg()
@@ -594,7 +585,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
         title_wdg.add_style("height: 35px")
-        #title_wdg.add_border()
         left_div.add_style("width: 100%")
 
         recent_div = DivWdg()
@@ -758,6 +748,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
         content_div.add_style("padding-top: 5px")
 
+        offset = 120
+        content_div.add_style("height: calc(100vh - %spx)" % offset)
+        content_div.add_style("overflow: auto")
+
 
         plugin_code = self.kwargs.get("plugin_code")
         #plugin_code = "SPT/sample_form"
@@ -842,8 +836,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     #icon.add_style("margin-top: -2px")
                     #icon.add_style("margin-left: -5px")
 
-                    icon = IconWdg(folder, "FA_FOLDER_OPEN", inline=False, size=12)
-                    icon.add_style("margin-top: 0px")
+                    icon = IconWdg(folder, "FAR_FOLDER_OPEN", inline=False, size=12)
+                    icon.add_style("margin-top: 1px")
                     icon.add_style("margin-left: -3px")
                     icon.add_style("margin-right: 3px")
 
@@ -899,10 +893,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             else:
                 config_div.add_style("padding-left: 5px")
 
+            config_div.add_style("display: flex")
+            config_div.add_style("align-items: center")
+
             config_div.add_class("spt_custom_layout_item")
-            #icon = IconWdg("Custom Layout View", IconWdg.VIEW, inline=False)
-            icon = IconWdg("Custom Layout View", "FA_FILE_O", inline=False, size=12)
-            icon.add_style("margin-right: 1px")
+            icon = IconWdg("Custom Layout View", "FAR_FILE", inline=False, size=12)
+            icon.add_style("margin-right: 5px")
             icon.add_style("opacity: 0.8")
             config_div.add(icon)
 
@@ -929,13 +925,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         right.add_style("vertical-align: top")
         right.add_color("background", "background", -3)
         right.add_style("width: 100%")
-        right.add_style("height: 100%")
+        right.add_style("height: calc(100vh - 130px)")
 
 
         right_div = DivWdg()
         right.add(right_div)
         right_div.add_color("color", "color")
         right_div.add_style("min-width: 800px")
+        right_div.add_style("width: 100%")
         right_div.add_style("min-height: 500px")
         right_div.add_class("spt_custom_layout_content")
 
@@ -1099,7 +1096,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             html_div = DivWdg()
             
             html_div.set_name("HTML")
-            html_div.add_style("height: 600px")
             html_div.add_class("spt_html_tab")
 
             text = TextAreaWdg("html")
@@ -1114,8 +1110,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             html_div.add(button)
             """
 
-            text.add_style("width: 100%")
-            text.add_style("height: 600px")
+            text.add_style("width: calc(100hw - 200px)")
+            #text.add_style("height: 600px")
+            text.add_style("height: inherit")
+            text.add_style("box-sizing: border-box")
             text.add_style("min-height: 400px")
             text.add_style("font-size: 12px")
             text.add_style("font-family: courier")
@@ -1218,12 +1216,14 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             if not selected:
                 selected = "HTML"
 
+            tab_height = "calc(100vh - 150px)"
+
             # start tab here
             from tactic.ui.container import TabWdg
-            tab = TabWdg(selected=selected, show_add=False, show_remove=False, tab_offset="10px", show_context_menu=False, allow_drag=False)
+            tab = TabWdg(selected=selected, show_add=False, show_remove=False, tab_offset="10px", show_context_menu=False, allow_drag=False, height=tab_height)
             #tab.add_style("margin: 5px -2px 0px -2px")
-            tab.add_style("margin: 10px -1px 0px -1px")
             tab.add_style("overflow: hidden")
+
             right_div.add(tab)
 
             right_div.add_behavior( {
@@ -1383,7 +1383,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     '''
                 })
 
-                add_button = ButtonNewWdg(title="", icon="FA_PLUS")
+                add_button = ButtonNewWdg(title="Add New Behavior", icon="FA_PLUS")
                 behavior_div.add(add_button)
                 add_button.add_behavior( {
                     'type': 'click',
@@ -1408,7 +1408,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     '''
                 } )
 
-                # This breaks the beahviors into separate intefaces
+                # This breaks the behaviors into separate intefaces
                 behavior_div.add_color("background", "background", -5)
                 table = Table()
                 table.add_style("width: 100%")
@@ -2036,7 +2036,8 @@ spt.custom_layout_editor.add_recent_item = function(data) {
             top.setAttribute("spt_view", view);
 
             spt.custom_layout_editor.set_top(top);
-            spt.custom_layout_editor.refresh();
+
+            spt.notify.show_message("View Saved");
 
             '''
         } )
@@ -2151,7 +2152,7 @@ spt.custom_layout_editor.add_recent_item = function(data) {
 
 
         #help_button = ButtonNewWdg(title="Help", icon=IconWdg.HELP)
-        help_button = ButtonNewWdg(title="Help", icon="FA_QUESTION_CIRCLE_O")
+        help_button = ButtonNewWdg(title="Help", icon="FAR_QUESTION_CIRCLE")
         button_row.add(help_button)
         help_button.add_behavior( {
             'type': 'click_up',

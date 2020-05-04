@@ -482,20 +482,9 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
 
             div.add(HtmlElement.br(2))
             
-            #script = "spt.side_bar.manage_section_action_cbk({'value':'predefined'},'project_view');"
-            #link = HtmlElement.js_href(script, data='[ Predefined View ]')
-            #div3 = DivWdg('Optional: drag existing elements from Project Views or %s into this new folder' %link.get_buffer_display())
-            #div.add(div3)
-            #item_div = DivWdg(css='spt_new_item spt_side_bar_content')
-            #div.add(item_div)
-
             div.add("<hr/>")
 
            
-            #save_div = SpanWdg(css='med hand')
-            #div.add(save_div)
-            #save_div.add(IconWdg('Save Folder', IconWdg.SAVE))
-
             save_button = ActionButtonWdg(title='Create', tip='Create a new folder')
             div.add(save_button)
        
@@ -635,6 +624,8 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
             """
         widget.add(div)
         return widget
+
+
 
 class ManageSideBarDetailCbk(Command):
 

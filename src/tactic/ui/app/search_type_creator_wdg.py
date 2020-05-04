@@ -25,7 +25,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.container import PopupWdg, DynamicListWdg
 from tactic.ui.widget import SearchTypeSelectWdg, ActionButtonWdg
 from tactic.ui.input import TextInputWdg
-from tactic.ui.input import UploadButtonWdg 
+from tactic.ui.input import UploadButtonWdg
 from tactic.ui.panel import TableLayoutWdg, SearchTypeManagerWdg
 
 class SearchTypeToolWdg(BaseRefreshWdg):
@@ -65,7 +65,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         from tactic.ui.widget import TitleWdg
         subtitle = TitleWdg(name_of_title='sType Table Manager',help_alias='stype-register')
         div.add(subtitle)
-        
+
         div.set_id('SearchTypeToolWdg')
         div.add_class('spt_stype_tool_top')
         div.set_attr('spt_class_name','tactic.ui.app.SearchTypeToolWdg')
@@ -118,7 +118,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         select.set_option("query_filter", "\"namespace\" in ('%s', '%s', '%s')" % (project_code, project_type, project_schema_type))
         #select.set_persistence()
         select.add_empty_option("-- Select --")
-        select.add_behavior({'type': "change", 
+        select.add_behavior({'type': "change",
             'cbjs_action': '''var values = spt.api.Utility.get_input_values('SearchTypeManagerContainer');
 
                 var top = bvr.src_el.getParent('.spt_stype_tool_top')
@@ -128,7 +128,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
                 spt.panel.refresh(target, values)'''})
         search_type = select.get_value()
         search_type_span.add(select)
-        
+
         #create_button = ProdIconButtonWdg('Create New')
         #create_button.add_behavior({'type':'click_up',
         #    'cbjs_action': "spt.popup.open('create_search_type_wizard')"})
@@ -227,7 +227,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         top.add( help_button )
         help_button.add_style("float: right")
 
-        
+
         from tactic.ui.container import WizardWdg
         #wizard = WizardWdg(title="Register a new sType", height="400px", width="550px")
         wizard = WizardWdg(title="none", height="400px", width="600px")
@@ -270,7 +270,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             else:
                 project_code = Project.get_project_code()
                 title_value = "%s/%s" % (project_code, parts[0])
-            
+
         if title_value:
             title_text.set_value(title_value)
 
@@ -340,11 +340,15 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         td = table.add_cell(checkbox)
 
 
+        # the project specific check box shouldn't be checked
+        # by default.
+        """
         if project_type in ['default']:
             #tr.add_style("opacity: 0.6")
             tr.add_style("display: none")
             checkbox.set_option("disabled", "1")
             checkbox.set_checked()
+        """
 
         tr, td = table.add_row_cell()
         td.add("&nbsp;")
@@ -398,7 +402,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
 
 
-        # Layout page 
+        # Layout page
         layout_wdg = self.get_layout_wdg()
         wizard.add(layout_wdg, "Layout")
 
@@ -817,8 +821,8 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         image_div.add("<br/><b>Preview Image: </b>")
 
         on_complete = '''var server = TacticServerStub.get();
-        var file = spt.html5upload.get_file(); 
-        if (file) { 
+        var file = spt.html5upload.get_file();
+        if (file) {
 
             var top = bvr.src_el.getParent(".spt_image_top");
             var text = top.getElement(".spt_image_path");
@@ -832,10 +836,10 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             display.innerHTML = "Uploaded: " + file.name;
             display.setStyle("padding", "10px");
             check_icon.setStyle("display", "");
-          
-          
+
+
             var filename = file.name;
-            
+
             // allow any name for now
             //filename = spt.path.get_filesystem_name(filename);
             var kwargs = {
@@ -843,14 +847,14 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                 filename: filename
             }
             try {
-           
-                
+
+
                 var ret_val = server.execute_cmd("tactic.command.CopyFileToAssetTempCmd", kwargs);
 
                 var info = ret_val.info;
                 var path = info.web_path;
                 text.value = info.lib_path;
-            
+
                 display.innerHTML = display.innerHTML + "<br/><br/><div style='text-align: center'><img style='width: 80px;' src='"+path+"'/></div>";
             }
             catch(e) {
@@ -859,12 +863,12 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
             spt.app_busy.hide();
             }
         else {
-            spt.alert('Error: file object cannot be found.') 
+            spt.alert('Error: file object cannot be found.')
         }
             spt.app_busy.hide();
         '''
         ticket = Environment.get_ticket()
-        button = UploadButtonWdg(title="Browse", on_complete=on_complete, ticket=ticket) 
+        button = UploadButtonWdg(title="Browse", on_complete=on_complete, ticket=ticket)
         image_div.add(button)
         button.add_style("margin-left: 215px")
         button.add_style("margin-right: auto")
@@ -920,7 +924,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
             'cbjs_action':  '''
 
-           
+
             var top = bvr.src_el.getParent(".spt_create_search_type_top");
 
             var options = bvr.options;
@@ -934,7 +938,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                 options.search_type = search_type;
             }
 
-           
+
             var yes = function(){
                 spt.app_busy.show("Registering sType");
                 var server = TacticServerStub.get();
@@ -957,7 +961,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
                     spt.named_events.fire_event(event_name, bvr );
 
                     server.finish();
-                    
+
                     spt.panel.refresh("side_bar");
 
                     spt.app_busy.hide();
@@ -1267,7 +1271,7 @@ class SearchTypeCreatorCmd(Command):
             # essentially: project == database
             self.project = Project.get_by_code(self.database)
 
-        self.search_type_name = self.get_value("search_type_name") 
+        self.search_type_name = self.get_value("search_type_name")
         self.db_resource = self.project.get_project_db_resource()
         # Advanced mode: special condition for sthpw/.. sType
         if self.search_type_name.startswith('sthpw/'):
@@ -1332,7 +1336,7 @@ class SearchTypeCreatorCmd(Command):
 
     def get_sobject(self):
         return self.sobject
-        
+
 
     def execute(self):
         if not self.database or not self.schema:
@@ -1349,7 +1353,7 @@ class SearchTypeCreatorCmd(Command):
 
         web = WebContainer.get_web()
 
-        
+
         if self.search_type_name == "":
             raise CommandExitException("No search type supplied")
 
@@ -1384,7 +1388,7 @@ class SearchTypeCreatorCmd(Command):
         #copy_from_template = web.get_form_value("copy_from_template")
         copy_from_template = self.get_value("copy_from_template")
         search_type = "%s/%s" % (self.namespace, self.search_type_name)
-        
+
 
         # don't auto lower it cuz the same sType name may get added to the schema
         #search_type = search_type.lower()
@@ -1393,7 +1397,7 @@ class SearchTypeCreatorCmd(Command):
         # display it when we are ready to refresh the SearchTypeToolWdg.
         self.info['search_type'] = search_type
 
-        
+
         self.register_search_type(search_type)
         if not self.search_type_obj:
             self.search_type_obj = SearchType.get(search_type)
@@ -1436,10 +1440,10 @@ class SearchTypeCreatorCmd(Command):
             #self.copy_template_config(copy_from_template)
             self.copy_template_table(copy_from_template)
 
-        
+
         # add this search_type to the schema for this project
         project_code = Project.get_project_code()
-        
+
         schema = Schema.get_by_code(project_code)
 
         # if it doesn't exist, then create an empty one
@@ -1457,7 +1461,7 @@ class SearchTypeCreatorCmd(Command):
 
         self.checkin_preview()
 
-        
+
 
 
     def register_search_type(self, search_type):
@@ -1472,12 +1476,12 @@ class SearchTypeCreatorCmd(Command):
                 msg = "Search type [%s] already exists." % search_type
                 if search_type.startswith('sthpw/'):
                     msg = '%s If you are trying to add this to the Project Schema, use the Save button instead of the Register button.'%msg
-           
+
                 raise CommandException(msg)
             else: # continue to add table to current project
                 return
 
-        
+
         # create the search type
         sobject = SearchType( SearchType.SEARCH_TYPE )
 
@@ -1513,7 +1517,7 @@ class SearchTypeCreatorCmd(Command):
         self.search_type_obj = sobject
 
 
-    
+
 
     def create_config(self):
         search_type = self.search_type_obj.get_value("search_type")
@@ -1622,7 +1626,7 @@ class SearchTypeCreatorCmd(Command):
 
 
 
- 
+
         # create the edit view
         view = "edit"
         xml = Xml()
@@ -1656,7 +1660,7 @@ class SearchTypeCreatorCmd(Command):
 
         WidgetDbConfig.create(search_type, view, xml.get_xml() )
 
-      
+
 
 
 
@@ -1688,12 +1692,12 @@ class SearchTypeCreatorCmd(Command):
             table = self.search_type_name
         else:
             table = "%s.%s" % (self.schema, self.search_type_name)
-        
+
         sql = DbContainer.get(self.db_resource)
         impl = sql.get_database_impl()
         exists = impl.table_exists(self.db_resource, table)
         return exists
-    
+
 
     def create_table(self):
 
@@ -1702,9 +1706,9 @@ class SearchTypeCreatorCmd(Command):
         else:
             table = "%s.%s" % (self.schema, self.search_type_name)
 
-        if self.namespace == 'sthpw': 
+        if self.namespace == 'sthpw':
             search_type = "%s/%s" % (self.namespace, self.search_type_name)
-        else:    
+        else:
             search_type = "%s/%s?project=%s" % (self.namespace, self.search_type_name, self.database)
         create = CreateTable(search_type=search_type)
 
@@ -1737,7 +1741,7 @@ class SearchTypeCreatorCmd(Command):
 
             data_type = ColumnAddCmd.get_data_type(search_type, column_type)
             create.add(column_name, data_type)
- 
+
 
         if self.folder_naming.find("{sobject.relative_dir}") != -1:
             create.add("relative_dir", "text")
@@ -1762,12 +1766,12 @@ class SearchTypeCreatorCmd(Command):
             create.commit(sql)
             TableUndo.log(self.search_type_obj.get_value("search_type"), database, table)
         '''
-            # add columns 
+            # add columns
             db_resource = Project.get_db_resource_by_search_type(search_type)
 
             sql = DbContainer.get(db_resource)
 
-            
+
             # put a unique constraint on code, which works automatically with Plugin creation
             statement = 'ALTER TABLE "%s" ADD CONSTRAINT "%s_code_unique" UNIQUE ("code")' % (table, table)
             #statement = 'CREATE UNIQUE INDEX "%s_code_idx" ON "%s" ("code")' % (table, table)
@@ -1789,7 +1793,7 @@ class SearchTypeCreatorCmd(Command):
             "search_type": search_type,
             "layout": "default"
         }
-        
+
         # this is now handled by the "default" setting
         """
         layout = self.get_value("layout")
@@ -1925,7 +1929,7 @@ class SearchTypeCreatorCmd(Command):
 
 
 
- 
+
     def checkin_preview(self):
         # if there is an image, check it in
         image_path = self.get_values("image_path")

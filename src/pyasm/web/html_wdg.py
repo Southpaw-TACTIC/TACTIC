@@ -367,6 +367,7 @@ class HtmlElement(Widget):
         palette = Palette.get()
         color = palette.color(palette_key, modifier, default=default)
         self.add_style("%s: %s" % (name, color) )
+        #self.add_style("%s: var(spt_palette_%s)" % (name, color) )
         return color
 
 

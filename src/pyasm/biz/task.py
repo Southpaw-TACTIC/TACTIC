@@ -1131,11 +1131,10 @@ class Task(SObject):
             version = workflow.get("version") or 1
             version_2 = version in [2, '2']
 
+
             properties = workflow.get("properties") or {}
 
             if process_type in ['hierarchy']:
-
-
                 if version_2:
                     settings = workflow.get("default")
                     task_creation = settings.get("task_creation")
@@ -1501,9 +1500,9 @@ class TaskGenerator(object):
 
         return self.completion_date
 
+
     def get_completion_date(self):
         return self.completion_date
-
 
     def execute(self, sobject, pipeline, parent_process=None, start_date=None, end_date=None, \
             today=None, existing_tasks=None, process_sobjects=None):

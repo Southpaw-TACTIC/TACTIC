@@ -1505,7 +1505,7 @@ spt.message.async_poll = function(key, callback) {
     var server = TacticServerStub.get();
     var expr = "@SOBJECT(sthpw/message['code','"+key+"'])";
 
-    server.async_eval(expr, {single:true,cbjs_action:callback});
+    server.eval(expr, {single:true,cbjs_action:callback});
 }
 
 

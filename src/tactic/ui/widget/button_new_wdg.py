@@ -682,6 +682,11 @@ class ButtonNewWdg(ButtonWdg):
         self.collapsible_btn.add(self.title)
 
         top.add(self.hit_wdg)
+        width = self.kwargs.get("width")
+        if width:
+            self.hit_wdg.add_style("width: %spx" % width)
+            self.hit_wdg.add_style("height: %spx" % width)
+            self.hit_wdg.add_style("min-width: %spx" % width)
         self.hit_wdg.add_class(self.btn_class)
         self.hit_wdg.add_class("spt_hit_wdg")
         self.hit_wdg.add(self.icon)
@@ -854,9 +859,11 @@ class ActionButtonWdgOldX(DivWdg):
         if size == 'm':
             top_width = 83
             self.add_style("width: %spx"%top_width)
-        if size == 'l':
+        elif size == 'l':
             top_width = 127
             self.add_style("width: %spx"%top_width)
+        elif size:
+            self.add_style("width: %spx"%size)
 
         self.add(self.table)
         td = self.td
@@ -958,7 +965,7 @@ class ActionButtonWdgOldX(DivWdg):
 
 
 __all__.extend(['BootstrapButtonWdg'])
-class BootstrapButtonWdg(DivWdg):
+class BootstrapButtonWdg(BaseRefreshWdg):
     
     ARGS_KEYS = {
         'title': {
@@ -1016,6 +1023,11 @@ class BootstrapButtonWdg(DivWdg):
         self.button_wdg.add_behavior(behavior)
         self.collapsible_wdg.add_behavior(behavior)
 
+    def add_event(self, name, action):
+        self.button_wdg.add_event(name, action)
+        self.collapsible_wdg.add_event(name, action)
+       
+
     def get_collapsible_wdg(self):
         return self.collapsible_wdg
 
@@ -1029,18 +1041,31 @@ class BootstrapButtonWdg(DivWdg):
         top = self.top
 
         top.add_class("spt_action_button")
+        top.add_style("display: inline-block")
         
         top.add(self.button_wdg)
-        btn_class = self.kwargs.get("btn_class") or "btn btn-primary"
+        self.button_wdg.add_class("btn")
+        btn_class = self.kwargs.get("btn_class")
+        if not btn_class:
+            btn_class = self.kwargs.get("color")
+            if btn_class:
+                btn_class = "btn-%s" % btn_class
+        if not btn_class:
+            btn_class = "btn-primary"
+
         self.button_wdg.add_class(btn_class)
         self.button_wdg.add_class("spt_hit_wdg")
         self.button_wdg.add(title)
         self.button_wdg.add_behavior ( {
             "type": "load",
-            "cbjs_action": """
+            "cbjs_action": '''
                 $(bvr.src_el).bmdRipples();
-            """
+           '''
         } )
+
+        size = self.kwargs.get("size")
+        if size:
+            self.button_wdg.add_style("width", "%spx" % size)
 
         
         top.add(self.collapsible_wdg)
@@ -1492,10 +1517,10 @@ class IconButtonWdg(DivWdg):
             arrow_div = DivWdg()
             icon_div.add(arrow_div)
             arrow_div.add_style("position: absolute")
-            arrow_div.add_style("top: 13px")
-            arrow_div.add_style("left: 11px")
+            arrow_div.add_style("top: 2px")
+            arrow_div.add_style("left: 14px")
 
-            arrow = IconWdg(title, IconWdg.ARROW_MORE_INFO)
+            arrow = IconWdg(title, "FA_CARET_DOWN")
             arrow_div.add(arrow)
 
 

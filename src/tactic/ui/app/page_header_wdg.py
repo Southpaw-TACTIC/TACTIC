@@ -637,12 +637,15 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
         inner = DivWdg()
         top.add(inner)
-        inner.add_style("width: 800px")
-        inner.add_style("float: center")
-        inner.add_border()
-        inner.center()
+        inner.add_style("width: 80%")
+        inner.add_style("max-width: 800px")
+        inner.add_style("margin: 10px auto")
         inner.add_style("padding: 30px")
+        inner.add_color("color", "color")
         inner.add_color("background", "background")
+        inner.add_style("border: solid 1px %s" % inner.get_color("border") )
+        inner.add_style("border-radius: 10px")
+        inner.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
 
 
         from tactic.ui.container import WizardWdg
@@ -702,10 +705,10 @@ class ProjectCreateWdg(BaseRefreshWdg):
         span = DivWdg()
         info_page.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
-        span.add(IconWdg("INFO", IconWdg.CREATE))
+        span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
         span.add_color("background", "background3")
-        span.add("The project title can be descriptive and contain spaces and special characters.")
-        info_page.add("<br/><br/><hr/><br/><br/>")
+        span.add(" The project title can be descriptive and contain spaces and special characters.")
+        info_page.add("<br/><br/><br/>")
         text.add_behavior( {
         'type': 'change',
         'cbjs_action': '''
@@ -763,9 +766,9 @@ class ProjectCreateWdg(BaseRefreshWdg):
         span = DivWdg()
         info_page.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
-        span.add(IconWdg("INFO", IconWdg.CREATE))
+        span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
         span.add_color("background", "background3")
-        span.add("The project code is a very important key that will tie many components of the project together.")
+        span.add(" The project code is a very important key that will tie many components of the project together.")
         span.add("<br/><br/>")
         span.add("* Note: the project code must contain only alphanumeric characters [A-Z]/[0-9] and only an '_' as a separator")
         info_page.add(span)
@@ -778,6 +781,9 @@ class ProjectCreateWdg(BaseRefreshWdg):
         info_page.add("<b>Is Main Project? </b>")
 
         checkbox = CheckboxWdg("is_main_project")
+        checkbox.add_style("height: 16px")
+        checkbox.add_style("width: 16px")
+        checkbox.add_style("margin-left: 8px")
         default_project_code = Project.get_default_project()
         info_page.add(checkbox)
         if default_project_code:
@@ -801,9 +807,9 @@ class ProjectCreateWdg(BaseRefreshWdg):
         span = DivWdg()
         info_page.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
-        span.add(IconWdg("INFO", IconWdg.CREATE))
+        span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
         span.add_color("background", "background3")
-        span.add("A TACTIC installation can have multiple projects, but one can be designated as the main project.  This project will appear at the root of the url. This is meant for building custom project launcher which is based on a main project.")
+        span.add(" A TACTIC installation can have multiple projects, but one can be designated as the main project.  This project will appear at the root of the url. This is meant for building custom project launcher which is based on a main project.")
         span.add("<br/>"*2)
         span.add("* Note: TACTIC may need to be restarted in order for this to take effect")
         info_page.add(span)
@@ -882,7 +888,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         check_div = DivWdg()
         image_div.add(check_div)
         check_div.add_class("spt_check_icon")
-        check_icon = IconWdg("Image uploaded", IconWdg.CHECK)
+        check_icon = IconWdg("Image uploaded", "FA_CHECK")
         check_div.add(check_icon)
         check_div.add_style("display: none")
         check_div.add_style("float: left")
@@ -897,8 +903,8 @@ class ProjectCreateWdg(BaseRefreshWdg):
         image_div.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
         span.add_color("background", "background3")
-        span.add(IconWdg("INFO", IconWdg.CREATE))
-        span.add("The project image is a small image that will be used in various places as a visual representation of this project.")
+        span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
+        span.add(" The project image is a small image that will be used in various places as a visual representation of this project.")
 
         info_page.add("<br/><br/>")
 
@@ -1022,9 +1028,9 @@ class ProjectCreateWdg(BaseRefreshWdg):
         span = DivWdg()
         copy_div.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
-        span.add(IconWdg("INFO", IconWdg.CREATE))
+        span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
         span.add_color("background", "background3")
-        span.add("This will use the selected project template as a basis and copy all of the configuration elements.  Only template projects should be copied.")
+        span.add(" This will use the selected project template as a basis and copy all of the configuration elements.  Only template projects should be copied.")
 
         #copy_div.add(HtmlElement.br(2))
         #span = DivWdg("This will create an empty project with no predefined configuration.")

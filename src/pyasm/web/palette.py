@@ -23,18 +23,37 @@ class Palette(object):
 
     # default color palette
     DEFAULT = {
-    'color':        '#AAA',         # main font color
+    'color':        '#CCC',         # main font color
     'color2':       '#BBB',         # secondary font color
     'color3':       '#222222',      # tertiary font color
     'background':   '#444444',      # main background color
     'background2':  '#2F2F2F',      # secondary background color
-    'background3':  '#777777',      # tertiary background color
+    'background3':  '#888888',      # tertiary background color
     'border':       '#737b79',      # main border color
-    'shadow':       '#000000',      # main shadow color
     'theme':        'dark',
 
     'table_border': '#494949',
-    'side_bar_title': '#3C76C2',
+    'side_bar_title_color': '#EEEEEE',
+
+    'shadow':       'rgba(0,0,0,0.1)',
+
+    #'md_primary_dark': '#c7c7c7', 
+    #'md_primary':   '#fafafa',
+    #'md_primary_light': '#ffffff',
+    #'md_secondary_dark': '#00675b',
+    #'md_secondary': '#009688',
+    #'md_secondary_light': '#52c7b8'
+
+ 
+    "md_primary_dark": "#000a12",
+    "md_primary": "#263238",
+    "md_primary_light": "#4f5b62",
+    "md_secondary_dark": "#00628b",
+    "md_secondary": "#1d90bb",
+    "md_secondary_light": "#61c0ee"
+
+ 
+
     
     }
     DARK = DEFAULT
@@ -257,11 +276,9 @@ class Palette(object):
                 return
         
 
-
-
-
-        value = palette
-        if not value:
+        value = self.COLORS
+        if value:
+            self.set_palette(palette=None, colors=value)
             return
 
 
@@ -287,7 +304,7 @@ class Palette(object):
                 if not self.colors.get(name):
                     self.colors[name] = value
 
-        except:
+        except Exception as e:
             try:
                 value = value.upper()
                 value = value.replace(" ", "_")
@@ -295,7 +312,6 @@ class Palette(object):
             except:
                 print("WARNING: palette [%s] does not exist.  Using default" % value)
 
-               
 
     def get_theme(self):
         theme = self.colors.get("theme")

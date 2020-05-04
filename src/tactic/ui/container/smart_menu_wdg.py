@@ -242,7 +242,8 @@ class SmartMenuWdg(BaseRefreshWdg):
             td.add_style("width", ("%spx" % icon_width))
 
             if opt['type'] == 'submenu':
-                icon_wdg = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
+                #icon_wdg = IconWdg("", IconWdg.ARROWHEAD_DARK_RIGHT)
+                icon_wdg = IconWdg("", "FA_ANGLE_RIGHT", size=8)
                 td.add(icon_wdg)
                 td.add_class("SPT_ENABLED_ICON_LOOK")
 

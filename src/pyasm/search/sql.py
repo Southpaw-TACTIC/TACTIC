@@ -593,6 +593,8 @@ class Sql(Base):
 
             elif self.vendor == "Salesforce":
 
+                # TEST
+
                 database_impl = DatabaseImpl.get(self.vendor)
                 #self.conn = database_impl.get_connection()
 

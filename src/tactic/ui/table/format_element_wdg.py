@@ -548,7 +548,11 @@ class FormatElementWdg(SimpleTableElementWdg):
                 value = parser.parse(value)
                 setting = ProdSetting.get_value_by_key('DATETIME')
                 if not setting:
-                    setting = "%Y-%m-%d %H:%M"
+                    #setting = "%Y-%m-%d (%I:%M %p)"
+                    if value.hour == 0 and value.minute == 0 and value.second == 0:
+                        setting = "%b %m, %Y"
+                    else:
+                        setting = "%b %m, %Y (%I:%M %p)"
                 
                 value = value.strftime(setting)
                 
@@ -573,6 +577,19 @@ class FormatElementWdg(SimpleTableElementWdg):
                 from pyasm.common import SPTDate
                 value = SPTDate.convert(value)
                 value = SPTDate.get_time_ago(value)
+
+
+        elif format == 'DAYS':
+            if not real_value:
+                value = 0
+            else:
+                value = real_value.days
+
+        elif format == 'SECONDS':
+            if not real_value:
+                value = 0
+            else:
+                value = real_value.days*24*3600 + real_value.seconds
 
 
 

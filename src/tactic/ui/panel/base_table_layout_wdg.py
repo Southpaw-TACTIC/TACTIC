@@ -62,9 +62,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-
-
-
     def __init__(self, **kwargs):
 
         # get the them from cgi
@@ -550,7 +547,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.search_limit.alter_search(search)
 
 
-
     def handle_search(self):
         '''method where the table handles it's own search on refresh'''
 
@@ -651,13 +647,24 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_values = filter_data.get_values_by_prefix("keyword")
 
             if keyword_values:
+                cross_db = None
+                if self.search_type and self.simple_search_view:
+                    search_config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.simple_search_view)
+                    if search_config:
+                        xml = search_config.configs[0].xml
+                        cross_db_node = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view)
+                        if cross_db_node is not None:
+                            cross_db = xml.get_node("config/%s/element[@name='keywords']/display/cross_db" % self.simple_search_view).text
 
                 keyword_value = keyword_values[0].get('value')
+                if cross_db:
+                    keyword_values[0]['partial'] = "on"
                 if keyword_value:
                     from tactic.ui.filter import KeywordFilterElementWdg
                     keyword_filter = KeywordFilterElementWdg(
                             column=self.keyword_column,
                             mode="keyword",
+                            cross_db=cross_db
                     )
                     keyword_filter.set_values(keyword_values[0])
                     keyword_filter.alter_search(search)
@@ -937,7 +944,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     value = True
 
 
-
         return value
 
 
@@ -986,7 +992,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                  background: var(--spt_palette_background2);
             }
             
-        """)        
+        """)
 
 
     def get_action_wdg(self):
@@ -1089,6 +1095,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         column = "keywords"
         simple_search_mode = self.kwargs.get("simple_search_mode")
+
+
+
+
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
+
+
+
+        title_wdg = self.get_title_wdg()
+        if title_wdg:
+            div.add(title_wdg)
+
+
 
         # default to true
         show_keyword_search = self.get_setting("keyword_search")
@@ -1348,9 +1368,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
        
-        if self.get_setting("show_refresh"):
-            if self.get_setting("show_keyword_search"):
-                button_div = ButtonNewWdg(title='Search', icon="FA_ARROW-CIRCLE-RIGHT")
+        if self.get_setting("refresh"):
+            if self.get_setting("keyword_search"):
+                button_div = ButtonNewWdg(title='Search', icon="FA_REFRESH")
             else:
                 button_div = ButtonNewWdg(title='Refresh', icon="FA_SYNC")
                
@@ -1360,7 +1380,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             else:
                 button_div.add_behavior( {
                 'type': 'click_up',
-                'cbjs_action':  'spt.dg_table.search_cbk(evt, bvr)'
+                'cbjs_action':  '''
+                var tableTop = bvr.src_el.getParent('.spt_table_top');
+                var tableSearch = tableTop.getElement(".spt_table_search");
+                var hidden_el = tableSearch.getElement(".spt_text_value");
+
+                var src_el = tableSearch.getElement(".spt_text_input_wdg");
+                src_el.setAttribute("spt_input_value", src_el.value);
+                hidden_el.setAttribute("spt_input_value", src_el.value);
+                hidden_el.value = src_el.value;
+
+                spt.dg_table.search_cbk({}, {src_el: src_el});
+                '''
             } )
 
             wdg_list.append({
@@ -1456,7 +1487,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add_class("navbar") 
         xx.add_class("spt_base_table_action_wdg")
 
+        xx.add_style("flex-wrap: nowrap")
         xx.add_style("box-shadow: none")
+        xx.add_style("width: 100%")
+        xx.add_style("box-sizing: border-box")
+        xx.add_style("z-index: 10")
 
         left_div = DivWdg()
         left_div.add_class("d-flex")
@@ -1511,6 +1546,47 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         outer.add_style("white-space: nowrap")
         
         return outer
+
+
+
+
+    def get_title_wdg(self):
+
+        title = self.kwargs.get("title")
+        description = self.kwargs.get("description")
+        title_view = self.kwargs.get("title_view")
+        if not title and not description and not title_view:
+            return
+
+
+        title = title.upper()
+
+        title_box_wdg = DivWdg()
+        title_box_wdg.add_style("padding: 0px 6px 0px 10px")
+        title_box_wdg.add_style("box-sizing: border-box")
+
+        title_box_wdg.add_style("float: left")
+
+
+        if title_view:
+            from .custom_layout_wdg import CustomLayoutWdg
+            title_wdg = CustomLayoutWdg(view=title_view)
+            title_box_wdg.add(title_wdg)
+
+
+        if title:
+            title_wdg = DivWdg()
+            title_box_wdg.add(title_wdg)
+            title_wdg.add(title)
+            title_wdg.add_style("font-size: 1.2em")
+            title_wdg.add_style("font-weight: bold")
+
+        if description:
+            title_box_wdg.add("<br/>")
+            title_box_wdg.add(description)
+            title_box_wdg.add("<br/>")
+
+        return title_box_wdg
 
 
 
@@ -1585,7 +1661,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         show_insert = self.get_show_insert()
         if show_insert:
             insert_view = self.kwargs.get("insert_view")
-            
             if not insert_view or insert_view == 'None':
                 insert_view = "insert"
 
@@ -1607,6 +1682,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var table = top.getElement(".spt_table");
                 var search_type = top.getAttribute("spt_search_type");
 
+                // NOTE: not sure if this condition is good enough to
+                // separate a custom view from an insert view
+                if (bvr.view && bvr.view.contains(".")) {
+                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                }
+                else {
+                    var class_name = 'tactic.ui.panel.EditWdg';
+                }
+
                 var kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
@@ -1616,7 +1700,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   save_event: 'search_table_' + bvr.table_id,
                   show_header: false,
                 };
-                spt.panel.load_popup('Add new ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
+                spt.panel.load_popup('Add new ' + bvr.title, class_name, kwargs);
                 '''
 
             } )
@@ -1848,10 +1932,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.filter_num_div = None
         # Search button
         search_dialog_id = self.kwargs.get("search_dialog_id")
-        
-        show_search = self.get_setting("show_search")
+
+        show_search = None
+        show_search1 = self.get_setting("search")
+        show_search2 = self.get_setting("show_search")
+        if show_search1 or show_search2:
+            show_search = True
+
         if show_search is None:
-            # advanced_search is deprecated as of 4.7
+            # advanced_search is deprecated as of 4.7 (use "search")
             show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
@@ -1953,7 +2042,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 
         button_wdg = layout.get_button_wdg()
         collapsible_wdg = layout.get_collapsible_wdg()
+
         SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=button_wdg)
+
         SwitchLayoutMenu(search_type=self.search_type, view=view, custom_views=custom_views, default_views=default_views, activator=collapsible_wdg)
         return layout
 
@@ -2048,7 +2139,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         from tactic.ui.widget.button_new_wdg import SingleButtonWdg
 
         #button = ButtonNewWdg(title='Column Manager', icon=IconWdg.COLUMNS, show_arrow=False)
-        button = ButtonNewWdg(title='Column Manager', icon="FA_LIST", show_arrow=False)
+        button = ButtonNewWdg(title='Column Manager', icon="FA_COLUMNS", show_arrow=False)
 
         search_type_obj = SearchType.get(self.search_type)
 
@@ -3328,6 +3419,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         msg_div.add_style("margin-left: auto")
         msg_div.add_style("margin-right: auto")
         msg_div.add_style("margin-top: -260px")
+        msg_div.add_style("margin-bottom: 20px")
+        msg_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        msg_div.add_style("width: 400px")
+        msg_div.add_style("height: 100px")
 
 
         if not self.is_refresh and self.kwargs.get("do_initial_search") in ['false', False]:
@@ -3342,25 +3437,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 msg.add("<br/>"*2)
                 msg.add(no_results_msg)
 
-            elif self.get_show_insert():
-                msg.add("<br/><br/>Click on the &nbsp;")
-                icon = IconWdg("Add", "FA_PLUS")
-                msg.add(icon)
-                msg.add(" button to add new items")
-                msg.add("<br/>")
-                msg.add("or ")
-                msg.add("alter search criteria for new search.")
             else:
                 msg.add("<br/>"*2)
-                msg.add("Alter search criteria for new search.")
+                msg.add("Alter filters for new search.")
 
         msg_div.add(msg)
 
         msg.add_style("padding-top: 20px")
-        msg.add_style("height: 100px")
-        msg.add_style("width: 400px")
-        msg.add_style("margin-left: auto")
-        msg.add_style("margin-right: auto")
+        msg.add_style("padding-bottom: 20px")
+        msg.add_style("height: 100%")
         msg.add_color("background", "background3")
         msg.add_color("color", "color3")
         msg.add_border()

@@ -198,9 +198,11 @@ class WizardWdg(BaseRefreshWdg):
         div.add("<hr/>")
 
         dots_div = DivWdg()
-        #dots_div.add_style("margin: -28px auto 0px auto")
-        dots_div.add_style("margin: -28px auto 0px auto")
+        dots_div.add_style("margin: -36px auto 0px auto")
         div.add(dots_div)
+        dots_div.add_style("display: flex")
+        dots_div.add_style("align-items: center")
+        dots_div.add_style("jstify-content: space-arount")
 
         left = 50
         width = 50
@@ -209,28 +211,27 @@ class WizardWdg(BaseRefreshWdg):
 
         for i, widget in enumerate(self.widgets):
             on_dot = DivWdg()
-            on_dot.add_style("width: 20px")
-            on_dot.add_style("height: 18px")
-            on_dot.add_style("padding-top: 2px")
+            on_dot.add_style("box-sizing: border-box")
+            on_dot.add_style("width: 30px")
+            on_dot.add_style("height: 30px")
+            on_dot.add_style("padding-top: 4px")
             on_dot.add_style("border-radius: 20px")
             on_dot.add_style("background: rgba(188,215,207,1.0)")
             on_dot.add_style("margin: 6px auto")
-            #on_dot.add("&nbsp;")
             on_dot.add_border()
-            #on_dot = IconWdg("", IconWdg.DOT_GREEN)
             on_dot.add_class("spt_wizard_on_dot")
+            on_dot.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+            on_dot.add_style("font-weight: bold")
 
             off_dot = DivWdg()
-            off_dot.add_style("width: 12px")
-            off_dot.add_style("height: 10px")
-            off_dot.add_style("padding-top: 2px")
+            off_dot.add_style("box-sizing: border-box")
+            off_dot.add_style("width: 20px")
+            off_dot.add_style("height: 20px")
+            off_dot.add_style("padding-top: 3px")
             off_dot.add_style("border-radius: 10px")
-            #off_dot.add_style("background: rgba(215,188,207,1.0)")
             off_dot.add_style("background: #DDD")
             off_dot.add_style("margin: 11px auto 12px auto")
-            #off_dot.add("&nbsp;")
             off_dot.add_border()
-            #off_dot = IconWdg("", IconWdg.DOT_GREY)
             off_dot.add_class("spt_wizard_off_dot")
 
             if i == 0:
@@ -255,7 +256,7 @@ class WizardWdg(BaseRefreshWdg):
 
             on_dot.add("%s" % (i+1))
             off_dot.add("%s" % (i+1))
-            off_dot.add_style("font-size: 0.6em")
+            off_dot.add_style("font-size: 0.7em")
             on_dot.add_style("text-align: center")
             off_dot.add_style("text-align: center")
 

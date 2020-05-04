@@ -70,11 +70,11 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         button_row = ButtonRowWdg()
         widget.add(button_row)
         button_row.add_style("float: left")
-        widget.add_style("height: 37px")
+        widget.add_style("height: 40px")
         button_row.add_style("margin-right: 50px")
 
         # refresh button
-        refresh_button = ButtonNewWdg(title="Refresh", icon=IconWdg.REFRESH)
+        refresh_button = ButtonNewWdg(title="Refresh", icon="FA_REFRESH")
         button_row.add(refresh_button)
         refresh_button.add_behavior( {
             'type': 'click_up',
@@ -100,7 +100,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         }
 
 
-        trash_button = ButtonNewWdg(title="Drag to Trash", icon=IconWdg.TRASH)
+        trash_button = ButtonNewWdg(title="Drag to Trash", icon="FA_TRASH")
         button_row.add(trash_button)
         trash_button.add_behavior(bvr)
         trash_button.add_class("spt_side_bar_trash")
@@ -111,7 +111,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
 
         # save button
-        save_button = ButtonNewWdg(title="Save Order of Elements to Side Bar", icon=IconWdg.SAVE)
+        save_button = ButtonNewWdg(title="Save Order of Elements to Side Bar", icon="FA_SAVE")
         button_row.add(save_button)
         save_button.add_behavior(bvr)
 
@@ -122,7 +122,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         #widget.add(button_row)
 
         # new link button
-        link_button = ButtonNewWdg(title="Add New Link", icon=IconWdg.ADD)
+        link_button = ButtonNewWdg(title="Add New Link", icon="FA_PLUS")
         button_row.add(link_button)
         link_button.add_behavior( {
         'type': 'click_up',
@@ -139,7 +139,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         '''
         } )
 
-        folder_button = ButtonNewWdg(title="New Folder", icon=IconWdg.FOLDER_EDIT)
+        folder_button = ButtonNewWdg(title="New Folder", icon="FA_FOLDER")
         button_row.add(folder_button)
         folder_button.add_behavior( {
             'type': 'click_up',
@@ -166,7 +166,8 @@ class ManageViewPanelWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        div = DivWdg()
+        div = self.top
+
         div.add_color("background", "background")
         div.add_color("color", "color")
         self.set_as_panel(div)
@@ -206,25 +207,19 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         div.add(menu_div)
 
 
-        from tactic.ui.container import ResizableTableWdg
-        table = ResizableTableWdg()
         table = Table()
-        #table.add_attr("cellspacing", "0")
-        #table.add_attr("cellpadding", "0")
         table.add_color("color", "color")
         table.add_row()
-        #table.set_max_width()
+        table.add_style("width: 100%")
 
         td = table.add_cell()
-        #td.add_attr("colspan", "3")
 
         
         tool_bar = self.get_tool_bar()
         td.add(tool_bar)
-        tool_bar.add_color("background", "background3")
+        tool_bar.add_color("background", "background2")
         tool_bar.add_style("padding: 5px 5px 3px 5px")
-        tool_bar.add_style("margin-left: -2px")
-        tool_bar.add_border()
+        tool_bar.add_style("border-bottom: solid 1px %s" % tool_bar.get_color("border"))
 
 
 
@@ -236,7 +231,8 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         td.add_class("SPT_CHANGE")
         #td.add_border()
         td.add_style("padding: 10px 30px 30px 30px")
-        td.add_style("width: 250px")
+        td.add_style("max-width: 200px")
+        td.add_style("width: 200px")
         td.add_style("vertical-align: top")
         td.add_color("background", "background", -10)
 
@@ -248,7 +244,7 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         #td.add("<b>Preview of Side Bar</b><hr/>")
         title_div.add_style("font-weight: bold")
         title_div.add_style("padding: 10px")
-        title_div.add_style("margin: -12px -30px 10px -30px")
+        title_div.add_style("margin: -11px -30px 10px -30px")
 
 
 
@@ -1063,20 +1059,22 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
 
 
         # add a icon entry
-        icon_label = SpanWdg()
-        icon_label.add_styles( "color: black;" )
-        icon_label.add("Icon: ")
+        icon_label = DivWdg()
+        icon_label.add("<div style='margin-right: 10px'>Icon:</div>")
 
-        # detail_wdg.add(icon_label)
-        icon_entry_text = TextWdg("config_icon")
+        icon_entry_text = TextInputWdg(name="config_icon")
         icon_entry_text.set_id("config_icon")
         icon_entry_text.set_option("size", "30")
-        icon_entry_text.set_attr("readonly", "readonly")
         icon_entry_text.add_class( "SPT_ICON_ENTRY_TEXT" )
         icon_entry_text.add_color("color", "color3")
         icon_entry_text.add_color("background", "background3")
-        button = ActionButtonWdg(title='Choose',tip='Click to select an icon')
-        button.add_style("margin-top: -5px")
+
+        #button = ActionButtonWdg(title='Choose',tip='Click to select an icon')
+        #button.add_behavior({
+        #    'type': 'click_up',
+        #    'cbjs_action': 'spt.popup.open( "Icon Chooser", false);'
+        #} )
+
 
         icon_img = HtmlElement.img()
         icon_img.add_class( "SPT_ICON_IMG" )
@@ -1094,8 +1092,10 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             icon_img.set_attr("src", IconWdg.get_icon_path("TRANSPARENT"))
 
         named_event_name = "ICON_CHOOSER_SELECTION_MADE"
-        icon_entry_text.add_behavior( {'type': 'listen', 'event_name': named_event_name,
-           'cbjs_action': '''
+        icon_entry_text.add_behavior({
+            'type': 'listen',
+            'event_name': named_event_name,
+            'cbjs_action': '''
             // like it or not, the chooser is global
             var top = document.id("IconChooserPopup");
             var chooser = spt.get_element(top, ".SPT_ICON_CHOOSER_WRAPPER_DIV");
@@ -1114,15 +1114,16 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             }
            ''' } )
 
-        button.add_behavior( {'type': 'click_up', 'cbjs_action': 'spt.popup.open( "IconChooserPopup", false);' } )
-
-        table = Table()
-        detail_wdg.add(table)
-        table.add_row()
-        table.add_cell(icon_label)
-        table.add_cell(icon_img)
-        table.add_cell(icon_entry_text)
-        table.add_cell(button)
+        icon_wdg = DivWdg()
+        detail_wdg.add(icon_wdg)
+        icon_wdg.add_style("display: flex")
+        icon_wdg.add_style("align-items: center")
+        icon_wdg.add_style("justify-content: flex-start")
+        icon_wdg.add_style("width: 100%")
+        icon_wdg.add(icon_label)
+        icon_wdg.add(icon_img)
+        icon_wdg.add(icon_entry_text)
+        #icon_wdg.add(button)
 
         detail_wdg.add("<br/>")
 

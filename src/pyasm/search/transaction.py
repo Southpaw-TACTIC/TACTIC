@@ -1146,7 +1146,7 @@ class TableUndo(Base):
 
     def undo(node):
 
-        from sql import SqlException
+        from .sql import SqlException
 
         try:
             search_type = Xml.get_attribute(node,"search_type")
@@ -1220,7 +1220,7 @@ class TableUndo(Base):
                 raise TransactionException("Missing database or table in transaction_log")
 
             # re-enter table
-            from sql import DbContainer
+            from .sql import DbContainer
             from search import SearchType
             from pyasm.biz import Project
             project = Project.get_by_code(database)
@@ -1324,7 +1324,7 @@ class TableDropUndo(Base):
                 raise TransactionException('Missing search_type, table or database in transaction log')
 
             # re-enter table
-            from sql import DbContainer
+            from .sql import DbContainer
 
             from pyasm.biz import Project
             project = Project.get_by_code(database)
@@ -1368,7 +1368,7 @@ class TableDropUndo(Base):
 
 
     def redo(node):
-        from sql import SqlException
+        from .sql import SqlException
 
         try:
             search_type = Xml.get_attribute(node,"search_type")
@@ -1380,7 +1380,7 @@ class TableDropUndo(Base):
 
 
 
-            from sql import DbContainer
+            from .sql import DbContainer
             from pyasm.biz import Project
             # remove table
             project = Project.get_by_code(database)
@@ -1455,7 +1455,7 @@ class AlterTableUndo(Base):
         Xml.set_attribute(sobject_node,"column",column)
         Xml.set_attribute(sobject_node,"to_type",type)
         Xml.set_attribute(sobject_node,"to_not_null", not_null)
-        from sql import DbContainer
+        from .sql import DbContainer
         from pyasm.biz import Project
         project = Project.get_by_code(database)
         # FIXME: for now, make database == project
@@ -1492,7 +1492,7 @@ class AlterTableUndo(Base):
         col_dict = sql.get_column_types(table)
         col_type = col_dict.get(column)
         if not col_type:
-            from sql import SqlException
+            from .sql import SqlException
             raise SqlException('Column Type is unknown. log_drop() needs to be called before a column is dropped.')
         Xml.set_attribute(sobject_node,"type", col_type)
 
@@ -1537,7 +1537,7 @@ class AlterTableUndo(Base):
                 raise TransactionException()
 
             # add column
-            from sql import DbContainer
+            from .sql import DbContainer
             from pyasm.biz import Project
             project = Project.get_by_code(database)
             db_resource = project.get_project_db_resource()
@@ -1572,7 +1572,7 @@ class AlterTableUndo(Base):
                 raise TransactionException()
 
             # drop column
-            from sql import DbContainer
+            from .sql import DbContainer
             from pyasm.biz import Project
             project = Project.get_by_code(database)
             # FIXME: for now, make database == project

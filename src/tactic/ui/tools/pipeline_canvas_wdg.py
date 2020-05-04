@@ -320,8 +320,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         self.background_color = self.kwargs.get("background_color")
         if not self.background_color:
-            self.background_color = "white"
-
+            self.background_color = self.top.get_color("background", 10)
 
         self.top.add_style("height", "100%")
         self.top.add_style("width", "100%")
@@ -890,21 +889,22 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
         process_menu = self.get_node_context_menu()
-        menus = [process_menu.get_data()]
+        if process_menu:
+            menus = [process_menu.get_data()]
 
-        # Simple context menu is for renaming and
-        # deleting approval, action and condition nodes..
-        simple_menu = self.get_simple_node_context_menu()
-        simple_menus = [simple_menu.get_data()]
+            # Simple context menu is for renaming and
+            # deleting approval, action and condition nodes..
+            simple_menu = self.get_simple_node_context_menu()
+            simple_menus = [simple_menu.get_data()]
 
-        menus_in = {
-            'NODE_CTX': menus,
-            'SIMPLE_NODE_CTX': simple_menus
-        }
+            menus_in = {
+                'NODE_CTX': menus,
+                'SIMPLE_NODE_CTX': simple_menus
+            }
 
-        if self.is_editable == True:
-            from tactic.ui.container.smart_menu_wdg import SmartMenu
-            SmartMenu.attach_smart_context_menu( outer, menus_in, False )
+            if self.is_editable == True:
+                from tactic.ui.container.smart_menu_wdg import SmartMenu
+                SmartMenu.attach_smart_context_menu( outer, menus_in, False )
 
         # inner is used to scale
         inner = DivWdg()
@@ -1316,7 +1316,6 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("position: absolute")
         #canvas.add_style("border: solid 1px red")
         canvas.add_style("top: 0px")
-        canvas.add_style("right: 0px")
         canvas.set_attr("width", "600")
         canvas.set_attr("height", "600")
         canvas.set_attr("spt_background_color", self.background_color)
@@ -1573,6 +1572,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "#000") # we want a dark color here
 
         label.add_style("width: %spx" % width)
         if node_type == "hierarchy":
@@ -1609,7 +1609,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             icon_div = DivWdg()
             node.add(icon_div)
-            icon = IconButtonWdg(name="Expand", icon="BS_ARROW_DOWN")
+            icon = IconButtonWdg(name="Expand", icon="FA_ARROW_DOWN")
             icon_div.add(icon)
             icon_div.add_style("margin: 0px auto")
             icon_div.add_style("top: 40px")
@@ -2239,6 +2239,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label_width = custom_wdg.get_label_width()
         if label_width == None:
@@ -2341,6 +2342,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
@@ -2429,6 +2431,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_row()
         node.add(label)
         label.add_style("position: absolute")
+        label.add_color("color", "color")
 
         label.add_style("width: %spx" % width)
         label.add_style("height: %spx" % height)
@@ -2509,6 +2512,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         label.add_style("text-align: center")
         label.add_style("padding-left: 2px")
         label.add_style("padding-top: 1px")
+        label.add_color("color", "color")
 
         label = DivWdg()
         node.add(label)
@@ -3238,9 +3242,9 @@ spt.pipeline.select_node = function(node) {
     if (box_shadow) {
         outer.setStyle("box-shadow", box_shadow);
     } else {
-        outer.setStyle("box-shadow", "0px 0px 15px rgba(128,128,128,1.0)");
+        outer.setStyle("box-shadow", "0px 0px 10px rgba(128,128,128,1.0)");
     }
-    outer.setStyle("border", "solid 1px rgba(128,128,0,1.0)");
+    outer.setStyle("border", "solid 1px rgba(64,64,64,1.0)");
     outer.setStyle("opacity", "0.8");
 
 
@@ -3269,7 +3273,7 @@ spt.pipeline.unselect_node = function(node) {
     else {
         var outer = node.getElement(".spt_content");
     }
-    var border_color = outer.getAttribute("spt_border_color");
+    var border_color = outer.getAttribute("spt_border_color") || "#000";
     var box_shadow = outer.getAttribute("spt_box_shadow");
     outer.setStyle("box-shadow", box_shadow);
     outer.setStyle("border", "solid 1px " + border_color);
@@ -4210,7 +4214,7 @@ spt.pipeline.set_color = function(node, color) {
 
     var content= node.getElement(".spt_content");
     var color1 = spt.css.modify_color_value(color, +10);
-    var color2 = spt.css.modify_color_value(color, -10);
+    var color2 = spt.css.modify_color_value(color, -5);
 
     if (spt.pipeline.get_node_type(node) == "condition") {
         angle = 225;
@@ -5841,8 +5845,7 @@ spt.pipeline.fit_to_canvas = function(group_name) {
         scale = vscale;
     }
 
-    scale = scale * 0.95;
-    //scale = 1.0
+    scale = scale * 0.9;
     if (scale > 1.0) {
         scale = 1.0;
     }
@@ -6799,7 +6802,7 @@ spt.pipeline.import_pipeline = function(pipeline_code, color) {
         color = pipeline.color;
     }
     if (color == '' || color == null || typeof(color) == 'undefined') {
-        color = "#999";
+        color = "#AAAAB0";
     }
     group.set_color(color);
     group.set_group_type("pipeline");

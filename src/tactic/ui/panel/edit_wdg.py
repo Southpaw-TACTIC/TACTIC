@@ -238,7 +238,6 @@ class EditWdg(BaseRefreshWdg):
                 self.mode = 'insert'
             else:
                 self.mode = 'edit'
-
         elif self.expression:
             sobject = Search.eval(self.expression, single=True)
             self.search_id = sobject.get_id()
@@ -643,7 +642,7 @@ class EditWdg(BaseRefreshWdg):
 
         #insert the header before body into inner
         show_header = self.kwargs.get("show_header")
-        if show_header not in ['false', False]:
+        if show_header and show_header not in ['false', False]:
             self.add_header(inner, sobj_title)
 
         body_container = DivWdg()
@@ -664,7 +663,9 @@ class EditWdg(BaseRefreshWdg):
 
 
         if self.color_mode == "default":
-            table.add_color("background", "background")
+            #table.add_color("background", "background")
+            pass
+
         elif self.color_mode == "transparent":
             table.add_style("background", "transparent")
         table.add_color("color", "color")
@@ -846,11 +847,11 @@ class EditWdg(BaseRefreshWdg):
                 tr = table.add_row()
 
 
-                if self.color_mode == "default":
-                    if index % 2 == 0:
-                        tr.add_color("background", "background")
-                    else:
-                        tr.add_color("background", "background", -1 )
+                #if self.color_mode == "default":
+                #    if index % 2 == 0:
+                #        tr.add_color("background", "background")
+                #    else:
+                #        tr.add_color("background", "background", -1 )
 
 
             index += 1
@@ -877,6 +878,9 @@ class EditWdg(BaseRefreshWdg):
                 title_div.add(title)
                 title_div.add_style("display: inline-block")
                 title_div.add_class("spt_edit_title")
+                title_div.add_style("font-size: 0.9em")
+                title_div.add_style("text-transform: uppercase")
+                title_div.add_style("opacity: 0.5")
 
 
                 td = table.add_cell(title_div)
@@ -929,6 +933,8 @@ class EditWdg(BaseRefreshWdg):
 
                 if (title in self.disables):
                     widget.add_attr("disabled", "disabled")
+
+                widget.add_style("font-size: 1.2em")
                 td.add(widget)
 
 
@@ -1174,6 +1180,7 @@ class EditWdg(BaseRefreshWdg):
 
 
         search_key = SearchKey.get_by_sobject(self.sobjects[0], use_id=True)
+        search_key_wo_id = SearchKey.get_by_sobject(self.sobjects[0])
         search_type = self.sobjects[0].get_base_search_type()
 
 
@@ -1251,7 +1258,9 @@ class EditWdg(BaseRefreshWdg):
             cbjs_insert = '''
             spt.edit.edit_form_cbk(evt, bvr);
             spt.notify.show_message("%s item complete.");
-            '''%mode_label
+            var kwargs = {options: {search_keys: "%s"}};
+            spt.named_events.fire_event("delete|workflow/job", kwargs);
+            '''% (mode_label, search_key_wo_id)
 
         save_event = self.kwargs.get('save_event')
         if not save_event:
@@ -1298,12 +1307,12 @@ class EditWdg(BaseRefreshWdg):
 
 
         # create the buttons
-        insert_button = ActionButtonWdg(title=ok_btn_label, tip=ok_btn_tip, width=150)
+        insert_button = ActionButtonWdg(title=ok_btn_label, tip=ok_btn_tip, size=150)
         insert_button.add_behavior(bvr)
 
 
 
-        cancel_button = ActionButtonWdg(title=cancel_btn_label, tip=cancel_btn_tip, width=150)
+        cancel_button = ActionButtonWdg(title=cancel_btn_label, tip=cancel_btn_tip, size=150)
         cancel_button.add_behavior({
         'type': 'click_up',
         'cbjs_action': cbjs_cancel

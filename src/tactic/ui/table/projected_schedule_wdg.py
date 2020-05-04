@@ -134,6 +134,7 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
         task_processes = {}
 
         layout = ProjectSetting.get_value_by_key("workflow/workflow_schedule_preview") or 'open src'
+        open_src = True
 
         kwargs = {
                 'mode': 'preview',
@@ -150,17 +151,24 @@ class WorkflowSchedulePreviewWdg(BaseRefreshWdg):
                 'is_editable': False
             }
         
-        if layout == 'spt.tools.gantt.GanttLayoutWdg':
-            for i, x in enumerate(tasks):
-                x.set_value("status", "Assignment")
-                x.set_value("id", "1")
-                x.set_value("description", "")
-                x.set_value("data", "")
-                task_processes[x.get_value("process")] = x
-            kwargs['layout'] = layout
-            kwargs['element_names'] = 'process,status,days_due'
-            kwargs['gantt_width'] = 400
-        else:
+        if layout != 'open src': 
+            try:
+                from spt.tools.gantt import GanttLayoutWdg
+            except ImportError:
+                open_src = True
+            else:
+                open_src = False
+                for i, x in enumerate(tasks):
+                    x.set_value("status", "Assignment")
+                    x.set_value("id", "1")
+                    x.set_value("description", "")
+                    x.set_value("data", "")
+                    task_processes[x.get_value("process")] = x
+                kwargs['layout'] = layout
+                kwargs['element_names'] = 'process,status,days_due'
+                kwargs['gantt_width'] = 400
+        
+        if open_src or layout == 'open src':
             for i, x in enumerate(tasks):
                 x.set_value("status", "Assignment")
                 code = Common.generate_random_key()

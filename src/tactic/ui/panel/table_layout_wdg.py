@@ -41,7 +41,7 @@ basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
-    SCROLLBAR_WIDTH = 17
+    SCROLLBAR_WIDTH = 8 
 
     #CATEGORY_KEYS = {
     #    '_order': ['Required', 'Misc']
@@ -561,6 +561,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
     def get_display(self):
 
+
         # fast table should use 0 chunk size
         self.chunk_size = 0
 
@@ -876,7 +877,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 default_width = -1
 
             width = self.attributes[i].get("width")
-            
 
             if i >= len(column_widths):
                 # default width
@@ -887,7 +887,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             elif not column_widths[i]:
                 column_widths[i] = default_width
-            
+
+
         # resize the widths so that the last one is free
         expand_full_width = True
         default_width = 120
@@ -906,7 +907,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 elif item_width.endswith("%"):
                     continue
                 else:
-                    item_width = int(float(item_width))
+                    try:
+                        item_width = int(float(item_width))
+                    except:
+                        item_width = -1
             if i == 0 and expand_full_width:
                 column_widths[-(i+1)] = -1
             elif item_width == -1:
@@ -935,6 +939,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner.add(h_scroll)
             h_scroll.add_style("overflow-x: hidden")
             h_scroll.add_style("overflow-y: auto")
+            h_scroll.add_style("height: 100%")
             h_scroll.add_style("flex-direction: column")
  
             scroll = DivWdg()
@@ -945,11 +950,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             padding = DivWdg()
             #scroll.add(padding)
             padding.add_class("spt_header_padding")
-            padding.add_style("width", "17px")
+            padding.add_style("width", "8px")
             padding.add_style("display", "none")
 
             padding.add_style("background", "#F5F5F5")
-            padding.add_style("float", "right")
+            #padding.add_style("float", "right")
+            padding.add_style("position: absolute")
+            padding.add_style("right: 0px")
 
 
 
@@ -965,6 +972,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             scroll.add_class("spt_table_scroll")
+            scroll.add_style("height: 100%")
             h_scroll.add(scroll)
             
             """
@@ -1393,7 +1401,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
 
 
-        
 
         if not self.sobjects:
             self.handle_no_results(table)
@@ -1680,7 +1687,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             reverse = True
         elif self.order_element and self.order_element.endswith(' desc'):
             reverse = True
-
 
         sobjects = Common.sort_dict(self.group_dict, reverse=reverse)
         for sobject in sobjects:
@@ -2064,6 +2070,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             is_editable = False
             self.view_editable = False
 
+
         if is_editable:
             table.add_relay_behavior( {
                 'type': 'click',
@@ -2246,6 +2253,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             tr.add_color("background", "background", -2)
             border_color = table.get_color("table_border", 0, default="border")
+            tr.add_color("color", "color", 8)
 
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
@@ -2426,6 +2434,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             if self.mode == 'widget':
                 value = widget.get_title()
+                if isinstance(value, six.string_types):
+                    d = DivWdg()
+                    d. add_style("margin-top: 6px")
+                    d.add(value)
+                    value = d
             else:
                 element = widget.get_name()
                 value = Common.get_display_title(element)
@@ -3191,8 +3204,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-
-
         min_height = 25
 
         # add extra data if it exists
@@ -3212,11 +3223,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         tr.add_style("min-height: %spx" % min_height)
         tr.add_style("height: %spx" % min_height)
 
-
-
-
-
-
+        tr.add_attr("spt_group_level", level)
 
         tr.add_attr("spt_search_key", sobject.get_search_key(use_id=True) )
         tr.add_attr("spt_search_key_v2", sobject.get_search_key() )
@@ -3575,6 +3582,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 else:
                     value = self.value
 
+                ## add timezone conversion
+                ##if not SObject.is_day_column(element_name):
+                ##    element_type = SearchType.get_tactic_type(self.search_type, element_name)
+
+                ##    if element_type in ['time', 'datetime']:
+                ##        value = widget.get_timezone_value(value)
+
                 if isinstance(value, basestring):
                     value = value.replace('"', '&quot;')
 
@@ -3808,7 +3822,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_select_wdg(self):
         checkbox_container = DivWdg()
         checkbox_container.add_style("position", "relative")
-        checkbox_container.add_style("top", "-3px")
+        checkbox_container.add_style("top", "-4px")
 
         checkbox = DivWdg(css="checkbox spt_table_checkbox")
         checkbox_container.add(checkbox)
@@ -4577,6 +4591,7 @@ spt.table.select_row = function(row) {
 
         row.setAttribute("spt_last_background", current_color);
         row.setStyle("background-color", spt.table.select_color);
+        row.setStyle("font-weight", "700");
         row.setAttribute("spt_background", spt.table.select_color);
         row.addClass("spt_table_selected");
     }
@@ -4596,6 +4611,7 @@ spt.table.unselect_row = function(row) {
 
     }
     row.setStyle("background-color", row.getAttribute("spt_last_background"));
+    row.setStyle("font-weight", "normal");
     row.setAttribute("spt_background", row.getAttribute("spt_last_background"));
     row.removeClass("spt_table_selected");
     spt.table.last_selected_row = null;
@@ -5153,7 +5169,6 @@ spt.table.add_new_item = function(kwargs) {
     var event = "insert|tableId|"+tableId;
     spt.named_events.fire_event(event, {src_el: clone});
 
-
     var event = "insertX|"+search_type;
     spt.named_events.fire_event(event, {src_el: clone});
 
@@ -5572,6 +5587,8 @@ spt.table._find_edit_wdg = function(cell, edit_wdg_template) {
 
     // clone the template edit_wdg
     var clone = spt.behavior.clone(edit_wdg);
+    clone.setStyle("background-color", "var(--spt_palette_background)");
+    clone.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.1)");
 
     return clone;
 
@@ -5746,12 +5763,14 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.setStyle("height", "auto");
-        input.setStyle("min-width", "100px");
+        input.setStyle("min-width", "150px");
         input.setStyle("width", "auto");
+        input.setStyle("overflow", "auto");
+        input.setStyle("border", "solid 1px #DDD");
 
         edit_wdg.setStyle("position", "absolute");
         edit_wdg.setStyle("margin-right", "-3px");
-        edit_wdg.setStyle("min-width", "100px");
+        edit_wdg.setStyle("min-width", "140px");
 
         set_focus = true;
         accept_event = 'change';
@@ -5765,16 +5784,6 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        // FIXME: check if this is stil needed
-        if( spt.browser.is_IE() ) {
-            mult = 15;
-            if (size.y < (input.size * mult)) {
-                edit_wdg.setStyle( "height", (input.size * mult) + 'px');
-            }
-            else {
-                edit_wdg.setStyle( "height", size.y+'px');
-            }
-        }
         // to avoid overlapping select in UI
         edit_wdg.setStyle('z-index', '100' );
     }
@@ -5797,7 +5806,6 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
 
 
 
-
     if (accept_event == 'blur') {
         input.addEvent("blur", function() {
             // to make checkbox aware of its checked state
@@ -5811,6 +5819,13 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             spt.table.accept_edit(edit_wdg, input.value, true, {input: input});
         });
     }
+
+
+    var els = input.getElements("option");
+    els.forEach( function(el) {
+        el.addEvent("mouseover", function(e) { el.setStyle("background", "var(--spt_palette_background3)") } );
+        el.addEvent("mouseout", function(e) { el.setStyle("background", "") } );
+    } );
 
 
     input.addEvent("keydown", function(e) {
@@ -5893,7 +5908,12 @@ spt.table.open_link = function(bvr) {
         search_key = sss.__search_key__;
         server.clear_api_key();
 
-        title = sss.code;
+        if (sss.name) {
+            title = sss.name;
+        }
+        else {
+            title = sss.code;
+        }
         name = sss.code;
     }
 
@@ -6177,6 +6197,7 @@ spt.table.set_display = function( el, value, input_type ) {
 }
 
 spt.table.set_changed_color = function(row, cell) {
+
     cell.setAttribute("spt_orig_background", cell.getStyle("background-color"));
     row.setAttribute("spt_orig_background", row.getAttribute("spt_background"));
 
@@ -6943,9 +6964,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     var table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
-    if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
-
     if (table_top) {
+        if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
         var show_select = table_top.getAttribute("spt_show_select");
         var document_mode = table_top.getAttribute("spt_document_mode");
     }
@@ -7014,7 +7034,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             
             // HACK for tile layout 
             dummy = spt.behavior.clone(dummy);
-
 
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
@@ -8029,7 +8048,6 @@ spt.table.expand_table = function(mode) {
 
     // adjust for windows scrollbar
     if (spt.browser.os_is_Windows() && table) {
-        return;
         var div = layout.getElement(".spt_header_padding");
         if (div) {
             spt.behavior.destroy_element(div);
@@ -8041,17 +8059,19 @@ spt.table.expand_table = function(mode) {
 
         if (header_size.x > table_size.x) {
             header_parent = header_table.getParent();
-            header_parent.setStyle("margin-right", "17px");
+            header_parent.setStyle("margin-right", "8px");
 
             var div = document.createElement("div");
-            div.setStyle("width", "17px");
+            div.setStyle("width", "8px");
             div.innerHTML = "&nbsp;";
             div.addClass("spt_header_padding");
 
             var height = header_parent.getStyle("height");
             div.setStyle("height", height);
             div.setStyle("background", "#F5F5F5");
-            div.setStyle("float", "right");
+            div.setStyle("position", "absolute")
+            div.setStyle("right", "0px")
+
 
             div.setStyle("box-sizing", "border-box");
             div.setStyle("border-right", "solid 1px #DDD")

@@ -1858,6 +1858,11 @@ TacticServerStub = function() {
     // async functions
 
     this.async_get_widget = function(class_name, kwargs, on_complete, on_error) {
+
+        var api = this;
+        var api_kwargs = {};
+        Object.assign(api_kwargs, kwargs);
+
         var libraries = spt.Environment.get().get_libraries();
         kwargs.libraries = libraries;
         
@@ -1874,6 +1879,14 @@ TacticServerStub = function() {
 
 
         var err_callback = function(e) {
+            // try handling the ERROMETHOD error
+            /*
+            if (e.contains("XERRORMETHOD")) {
+                //alert("ERRORMETHOD!!!!!");
+                //api.async_get_widget(class_name, api_kwargs, on_complete, on_error);
+                return;
+            }
+            */
             if (e == 0) {
                 e = 'Received an error (Error 0)';
                 var error = new Error();
@@ -1883,6 +1896,8 @@ TacticServerStub = function() {
                 e = 'Timeout Error (Error 502)';
             else if (e == 503)
                 e = 'Service is unavailable (Error 503)';
+            else if (e == 504)
+                e = 'Gateway Timeout error (Error 504)';
 
             if (!on_error) {
                 on_error = kwargs['on_error'];
@@ -1892,7 +1907,7 @@ TacticServerStub = function() {
                 on_error(e);
             }
             else {
-                spt.alert(e);
+                spt.alert("async_get_widget: " + e);
             }
         };
         passed_args = [class_name, kwargs];
@@ -2101,7 +2116,7 @@ TacticServerStub = function() {
                     else if (on_error)
                         on_error(e);
                     else
-                        spt.alert(e_msg);
+                        spt.alert("async_callback: " + e_msg);
                 }
             } else {
                 

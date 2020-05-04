@@ -86,8 +86,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
     def get_title_wdg(self):
 
-
-
         title_view = self.kwargs.get("title_view")
         if title_view:
             from tactic.ui.panel import CustomLayoutWdg
@@ -131,6 +129,15 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div = DivWdg()
         div.add_style("padding: 10px 15px")
 
+        border_color = div.get_color("border")
+        div.add_style("border: solid 1px %s" % border_color)
+        div.add_style("border-radius: 5px")
+        div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        div.add_style("margin: 20px")
+
+
+
+
         title = DivWdg()
         div.add(title)
         title.add_style("text-overflow: ellipsis")
@@ -153,16 +160,22 @@ class SObjectDetailWdg(BaseRefreshWdg):
         title.add_style("font-size: 25px")
         title.add_style("margin-bottom: 5px")
 
+        parent = self.sobject.get_parent()
+        if parent:
+            parent_name = parent.get_value("name", no_exception=True)
+            title.add("<div style='font-size: 0.5em'>%s:</div> " % parent_name.upper())
 
-        stype_title = search_type_obj.get_value("title")
-        if stype_title:
-            stype_title = _(stype_title)
-            title.add("%s: " % stype_title)
+        else:
+            stype_title = search_type_obj.get_value("title")
+            if stype_title:
+                stype_title = _(stype_title)
+                title.add("<div style='font-size: 0.5em'>%s:</div> " % stype_title.upper())
 
         if name:
+            #name = Common.pluralize(name)
             title.add("%s" % name)
             if code:
-                title.add(" <i style='font-size: 0.8em; opacity: 0.7'>(code: %s)</i>" % code)
+                title.add("<br/><i style='margin-top: -3px; font-size: 0.4em; opacity: 0.5'>(code: %s)</i>" % code)
         elif code:
             title.add("%s" % code)
         else:
@@ -171,7 +184,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         if desc:
             desc_div = DivWdg()
-            desc_div.add(desc)
+            desc_div.add(desc.replace("\n", "<br/>"))
             desc_div.add_color("color", "color", 30)
             desc_div.add_style("font-size: 1.2em")
             div.add(desc_div)
@@ -263,8 +276,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
             key = "sobject_detail_view"
             custom_view = ProjectSetting.get_value_by_key(key, search_type=self.sobject.get_base_search_type())
 
-        print("hello")
-        print(custom_view)
         if custom_view:
             from tactic.ui.panel import CustomLayoutWdg
             selected = self.kwargs.get("selected") or ""
@@ -302,16 +313,19 @@ class SObjectDetailWdg(BaseRefreshWdg):
             thumb_div = DivWdg()
             panel_wdg.add(thumb_div)
 
-            thumb = ThumbWdg2()
+            thumb = ThumbWdg2(width="auto", height="100%")
             thumb_div.add(thumb)
-            thumb_div.add_style("width: 200px")
-            thumb_div.add_style("height: 125px")
-            thumb_div.add_style("padding: 5px")
+            thumb_div.add_style("box-sizing: border-box")
+            thumb_div.add_style("height: 175px")
             thumb_div.add_style("margin-left: 20px")
             thumb_div.add_style("margin-top: 20px")
             thumb_div.add_style("display: inline-block")
             thumb_div.add_style("vertical-align: top")
             thumb_div.add_style("overflow-y: hidden")
+            border = thumb_div.get_color("border")
+            thumb_div.add_style("border: solid 1px %s" % border)
+            thumb_div.add_style("border-radius: 5px")
+            thumb_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
             # use a larger version for clearer display
             #thumb.set_icon_type('web')
 
@@ -417,27 +431,32 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         save_state = self.kwargs.get("tab_save_state") or ""
 
-        #menu = self.get_extra_menu()
-        #tab = TabWdg(config=config, state=state, extra_menu=menu)
         tab_kwargs = self.kwargs.get("tab_kwargs") or {}
         if isinstance(tab_kwargs, basestring):
             tab_kwargs = jsonloads(tab_kwargs)      
 
-        show_remove = tab_kwargs.get("show_remove") or False
-        show_add = tab_kwargs.get("show_add") or False
+        show_remove = tab_kwargs.get("show_remove")
+        if show_remove == None:
+            tab_kwargs['show_remove'] = 'false'
+
+        show_add = tab_kwargs.get("show_add")
+        if show_add == None:
+            tab_kwargs['show_add'] = 'false'
+
+
         add_bvr = tab_kwargs.get("add_bvr") or ""
         use_default_style = tab_kwargs.get("use_default_style")
         height = tab_kwargs.get("height")
-        #show_add = True
-        #show_remove = True
 
         tab_kwargs['state'] = state
+        #tab_kwargs['show_add'] = "true"
+        #tab_kwargs['show_remove'] = "true"
         tab_kwargs['config'] = config
         tab_kwargs['selected'] = selected
         tab_kwargs['tab_offset'] = 10
         tab_kwargs['save_state'] = save_state
         tab_kwargs['use_header_back'] = True
-        
+
  
         tab = TabWdg(**tab_kwargs)
         tab.add_style("margin: 0px -1px -1px -1px")
@@ -549,6 +568,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         sobject_config = None
         element_names = None
 
+
         if sobject_settings:
             wdg_settings = sobject_settings.get("SObjectDetailWdg") or {}
             config_xml = wdg_settings.get("config")
@@ -596,7 +616,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             tabs = config.get_element_names()
         else:
             tabs = self.get_default_tabs()
-        
+
         if len(tabs) == 0:
             tabs.insert(0, "info")
 
@@ -619,7 +639,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         config_xml.append('''
         <config>
         <tab>''')
-
 
         for tab in tabs:
 
@@ -2256,6 +2275,9 @@ class TaskDetailPipelineWdg(PipelineCanvasWdg):
 
     def get_node_context_menu(self):
 
+        return None
+
+        """
         menu = Menu(width=180)
         menu.set_allow_icons(False)
         menu.set_setup_cbfn( 'spt.smenu_ctx.setup_cbk' )
@@ -2294,6 +2316,7 @@ class TaskDetailPipelineWdg(PipelineCanvasWdg):
 
 
         return menu
+        """
 
 
 

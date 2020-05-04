@@ -1074,9 +1074,9 @@ class ExpressionMode(ExpressionParser):
             try:
                 result = eval(expression)
 
-                # convert result to  seconds if it is a timedelta
-                if isinstance(result, datetime.timedelta):
-                    result = result.seconds
+                # convert result to seconds if it is a timedelta
+                #if isinstance(result, datetime.timedelta):
+                #    result = result.days*24*3600 + result.seconds
 
             except ZeroDivisionError:
                 result = None
@@ -1584,8 +1584,10 @@ class MethodMode(ExpressionParser):
             if len(values_list) == 1:
                 pass
             else:
+                for i, value in enumerate(values_list):
+                    if not isinstance( values_list[i], list):
+                        values_list[i] = [values_list[i]]
                 values_list = zip(*values_list)
-            results = []
             for values in values_list:
                 result = args[0] % values
                 results.append(result)
@@ -1875,8 +1877,9 @@ class MethodMode(ExpressionParser):
         # format the results
         for result in results:
             if result_type == 'datetime':
-                result = result.strftime(format)
-                result = dateutil.parser.parse(result)
+                if result:
+                    result = result.strftime(format)
+                #result = dateutil.parser.parse(result)
 
             formated_results.append(result)
 
@@ -2340,7 +2343,7 @@ class MethodMode(ExpressionParser):
                         count = search.get_count()
                         return count
 
-                    if self.sobjects and len(related_types) == 1 and related_type == self.sobjects[0].get_base_search_type():
+                    if self.sobjects and len(related_types) == 1 and related_type == self.sobjects[0].get_base_search_type() and not path:
                         # this handles the specific case where there is only
                         # related type that is the same as the passed in sobjects
                         list = self.sobjects
@@ -2409,6 +2412,10 @@ class MethodMode(ExpressionParser):
 
 
     def get(self, sobjects, column):
+
+        # fix bad column names.  This can happen if expression comes from xml
+        column = column.replace("&gt;", ">")
+
         if isinstance(sobjects, dict):
             results = {}
             for key, values in sobjects.items():

@@ -92,7 +92,6 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         #add_div.add_style("display: flex")
         add_div.add_class("tactic_hover")
         icon = IconWdg(name="Add new collection", icon="FA_PLUS")
-        icon.add_style("opacity: 0.6")
         icon.add_style("padding-right: 3px")
         icon.add_style("vertical-align: middle")
         add_div.add(icon)
@@ -791,13 +790,13 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         
         asset_lib_div = DivWdg()
         div.add(asset_lib_div)
-        folder_icon = IconWdg(icon="FOLDER_2", width='30px')
+        folder_icon = IconWdg(icon="FAR_FOLDER_OPEN", width='30px')
 
         asset_lib_div.add(folder_icon)
-        asset_lib_div.add_style("margin: 5px 0px 5px -5px")
+        asset_lib_div.add_style("margin: 5px 0px 5px 0px")
         asset_lib_div.add_style("height: 20px")
         asset_lib_div.add_style("padding-top: 5px")
-        asset_lib_div.add_style("padding-bottom: 5px")
+        asset_lib_div.add_style("padding-bottom: 10px")
         asset_lib_div.add_style("font-weight: bold")
 
         asset_lib_div.add(library_title)
@@ -1134,7 +1133,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 	    # Asset Library folder access
             library_title = "Asset Library"
-            icon = IconWdg(name=library_title, icon="FA_FOLDER_OPEN")
+            icon = IconWdg(name=library_title, icon="FAR_FOLDER_OPEN")
 
             asset_lib_span_div.add(icon)
 
@@ -1234,13 +1233,10 @@ class CollectionContentWdg(BaseRefreshWdg):
                     '''
                 } )
                     
-                #title_div.add("/ %s" % collection.get_value("name") )
 
-        #scale_wdg = tile.get_scale_wdg()
-        #top.add(scale_wdg)
-        #scale_wdg.add_style("float: right")
 
         top.add(self.get_header_wdg())
+        top.add("<br clear='all'/>")
 
         top.add(tile)
 
@@ -1524,8 +1520,11 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_attr("spt_search_code", collection.get_code())
         collection_div.add_attr("spt_name", name)
 
-        collection_div.add_style("height: 20px")
+        collection_div.add_style("height: 24px")
         collection_div.add_style("padding-top: 10px")
+
+        collection_div.add_style("display: flex")
+        collection_div.add_style("align-items: center")
 
         
         if has_child_collections:
@@ -1542,16 +1541,20 @@ class CollectionItemWdg(BaseRefreshWdg):
         from tactic.ui.panel import ThumbWdg2
         thumb_wdg = ThumbWdg2()
         thumb_wdg.set_sobject(collection)
-        collection_div.add(thumb_wdg)
+        #collection_div.add(thumb_wdg)
         thumb_wdg.add_style("width: 45px")
         thumb_wdg.add_style("float: left")
         thumb_wdg.add_style("margin-top: -10px")
 
+        thumb_wdg = DivWdg()
+        collection_div.add(thumb_wdg)
+        thumb_wdg.add("<i class='far fa-folder-open' style='opacity: 0.6; font-size: 16px'> </i>")
+        thumb_wdg.add_style('padding-left: 15px')
+
+
         if count:
             count_div = DivWdg()
             collection_div.add(count_div)
-            #count_div.add_style("margin-top: -10px")
-            #count_div.add_style("margin-left: -10px")
 
             count_div.add_style("width: 15px")
             count_div.add_style("height: 15px")
@@ -1561,7 +1564,7 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("position: absolute")
             count_div.add_style("text-align: center")
             count_div.add_style("margin-left: 23px")
-            count_div.add_style("margin-top: -8px")
+            count_div.add_style("margin-top: -6px")
             count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
             
             expression = "@COUNT(%s['parent_code','%s'])" % (collection_type, collection.get_code())
@@ -1574,7 +1577,7 @@ class CollectionItemWdg(BaseRefreshWdg):
 
 
         name = collection.get_value("name")
-        collection_div.add(name)
+        collection_div.add("<div style='margin-left: 10px'>%s</div>" % name)
 
 
 

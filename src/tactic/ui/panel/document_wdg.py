@@ -45,6 +45,9 @@ class Document(object):
         if self.kwargs.get("document"):
             self.document = jsonloads(self.kwargs.get("document") )
 
+    def get_document(self):
+        return self.document
+
 
     def get_sobjects_from_document(self, document):
 
@@ -552,6 +555,7 @@ spt.document.item.open_edit = function(top) {
     input.setStyle("display", "");
     top.toggled = true;
     input.value = label.getElement(".spt_group_label").innerText;
+    input.setSelectionRange(0, input.value.length);
 }
 
 spt.document.item.close_edit = function(top) {

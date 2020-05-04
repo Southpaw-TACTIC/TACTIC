@@ -131,8 +131,9 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
             "VALUE":    value
         }
 
+
         for key, expr in self.kwargs.items():
-            if not key.startswith(prefix):
+            if not key.startswith("%s" % prefix):
                 continue
 
             if expr:

@@ -71,10 +71,11 @@ class ScheduleToolWdg(BaseRefreshWdg):
         div.add_style("width: 400px")
         div.add_color("background", "background3")
         div.add_color("color", "color3")
+        div.add_style("box-sizing: border-box")
         #div.add_border()
         div.center()
-        div.add_style("margin-top: 50px")
-        div.add_style("padding-top: 75px")
+        div.add_style("margin: 50px auto")
+        div.add_style("padding-top: 40px")
 
         div.add_style("text-align: center")
         div.add("<b>Select a user on the left</b>")

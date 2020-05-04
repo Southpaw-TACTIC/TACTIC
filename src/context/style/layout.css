@@ -49,9 +49,21 @@
 }
 
 
+body {
+    font-size: 0.75rem;
+}
+
+
 table {
     font-size: .75rem;
 }
+
+
+select option {
+    padding: 3px 5px;
+}
+
+
 
 .hand
 {

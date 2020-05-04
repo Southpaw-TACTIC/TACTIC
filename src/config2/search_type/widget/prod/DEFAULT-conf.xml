@@ -930,6 +930,14 @@ display class, it will adopt the one defined here-->
         <display class="TextAreaWdg"/>
     </element>
 
+
+    <element name="data">
+        <display class="TextAreaWdg">
+            <rows>10</rows>
+        </display>
+    </element>
+
+
    <element name="sort_order">
         <display class="TextWdg">
             <hint>Order with an integer. 1 will stay at the top</hint>

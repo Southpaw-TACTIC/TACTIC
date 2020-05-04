@@ -10,13 +10,14 @@
 #
 
 __all__ = [
-#'TopWdg',
+# DEPRECATED: these really haven't been used in a long time
 'PyMayaInit', 'PyFlashInit', 'PyPerforceInit', 'PyHoudiniInit', 'PyXSIInit',
+##
+
 'BottomWdg', 'DynTopWdg', 'DynBottomWdg', 'EditLinkWdg', 'ProdSettingLinkWdg', 'SubmissionLinkWdg', 'RenderLinkWdg', 'FileAppendLinkWdg',
 'InsertLinkWdg', 'IframeInsertLinkWdg', 'DeleteLinkWdg', 'RetireLinkWdg',
 'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg', 'WebLoginWdg2', 'BaseSignInWdg',
 'WebLoginCmd', 'WebLicenseWdg', 'TacticLogoWdg',
-#'ChangePasswordWdg', 'ChangePasswordLinkWdg',
 'SignOutLinkWdg', 'UndoButtonWdg', 'RedoButtonWdg',
 'CmdReportWdg', 'WarningReportWdg', 'MessageWdg', 'HintWdg', 'HelpMenuWdg',
 'HelpItemWdg', 'WarningMenuWdg', 'FloatMenuWdg', 'ExtraInfoWdg', 'UserExtraInfoWdg',
@@ -443,18 +444,18 @@ class ProdSettingLinkWdg(EditLinkWdg):
 
 class SubmissionLinkWdg(EditLinkWdg):
     def __init__(self, search_type, search_id, text="Submit", long=False, \
-            config_base='submit', widget='pyasm.prod.web.SubmissionWdg'):
+            config_base='submit', widget='pyasm.prod.web.SubmissionWdg', **kwargs):
            
         self.long = long
 
         self.parent_search_type = search_type
         self.parent_search_id = search_id
 
-        search_type = "prod/submission"
+        search_type = "vfx/submission"
         search_id = "-1"
         config_base = "insert"
 
-        super(SubmissionLinkWdg,self).__init__(search_type,search_id,text,config_base, widget)
+        super(SubmissionLinkWdg,self).__init__(search_type,search_id,text,config_base, widget, **kwargs)
 
     def modify_behavior(self, bvr):
         '''values is for web form values'''
@@ -3590,17 +3591,19 @@ class ExceptionWdg(Widget):
         table.add_style("margin: 0px 20px 0px 20px")
         table.add_style("min-width: 200px")
 
+        security = WebContainer.get_security()
+        if security.is_admin():
+            # show stack trace
+            button = ActionButtonWdg(title="Stack Trace")
+            button.add_style("white-space: nowrap")
+            table.add_row()
+            table.add_cell("Show the Stack Trace for the Error: ")
+            table.add_cell(button)
 
-        # show stack trace
-        button = ActionButtonWdg(title="Stack Trace")
-        table.add_row()
-        table.add_cell("Show the Stack Trace for the Error: ")
-        table.add_cell(button)
-
-        dialog = DialogWdg(show_pointer=False)
-        widget.add(dialog)
-        dialog.set_as_activator(button)
-        dialog.add_title("Stack Trace")
+            dialog = DialogWdg(show_pointer=False)
+            widget.add(dialog)
+            dialog.set_as_activator(button)
+            dialog.add_title("Stack Trace")
 
         div = DivWdg()
         dialog.add(div)
@@ -3613,21 +3616,24 @@ class ExceptionWdg(Widget):
         div.add(pre)
 
 
-        # show system info
-        button = ActionButtonWdg(title="System Info")
-        table.add_row()
-        table.add_cell("Show the System Info: ")
-        table.add_cell(button)
+        security = WebContainer.get_security()
+        if security.is_admin():
+            # show system info
+            button = ActionButtonWdg(title="System Info")
+            button.add_style("white-space: nowrap")
+            table.add_row()
+            table.add_cell("Show the System Info: ")
+            table.add_cell(button)
 
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.app.SystemInfoWdg';
-            var kwargs = {
-            };
-            spt.panel.load_popup("System Info", class_name, kwargs);
-            '''
-        } )
+            button.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                var class_name = 'tactic.ui.app.SystemInfoWdg';
+                var kwargs = {
+                };
+                spt.panel.load_popup("System Info", class_name, kwargs);
+                '''
+            } )
 
 
         # ignore
@@ -3637,6 +3643,7 @@ class ExceptionWdg(Widget):
         td.add(div)
 
         button = ActionButtonWdg(title="Ignore >>")
+        button.add_style("white-space: nowrap")
         table.add_cell(button)
 
         # click the top layout and jump to default page

@@ -176,8 +176,8 @@ spt.tab.resize_headers = function() {
 
     for (var i = 0; i < els.length; i++) {
         els[i].setStyle("width", width + 'px');
-        var title_el = els[i].getElement(".spt_tab_header_label");
-        title_el.setStyle("width", width + 'px');
+        //var title_el = els[i].getElement(".spt_tab_header_label");
+        els[i].setStyle("width", width + 'px');
     }
 }
 
@@ -408,12 +408,9 @@ spt.tab.add_new = function(element_name, title, class_name, kwargs,
         // set the new label
         var label = header.getElement(".spt_tab_header_label");
         var display_title = title;
-        if (display_title.length > 20) {
-            display_title = title.substr(0,18) + "...";
-        }
 
         label.setAttribute("title", title);
-        label.innerHTML = display_title + label.innerHTML;
+        label.innerHTML = display_title;
 
         header.setAttribute("spt_class_name", class_name);
         var kwargs_str = JSON.stringify(kwargs);
@@ -1159,7 +1156,7 @@ spt.tab.close = function(src_el) {
         spt.behavior.destroy_element(header);
         spt.behavior.destroy_element(content);
 
-        spt.tab.resize_headers();
+        //spt.tab.resize_headers();
 
 
         var last_element_name = spt.tab.get_last_selected_element_name();
@@ -1282,6 +1279,7 @@ spt.tab.view_definition = function(bvr) {
             style.add('''
             #%(header_id)s .spt_tab_header {
                 border-style: solid;
+                position: relative;
                 border-color: %(border)s;
                 border-width: 1px 1px 0px 1px;
                 padding: 7px 5px;
@@ -1311,32 +1309,94 @@ spt.tab.view_definition = function(bvr) {
 
     
     def get_bootstrap_styles(self):
-    
-        styles = HtmlElement.style('''
+        styles = HtmlElement.style()
+        color = styles.get_color("color")
+        styles.add('''
             .nav-pills .nav-link, .nav-tabs .nav-link {
                 padding: .5em .8575em;
                 font-size: 12px;
-                height: 40px;
+                height: 31px;
             }
 
             .spt_tab_header_top {
-                height: 40px;
+                height: 31px;
+            }
+
+            .spt_tab_header_top {
+                height: 31px;
+            }
+
+            .spt_tab_header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                user-select: none;
+                -webkit-touch-callout: none; /* iOS Safari */
+                -webkit-user-select: none; /* Safari */
+                -khtml-user-select: none; /* Konqueror HTML */
+                -moz-user-select: none; /* Old versions of Firefox */
+                -ms-user-select: none; /* Internet Explorer/Edge */
             }
 
             .spt_tab_header_top .spt_tab_selected {
-                height: 40px;
+                height: 31px;
+                background: var(--spt_palette_background);
+                color: #000;
+            }
+
+            .spt_tab_content_top .spt_tab_header {
+                border-bottom: solid .214rem transparent;
+            }
+
+            .spt_popup_content .spt_tab_header {
+                border-bottom: solid .214rem transparent;
+                background: inherit;
+                color: inherit;
+            }
+
+            .spt_tab_content_top .spt_tab_header_top .spt_tab_selected {
                 border-bottom: solid .214rem var(--spt_palette_md_secondary);
+                background: inherit;
+                color: inherit;
+            }
+            
+            .spt_popup_content .spt_tab_header_top .spt_tab_selected {
+                border-bottom: solid .214rem var(--spt_palette_md_secondary);
+                background: inherit;
+                color: inherit;
             }
 
             .spt_tab_header_top .spt_tab_selected .nav-link {
-                color: rgba(0,0,0,.87);
+                color: #fff;
+                border-bottom: 0px solid transparent;
+            }
+
+            .spt_tab_header_top .spt_tab_selected .nav-link:hover {
+                color: #fff;
+                border-bottom: 0px solid transparent;
+            }
+            
+            .nav-tabs .nav-link {
+                border-bottom: .214rem solid transparent;
+            }
+
+            .nav-tabs .nav-link:hover {
+                border-bottom: .214rem solid transparent;
             }
 
             .spt_tab_remove {
-                position: absolute;
-                top: 2;
-                right: 0;
                 display: none;
+                position: absolute;
+                right: 3px;
+            }
+
+            .spt_tab_selected .spt_tab_remove {
+                display: block;
+            }
+
+            .spt_tab_selected .spt_tab_remove {
+                display: block;
             }
 
             .spt_tab_header:hover .spt_tab_remove {
@@ -1349,15 +1409,20 @@ spt.tab.view_definition = function(bvr) {
             }
 
             .spt_tab_header_label {
+                color: %s;
                 text-overflow: ellipsis;
                 overflow-x: hidden;
                 white-space: nowrap;
             }
 
+            .spt_tab_selected .spt_tab_header_label {
+                color: %s !important;
+            }
+
             .spt_tab_header_count {
                 margin-left: 10px;
             }
-        ''')
+        ''' % (color, color))
 
         return styles
 
@@ -1683,7 +1748,10 @@ spt.tab.view_definition = function(bvr) {
             header_div.add_style("padding-left: %s" % offset)
 
         if self.mode == "hidden":
+            # TODO: The display is problematic because bmd is using !important
             header_div.add_style("display: none")
+            header_div.add_style("visibility: hidden")
+            header_div.add_style("height: 0px")
 
 
         header_defs = {}
@@ -1756,6 +1824,17 @@ spt.tab.view_definition = function(bvr) {
 
 
         show_remove = self.kwargs.get("show_remove")
+
+        # resize headers on leave
+        resize_headers = self.kwargs.get("resize_headers")
+        resize_headers = True
+        if resize_headers:
+            header_div.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                    spt.tab.resize_headers();
+                '''
+                } )
 
         if show_remove == "hover":
 
@@ -1943,7 +2022,7 @@ spt.tab.view_definition = function(bvr) {
             pass
         else:
             content_top.add_color("color", "color")
-            content_top.add_color("background", "background")
+            # content_top.add_color("background", "background")
 
 
         # put in a content box for each element
@@ -2059,8 +2138,10 @@ spt.tab.view_definition = function(bvr) {
         template_div.add(subheader)
         subheader.add_style("z-index: 3")
 
-        header.add_behavior( {
+        #header.add_behavior( {
+        header.add_relay_behavior( {
             'type': 'click',
+            'bvr_match_class': 'spt_tab_header',
             'cbjs_action': '''
 
             var header_top = bvr.src_el.getParent(".spt_tab_header_top");
@@ -2110,21 +2191,27 @@ spt.tab.view_definition = function(bvr) {
 
 
     def get_add_wdg(self):
+        style = HtmlElement.style('''
+            .spt_add_tab {
+                display: flex;
+                align-items: center;
+                padding-left: 10px;
+            }
+        ''')
 
         div = DivWdg()
+        div.add(style)
         div.add_class("spt_add_tab")
 
         icon_div = DivWdg()
         icon_div.add_class("spt_add_tab_inner")
         
-        from tactic.ui.widget import IconButtonWdg
-        icon = IconButtonWdg(title="New Tab", icon=IconWdg.PLUS)
-        icon = IconWdg("New Tab", IconWdg.PLUS)
+        from tactic.ui.widget import IconButtonWdg, ButtonNewWdg
+        icon = ButtonNewWdg(title="New Tab", icon="FA_PLUS", width=20)
+        #icon = IconWdg("New Tab", IconWdg.PLUS)
         #icon.add_style("top: -1px")
         #icon.add_style("left: 0px")
         #icon.add_style("position: absolute")
-        icon.add_style("margin-left: 3px")
-        icon.add_style("margin-top: 5px")
         icon.add_style("display: block")
         icon_div.add_class("hand")
 
@@ -2574,6 +2661,8 @@ spt.tab.view_definition = function(bvr) {
         header.add_attr("spt_tab_id", self.unique_id)
         header.add_class("hand")
 
+        header.add_style("width: 120px")
+
         header.add_behavior({
             'type': 'load',
             'cbjs_action': '''$(bvr.src_el).bmdRipples();'''
@@ -2628,6 +2717,12 @@ spt.tab.view_definition = function(bvr) {
 
         title_container = DivWdg(css="spt_tab_header_label_container")
         title_container.add_class("nav-link")
+
+        show_remove = self.kwargs.get("show_remove")
+        if show_remove not in [False, "false"]:
+            title_container.add_style("width: 95%")
+        else:
+            title_container.add_style("width: 100%")
         header.add(title_container)
 
         title_div = DivWdg()
@@ -2710,10 +2805,16 @@ spt.tab.view_definition = function(bvr) {
             icon.add_styles("padding: 2px; width: 11px")
             remove_wdg.add_style("right: 6px;")
         else:
-            icon = IconWdg("Remove Tab", "FA_TIMES", size=12)
+            from tactic.ui.widget import ButtonNewWdg
+            icon = ButtonNewWdg(icon="FA_TIMES", size=12, width=20)
         icon.add_class("spt_icon_active")
         remove_wdg.add(icon)
-        icon.add_style("margin: 3px")
+
+        divider_div = DivWdg()
+        divider_div.add_style("width: 1px")
+        divider_div.add_style("background: #fff")
+        divider_div.add_style("height: 20px")
+        header.add(divider_div)
         
 
        
@@ -2860,6 +2961,7 @@ class TabRenameWdg(BaseRefreshWdg):
 
         top = self.top
         top.add_style("margin: 20px")
+        top.add_style("min-width: 250px")
 
         top.add_class("spt_tab_rename_top")
 
@@ -2881,7 +2983,7 @@ class TabRenameWdg(BaseRefreshWdg):
 
         top.add("<br/>")
 
-        button = ActionButtonWdg(title="Rename", color="basic")
+        button = ActionButtonWdg(title="Rename", color="primary")
         top.add(button)
         button.add_style("float: right")
 

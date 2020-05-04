@@ -245,7 +245,7 @@ class MainWdg(BaseRefreshWdg):
         security = Environment.get_security()
         view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
         if view_side_bar:
-            button = IconButtonWdg(title="Side Bar", icon=IconWdg.ARROW_LEFT)
+            button = IconButtonWdg(title="Side Bar", icon="FA_ANGLE_LEFT")
             button_div.add(button)
             shelf.add("Toggle Side Bar")
             shelf.add_attr("title", "Toggle Side Bar (or press '1')")
@@ -403,6 +403,7 @@ class MainWdg(BaseRefreshWdg):
         # create a bunch of panels
         table = Table()
         table.add_color("color", "color")
+        table.add_style("margin: 0px auto")
         table.add_style("margin-bottom: 20px")
         table.center()
         top.add(table)

@@ -2230,7 +2230,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     // get all of the search input values
     var new_values = [];
     if (search_top) {
-        var search_containers = search_top.getElements('.spt_search_filter')
+        var search_containers = search_top.getElements('.spt_search_filter');
         for (var i = 0; i < search_containers.length; i++) {
             var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
             new_values.push(values);
@@ -4325,8 +4325,6 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
         var row = activator;
         var search_key = row.get("spt_search_key");
         var api_key = row.getAttribute("SPT_RET_API_KEY");
-
-
 
 
         var server = TacticServerStub.get();

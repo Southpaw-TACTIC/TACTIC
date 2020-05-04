@@ -40,21 +40,24 @@ class ProjectStartWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 310px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
+        section_wdg.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        section_wdg.add_color("background", "background", 10)
+        section_wdg.add_color("color", "color")
 
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
-        title_wdg.add(title)
-        title_wdg.add_style("height: 20px")
-        title_wdg.add_style("padding: 3px")
-        title_wdg.add_style("margin-top: 3px")
+        title_wdg.add(title.upper())
+        title_wdg.add_style("display: flex")
+        title_wdg.add_style("align-items: center")
+        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("padding: 0px 8px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "#F2F2F2")
+        title_wdg.add_color("background", "background", 0)
 
-        section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
         'type': 'hover',
-        'add_color_modifier': -5,
+        'add_color_modifier': -3,
         'cb_set_prefix': 'spt.mouse.table_layout_hover',
         } )
 
@@ -65,11 +68,8 @@ class ProjectStartWdg(BaseRefreshWdg):
 
         div = DivWdg()
         section_wdg.add(div)
-        div.add_style("padding: 3px")
-        div.add_style("margin: 5px")
-        div.add_style("width: 210px")
-        #div.add_style("height: 64px")
-        div.add_style("height: 170px")
+        div.add_style("margin: 8px 0px")
+        div.add_style("width: 100%")
         div.add_style("text-align: center")
         div.add(image)
         section_wdg.add(desc_div)
@@ -92,19 +92,19 @@ class ProjectStartWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 10px")
-        #section_wdg.set_box_shadow("1px 1px 1px 1px")
+        section_wdg.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
-        title_wdg.add(title)
-        title_wdg.add_style("height: 20px")
-        title_wdg.add_style("padding: 3px")
-        title_wdg.add_style("margin-top: 3px")
+        title_wdg.add(title.upper())
+        title_wdg.add_style("display: flex")
+        title_wdg.add_style("align-items: center")
+        title_wdg.add_style("height: 25px")
+        title_wdg.add_style("padding: 3px 8px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_color("background", "#F2F2F2")
+        title_wdg.add_color("background", "background", 0)
 
-        section_wdg.add_color("background", "background")
-        #section_wdg.add_gradient("background", "background", 0, -3)
+        section_wdg.add_color("background", "background", 10)
         section_wdg.add_behavior( {
         'type': 'hover',
         'add_color_modifier': -5,
@@ -197,7 +197,8 @@ class ProjectStartWdg(BaseRefreshWdg):
         content.add(table)
         table.add_color("color", "color")
         table.add_row()
-        table.center()
+        #table.center()
+        table.add_style("margin: 0px auto")
 
 
 
@@ -210,7 +211,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         description = '''The schema is a collection of nodes that layout the basic components of a project. Each node represents a separate list of items (sType) used in this project: ie Assets, Shots, Artwork, etc.'''
 
 	#image = "<img src='/context/icons/64x64/schema_64.png'/>"
-        image = "<img src='/context/images/getting_started_schema.png'/>"
+        image = "<img style='filter: grayscale(100%);' src='/context/images/getting_started_schema.png'/>"
         behavior = {
         'type': 'click_up',
         'cbjs_action': '''
@@ -231,7 +232,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
         title = "Create Workflow"
-        image = "<img src='/context/images/getting_started_pipeline.png'/>"
+        image = "<img style='filter: grayscale(100%);' src='/context/images/getting_started_pipeline.png'/>"
 
         description = "Pipelines define how particular items of an sType will move through its lifecycle. Creating pipelines will also allow you to set up automatic triggers and notifications for each process."
 
@@ -257,7 +258,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         title = "Manage Side Bar"
 
 	#image = "<img src='/context/icons/64x64/sidebar_64.png'/>"
-        image = "<img src='/context/images/getting_started_sidebar.png'/>"
+        image = "<img style='filter: grayscale(100%);' src='/context/images/getting_started_sidebar.png'/>"
 
         description = "The Side Bar can be easily configured to show specific views of your project to each user."
         behavior = {
@@ -466,7 +467,7 @@ class ProjectStartWdg(BaseRefreshWdg):
         div = DivWdg()
         title = DivWdg()
         div.add(title)
-        div.add_color("background", "background")
+        div.add_color("background", "background", 10)
         div.add_style("margin: 0px 10px 15px 10px")
 
 

@@ -114,6 +114,8 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
+        top.add_color("color", "color")
+
         div = DivWdg()
         top.add(div)
         div.add_style("width: 630px")
@@ -236,7 +238,7 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 	#image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
-        image = IconWdg("Users", "FA_ADDRESS_CARD_O", size=32)
+        image = IconWdg("Users", "FA_ADDRESS_CARD", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''
