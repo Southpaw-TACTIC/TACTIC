@@ -17,7 +17,7 @@ from pyasm.command import Command
 from pyasm.biz import Project, Schema
 from pyasm.search import Search, SearchType, SearchKey, SObject, WidgetDbConfig
 from pyasm.web import Widget, DivWdg, HtmlElement, SpanWdg, Table, FloatDivWdg, WebContainer, WidgetSettings
-from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, WidgetConfigView, TextWdg, ButtonWdg, CheckboxWdg, ProdIconButtonWdg, HiddenWdg
+from pyasm.widget import SelectWdg, FilterSelectWdg, WidgetConfig, WidgetConfigView, TextWdg, ButtonWdg, CheckboxWdg, ProdIconButtonWdg, HiddenWdg, IconWdg
 from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg, WidgetClassHandler
@@ -467,11 +467,16 @@ spt.side_bar.toggle_section_display_cbk = function(evt, bvr)
     bvr.slide_direction = "vertical";
     bvr.dst_el = hide_el;
 
-    var arrow_img_el = click_el.getElement('img');
-    var arrow_img_src = arrow_img_el.get('src');
+    var arrow_img_el = click_el.getElement('.spt_arrow_img');
+    if  (arrow_img_el) {
+        var arrow_img_src = arrow_img_el.get('src');
+    }
 
-    if( arrow_img_src.match( /_right_/ ) ) {
-        arrow_img_el.set('src', arrow_img_src.replace(/_right_/,"_down_"));
+    if( !click_el.hasClass("spt_open") ) {
+        click_el.addClass("spt_open");
+
+        if (arrow_img_el)
+            arrow_img_el.set('src', arrow_img_src.replace(/_right_/,"_down_"));
 
         hide_el.setStyle("display", "block");
         hide_el.setStyle("margin-top", "-"+hide_el.getSize().y+"px")
@@ -479,13 +484,14 @@ spt.side_bar.toggle_section_display_cbk = function(evt, bvr)
 
     }
     else {
-        arrow_img_el.set('src', arrow_img_src.replace(/_down_/,"_right_"));
+        click_el.removeClass("spt_open");
+
+        if (arrow_img_el)
+            arrow_img_el.set('src', arrow_img_src.replace(/_down_/,"_right_"));
 
         hide_el.setStyle("margin-top", "0px")
         new Fx.Tween(hide_el, {duration:"short"}).start('margin-top', "-"+hide_el.getSize().y+"px");
         //hide_el.setStyle("display", "none");
-
-
 
     }
 
@@ -2244,11 +2250,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         if icon:
             icon = icon.upper()
-            from pyasm.widget import IconWdg
-            try:
-                span.add( IconWdg(title, eval("IconWdg.%s" % icon) ) )
-            except:
-                span.add( IconWdg(title, icon) )
+            span.add( IconWdg(title, icon) )
 
 
         span.add(title)
@@ -2337,22 +2339,18 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         s_link_div.add_event("onmouseout", "this.style.background='%s'" % bg_color)
 
         if is_open:
-            s_link_div.add( "<img src='/context/icons/silk/_spt_bullet_arrow_down_dark.png' " \
+            s_link_div.add( "<img class='spt_arrow_img' src='/context/icons/silk/_spt_bullet_arrow_down_dark.png' " \
                     "style='float: top left; margin-left: -5px; margin-top: -4px;' />" )
         else:
-            s_link_div.add( "<img src='/context/icons/silk/_spt_bullet_arrow_right_dark.png' " \
+            s_link_div.add( "<img class='spt_arrowfolder_img' src='/context/icons/silk/_spt_bullet_arrow_right_dark.png' " \
                     "style='float: top left; margin-left: -5px; margin-top: -4px;' />" )
 
         # add an icon if applicable
         icon = attributes.get("icon")
         if icon:
             icon = icon.upper()
-            from pyasm.widget import IconWdg
-            try:
-                icon_wdg =  IconWdg(title, eval("IconWdg.%s" % icon) ) 
-                s_link_div.add(icon_wdg)
-            except:
-                pass
+            icon_wdg =  IconWdg(title, icon ) 
+            s_link_div.add(icon_wdg)
         s_link_div.add(SpanWdg(title))
 
         # create the content of the link div

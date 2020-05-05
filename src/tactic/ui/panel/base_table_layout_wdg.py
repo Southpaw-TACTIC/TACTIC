@@ -2514,6 +2514,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         # Add column-based search ...
+        # DEPRECATED: we used the simple search widget for this
+        """
         kwargs = {
             "args": {'use_last_search': True,  
                      'display' : True,
@@ -2529,13 +2531,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             "hide_when_disabled" : True,
             "label": "Local Search",
             "bvr_cb": {
-                'cbjs_action': '''var activator = spt.smenu.get_activator(bvr);
-                                bvr.options.title = 'Local Search (' + activator.getProperty("spt_element_name").capitalize() + ')';
-                                bvr.options.popup_id =  bvr.options.title;
-                                bvr.args.prefix_namespace = activator.getProperty("spt_display_class");
-                                bvr.args.searchable_search_type =  activator.getProperty("spt_searchable_search_type");
-                                spt.popup.get_widget(evt, bvr);
-                                ''',
+                'cbjs_action': '''
+                var activator = spt.smenu.get_activator(bvr);
+                bvr.options.title = 'Local Search (' + activator.getProperty("spt_element_name").capitalize() + ')';
+                bvr.options.popup_id =  bvr.options.title;
+                bvr.args.prefix_namespace = activator.getProperty("spt_display_class");
+                bvr.args.searchable_search_type =  activator.getProperty("spt_searchable_search_type");
+                spt.popup.get_widget(evt, bvr);
+                ''',
                 'options' : {'class_name' : widget_key },
                 'args' : {
                     'use_last_search': True,
@@ -2544,6 +2547,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 }
             }
         } )
+        """
        
 
         # Edit Column Definition menu item ...
@@ -2580,8 +2584,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         popup.activator = activator;
                         '''
                 },
-                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
             } )
 
             """
