@@ -418,6 +418,7 @@ class WidgetDbConfig(SObject):
         if view_node is None:
             print("View Node does not exist")
             return
+
         node = self.get_element_node(element_name)
         if node is not None:
             xml.replace_child(view_node, node, new_root_node)
@@ -425,9 +426,12 @@ class WidgetDbConfig(SObject):
             element = self.get_element_node("code")
             if element is None:
                 element = self.get_element_node("name")
+
             if element is not None:
                 #xml.insert_before(new_root_node, element)
-                xml.insert_before(element, new_root_node)   #markmark
+                # This is backwards
+                #xml.insert_before(element, new_root_node)
+                xml.insert_after(new_root_node, element)
             else:
                 xml.append_child(view_node, new_root_node)
         #print(self.xml.to_string())

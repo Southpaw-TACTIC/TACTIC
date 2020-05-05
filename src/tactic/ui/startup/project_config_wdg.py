@@ -298,10 +298,11 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
 
-        button = SingleButtonWdg(title="Advanced Setup", icon=IconWdg.ADVANCED)
+        button = ActionButtonWdg(title="Setup", tip="Advanced Setup", icon=IconWdg.ADVANCED)
         top.add(button)
         button.add_style("float: right")
         button.add_style("margin-top: 0px")
+        button.add_style("margin-right: 5px")
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -312,7 +313,7 @@ class SearchTypePanel(BaseRefreshWdg):
         } )
 
 
-        button = SingleButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="FA_PLUS")
+        button = ActionButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="FAS_PLUS")
         top.add(button)
         button.add_style("display: inline-block")
         button.add_style("vertical-align: middle")

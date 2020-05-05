@@ -3346,7 +3346,7 @@ class SimpleElementDefinitionCbk(Command):
         display_class = web.get_form_value("xxx_%s|display_class" % prefix)
         widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
         if 'HiddenRowElementWdg' in display_class or 'HiddenRowToggleWdg' in display_class  or widget_key == 'hidden_row':
-            hidden_class = web.get_form_values("xxx_%s|display_class" % prefix)[1]
+            hidden_class = web.get_form_values("xxx_%s|display_class" % prefix)[0]
 
             # have to convert back to class_name:
             

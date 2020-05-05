@@ -488,9 +488,9 @@ class CheckinWdg(BaseRefreshWdg):
 
         else:
 
-            div.add_style("margin: 15px 12px 15px 12px")
+            div.add_style("margin: 15px 12px 15px 10px")
             div.add_style("width: 100%")
-            process_div = FloatDivWdg('Process: &nbsp;')
+            process_div = DivWdg('Process: &nbsp;')
             process_div.add_style("font-weight: bold")
             process_div.add_style("font-size: 14px")
             process_div.add_style("padding-top: 5px")
@@ -1441,6 +1441,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         publish_wdg = self.get_publish_wdg(self.search_key, self.snapshot, self.process, self.pipeline, self.transfer_mode)  
         td.add( publish_wdg )
         td.add_color("background", "background3")
+        td.add_color("color", "color3")
         td.add_style("vertical-align: top")
 
 
@@ -2927,6 +2928,7 @@ else {
         grey_out_div.add_style("top: 10px")
         grey_out_div.add_style("opacity: 0.6")
         grey_out_div.add_color("background", "background")
+        grey_out_div.add_color("color", "color")
         grey_out_div.add_style("height: 100%")
         grey_out_div.add_style("width: 100%")
         #grey_out_div.add_border()

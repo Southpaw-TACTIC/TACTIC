@@ -528,7 +528,7 @@ kbd kbd {
 pre {
   display: block;
   font-size: 87.5%;
-  color: #212529;
+  color: var(--spt_palette_color);
 }
 pre code {
   font-size: inherit;
@@ -10070,7 +10070,7 @@ button:focus {
   outline: 0;
   transition: box-shadow 0.2s cubic-bezier(0.4, 0, 1, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: box-shadow, transform;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--spt_palette-color);
   background-color: transparent;
   border-color: #ccc;
 }

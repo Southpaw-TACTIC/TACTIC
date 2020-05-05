@@ -1126,8 +1126,12 @@ class TopWdg(Widget):
             ''')
             """
 
+            # Right now, we have no way to determine a theme (just a palette), however, the
+            # dark css file is able to accomodate both due to var(--palette...) ussge
+            # We'll keep the file separate until there is more confidence that they
+            # can be the same file
             theme = "DARK"
-            if theme == "DARK":
+            if theme == "LIGHT":
                 bootstrap_material_css = "/plugins/spt/modules/workflow/project_management/assets/bmd-bs-tactic-project.css"
                 widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
             elif theme == "LIGHT":

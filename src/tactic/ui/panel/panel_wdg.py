@@ -768,7 +768,6 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
         var name = 'separator';
         
         var server = TacticServerStub.get();
-        server.start({"title": "Adding separator"});
         var kwargs = {'class_name' : 'SeparatorWdg',
                       'element_attrs' : {'title': 'Separator'},
                       'unique': false,
@@ -791,7 +790,6 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
         
         // now add to project_view
         server.add_config_element(search_type, view, unique_el_name, kwargs2);
-        server.finish();
         //refresh 
         spt.popup.destroy(popup_id);
         spt.panel.refresh("ManageSideBarBookmark_" + view);
@@ -2050,8 +2048,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             options = config.get_display_options(element_name)
             if display_class == "SeparatorWdg":
                 options = config.get_display_options(element_name)
-                # div = self.get_separator_wdg(element_name, config, options)
-                # subsection_div.add(div)
+                div = self.get_separator_wdg(element_name, config, options)
+                subsection_div.add(div)
                 continue
 
             elif display_class == "TitleWdg":

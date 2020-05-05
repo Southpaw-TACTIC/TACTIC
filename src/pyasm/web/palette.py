@@ -35,7 +35,7 @@ class Palette(object):
     'table_border': '#494949',
     'side_bar_title_color': '#EEEEEE',
 
-    'shadow':       'rgba(0,0,0,0.1)',
+    'shadow':       'rgba(0,0,0,0.8)',
 
     #'md_primary_dark': '#c7c7c7', 
     #'md_primary':   '#fafafa',

@@ -1162,7 +1162,6 @@ class XmlWdg(BaseTableElementWdg):
         try:
             Xml(string=value)
         except XmlException as e:
-
           
             widget.add( IconWdg("XML Parse Error", IconWdg.ERROR) )
             span = SpanWdg()
