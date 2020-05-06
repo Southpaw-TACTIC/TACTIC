@@ -9876,7 +9876,7 @@ class TableGroupManageWdg(BaseRefreshWdg):
 
         save = ActionButtonWdg(title='OK', tip='Search with these Group columns')
 
-        save.add_styles("position: absolute; left: 420; top: 425")
+        # save.add_styles("position: absolute; left: 420; top: 425")
 
         save.add_behavior({ 'type': 'click_up',
             'cbjs_action': '''var el = spt.table.get_layout().getElement(".spt_search_group");
