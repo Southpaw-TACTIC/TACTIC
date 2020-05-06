@@ -1124,7 +1124,10 @@ class ActionButtonWdg(DivWdg):
         # no need to define top
         #self.add(top)
 
-        self.add_style("margin: 0px 3px", override=False)
+        margin = self.kwargs.get("margin")
+        if not margin:
+            margin = "0px 3px"
+        self.add_style("margin: %s" % margin, override=False)
 
         opacity = self.kwargs.get("opacity")
         if not opacity:
