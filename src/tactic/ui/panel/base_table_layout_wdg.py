@@ -2579,7 +2579,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         bvr.args.element_name = activator.getProperty("spt_element_name");
 
                         bvr.args.view = activator.getParent('.spt_table').getAttribute('spt_view');
-                        //bvr.args.is_insert = true;
                         var popup = spt.popup.get_widget(evt,bvr);
                         popup.activator = activator;
                         '''

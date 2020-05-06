@@ -3161,9 +3161,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         access_keys = self._get_access_keys("retire_delete",  project_code)
         if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
             search_key = sobject.get_search_key(use_id=True)
-            ret_api_key = tr.generate_api_key("retire_sobject", inputs=[search_key], attr="ret")
-            del_api_key = tr.generate_api_key("delete_sobject", inputs=[search_key], attr="del")
-            reac_api_key = tr.generate_api_key("reactivate_sobject", inputs=[search_key], attr="reac")
+
+            # These are not yet used, commenting out for now
+            #ret_api_key = tr.generate_api_key("retire_sobject", inputs=[search_key], attr="ret")
+            #del_api_key = tr.generate_api_key("delete_sobject", inputs=[search_key], attr="del")
+            #reac_api_key = tr.generate_api_key("reactivate_sobject", inputs=[search_key], attr="reac")
 
 
         # TEST TEST TEST

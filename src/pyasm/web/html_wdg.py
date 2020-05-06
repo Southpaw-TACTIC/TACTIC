@@ -20,6 +20,7 @@ import string
 import types
 import locale
 import sys
+import hashlib
 
 from dateutil import parser
 
@@ -1048,13 +1049,23 @@ class HtmlElement(Widget):
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
-        from pyasm.common import jsondumps
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
 
         login = Environment.get_user_name()
-        key = "$"+Common.generate_random_key()
+
+        # use a non-random key
+        seed = jsondumps(inputs)
+        key = "%s%s%s" % (ticket, cmd, seed)
+        hash_object = hashlib.sha512(key.encode())
+        key = "$%s" % hash_object.hexdigest()[:12]
+        #key = "$"+Common.generate_random_key()
+
         filename = "key_" + key.lstrip("$") + ".txt"
-        f = open("%s/%s" % (tmp_dir, filename), "w")
+        path = "%s/%s" % (tmp_dir, filename)
+        if os.path.exists(path):
+            return key
+
+        f = open(path, "w")
         data = {
             "class_name": cmd,
             "login": login,
@@ -1073,7 +1084,6 @@ class HtmlElement(Widget):
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
-        from pyasm.common import jsondumps
         if not ticket:
             ticket = Environment.get_ticket()
         
@@ -1086,9 +1096,26 @@ class HtmlElement(Widget):
             api_name = api_name.lstrip("p_")
 
         login = Environment.get_user_name()
-        key = "$"+Common.generate_random_key()
+
+        # use a non-random key
+        seed = jsondumps(inputs)
+        key = "%s%s%s" % (ticket, api_name, seed)
+        hash_object = hashlib.sha512(key.encode())
+        key = "$%s" % hash_object.hexdigest()[:12]
+        #key = "$"+Common.generate_random_key()
+
+        if attr:
+            self.add_attr("SPT_%s_API_KEY" % attr.capitalize(), key)
+        else:
+            self.add_attr("SPT_API_KEY", key)
+
+
         filename = "api_key_" + key.lstrip("$") + ".txt"
-        f = open("%s/%s" % (tmp_dir, filename), "w")
+        path = "%s/%s" % (tmp_dir, filename)
+        if os.path.exists(path):
+            return key
+
+        f = open(path, 'w')
         args = {
             "method": api_name,
             "login": login,
@@ -1098,20 +1125,14 @@ class HtmlElement(Widget):
         f.write(jsondumps(args))
         f.close()
 
-        if attr:
-            self.add_attr("SPT_%s_API_KEY" % attr.capitalize(), key)
-        else:
-            self.add_attr("SPT_API_KEY", key)
-
         return key
     
 
-    def generate_widget_key(self, class_name, inputs={}, ticket=None, attr=""):
+    def generate_widget_key(self, class_name, inputs={}, ticket=None, attr="", unique=False):
 
         if ticket and not ticket.isalnum():
             raise Exception("No valid ticket")
 
-        from pyasm.common import jsondumps
         if not ticket:
             ticket = Environment.get_ticket()
         
@@ -1124,9 +1145,30 @@ class HtmlElement(Widget):
             raise Exception("Wrong class name")
 
         login = Environment.get_user_name()
-        key = "$"+Common.generate_random_key()
+
+        #unique = True
+        if unique:
+            key = "$"+Common.generate_random_key()
+        else:
+            # use a non-random key
+            seed = jsondumps(inputs)
+            key = "%s%s%s" % (ticket, class_name, seed)
+
+            hash_object = hashlib.sha512(key.encode())
+            key = "$%s" % hash_object.hexdigest()[:12]
+
+        if attr:
+            self.add_attr("SPT_%s_WIDGET_KEY" % attr.capitalize(), key)
+        else:
+            self.add_attr("SPT_WIDGET_KEY", key)
+
+
         filename = "widget_key_" + key.lstrip("$") + ".txt"
-        f = open("%s/%s" % (tmp_dir, filename), "w")
+        path = "%s/%s" % (tmp_dir, filename)
+        if os.path.exists(path):
+            return key
+
+        f = open(path, "w")
         args = {
             "method": class_name,
             "login": login,
@@ -1135,11 +1177,6 @@ class HtmlElement(Widget):
         }
         f.write(jsondumps(args))
         f.close()
-
-        if attr:
-            self.add_attr("SPT_%s_WIDGET_KEY" % attr.capitalize(), key)
-        else:
-            self.add_attr("SPT_WIDGET_KEY", key)
 
         return key
 
