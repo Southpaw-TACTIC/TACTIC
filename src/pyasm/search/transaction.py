@@ -1146,7 +1146,7 @@ class TableUndo(Base):
 
     def undo(node):
 
-        from sql import SqlException
+        from .sql import SqlException
 
         try:
             search_type = Xml.get_attribute(node,"search_type")

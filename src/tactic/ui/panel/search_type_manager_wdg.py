@@ -636,8 +636,8 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         button_div.add_style("text-align: center")
         
 
-        button = ActionButtonWdg(title="Save Definition") 
-        #button = ProdIconButtonWdg("Save Definition")
+        # button = ActionButtonWdg(title="Save Definition")
+        button = ProdIconButtonWdg("Save Definition")
         button.add_event("onclick", "spt.custom_project.save_definition_cbk()")
         button_div.add(button)
         button_div.add_style("margin-left: 130px")
