@@ -298,7 +298,7 @@ class SearchLimitWdg(Widget):
         # or explicitly set, (this is not mandatory though)
         if self.sobjects and len(self.sobjects) < self.search_limit:
             limit = len(self.sobjects)
-        elif self.search and self.count < self.search_limit:
+        elif self.search_limit and self.count < self.search_limit:
             # this is only true if the total result of the search is 
             # less than the limit and so this wdg will not display
             limit = self.count
