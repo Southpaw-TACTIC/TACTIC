@@ -2583,7 +2583,7 @@ class PopupWdg(BaseInputWdg):
         div.add_style("margin", "15px 0px 0px 0px")
         div.add_style("position", "absolute")
 
-        from web_wdg import CloseWdg
+        from .web_wdg import CloseWdg
         div.add(CloseWdg(self.get_off_script()))
         div.add( HtmlElement.br(clear="all") )
 
