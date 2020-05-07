@@ -632,6 +632,8 @@ class ButtonNewWdg(ButtonWdg):
         self.collapsible_btn = DivWdg()
 
         self.btn_class = self.kwargs.get("btn_class") or "btn bmd-btn-icon"
+        
+        self.action_class = self.kwargs.get("action_class") or ""
 
         self.navbar_collapse_target = self.kwargs.get("navbar_collapse_target")
 
@@ -679,6 +681,8 @@ class ButtonNewWdg(ButtonWdg):
         
         top.add(self.collapsible_btn)
         self.collapsible_btn.add_class("spt_collapsible_btn d-none")
+        if self.action_class:
+            self.collapsible_btn.add_class(self.action_class)
         self.collapsible_btn.add(self.title)
 
         top.add(self.hit_wdg)
@@ -688,6 +692,8 @@ class ButtonNewWdg(ButtonWdg):
             self.hit_wdg.add_style("height: %spx" % width)
             self.hit_wdg.add_style("min-width: %spx" % width)
         self.hit_wdg.add_class(self.btn_class)
+        if self.action_class:
+            self.hit_wdg.add_class(self.action_class)
         self.hit_wdg.add_class("spt_hit_wdg")
         self.hit_wdg.add(self.icon)
         
@@ -1012,13 +1018,21 @@ class BootstrapButtonWdg(BaseRefreshWdg):
 
         super(BootstrapButtonWdg, self).__init__(**kwargs)
 
-    def add_class(self, class_name):
-        self.button_wdg.add_class(class_name)
-        self.collapsible_wdg.add_class(class_name)
+    def add_class(self, class_name, redirect=True):
+        if redirect:
+            self.button_wdg.add_class(class_name)
+            self.collapsible_wdg.add_class(class_name)
+        else:
+            self.top.add_class(class_name)
     
     def add_behavior(self, behavior):
         self.button_wdg.add_behavior(behavior)
         self.collapsible_wdg.add_behavior(behavior)
+
+    def add_event(self, name, action):
+        self.button_wdg.add_event(name, action)
+        self.collapsible_wdg.add_event(name, action)
+       
 
     def get_collapsible_wdg(self):
         return self.collapsible_wdg
@@ -1031,6 +1045,8 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         title = self.kwargs.get("title")
 
         top = self.top
+
+        top.add_class("spt_action_button")
         top.add_style("display: inline-block")
         
         top.add(self.button_wdg)

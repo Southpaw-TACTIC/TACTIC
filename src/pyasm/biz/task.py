@@ -1905,9 +1905,7 @@ class TaskGenerator(object):
             if self.generate_mode == "projected_schedule":
                
                 preexisting_task = self.preexisting_tasks_by_process.get(process_name)
-                status = preexisting_task.get_value("status")
-
-                if status == "Complete":
+                if preexisting_task and preexisting_task.get_value("status") == "Complete":
                     actual_end_date = preexisting_task.get_datetime_value("actual_end_date")
                     if actual_end_date:
                         end_date = actual_end_date

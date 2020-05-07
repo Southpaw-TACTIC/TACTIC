@@ -273,19 +273,20 @@ class ProjectedCompletionWdg(BaseTableElementWdg):
         
             tasks = tasks_by_code.get(sobj.get_code())
             pipeline = pipelines_by_code.get(sobj.get_value("pipeline_code"))
-            process_sobjects = processes_by_pipeline.get(pipeline.get_code())
+            if pipeline:
+                process_sobjects = processes_by_pipeline.get(pipeline.get_code())
 
-            start_date = sobj.get_value(start_column)
-            
-            cmd = GetProjectedScheduleCmd(
-                sobject=sobj,
-                pipeline=pipeline,
-                process_sobjects=process_sobjects,
-                start_date=start_date,
-                tasks=tasks
-            )
-            completion_date = cmd.execute().get("completion_date")
-            self.dates[sobj.get_search_key()] = completion_date
+                start_date = sobj.get_value(start_column)
+                
+                cmd = GetProjectedScheduleCmd(
+                    sobject=sobj,
+                    pipeline=pipeline,
+                    process_sobjects=process_sobjects,
+                    start_date=start_date,
+                    tasks=tasks
+                )
+                completion_date = cmd.execute().get("completion_date")
+                self.dates[sobj.get_search_key()] = completion_date
 
 
     def get_display(self):
