@@ -1139,7 +1139,7 @@ class TopWdg(Widget):
                 widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
             else:
                 widget.add('''
-                <link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bmd-bs-light.css"/> 
+                <link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
                 ''')
 
 
