@@ -157,12 +157,6 @@ class TaskElementWdg(BaseTableElementWdg):
         'order': '04',
         'category': "Color"
     },
-    'text_color': {
-        'description': 'Text color',
-        'type': 'tactic.ui.input.ColorInputWdg',
-        'category': "Color",
-        'order': '05'
-    },
     'panel_width': {
         'description': 'Select the overall width for the panel layout',
         'type': 'SelectWdg',
@@ -1464,7 +1458,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             
             show_current_pipeline_only = self.kwargs.get('show_current_pipeline_only') != 'false'
             label = Table()
-            label.add_color("color", "color")
+            if self.layout in ['horizontal']:
+                label.add_style("color", "color")
+            else:
+                table.add_style("color: #000")
+     
+
             label.add_class("hand")
             label.add_row()
             label.add_styles("opacity: 0.5;font-size: 10px;margin-left: 5px")
@@ -1522,6 +1521,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             table = Table(css='minimal')
             table.add_style("border-width: 2px")
             table.add_style('border-collapse: collapse')
+            if self.layout in ['panel']:
+                table.add_style("color", "color")
+            else:
+                table.add_style("color: #000")
             table.add_row()
 
             project_code = Project.get_project_code()
@@ -1650,7 +1653,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             # add + icon at the end for convenience
             if self.show_add_task and security.check_access("search_type", {"code":"sthpw/task"}, "insert", default="insert"):
                 label = table.add_cell()
-                label.add_color("color", "color")
                 label.add_class("spt_task_element_add_task hand")
                 label.add_styles('opacity: 0.5; vertical-align: bottom; text-align: right;padding: 0 4px 4px 0')
                 label.add_attr("spt_search_key", sobject.get_search_key() )
@@ -2073,10 +2075,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         # make it into a table
         table = Table()
-        #table.add_attr("border", "1")
+        if self.layout in ['panel']:
+            table.add_style("color", "color")
+        else:
+            table.add_style("color: #000")
         div.add(table)
         table.add_row()
-        #table.add_style("width: 100%")
 
         if self.show_border != 'none' :
             if self.show_border == 'one-sided' and not last_one:
@@ -2139,10 +2143,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 div.add(context_div)
 
             context_div.add_style("font-size: %spx" % self.font_size)
-            if self.text_color:
-                context_div.add_style("color", self.text_color)
-            else:
-                context_div.add_color("color", 'color')
             proc = task.get_value("process")
             label_dict = self.label_dict.get(pipeline_code)
             if label_dict and proc in label_dict:
@@ -2188,10 +2188,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             #process_div.add_style("font-weight: bold")
             process_div.add_style("font-size: %spx" % self.font_size)
-            if self.text_color:
-                process_div.add_style("color", self.text_color)
-            else:
-                process_div.add_color("color","color")
             if process_color:
                 process_div.add_style("background-color: %s" %process_color)
             process_div.add(process)
@@ -2210,10 +2206,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             #context_div.add_style("font-weight: bold")
             context_div.add_style("font-size: %spx" % self.font_size)
-            if self.text_color:
-                context_div.add_style("color", self.text_color)
-            else:
-                context_div.add_color("color","color")
             if process_color:
                 context_div.add_style("background-color: %s" %process_color)
             context = task.get_value("context")
@@ -2240,10 +2232,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 div.add(date_div)
 
             date_div.add_style("font-size: %spx" % (self.font_size-2))
-            if self.text_color:
-                date_div.add_style("color", self.text_color)
-            else:
-                date_div.add_color('color','color')
             start_date = task.get_value("bid_start_date")
             if start_date:
                 start_date = parser.parse(start_date)
@@ -2266,7 +2254,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         if self.show_status != 'false':
             if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
                 status_div = DivWdg()
-                status_div.add_color('color','color')
                 if self.layout in ['horizontal', 'vertical']:
                     #status_div.add_style("float: left")
                     td = table.add_cell(status_div)
@@ -2307,7 +2294,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     name = 'status|EDIT|%s' % task.get_id()
 
                 select = SelectWdg(name)
-                select.add_color('color','color')
                 #select = SelectWdg('status_%s'%task_id)
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
@@ -2434,7 +2420,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             assigned_div = DivWdg()
             assigned_div.add_style("font-size: %spx" % (self.font_size-1))
-            assigned_div.add_color('color','color')
             if self.layout in ['horizontal', 'vertical']:
                 table.add_cell(assigned_div)
             else:

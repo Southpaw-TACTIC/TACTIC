@@ -10,12 +10,20 @@
 #
 #
 
+from __future__ import print_function
+
+
 __all__ = ['Install']
 
 import os, shutil, sys
 import subprocess
 import re
 import os.path
+import six
+
+
+if six.PY2:
+    input = raw_input
 
 
 class InstallException(Exception):

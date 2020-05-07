@@ -823,23 +823,30 @@ class TopWdg(Widget):
             if web.is_admin_page():
                 palette_key = 'AQUA'
                 #palette_key = 'SILVER'
-        
+
         if palette_key:
             from pyasm.web import Palette
             palette = Palette.get()
-
             palette.set_palette(palette_key)
-            colors = palette.get_colors()
-            colors = jsondumps(colors)
 
-            script = HtmlElement.script('''
-                var env = spt.Environment.get();
-                env.set_colors(%s);
-                env.set_palette('%s');
-                ''' % (colors, palette_key)
-            )
-            top.add(script)
-    
+        else:
+            from pyasm.web import Palette
+            palette = Palette.get()
+            palette_key = palette.get_theme()
+            if palette_key == "default":
+                palette_key = "light"
+
+        colors = palette.get_colors()
+        colors = jsondumps(colors)
+
+        script = HtmlElement.script('''
+            var env = spt.Environment.get();
+            env.set_colors(%s);
+            env.set_palette('%s');
+            ''' % (colors, palette_key)
+        )
+        top.add(script)
+
         
         if tactic_kbd == True:
             body.add_event('onload', 'spt.onload_startup(admin=true)')

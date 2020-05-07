@@ -42,8 +42,8 @@ class SwapDisplayWdg(BaseRefreshWdg):
             self.on_wdg = IconWdg('open', IconWdg.INFO_OPEN_SMALL)
             self.off_wdg = IconWdg('closed', IconWdg.INFO_CLOSED_SMALL)
 
-        self.on_wdg = IconWdg('open', "FA_ANGLE_DOWN", size=12)
-        self.off_wdg = IconWdg('closed', "FA_ANGLE_RIGHT", size=12)
+            self.on_wdg = IconWdg('open', "FA_ANGLE_DOWN", size=12)
+            self.off_wdg = IconWdg('closed', "FA_ANGLE_RIGHT", size=12)
 
 
     def set_display_wdgs(self, on_wdg, off_wdg):
