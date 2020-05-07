@@ -987,12 +987,16 @@ class GeneralFilterWdg(BaseFilterWdg):
             'cbjs_action': '''
             var buttons = bvr.src_el.getElement(".spt_buttons_top");
 
+            // Whatever this is trying to do, it broke the search widget, as the buttons
+            // no longer appear
+            /*
             var addBtn = bvr.src_el.getElement(".spt_button_top[title='Add Filter']");
             var action_el = bvr.src_el.getElement(".spt_action_top");
             var pos = addBtn.getPosition();
 
             action_el.setStyle("top", pos.y + addBtn.getHeight());
             action_el.setStyle("left", pos.x);
+            */
 
             buttons.setStyle("display", "flex");
 
@@ -1022,8 +1026,6 @@ class GeneralFilterWdg(BaseFilterWdg):
         add_button.add_style("display: inline-block")
         add_button.add_behavior( {
         'type': 'click_up',
-        #'cbjs_action': 'spt.dg_table.add_filter(bvr.src_el)'
-        #'cbjs_action': 'spt.table.add_filter(bvr.src_el)'
         'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_buttons_top");
             var action_el = top.getElement(".spt_action_top");
@@ -1057,63 +1059,6 @@ class GeneralFilterWdg(BaseFilterWdg):
 
             spt.body.add_focus_element(action_el);
         '''
-        # 'cbjs_action': '''
-
-        # var element = bvr.src_el;
-        # var container = element.getParent(".spt_filter_container");
-        # var filter = element.getParent(".spt_filter_container_with_op");
-        # var op = filter.getElement(".spt_op");
-
-        # var op_value;
-        # if (op == null) {
-        #     op_value = 'and';
-        # } else {
-        #     op_value = op.getAttribute("spt_op");
-        # }
-
-        # // get template
-        # var filter_top = element.getParent(".spt_filter_top");
-        # var filter_template = filter_top.getElement(".spt_filter_template_with_op");
-
-        # var filter_options = filter_top.getElement(".spt_filter_options");
-        # var filters = filter_options.getElements(".spt_filter_type_wdg");
-        # // clear the value in the textbox if any
-        # for (var k=0; k< filters.length; k++){
-        #     input = filters[k].getElement("input");
-        #     // hidden used for expression
-        #     if (input && input.getAttribute('type') !='hidden' ) input.value ='';
-        # }
-
-
-
-        # // clone the filter
-        # var new_filter = spt.behavior.clone(filter_template);
-        # new_filter.addClass("spt_filter_container_with_op");
-        # new_filter.inject(filter, "after");
-        # var display = new_filter.getElement(".spt_op_display");
-
-        # var top = element.getParent(".spt_search");
-        # var filter_mode = top.getElement(".spt_search_filter_mode").value;
-        # if (filter_mode == 'custom') {
-        #     display.innerHTML = op_value;
-        # }
-
-        # // make this into a new search filter
-        # var children = new_filter.getElements(".spt_filter_template");
-        # for (var i=0; i<children.length; i++) {
-        #     var child = children[i];
-        #     child.addClass("spt_search_filter");
-        # }
-        # var children = new_filter.getElements(".spt_op_template");
-        # for (var i=0; i<children.length; i++) {
-        #     var child = children[i];
-        #     child.addClass("spt_op");
-
-        #     child.setAttribute("spt_op", op_value);
-        # }
-
-
-        # '''
         } )
 
 
@@ -1124,34 +1069,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         sub_button.add_style("display: inline-block")
         sub_button.add_behavior( {
         'type': 'click_up',
-        #'cbjs_action': 'spt.dg_table.remove_filter(bvr.src_el)'
         'cbjs_action': 'spt.table.remove_filter(bvr.src_el)'
-
-        # 'cbjs_action': '''
-
-        # var element = bvr.src_el;
-        # var container = element.getParent(".spt_filter_container");
-        # //var search_filter = element.getParent(".spt_search_filter")
-        # var search_filter = element.getParent(".spt_filter_container_with_op")
-
-        # var all_filters = container.getElements(".spt_filter_container_with_op");
-        # if (all_filters.length == 1) {
-        #     return;
-        # }
-
-        # if (all_filters[0] == search_filter) {
-        #     // have to destoy the spacing and op for the first filter
-        #     var second_filter = all_filters[1];
-        #     var op = second_filter.getElement(".spt_op");
-        #     op.destroy();
-        #     var spacing = second_filter.getElement(".spt_spacing");
-        #     spacing.destroy();
-        # }
-
-        # container.removeChild( search_filter );
-
-
-        # '''
         } )
 
 

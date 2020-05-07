@@ -151,7 +151,7 @@ class EditCmd(Command):
 
             last_code = last_sobject.get_value("code", no_exception=True)
 
-            if last_sobject.column_exists("name"):
+            if SearchType.column_exists(last_sobject.get_search_type(), "name"):
                 last_name = last_sobject.get_value("name", no_exception=True)
 
                 if index == 0 and self.multiplier > 1:

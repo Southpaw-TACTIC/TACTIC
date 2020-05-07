@@ -228,29 +228,25 @@ class CheckinDirListWdg(DirListWdg):
         else:
             icon_string = self.get_file_icon(dirname, basename)
             tip = path
+
         icon_div = DivWdg()
+        icon_div.add_style("display: flex")
+        icon_div.add_style("align-items: center")
         item_div.add(icon_div)
         icon = IconWdg(tip, icon_string)
         icon_div.add(icon)
-        icon_div.add_style("float: left")
-        icon_div.add_style("margin-top: -1px")
+
+        icon.add_style("margin-right: 5px")
+
 
         self.handle_dir_or_item(item_div, dirname, basename)
 
         size_div = DivWdg()
         size_div.add(FormatValue().get_format_value(self.sizes.get(path), 'KB'))
-        size_div.add_style("float: left")
         item_div.add(size_div)
-        #size_div.add_style("margin-right: 30px")
         size_div.add_style("width: 60px")
         size_div.add_style('text-align: right')
 
-        #icon_div = DivWdg()
-        #item_div.add(icon_div)
-        #icon = IconWdg("Delvered to next process", IconWdg.JUMP)
-        #icon_div.add(icon)
-        #icon_div.add_style("float: right")
-        #icon_div.add_style("margin-top: -1px")
 
         depend_wdg = DivWdg()
         #item_div.add(depend_wdg)

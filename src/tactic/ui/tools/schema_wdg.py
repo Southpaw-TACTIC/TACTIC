@@ -372,9 +372,8 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
  
         shelf_wdg = DivWdg()
         shelf_wdg.add_style("padding: 5px 5px 0px 5px")
-        #shelf_wdg.add_style("margin-bottom: -3px")
+        shelf_wdg.add_style("height: 45px")
         shelf_wdg.add_color("background", "background")
-        shelf_wdg.add_border()
 
 
         spacing_divs = []

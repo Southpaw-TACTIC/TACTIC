@@ -145,7 +145,10 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             strip_count = 0
             for line in f:
                 if anchor and not read:
-                    tmp_line = line.decode('utf-8','ignore')
+                    if not Common.IS_Pv3:
+                        tmp_line = line.decode('utf-8', 'ignore')
+                    else:
+                        tmp_line = line
                     div_idx = tmp_line.find(div_str)
                     idx = tmp_line.find(anchor_str)
                     if idx != -1:
@@ -167,6 +170,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         except Exception as e:
             print("Error processing: ", e)
             html.append("Error processing document: %s<br/><br/>" % str(e))
+            raise
         
         html = "\n".join(html)
         if not html:
