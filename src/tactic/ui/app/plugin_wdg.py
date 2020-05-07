@@ -78,7 +78,9 @@ class PluginWdg(BaseRefreshWdg):
 
         left.add_style("width: 20%")
         left.add_style("padding: 0px")
+        left.add_color("color", "color3")
         left.add_color("background", "background3")
+        left.add_color("color", "color3")
 
 
 
@@ -157,6 +159,7 @@ class PluginWdg(BaseRefreshWdg):
         title_div.add("%s List" % title)
         title_div.add_style("font-size: 14px")
         title_div.add_style("font-weight: bold")
+        title_div.add_color("color", "color")
         title_div.add_color("background", "background", 0, -10)
         title_div.add_style("padding: 10px 5px 10px 5px")
         title_div.add_style("margin-bottom: 15px")
@@ -351,7 +354,7 @@ class PluginWdg(BaseRefreshWdg):
 
                     # fill it in
                     icon = IconWdg(folder, "FA_FOLDER_OPEN", inline=False)
-                    icon.add_style("margin-left: -5px")
+                    icon.add_style("margin-left: 0px")
                     icon.add_style("margin-right: 3px")
 
                     folder_header = DivWdg()
@@ -672,6 +675,7 @@ class PluginEditWdg(BaseRefreshWdg):
                 msg = DivWdg()
                 msg.add("No Plugin Selected")
                 msg.add_border()
+                msg.add_color("color", "color3")
                 msg.add_color("background", "background3")
                 msg.add_style("padding", "30px 50px 30px 50px")
                 msg.add_style("margin", "100px auto")
@@ -954,6 +958,7 @@ class PluginEditWdg(BaseRefreshWdg):
 
             title_wdg = DivWdg()
             dir_div.add(title_wdg)
+            title_wdg.add_color("color", "color3")
             title_wdg.add_color("background", "background3")
             title_wdg.add_style("padding: 5px")
             title_wdg.add_style("height: 50px")
@@ -1087,6 +1092,7 @@ class PluginEditWdg(BaseRefreshWdg):
             msg = DivWdg()
             msg.add("No Files in Plugin")
             msg.add_border()
+            msg.add_color("color", "color3")
             msg.add_color("background", "background3")
             msg.add_style("padding", "30px 50px 30px 50px")
             msg.add_style("margin", "100px auto")
@@ -1120,6 +1126,7 @@ class PluginEditWdg(BaseRefreshWdg):
         manifest_div.add(shelf_wdg)
         shelf_wdg.add_style("height: 50px")
         shelf_wdg.add_style("padding: 5px 10px")
+        shelf_wdg.add_color("color", "color3")
         shelf_wdg.add_color("background", "background3")
         shelf_wdg.add_style("display: flex")
         shelf_wdg.add_style("align-items: center")
@@ -1369,6 +1376,7 @@ class PluginEditWdg(BaseRefreshWdg):
             shelf_wdg = DivWdg()
             shelf_wdg.add_style("height: 35px")
             shelf_wdg.add_style("padding: 5px 10px")
+            shelf_wdg.add_color("color", "color3")
             shelf_wdg.add_color("background", "background3")
             doc_div.add(shelf_wdg)
 
@@ -1398,6 +1406,7 @@ class PluginEditWdg(BaseRefreshWdg):
             doc_div = DivWdg()
             doc_div.add("No Documentation File in Plugin")
             doc_div.add_border()
+            doc_div.add_color("color", "color3")
             doc_div.add_color("background", "background3")
             doc_div.add_style("padding", "30px 50px 30px 50px")
             doc_div.add_style("margin", "100px auto")
@@ -2290,6 +2299,7 @@ class PluginInstallWdg(BaseRefreshWdg):
         top.add(url_wdg)
         url_wdg.add_style("padding: 20px")
         url_wdg.add_border()
+        url_wdg.add_color("color", "color3")
         url_wdg.add_color("background", "background3")
         url_wdg.add_color("color", "color3")
         url_wdg.add_style("width: 600px")
@@ -2391,6 +2401,7 @@ class PluginInstallWdg(BaseRefreshWdg):
         browse_div.add_style("width: 600px")
         browse_div.add_style("padding: 20px")
         browse_div.add_border()
+        browse_div.add_color("color", "color3")
         browse_div.add_color("background", "background3")
         browse_div.add_color("color", "color3")
 

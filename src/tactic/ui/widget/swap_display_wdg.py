@@ -42,6 +42,10 @@ class SwapDisplayWdg(BaseRefreshWdg):
             self.on_wdg = IconWdg('open', IconWdg.INFO_OPEN_SMALL)
             self.off_wdg = IconWdg('closed', IconWdg.INFO_CLOSED_SMALL)
 
+        self.on_wdg = IconWdg('open', "FA_ANGLE_DOWN", size=12)
+        self.off_wdg = IconWdg('closed', "FA_ANGLE_RIGHT", size=12)
+
+
     def set_display_wdgs(self, on_wdg, off_wdg):
         self.on_wdg = on_wdg
         self.off_wdg = off_wdg
@@ -128,14 +132,12 @@ class SwapDisplayWdg(BaseRefreshWdg):
         top.add(inner)
         inner.add_class("spt_swap_top")
 
-        table = Table()
+        table = DivWdg()
+        table.add_style("display: flex")
+        table.add_style("align-items: center")
         inner.add(table)
         table.add_style("width: 100%")
-        table.add_color("color", "color")
         table.add_class("SPT_DTS")
-        table.add_row()
-        td = table.add_cell()
-        td.add_style("width: 1px")
 
         title = self.kwargs.get("title")
 
@@ -160,12 +162,12 @@ class SwapDisplayWdg(BaseRefreshWdg):
             self.handle_top(top)
 
         on_div = DivWdg()
-        td.add(on_div)
+        table.add(on_div)
         on_div.add_class("SPT_SWAP_ON")
 
 
         off_div = DivWdg()
-        td.add(off_div)
+        table.add(off_div)
         off_div.add_class("SPT_SWAP_OFF")
 
         if is_on:
@@ -179,6 +181,11 @@ class SwapDisplayWdg(BaseRefreshWdg):
         on_div.add( self.on_wdg )
         off_div.add( self.off_wdg )
 
+        on_div.add_style("margin-left: 5px")
+        on_div.add_style("margin-right: 3px")
+        off_div.add_style("margin-left: 5px")
+        off_div.add_style("margin-right: 3px")
+
 
         # handle an icon
         icon_str = self.kwargs.get("icon")
@@ -188,37 +195,35 @@ class SwapDisplayWdg(BaseRefreshWdg):
             if icon_str.startswith("BS_"):
                 icon = IconWdg(name=title, icon=icon_str, size=12 )
                 icon_div.add_style("margin: -2px 10px 0px 10px")
-                icon_div.add_style("margin-left: -3px")
             else:
                 icon = IconWdg(name=title, icon=icon_str )
-                icon_div.add_style("margin-left: -6px")
 
             icon_div.add(icon)
-            td = table.add_cell(icon_div)
+            table.add(icon_div)
 
         elif icon_str:
-            td = table.add_cell(icon_str)
+            table.add(icon_str)
             icon_str.add_style("margin-left: -6px")
 
         else:
             show_border = self.kwargs.get("show_border")
             if show_border in [True, 'true']:
-                on_div.add_border()
-                off_div.add_border()
+
+                on_div.add_style("border: solid 1px %s" % on_div.get_color("border") )
+                on_div.add_style("border-radius: 20px")
+                on_div.add_style("padding: 5px 3px")
 
 
-            #on_div.add_style("width: 16")
-            #on_div.add_style("height: 16")
-            #on_div.add_style("overflow: hidden")
-            #off_div.add_style("width: 16")
-            #off_div.add_style("height: 16")
-            #off_div.add_style("overflow: hidden")
+                off_div.add_style("border: solid 1px %s" % off_div.get_color("border") )
+                off_div.add_style("border-radius: 20px")
+                off_div.add_style("padding: 5px 3px")
+
 
 
         if self.title_wdg:
-            td = table.add_cell(self.title_wdg)
+            table.add(self.title_wdg)
         else:
-            td = table.add_cell(title)
+            table.add(title)
 
 
 

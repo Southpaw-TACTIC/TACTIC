@@ -323,10 +323,9 @@
 
 
 <inline_add_item>
-    <element name="process" width="100px"/>
     <element name="expand"/>
+    <element name="process" width="100px"/>
     <element name="general_checkin"/>
-    <element name="general_checkin_simple"/>
     <element name="description" width="300px"/>
     <element name="milestone_code"/>
     <element name="status" width="100px"/>

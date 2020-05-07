@@ -1131,11 +1131,11 @@ class TopWdg(Widget):
             # We'll keep the file separate until there is more confidence that they
             # can be the same file
             theme = "DARK"
-            if theme == "LIGHT":
-                bootstrap_material_css = "/plugins/spt/modules/workflow/project_management/assets/bmd-bs-tactic-project.css"
+            if theme == "DARK":
+                bootstrap_material_css = "/context/spt_js/bootstrap_material_design/bmd-bs-dark.css"
                 widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
             elif theme == "LIGHT":
-                bootstrap_material_css = "/plugins/spt/modules/workflow/project_management/assets/bmd-bs-tactic-project.css"
+                bootstrap_material_css = "/context/spt_js/bootstrap_material_design/bmd-bs-light.css"
                 widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
             else:
                 widget.add('''

@@ -3591,6 +3591,9 @@ class ExceptionWdg(Widget):
         table.add_style("margin: 0px 20px 0px 20px")
         table.add_style("min-width: 200px")
 
+        dialog = DialogWdg(show_pointer=False)
+        widget.add(dialog)
+
         security = WebContainer.get_security()
         if security.is_admin():
             # show stack trace
@@ -3600,8 +3603,6 @@ class ExceptionWdg(Widget):
             table.add_cell("Show the Stack Trace for the Error: ")
             table.add_cell(button)
 
-            dialog = DialogWdg(show_pointer=False)
-            widget.add(dialog)
             dialog.set_as_activator(button)
             dialog.add_title("Stack Trace")
 
