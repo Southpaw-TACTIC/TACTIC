@@ -63,14 +63,14 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         div = HtmlElement.div()
 
         from tactic.ui.widget import TitleWdg
-        subtitle = TitleWdg(name_of_title='sType Table Manager',help_alias='stype-register')
+        subtitle = TitleWdg(name_of_title='Search Type Table Manager',help_alias='stype-register')
         div.add(subtitle)
 
         div.set_id('SearchTypeToolWdg')
         div.add_class('spt_stype_tool_top')
         div.set_attr('spt_class_name','tactic.ui.app.SearchTypeToolWdg')
         div.add_style("padding: 10px")
-        div.add_style("max-width: 800px")
+        #div.add_style("max-width: 800px")
 
         div.add_color("background", "background")
         div.add_color("color", "color")
@@ -90,7 +90,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
 
 
     def get_search_type_manager(self):
-        widget = Widget()
+        widget = DivWdg()
         div = DivWdg(id='SearchTypeManagerContainer')
         #select = SearchTypeSelectWdg(mode=SearchTypeSelectWdg.ALL_BUT_STHPW)
         #widget.add(select)
@@ -98,7 +98,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
 
         wizard = SearchTypeCreatorWdg(namespace=self.namespace, database=self.database, schema=self.schema)
         popup = PopupWdg(id='create_search_type_wizard')
-        popup.add_title('Register New sType')
+        popup.add_title('Register New Search Type')
         popup.add(wizard)
         div.add(popup)
         project = Project.get()
@@ -108,9 +108,13 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         project_code = project.get_code()
 
         # add a search_type filter
-        search_type_span = SpanWdg()
-        search_type_span.add("sType: " )
+        search_type_span = DivWdg()
+        search_type_span.add_style("display: flex")
+        search_type_span.add_style("align-items: center")
+
+        search_type_span.add("<div style='margin-right: 20px'>Search Type: </div>" )
         select = SelectWdg("search_type")
+        select.add_style("width: 200px")
         search_type = self.kwargs.get("search_type")
         if search_type:
             select.set_value(search_type)
@@ -144,10 +148,20 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         #if not project.has_table(search_type):
         #    div.add("No table for [%s] exists in this project" % search_type)
         #    return div
+        manager_wdg = DivWdg()
+        widget.add(manager_wdg)
+        manager_wdg.add_style("border: solid 1px %s" % widget.get_color("border"))
+        manager_wdg.add_style("border-radius: 10px")
+        manager_wdg.add_style("box-shadow: 0px 0px 15px %s" % widget.get_color("shadow"))
+        manager_wdg.add_style("padding: 20px")
+        manager_wdg.add_style("width: 60%")
+        manager_wdg.add_style("margin: 10px auto")
+
 
 
         manager = SearchTypeManagerWdg(search_type=search_type, show_definition=False)
-        widget.add(manager)
+        manager_wdg.add(manager)
+
         return widget
 
     def get_existing_wdg(self):

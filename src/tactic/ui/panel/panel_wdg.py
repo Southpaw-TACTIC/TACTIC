@@ -237,10 +237,10 @@ spt.side_bar._display_link_action = function(target_id, title, options, values, 
     //spt.app_busy.show( busy_title, busy_msg );
 
     setTimeout( function() {
-                        spt.side_bar._load_for_display_link_change(target_id, title, options, values, is_popup);
-                        if( spt.is_TRUE(is_popup) )
-                            spt.app_busy.hide();
-                    }, 10 );
+        spt.side_bar._load_for_display_link_change(target_id, title, options, values, is_popup);
+        if( spt.is_TRUE(is_popup) )
+            spt.app_busy.hide();
+    }, 10 );
 }
 
 
@@ -273,7 +273,8 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
         //var element_name = options['element_name'];
         var element_name = options['path'];
 
-        spt.tab.load_selected(element_name, title, class_name, options, values);
+        //spt.tab.load_selected(element_name, title, class_name, options, values);
+        spt.tab.add_new(element_name, title, class_name, options, values);
 
         // Set the state of the page
         var key = "top_layout";

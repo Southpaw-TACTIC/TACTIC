@@ -1461,7 +1461,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if self.layout in ['horizontal']:
                 label.add_style("color", "color")
             else:
-                table.add_style("color: #000")
+                label.add_style("color: #000")
      
 
             label.add_class("hand")
@@ -1469,6 +1469,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             label.add_styles("opacity: 0.5;font-size: 10px;margin-left: 5px")
 
             if security.check_access("search_type", {"code":"sthpw/task"}, "insert", default="insert"):
+                label.add_style("color", "color")
                 label.add_class("spt_task_element_add_task")
                 label.add_attr("spt_search_key", sobject.get_search_key() )
                 icon = IconWdg("Add Tasks", icon="FA_PLUS")

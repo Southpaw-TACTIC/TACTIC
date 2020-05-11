@@ -82,9 +82,9 @@ spt.hash.set_hash = function(state, title, url) {
         }
     }
 
-    if (site) {
-        base_url.push(site);
-    }
+    //if (site) {
+    //    base_url.push(site);
+    //}
 
     base_url = base_url.join("/");
 

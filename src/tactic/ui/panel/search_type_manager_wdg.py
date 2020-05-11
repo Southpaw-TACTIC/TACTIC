@@ -77,8 +77,8 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
         
         div.add(top_div)
 
-        top_div.add( self.get_action_wdg(self.search_type) ) 
-        top_div.add(HtmlElement.br())
+        #top_div.add( self.get_action_wdg(self.search_type) ) 
+        #top_div.add(HtmlElement.br())
 
         div.add(HtmlElement.br())
         if not self.search_type:
@@ -549,7 +549,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
             detail_wdg.add(overlay)
 
         detail_wdg.add_border()
-        detail_wdg.add_color("color", "black")
+        detail_wdg.add_color("color", "color")
         detail_wdg.add_style("padding: 10px")
         detail_wdg.add_color("background", "background", -5)
 
@@ -568,6 +568,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         select.add_class('spt_config_mode')
 
         title_div = DivWdg("Column Detail")
+        title_div.add_style("font-size: 1.2em")
         title_div.add_class("maq_search_bar")
         detail_wdg.add(title_div)
         detail_wdg.add("<br/>")
@@ -618,7 +619,7 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         advanced.add_style("padding: 10px")
         advanced.add_border()
         title = DivWdg()
-        title.add_style("color: black")
+        title.add_color("color", "color")
         title.add("Advanced - XML Column Definition")
         title.add_style("margin-top: -23")
         advanced.add(title)

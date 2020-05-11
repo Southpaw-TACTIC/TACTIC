@@ -834,7 +834,7 @@ class TopWdg(Widget):
             palette = Palette.get()
             palette_key = palette.get_theme()
             if palette_key == "default":
-                palette_key = "light"
+                palette_key = "AQUA"
 
         colors = palette.get_colors()
         colors = jsondumps(colors)
