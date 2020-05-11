@@ -136,7 +136,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             else:
                 read = True
 
-            
+           
             f = open(path, 'r')
             count = 0
             idx = 0 
@@ -191,7 +191,11 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         except Exception as e:
             print("WARNING: ", e)
             # some crazy encoding for python 3.   Not sure why?
-            tree = Xml.parse_html(str(html.encode()))
+            #tree = Xml.parse_html(str(html.encode()))
+            # Actually have to remove encode from html.  Just do a string replace
+            # for now.
+            html = html.replace('''encoding="UTF-8"''', '')
+            tree = Xml.parse_html(html)
         
         xml = Xml(doc=tree)
 
@@ -258,6 +262,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
         nodes = xml.get_nodes("//body/*")
         for node in nodes:
             html = xml.to_string(node)
+
             html = html.replace("&lt;", "&spt_lt;")
             html = html.replace("&gt;", "&spt_gt;")
             inner.add(html)
@@ -369,13 +374,13 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             else:
                 styles = []
 
-            shadow = "rgba(0,0,0,0.4)"
+            shadow = DivWdg().get_color("shadow")
             if size[0] > 500:
                 styles.append("width: 75%")
                 styles.append("margin-left: 50px")
                 styles.append("margin-bottom: 20px")
                 styles.append("margin-top: 10px")
-                self.add_shadow(styles, "0px 0px 5px", shadow)
+                self.add_shadow(styles, "0px 0px 15px", shadow)
 
             elif size[0] > 100:
                 x = int(float(size[0])/500*75)
@@ -383,12 +388,12 @@ class HelpDocFilterWdg(BaseRefreshWdg):
                 styles.append("margin-left: 50px")
                 styles.append("margin-bottom: 20px")
                 styles.append("margin-top: 10px")
-                self.add_shadow(styles, "0px 0px 5px", shadow)
+                self.add_shadow(styles, "0px 0px 15px", shadow)
 
             else:
-                self.add_shadow(styles, "0px 0px 5px", shadow)
+                self.add_shadow(styles, "0px 0px 15px", shadow)
 
-            styles.append("border: solid 1px rgba(0,0,0,0.3)")
+            styles.append("border: solid 1px %s" % DivWdg().get_color("border"))
             style = ";".join(styles)
             xml.set_attribute(node, "style", style)
 
@@ -912,7 +917,13 @@ spt.help.load_html = function(html) {
         html: html
     }
 
-    spt.panel.load_popup("Help", class_name, kwargs, {width: "500px"});
+    var top = document.id("spt_help_top")
+    if (!top) {
+        spt.panel.load_popup("Help", class_name, kwargs, {width: "500px"});
+    }
+    else {
+        spt.panel.load(top, class_name, args, {width: "500px"});
+    }
 }
 
 
@@ -930,8 +941,17 @@ spt.help.load_alias = function(alias, history) {
 
     spt.help.set_view(alias);
 
-    var popup = spt.panel.load_popup("Help", class_name, args, {width: "500px"});
-    var popup_content = popup.getElement(".spt_help_top");
+    var top = document.id("spt_help_top")
+    if (!top) {
+        var popup = spt.panel.load_popup("Help", class_name, args, {width: "500px"});
+        var popup_content = popup.getElement(".spt_help_top");
+    }
+    else {
+        var popup = null;
+        spt.panel.load(top, class_name, args, {width: "500px"});
+        var popup_content = top;
+    }
+
     spt.help.content = popup_content;
 
     if (typeof(history) == 'undefined') {
@@ -972,7 +992,13 @@ spt.help.load_rel_path = function(rel_path, history) {
         rel_path: rel_path
     }
 
-    spt.panel.load_popup("Help", class_name, kwargs, {width: "500px"});
+    var top = document.id("spt_help_top")
+    if (!top) {
+        spt.panel.load_popup("Help", class_name, kwargs, {width: "500px"});
+    }
+    else {
+        spt.panel.load(top, class_name, kwargs, {width: "500px"});
+    }
 
     if (typeof(history) == 'undefined') {
         history = true;
