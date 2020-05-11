@@ -1,6 +1,7 @@
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """1VFX""")
+insert.set_value('folder', """rv""")
 insert.set_value('script', """var server = TacticServerStub.get();
 
 var applet = spt.Applet.get();
@@ -11,13 +12,14 @@ var path = "c:/sthpw/test/frames/TEST_00009.jpg"
 var cmd = "rv " + path;
 
 applet.exec_shell(cmd);""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """test_command_line""")
-insert.set_value('folder', """rv""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """2VFX""")
+insert.set_value('folder', """rv""")
 insert.set_value('script', """var server = TacticServerStub.get();
 
 var applet = spt.Applet.get();
@@ -29,13 +31,14 @@ var fps = "24"
 var cmd = "rv -fps " + fps + " " + path;
 
 applet.exec_shell(cmd, "false");""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """test_with_fps""")
-insert.set_value('folder', """rv""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """3VFX""")
+insert.set_value('folder', """rv""")
 insert.set_value('script', """// Setup the options
 var mode = "RV"
 
@@ -126,13 +129,14 @@ applet.exec_shell(cmd, false);
 
 spt.app_busy.hide();
 """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """play""")
-insert.set_value('folder', """rv""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """4VFX""")
+insert.set_value('folder', """shots""")
 insert.set_value('script', """var class_name = "tactic.ui.panel.CustomLayoutWdg"
 var kwargs = {
     'view': 'shot_sheet_wdg',
@@ -145,13 +149,14 @@ var shot = server.get_by_search_key(bvr.search_key)
 var shot_code = shot.code
 
 spt.panel.load_popup(shot_code, class_name, kwargs)""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """shot_sheet_wdg""")
-insert.set_value('folder', """shots""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """7VFX""")
+insert.set_value('folder', """triggers""")
 insert.set_value('script', """ASSET_TASK = "rig"
 ASSET_STATUS = "Approved"
 
@@ -180,13 +185,14 @@ for shot in shots:
         
         if shot_task:
             server.update(shot_task, {'status': SHOT_STATUS})""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """update_shot_assets_status""")
-insert.set_value('folder', """triggers""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """8VFX""")
+insert.set_value('folder', """rv""")
 insert.set_value('script', """var server = TacticServerStub.get();
 
 var applet = spt.Applet.get();
@@ -205,13 +211,14 @@ cmd.push(path)
 cmd = cmd.join(" ")
 alert(cmd)
 applet.exec_shell(cmd, false);""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """test_webview""")
-insert.set_value('folder', """rv""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """9VFX""")
+insert.set_value('folder', """shots""")
 insert.set_value('script', """var server = TacticServerStub.get();
 
 // Get the search key from the button behavior
@@ -233,13 +240,14 @@ var kwargs = {
 
 spt.tab.set_main_body_top();
 spt.tab.add_new(title, title, class_name, kwargs);""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """load_shot_planner""")
-insert.set_value('folder', """shots""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """10VFX""")
+insert.set_value('folder', """video""")
 insert.set_value('script', """# Generate a video thumbnail using FFMPEG
 
 import os
@@ -263,13 +271,14 @@ for format in formats:
         os.system(ffmpeg)
     
         server.add_file(snapshot_code, thumb_path, file_type="icon", mode="move")""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """generate_video_thumbnail""")
-insert.set_value('folder', """video""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """11VFX""")
+insert.set_value('folder', """maya""")
 insert.set_value('script', """var server = TacticServerStub.get()
 var applet = spt.Applet.get()
 
@@ -329,13 +338,14 @@ spt.app_busy.hide();
 
 
 """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """checkin_playblast""")
-insert.set_value('folder', """maya""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """12VFX""")
+insert.set_value('folder', """ingest""")
 insert.set_value('script', """var server = TacticServerStub.get();
 var applet = spt.Applet.get();
 
@@ -389,13 +399,14 @@ spt.confirm(message, ingest, "", {'ok_args': items})
 
 
 """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """art_ref_simple_ingest""")
-insert.set_value('folder', """ingest""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """13VFX""")
+insert.set_value('folder', """triggers""")
 insert.set_value('script', """# A trigger to catch notes on snapshots to add the version into the note
 
 # Get the note that was entered from the input data
@@ -451,13 +462,14 @@ if search_type == 'sthpw/snapshot':
     server.update(note_sk, {'context': ctx})
     
     """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """snapshot_note""")
-insert.set_value('folder', """triggers""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
 insert.set_value('code', """14VFX""")
+insert.set_value('folder', """video""")
 insert.set_value('script', """# Generate a video thumbnail using FFMPEG
 
 import os, shutil
@@ -503,7 +515,7 @@ if snapshot_type == "sequence":
 
     
     """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
 insert.set_value('title', """sequence_to_mp4""")
-insert.set_value('folder', """video""")
 #-- End Entry --#
 

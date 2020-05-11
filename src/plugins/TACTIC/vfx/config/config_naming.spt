@@ -1,24 +1,24 @@
 #-- Start Entry --#
 insert = SearchType.create('config/naming')
 insert.set_value('code', """1VFX""")
-insert.set_value('latest_versionless', False)
-insert.set_value('snapshot_type', """sequence""")
-insert.set_value('search_type', """vfx/layer""")
-insert.set_value('manual_version', False)
-insert.set_value('file_naming', """{sobject.shot_code}-{sobject.name}_{context}_v{version}_####.{ext}""")
-insert.set_value('dir_naming', """{project.code}/shot/{sobject.shot_code}/layers/{sobject.name}/{context}""")
 insert.set_value('current_versionless', False)
+insert.set_value('dir_naming', """{project.code}/shot/{sobject.shot_code}/layers/{sobject.name}/{context}""")
+insert.set_value('file_naming', """{sobject.shot_code}-{sobject.name}_{context}_v{version}_####.{ext}""")
+insert.set_value('latest_versionless', False)
+insert.set_value('manual_version', False)
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('snapshot_type', """sequence""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/naming')
 insert.set_value('code', """2VFX""")
-insert.set_value('latest_versionless', False)
-insert.set_value('snapshot_type', """sequence""")
-insert.set_value('search_type', """vfx/plate""")
-insert.set_value('manual_version', False)
-insert.set_value('file_naming', """{sobject.shot_code}-{sobject.name}_{context}_v{version}_####.{ext}""")
-insert.set_value('dir_naming', """{project.code}/shot/{sobject.shot_code}/layers/{sobject.name}/{context}""")
 insert.set_value('current_versionless', False)
+insert.set_value('dir_naming', """{project.code}/shot/{sobject.shot_code}/layers/{sobject.name}/{context}""")
+insert.set_value('file_naming', """{sobject.shot_code}-{sobject.name}_{context}_v{version}_####.{ext}""")
+insert.set_value('latest_versionless', False)
+insert.set_value('manual_version', False)
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('snapshot_type', """sequence""")
 #-- End Entry --#
 

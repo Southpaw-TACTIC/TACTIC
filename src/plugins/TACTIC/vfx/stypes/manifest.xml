@@ -3,12 +3,6 @@
     <code>TACTIC/vfx/stypes</code>
     <title>VFX Search Types</title>
     <description>Search Types for TACTIC VFX Open Source</description>
-</data>
-<manifest>
-  <data>
-    <code>TACTIC/vfx/config</code>
-    <title>VFX Configuration</title>
-    <description>Configuration views for TACTIC Open Source</description>
   </data>
   <!-- <python path="sql_upgrade.py" undo_path_VOID="sql_upgrade_undo.py"/> -->
   <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
