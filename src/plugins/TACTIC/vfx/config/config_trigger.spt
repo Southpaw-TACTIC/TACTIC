@@ -1,0 +1,48 @@
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """1VFX""")
+insert.set_value('process', """rig""")
+insert.set_value('script_path', """triggers/update_shot_assets_status""")
+insert.set_value('event', """change|sthpw/task|status""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """2VFX""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/generate_video_thumbnail""")
+insert.set_value('event', """checkin|vfx/shot""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """3VFX""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/generate_video_thumbnail""")
+insert.set_value('event', """checkin|vfx/asset""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """4VFX""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/generate_video_thumbnail""")
+insert.set_value('event', """checkin|vfx/leica""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """5VFX""")
+insert.set_value('mode', """same process,same transaction""")
+insert.set_value('script_path', """triggers/snapshot_note""")
+insert.set_value('event', """insert|sthpw/note""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """6VFX""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/sequence_to_mp4""")
+insert.set_value('event', """checkin|vfx/layer""")
+#-- End Entry --#
+

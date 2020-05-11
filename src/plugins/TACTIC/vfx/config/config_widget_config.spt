@@ -1,0 +1,5201 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """1VFX""")
+insert.set_value('timestamp', """2011-10-20 19:20:21.565936""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <project_view>
+    <element name="art_reference"/>
+    <element name="script"/>
+    <element name="storyboard"/>
+    <element name="leica"/>
+    <element name="separator096"/>
+    <element name="sequence"/>
+    <element name="shot"/>
+    <element name="separator100"/>
+    <element name="asset"/>
+    <element name="separator020"/>
+    <element name="_my_tactic"/>
+    <element name="tools"/>
+    <element name="application"/>
+    <element name="schedule"/>
+    <element name="review"/>
+    <element name="separator006"/>
+    <element name="manage_lists"/>
+    <element name="development"/>
+  </project_view>
+</config>
+""")
+insert.set_value('view', """project_view""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """2VFX""")
+insert.set_value('timestamp', """2011-10-20 21:18:06.261007""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code" width="60px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="description"/>
+    <element name="sequence_code"/>
+    <element name="detail" edit="false">
+      <display class="HiddenRowToggleWdg">
+        <dynamic_class>pyasm.prod.web.ShotDetailWdg</dynamic_class>
+      </display>
+    </element>
+    <element name="shot">
+      <display class="pyasm.prod.web.ShotInfoWdg"/>
+    </element>
+    <element name="tc_frame_start" title="Start Frame"/>
+    <element name="tc_frame_end" title="End Frame"/>
+    <element name="status">
+      <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
+    <element name="scan_status">
+      <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
+    <element name="complexity"/>
+    <element name="priority"/>
+    <element name="submit" edit="false">
+      <display class="SubmissionLinkTableElement"/>
+    </element>
+    <!-- test edit functionality -->
+    <element name="preview" edit="true"/>
+    <element name="notes" edit="false"/>
+    <element name="task_edit" title="Tasks" width="40px" edit="false">
+      <display widget="hidden_row">
+        <search_type>sthpw/task</search_type>
+        <show_insert>true</show_insert>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <view>task_list</view>
+      </display>
+    </element>
+    <element name="task_status"/>
+    <element name="task_list" edit="false"/>
+    <element name="timestamp"/>
+    <element name="pipeline_code" title="Pipeline"/>
+    <element name="input" edit="false" sortable="false">
+      <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>vfx/shot</search_type>
+        <mode>input</mode>
+      </display>
+    </element>
+    <element name="output" edit="false" sortable="false">
+      <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>vfx/shot</search_type>
+        <mode>output</mode>
+      </display>
+    </element>
+    <element name="discussion" edit="false">
+      <display class="pyasm.widget.DiscussionWdg">
+        <sticky>new</sticky>
+      </display>
+    </element>
+    <element name="asset_in_shot" edit="false">
+      <display widget="hidden_row">
+        <search_type>vfx/asset</search_type>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <expression>@SOBJECT(vfx/asset_in_shot.vfx/asset)</expression>
+        <mode>simple</mode>
+        <view>shot_planner_assets</view>
+      </display>
+    </element>
+    <element name="task_status_edit" title="Task Status" width="851px" edit="false">
+      <display class="tactic.ui.table.TaskElementWdg">
+        <show_assigned>true</show_assigned>
+        <layout>vertical</layout>
+        <edit_status>true</edit_status>
+        <edit_assigned>true</edit_assigned>
+        <bg_color>status</bg_color>
+        <show_border>one-sided</show_border>
+        <show_dates>true</show_dates>
+      </display>
+    </element>
+    <element name="plate" width="35px" edit="true">
+      <display widget="hidden_row">
+        <search_type>vfx/plate</search_type>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <icon>CAMERA</icon>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_drop" width="333px" edit="false">
+      <display class="tactic.ui.table.DropElementWdg">
+        <instance_type>vfx/asset_in_shot</instance_type>
+        <accepted_drop_type>vfx/asset</accepted_drop_type>
+        <css_background-color>#425952</css_background-color>
+      </display>
+      <action class="tactic.ui.table.DropElementAction">
+        <instance_type>vfx/asset_in_shot</instance_type>
+      </action>
+    </element>
+    <element name="shot_planner" title="Shot Planner" edit="false" color="false">
+      <display widget="button">
+        <path>shots/load_shot_planner</path>
+        <icon>PLUGIN_ADD</icon>
+      </display>
+    </element>
+    <element name="frames" width="80px" edit="false">
+      <display class="pyasm.prod.web.FrameRangeWdg"/>
+    </element>
+    <element name="layers" title="Layers" width="41px" edit="true" color="false">
+      <display widget="hidden_row">
+        <search_type>vfx/layer</search_type>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <icon>PHOTOS</icon>
+        <view>layer</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """3VFX""")
+insert.set_value('timestamp', """2011-10-20 21:18:46.819187""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+<table layout="TableLayoutWdg">
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="frames"/>
+    <element name="pipeline_code" title="Pipeline"/>
+</table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """4VFX""")
+insert.set_value('timestamp', """2011-10-20 21:20:56.552860""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+<edit_definition>
+
+  <element name="asset_drop">
+       <action class="tactic.ui.table.DropElementAction">
+        <instance_type>vfx/asset_in_shot</instance_type>
+      </action>
+  </element>
+ 
+  <element name="sequence_code">
+        <display class="SelectWdg">
+            <empty>true</empty>
+            <query>vfx/sequence|code|code</query>
+        </display>
+    </element>
+
+  <element name="code"/>
+  <element name="description"/>
+
+  <element name="status">
+    <display class="SelectWdg">
+        <empty>true</empty>
+        <setting>shot_status</setting>
+    </display>
+  </element>
+
+    <element name="scan_status">
+        <display class="SelectWdg">
+            <empty>true</empty>
+            <setting>shot_scan_status</setting>
+        </display>
+    </element>
+
+
+  <element name="frames">
+    <display class="pyasm.prod.web.FrameInputWdg"/>
+    <action class="pyasm.prod.web.FrameAction"/>
+  </element>
+
+    <element name="complexity">
+        <display class="SelectWdg">
+            <values>5|4|3|2|1</values>
+            <empty>true</empty>
+        </display>
+    </element>
+
+
+  <element name="sort_order"/>
+
+  <element name="pipeline_code" title="Pipeline">
+      <!--
+    <display class="SelectWdg">
+        <query>sthpw/pipeline|code|code</query>
+        <query_filter>"search_type" like '%/shot'</query_filter>
+        <empty>true</empty>
+    </display>-->
+  </element>
+
+ 
+</edit_definition>
+</config>""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """5VFX""")
+insert.set_value('timestamp', """2011-10-20 21:22:31.479053""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="sequence_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="status"/>
+    <element name="scan_status"/>
+    <element name="frames"/>
+    <element name="complexity"/>
+    <element name="sort_order"/>
+    <element name="pipeline_code" title="Pipeline"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """6VFX""")
+insert.set_value('timestamp', """2011-10-20 21:24:13.375748""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="shot_list" title="Shot List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/shot</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="leica_list" title="Leica List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/leica</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_category_list" title="Asset Category List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/asset_category</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_in_shot_list" title="Asset In Shot List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/asset_in_shot</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_in_sequence_list">
+      <display class="LinkWdg">
+        <search_type>vfx/asset_in_sequence</search_type>
+        <search_view>link_search:asset_in_sequence_list</search_view>
+        <view>asset_in_sequence_list</view>
+      </display>
+    </element>
+    <element name="asset_in_episode_list" title="Asset In Episode List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/asset_in_episode</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="review_list" title="Review List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/review</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="layer_list" title="Layer List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/layer</search_type>
+        <view>layer_list</view>
+      </display>
+    </element>
+    <element name="plate_list">
+      <display class="LinkWdg">
+        <search_type>vfx/plate</search_type>
+        <search_view>link_search:plate_list</search_view>
+        <view>plate_list</view>
+      </display>
+    </element>
+    <element name="sequence_list" title="Sequence List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/sequence</search_type>
+        <view>sequence_list</view>
+      </display>
+    </element>
+    <element name="episode_list" title="Episode List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/episode</search_type>
+        <view>episode_list</view>
+      </display>
+    </element>
+    <element name="art_reference_list" title="Art Reference List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/art_reference</search_type>
+        <view>art_reference_list</view>
+      </display>
+    </element>
+    <element name="script_list" title="Script List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/script</search_type>
+        <view>script_list</view>
+      </display>
+    </element>
+    <element name="storyboard_list" title="Storyboard List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/storyboard</search_type>
+        <view>storyboard_list</view>
+      </display>
+    </element>
+    <element name="manage_lists" title="Manage Lists">
+      <display class="SideBarSectionLinkWdg">
+        <view>manage_lists</view>
+      </display>
+    </element>
+    <element name="tools" title="Tools">
+      <display class="SideBarSectionLinkWdg">
+        <view>tools</view>
+      </display>
+    </element>
+    <element name="review" title="Review">
+      <display class="SideBarSectionLinkWdg">
+        <view>review</view>
+      </display>
+    </element>
+    <element name="separator" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator098" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator097" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator003" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="hidden_views" title="Hidden Views">
+      <display class="SideBarSectionLinkWdg">
+        <view>hidden_views</view>
+      </display>
+    </element>
+    <element name="development" title="Development">
+      <display class="SideBarSectionLinkWdg">
+        <view>development</view>
+      </display>
+    </element>
+    <element name="asset_list" title="Asset List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/asset</search_type>
+        <view>asset_list</view>
+      </display>
+    </element>
+    <element name="separator006" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="schedule" title="Schedule">
+      <display class="SideBarSectionLinkWdg">
+        <view>schedule</view>
+      </display>
+    </element>
+    <element name="review_tracking">
+      <display class="LinkWdg">
+        <search_type>vfx/review</search_type>
+        <search_view>link_search:review_tracking</search_view>
+        <view>review_tracking</view>
+      </display>
+    </element>
+    <element name="schedule_list" title="Schedule List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/schedule</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="schedule_task_list" title="Schedule Task List">
+      <display class="LinkWdg">
+        <search_type>sthpw/task</search_type>
+        <search_view>link_search:schedule_task_list</search_view>
+        <view>schedule_task_list</view>
+      </display>
+    </element>
+    <element name="schedule_bidding" title="Schedule Bidding">
+      <display class="LinkWdg">
+        <search_type>vfx/schedule</search_type>
+        <search_view>link_search:schedule_bidding</search_view>
+        <view>schedule_bidding</view>
+      </display>
+    </element>
+    <element name="separator020" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="checkin_history">
+      <display class="LinkWdg">
+        <search_type>sthpw/snapshot</search_type>
+        <search_view>link_search:checkin_history</search_view>
+        <view>checkin_history</view>
+      </display>
+    </element>
+    <element name="review_submission_list" title="Review Submission List">
+      <display class="LinkWdg">
+        <search_type>vfx/submission</search_type>
+        <search_view>link_search:review_submission_list</search_view>
+        <view>review_submission_list</view>
+      </display>
+    </element>
+    <element name="config_shot_sheet_wdg" title="CONFIG - Shot Sheet Wdg">
+      <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <search_view>link_search:config_shot_sheet_wdg</search_view>
+        <view>config_shot_sheet_wdg</view>
+      </display>
+    </element>
+    <element name="shot_sheet_wdg_plates" title="Shot Sheet Wdg Plates">
+      <display class="LinkWdg">
+        <search_type>vfx/plate</search_type>
+        <search_view>link_search:shot_sheet_wdg_plates</search_view>
+        <view>shot_sheet_wdg_plates</view>
+      </display>
+    </element>
+    <element name="shot_planner" title="Shot Planner" icon="" state="" is_visible="on">
+      <display class="LinkWdg">
+        <widget_key>custom_layout</widget_key>
+        <view>shot_planner_wdg</view>
+      </display>
+    </element>
+    <element name="config_shot_planner" title="CONFIG - Shot Planner">
+      <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <search_view>link_search:config_shot_planner</search_view>
+        <view>config_shot_planner</view>
+      </display>
+    </element>
+    <element name="configs" title="Configs">
+      <display class="SideBarSectionLinkWdg">
+        <view>configs</view>
+      </display>
+    </element>
+    <element name="episode" title="Episode">
+      <display class="LinkWdg">
+        <search_type>vfx/episode</search_type>
+        <search_view>link_search:episode</search_view>
+        <view>episode</view>
+      </display>
+    </element>
+    <element name="sequence" title="Sequence" icon="PHOTOS" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/sequence</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:sequence</search_view>
+        <view>sequence</view>
+      </display>
+    </element>
+    <element name="shot" icon="FILM" title="Shot" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/shot</search_type>
+        <simple_search_view>shot_custom_filter</simple_search_view>
+        <search_view>link_search:shot</search_view>
+        <view>shot</view>
+      </display>
+    </element>
+    <element name="asset" icon="PLUGIN" title="Asset">
+      <display class="LinkWdg">
+        <search_type>vfx/asset</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:asset</search_view>
+        <view>asset</view>
+      </display>
+    </element>
+    <element name="layer" title="Layer">
+      <display class="LinkWdg">
+        <search_type>vfx/layer</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:layer</search_view>
+        <view>layer</view>
+      </display>
+    </element>
+    <element name="plate" title="Plate" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/plate</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <view>plate</view>
+        <search_view>link_search:plate</search_view>
+      </display>
+    </element>
+    <element name="asset_category" title="Asset Category">
+      <display class="LinkWdg">
+        <search_type>vfx/asset_category</search_type>
+        <search_view>link_search:asset_category</search_view>
+        <view>asset_category</view>
+      </display>
+    </element>
+    <element name="art_reference" title="Art Reference" icon="PICTURE_EDIT" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/art_reference</search_type>
+        <search_view>link_search:art_reference</search_view>
+        <view>art_reference</view>
+      </display>
+    </element>
+    <element name="script" title="Script" icon="DETAILS" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/script</search_type>
+        <search_view>link_search:script</search_view>
+        <view>script</view>
+      </display>
+    </element>
+    <element name="storyboard" title="Storyboard" icon="PROCESS" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/storyboard</search_type>
+        <search_view>link_search:storyboard</search_view>
+        <view>storyboard</view>
+      </display>
+    </element>
+    <element name="leica" title="Leica" icon="MOVIE_VIEW" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/leica</search_type>
+        <search_view>link_search:leica</search_view>
+        <view>leica</view>
+      </display>
+    </element>
+    <element name="separator096" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator100" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="asset_loader" icon="folder_go">
+      <display class="LinkWdg">
+        <search_type>vfx/asset</search_type>
+        <view>load</view>
+      </display>
+    </element>
+    <element name="asset_checkin" icon="save">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.AssetCheckinWdg</class_name>
+        <search_type>vfx/asset</search_type>
+        <texture_search_type>vfx/texture</texture_search_type>
+      </display>
+    </element>
+    <element name="shot_loader" icon="film">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.AppShotPanelWdg</class_name>
+        <search_type>vfx/shot</search_type>
+        <asset_search_type>vfx/asset</asset_search_type>
+        <instance_search_type>vfx/asset_in_shot</instance_search_type>
+        <view>load</view>
+      </display>
+    </element>
+    <element name="shot_checkin" icon="save">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.ShotCheckinWdg</class_name>
+        <search_type>vfx/shot</search_type>
+        <sequence_search_type>vfx/sequence</sequence_search_type>
+        <texture_search_type>vfx/shot_texture</texture_search_type>
+      </display>
+    </element>
+    <element name="session" icon="connect">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.SessionWdg</class_name>
+        <search_type>vfx/asset</search_type>
+        <view>load</view>
+      </display>
+    </element>
+    <element name="_my_tactic" title="My TACTIC">
+      <display class="SideBarSectionLinkWdg">
+        <view>_my_tactic</view>
+      </display>
+    </element>
+    <element name="planner_shot" title="Planner Shot">
+      <display class="LinkWdg">
+        <search_type>vfx/shot</search_type>
+        <search_view>link_search:planner_shot</search_view>
+        <view>planner_shot</view>
+      </display>
+    </element>
+    <element name="planner_asset" title="Planner Asset">
+      <display class="LinkWdg">
+        <search_type>vfx/asset</search_type>
+        <search_view>link_search:planner_asset</search_view>
+        <view>planner_asset</view>
+      </display>
+    </element>
+    <element name="planner_sequence" title="Planner Sequence">
+      <display class="LinkWdg">
+        <search_type>vfx/sequence</search_type>
+        <search_view>link_search:planner_sequence</search_view>
+        <view>planner_sequence</view>
+      </display>
+    </element>
+    <element name="config_sequence_planner" title="Sequence Planner" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>custom_layout</widget_key>
+        <view>sequence_planner_wdg</view>
+      </display>
+    </element>
+    <element name="my_tasks" icon="date">
+      <display class="LinkWdg">
+        <show_insert>false</show_insert>
+        <search_type>sthpw/task</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <view>my_task</view>
+        <filter>
+       [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"assigned","main_body_relation":"is","main_body_value":"{$LOGIN}"},{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},{"prefix": "group", "group": "true", "order": "parent"}]
+      </filter>
+      </display>
+    </element>
+    <element name="extra_views" title="Extra Views">
+      <display class="SideBarSectionLinkWdg">
+        <view>extra_views</view>
+      </display>
+    </element>
+    <element name="config_snapshot_to_review" title="CONFIG - Snapshot to Review">
+      <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <search_view>link_search:config_snapshot_to_review</search_view>
+        <view>config_snapshot_to_review</view>
+      </display>
+    </element>
+    <element name="snapshot_in_submission_list" title="Snapshot In Submission List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/snapshot_in_submission</search_type>
+        <view>table</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """10VFX""")
+insert.set_value('timestamp', """2011-10-26 00:42:03.664384""")
+insert.set_value('search_type', """vfx/asset_category""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """11VFX""")
+insert.set_value('timestamp', """2011-10-26 00:42:03.664384""")
+insert.set_value('search_type', """vfx/asset_category""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="asset">
+      <display widget="hidden_row">
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>vfx/asset</search_type>
+        <view>table</view>
+        <mode>simple</mode>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """12VFX""")
+insert.set_value('timestamp', """2011-10-26 00:42:03.664384""")
+insert.set_value('search_type', """vfx/asset_category""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """13VFX""")
+insert.set_value('timestamp', """2011-10-26 00:48:59.430199""")
+insert.set_value('search_type', """vfx/asset_in_shot""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """14VFX""")
+insert.set_value('timestamp', """2011-10-26 00:48:59.430199""")
+insert.set_value('search_type', """vfx/asset_in_shot""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="shot_code"/>
+    <element name="asset_code"/>
+    <element name="type" title="Type" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="name" title="Name" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="pipeline_code" title="Pipeline code" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """15VFX""")
+insert.set_value('timestamp', """2011-10-26 00:48:59.430199""")
+insert.set_value('search_type', """vfx/asset_in_shot""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="shot_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/shot|code|code</query>
+      </display>
+    </element>
+    <element name="asset_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/asset|code|code</query>
+      </display>
+    </element>
+    <element name="type"/>
+    <element name="name"/>
+    <element name="pipeline_code"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """16VFX""")
+insert.set_value('timestamp', """2011-10-26 00:50:00.375496""")
+insert.set_value('search_type', """vfx/asset_in_sequence""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """17VFX""")
+insert.set_value('timestamp', """2011-10-26 00:50:00.375496""")
+insert.set_value('search_type', """vfx/asset_in_sequence""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="asset_code"/>
+    <element name="sequence_code"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """18VFX""")
+insert.set_value('timestamp', """2011-10-26 00:50:00.375496""")
+insert.set_value('search_type', """vfx/asset_in_sequence""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="asset_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/asset|code|code</query>
+      </display>
+    </element>
+    <element name="sequence_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/sequence|code|code</query>
+      </display>
+    </element>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """19VFX""")
+insert.set_value('timestamp', """2011-10-26 00:51:02.819168""")
+insert.set_value('search_type', """vfx/asset_in_episode""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """20VFX""")
+insert.set_value('timestamp', """2011-10-26 00:51:02.819168""")
+insert.set_value('search_type', """vfx/asset_in_episode""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="asset_code"/>
+    <element name="episode_code"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """21VFX""")
+insert.set_value('timestamp', """2011-10-26 00:51:02.819168""")
+insert.set_value('search_type', """vfx/asset_in_episode""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="asset_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/asset|code|code</query>
+      </display>
+    </element>
+    <element name="episode_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/episode|code|code</query>
+      </display>
+    </element>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """22VFX""")
+insert.set_value('timestamp', """2011-10-26 00:54:22.516163""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """23VFX""")
+insert.set_value('timestamp', """2011-10-26 00:54:22.516163""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="submission" width="95px" edit="false">
+      <display widget="hidden_row">
+        <search_type>vfx/submission</search_type>
+        <width>100%</width>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <view>review_submission_list</view>
+      </display>
+    </element>
+    <element name="type" title="Type" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="description" title="Description" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="snapshots" title="Snapshots" width="106.9px" edit="false" color="false">
+      <display widget="hidden_row">
+        <search_type>sthpw/snapshot</search_type>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <expression>@SOBJECT(vfx/submission.sthpw/snapshot)</expression>
+        <mode>simple</mode>
+        <view>review_snapshots</view>
+      </display>
+    </element>
+    <element name="date" title="Date" edit="true" color="false">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+    <element name="total_items" title="Total Items" edit="false" color="false">
+      <display widget="expression">
+        <expression>@COUNT(vfx/submission)</expression>
+      </display>
+    </element>
+    <element name="content_creators" title="Content Creators" edit="false" color="false">
+      <display widget="expression">
+        <expression>@GET(vfx/submission.sthpw/snapshot.login)</expression>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """24VFX""")
+insert.set_value('timestamp', """2011-10-26 00:54:22.516163""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="type"/>
+    <element name="description"/>
+    <element name="date"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """25VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/texture""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+
+    <element name="asset_code"/>
+    <element name="pipeline_code" title="Pipeline"/>
+
+    <element name="preview"/>
+
+  </definition>
+</config>""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """26VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="shot_code"/>
+    <element name="description"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """27VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="thumb">
+      <display class="pyasm.widget.ThumbInputWdg"/>
+      <action class="NullAction"/>
+    </element>
+    <element name="snapshot">
+      <display class="SimpleUploadWdg">
+        <context>publish</context>
+      </display>
+    </element>
+    <element name="shot_code">
+      <display widget="select">
+        <values_expr>@GET(vfx/shot.code)</values_expr>
+        <empty>true</empty>
+      </display>
+      <action class="DatabaseAction"/>
+    </element>
+    <element name="code"/>
+    <element name="description"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """28VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/texture""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="preview"/>
+    <element name="asset_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """37VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+    <element name="submit">
+      <display class="SubmissionLinkTableElement"/>
+    </element>
+    <element edit="false" name="completion"/>
+    <element name="shot_task_schedule">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>[
+      {
+        "start_date_expr":  "@MIN(vfx/sequence.vfx/shot.sthpw/task.bid_start_date)",
+        "end_date_expr":    "@MAX(vfx/sequence.vfx/shot.sthpw/task.bid_end_date)",
+        "color":            "#33F",
+        "edit":             "true",
+        "default":          "false"
+      }
+      ]</options>
+      </display>
+      <action class="tactic.ui.table.GanttChildrenCbk">
+        <sobjects>@SOBJECT(vfx/sequence.vfx/shot.sthpw/task)</sobjects>
+      </action>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """38VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+  </edit>
+</config>""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """39VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+
+  </edit_definition>
+</config>""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """40VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <table>
+  <element name="code"/>
+  <element name="description"/>
+  <element name="completion"/>
+  <element name="submit"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """41VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="category" width="208.083px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="description" edit="true"/>
+    <element name="keywords"/>
+    <element name="timestamp"/>
+    <element name="name" title="Name" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="preview" width="30px" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <detail>true</detail>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """42VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="category"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """43VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="preview"/>
+    <element name="name">
+      <display widget="text"/>
+    </element>
+    <element name="category">
+      <display widget="select">
+        <values>previz|reference|design</values>
+        <empty>true</empty>
+      </display>
+    </element>
+    <element name="description">
+      <display class="TextAreaWdg"/>
+    </element>
+    <element name="keywords">
+      <display class="TextAreaWdg"/>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """44VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="name"/>
+    <element name="category"/>
+    <element name="description"/>
+    <element name="keywords"/>
+    <element name="timestamp"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """45VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="history"/>
+    <element name="files" width="30px" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <detail>false</detail>
+      </display>
+    </element>
+    <element name="description"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """46VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="description"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """47VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="thumb">
+      <display class="pyasm.widget.ThumbInputWdg"/>
+      <action class="NullAction"/>
+    </element>
+    <element name="snapshot">
+      <display class="SimpleUploadWdg">
+        <context>publish</context>
+      </display>
+    </element>
+    <element name="shot_code">
+      <display widget="select">
+        <values_expr>@GET(vfx/shot.code)</values_expr>
+        <empty>true</empty>
+      </display>
+    </element>
+    <element name="code"/>
+    <element name="description"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """48VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="history"/>
+    <element name="files"/>
+    <element name="shot_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="general_publish" edit="false"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """53VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="history"/>
+    <element name="files" width="72px" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <detail>false</detail>
+      </display>
+    </element>
+    <element name="shot_code" width="263.85px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="code"/>
+    <element name="description" width="296.2px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """54VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/texture""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="asset_code"/>
+
+    <element name="description"/>
+
+    <element name="pipeline_code"/>
+  
+  </edit>
+</config>""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """55VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/texture""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="code">
+        <display class="TextWdg"/>
+    </element>
+
+    <element name="preview"/>
+
+    <element name="asset_code">
+        <display class="SelectWdg">
+            <required>true</required>
+            <query>vfx/asset|code|code</query>
+            <empty>true</empty>
+        </display>
+     
+    </element>
+
+    <element name="description" type="string"/>
+
+    <element name="pipeline_code"/>
+
+
+  </edit_definition>
+</config>""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """56VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="history"/>
+    <element name="files"/>
+    <element name="shot_code"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="general_publish" edit="false"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """65VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="preview"/>
+    <element name="detail"/>
+    <element name="asset_category"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+    <element name="submit"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """66VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="code">
+        <display class="TextWdg"/>
+    </element>
+
+    <element name="preview"/>
+
+    <element name="asset_category">
+        <display class="SelectWdg">
+            <required>true</required>
+            <query>vfx/asset_category|code|code</query>
+            <empty>true</empty>
+        </display>
+     
+    </element>
+
+    <element name="name">
+        <display class="TextWdg">
+            <required>true</required>
+        </display>
+    </element>
+
+    <element name="description" type="string"/>
+
+
+  <element name="pipeline_code"/>
+
+  <element name="asset_type">
+    <display class="SelectWdg">
+        <query>vfx/asset_type|code|code</query>
+    </display>
+  </element>
+
+
+  </edit_definition>
+</config>""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """67VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="asset_category"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+    <element name="asset_type"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """68VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="detail" edit="false">
+      <display class="HiddenRowToggleWdg">
+        <dynamic_class>pyasm.prod.web.AssetDetailWdg</dynamic_class>
+      </display>
+    </element>
+    <element name="asset_category" title="Library"/>
+    <element name="pipeline_code" title="Pipeline"/>
+    <element name="preview"/>
+    <element name="info" edit="false">
+      <display class="pyasm.prod.web.AssetInfoWdg"/>
+    </element>
+    <element name="task" edit="false">
+      <display class="pyasm.widget.SObjectTaskTableElement">
+        <width>250</width>
+        <simple_date>true</simple_date>
+        <bid_edit>false</bid_edit>
+      </display>
+    </element>
+    <element name="discussion" edit="false">
+      <display class="pyasm.widget.DiscussionWdg">
+        <sticky>new</sticky>
+      </display>
+    </element>
+    <element name="task_edit" width="46.7167px" edit="false">
+      <display class="HiddenRowToggleWdg">
+        <show_gear>true</show_gear>
+        <show_search>false</show_search>
+        <show_search_limit>true</show_search_limit>
+        <search_type>sthpw/task</search_type>
+        <show_insert>true</show_insert>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <mode>insert</mode>
+        <view>inline_add_item</view>
+        <icon>DATE_GO</icon>
+      </display>
+    </element>
+    <element name="task_status"/>
+    <element name="input" edit="false" sortable="false">
+      <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>vfx/asset</search_type>
+        <mode>input</mode>
+      </display>
+    </element>
+    <element name="output" edit="false" sortable="false">
+      <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>vfx/asset</search_type>
+        <mode>output</mode>
+      </display>
+    </element>
+    <element name="submit" edit="false" sortable="false">
+      <display class="SubmissionLinkTableElement"/>
+    </element>
+    <element name="related">
+      <display class="pyasm.flash.widget.RelatedAssetInsertElement"/>
+    </element>
+    <element name="task_schedule"/>
+    <element name="task_status_edit" width="439px" edit="false">
+      <display class="tactic.ui.table.TaskElementWdg">
+        <bg_color>status</bg_color>
+        <edit_status>true</edit_status>
+        <show_assigned>true</show_assigned>
+        <layout>vertical</layout>
+        <show_dates>true</show_dates>
+      </display>
+    </element>
+    <element name="maya_playblast" title="Maya Playblast" edit="false" color="false">
+      <display widget="button">
+        <path>maya/checkin_playblast</path>
+        <icon>CAMERA</icon>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """69VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="history"/>
+    <element name="files"/>
+    <element name="general_publish"/>
+    <element name="sequence_code" title="sequence"/>
+    <element name="code"/>
+    <element name="stage"/>
+    <element name="title"/>
+    <element name="author"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """70VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="sequence_code">
+      <display class="SelectWdg">
+        <query>vfx/sequence|code|code</query>
+        <empty>true</empty>
+      </display>
+    </element>
+    <element name="title"/>
+    <element name="code"/>
+    <element name="author"/>
+    <element name="stage">
+      <display class="SelectWdg">
+        <setting>script_stage</setting>
+      </display>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """71VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="title"/>
+    <element name="author"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """72VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="title"/>
+    <element name="author"/>
+    <element name="task_status_edit" edit="false">
+      <display class="tactic.ui.table.TaskElementWdg">
+        <show_assigned>true</show_assigned>
+        <layout>vertical</layout>
+        <edit_status>true</edit_status>
+        <edit_assigned>true</edit_assigned>
+        <bg_color>status</bg_color>
+        <show_task_edit>true</show_task_edit>
+        <show_dates>true</show_dates>
+      </display>
+    </element>
+    <element name="preview" width="55px" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <detail>false</detail>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """73VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="info"/>
+    <element name="shot_code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="explore"/>
+    <element name="sort_order"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """74VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="images"/>
+    <element name="shot_code">
+      <display widget="select">
+        <query>vfx/shot|code|code</query>
+        <empty>true</empty>
+      </display>
+    </element>
+    <element name="name">
+      <display widget="text"/>
+    </element>
+    <element name="description"/>
+    <element name="sort_order"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """75VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="images"/>
+    <element name="shot_code"/>
+    <element name="name"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """76VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="info">
+      <display class="HiddenRowToggleWdg">
+        <dynamic_class>pyasm.prod.web.LayerDetailWdg</dynamic_class>
+      </display>
+    </element>
+    <element name="explore">
+      <display class="pyasm.prod.web.ExploreTableElementWdg"/>
+    </element>
+    <element name="name" width="157.833px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="shot_code" width="157.833px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="images" width="58px" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <original>false</original>
+        <detail>false</detail>
+      </display>
+    </element>
+    <element name="general_checkin" title="Checkin" width="54px" edit="false">
+      <display class="tactic.ui.table.CheckinButtonElementWdg">
+        <transfer_mode>upload</transfer_mode>
+        <width>600</width>
+        <mode>sequence</mode>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """77VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="preview"/>
+
+    <element name="history"/>
+    <element name="code"/>
+    <element name="name"/>
+
+    <element name="shot_code"/>
+    <element name="type"/>
+    <element name="description">
+        <display class="WikiElementWdg"/>
+    </element>
+    <element name="file_range"/>
+    <element name="login"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """78VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="code"/>
+    <element name="preview">
+        <display class="tactic.ui.widget.SimpleUploadWdg">
+            <context>icon</context>
+        </display>
+    </element>
+    <element name="shot_code">
+        <display class="SelectWdg">
+            <persist>true</persist>
+            <query>vfx/shot|code|code</query>
+        </display>
+    </element>
+    <element name="name"/>
+ 
+    <element name="type"/>
+    <element name="description"/>
+    <element name="file_range"/>
+    <element name="login"/>
+
+  </edit_definition>
+</config>""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """79VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code" width="100px"/>
+    <element name="name" width="100px"/>
+    <element name="shot_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>vfx/shot|code|code</query>
+      </display>
+    </element>
+    <element name="type" width="100px"/>
+    <element name="description" width="300px"/>
+    <element name="login" width="100px"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """80VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="preview">
+      <display class="ThumbWdg">
+        <context>icon</context>
+      </display>
+    </element>
+    <element name="history"/>
+    <element name="code"/>
+    <element name="name" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="shot_code"/>
+    <element name="type"/>
+    <element name="description">
+      <display class="WikiElementWdg"/>
+    </element>
+    <element name="file_range"/>
+    <element name="login"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """81VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.618786""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <table>
+  <element name="code"/>
+  <element name="description"/>
+  <element name="completion"/>
+  <element name="submit"/>
+  </table>
+</config>""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """82VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:07.144980""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+    <element name="episode_code">
+      <display widget="select">
+        <values_expr>@GET(vfx/episode.code)</values_expr>
+        <empty>true</empty>
+      </display>
+      <action class="DatabaseAction"/>
+    </element>
+  </edit_definition>
+</config>""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """83VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:06.575761""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """84VFX""")
+insert.set_value('timestamp', """2011-10-26 01:00:05.775283""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="episode_code"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+    <element name="completion" width="329.25px" edit="false">
+      <display class="tactic.ui.table.TaskCompletionWdg">
+        <task_expr>@SOBJECT(vfx/shot.sthpw/task)</task_expr>
+      </display>
+    </element>
+    <element name="shot_task_schedule">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>[
+      {
+        "start_date_expr":  "@MIN(vfx/shot.sthpw/task.bid_start_date)",
+        "end_date_expr":    "@MAX(vfx/shot.sthpw/task.bid_end_date)",
+        "color":            "#33F",
+        "edit":             "true",
+        "default":          "false"
+      }
+      ]</options>
+      </display>
+      <action class="tactic.ui.table.GanttChildrenCbk">
+        <sobjects>@SOBJECT(vfx/shot.sthpw/task)</sobjects>
+      </action>
+    </element>
+    <element name="shots" title="Shots" width="68.5167px" edit="true" color="false">
+      <display widget="hidden_row">
+        <search_type>vfx/shot</search_type>
+        <icon_tip>Display shots in this sequence</icon_tip>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <view>shot</view>
+      </display>
+    </element>
+    <element name="asset_drop" width="333px" edit="false">
+      <display class="tactic.ui.table.DropElementWdg">
+        <instance_type>vfx/asset_in_sequence</instance_type>
+        <accepted_drop_type>vfx/asset</accepted_drop_type>
+        <css_background-color>#425952</css_background-color>
+      </display>
+      <action class="tactic.ui.table.DropElementAction">
+        <instance_type>vfx/asset_in_sequence</instance_type>
+      </action>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """85VFX""")
+insert.set_value('timestamp', """2011-10-26 02:55:39.656406""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:shot_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """86VFX""")
+insert.set_value('timestamp', """2011-10-26 02:55:40.030131""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <shot_tracking layout="TableLayoutWdg" >
+    <element name="preview" width="170px"/>
+    <element name="shot_sheet_wdg" width="34px"/>
+    <element name="sequence_code" width="77px"/>
+    <element name="code" width="59.0667px"/>
+    <element name="description" width="154px"/>
+    <element name="frames" width="102.583px"/>
+    <element name="plate" width="29px"/>
+    <element name="task_edit" width="45.0667px"/>
+    <element name="history" width="65.2833px"/>
+    <element name="task_status_edit" width="635px"/>
+  </shot_tracking>
+</config>
+""")
+insert.set_value('view', """shot_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """87VFX""")
+insert.set_value('timestamp', """2011-10-26 02:56:12.493645""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <sequence_list>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="shot_task_schedule"/>
+    <element name="completion"/>
+  </sequence_list>
+</config>
+""")
+insert.set_value('view', """sequence_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """88VFX""")
+insert.set_value('timestamp', """2011-10-26 02:56:54.059268""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <episode_list>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="completion"/>
+    <element name="shot_task_schedule"/>
+  </episode_list>
+</config>
+""")
+insert.set_value('view', """episode_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """89VFX""")
+insert.set_value('timestamp', """2011-10-26 02:57:39.022114""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <plate_list layout="TableLayoutWdg" >
+    <element name="shot_code" width="90px"/>
+    <element name="name" width="71px"/>
+    <element name="type" width="204px"/>
+    <element name="file_range" width="81px"/>
+    <element name="description" width="637px"/>
+  </plate_list>
+</config>
+""")
+insert.set_value('view', """plate_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """90VFX""")
+insert.set_value('timestamp', """2011-10-26 02:58:11.835747""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <layer_list>
+    <element name="checkin_history"/>
+    <element name="images"/>
+    <element name="info"/>
+  </layer_list>
+</config>
+""")
+insert.set_value('view', """layer_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """91VFX""")
+insert.set_value('timestamp', """2011-10-26 03:01:59.137098""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <manage_lists>
+    <element name="episode_list"/>
+    <element name="sequence_list"/>
+    <element name="shot_list"/>
+    <element name="layer_list"/>
+    <element name="plate_list"/>
+    <element name="separator098"/>
+    <element name="asset_category_list"/>
+    <element name="asset_list"/>
+    <element name="separator097"/>
+    <element name="art_reference_list"/>
+    <element name="script_list"/>
+    <element name="storyboard_list"/>
+    <element name="leica_list"/>
+    <element name="separator003"/>
+    <element name="schedule_list"/>
+    <element name="review_list"/>
+  </manage_lists>
+</config>
+""")
+insert.set_value('view', """manage_lists""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """92VFX""")
+insert.set_value('timestamp', """2011-10-26 03:03:15.755060""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <hidden_views>
+    <element name="snapshot_in_submission_list"/>
+    <element name="planner_sequence"/>
+    <element name="planner_asset"/>
+    <element name="planner_shot"/>
+    <element name="shot_sheet_wdg_plates"/>
+    <element name="review_submission_list"/>
+    <element name="checkin_history"/>
+    <element name="schedule_task_list"/>
+    <element name="asset_in_episode_list"/>
+    <element name="asset_in_sequence_list"/>
+    <element name="asset_in_shot_list"/>
+  </hidden_views>
+</config>
+""")
+insert.set_value('view', """hidden_views""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """93VFX""")
+insert.set_value('timestamp', """2011-10-26 03:03:50.628785""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <development>
+    <element name="extra_views"/>
+    <element name="configs"/>
+    <element name="hidden_views"/>
+  </development>
+</config>
+""")
+insert.set_value('view', """development""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """94VFX""")
+insert.set_value('timestamp', """2011-10-26 03:03:50.810415""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <review>
+    <element name="review_tracking"/>
+  </review>
+</config>
+""")
+insert.set_value('view', """review""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """95VFX""")
+insert.set_value('timestamp', """2011-10-26 03:05:05.181422""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <asset_list>
+    <element name="preview"/>
+    <element name="asset_category"/>
+    <element name="code"/>
+    <element name="name"/>
+    <element name="pipeline_code"/>
+  </asset_list>
+</config>
+""")
+insert.set_value('view', """asset_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """96VFX""")
+insert.set_value('timestamp', """2011-10-26 03:07:27.109808""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:asset_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """97VFX""")
+insert.set_value('timestamp', """2011-10-26 03:07:27.483205""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <asset_tracking layout="TableLayoutWdg" >
+    <element name="preview" width="80px"/>
+    <element name="asset_category" width="270px"/>
+    <element name="code" width="270px"/>
+    <element name="name" width="270px"/>
+    <element name="pipeline_code" width="270px"/>
+  </asset_tracking>
+</config>
+""")
+insert.set_value('view', """asset_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """98VFX""")
+insert.set_value('timestamp', """2011-10-26 03:07:49.929124""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:episode_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """99VFX""")
+insert.set_value('timestamp', """2011-10-26 03:07:50.265047""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <episode_tracking layout="TableLayoutWdg" >
+    <element name="code" width="179.183px"/>
+    <element name="description" width="179.183px"/>
+    <element name="completion" width="304.633px"/>
+    <element name="shot_task_schedule" width="500px"/>
+  </episode_tracking>
+</config>
+""")
+insert.set_value('view', """episode_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """100VFX""")
+insert.set_value('timestamp', """2011-10-26 03:08:07.765331""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sequence_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """101VFX""")
+insert.set_value('timestamp', """2011-10-26 03:08:08.458698""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <sequence_tracking layout="TableLayoutWdg" >
+    <element name="code" width="179.183px"/>
+    <element name="description" width="179.183px"/>
+    <element name="shot_task_schedule" width="500px"/>
+    <element name="completion" width="304.633px"/>
+  </sequence_tracking>
+</config>
+""")
+insert.set_value('view', """sequence_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """102VFX""")
+insert.set_value('timestamp', """2011-10-26 03:09:28.269621""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:review_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """103VFX""")
+insert.set_value('timestamp', """2011-10-26 03:09:28.639395""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('config', """<config>
+  <review_tracking layout="TableLayoutWdg" >
+    <element name="submission" width="95px"/>
+    <element name="snapshots" width="106.9px"/>
+    <element name="date" width="265.4px"/>
+    <element name="type" width="125.333px"/>
+    <element name="total_items" width="73.7167px"/>
+    <element name="description" width="755.65px"/>
+  </review_tracking>
+</config>
+""")
+insert.set_value('view', """review_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """104VFX""")
+insert.set_value('timestamp', """2011-10-26 03:10:56.252169""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="type">
+      <display widget="select">
+        <values>daily|client</values>
+      </display>
+    </element>
+    <element name="description"/>
+    <element name="date">
+      <display widget="calendar"/>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """105VFX""")
+insert.set_value('timestamp', """2011-10-26 03:10:56.252169""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="type">
+</element>
+    <element name="description">
+</element>
+    <element name="snapshots">
+</element>
+    <element name="submission">
+</element>
+    <element name="date">
+</element>
+    <element name="total_items">
+</element>
+    <element name="content_creators">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """106VFX""")
+insert.set_value('timestamp', """2011-10-26 03:23:37.449547""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="frames">
+</element>
+    <element name="task_status_edit">
+</element>
+    <element name="task_edit">
+</element>
+    <element name="code">
+</element>
+    <element name="shot_sheet_wdg">
+</element>
+    <element name="plate">
+</element>
+    <element name="asset_in_shot">
+</element>
+    <element name="asset_drop">
+</element>
+    <element name="shot_planner">
+</element>
+    <element name="layers">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """107VFX""")
+insert.set_value('timestamp', """2011-10-26 03:56:21.956270""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """108VFX""")
+insert.set_value('timestamp', """2011-10-26 03:56:21.956270""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="description" title="Description" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="task_edit" edit="false">
+      <display class="HiddenRowToggleWdg">
+        <show_gear>true</show_gear>
+        <search_view>link_search:schedule_task_list</search_view>
+        <show_search>false</show_search>
+        <edit_view>schedule_task_edit</edit_view>
+        <show_search_limit>true</show_search_limit>
+        <search_type>sthpw/task</search_type>
+        <show_insert>true</show_insert>
+        <dynamic_class>tactic.ui.panel.ViewPanelWdg</dynamic_class>
+        <mode>insert</mode>
+        <insert_view>schedule_task_edit</insert_view>
+        <view>schedule_task_list</view>
+      </display>
+    </element>
+    <element name="pipeline_code" title="Pipeline Code" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="task_schedule" edit="false">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>[
+        {
+          "start_date_expr":  "@MIN(sthpw/task.bid_start_date)",
+          "end_date_expr":    "@MAX(sthpw/task.bid_end_date)",
+          "color":            "#33F",
+          "edit":             "true",
+          "default":          "false"
+        }
+        ]</options>
+      </display>
+    </element>
+    <element name="total_bid_duration" title="Total Bid Hours" edit="false" color="false">
+      <display widget="expression">
+        <expression>@SUM(sthpw/task.bid_duration)</expression>
+      </display>
+    </element>
+    <element name="total_cost" title="Total Cost" edit="false" color="false">
+      <display widget="expression">
+        <expression>@SUM(sthpw/task.bid_cost)</expression>
+        <display_expression>${@GET(.total_cost, %0.2f)}</display_expression>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """109VFX""")
+insert.set_value('timestamp', """2011-10-26 03:56:21.956270""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """110VFX""")
+insert.set_value('timestamp', """2011-10-26 03:56:50.494700""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="description"/>
+    <element name="pipeline_code"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """111VFX""")
+insert.set_value('timestamp', """2011-10-26 03:56:50.494700""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="description">
+</element>
+    <element name="task_edit">
+</element>
+    <element name="pipeline_code">
+</element>
+    <element name="task_schedule">
+</element>
+    <element name="total_bid_duration">
+</element>
+    <element name="total_cost">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """112VFX""")
+insert.set_value('timestamp', """2011-10-26 03:58:07.965170""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <schedule_task_list>
+    <element name="description"/>
+    <element name="bid_cost"/>
+    <element name="schedule"/>
+  </schedule_task_list>
+</config>
+""")
+insert.set_value('view', """schedule_task_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """113VFX""")
+insert.set_value('timestamp', """2011-10-26 03:59:00.036911""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <schedule_task_edit>
+    <element name="process">
+      <display class="TextWdg"/>
+    </element>
+    <element name="description"/>
+    <element name="bid_duration"/>
+    <element name="bid_cost"/>
+    <element name="bid_start_date">
+      <display class="tactic.ui.widget.CalendarInputWdg"/>
+    </element>
+    <element name="bid_end_date">
+      <display class="tactic.ui.widget.CalendarInputWdg"/>
+    </element>
+    <element name="color">
+      <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+  </schedule_task_edit>
+</config>
+""")
+insert.set_value('view', """schedule_task_edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """114VFX""")
+insert.set_value('timestamp', """2011-10-26 04:07:03.662981""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "schedule", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "on", "main_body_column": "search_type"}, {"main_body_value": "{$PROJECT}", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "project_code"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "bid_start_date"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:schedule_task_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """115VFX""")
+insert.set_value('timestamp', """2011-10-26 04:07:44.827646""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:schedule_bidding""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """116VFX""")
+insert.set_value('timestamp', """2011-10-26 04:07:45.330493""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('config', """<config>
+  <schedule_bidding layout="TableLayoutWdg" >
+    <element name="task_edit" width="229.25px"/>
+    <element name="description" width="853.733px"/>
+    <element name="total_cost" width="252.017px"/>
+  </schedule_bidding>
+</config>
+""")
+insert.set_value('view', """schedule_bidding""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """117VFX""")
+insert.set_value('timestamp', """2011-10-26 04:08:07.358047""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <schedule>
+    <element name="schedule_bidding"/>
+  </schedule>
+</config>
+""")
+insert.set_value('view', """schedule""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """118VFX""")
+insert.set_value('timestamp', """2011-10-26 04:12:45.439163""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="schedule" width="500px" edit="false">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <color_mode>status</color_mode>
+        <year_display>default</year_display>
+        <options>[
+        {
+            "start_date_col":  "bid_start_date",
+            "end_date_col":    "bid_end_date",
+            "edit":             "true"
+        }
+        ]</options>
+        <show_title>true</show_title>
+      </display>
+    </element>
+    <element name="bid_cost" title="Bid Cost" edit="true" color="false">
+      <display widget="format">
+        <type>currency</type>
+        <total_summary>total</total_summary>
+        <format>-$1,234</format>
+      </display>
+    </element>
+    <element name="notes" edit="false">
+      <display class="tactic.ui.widget.DiscussionElementWdg">
+        <show_note_expand>false</show_note_expand>
+        <context_hidden>true</context_hidden>
+        <use_parent>true</use_parent>
+      </display>
+    </element>
+    <element name="bid_end_date" title="Due" edit="true">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+    <element name="search_code" title="Search Code" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="shot" title="Shot" edit="false" color="false">
+      <display widget="hidden_row">
+        <search_type>vfx/shot</search_type>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <expression>@SOBJECT(vfx/shot)</expression>
+        <view>table</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """119VFX""")
+insert.set_value('timestamp', """2011-10-26 04:12:45.439163""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="color">
+      <display class="tactic.ui.input.ColorInputWdg"/>
+    </element>
+    <element name="bid_duration" title="Bid Hours">
+      <display class="TextWdg"/>
+    </element>
+    <element name="bid_cost"/>
+    <element name="search_code"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """120VFX""")
+insert.set_value('timestamp', """2011-10-26 04:12:45.439163""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="color">
+</element>
+    <element name="schedule">
+</element>
+    <element name="bid_duration">
+</element>
+    <element name="bid_cost">
+</element>
+    <element name="notes">
+</element>
+    <element name="bid_end_date">
+</element>
+    <element name="search_code">
+</element>
+    <element name="shot">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """121VFX""")
+insert.set_value('timestamp', """2011-10-26 05:13:02.783076""")
+insert.set_value('search_type', """sthpw/snapshot""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="play_rv" title="Play RV" edit="false" color="false">
+      <display widget="button">
+        <path>rv/play</path>
+        <icon>MOVIE_VIEW</icon>
+      </display>
+    </element>
+    <element name="submit" title="Submit" edit="false" color="false">
+      <display widget="button">
+        <cbjs_action>      kwargs = {
+        'view': 'add_snapshot_to_review_wdg',
+        'search_key': bvr.search_key
+      };
+      spt.panel.load_popup('Add Snapshot to Review', 'tactic.ui.panel.CustomLayoutWdg', kwargs);</cbjs_action>
+        <icon>FILM_SUBMIT</icon>
+      </display>
+    </element>
+    <element name="notes" width="300px" edit="false">
+      <display class="tactic.ui.widget.DiscussionElementWdg">
+        <use_parent>false</use_parent>
+      </display>
+    </element>
+    <element name="submission">
+      <display widget="hidden_row">
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>vfx/submission</search_type>
+        <view>table</view>
+        <mode>simple</mode>
+      </display>
+    </element>
+    <element name="parent" title="For" width="80px" edit="false">
+      <display widget="expression">
+        <expression>@GET(parent.code)</expression>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """122VFX""")
+insert.set_value('timestamp', """2011-10-26 05:13:02.783076""")
+insert.set_value('search_type', """sthpw/snapshot""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="play_rv">
+</element>
+    <element name="submit">
+</element>
+    <element name="notes">
+</element>
+    <element name="parent">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """123VFX""")
+insert.set_value('timestamp', """2011-10-26 05:13:38.065843""")
+insert.set_value('search_type', """sthpw/snapshot""")
+insert.set_value('config', """<config>
+  <checkin_history>
+    <element name="preview" width="80px"/>
+    <element name="process" width="101.533px"/>
+    <element name="version" width="66.3167px"/>
+    <element name="description" width="343.983px"/>
+    <element name="files" width="87.0333px"/>
+    <element name="submit" width="55.95px"/>
+    <element name="checkout" width="53.8833px"/>
+    <element name="play_rv" width="55.95px"/>
+    <element name="login" width="84.9667px"/>
+    <element name="timestamp" width="246.583px"/>
+
+    <element name="is_current" width="51.8px"/>
+    <element name="notes" width="300px"/>    
+  </checkin_history>
+</config>""")
+insert.set_value('view', """checkin_history""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """124VFX""")
+insert.set_value('timestamp', """2011-10-26 05:32:53.942350""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
+<config>
+  <add_snapshot_to_review_wdg>
+
+    <html>
+      <body>
+
+        <div class="spt_top" style="height:100px; width:400px">
+          <div class="spt_label_div"> </div>  
+          <br/>
+          <div>         
+            <form name="spt_bin_form">
+              <select name="spt_bin_select" class="spt_bin_select">
+              </select>
+            </form>
+          </div>
+          <div>
+            <input type="button" value="Submit" class="spt_submit_button"/>
+          </div>
+          <br/><br/>
+          <div class="spt_file_info">
+        
+          </div>
+        </div>
+      </body>
+
+    </html>
+
+   <behavior class='spt_top'>{
+      "type": "load",
+      "cbjs_action": <![CDATA['''
+          var server = TacticServerStub.get();
+          var applet = spt.Applet.get();
+          var top_el = bvr.src_el;
+
+          var search_key = bvr.kwargs.search_key;
+          top_el.search_key = search_key;
+
+          // Get the input snapshot info
+          var snapshot = server.get_by_search_key(search_key);
+          top_el.snapshot = snapshot;
+        
+          // Get the parent info
+          var parent_sobject = server.get_parent(snapshot.__search_key__);
+          top_el.parent_sobject = parent_sobject;
+
+          // Get the file info
+          var files = server.get_path_from_snapshot(snapshot.code);
+          var file_info_el = top_el.getElement(".spt_file_info");
+          //file_info_el.innerHTML = files;
+
+          // Set the Label
+         var label_text = "Choose the bin for submission of: <b>" + parent_sobject.code + " ["+ snapshot.context +"- v" +snapshot.version + "]</b>"   
+         label_div_el = top_el.getElement(".spt_label_div")
+         label_div_el.innerHTML = label_text;
+
+          // Set the context select dropdown values
+          var bin_list = server.eval("@SOBJECT(vfx/review)");
+          var bin_dates = server.eval("@FORMAT(@GET(vfx/review.date), 1999-12-31)");
+
+
+          for (i=0; i<bin_list.length; i++) {
+                var option_value = bin_list[i].code;
+                var bin_date = bin_dates[i];
+                var bin_type = bin_list[i].type;
+                var bin_desc = bin_list[i].description;
+
+                var option_label = bin_date + " [" + bin_type + "] " + bin_desc;
+                var new_option = new Option(option_label, option_value);
+                document.spt_bin_form.spt_bin_select.options[i] = new_option
+          }
+
+
+       
+      ''']]>
+    }</behavior>
+
+
+
+   <behavior class='spt_submit_button'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+          // Setup
+          var server = TacticServerStub.get();
+          var top_el = bvr.src_el.getParent(".spt_top")
+          var search_key = top_el.search_key
+          var snapshot = top_el.snapshot;
+          var snapshot_code = snapshot.code;
+          var parent_sobject = top_el.parent_sobject;
+          var parent_code = parent_sobject.code;
+          var artist = spt.Environment.get().get_user(); 
+
+         // Get the value from the spt_bin_select 
+         var review_code =  document.spt_bin_form.spt_bin_select.value;
+
+
+          // Create the Submission
+          var submission_data = {
+              'review_code': review_code,
+              'parent_code': parent_code,
+              'snapshot_code': snapshot_code,
+              'artist': artist,
+              'search_type': snapshot.search_type,
+              'context': snapshot.context,
+              'version': snapshot.version
+          };
+          var submission = server.insert("vfx/submission", submission_data)
+
+          // Create the submission snapshot and add a dependendy to this snapshot
+          //var submission_snapshot = server.create_snapshot(submission.__search_key__, "publish");
+          //server.add_dependency_by_code(submission_snapshot.code, snapshot.code)
+
+          alert("Successfully Added " + parent_sobject.code + "- " + snapshot.context + " [" + snapshot.version + "]");
+          var popup = spt.popup.get_popup( bvr.src_el ) 
+          spt.popup.close(popup); 
+
+
+       
+      ''']]>
+    }</behavior>
+
+
+
+ 
+  </add_snapshot_to_review_wdg>
+</config>""")
+insert.set_value('view', """add_snapshot_to_review_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """125VFX""")
+insert.set_value('timestamp', """2011-10-27 15:27:29.425334""")
+insert.set_value('search_type', """vfx/submission""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="preview" width="1px" edit="true">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <redirect_expr>@SOBJECT(sthpw/snapshot.parent)</redirect_expr>
+      </display>
+    </element>
+    <element name="parent_code" title="For" edit="false" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="play_rv" title="Play RV" edit="false" color="false">
+      <display widget="button">
+        <path>rv/play</path>
+        <icon>MOVIE_VIEW</icon>
+      </display>
+    </element>
+    <element name="timestamp" title="Date Submitted" edit="true">
+      <display widget="format">
+        <type>time</type>
+        <format>31/12/99 13:37</format>
+      </display>
+    </element>
+    <element name="sort_order" title="Sort Order" edit="true" color="false">
+      <display widget="format">
+        <type>integer</type>
+      </display>
+    </element>
+    <element name="snapshot_code"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """126VFX""")
+insert.set_value('timestamp', """2011-10-27 15:27:29.425334""")
+insert.set_value('search_type', """vfx/submission""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="preview">
+</element>
+    <element name="parent_code">
+</element>
+    <element name="play_rv">
+</element>
+    <element name="timestamp">
+</element>
+    <element name="sort_order">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """127VFX""")
+insert.set_value('timestamp', """2011-10-27 15:28:22.253886""")
+insert.set_value('search_type', """vfx/submission""")
+insert.set_value('config', """<config>
+  <table layout="TableLayoutWdg" >
+    <element name="preview" width="80px"/>
+    <element name="search_type" width="330.517px"/>
+    <element name="search_id" width="60.1px"/>
+    <element name="snapshot_code" width="60.1px"/>
+    <element name="context" width="126.2px"/>
+    <element name="version" width="60.1px"/>
+    <element name="description" width="60.1px"/>
+    <element name="login" width="60.1px"/>
+    <element name="timestamp" width="225.35px"/>
+    <element name="artist" width="123.183px"/>
+    <element name="status" width="60.1px"/>
+    <element name="review_code" width="102.15px"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """128VFX""")
+insert.set_value('timestamp', """2011-10-27 15:46:08.152387""")
+insert.set_value('config', """
+<config>
+  <schedule_bidding>
+<html><div><![CDATA[
+<h2>
+\tSchedule Bidding</h2>
+<p>
+\tThis view is setup to allow creation of multiple versions of bid schedules.&nbsp; This can be useful when starting a project to layout the general schedule before adding any assets, shots etc.</p>
+<p>
+\tTo use this view:</p>
+<ol>
+\t<li>
+\t\tInsert a new schedule by clicking the [+] button in the button bar.&nbsp; This will load a popup where you can provide a description for your schedule.</li>
+\t<li>
+\t\tOnce your schedule entry is created.&nbsp; Expand the Breakdown column to work on the schedule.</li>
+\t<li>
+\t\tTo insert new tasks into the schedule, click the [+] to add new tasks.</li>
+\t<li>
+\t\tAs tasks are added, you can use the Gantt to set the dates for each item.</li>
+</ol>
+
+]]></div></html>
+  </schedule_bidding>
+</config>
+""")
+insert.set_value('view', """schedule_bidding""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """130VFX""")
+insert.set_value('timestamp', """2011-10-28 17:44:06.190305""")
+insert.set_value('search_type', """sthpw/snapshot""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"snapshot_filter_enabled": "", "publish_date": "NONE", "prefix": "snapshot_filter", "publish_search_type": "", "user_filter": ""}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "context", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:checkin_history""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """131VFX""")
+insert.set_value('timestamp', """2011-10-28 21:57:38.471355""")
+insert.set_value('search_type', """vfx/submission""")
+insert.set_value('config', """<config>
+  <review_submission_list layout="TableLayoutWdg" >
+    <element name="preview" width="1px"/>
+    <element name="parent_code" width="162.717px"/>
+    <element name="timestamp" width="389.683px"/>
+    <element name="artist" width="175.567px"/>
+    <element name="context" width="179.85px"/>
+    <element name="version" width="85.65px"/>
+  </review_submission_list>
+</config>
+""")
+insert.set_value('view', """review_submission_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """132VFX""")
+insert.set_value('timestamp', """2011-10-28 21:59:52.880560""")
+insert.set_value('search_type', """vfx/submission""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:review_submission_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """133VFX""")
+insert.set_value('timestamp', """2011-10-28 22:01:41.027906""")
+insert.set_value('search_type', """vfx/submission""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="sort_order"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """TabWdg""")
+insert.set_value('code', """134VFX""")
+insert.set_value('timestamp', """2011-10-28 23:10:12.253341""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+<tab_config_render>
+
+<element edit='false' name='snapshots'>
+  <display class='tactic.ui.panel.TableLayoutWdg'>
+   <view>checkin_history</view>
+   <search_type>sthpw/snapshot</search_type>
+   <search_key>{@GET(state.search_key)}</search_key>
+  </display>
+</element>
+
+<element edit='false' name='Checkin'>
+  <display class='tactic.ui.widget.CheckinWdg'>
+     <search_key>{@GET(state.search_key)}</search_key>
+     <search_type>vfx/shot</search_type>
+     <lock_process>true</lock_process>
+     <mode>sequence</mode>
+
+   </display>
+</element>
+
+
+
+
+</tab_config_render>
+</config>""")
+insert.set_value('view', """tab_config_render""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """135VFX""")
+insert.set_value('timestamp', """2011-10-31 16:50:32.090184""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
+<config>
+  <shot_sheet_wdg>
+
+    <html>
+      <style type="text/css">
+          div.sheet_panel {
+              border: 1px solid #FFF;
+              margin-bottom: 10px;
+              padding: 5px;
+          }
+          .spt_print {
+              font-size:16px;
+              font-weight:bold;
+          }
+
+          .spt_print:hover {
+              font-size:16px;
+              font-weight:bold;
+              cursor:hand;
+          }
+      </style>
+      <body>
+        <div class="spt_top" style="height:900px; width:800">
+
+        <div class="spt_print">PRINT</div>
+
+<![CDATA[
+<%
+
+    snapshot = server.get_snapshot(sobject, context="icon")
+    path = server.get_path_from_snapshot(snapshot.get("code"), mode="web")
+    image = "<img src='%s' width='300px'/>" %path
+
+
+%>
+]]>
+
+
+
+        <div class="sheet_panel">
+          <table width="100%">
+            <tr>
+              <td><h4>[expr]{$PROJECT}[/expr]</h4></td>
+              <td align="right"><h4>Southpaw Technology</h4></td>        
+            </tr>
+            <tr>
+              <td>Shot Sheet</td>
+              <td align="right">[expr]{$TODAY}[/expr]</td>        
+            </tr>
+          </table>
+        </div>
+        <div class="sheet_panel">
+          <table width="100%">
+            <tr>
+              <td width="300px">${image}</td>
+              <td valign="top">
+                <table width="100%">
+                  <tr>
+                    <td width=""><h4>[expr]@GET(.code)[/expr]</h4></td>
+                    <td width="40px"><h4>[expr]@GET(.frame_in)[/expr]</h4></td>
+                    <td width="40px"><h4>[expr]@GET(.frame_out)[/expr]</h4></td>
+                    <td width="40px"><h4>[expr]@GET(.tc_frame_start)[/expr]</h4></td>
+                    <td width="40px"><h4>[expr]@GET(.tc_frame_end)[/expr]</h4></td>
+                  </tr>
+                  <tr>
+                    <td> </td>
+                    <td>In</td>
+                    <td>Out</td>
+                    <td>Start</td>
+                    <td>End</td>
+                  </tr>
+
+                  <tr>
+                    <td>[expr]@GET(.description)[/expr]</td>
+                    <td colspan="4">Resolution</td>
+                  </tr>
+                </table>
+              </td>        
+            </tr>
+          </table>
+        </div>
+
+          <h4>Plates</h4>
+          <element name="plates"/>
+          <br/><br/>
+
+          <h4>Tasks</h4>
+          <element name="tasks"/>
+        </div>
+
+
+      </body>
+
+    </html>
+
+
+          <element name="plates">
+            <display class="tactic.ui.panel.TableLayoutWdg">
+              <search_type>vfx/plate</search_type>
+              <view>shot_sheet_wdg_plates</view>
+              <search_key>{@GET(state.search_key)}</search_key>
+              <width>100%</width>
+              <mode>simple</mode>
+              <show_row_select>false</show_row_select>
+            </display>
+          </element>
+
+
+          <element name="tasks">
+            <display class="tactic.ui.panel.TableLayoutWdg">
+              <search_type>sthpw/task</search_type>
+              <view>shot_sheet_wdg_tasks</view>
+              <search_key>{@GET(state.search_key)}</search_key>
+              <width>100%</width>
+              <mode>simple</mode>
+              <show_row_select>false</show_row_select>
+            </display>
+          </element>
+
+
+
+
+   <behavior class='spt_print'>{
+      "type": "click_up",
+      "cbjs_action": <![CDATA['''
+
+          // Get the top elements
+          var top_el = bvr.src_el.getParent(".spt_top");
+          //var view_el = top_el.getElement(".spt_view");
+          var view_html  = top_el.innerHTML
+          var window_options = "width=1200,height=600,top=10,left=10,toolbars=no,scrollbars=yes,status=no,resizable=no"
+
+          var print_window = window.open('Report View', "Report View", window_options);
+          print_window.document.writeln(view_html);
+          print_window.document.close();
+          print_window.focus();
+          print_window.print();
+          print_window.close();
+
+        
+      ''']]>
+    }</behavior>
+
+
+  </shot_sheet_wdg>
+</config>""")
+insert.set_value('view', """shot_sheet_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """136VFX""")
+insert.set_value('timestamp', """2011-10-31 17:00:15.254441""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <shot_sheet_wdg_tasks>
+    <element name="process"/>
+    <!--<element name="description"/>-->
+    <element name="assigned"/>
+    <element name="bid_end_date" title="Due"/>
+    <element name="notes"/>
+  </shot_sheet_wdg_tasks>
+</config>""")
+insert.set_value('view', """shot_sheet_wdg_tasks""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """137VFX""")
+insert.set_value('timestamp', """2011-10-31 17:06:17.181953""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "shot_sheet", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "on", "main_body_column": "view"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:config_shot_sheet_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """138VFX""")
+insert.set_value('timestamp', """2011-10-31 17:06:17.726881""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <config_shot_sheet_wdg layout="TableLayoutWdg" >
+    <element name="category" width="35.05px"/>
+    <element name="search_type" width="194.483px"/>
+    <element name="view" width="236.55px"/>
+    <element name="config" width="905.867px"/>
+    <element name="login" width="35.05px"/>
+  </config_shot_sheet_wdg>
+</config>
+""")
+insert.set_value('view', """config_shot_sheet_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """139VFX""")
+insert.set_value('timestamp', """2011-11-01 22:09:43.967506""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="name">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """140VFX""")
+insert.set_value('timestamp', """2011-11-01 22:10:51.225411""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 3", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:shot_sheet_wdg_plates""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """141VFX""")
+insert.set_value('timestamp', """2011-11-01 22:10:51.620531""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <shot_sheet_wdg_plates layout="TableLayoutWdg" >
+    <element name="shot_code" width="285.5px"/>
+    <element name="code" width="277.333px"/>
+    <element name="description" width="48.95px"/>
+    <element name="name" width="464.95px"/>
+    <element name="type" width="163.133px"/>
+    <element name="file_range" width="163.133px"/>
+  </shot_sheet_wdg_plates>
+</config>
+""")
+insert.set_value('view', """shot_sheet_wdg_plates""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """142VFX""")
+insert.set_value('timestamp', """2011-11-01 22:11:26.972953""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 3", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:plate_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """143VFX""")
+insert.set_value('timestamp', """2011-11-10 19:59:11.461597""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+  <sequence_planner_wdg>
+    <html>
+<table>
+  <tr>
+    <td valign="top" width="50%">
+
+      <element name="asset_tracking" title="Asset Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/asset</search_type>
+          <search_view>link_search:planner_asset</search_view>
+          <width>100%</width>
+          <view>planner_asset</view>
+          <simple_search_view>custom_filter</simple_search_view>
+        </display>
+      </element>
+
+    </td>
+    <td valign="top" width="50%">
+
+      <element name="sequence_tracking" title="Sequence Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/sequence</search_type>
+          <search_view>link_search:planner_sequence</search_view>
+          <simple_search_view>custom_filter</simple_search_view>
+          <view>planner_sequence</view>
+          <width>100%</width>
+        </display>
+      </element>
+
+    </td>
+  </tr>
+</table> 
+
+    </html>
+  </sequence_planner_wdg>
+</config>""")
+insert.set_value('view', """sequence_planner_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """148VFX""")
+insert.set_value('timestamp', """2011-11-10 20:10:33.565857""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "sidebar", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "", "main_body_column": "search_type"}, {"main_body_value": "shot_planner_", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "on", "main_body_column": "view"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"Showing": "1 - 5", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:config_shot_planner""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """149VFX""")
+insert.set_value('timestamp', """2011-11-10 20:10:33.945948""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <config_shot_planner layout="TableLayoutWdg" >
+    <element name="category" width="28px"/>
+    <element name="search_type" width="155.383px"/>
+    <element name="view" width="267.35px"/>
+    <element name="config" width="848.267px"/>
+    <element name="login" width="28px"/>
+  </config_shot_planner>
+</config>
+""")
+insert.set_value('view', """config_shot_planner""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """150VFX""")
+insert.set_value('timestamp', """2011-11-10 20:19:43.630952""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <configs>
+    <element name="config_snapshot_to_review"/>
+    <element name="config_sequence_planner"/>
+    <element name="config_shot_planner"/>
+    <element name="config_shot_sheet_wdg"/>
+  </configs>
+</config>
+""")
+insert.set_value('view', """configs""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """151VFX""")
+insert.set_value('timestamp', """2011-11-10 20:20:00.237020""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <tools>
+    <element name="config_sequence_planner"/>
+    <element name="shot_planner"/>
+  </tools>
+</config>
+""")
+insert.set_value('view', """tools""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """152VFX""")
+insert.set_value('timestamp', """2011-11-11 20:58:44.644628""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="task_status_edit">
+</element>
+    <element name="maya_playblast">
+</element>
+    <element name="task_edit">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """153VFX""")
+insert.set_value('timestamp', """2011-11-21 20:58:24.833167""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:episode""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """154VFX""")
+insert.set_value('timestamp', """2011-11-21 20:58:25.230693""")
+insert.set_value('search_type', """vfx/episode""")
+insert.set_value('config', """<config>
+  <episode layout="TableLayoutWdg" >
+    <element name="code" width="169.95px"/>
+    <element name="description" width="333.8px"/>
+    <element name="completion" width="329.25px"/>
+    <element name="shot_task_schedule" width="500px"/>
+  </episode>
+</config>
+""")
+insert.set_value('view', """episode""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """155VFX""")
+insert.set_value('timestamp', """2011-11-21 20:58:38.297861""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sequence""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """156VFX""")
+insert.set_value('timestamp', """2011-11-21 20:58:38.688302""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <sequence layout="TableLayoutWdg" >
+    <element name="code" width="167px"/>
+    <element name="shots" width="68.5167px"/>
+    <element name="description" width="123.017px"/>
+    <element name="shot_task_schedule" width="850.15px"/>
+    <element name="completion" width="121.317px"/>
+  </sequence>
+</config>
+""")
+insert.set_value('view', """sequence""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """157VFX""")
+insert.set_value('timestamp', """2011-11-21 20:58:51.965254""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 7", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:shot""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """158VFX""")
+insert.set_value('timestamp', """2011-11-21 20:58:52.311239""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <shot layout="TableLayoutWdg" >
+    <element name="preview" width="63px"/>
+    <element name="code" width="36px"/>
+    <element name="frames" width="49px"/>
+    <element name="plate" width="35px"/>
+    <element name="layers" width="41px"/>
+    <element name="task_edit" width="40px"/>
+    <element name="history" width="46px"/>
+    <element name="general_checkin" width="27px"/>
+    <element name="task_status_edit" width="851px"/>
+    <element name="notes" width="397px"/>
+  </shot>
+</config>
+""")
+insert.set_value('view', """shot""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """159VFX""")
+insert.set_value('timestamp', """2011-11-21 20:59:03.085684""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"prefix": "simple", "handler": "", "partial": "", "value": "", "element_name": "keywords"}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "asset_category", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sequence", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "shot", "op": "="}, {"Showing": "1 - 15", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:asset""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """160VFX""")
+insert.set_value('timestamp', """2011-11-21 20:59:03.440754""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <asset layout="TableLayoutWdg" >
+    <element name="preview" width="30px"/>
+    <element name="maya_playblast" width="92px"/>
+    <element name="asset_category" width="36.25px"/>
+    <element name="code" width="98.2667px"/>
+    <element name="description" width="222.017px"/>
+    <element name="history" width="42px"/>
+    <element name="task_edit" width="46.7167px"/>
+    <element name="task_status_edit" width="439px"/>
+    <element name="notes" width="293px"/>
+    <element name="completion" width="170px"/>
+  </asset>
+</config>
+""")
+insert.set_value('view', """asset""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """161VFX""")
+insert.set_value('timestamp', """2011-11-21 21:18:17.659730""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"prefix": "simple", "handler": "", "partial": "", "value": "", "element_name": "keywords"}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sequence", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "shot", "op": "="}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:layer""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """162VFX""")
+insert.set_value('timestamp', """2011-11-21 21:18:18.092964""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <layer layout="TableLayoutWdg" >
+    <element name="images" width="58px"/>
+    <element name="shot_code" width="102px"/>
+    <element name="name" width="157.833px"/>
+    <element name="general_checkin" width="54px"/>
+    <element name="history" width="52px"/>
+    <element name="description" width="938px"/>
+  </layer>
+</config>
+""")
+insert.set_value('view', """layer""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """163VFX""")
+insert.set_value('timestamp', """2011-11-21 21:18:35.670714""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 3", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:plate""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """164VFX""")
+insert.set_value('timestamp', """2011-11-21 21:18:36.031145""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <plate layout="TableLayoutWdg" >
+    <element name="shot_code" width="295.883px"/>
+    <element name="name" width="259.667px"/>
+    <element name="type" width="155.5px"/>
+    <element name="file_range" width="286.833px"/>
+    <element name="description" width="332.117px"/>
+  </plate>
+</config>
+""")
+insert.set_value('view', """plate""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """165VFX""")
+insert.set_value('timestamp', """2011-11-21 21:19:15.529467""")
+insert.set_value('search_type', """vfx/asset_category""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 3", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:asset_category""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """166VFX""")
+insert.set_value('timestamp', """2011-11-21 21:19:15.894920""")
+insert.set_value('search_type', """vfx/asset_category""")
+insert.set_value('config', """<config>
+  <asset_category layout="TableLayoutWdg" >
+    <element name="code" width="1342px"/>
+  </asset_category>
+</config>
+""")
+insert.set_value('view', """asset_category""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """167VFX""")
+insert.set_value('timestamp', """2011-11-21 21:19:32.180452""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:art_reference""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """168VFX""")
+insert.set_value('timestamp', """2011-11-21 21:19:32.536993""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <art_reference layout="TableLayoutWdg" >
+    <element name="preview" width="30px"/>
+    <element name="name" width="144.767px"/>
+    <element name="category" width="208.083px"/>
+    <element name="description" width="376.95px"/>
+    <element name="keywords" width="229.2px"/>
+  </art_reference>
+</config>
+""")
+insert.set_value('view', """art_reference""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """169VFX""")
+insert.set_value('timestamp', """2011-11-21 21:20:00.014523""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:script""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """170VFX""")
+insert.set_value('timestamp', """2011-11-21 21:20:00.397840""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <script layout="TableLayoutWdg" >
+    <element name="preview" width="55px"/>
+    <element name="history" width="49px"/>
+    <element name="general_checkin" width="308.85px"/>
+    <element name="title" width="169.75px"/>
+    <element name="author" width="243.033px"/>
+    <element name="description" width="384.367px"/>
+  </script>
+</config>
+""")
+insert.set_value('view', """script""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """171VFX""")
+insert.set_value('timestamp', """2011-11-21 21:20:18.966297""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:storyboard""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """172VFX""")
+insert.set_value('timestamp', """2011-11-21 21:20:19.326509""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <storyboard layout="TableLayoutWdg" >
+    <element name="files" width="30px"/>
+    <element name="history" width="57px"/>
+    <element name="general_checkin" width="146px"/>
+    <element name="code" width="195.333px"/>
+    <element name="description" width="383.217px"/>
+  </storyboard>
+</config>
+""")
+insert.set_value('view', """storyboard""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """173VFX""")
+insert.set_value('timestamp', """2011-11-21 21:20:50.113216""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:leica""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """174VFX""")
+insert.set_value('timestamp', """2011-11-21 21:20:50.463082""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <leica layout="TableLayoutWdg" >
+    <element name="files" width="72px"/>
+    <element name="general_checkin" width="92.0833px"/>
+    <element name="history" width="143.25px"/>
+    <element name="description" width="593.45px"/>
+    <element name="shot_code" width="68.2167px"/>
+  </leica>
+</config>
+""")
+insert.set_value('view', """leica""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """175VFX""")
+insert.set_value('timestamp', """2011-11-21 21:21:02.836597""")
+insert.set_value('search_type', """vfx/schedule""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:schedule""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """176VFX""")
+insert.set_value('timestamp', """2011-11-21 21:21:18.169505""")
+insert.set_value('search_type', """vfx/review""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:review""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """177VFX""")
+insert.set_value('timestamp', """2011-11-21 21:42:15.513248""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="name">
+</element>
+    <element name="preview">
+</element>
+    <element name="category">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """178VFX""")
+insert.set_value('timestamp', """2011-11-21 22:30:58.608549""")
+insert.set_value('search_type', """vfx/script""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="sequence_code">
+</element>
+    <element name="task_status_edit">
+</element>
+    <element name="preview">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """widget_config00179""")
+insert.set_value('timestamp', """2011-11-28 19:05:34.373248""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="completion">
+</element>
+    <element name="shots">
+</element>
+    <element name="asset_drop">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """180VFX""")
+insert.set_value('timestamp', """2011-12-12 20:58:19.070710""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+  <single_shot_planner_wdg>
+    <html>
+<table>
+  <tr>
+    <td valign="top" width="50%">
+
+      <element name="asset_tracking" title="Asset Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/asset</search_type>
+          <search_view>link_search:shot_planner_assets</search_view>
+          <width>100%</width>
+          <view>shot_planner_assets</view>
+        </display>
+      </element>
+
+    </td>
+    <td valign="top" width="50%">
+
+      <element name="shot_tracking" title="Shot Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/shot</search_type>
+          <search_view>link_search:shot_planner_shots</search_view>
+          <view>shot_planner_shots</view>
+          <width>100%</width>
+          <search_key>{@GET(state.search_key)}</search_key>
+        </display>
+      </element>
+
+    </td>
+  </tr>
+</table> 
+
+    </html>
+  </single_shot_planner_wdg>
+</config>""")
+insert.set_value('view', """single_shot_planner_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """181VFX""")
+insert.set_value('timestamp', """2011-12-15 16:11:31.953009""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <_application>
+    <element name="asset_loader"/>
+    <element name="asset_checkin"/>
+    <element name="shot_loader"/>
+    <element name="shot_checkin"/>
+    <element name="session"/>
+    <element name="checkin_log"/>
+  </_application>
+</config>
+""")
+insert.set_value('view', """_application""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """182VFX""")
+insert.set_value('timestamp', """2011-12-15 17:23:33.886154""")
+insert.set_value('search_type', """vfx/shot_texture""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="category"/>
+    <element name="snapshot"/>
+    <element name="asset_context"/>
+    <element name="search_type"/>
+    <element name="search_id"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """183VFX""")
+insert.set_value('timestamp', """2011-12-15 17:23:33.886154""")
+insert.set_value('search_type', """vfx/shot_texture""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="category"/>
+    <element name="snapshot"/>
+    <element name="asset_context"/>
+    <element name="search_type"/>
+    <element name="search_id"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """184VFX""")
+insert.set_value('timestamp', """2011-12-15 17:23:33.886154""")
+insert.set_value('search_type', """vfx/shot_texture""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="category"/>
+    <element name="snapshot"/>
+    <element name="asset_context"/>
+    <element name="search_type"/>
+    <element name="search_id"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """185VFX""")
+insert.set_value('timestamp', """2011-12-19 22:05:24.266199""")
+insert.set_value('search_type', """vfx/leica""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="description">
+</element>
+    <element name="shot_code">
+</element>
+    <element name="files">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """186VFX""")
+insert.set_value('timestamp', """2011-12-20 21:58:47.379519""")
+insert.set_value('search_type', """vfx/storyboard""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="files">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """187VFX""")
+insert.set_value('timestamp', """2011-11-10 19:59:11.461597""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+  <shot_planner_wdg>
+    <html>
+<table>
+  <tr>
+    <td valign="top" width="50%">
+
+      <element name="asset_tracking" title="Asset Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/asset</search_type>
+          <search_view>link_search:planner_asset</search_view>
+          <width>100%</width>
+          <view>planner_asset</view>
+          <simple_search_view>custom_filter</simple_search_view>
+        </display>
+      </element>
+
+    </td>
+    <td valign="top" width="50%">
+
+      <element name="shot_tracking" title="Shot Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/shot</search_type>
+          <search_view>link_search:planner_shot</search_view>
+          <view>planner_shot</view>
+          <width>100%</width>
+          <simple_search_view>custom_filter</simple_search_view>
+        </display>
+      </element>
+
+    </td>
+  </tr>
+</table> 
+
+    </html>
+  </shot_planner_wdg>
+</config>""")
+insert.set_value('view', """shot_planner_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """188VFX""")
+insert.set_value('timestamp', """2011-12-20 22:11:49.202065""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:planner_shot""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """189VFX""")
+insert.set_value('timestamp', """2011-12-20 22:11:49.954199""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <planner_shot layout="TableLayoutWdg" >
+    <element name="asset_drop" width="333px"/>
+    <element name="preview" width="80px"/>
+    <element name="sequence_code" width="419.517px"/>
+    <element name="code" width="60px"/>
+    <element name="asset_in_shot" width="434.483px"/>
+  </planner_shot>
+</config>
+""")
+insert.set_value('view', """planner_shot""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """190VFX""")
+insert.set_value('timestamp', """2011-12-20 22:12:07.176806""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 14", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:planner_asset""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """191VFX""")
+insert.set_value('timestamp', """2011-12-20 22:12:07.999524""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <planner_asset layout="TableLayoutWdg" >
+    <element name="preview" width="80px"/>
+    <element name="asset_category" width="270px"/>
+    <element name="code" width="270px"/>
+    <element name="name" width="270px"/>
+  </planner_asset>
+</config>
+""")
+insert.set_value('view', """planner_asset""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """192VFX""")
+insert.set_value('timestamp', """2011-12-20 22:12:49.472606""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:planner_sequence""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """193VFX""")
+insert.set_value('timestamp', """2011-12-20 22:12:49.961214""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <planner_sequence layout="TableLayoutWdg" >
+    <element name="asset_drop" width="333px"/>
+    <element name="code" width="485.45px"/>
+    <element name="shots" width="502.8px"/>
+    <element name="description" width="346.75px"/>
+  </planner_sequence>
+</config>
+""")
+insert.set_value('view', """planner_sequence""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """194VFX""")
+insert.set_value('timestamp', """2011-12-20 22:15:38.588117""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "sidebar", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "", "main_body_column": "search_type"}, {"main_body_value": "sequence_planner_", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "on", "main_body_column": "view"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:config_sequence_planner""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """195VFX""")
+insert.set_value('timestamp', """2011-12-20 22:15:39.506016""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <config_sequence_planner layout="TableLayoutWdg" >
+    <element name="category" width="28px"/>
+    <element name="search_type" width="155.383px"/>
+    <element name="view" width="267.35px"/>
+    <element name="config" width="848.267px"/>
+    <element name="login" width="28px"/>
+  </config_sequence_planner>
+</config>
+""")
+insert.set_value('view', """config_sequence_planner""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """196VFX""")
+insert.set_value('timestamp', """2011-12-21 04:55:47.868213""")
+insert.set_value('search_type', """vfx/asset""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+    <element name='keywords'/>
+
+  
+    <element name='asset_category'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/asset_category.code))</values_expr> 
+          <column>asset_category</column> 
+        </display> 
+    </element>
+
+
+    <element name='sequence'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/sequence.code))</values_expr> 
+          <column>vfx/asset_in_sequence.sequence_code</column> 
+        </display> 
+    </element>
+
+    <element name='shot'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/shot.code))</values_expr> 
+          <column>vfx/asset_in_shot.shot_code</column> 
+        </display> 
+    </element>
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """197VFX""")
+insert.set_value('timestamp', """2011-12-21 04:58:59.067133""")
+insert.set_value('search_type', """vfx/asset_in_sequence""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:asset_in_sequence_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """198VFX""")
+insert.set_value('timestamp', """2011-12-21 04:58:59.791286""")
+insert.set_value('search_type', """vfx/asset_in_sequence""")
+insert.set_value('config', """<config>
+  <asset_in_sequence_list layout="TableLayoutWdg" >
+    <element name="code" width="357.4px"/>
+    <element name="sequence_code" width="294.333px"/>
+    <element name="asset_code" width="683.267px"/>
+  </asset_in_sequence_list>
+</config>
+""")
+insert.set_value('view', """asset_in_sequence_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """199VFX""")
+insert.set_value('timestamp', """2011-12-21 22:24:20.336889""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+    <element name='keywords'/>
+  
+
+    <element name='sequence'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/sequence.code))</values_expr> 
+          <column>code</column> 
+        </display> 
+    </element>
+
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """200VFX""")
+insert.set_value('timestamp', """2011-12-21 22:24:21.425101""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <shot_custom_filter> 
+    <element name='keywords'/>
+  
+
+    <element name='sequence'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/sequence.code))</values_expr> 
+          <column>sequence_code</column> 
+        </display> 
+    </element>
+
+  </shot_custom_filter>
+</config>""")
+insert.set_value('view', """shot_custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """201VFX""")
+insert.set_value('timestamp', """2011-12-21 22:26:14.290041""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+    <element name='keywords'/>
+  
+
+    <element name='sequence'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/sequence.code))</values_expr> 
+          <column>vfx/shot.sequence_code</column> 
+        </display> 
+    </element>
+
+    <element name='shot'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/shot.code))</values_expr> 
+          <column>shot_code</column> 
+        </display> 
+    </element>
+
+
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """202VFX""")
+insert.set_value('timestamp', """2011-12-21 22:26:14.730300""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+    <element name='keywords'/>
+  
+
+    <element name='sequence'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/sequence.code))</values_expr> 
+          <column>vfx/shot.sequence_code</column> 
+        </display> 
+    </element>
+
+    <element name='shot'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(vfx/shot.code))</values_expr> 
+          <column>shot_code</column> 
+        </display> 
+    </element>
+
+
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """203VFX""")
+insert.set_value('timestamp', """2011-12-21 23:33:47.574640""")
+insert.set_value('search_type', """sthpw/task""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+    <!--<element name='keywords'/>-->
+
+  
+    <element name='assigned'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(sthpw/login.login)</values_expr> 
+          <column>assigned</column> 
+        </display> 
+    </element>
+
+    <element name='status'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@UNIQUE(@GET(sthpw/task['project_code', $PROJECT].status))</values_expr> 
+          <column>status</column> 
+        </display> 
+    </element>
+
+    <element name='priority'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@UNIQUE(@GET(sthpw/task['project_code', $PROJECT].priority))</values_expr> 
+          <column>priority</column> 
+        </display> 
+    </element>
+
+
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """204VFX""")
+insert.set_value('timestamp', """2011-12-21 23:34:35.191058""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <_my_tactic>
+    <element name="my_tasks"/>
+  </_my_tactic>
+</config>
+""")
+insert.set_value('view', """_my_tactic""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """205VFX""")
+insert.set_value('timestamp', """2011-12-21 23:37:03.208531""")
+insert.set_value('search_type', """vfx/asset_in_shot""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="type"/>
+    <element name="name"/>
+    <element name="pipeline_code"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """206VFX""")
+insert.set_value('timestamp', """2011-12-21 23:37:03.208531""")
+insert.set_value('search_type', """vfx/asset_in_shot""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="type">
+</element>
+    <element name="name">
+</element>
+    <element name="pipeline_code">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """207VFX""")
+insert.set_value('timestamp', """2011-12-22 03:18:48.425436""")
+insert.set_value('search_type', """vfx/asset_in_shot""")
+insert.set_value('config', """<config>
+<load default="table">
+   
+  <element name="preview"/>
+
+  <element name="history" width='1%'>
+    <display class="HiddenRowToggleWdg">
+      <dynamic_class>pyasm.prod.web.InstanceHistoryWdg</dynamic_class>
+       <asset_search_type>vfx/asset</asset_search_type>
+        <search_type>vfx/asset_in_shot</search_type>   
+ </display>
+  </element>
+
+  <element name="asset_code"/>
+<!--
+  <element name="asset_name">
+      <display class="AuxDataWdg"/>
+  </element>
+-->
+  <element name="name"/>
+
+  <element name="input">
+      <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>vfx/asset_in_shot</search_type>
+        <shot_search_type>vfx/shot</shot_search_type>
+        <mode>input</mode>
+    </display>
+  </element>
+  <element name="output">
+        <display class="tactic.ui.cgapp.LoaderElementWdg">
+        <search_type>vfx/asset_in_shot</search_type>
+        <shot_search_type>vfx/shot</shot_search_type>
+        <mode>output</mode>
+    </display>
+  </element>
+
+</load>
+</config>""")
+insert.set_value('view', """load""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """208VFX""")
+insert.set_value('timestamp', """2011-12-22 18:29:59.354636""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <extra_views>
+    <element name="asset_category"/>
+    <element name="plate"/>
+    <element name="layer"/>
+    <element name="episode"/>
+  </extra_views>
+</config>
+""")
+insert.set_value('view', """extra_views""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """209VFX""")
+insert.set_value('timestamp', """2011-12-23 08:00:00.678670""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('config', """<config>
+  <search_shot_loader>
+  
+  <element name='Main Filter'>
+    <display class='tactic.ui.filter.ShotFilterWdg'>
+      <prefix>shot_filter</prefix>
+      <search_type>vfx/shot</search_type>
+      <sequence_search_type>vfx/sequence</sequence_search_type>
+    </display>
+  </element>
+  <element name='Custom'>
+       <display class='tactic.ui.filter.GeneralFilterWdg'>
+            <prefix>custom</prefix>
+            <search_type>vfx/shot</search_type>
+            <mode>custom</mode>
+            <custom_filter_view></custom_filter_view>
+          </display>
+        </element>
+   
+</search_shot_loader>
+</config>""")
+insert.set_value('view', """search_shot_loader""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """210VFX""")
+insert.set_value('timestamp', """2011-12-23 17:29:27.631671""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "add_snapshot_to_review", "prefix": "main_body", "main_body_relation": "contains", "main_body_enabled": "on", "main_body_column": "view"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:config_snapshot_to_review""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """211VFX""")
+insert.set_value('timestamp', """2011-12-23 17:29:28.059400""")
+insert.set_value('search_type', """config/widget_config""")
+insert.set_value('config', """<config>
+  <config_snapshot_to_review layout="TableLayoutWdg" >
+    <element name="category" width="28.4833px"/>
+    <element name="search_type" width="158.05px"/>
+    <element name="view" width="249.167px"/>
+    <element name="config" width="862.817px"/>
+    <element name="login" width="28.4833px"/>
+  </config_snapshot_to_review>
+</config>
+""")
+insert.set_value('view', """config_snapshot_to_review""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """212VFX""")
+insert.set_value('timestamp', """2011-12-23 18:13:53.078194""")
+insert.set_value('search_type', """vfx/snapshot_in_submission""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """213VFX""")
+insert.set_value('timestamp', """2011-12-23 18:13:53.078194""")
+insert.set_value('search_type', """vfx/snapshot_in_submission""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """214VFX""")
+insert.set_value('timestamp', """2011-12-23 18:13:53.078194""")
+insert.set_value('search_type', """vfx/snapshot_in_submission""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """215VFX""")
+insert.set_value('timestamp', """2011-12-23 18:23:16.768567""")
+insert.set_value('search_type', """sthpw/snapshot""")
+insert.set_value('config', """<config>
+  <review_snapshots>
+
+    <element name="preview" width="80px"/>
+    <element name="parent" width="80px"/>
+    <element name="process" width="101.533px"/>
+    <element name="version" width="66.3167px"/>
+    <element name="description" width="343.983px"/>
+    <element name="files" width="87.0333px"/>
+    <element name="submit" width="55.95px"/>
+    <element name="checkout" width="53.8833px"/>
+    <element name="play_rv" width="55.95px"/>
+    <element name="login" width="84.9667px"/>
+    <element name="timestamp" width="246.583px"/>
+
+    <element name="is_current" width="51.8px"/>
+    <element name="notes" width="300px"/>    
+  </review_snapshots>
+</config>""")
+insert.set_value('view', """review_snapshots""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """216VFX""")
+insert.set_value('timestamp', """2011-12-23 18:28:56.007379""")
+insert.set_value('config', """
+<config>
+  <art_reference>
+<html><div><![CDATA[
+<p>
+\tThis is the art reference library for the project.</p>
+<p>
+\tAdding Keywords allows for simple searching when there are many assets.</p>
+
+]]></div></html>
+  </art_reference>
+</config>
+""")
+insert.set_value('view', """art_reference""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """217VFX""")
+insert.set_value('timestamp', """2011-12-23 18:59:32.282540""")
+insert.set_value('config', """
+<config>
+  <script>
+<html><div><![CDATA[
+<p>
+\tAdd line items to track script development.</p>
+<p>
+\tThe History dropdown shows which scripts have been checked in and which is the most current.</p>
+<p>
+\tNotes are available on each checkin for reference.</p>
+
+]]></div></html>
+  </script>
+</config>
+""")
+insert.set_value('view', """script""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """218VFX""")
+insert.set_value('timestamp', """2011-12-23 19:01:21.835698""")
+insert.set_value('config', """
+<config>
+  <storyboard>
+<html><div><![CDATA[
+<p>
+\tThe Storyboard is checked into this view.</p>
+<p>
+\tClick the Files icon to view the complete Storyboard file.</p>
+
+]]></div></html>
+  </storyboard>
+</config>
+""")
+insert.set_value('view', """storyboard""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """219VFX""")
+insert.set_value('timestamp', """2011-12-23 19:06:31.794325""")
+insert.set_value('config', """
+<config>
+  <leica>
+<html><div><![CDATA[
+<p>
+\tThe Leica for this project is checked into this view.</p>
+<p>
+\tClick the Files icon to view a Quicktime of the Leica.</p>
+
+]]></div></html>
+  </leica>
+</config>
+""")
+insert.set_value('view', """leica""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """220VFX""")
+insert.set_value('timestamp', """2011-12-23 19:21:48.002253""")
+insert.set_value('config', """
+<config>
+  <sequence>
+<html><div><![CDATA[
+<p>
+\tThe Squence view shows the start and end date of the sequence or project and the current completion status.</p>
+<p>
+\tSelect the Shots dropdown to reveil all shots in the sequence or project.</p>
+<p>
+\tThe Shots view also shows the current status of a process and the person to which it is assigned.</p>
+<p>
+\tThe Tasks dropdown allows for quick navigation to the Work area.</p>
+
+]]></div></html>
+  </sequence>
+</config>
+""")
+insert.set_value('view', """sequence""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """221VFX""")
+insert.set_value('timestamp', """2011-12-23 19:40:15.436345""")
+insert.set_value('config', """
+<config>
+  <shot>
+<html><div><![CDATA[
+<p>
+\tThe Shots view shows all shots in the project.</p>
+<p>
+\tThis view shows the current status of a process and the person to which it is assigned. Notes for any process can be inserted in this view.</p>
+<p>
+\tThe Plates dropdown shows the source plates for the shot.</p>
+<p>
+\tThe Layers dropdown shows all the rendered shot layers.</p>
+<p>
+\tThe Work On Tasks button allows for quick navigation to the Work area of any task assigned.</p>
+
+]]></div></html>
+  </shot>
+</config>
+""")
+insert.set_value('view', """shot""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """222VFX""")
+insert.set_value('timestamp', """2011-12-23 20:40:17.772535""")
+insert.set_value('search_type', """sthpw/snapshot""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="is_current">
+      <display class="pyasm.prod.web.CurrentCheckboxWdg"/>
+      <action class="IsCurrentAction"/>
+    </element>
+    <element name="login">
+      <display class="pyasm.prod.web.UserSelectWdg"/>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """223VFX""")
+insert.set_value('timestamp', """2011-12-23 20:41:13.432197""")
+insert.set_value('config', """
+<config>
+  <asset>
+<html><div><![CDATA[
+<p>
+\tThe Asset view shows all assets in the project and which process they are connected to. You may also enter notes and assign tasks on each process in this view.<br />
+\t<br />
+\tView the checked in image of the asset by clicking the Preview icon.<br />
+\t<br />
+\tThe Maya Playblast button generates and checks in a playblast from an active Maya session.<br />
+\t<br />
+\tReview the current status of an asset and any notes associated with this asset in this view.<br />
+\t<br />
+\tReview the history of an asset by using the History dropdown.<br />
+\t<br />
+\tThe Task Status Edit dropdown allows for quick navigation to the Work on Task area of each asset.</p>
+
+]]></div></html>
+  </asset>
+</config>
+""")
+insert.set_value('view', """asset""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """224VFX""")
+insert.set_value('timestamp', """2011-12-23 20:55:51.817312""")
+insert.set_value('config', """
+<config>
+  <help_edit>
+<html><div><![CDATA[
+<p>
+\tThis is a one page view of all tasks assigned to a particular user.</p>
+<p>
+\tThe gantt view shows the start and end date on each task.</p>
+<p>
+\tThe status and supervisor for each task is also provided in this view.</p>
+<p>
+\tThe Work on Task button allows for quick navigation for the user to work on each task.</p>
+
+]]></div></html>
+  </help_edit>
+</config>
+""")
+insert.set_value('view', """help_edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """225VFX""")
+insert.set_value('timestamp', """2011-12-23 20:58:05.131882""")
+insert.set_value('config', """
+<config>
+  <my_tasks>
+<html><div><![CDATA[
+<p>
+\tThis is a one page view of all tasks assigned to a particular user.</p>
+<p>
+\tThe gantt view shows the start and end date on each task.</p>
+<p>
+\tThe status and supervisor for each task is also provided in this view.</p>
+<p>
+\tThe Work on Task button allows for quick navigation for the user to work on each task.</p>
+
+]]></div></html>
+  </my_tasks>
+</config>
+""")
+insert.set_value('view', """my_tasks""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """226VFX""")
+insert.set_value('timestamp', """2011-12-23 21:10:55.643785""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="name">
+</element>
+    <element name="images">
+</element>
+    <element name="general_checkin">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """HelpWdg""")
+insert.set_value('code', """227VFX""")
+insert.set_value('timestamp', """2011-12-23 22:18:18.359278""")
+insert.set_value('config', """
+<config>
+  <review_tracking>
+<html><div><![CDATA[
+<p>
+\tEach line item includes item includes a list of submissions to be reviewed in a dailies session.</p>
+<p>
+\tThe Snapshot column shows all items to be reviewed in that session.</p>
+<p>
+\tAdd notes while reviewing each submission.</p>
+
+]]></div></html>
+  </review_tracking>
+</config>
+""")
+insert.set_value('view', """review_tracking""")
+#-- End Entry --#
+

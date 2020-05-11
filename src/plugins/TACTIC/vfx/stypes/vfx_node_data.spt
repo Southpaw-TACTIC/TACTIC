@@ -1,0 +1,12 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/node_data""")
+insert.set_value('description', """Maya Node Data""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Maya Node Data""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/node_data""")
+insert.set_value('table_name', """node_data""")
+#-- End Entry --#
+

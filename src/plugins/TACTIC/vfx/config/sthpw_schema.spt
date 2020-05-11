@@ -1,0 +1,53 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/schema')
+insert.set_value('code', """vfx""")
+insert.set_value('description', """Schema for project [vfx]""")
+insert.set_value('timestamp', """2011-10-20 19:24:48.517724""")
+insert.set_value('schema', """<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+  <search_type name="vfx/art_reference" xpos="415" ypos="178"/>
+  <search_type name="vfx/script" xpos="414" ypos="103"/>
+  <search_type name="vfx/storyboard" xpos="411" ypos="242"/>
+  <search_type name="vfx/asset" xpos="627" ypos="253"/>
+  <search_type name="vfx/texture" xpos="629" ypos="335"/>
+  <search_type name="vfx/episode" xpos="932" ypos="104"/>
+  <search_type name="vfx/sequence" xpos="933" ypos="179"/>
+  <search_type name="vfx/shot" xpos="932" ypos="256"/>
+  <search_type name="vfx/layer" xpos="1011" ypos="352"/>
+  <search_type name="vfx/plate" xpos="1073" ypos="258"/>
+  <search_type name="vfx/bin" xpos="938" ypos="834"/>
+  <search_type name="vfx/submission_in_bin" xpos="965" ypos="912"/>
+  <search_type name="vfx/render" xpos="1477" ypos="860"/>
+  <search_type name="vfx/leica" xpos="415" ypos="336"/>
+  <search_type name="vfx/asset_category" xpos="628" ypos="107"/>
+  <search_type name="vfx/asset_in_shot" xpos="781" ypos="254" display="{@GET(vfx/asset.code)}"/>
+  <search_type name="vfx/asset_in_sequence" xpos="780" ypos="178" display="{@GET(vfx/asset.code)}"/>
+  <search_type name="vfx/asset_in_episode" xpos="779" ypos="106" display="{@GET(vfx/asset.code)}"/>
+  <search_type name="vfx/submission" xpos="247" ypos="179"/>
+  <search_type name="vfx/review" xpos="246" ypos="100"/>
+  <search_type name="vfx/schedule" xpos="248" ypos="259"/>
+  <search_type name="vfx/shot_texture" xpos="843" ypos="350"/>
+  <search_type name="sthpw/snapshot" xpos="100" ypos="180"/>
+  <connect from="vfx/texture" to="vfx/asset" relationship="code" type="hierarchy"/>
+  <connect from="vfx/shot" to="vfx/sequence" relationship="code" type="hierarchy"/>
+  <connect from="vfx/sequence" to="vfx/episode" relationship="code" type="hierarchy"/>
+  <connect from="vfx/layer" to="vfx/shot" relationship="code" type="hierarchy"/>
+  <connect from="vfx/plate" to="vfx/shot" relationship="code" type="hierarchy" from_col="shot_code" to_col="code"/>
+  <connect from="vfx/submission_in_bin" to="vfx/bin" relationship="id" from_col="bin_id" to_col="id"/>
+  <connect from="vfx/asset" to="vfx/asset_category" relationship="code" from_col="asset_category" to_col="code"/>
+  <connect from="vfx/asset_in_shot" to="vfx/shot" relationship="code" from_col="shot_code" to_col="code"/>
+  <connect from="vfx/asset_in_shot" to="vfx/asset" relationship="code" from_col="asset_code" to_col="code"/>
+  <connect from="vfx/asset_in_sequence" to="vfx/asset" relationship="code" from_col="asset_code" to_col="code"/>
+  <connect from="vfx/asset_in_sequence" to="vfx/sequence" relationship="code" from_col="sequence_code" to_col="code"/>
+  <connect from="vfx/asset_in_episode" to="vfx/asset" relationship="code" from_col="asset_code" to_col="code"/>
+  <connect from="vfx/asset_in_episode" to="vfx/episode" relationship="code" from_col="episode_code" to_col="code"/>
+  <connect from="vfx/submission" to="vfx/review" relationship="code" from_col="review_code" to_col="code"/>
+  <connect from="vfx/shot_texture" to="vfx/shot" relationship="search_type" type="hierarchy"/>
+  <connect from="vfx/submission" to="sthpw/snapshot" relationship="code" from_col="snapshot_code" to_col="code"/>
+  <connect from="vfx/composite" to="vfx/shot" relationship="code" type="hierarchy"/>
+  <connect to="*" type="connection" from="vfx/art_reference" relationship="general"/>
+  <connect to="*" from="vfx/render" type="hierarchy" relationship="search_type"/>
+</schema>
+""")
+#-- End Entry --#
+

@@ -1,0 +1,20 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/asset_type""")
+insert.set_value('description', """Asset Type""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Asset Type""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/asset_type""")
+insert.set_value('table_name', """asset_type""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/asset_type')
+table.add('code',                     'varchar', length=30, not_null=True )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+#-- End Entry --#
+

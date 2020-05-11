@@ -1,0 +1,26 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/plate""")
+insert.set_value('description', """Production Plates""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Production plates""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/plate""")
+insert.set_value('table_name', """plate""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/plate')
+table.add('code',                     'varchar', length=256 )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('name',                     'text' )
+table.add('pipeline_code',            'varchar', length=256 )
+table.add('s_status',                 'varchar', length=30 )
+table.add('shot_code',                'varchar', length=30 )
+table.add('timestamp',                'timestamp' )
+table.add('type',                     'varchar', length=30 )
+#-- End Entry --#
+

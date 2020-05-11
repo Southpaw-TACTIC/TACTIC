@@ -1,0 +1,23 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """prod/session_contents""")
+insert.set_value('description', """Introspection Contents of a users session""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.prod.biz.SessionContents""")
+insert.set_value('title', """Session Contents""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """prod/session_contents""")
+insert.set_value('table_name', """session_contents""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('prod/session_contents')
+table.add('data',                     'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('login',                    'varchar', length=100, not_null=True )
+table.add('pid',                      'integer', not_null=True )
+table.add('session',                  'text' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

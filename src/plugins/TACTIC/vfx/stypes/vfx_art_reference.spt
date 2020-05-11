@@ -1,0 +1,25 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/art_reference""")
+insert.set_value('description', """Reference Images""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Reference Images""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/art_reference""")
+insert.set_value('table_name', """art_reference""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/art_reference')
+table.add('category',                 'varchar', length=256 )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('keywords',                 'text' )
+table.add('name',                     'text' )
+table.add('s_status',                 'varchar', length=30 )
+table.add('snapshot',                 'text' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

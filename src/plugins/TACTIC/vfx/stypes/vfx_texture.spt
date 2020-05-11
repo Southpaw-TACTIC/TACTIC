@@ -1,0 +1,27 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/texture""")
+insert.set_value('description', """Textures""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.prod.biz.Texture""")
+insert.set_value('title', """Textures""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/texture""")
+insert.set_value('table_name', """texture""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/texture')
+table.add('asset_code',               'varchar', length=256 )
+table.add('asset_context',            'varchar', length=256 )
+table.add('category',                 'varchar', length=256 )
+table.add('code',                     'varchar', length=256 )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('pipeline_code',            'varchar', length=256 )
+table.add('s_status',                 'varchar', length=32 )
+table.add('snapshot',                 'text' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+
