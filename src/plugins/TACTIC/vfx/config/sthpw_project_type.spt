@@ -1,0 +1,6 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/project_type')
+insert.set_value('code', """simple""")
+insert.set_value('type', """simple""")
+#-- End Entry --#
+

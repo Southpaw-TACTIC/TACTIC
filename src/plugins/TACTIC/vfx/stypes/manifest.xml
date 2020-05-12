@@ -4,17 +4,29 @@
     <title>VFX Search Types</title>
     <description>Search Types for TACTIC VFX Open Source</description>
   </data>
-  <!-- <python path="sql_upgrade.py" undo_path_VOID="sql_upgrade_undo.py"/> -->
-  <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
-  <sobject expression="@SOBJECT(sthpw/schema['code',$PROJECT])" search_type="sthpw/schema" unique="true"/>
-  <sobject search_type="config/custom_script" seq_max="14"/>
-  <sobject search_type="config/widget_config" seq_max="227"/>
-  <sobject search_type="config/naming" seq_max="2"/>
-  <sobject search_type="config/client_trigger" seq_max="1"/>
-  <sobject search_type="config/process" seq_max="12"/>
-  <sobject search_type="config/trigger" seq_max="6"/>
-  <sobject search_type="config/url" seq_max="1"/>
-  <sobject expression="@SOBJECT(sthpw/login_group['project_code',$PROJECT])" search_type="sthpw/login_group" unique="true"/>
-  <sobject expression="@SOBJECT(sthpw/pipeline['project_code',$PROJECT])" search_type="sthpw/pipeline" unique="true"/>
-  <sobject expression="@SOBJECT(sthpw/notification['project_code',$PROJECT])" search_type="sthpw/notification"/>
+  <search_type code="prod/session_contents"/>
+  <search_type code="vfx/art_reference"/>
+  <search_type code="vfx/asset"/>
+  <search_type code="vfx/asset_category"/>
+  <search_type code="vfx/asset_in_episode"/>
+  <search_type code="vfx/asset_in_sequence"/>
+  <search_type code="vfx/asset_in_shot"/>
+  <search_type code="vfx/asset_type"/>
+  <search_type code="vfx/camera"/>
+  <search_type code="vfx/episode"/>
+  <search_type code="vfx/layer"/>
+  <search_type code="vfx/leica"/>
+  <search_type code="vfx/naming"/>
+  <search_type code="vfx/node_data"/>
+  <search_type code="vfx/plate"/>
+  <search_type code="vfx/render"/>
+  <search_type code="vfx/review"/>
+  <search_type code="vfx/schedule"/>
+  <search_type code="vfx/script"/>
+  <search_type code="vfx/sequence"/>
+  <search_type code="vfx/shot"/>
+  <search_type code="vfx/shot_texture"/>
+  <search_type code="vfx/storyboard"/>
+  <search_type code="vfx/submission"/>
+  <search_type code="vfx/texture"/>
 </manifest>
