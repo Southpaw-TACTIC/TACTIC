@@ -16,7 +16,9 @@
   <search_type code="vfx/episode"/>
   <search_type code="vfx/layer"/>
   <search_type code="vfx/leica"/>
-  <search_type code="vfx/naming"/>
+<!--
+    <search_type code="vfx/naming"/>
+-->
   <search_type code="vfx/node_data"/>
   <search_type code="vfx/plate"/>
   <search_type code="vfx/render"/>
