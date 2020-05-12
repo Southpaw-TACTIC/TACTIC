@@ -263,13 +263,25 @@ class PageNavContainerWdg(BaseRefreshWdg):
                 
         # create the elements
         config = WidgetConfig.get(xml=self.config_xml, view="application")
-
         left_nav_handler = config.get_display_handler("left_nav")
         left_nav_options = config.get_display_options("left_nav")
 
         view_side_bar = None
         if left_nav_handler:
-            left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
+            try:
+                left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
+            except Exception as e:
+                print("WARNING: ", e)
+                # try default if it doesn't work for whatever
+                self.config_xml = self.get_default_config()
+
+                # create the elements
+                config = WidgetConfig.get(xml=self.config_xml, view="application")
+                left_nav_handler = config.get_display_handler("left_nav")
+                left_nav_options = config.get_display_options("left_nav")
+                
+                left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
+
 
             # caching
             side_bar_cache = self.get_side_bar_cache(left_nav_wdg)
