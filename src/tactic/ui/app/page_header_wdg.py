@@ -1205,24 +1205,50 @@ class ProjectCreateWdg(BaseRefreshWdg):
         last_page.add_style("padding-top: 80px")
         last_page.add_style("padding-left: 30px")
 
+        item = DivWdg()
+        last_page.add(item)
         cb = RadioWdg('jump_project', label='Jump to New Project')
         cb.set_option("value", "project")
         #cb.set_option('disabled','disabled')
-        cb.set_checked()
-        last_page.add(cb)
+        cb.add_style("height: 18px")
+        cb.add_style("width: 18px")
+        cb.add_style("margin-right: 5px")
+        item.add(cb)
+        item.add_style("display: flex")
+        item.add_style("align-items: center")
+
+
+
 
         last_page.add(HtmlElement.br(2))
 
+        item = DivWdg()
+        last_page.add(item)
         cb = RadioWdg('jump_project', label='Jump to Project Admin')
         cb.set_option("value", "admin")
-        last_page.add(cb)
+        cb.add_class("form-control")
+        cb.add_style("height: 18px")
+        cb.add_style("width: 18px")
+        cb.add_style("margin-right: 5px")
+        item.add(cb)
+        item.add_style("display: flex")
+        item.add_style("align-items: center")
 
 
         last_page.add(HtmlElement.br(2))
 
+        item = DivWdg()
+        last_page.add(item)
         cb = RadioWdg('jump_project', label='Create Another Project')
         cb.set_option("value", "new")
-        last_page.add(cb)
+        cb.add_class("form-control")
+        cb.add_style("height: 18px")
+        cb.add_style("width: 18px")
+        cb.add_style("margin-right: 5px")
+        item.add(cb)
+        item.add_style("display: flex")
+        item.add_style("align-items: center")
+
 
 
 
