@@ -943,13 +943,21 @@ spt.help.load_alias = function(alias, history) {
 
     var top = document.id("spt_help_top")
     if (!top) {
-        var popup = spt.panel.load_popup("Help", class_name, args, {width: "500px"});
+        var popup = spt.panel.load_popup("Help", class_name, args, {width: "600px"});
         var popup_content = popup.getElement(".spt_help_top");
     }
     else {
-        var popup = null;
         spt.panel.load(top, class_name, args, {width: "500px"});
         var popup_content = top;
+
+        var popup = top.getParent(".spt_popup");
+        if (popup) {
+            popup.setStyle("display", "");
+            popup.setStyle("top", 0);
+            popup.setStyle("right", 0);
+            popup.setStyle("height", "100vh");
+            popup.setStyle("max-width", "30%");
+        }
     }
 
     spt.help.content = popup_content;
