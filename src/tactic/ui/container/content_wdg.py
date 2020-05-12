@@ -33,17 +33,6 @@ class ContentBoxWdg(BaseRefreshWdg):
         top.add_class("spt_content_box_inline")
         top.add_style("min-width: 200px")
 
-        #top.add_style("opacity: 0.1")
-
-        """
-        top.add_behavior( {
-            'type': 'loadX',
-            'cbjs_action': '''
-            new Fx.Tween(bvr.src_el, {duration: 500}).start("opacity", 1.0);
-            '''
-        } )
-        """
-
         colors = {
             #"color3": top.get_color("color3"),
             #"background3": top.get_color("background3"),
@@ -81,7 +70,7 @@ class ContentBoxWdg(BaseRefreshWdg):
             border: none;
             background: %(background3)s;
             color: %(color3)s;
-            height: 18px;
+            height: 35px;
             padding: 6px 8px;
             font-weight: bold;
             font-size: 1.2em;

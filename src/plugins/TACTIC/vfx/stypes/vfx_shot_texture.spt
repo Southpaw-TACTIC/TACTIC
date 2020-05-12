@@ -1,0 +1,28 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/shot_texture""")
+insert.set_value('description', """used when handle texture is enabled in Shot Checkin """)
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Shot Texture""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/shot_texture""")
+insert.set_value('table_name', """shot_texture""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/shot_texture')
+table.add('asset_context',            'varchar', length=256 )
+table.add('category',                 'varchar', length=256 )
+table.add('code',                     'varchar', length=256 )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('login',                    'varchar', length=256 )
+table.add('s_status',                 'varchar', length=256 )
+table.add('search_id',                'integer' )
+table.add('search_type',              'varchar', length=256 )
+table.add('snapshot',                 'text' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

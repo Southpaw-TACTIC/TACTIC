@@ -1,0 +1,521 @@
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """1VFX""")
+insert.set_value('folder', """rv""")
+insert.set_value('script', """var server = TacticServerStub.get();
+
+var applet = spt.Applet.get();
+
+
+var path = "c:/sthpw/test/frames/TEST_00009.jpg"
+
+var cmd = "rv " + path;
+
+applet.exec_shell(cmd);""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """test_command_line""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """2VFX""")
+insert.set_value('folder', """rv""")
+insert.set_value('script', """var server = TacticServerStub.get();
+
+var applet = spt.Applet.get();
+
+
+var path = "c:/sthpw/test/frames/TEST_#.jpg"
+var fps = "24"
+
+var cmd = "rv -fps " + fps + " " + path;
+
+applet.exec_shell(cmd, "false");""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """test_with_fps""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """3VFX""")
+insert.set_value('folder', """rv""")
+insert.set_value('script', """// Setup the options
+var mode = "RV"
+
+var modes = {
+  'RV': 'rv',
+  'FC': 'framecycycler',
+  'QT': 'Quicktime'
+}
+
+
+// Setup the classes
+var server = TacticServerStub.get();
+var applet = spt.Applet.get();
+
+
+
+// Setup the command string
+var cmd = []
+cmd.push(modes[mode])
+//cmd.push("-flags ModeManagerPreload=webview")
+
+
+
+
+// Get the selected items or the one that was clicked on
+var table = bvr.src_el.getParent(".spt_table");
+var search_keys = spt.dg_table.get_selected_search_keys(table);
+
+if (search_keys.length == 0) {
+    search_keys[0] = bvr.search_key;
+}
+
+
+for (i=0; i<search_keys.length; i++) {
+    // Check if the imcoming sObject is a snapshot
+    // If not get the first snapshot.
+    if (search_keys[i].indexOf("sthpw/snapshot") == -1) {
+        var snapshot_expr = "@SOBJECT(sthpw/snapshot)"
+        var snapshots = server.eval(snapshot_expr, {'search_keys': search_keys[i]})
+        var snapshot_sk = snapshots[0].__search_key__;
+    }
+    else {
+        var snapshot_sk = search_keys[i]
+    }
+
+
+    // Get the path for the incoming snapshot
+    var snapshot = server.get_by_search_key(snapshot_sk)
+    var snapshot_code = snapshot.code;
+    var path = server.get_path_from_snapshot(snapshot_code, {'mode': 'sandbox'})
+
+    // If not path is returned, check for a dependant snapshot
+    if (path.length > 0) {
+        var msg = snapshot.context + " - v" + snapshot.version;
+        spt.app_busy.show("Downloading", msg)
+        var path_split = path.split("/")
+        path_split.pop();
+        var sandbox = path_split.join("/")
+        server.checkout_snapshot(snapshot.code, sandbox, {'mode': 'web'})
+        cmd.push(path);
+    }
+
+    else {
+        var dep = server.get_all_dependencies(snapshot_code)
+        var path = server.get_path_from_snapshot(dep[0].code, {'mode': 'sandbox'})
+        var path_split = path.split("/")
+        path_split.pop();
+        var sandbox = path_split.join("/")
+        server.checkout_snapshot(dep[0].code, sandbox, {'mode': 'web'})
+
+        var msg= dep[0].context + " - v" + dep[0].version;
+        spt.app_busy.show("Downloading", msg)
+        cmd.push(path)
+    }
+
+}
+
+
+var msg = search_keys.length + " Checkins"
+spt.app_busy.show("Loading Tweak RV", "...")
+
+// Setup the command 
+cmd = cmd.join(" ")
+//spt.info(cmd)
+
+// Execute the command
+applet.exec_shell(cmd, false);
+
+spt.app_busy.hide();
+""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """play""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """4VFX""")
+insert.set_value('folder', """shots""")
+insert.set_value('script', """var class_name = "tactic.ui.panel.CustomLayoutWdg"
+var kwargs = {
+    'view': 'shot_sheet_wdg',
+    'search_key': bvr.search_key,
+    'include_mako': 'true'
+}
+
+var server = TacticServerStub.get();
+var shot = server.get_by_search_key(bvr.search_key)
+var shot_code = shot.code
+
+spt.panel.load_popup(shot_code, class_name, kwargs)""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """shot_sheet_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """7VFX""")
+insert.set_value('folder', """triggers""")
+insert.set_value('script', """ASSET_TASK = "rig"
+ASSET_STATUS = "Approved"
+
+SHOT_TASK = "assets"
+SHOT_STATUS = "Approved"
+
+shots_expr = "@SOBJECT(vfx/asset.vfx/asset_in_shot.vfx/shot)"
+
+task_sk = input.get("search_key")
+shots = server.eval(shots_expr, task_sk)
+
+for shot in shots:
+    complete = True
+   
+    status_expr = "@GET(vfx/asset_in_shot.vfx/asset.sthpw/task['process', '%s'].status)" %ASSET_TASK
+    
+    status_list = server.eval(status_expr, shot)
+    for status in status_list:
+        if status != ASSET_STATUS:
+            complete = False
+            
+            
+    if complete:
+        task_expr = "@SOBJECT(sthpw/task['process', '%s'])" %SHOT_TASK
+        shot_task = server.eval(task_expr, shot, single=True)
+        
+        if shot_task:
+            server.update(shot_task, {'status': SHOT_STATUS})""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """update_shot_assets_status""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """8VFX""")
+insert.set_value('folder', """rv""")
+insert.set_value('script', """var server = TacticServerStub.get();
+
+var applet = spt.Applet.get();
+
+
+var path = "C:/sthpw/sandbox/vfx/shot/S001/render/SC06_comp__render_v002.0001.jpg"
+
+var url = "http://www.southpawtech.com"
+
+var cmd = []
+cmd.push("rv")
+cmd.push("-flags ModeManagerPreload=webview")
+cmd.push("webviewUrlRight=" + url)
+cmd.push(path)
+
+cmd = cmd.join(" ")
+alert(cmd)
+applet.exec_shell(cmd, false);""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """test_webview""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """9VFX""")
+insert.set_value('folder', """shots""")
+insert.set_value('script', """var server = TacticServerStub.get();
+
+// Get the search key from the button behavior
+var search_key = bvr.search_key;
+
+// Get the shot code
+var shot = server.get_by_search_key(search_key);
+var shot_code = shot.code;
+var title = shot_code + " Planner";
+
+
+// Setup the view name and the class for the new tab
+var view = "single_shot_planner_wdg";
+var class_name = "tactic.ui.panel.CustomLayoutWdg";
+var kwargs = {
+    'view': view,
+    'search_key': search_key
+}
+
+spt.tab.set_main_body_top();
+spt.tab.add_new(title, title, class_name, kwargs);""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """load_shot_planner""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """10VFX""")
+insert.set_value('folder', """video""")
+insert.set_value('script', """# Generate a video thumbnail using FFMPEG
+
+import os
+
+# Setup a list of formats that thumbnails will be generated for.
+formats = ['.mov', '.mp4', '.avi']
+
+# Get the tempDir for placing the rendered thumbnail
+thumb_path = "/spt/tactic/tactic_temp/temp/temp_thumb.jpg"
+thumb_time = "3"
+
+update_data = input.get("update_data")
+snapshot_code = update_data.get("code")
+path = server.get_path_from_snapshot(snapshot_code)
+
+for format in formats:
+    if format in path:
+        ffmpeg = "ffmpeg  -itsoffset -%s  -i %s -y  %s"\\
+            %(thumb_time, path, thumb_path)
+        #Execute FFMPEG
+        os.system(ffmpeg)
+    
+        server.add_file(snapshot_code, thumb_path, file_type="icon", mode="move")""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """generate_video_thumbnail""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """11VFX""")
+insert.set_value('folder', """maya""")
+insert.set_value('script', """var server = TacticServerStub.get()
+var applet = spt.Applet.get()
+
+// Determine the temp dir based on the os
+var dirs = server.get_base_dirs();
+var windows = spt.browser.os_is_Windows();
+if (windows) {
+    temp_dir = dirs.win32_local_base_dir + '/maya';
+}
+else {
+    temp_dir = dirs.linux_local_base_dir + '/maya';
+}
+
+applet.makedirs(temp_dir);
+var PATH = temp_dir + "/playblast.jpg";
+
+var drg = 'setAttr "defaultRenderGlobals.imageFormat" 8;';
+
+
+var mel = []
+mel.push('playblast')
+mel.push('-fo') 
+mel.push('-fmt "image"') 
+mel.push('-cf "'+ PATH +'"') 
+mel.push('-fr 1')
+mel.push('-orn 0')
+mel.push('-p 80')
+
+//mel.push('-width 720')
+//mel.push('-height 405')
+
+
+mel = mel.join(" ")
+spt.app_busy.show('Creating playblast image and running check-in')
+applet.command_port("localhost", "4444", drg, wait_for="true")
+applet.command_port("localhost", "4444", mel, wait_for="true")
+server.simple_checkin(bvr.search_key, "icon", PATH, {'create_icon':'True'})
+
+
+var sobject = server.get_by_search_key(bvr.search_key)
+var id = sobject.id
+var search_key = server.build_search_key("vfx/asset", id, {'column':'id'})
+
+
+var update_event = "update|" + search_key;
+spt.named_events.fire_event(update_event, {});
+
+
+
+spt.info("Complete")
+
+
+spt.app_busy.hide();
+
+
+
+
+
+""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """checkin_playblast""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """12VFX""")
+insert.set_value('folder', """ingest""")
+insert.set_value('script', """var server = TacticServerStub.get();
+var applet = spt.Applet.get();
+
+
+
+
+
+var files = applet.open_file_browser()
+
+
+var items = [];
+var message = [];
+
+
+var ingest = function(items) {
+    
+    server.start({'title': 'Ingest', 'description': 'Art Reference Ingest'})
+    for (i=0; i<items.length; i++) {
+        var file_name = items[i].file_name;
+        var file_path = items[i].path;
+    
+        spt.app_busy.show("Ingesting", file_name )   
+        var art_ref = server.insert("vfx/art_reference", {'name': items[i].file_name})
+        server.simple_checkin(art_ref.__search_key__, "icon", items[i].path)
+            
+    }
+    server.finish()
+    spt.app_busy.hide();
+}
+
+
+
+
+for (i=0; i<files.length; i++) {
+
+    var file = files[i].replace(/\\\\/gi, '/')
+    if ( !applet.is_dir(files[i]) ) {
+        var file_array = file.split('/')
+        var file_name = file_array[file_array.length-1]
+        file_name = file_name.split('.')[0]
+        var new_item = {'path': file, 'file_name': file_name}
+        items.push(new_item) 
+        message.push("<div>" + file_name + "</div>")      
+    }
+}
+
+message = "<b>Ingest the following files?</b>" + message.join("")
+
+spt.confirm(message, ingest, "", {'ok_args': items})
+
+
+
+""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """art_ref_simple_ingest""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """13VFX""")
+insert.set_value('folder', """triggers""")
+insert.set_value('script', """# A trigger to catch notes on snapshots to add the version into the note
+
+# Get the note that was entered from the input data
+note_sk = input.get("search_key")
+note_data = input.get("update_data")
+note_so = server.get_by_search_key(note_sk)
+search_type = note_data.get("search_type")
+
+
+
+if search_type == 'sthpw/snapshot':
+  
+    
+  
+  
+  
+    # Get the snapshots id from the note
+    snapshot_id = note_data.get("search_id")
+    
+    # Get the snapshot sObject
+    snapshot_expr = "@SOBJECT(sthpw/snapshot['id', '%s'])" %snapshot_id
+    snapshot = server.eval(snapshot_expr, single=True)
+    
+    # Get the parent information from the snapshot
+    parent_id = snapshot.get("search_id")
+    parent_st = snapshot.get("search_type")
+        
+    # Gather info for the new note    
+    version = snapshot.get("version")
+    ctx = snapshot.get("context")
+    login = note_so.get("login")
+
+    # Build the new note with the version and context info.
+    note = note_data.get("note")
+    new_note = "[%s - v%03d] %s" %(ctx, version, note)
+    
+    
+    # Insert the cached note 
+    data = {
+        'note': new_note, # The new note with the version 
+        'search_id': parent_id, #id of the parent shot, scene etc
+        'parent_id': snapshot_id, #id if the snapshot
+        'search_type': parent_st, #search type of the shot, scene etc
+        'context': ctx, # The context from the snapshot
+        'login': login  # Teh login from the note  
+    }
+    
+    server.insert("sthpw/note", data)
+    
+    
+    
+    # SPOT FIX - force the snapshot context onto the note
+    server.update(note_sk, {'context': ctx})
+    
+    """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """snapshot_note""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """14VFX""")
+insert.set_value('folder', """video""")
+insert.set_value('script', """# Generate a video thumbnail using FFMPEG
+
+import os, shutil
+
+
+# Get the tempDir for placing the rendered thumbnail
+base_dirs = server.get_base_dirs()
+temp_dir = base_dirs.get("linux_local_base_dir")
+if not os.path.exists(temp_dir):
+    os.makedirs(temp_dir)
+
+
+video_path = "%s/temp_video.mp4" %temp_dir
+thumb_path = "%s/temp_thumb" %temp_dir
+
+update_data = input.get("update_data")
+snapshot_sk = input.get("search_key")
+snapshot_code = update_data.get("code")
+snapshot_type = update_data.get("snapshot_type")
+
+path = server.get_path_from_snapshot(snapshot_code, mode="lib")
+ffmpeg_path = path.replace("####", "%04d")
+
+
+if snapshot_type == "sequence":
+
+    # Thumbnail
+    file = path.replace("####", "0001")
+    img_ext = file.split('.')[-1]
+
+    src_path = file
+    dst_path = "%s.%s" %( thumb_path, img_ext )
+    shutil.copy2(src_path, dst_path)
+    server.add_file(snapshot_code, dst_path, file_type="icon", mode="move", create_icon=False, file_naming="{name}_icon_v{version}.{ext}")
+
+
+    # Video
+    ffmpeg = "ffmpeg  -r 24 -i %s -y  %s" %(ffmpeg_path, video_path)  
+    print "FFMPEG: ", ffmpeg  
+    os.system(ffmpeg)
+    server.add_file(snapshot_code, video_path, file_type="web", mode="copy", create_icon=False, file_naming="{name}_video_v{version}.{ext}")
+    
+
+    
+    """)
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+insert.set_value('title', """sequence_to_mp4""")
+#-- End Entry --#
+

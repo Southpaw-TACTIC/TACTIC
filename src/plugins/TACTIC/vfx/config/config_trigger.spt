@@ -1,0 +1,54 @@
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """1VFX""")
+insert.set_value('event', """change|sthpw/task|status""")
+insert.set_value('process', """rig""")
+insert.set_value('script_path', """triggers/update_shot_assets_status""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """2VFX""")
+insert.set_value('event', """checkin|vfx/shot""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/generate_video_thumbnail""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """3VFX""")
+insert.set_value('event', """checkin|vfx/asset""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/generate_video_thumbnail""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """4VFX""")
+insert.set_value('event', """checkin|vfx/leica""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/generate_video_thumbnail""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """5VFX""")
+insert.set_value('event', """insert|sthpw/note""")
+insert.set_value('mode', """same process,same transaction""")
+insert.set_value('script_path', """triggers/snapshot_note""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """6VFX""")
+insert.set_value('event', """checkin|vfx/layer""")
+insert.set_value('mode', """same process,new transaction""")
+insert.set_value('script_path', """video/sequence_to_mp4""")
+insert.set_value('timestamp', """2020-04-27 21:59:25.224589""")
+#-- End Entry --#
+

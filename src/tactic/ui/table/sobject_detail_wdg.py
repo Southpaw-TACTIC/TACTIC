@@ -130,6 +130,13 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         if self.kwargs.get("show_default_elements") in ['false', False]:
             show_default_elements = "false"
 
+
+        if sobject.get_base_search_type() == "sthpw/task":
+            class_name = 'tactic.ui.tools.TaskDetailWdg'
+        else:
+            class_name = 'tactic.ui.tools.SObjectDetailWdg'
+
+
         widget.add_behavior( {
         'type': 'click_up',
         'search_key': self.search_key,
@@ -141,9 +148,10 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         'code': code,
         'name': name,
         'label': title,
+        'class_name': class_name,
         'cbjs_action': '''
         spt.tab.set_main_body_tab();
-        var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+        var class_name = bvr.class_name;
         var kwargs = {
             search_key: bvr.search_key,
             use_parent: bvr.use_parent,

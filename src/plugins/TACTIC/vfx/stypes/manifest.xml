@@ -1,0 +1,20 @@
+<manifest>
+  <data>
+    <code>TACTIC/vfx/stypes</code>
+    <title>VFX Search Types</title>
+    <description>Search Types for TACTIC VFX Open Source</description>
+  </data>
+  <!-- <python path="sql_upgrade.py" undo_path_VOID="sql_upgrade_undo.py"/> -->
+  <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
+  <sobject expression="@SOBJECT(sthpw/schema['code',$PROJECT])" search_type="sthpw/schema" unique="true"/>
+  <sobject search_type="config/custom_script" seq_max="14"/>
+  <sobject search_type="config/widget_config" seq_max="227"/>
+  <sobject search_type="config/naming" seq_max="2"/>
+  <sobject search_type="config/client_trigger" seq_max="1"/>
+  <sobject search_type="config/process" seq_max="12"/>
+  <sobject search_type="config/trigger" seq_max="6"/>
+  <sobject search_type="config/url" seq_max="1"/>
+  <sobject expression="@SOBJECT(sthpw/login_group['project_code',$PROJECT])" search_type="sthpw/login_group" unique="true"/>
+  <sobject expression="@SOBJECT(sthpw/pipeline['project_code',$PROJECT])" search_type="sthpw/pipeline" unique="true"/>
+  <sobject expression="@SOBJECT(sthpw/notification['project_code',$PROJECT])" search_type="sthpw/notification"/>
+</manifest>

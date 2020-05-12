@@ -112,6 +112,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
             var border = "#999";
             var bgcolor = "#333";
             var shadow = "#333";
+            var color = "#FFF";
             if (colors) {
                 var theme = colors.theme;
                 if (theme == "dark") {
@@ -119,6 +120,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 }
                 bgcolor = colors.background3;
                 shadow = colors.shadow;
+                color = colors.color3;
             }
 
 
@@ -131,7 +133,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
 
 
             var element = document.id(document.createElement("div"));
-            element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; background: #EEE; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
+            element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; color: '+color+'; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
             element.setStyle("z-index", "100");
             //element.setStyle("margin-top", -size.y);
             element.setStyle("position", "absolute");

@@ -1,0 +1,25 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/layer""")
+insert.set_value('description', """Layers""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Layers""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/layer""")
+insert.set_value('table_name', """layer""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/layer')
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('name',                     'varchar', length=100 )
+table.add('s_status',                 'varchar', length=30 )
+table.add('shot_code',                'varchar', length=100 )
+table.add('snapshot',                 'text' )
+table.add('sort_order',               'integer' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

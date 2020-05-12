@@ -1549,6 +1549,9 @@ class IconButtonElementWdg(BaseTableElementWdg):
 
 class SingleButtonWdg(IconButtonWdg):
 
+    pass
+
+    """
     def get_out_img(self):
         if self.kwargs.get("show_out") in [False, "false"]:
             return None
@@ -1567,6 +1570,7 @@ class SingleButtonWdg(IconButtonWdg):
     def get_height(self):
         #return 30 
         return 20
+    """
 
 
 

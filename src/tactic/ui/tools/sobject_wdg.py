@@ -1774,6 +1774,7 @@ class TaskDetailWdg(SObjectDetailWdg):
             ''' % (parent_type, parent_key) )
 
 
+
         """
         config_xml.append( '''
         <element name="edit" title="Edit">

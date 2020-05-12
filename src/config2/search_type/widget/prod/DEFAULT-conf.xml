@@ -415,8 +415,6 @@ display class, it will adopt the one defined here-->
     </element>
 
 
-
-    <!-- DEPRECATED -->
     <element name="expand" title="Expand" edit="false">
         <display class="tactic.ui.table.SObjectDetailElementWdg"/>
     </element>

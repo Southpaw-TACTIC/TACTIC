@@ -102,7 +102,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
     def get_prefs(self):
         div = DivWdg('Bar Size: ')
         self.bar_select = FilterSelectWdg('progress_bar_size')
-        bar_sizes = [x*2 + 1 for x in xrange(6)]
+        bar_sizes = [x*2 + 1 for x in range(6)]
         self.bar_select.set_option('values', bar_sizes)
         self.bar_select.set_option('default', '3')
         div.add(self.bar_select)
@@ -486,7 +486,7 @@ class ParallelStatusWdg(BaseTableElementWdg):
             alert_color = None
 
 
-        for x in xrange(proc_count):
+        for x in range(proc_count):
             cur_percent -= increment
             div = DivWdg()
             content = '&nbsp;'

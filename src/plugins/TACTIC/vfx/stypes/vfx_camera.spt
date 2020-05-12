@@ -1,0 +1,22 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/camera""")
+insert.set_value('description', """Camera Information""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Camera Information""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/camera""")
+insert.set_value('table_name', """camera""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/camera')
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('s_status',                 'varchar', length=30 )
+table.add('shot_code',                'varchar', length=30 )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

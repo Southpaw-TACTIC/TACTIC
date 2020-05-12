@@ -418,9 +418,10 @@
 
 
 <my_task insert="false">
+    <element name="expand"/>
     <element name="project_code"/>
     <element name="parent"/>
-    <element name="expand"/>
+    <element name="general_checkin"/>
     <element name="process"/>
     <element name="description"/>
     <element name="status"/>
@@ -428,7 +429,6 @@
     <element name="priority"/>
     <element name="bid_start_date"/>
     <element name="bid_end_date"/>
-    <element name="general_checkin"/>
     <element name="work_hours"/>
     <element name="notes"/>
 </my_task>

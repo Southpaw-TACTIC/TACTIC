@@ -298,6 +298,9 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
            td.add_style("background-color: %s" % color)
 
 
+        td.add_style("color", "#000")
+
+
         if parent_pipeline_code:
             td.set_attr("spt_parent_pipeline_code", parent_pipeline_code)
         super(TaskStatusElementWdg, self).handle_td(td)

@@ -1,0 +1,32 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/naming""")
+insert.set_value('description', """Naming""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/naming""")
+insert.set_value('table_name', """naming""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/naming')
+table.add('class_name',               'text' )
+table.add('code',                     'varchar', length=256 )
+table.add('condition',                'text' )
+table.add('context',                  'varchar', length=256 )
+table.add('current_versionless',      'boolean' )
+table.add('dir_naming',               'text' )
+table.add('file_naming',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('ingest_rule_code',         'varchar', length=256 )
+table.add('latest_versionless',       'boolean' )
+table.add('manual_version',           'boolean' )
+table.add('sandbox_dir_naming',       'text' )
+table.add('script_path',              'text' )
+table.add('search_type',              'varchar', length=100 )
+table.add('snapshot_type',            'varchar', length=256 )
+#-- End Entry --#
+

@@ -1,0 +1,24 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """vfx/sequence""")
+insert.set_value('description', """A list of shots that are grouped together""")
+insert.set_value('database', """{project}""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('title', """Sequence""")
+insert.set_value('namespace', """vfx""")
+insert.set_value('search_type', """vfx/sequence""")
+insert.set_value('table_name', """sequence""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('vfx/sequence')
+table.add('code',                     'varchar', length=30, not_null=True )
+table.add('description',              'text' )
+table.add('episode_code',             'varchar', length=256 )
+table.add('id',                       'serial', primary_key=True)
+table.add('s_status',                 'varchar', length=30 )
+table.add('sort_order',               'integer' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+
