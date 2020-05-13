@@ -2473,7 +2473,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                     select.add_class('spt_task_assigned_select')
                     select.add_attr("spt_context", context)
-                    select.add_empty_option('-- Assigned --')
+                    select.add_empty_option('-- Select a User --')
                     select.set_option('values', assignee) 
                     select.set_option('labels', assignee_labels) 
                     select.set_value(assigned)
