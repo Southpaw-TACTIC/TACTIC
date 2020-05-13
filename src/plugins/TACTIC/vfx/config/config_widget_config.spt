@@ -2941,38 +2941,32 @@ insert.set_value('view', """checkin_history""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
 insert.set_value('code', """124VFX""")
-insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
-<config>
-  <add_snapshot_to_review_wdg>
-
-    <html>
-      <body>
-
-        <div class="spt_top" style="height:100px; width:400px">
-          <div class="spt_label_div"> </div>  
-          <br/>
-          <div>         
-            <form name="spt_bin_form">
-              <select name="spt_bin_select" class="spt_bin_select">
+insert.set_value('config', """<config>
+<add_snapshot_to_review_wdg>
+<html>
+<body>
+  <div class="spt_top" style="height:100px; width:400px">
+    <div class="spt_label_div"> </div>
+    <br/>
+    <div>
+      <form name="spt_bin_form">
+        <select name="spt_bin_select" class="spt_bin_select">
               </select>
-            </form>
-          </div>
-          <div>
-            <input type="button" value="Submit" class="spt_submit_button"/>
-          </div>
-          <br/><br/>
-          <div class="spt_file_info">
-        
-          </div>
-        </div>
-      </body>
+      </form>
+    </div>
+    <div>
+      <input type="button" value="Submit" class="spt_submit_button"/>
+    </div>
+    <br/>
+    <br/>
+    <div class="spt_file_info"> </div>
+  </div>
+</body>
+</html>
+<behavior class="spt_top"><![CDATA[
 
-    </html>
-
-   <behavior class='spt_top'>{
-      "type": "load",
-      "cbjs_action": <![CDATA['''
           var server = TacticServerStub.get();
           var applet = spt.Applet.get();
           var top_el = bvr.src_el;
@@ -3015,15 +3009,12 @@ insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
           }
 
 
-       
-      ''']]>
-    }</behavior>
+
+]]></behavior>
 
 
+<behavior class="spt_submit_button"><![CDATA[
 
-   <behavior class='spt_submit_button'>{
-      "type": "click_up",
-      "cbjs_action": <![CDATA['''
           // Setup
           var server = TacticServerStub.get();
           var top_el = bvr.src_el.getParent(".spt_top")
@@ -3059,14 +3050,9 @@ insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
           spt.popup.close(popup); 
 
 
-       
-      ''']]>
-    }</behavior>
 
-
-
- 
-  </add_snapshot_to_review_wdg>
+]]></behavior>
+</add_snapshot_to_review_wdg>
 </config>""")
 insert.set_value('search_type', """CustomLayoutWdg""")
 insert.set_value('timestamp', """2011-10-26 05:32:53""")
@@ -3294,14 +3280,39 @@ insert.set_value('view', """tab_config_render""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
 insert.set_value('code', """135VFX""")
-insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
-<config>
-  <shot_sheet_wdg>
+insert.set_value('config', """<config>
+<shot_sheet_wdg>
+<html>
+<body>
+  <div class="spt_top" style="height:900px; width:800"><div class="spt_print">PRINT</div>
+<![CDATA[
+<%
 
-    <html>
-      <style type="text/css">
-          div.sheet_panel {
+    snapshot = server.get_snapshot(sobject, context="icon")
+    path = server.get_path_from_snapshot(snapshot.get("code"), mode="web")
+    image = "<img src='%s' width='300px'/>" %path
+
+
+%>]]>
+
+
+
+
+        <div class="sheet_panel"><table width="100%"><tr><td><h4>[expr]{$PROJECT}[/expr]</h4></td><td align="right"><h4>Southpaw Technology</h4></td></tr><tr><td>Shot Sheet</td><td align="right">[expr]{$TODAY}[/expr]</td></tr></table></div>
+        <div class="sheet_panel"><table width="100%"><tr><td width="300px">${image}</td><td valign="top"><table width="100%"><tr><td width=""><h4>[expr]@GET(.code)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.frame_in)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.frame_out)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.tc_frame_start)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.tc_frame_end)[/expr]</h4></td></tr><tr><td> </td><td>In</td><td>Out</td><td>Start</td><td>End</td></tr><tr><td>[expr]@GET(.description)[/expr]</td><td colspan="4">Resolution</td></tr></table></td></tr></table></div>
+
+          <h4>Plates</h4>
+          <element name="plates"/>
+          <br/><br/>
+
+          <h4>Tasks</h4>
+          <element name="tasks"/>
+        </div>
+</body>
+<style type="text/css">
+div.sheet_panel {
               border: 1px solid #FFF;
               margin-bottom: 10px;
               padding: 5px;
@@ -3316,111 +3327,9 @@ insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
               font-weight:bold;
               cursor:hand;
           }
-      </style>
-      <body>
-        <div class="spt_top" style="height:900px; width:800">
-
-        <div class="spt_print">PRINT</div>
-
-<![CDATA[
-<%
-
-    snapshot = server.get_snapshot(sobject, context="icon")
-    path = server.get_path_from_snapshot(snapshot.get("code"), mode="web")
-    image = "<img src='%s' width='300px'/>" %path
-
-
-%>
-]]>
-
-
-
-        <div class="sheet_panel">
-          <table width="100%">
-            <tr>
-              <td><h4>[expr]{$PROJECT}[/expr]</h4></td>
-              <td align="right"><h4>Southpaw Technology</h4></td>        
-            </tr>
-            <tr>
-              <td>Shot Sheet</td>
-              <td align="right">[expr]{$TODAY}[/expr]</td>        
-            </tr>
-          </table>
-        </div>
-        <div class="sheet_panel">
-          <table width="100%">
-            <tr>
-              <td width="300px">${image}</td>
-              <td valign="top">
-                <table width="100%">
-                  <tr>
-                    <td width=""><h4>[expr]@GET(.code)[/expr]</h4></td>
-                    <td width="40px"><h4>[expr]@GET(.frame_in)[/expr]</h4></td>
-                    <td width="40px"><h4>[expr]@GET(.frame_out)[/expr]</h4></td>
-                    <td width="40px"><h4>[expr]@GET(.tc_frame_start)[/expr]</h4></td>
-                    <td width="40px"><h4>[expr]@GET(.tc_frame_end)[/expr]</h4></td>
-                  </tr>
-                  <tr>
-                    <td> </td>
-                    <td>In</td>
-                    <td>Out</td>
-                    <td>Start</td>
-                    <td>End</td>
-                  </tr>
-
-                  <tr>
-                    <td>[expr]@GET(.description)[/expr]</td>
-                    <td colspan="4">Resolution</td>
-                  </tr>
-                </table>
-              </td>        
-            </tr>
-          </table>
-        </div>
-
-          <h4>Plates</h4>
-          <element name="plates"/>
-          <br/><br/>
-
-          <h4>Tasks</h4>
-          <element name="tasks"/>
-        </div>
-
-
-      </body>
-
-    </html>
-
-
-          <element name="plates">
-            <display class="tactic.ui.panel.TableLayoutWdg">
-              <search_type>vfx/plate</search_type>
-              <view>shot_sheet_wdg_plates</view>
-              <search_key>{@GET(state.search_key)}</search_key>
-              <width>100%</width>
-              <mode>simple</mode>
-              <show_row_select>false</show_row_select>
-            </display>
-          </element>
-
-
-          <element name="tasks">
-            <display class="tactic.ui.panel.TableLayoutWdg">
-              <search_type>sthpw/task</search_type>
-              <view>shot_sheet_wdg_tasks</view>
-              <search_key>{@GET(state.search_key)}</search_key>
-              <width>100%</width>
-              <mode>simple</mode>
-              <show_row_select>false</show_row_select>
-            </display>
-          </element>
-
-
-
-
-   <behavior class='spt_print'>{
-      "type": "click_up",
-      "cbjs_action": <![CDATA['''
+</style>
+</html>
+<behavior class="spt_print"><![CDATA[
 
           // Get the top elements
           var top_el = bvr.src_el.getParent(".spt_top");
@@ -3435,12 +3344,9 @@ insert.set_value('config', """<?xml version='1.0' encoding='UTF-8'?>
           print_window.print();
           print_window.close();
 
-        
-      ''']]>
-    }</behavior>
 
-
-  </shot_sheet_wdg>
+]]></behavior>
+</shot_sheet_wdg>
 </config>""")
 insert.set_value('search_type', """CustomLayoutWdg""")
 insert.set_value('timestamp', """2011-10-31 16:50:32""")

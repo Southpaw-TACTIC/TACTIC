@@ -90,7 +90,18 @@ class Error404Wdg(ErrorWdg):
             return widget
 
         div = DivWdg()
+
+        div.add('''
+<!-- Material Design for Bootstrap JS -->
+<script src="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+
+
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+        ''')
+
+
         error_div = DivWdg()
+
         error_div.add("<hr/>")
         error_div.add("Error %s" % self.status)
         error_div.add("<hr/>")
@@ -101,6 +112,7 @@ class Error404Wdg(ErrorWdg):
         error_div.add_style("width: auto")
         error_div.add_color("background", "background", -3)
         error_div.add_color("color", "color")
+
         #error_div.add_border()
         error_div.add_style("margin-left: 5px")
         error_div.add_style("margin-right: 5px")
