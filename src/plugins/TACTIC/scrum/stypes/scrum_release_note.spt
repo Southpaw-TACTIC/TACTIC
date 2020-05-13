@@ -1,0 +1,24 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """scrum/release_note""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('database', """{project}""")
+insert.set_value('title', """Release Note""")
+insert.set_value('namespace', """scrum""")
+insert.set_value('search_type', """scrum/release_note""")
+insert.set_value('table_name', """release_note""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('scrum/release_note')
+table.add('code',                     'varchar', length='256' )
+table.add('feature_code',             'varchar', length='256' )
+table.add('id',                       'serial', primary_key=True)
+table.add('login',                    'varchar', length='256' )
+table.add('product_version_code',     'varchar', length='256' )
+table.add('s_status',                 'varchar', length='256' )
+table.add('sprint_code',              'varchar', length='256' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

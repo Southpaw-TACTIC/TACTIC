@@ -1,0 +1,36 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/schema')
+insert.set_value('code', """scrum""")
+insert.set_value('description', """Schema for project [scrum]""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.417104""")
+insert.set_value('project_code', """scrum""")
+insert.set_value('schema', """<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+  <search_type name="scrum/product" xpos="100" ypos="173"/>
+  <search_type name="scrum/sprint" xpos="345" ypos="353"/>
+  <search_type name="scrum/ticket" xpos="344" ypos="263"/>
+  <search_type name="scrum/product_version" xpos="102" ypos="261"/>
+  <search_type name="scrum/release_note" xpos="103" ypos="353"/>
+  <search_type name="scrum/feature" xpos="342" ypos="175"/>
+  <search_type name="scrum/ticket_status" xpos="674" ypos="181"/>
+  <search_type name="sthpw/login" xpos="677" ypos="414"/>
+  <search_type name="scrum/ticket_log" xpos="555" ypos="412"/>
+  <search_type name="goat/customer" xpos="827" ypos="262"/>
+  <search_type name="scrum/plan_item" xpos="493" ypos="175"/>
+  <search_type name="scrum/plan" xpos="493" ypos="100"/>
+  <connect from="scrum/sprint" to="scrum/product" relationship="code" from_col="product_code" to_col="code"/>
+  <connect from="scrum/ticket" to="scrum/product" relationship="code" from_col="product_code" to_col="code"/>
+  <connect from="scrum/product" to="scrum/product_version" relationship="code" from_col="code" to_col="product_code"/>
+  <connect from="scrum/sprint" to="scrum/ticket" relationship="code" from_col="code" to_col="sprint_code"/>
+  <connect from="scrum/release_note" to="scrum/product_version" relationship="code" from_col="product_version_code" to_col="code"/>
+  <connect from="scrum/ticket" to="scrum/feature" relationship="code" from_col="feature_code" to_col="code"/>
+  <connect from="scrum/product" to="scrum/feature" relationship="code" from_col="code" to_col="product_code"/>
+  <connect from="sthpw/login" to="scrum/ticket" relationship="code" from_col="login" to_col="assigned"/>
+  <connect from="scrum/ticket_log" to="scrum/ticket" relationship="code" from_col="ticket_code" to_col="code"/>
+  <connect from="scrum/ticket" to="goat/customer" relationship="code" from_col="customer_code" to_col="company_code"/>
+  <connect from="scrum/plan_item" to="scrum/plan" relationship="code" from_col="plan_code" to_col="code"/>
+  <connect from="scrum/plan_item" to="scrum/feature" relationship="code" from_col="feature_code" to_col="code"/>
+</schema>
+""")
+#-- End Entry --#
+

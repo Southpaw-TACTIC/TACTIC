@@ -1,0 +1,27 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """scrum/sprint""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('database', """{project}""")
+insert.set_value('title', """Sprint""")
+insert.set_value('namespace', """scrum""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('table_name', """sprint""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('scrum/sprint')
+table.add('code',                     'varchar', length='256' )
+table.add('date_end',                 'timestamp' )
+table.add('date_start',               'timestamp' )
+table.add('id',                       'serial', primary_key=True)
+table.add('login',                    'varchar', length='256' )
+table.add('pipeline_code',            'varchar', length='256' )
+table.add('product_code',             'varchar', length='256' )
+table.add('s_status',                 'varchar', length='256' )
+table.add('status',                   'varchar', length='256' )
+table.add('timestamp',                'timestamp' )
+table.add('title',                    'varchar', length='256' )
+#-- End Entry --#
+

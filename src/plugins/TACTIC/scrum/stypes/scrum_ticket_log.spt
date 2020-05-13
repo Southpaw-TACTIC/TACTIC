@@ -1,0 +1,26 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """scrum/ticket_log""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('database', """{project}""")
+insert.set_value('title', """Ticket Log""")
+insert.set_value('namespace', """scrum""")
+insert.set_value('search_type', """scrum/ticket_log""")
+insert.set_value('table_name', """ticket_log""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('scrum/ticket_log')
+table.add('changed_from',             'varchar', length='256' )
+table.add('changed_to',               'varchar', length='256' )
+table.add('code',                     'varchar', length='256' )
+table.add('column',                   'varchar', length='256' )
+table.add('id',                       'serial', primary_key=True)
+table.add('login',                    'varchar', length='256' )
+table.add('s_status',                 'varchar', length='256' )
+table.add('ticket_code',              'varchar', length='256' )
+table.add('ticket_id',                'integer' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+
