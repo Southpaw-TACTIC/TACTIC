@@ -199,7 +199,7 @@ class ProjectTemplateCreatorCmd(Command):
 
 
 
-        from plugin import PluginCreator
+        from .plugin import PluginCreator
         creator = PluginCreator( base_dir=self.base_dir, manifest=xml.to_string(), force=True, version=version )
         creator.execute()
 
