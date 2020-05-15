@@ -1,0 +1,18 @@
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """SPT_TRIGGER00001""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('mode', """same process,same transaction""")
+insert.set_value('script_path', """triggers/work_hour_category""")
+insert.set_value('event', """insert|sthpw/work_hour""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/trigger')
+insert.set_value('code', """SPT_TRIGGER00002""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('mode', """same process,same transaction""")
+insert.set_value('script_path', """triggers/log_ticket_status""")
+insert.set_value('event', """update|scrum/ticket|status""")
+#-- End Entry --#
+

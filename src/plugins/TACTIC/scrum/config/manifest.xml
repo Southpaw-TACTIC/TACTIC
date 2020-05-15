@@ -1,0 +1,20 @@
+<manifest>
+  <data>
+    <code>TACTIC/scrum/config</code>
+    <title>Scrum Configuration</title>
+    <description>Configuration views for TACTIC Scrum Open Source</description>
+    <version>1</version>
+  </data>
+  <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
+  <sobject expression="@SOBJECT(sthpw/schema['code',$PROJECT])" search_type="sthpw/schema" unique="true"/>
+  <sobject search_type="config/custom_script"/>
+  <sobject search_type="config/widget_config"/>
+  <sobject search_type="config/naming"/>
+  <sobject search_type="config/client_trigger"/>
+  <sobject search_type="config/process"/>
+  <sobject search_type="config/trigger"/>
+  <sobject search_type="config/url"/>
+  <sobject expression="@SOBJECT(sthpw/login_group['project_code',$PROJECT])" search_type="sthpw/login_group" unique="true"/>
+  <sobject expression="@SOBJECT(sthpw/pipeline['project_code',$PROJECT])" search_type="sthpw/pipeline" unique="true"/>
+  <sobject expression="@SOBJECT(sthpw/notification['project_code',$PROJECT])" search_type="sthpw/notification"/>
+</manifest>
