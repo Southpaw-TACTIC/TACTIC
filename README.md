@@ -3,6 +3,16 @@
 
 TACTIC is a dynamic, open-source, web-based platform that allows users to manage the development and delivery of digital workflows.
 
+# Getting Started
+
+Getting started is easy.  You can download any of number of formats from:
+
+http://commmuity.southpawtech.com/downlaods
+
+Refer to the Quick Start up guide for more information:
+
+http://community.southpawtech.com/docs/quick-start/
+
 
 ## Workflows
 
