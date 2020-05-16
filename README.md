@@ -6,7 +6,7 @@ TACTIC is a dynamic, open-source, web-based platform that allows users to manage
 
 ## Workflows
 
-!(Workflow Manager(["https://southpawtech.com/wp-content/uploads/2019/11/workflow_screen-1024x489.png")
+![Workflow Manager]("https://southpawtech.com/wp-content/uploads/2019/11/workflow_screen-1024x489.png")
 
 
 ## Components
