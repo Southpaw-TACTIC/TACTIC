@@ -1312,7 +1312,7 @@ class EditWdg(BaseRefreshWdg):
 
 
 
-        cancel_button = ActionButtonWdg(title=cancel_btn_label, tip=cancel_btn_tip, size=150)
+        cancel_button = ActionButtonWdg(title=cancel_btn_label, tip=cancel_btn_tip, size=150, color='secondary')
         cancel_button.add_behavior({
         'type': 'click_up',
         'cbjs_action': cbjs_cancel
