@@ -13,7 +13,7 @@ TACTIC is a dynamic, open-source, web-based platform that allows users to manage
 
 TACTIC has a number of key components:
 
-* Workflow
+* Workflow Manager
 * Data Management
 * File System Management
 * Web Framework
