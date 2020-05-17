@@ -138,7 +138,6 @@ class ProjectTemplateCreatorCmd(Command):
             xml.append_child(manifest_node, data_node)
             xml.set_attribute(data_node, "code", search_type)
 
-
         search_types = [
             "config/custom_script",
             "config/widget_config",
@@ -147,6 +146,7 @@ class ProjectTemplateCreatorCmd(Command):
             "config/process",
             "config/trigger",
             "config/url",
+            "config/prod_setting",
 
             #"config/ingest_rule",
             #"config/ingest_session",
@@ -199,7 +199,7 @@ class ProjectTemplateCreatorCmd(Command):
 
 
 
-        from plugin import PluginCreator
+        from .plugin import PluginCreator
         creator = PluginCreator( base_dir=self.base_dir, manifest=xml.to_string(), force=True, version=version )
         creator.execute()
 
@@ -374,7 +374,6 @@ class ProjectTemplateInstallerCmd(Command):
             kwargs = {
                 'plugin_dir': template_dir
             }
-
 
         kwargs['filter_line_handler'] = self.filter_line_handler
         kwargs['filter_sobject_handler'] = self.filter_sobject_handler
