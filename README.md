@@ -1,4 +1,9 @@
-# TACTIC Open Source
+
+<p align="center">
+  <img width="300px" src="http://community.southpawtech.com/tactic/plugins/community/theme/media/TACTIC_logo.svg"/>
+</p>
+
+## Workflow Platform
 
 TACTIC is an open-source platform for creating and executing digital workflows.  TACTIC has been used in many exciting projects in a wide variety on industries.
 
