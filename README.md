@@ -21,6 +21,7 @@ http://community.southpawtech.com/docs/quick-start/
 
 ![Workflow Manager](https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png)
 
+<img src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
 
 ## Components
 
