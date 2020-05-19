@@ -25,7 +25,7 @@ TACTIC has a number of key components:
 
 You can download any of number of formats from:
 
-http://community.southpawtech.com/downlaods
+http://community.southpawtech.com/downloads
 
 For detailed installation instructions
 
