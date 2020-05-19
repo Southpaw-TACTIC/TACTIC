@@ -46,9 +46,6 @@ For more information, visit the community site for TACTIC:
 
 http://tactic.southpawtech.com
 
-For packaged downloads, go directly to:
-
-http://tactic.southpawtech.com/downloads
 
 Or participate in the forum if you have any questions:
 
