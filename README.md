@@ -23,9 +23,9 @@ TACTIC has a number of key components:
 
 ## Installation
 
-You can download any of number of formats from:
+You can download distributions from any of number of formats from:
 
-http://community.southpawtech.com/downloads
+http://community.southpawtech.com/community/link/downloads (for earlier versions: http://community.southpawtech.com/downloads)
 
 For detailed installation instructions
 
