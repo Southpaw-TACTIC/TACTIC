@@ -1,7 +1,12 @@
 
 <p align="center">
-  <img width="300px" src="http://community.southpawtech.com/tactic/plugins/community/theme/media/TACTIC_logo.svg"/>
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/theme/media/TACTIC_logo.svg"/>
 </p>
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/Showreel.gif"/>
+</p>
+
 
 ## Workflow Platform
 
