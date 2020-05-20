@@ -64,3 +64,6 @@ TACTIC has a built-in VFX module that has been used as a template for countless 
 
 Easily start up your production by creating a project with TACTIC nad selecting the VFX template.  Create your own template and reuse your own template for all future productions.
 
+## License
+
+[Eclipse Public License 1.0](https://github.com/Southpaw-TACTIC/TACTIC/blob/4.8/LICENSE)
