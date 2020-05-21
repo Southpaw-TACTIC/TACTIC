@@ -32,6 +32,7 @@ except:
     # Python3
     from http import client as httplib
 
+raw_input = six.input()
 
 
 class TacticApiException(Exception):
@@ -616,16 +617,16 @@ class TacticServerStub(object):
         if not force and old_server_name and old_project_code:
             return
 
-        print("\n")
+        print("")
         print("TACTIC requires the following connection information:")
-        print("\n")
+        print("")
         server_name = raw_input("Enter name of TACTIC server (%s): "
                                 % old_server_name)
         if not server_name:
             server_name = old_server_name
         
         
-        print("\n")
+        print("")
         site = raw_input("If you are accessing a portal project, please enter the site name. Otherwise, hit enter: (site = %s) " % old_site)
         if not site:
             site = old_site
@@ -636,14 +637,14 @@ class TacticServerStub(object):
         if not login:
             login = default_login
 
-        print("\n")
+        print("")
         if login == old_login and old_ticket:
             password = getpass.getpass(
                 "Enter password (or use previous ticket): ")
         else:
             password = getpass.getpass("Enter password: ")
 
-        print("\n")
+        print("")
         project_code = raw_input("Project (%s): " % old_project_code)
         if not project_code:
             project_code = old_project_code

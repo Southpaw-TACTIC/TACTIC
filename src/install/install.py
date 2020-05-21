@@ -22,8 +22,7 @@ import os.path
 import six
 
 
-if six.PY2:
-    input = raw_input
+raw_input = six.input()
 
 
 class InstallException(Exception):
@@ -608,13 +607,13 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         if os.name != 'nt':
             default_apache_user = self.get_default_web_server_user()
             if not install_defaults:
-                print()
+                print("")
                 print("Please enter the user Apache Web Server is run under:")
-                print()
+                print("")
                 tactic_apache_user = input("(%s) -> " % default_apache_user)
                 if not tactic_apache_user:
                     tactic_apache_user = default_apache_user
-                print ()
+                print("")
             else:
                 tactic_apache_user = default_apache_user
 
