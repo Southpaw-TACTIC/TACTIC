@@ -1,16 +1,37 @@
 # TACTIC Open Source
 
+TACTIC is an open-source platform for creating and executing digital workflows.  TACTIC has been used in many exciting projects in a wide variety on industries.
 
-TACTIC is a dynamic, open-source, web-based platform that allows users to manage the development and delivery of digital workflows.
+<p align="center">
+  <img width="75%" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
+</p>
 
-## Components
+
+## Features
 
 TACTIC has a number of key components:
 
-* Workflow
+* Workflow Engine and Manager:
 * Data Management
 * File System Management
 * Web Framework
+
+## Installation
+
+You can download any of number of formats from:
+
+http://commmuity.southpawtech.com/downlaods
+
+For detailed installation instructions
+
+http://community.southpawtech.com/docs/sys-admin/
+
+
+## Getting Started
+
+Getting started is easy.  Refer to the Quick Start up guide for more information:
+
+http://community.southpawtech.com/docs/quick-start/
 
 
 
