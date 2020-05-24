@@ -153,9 +153,12 @@ class ViewManagerWdg(BaseRefreshWdg):
       
         # FIXME: is_personal???
         is_personal = 'false'
-        bvr = { "type": "click_up",\
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);" % (self.view, is_personal)} 
-        save_div.add_behavior(bvr)
+        save_div.add_behavior({
+            "type": "click_up",
+            'cbjs_action': '''
+            spt.side_bar.manage_section_action_cbk({'value':'save'},'%s',%s);
+            '''% (self.view, is_personal)
+        } )
         widget.add(save_div)
         return widget
 
@@ -216,8 +219,13 @@ class ViewManagerWdg(BaseRefreshWdg):
     def get_action_wdg(self):
         div = DivWdg()
         menus = [ self.get_action_menu_details() ]
-        dd_activator = ButtonForDropdownMenuWdg( id="SideBarManagerActionDropDown", title="-- Action --", menus=menus,
-                                                 width=150, match_width=True)
+        dd_activator = ButtonForDropdownMenuWdg(
+                id="SideBarManagerActionDropDown",
+                title="-- Action --",
+                menus=menus,
+                width=150,
+                match_width=True
+        )
         div.add( dd_activator )
 
         return div
@@ -611,17 +619,7 @@ class ManageViewNewItemWdg(BaseRefreshWdg):
             item_div.add_style('display: none')
             div.add(HtmlElement.br())
             div.add(item_div)
-            # since it's automated, this button is not needed
-            """ 
-            save_div = SpanWdg(css='med hand')
-            save_div.add(IconWdg('Save', IconWdg.SAVE))
-        
-            bvr = { "type": "click_up",\
-                'cbjs_action': "spt.side_bar.manage_section_action_cbk({"\
-                "'value':'save_separator'},'%s');" %self.view}
-            save_div.add_behavior(bvr)
-            div.add(save_div)
-            """
+
         widget.add(div)
         return widget
 

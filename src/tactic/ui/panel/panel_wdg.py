@@ -79,7 +79,6 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
     def get_display(self):
         views = self.get_views()
-
         top = self.get_subdisplay(views)
         return top
 
