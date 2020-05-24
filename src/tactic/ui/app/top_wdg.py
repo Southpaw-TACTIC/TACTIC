@@ -573,6 +573,7 @@ class TopWdg(Widget):
         # Add the tactic favicon
         head.add('<link rel="shortcut icon" href="/context/favicon.ico" type="image/x-icon"/>')
 
+
         # add the css styling
         head.add(self.get_css_wdg())
 
@@ -1274,12 +1275,13 @@ class JavascriptImportWdg(BaseRefreshWdg):
                     Container.append_seq("Page:js", include)
 
 
+
         widget = Widget()
+
 
         js_files = Container.get("Page:js")
         for js_file in js_files:
             widget.add('<script src="%s?ver=%s" ></script>\n' % (js_file,version) )
-
 
         return widget
 

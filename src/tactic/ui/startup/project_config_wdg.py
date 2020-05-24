@@ -442,7 +442,9 @@ class SearchTypePanel(BaseRefreshWdg):
         th.add_style("text-align: left")
         th = table.add_header("Import")
         th.add_style("text-align: left")
-        th = table.add_header("Custom Columns")
+        th = table.add_header("Custom<br/>Columns")
+        th.add_style("text-align: left")
+        th = table.add_header("Column<br/>Definition")
         th.add_style("text-align: left")
         th = table.add_header("Workflow")
         th.add_style("text-align: left")
@@ -661,7 +663,7 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
             td = table.add_cell()
-            button = IconButtonWdg(title="Custom Columns", icon="FA_COLUMNS")
+            button = IconButtonWdg(title="Custom Columns", icon="FAS_DATABASE")
             td.add(button)
             button.add_behavior( {
                 'type': 'click_up',
@@ -679,6 +681,24 @@ class SearchTypePanel(BaseRefreshWdg):
 
 
 
+
+            td = table.add_cell()
+            button = IconButtonWdg(title="Edit Definition", icon="FAS_COLUMNS")
+            td.add(button)
+            button.add_behavior( {
+                'type': 'click_up',
+                'search_type': search_type,
+                'cbjs_action': '''
+
+                var class_name = 'tactic.ui.panel.EditWdg';
+                var kwargs = {
+                    search_type: bvr.search_type,
+                }
+                var class_name = 'tactic.ui.panel.SearchTypeManagerWdg';
+                spt.panel.load_popup("Column Definiton for ("+bvr.search_type+")", class_name, kwargs);
+
+                '''
+            } )
 
 
             td = table.add_cell()
@@ -802,6 +822,9 @@ class SearchTypePanel(BaseRefreshWdg):
 
                 '''
             } )
+
+
+
 
 
  

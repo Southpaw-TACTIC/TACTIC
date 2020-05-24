@@ -758,10 +758,8 @@ class TextAreaWdg(BaseTextWdg):
                 self.set_attr("cols", cols)
 
 
-
-
         self.add_class("spt_input")
-        
+
 
     def handle_styles(self):
         

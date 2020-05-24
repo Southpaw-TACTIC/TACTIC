@@ -61,17 +61,19 @@ class JSIncludes(object):
         "keyboard.js",
         "events.js",
         "behavior.js",
+        "panel.js",
+
+
         #"ctx_menu.js",
         #"smart_menu.js",
-        "panel.js",
         #"side_bar.js",
         #"action_bar.js", # DEPRECATED
-
-
         #"gantt.js",        # This has been moved to be dynamically loaded
         #"fx_anim.js",      # If this needs to be used, it should be loaded
                             # dynamically
         #"popup.js",        # DEPRECATED: moved to container/popup_wdg.js
+
+
         "js_logger.js",
         "page_utility_widgets.js",
         "validation.js",
