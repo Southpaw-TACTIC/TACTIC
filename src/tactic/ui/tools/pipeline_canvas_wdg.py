@@ -3258,6 +3258,10 @@ spt.pipeline.select_node = function(node) {
         var event_name = 'process|select';
         spt.named_events.fire_event(event_name, { src_el: outer } );
     }
+
+
+    spt.pipeline.add_to_selected(node); 
+
 }
 
 

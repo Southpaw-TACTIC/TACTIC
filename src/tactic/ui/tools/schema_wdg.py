@@ -766,32 +766,42 @@ class SchemaToolWdg(PipelineToolWdg, PipelineEditorWdg):
         //var connector = connectors[0];
         var connector = spt.pipeline.get_selected_connector();
 
-        var class_name = "tactic.ui.tools.SchemaConnectorWdg";
         var dialog = document.id(bvr.dialog_id);
+
         
-        /*
         var pos = bvr.src_el.getPosition();
         var size = bvr.src_el.getSize();
         dialog.setStyle("left", pos.x+bvr.offset.x);
         dialog.setStyle("top", pos.y+size.y+bvr.offset.y+5);
         spt.toggle_show_hide(dialog);
 
-        */
-
         var selected = spt.pipeline.get_selected();
         if (selected.length == 0) {
+            spt.alert("No nodes selected.");
             return;
         }
         var item = selected[selected.length-1];
 
-        var from_node = item.get_from_node();
-        var to_node = item.get_to_node();
-        var kwargs = {
-            from_search_type: spt.pipeline.get_node_name(from_node),
-            to_search_type: spt.pipeline.get_node_name(to_node),
-            from_col: connector.get_attr("from_col"),
-            to_col: connector.get_attr("to_col")
-        };
+        console.log(item);
+
+        if (item.getAttribute("spt_node_type")) {
+            var class_name = "tactic.ui.tools.SchemaPropertyWdg";
+            var kwargs = {
+                search_type: spt.pipeline.get_node_name(item)
+            }
+        }
+        else {
+            var class_name = "tactic.ui.tools.SchemaConnectorWdg";
+
+            var from_node = item.get_from_node();
+            var to_node = item.get_to_node();
+            var kwargs = {
+                from_search_type: spt.pipeline.get_node_name(from_node),
+                to_search_type: spt.pipeline.get_node_name(to_node),
+                from_col: connector.get_attr("from_col"),
+                to_col: connector.get_attr("to_col")
+            };
+        }
         var content = dialog.getElement(".spt_dialog_content");
         spt.panel.load(content, class_name, kwargs);
 
@@ -1512,6 +1522,15 @@ class SchemaPropertyWdg(BaseRefreshWdg):
 
         #div.set_id("properties_editor")
         #div.add_style("display", "none")
+
+        if not search_type:
+            return div
+        from tactic.ui.panel import EditWdg
+
+        search_type_sobj = SearchType.get(search_type)
+        edit = EditWdg(search_key=search_type_sobj.get_search_key() )
+        div.add(edit)
+        return div
 
 
 

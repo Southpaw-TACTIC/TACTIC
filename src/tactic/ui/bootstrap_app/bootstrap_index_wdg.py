@@ -627,13 +627,19 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         div.add_class("spt_bs_left_sidebar")
         div.set_id("side_bar")
         div.set_attr('spt_class_name', Common.get_full_class_name(self))
-        div.add_behavior( {
+
+        outer_div = DivWdg()
+        div.add(outer_div)
+
+        load_div = DivWdg()
+        outer_div.add(load_div)
+        load_div.add_behavior( {
             'type': 'load',
             'cbjs_action': self.get_onload_js()
         } )
 
 
-        div.add_behavior( {
+        outer_div.add_behavior( {
             'type': 'mouseleave',
             'cbjs_action': '''
             spt.named_events.fire_event("side_bar|toggle")
@@ -651,12 +657,9 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
                  "<img class='spt_order_icon' src='/context/icons/common/order_array_up_1.png'></div>")
         down.add_event("onclick", "new Fx.Tween('side_bar_scroll').start('margin-top', 0);" \
                        "document.id(this).setStyle('display', 'none');")
-        div.add(down)
+        outer_div.add(down)
 
 
-        outer_div = DivWdg()
-       
-        div.add(outer_div)
         
         inner_div = DivWdg()
         inner_div.set_id("side_bar_scroll")
@@ -674,7 +677,11 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         inner_div.add( self.get_bookmark_menu_wdg("", None, views) )
         inner_div.add(HtmlElement.br())
 
-        return div
+        if self.kwargs.get("is_refresh"):
+            return outer_div
+        else:
+            return div
+
 
 
     def get_bookmark_menu_wdg(self, title, config, views):
