@@ -231,7 +231,7 @@ class MainWdg(BaseRefreshWdg):
         #top.add(title)
         title.add_gradient("background", "background3", 5, -10)
 
-
+        """
         shelf = DivWdg()
         top.add(shelf)
         shelf.add_style("margin-left: -8px")
@@ -264,6 +264,8 @@ class MainWdg(BaseRefreshWdg):
             shelf.add_class("hand")
         else:
             shelf.add("&nbsp;")
+        """
+
 
 
         search_wdg = Table()
@@ -419,7 +421,7 @@ class MainWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         title = "Configuration"
         #description = '''All TACTIC projects can be uniquely designed and managed using our configuration tools.'''
-        description = '''Configure a Project from start to finish.'''
+        description = '''Configure various aspects of a project.'''
         image = "<img src='/context/icons/64x64/configuration_64.png'/>"
         behavior = {
             'type': 'click_up',
@@ -505,8 +507,9 @@ class MainWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
         title = "Manage Plugins"
-        image = IconWdg("Manage Plugins", IconWdg.PLUGIN_32)
+        #image = IconWdg("Manage Plugins", IconWdg.PLUGIN_32)
         #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
+        image = IconWdg("Manage Plugins", "FAS_PLUG", size=32)
         description = '''Upload, install, remove and create TACTIC plugins.'''
 
         behavior = {
@@ -526,9 +529,10 @@ class MainWdg(BaseRefreshWdg):
         td = table.add_cell()
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
-        title = "Tools"
-        image = IconWdg("Tools", IconWdg.SHARE_32)
+        title = "Views"
+        #image = IconWdg("Views", IconWdg.SHARE_32)
         #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
+        image = IconWdg("Views", "FAS_COLUMNS", size=32)
         description = '''A collection of example views.'''
 
         behavior = {
@@ -574,8 +578,9 @@ class MainWdg(BaseRefreshWdg):
         td.add_style("vertical-align: top")
         td.add_style("padding: 3px")
         title = "Advanced Setup"
-        image = IconWdg("Advanced", IconWdg.ADVANCED_32)
+        #image = IconWdg("Advanced", IconWdg.ADVANCED_32)
         #image = "<img src='/context/icons/64x64/dashboard_64.png'/>"
+        image = IconWdg("Views", "FAS_UNIVERSITY", size=32)
         description = '''A set of advanced configuration tools.'''
 
         behavior = {
@@ -588,37 +593,6 @@ class MainWdg(BaseRefreshWdg):
         }
         share_wdg = self.get_small_section_wdg(title, description, image, behavior)
         td.add(share_wdg)
-
-
-
-
-        """
-        td = table.add_cell()
-        td.add_style("vertical-align: top")
-        td.add_style("padding: 3px")
-	title = "Documentation"
-
-        description = '''TACTIC Documentation.
-        * Project Setup Documentation<br/>
-        <br/>
-        * End User Documentation<br/>
-        <br/>
-        * Developer Documentation<br/>
-        <br/>
-        * System Administrator Documentation<br/>
-        <br/>
-        '''
-        image = "<img src='/context/images/getting_started_pipeline.png'/>"
-        behavior = {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.help.load_alias("main")
-        '''
-        }
-        doc_wdg = self.get_section_wdg(title, description, image, behavior)
-        td.add(doc_wdg)
-        """
-
 
 
 
