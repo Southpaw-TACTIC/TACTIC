@@ -5669,12 +5669,18 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     }
     else if (input.nodeName == "INPUT") {
         set_focus = true;
-        input.setStyle( "width", size.x+'px');
-        input.setStyle( "height", size.y+'px');
 
-        if (size.y > 500) {
-            input.setStyle( "height", '500px');
+
+        if (input.type != "color") {
+            input.setStyle( "width", size.x+'px');
+            input.setStyle( "height", size.y+'px');
+
+
+            if (size.y > 500) {
+                input.setStyle( "height", '500px');
+            }
         }
+
 
         input.value = value;
         // for calendar input
@@ -5694,6 +5700,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             }
             spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
             spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
+
+
             setTimeout( function() {
                 var cal_top = input.getParent('.spt_calendar_input_top');
                 var cal = cal_top.getElement(".spt_calendar_top");
@@ -5701,6 +5709,19 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                     spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
                 }
             }, 0);
+
+        }
+        else if (input.type == "color") {
+            accept_event = "change";
+            set_focus = false;
+            let text = input.getParent(".spt_color_top").getElement(".spt_color_text");
+            text.addEvent("change", function() {
+                input.value = text.value;
+                spt.table.accept_edit(edit_wdg, input.value, true, {input: input});
+            } )
+            text.value = value;
+            input.setAttribute("value", value);
+            input.click();
 
         }
         else if (input.type == "checkbox") {
@@ -5797,6 +5818,11 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
             // to make checkbox aware of its checked state
             if (input.type =='checkbox')
                input.value = input.checked;
+            spt.table.accept_edit(edit_wdg, input.value, true, {input: input});
+        });
+    }
+    else if (accept_event) {
+        input.addEvent(accept_event, function() {
             spt.table.accept_edit(edit_wdg, input.value, true, {input: input});
         });
     }
