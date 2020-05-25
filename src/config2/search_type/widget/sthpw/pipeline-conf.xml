@@ -106,9 +106,9 @@
 
 
 <manage>
-    <element name="code"/>
-    <element name="color"/>
     <element name="editor"/>
+    <element name="name"/>
+    <element name="color"/>
     <element name="description"/>
     <element name="pipeline_hidden"/>
     <element name="stype"/>
