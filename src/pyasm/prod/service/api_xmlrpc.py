@@ -6766,19 +6766,22 @@ class ApiXMLRPC(BaseApiXMLRPC):
             Container.put("API:xmlrpc_transaction", False)
 
             if ticket != transaction_ticket:
-                import os
-                import shutil
                 tmp_dir = Environment.get_tmp_dir()
                 dir_path = os.path.join(tmp_dir, "temp", ticket)
-                dest = os.path.join(tmp_dir, "temp", transaction_ticket)
-                if not os.path.exists(dest):
-                    os.makedirs(dest)
-                files = os.listdir(dir_path)
-                for f in files:
-                    full_path = os.path.join(dir_path, f)
-                    des_full_path = os.path.join(dest, f)
-                    if os.path.isfile(full_path) and not os.path.isfile(des_full_path):
-                        shutil.copy(full_path, dest)
+
+                # only do this if there actually is a dir_path
+                if os.path.exists(dir_path):
+                    dest = os.path.join(tmp_dir, "temp", transaction_ticket)
+                    if not os.path.exists(dest):
+                        os.makedirs(dest)
+
+                    files = os.listdir(dir_path)
+                    for f in files:
+                        full_path = os.path.join(dir_path, f)
+                        des_full_path = os.path.join(dest, f)
+                        if os.path.isfile(full_path) and not os.path.isfile(des_full_path):
+                            shutil.copy(full_path, dest)
+
         finally:
             if not self.get_protocol() == "local":
                 DbContainer.release_thread_sql()
