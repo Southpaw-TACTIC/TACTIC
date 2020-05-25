@@ -6766,6 +6766,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
             Container.put("API:xmlrpc_transaction", False)
 
             if ticket != transaction_ticket:
+                import os
+                import shutil
                 tmp_dir = Environment.get_tmp_dir()
                 dir_path = os.path.join(tmp_dir, "temp", ticket)
 
