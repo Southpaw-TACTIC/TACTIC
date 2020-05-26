@@ -53,6 +53,7 @@ http://community.southpawtech.com/community/link/docs/
 
 TACTIC has a very deep and mature API allow you to customize almost any part of the system.
 
+Python Example
 ```python
 from tactic_client_lib import TacticServerStub.get()
 server = TacticServerStub.get()
@@ -61,9 +62,9 @@ for shot in shots:
     print("shot: ", shot.get("status") )
 ```
 
-Javascript
-```
-server = TACTIC.get();
+Javascript Example
+```javascrip
+let server = TACTIC.get();
 server.update(shot_key, {'status', 'Complete'})
 ```
 
