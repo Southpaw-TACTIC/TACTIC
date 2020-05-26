@@ -70,6 +70,8 @@ class SearchTypeManagerWdg(ManageViewPanelWdg):
     def get_display(self):
         div = DivWdg()
 
+        div.add_style("margin: 20px")
+
         
         top_div = DivWdg(id='SearchTypeManager', css='spt_panel')
         top_div.set_attr('spt_class_name','tactic.ui.panel.SearchTypeManagerWdg')
@@ -561,9 +563,13 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
         values = ['simple', 'advanced']
         select.set_option("values", values)
         config_mode = select.get_value()
-        #select.add_behavior({"type": "change", "cbjs_action": "spt.simple_display_toggle( spt.get_cousin(bvr.src_el, '.spt_detail_panel','.config_simple') )"})
-        select.add_behavior({"type": "change", "cbjs_action": \
-            "spt.simple_display_toggle( spt.get_cousin(bvr.src_el, '.spt_detail_panel','.config_advanced')); %s" %select.get_save_script()})
+        select.add_behavior( {
+            "type": "change",
+            "cbjs_action": '''
+            spt.simple_display_toggle( spt.get_cousin(bvr.src_el, '.spt_detail_panel','.config_advanced'));
+            %s
+            ''' %select.get_save_script()
+        })
 
         select.add_class('spt_config_mode')
 
@@ -589,8 +595,11 @@ class ManageSearchTypeDetailWdg(ManageSideBarDetailWdg):
             detail_wdg.add( simple_wdg )
             adv_wdg = self.get_advanced_definition_wdg()
             adv_wdg.add_class("config_advanced")
-            if config_mode == 'simple':
+            if config_mode != 'advanced':
                 adv_wdg.add_style('display: none')
+
+
+
             detail_wdg.add(HtmlElement.br(2))
             detail_wdg.add( adv_wdg )
 

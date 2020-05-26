@@ -5657,6 +5657,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         input.setStyle('font-size', '1.1em');
         input.setStyle('padding', '5px');
 
+        // inline text areas should be resizable in both directions
+        input.setStyle('resize', 'both');
+
         input.value = value;
     }
     else if (input != null && input.type == "password") {
