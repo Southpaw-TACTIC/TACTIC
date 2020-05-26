@@ -39,11 +39,35 @@ http://community.southpawtech.com/docs/sys-admin/
 
 ## Getting Started
 
-Getting started is easy.  Refer to the Quick Start up guide for more information:
-
-http://community.southpawtech.com/docs/quick-start/
+Getting started is easy.  Refer to the [Quick Start Guide](http://community.southpawtech.com/docs/quick-start/) for more information:
 
 
+## Documentation
+
+Detailed documentation can be found on the community site.
+
+http://community.southpawtech.com/community/link/docs/
+
+
+## API
+
+TACTIC has a very deep and mature API allow you to customize almost any part of the system.
+
+```python
+from tactic_client_lib import TacticServerStub.get()
+server = TacticServerStub.get()
+shots = server.query("vfx/shot", ['sequence_code', 'SEQ001'])
+for shot in shots:
+    print("shot: ", shot.get("status") )
+```
+
+Javascript
+```
+server = TACTIC.get();
+server.update(shot_key, {'status', 'Complete'})
+```
+
+Complete documentation can be found on the [TACTIC Developer Documentation](http://community.southpawtech.com/docs/developer)
 
 ## Resources
 
