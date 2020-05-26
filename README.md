@@ -63,7 +63,7 @@ for shot in shots:
 ```
 
 Javascript Example
-```javascrip
+```javascript
 let server = TACTIC.get();
 server.update(shot_key, {'status', 'Complete'})
 ```
