@@ -32,7 +32,10 @@ except:
     # Python3
     from http import client as httplib
 
-raw_input = six.input()
+try:
+    raw_input = six.input()
+except:
+    pass
 
 
 class TacticApiException(Exception):
