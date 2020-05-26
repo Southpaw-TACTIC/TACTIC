@@ -28,25 +28,30 @@ TACTIC has a number of key components:
 
 ## Installation
 
-You can download distributions from any of number of formats from:
+You can download the latest distributions from any of number of formats from the [community downloads](http://community.southpawtech.com/community/link/downloads) 
 
-http://community.southpawtech.com/community/link/downloads (for earlier versions: http://community.southpawtech.com/downloads)
+or you can access [earlier versions](http://community.southpawtech.com/downloads)
 
-For detailed installation instructions
-
-http://community.southpawtech.com/docs/sys-admin/
+For detailed installation instructions, the [TACTIC System Administration](http://community.southpawtech.com/docs/sys-admin/) documentation is useful
 
 
 ## Getting Started
 
-Getting started is easy.  Refer to the [Quick Start Guide](http://community.southpawtech.com/docs/quick-start/) for more information:
+Getting started is easy.  You can start up quickly with an official VM distribution which has the database and webserver all setup for you.  Refer to the [Quick Start Guide](http://community.southpawtech.com/docs/quick-start/) for more information:
 
 
 ## Documentation
 
-Detailed documentation can be found on the community site.
+Detailed [documentation](http://community.southpawtech.com/community/link/docs/) can be found on the community site.
 
-http://community.southpawtech.com/community/link/docs/
+There documentation is split in different sections that focus on different aspects of TACTIC:
+
+1. [Quick Start](http://community.southpawtech.com/docs/quick-start/): quick overview of how what to do to get up and running
+1. [System Administration](http://community.southpawtech.com/docs/sys-admin/): detailed description of installation and connections to database and other external services.
+1. [Setup](http://community.southpawtech.com/docs/setup/): description of how to set up a TACTIC project for end users to work on.
+1. [Developer](http://community.southpawtech.com/docs/developer/): documention for developers to customize TACTIC and access the API.
+
+
 
 
 ## API
