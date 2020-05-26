@@ -80,7 +80,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
             view_attrs = config.get_view_attributes()
             tt = view_attrs.get("title")
             if not tt:
-                if view_item.startswith("self_view_"):
+                if view_item.startswith("my_view_"):
                     tt = "My Views"
                 else:
                     tt = view_item.replace("_", " ")

@@ -49,7 +49,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
         security = Environment.get_security()
         if security.check_access("builtin", "view_save_my_view", "allow", default='allow'):
             # show self views section
-            my_view = "self_view_%s" % Environment.get_user_name()
+            my_view = "my_view_%s" % Environment.get_user_name()
             my_view = my_view.replace("\\", "_")
             views.append(my_view)
                 
@@ -1534,7 +1534,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             view_attrs = config.get_view_attributes()
             tt = view_attrs.get("title")
             if not tt:
-                if view_item.startswith("self_view_"):
+                if view_item.startswith("my_view_"):
                     tt = "My Views"
                 else:
                     tt = view_item.replace("_", " ");
@@ -3884,14 +3884,18 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         from pyasm.widget import RadioWdg
         for name, label in zip(names, labels):
             cb_div = DivWdg()
-            cb_div.add_style("padding: 3px")
-            #cb = CheckboxWdg(name, label=label)
-            #cb_div.add(cb)
+            cb_div.add_style("display: flex")
+            cb_div.add_style("align-items: center")
+            cb_div.add_style("justify-content: flex-left")
+            cb_div.add_style("margin: 5px")
+
             cb = RadioWdg("save_mode", label=label)
             cb.set_option("value", name)
+            cb.add_class("form-control")
+            cb.add_style("height: 15px")
+            cb.add_style("width: 15px")
             cb_div.add(cb)
             if name == 'save_project_views':
-                #cb.set_default_checked()
                 cb.set_checked()
             if is_reg_user:
                 if name == 'save_my_views':
