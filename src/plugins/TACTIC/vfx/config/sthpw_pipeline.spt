@@ -15,7 +15,7 @@ insert.set_value('pipeline', """<pipeline>
   <connect from="texture" to="rig"/>
 </pipeline>
 """)
-insert.set_value('project_code', """vfx2""")
+insert.set_value('project_code', """vfx""")
 insert.set_value('search_type', """vfx/asset""")
 insert.set_value('timestamp', """2011-10-26 03:12:57""")
 insert.set_value('use_workflow', True)
@@ -45,7 +45,7 @@ insert.set_value('pipeline', """<pipeline>
   <connect from="render" to="comp"/>
 </pipeline>
 """)
-insert.set_value('project_code', """vfx2""")
+insert.set_value('project_code', """vfx""")
 insert.set_value('search_type', """vfx/shot""")
 insert.set_value('timestamp', """2011-10-26 03:14:01""")
 insert.set_value('use_workflow', True)
