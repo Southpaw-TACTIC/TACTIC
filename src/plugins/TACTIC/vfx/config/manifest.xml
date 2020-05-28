@@ -8,7 +8,8 @@
   <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
   <sobject expression="@SOBJECT(sthpw/schema['code',$PROJECT])" search_type="sthpw/schema" unique="true"/>
   <sobject search_type="config/custom_script" seq_max="14"/>
-  <sobject search_type="config/widget_config" seq_max="227"/>
+  <sobject search_type="config/widget_config" expression="@SOBJECT(config/widget_config['category','!=','SideBarWdg']['category','is','NULL']['or'])"/>
+  <sobject search_type="config/widget_config" path="config_sidebar.spt" expression="@SOBJECT(config/widget_config['category','SideBarWdg'])" unique="true"/>
   <sobject search_type="config/naming" seq_max="2"/>
   <sobject search_type="config/client_trigger" seq_max="1"/>
   <sobject search_type="config/process" seq_max="12"/>
