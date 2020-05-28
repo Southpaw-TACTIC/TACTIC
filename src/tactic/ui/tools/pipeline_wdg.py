@@ -6018,7 +6018,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
         settings_wdg.add("<br/>")
 
         save_button = ActionButtonWdg(title="Save", color="primary")
-        settings_wdg.add(save_button)
+        #settings_wdg.add(save_button)
         save_button.add_style("float: right")
         save_button.add_style("padding-top: 3px")
         save_button.add_behavior( {
