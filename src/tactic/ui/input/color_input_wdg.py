@@ -23,10 +23,8 @@ from tactic.ui.common import BaseRefreshWdg
 from .text_input_wdg import TextInputWdg
 
 
-# DEPRECATED: because the browsers have a sufficiently good one built in
-
-
 class ColorWdg(Widget):
+    # DEPRECATED: because the browsers have a sufficiently good one built-in
     '''This is drawn once in the page to reuse by repositioning it'''
     def get_display(self):
 
@@ -120,8 +118,7 @@ class ColorInputWdg(BaseInputWdg):
         super(ColorInputWdg, self).__init__(name)
 
         if not self.input:
-            self.input = TextInputWdg(name=self.get_input_name())
-
+            self.input = TextInputWdg(name=self.get_input_name(), type="color", width="60")
 
 
     def add_style(self, name, value=None):
@@ -146,13 +143,57 @@ class ColorInputWdg(BaseInputWdg):
 
     def get_display(self):
         top = self.top
+        top.add_style("display: flex")
+        top.add_style("align-items: center")
+        top.add_class("spt_color_top")
 
 
         value = self.get_value()
+
+        top.add(self.input)
+
+        text = TextInputWdg(name=self.get_input_name())
+        top.add(text)
+        text.add_class("spt_color_text")
+        text.add_style("margin-left: 15px")
+        text.add_style("width: 100%")
+
+        self.input.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_color_top");
+            var el = top.getElement(".spt_color_text");
+            el.value = bvr.src_el.value;
+            '''
+        } )
+
+
+        text.add_behavior( {
+            'type': 'change',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_color_top");
+            var el = top.getElement(".spt_color_input");
+            el.value = bvr.src_el.value;
+            '''
+        } )
+
+        text.add_behavior( {
+            'type': 'clickX',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_color_top");
+            var el = top.getElement(".spt_color_input");
+            el.click();
+            '''
+        } )
+
+
+
+
+
         if value:
             self.input.set_value(value)
-            self.input.add_style("background", value)
-        top.add(self.input)
+            text.set_value(value)
+
 
         start_color = self.kwargs.get("start_color")
 
@@ -178,7 +219,7 @@ class ColorInputWdg(BaseInputWdg):
 
         if start_color:
             self.input.set_value(start_color)
-            self.input.add_style("background", start_color)
+            text.set_value(start_color)
 
         self.input.add_class("spt_color_input")
      
@@ -191,78 +232,6 @@ class ColorInputWdg(BaseInputWdg):
 
             start_color = [r, g, b]
 
-        behavior = {
-            'type': 'click_up',
-            'name': self.get_name(),
-            'start_color': start_color,
-            'cbjs_action': '''
-
-            var pos = bvr.src_el.getPosition();
-            var input = bvr.src_el.getElement(".spt_color_input");
-            var cell_edit = bvr.src_el.getParent(".spt_cell_edit");
-            var current_color = input.value;
-            input.setStyle("background-color", current_color);
-
-            if (!current_color) {
-                current_color = bvr.start_color;
-            }
-            else {
-                var c = spt.css.convert_hex_to_rgb_obj(current_color);
-                current_color = [c.r, c.g, c.b];
-            }
-
-            
-
-            var options = {
-                startColor: current_color,
-                onComplete: function(color) {
-                    input.value=color.hex;
-                    
-                }
-            };
-
-            var cbk = function(color) {
-                input.value = color.hex;
-                input.setStyle("background-color", color.hex);
-                if (cell_edit) {
-                    input.blur();
-                    spt.table.accept_edit(cell_edit, input.value, true);
-                }
-                else {
-                    input.focus();
-                    input.blur();
-                }
-            };
-
-            var rainbow = null;
-            var rainbow = spt.color.get();
-            // function to actually display the mooRainbow picker
-            var display_dialog = function() {
-
-                rainbow.cbk = cbk;
-                rainbow.manualSet( current_color );
-
-                // set the position
-                spt.color.top.setStyle('left', pos.x);
-                spt.color.top.setStyle('top', pos.y+20);
-                //spt.color.top.setStyle('z-index', '1000');
-                rainbow.show();
-            }
-        
-            if (rainbow) {
-                display_dialog();
-            } else { // this could be run at the very first time it is drawn
-                setTimeout(function() {
-                rainbow = spt.color.get();
-                display_dialog();
-            
-                }, 1000)
-            }
-            '''
-        }
-        top.add_behavior(behavior)
-
-        return top
 
 
 

@@ -1,0 +1,657 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00001""")
+insert.set_value('config', """<config>
+  <project_view>
+    <element name="art_reference"/>
+    <element name="script"/>
+    <element name="storyboard"/>
+    <element name="leica"/>
+    <element name="separator096"/>
+    <element name="sequence"/>
+    <element name="shot"/>
+    <element name="separator100"/>
+    <element name="asset"/>
+    <element name="separator020"/>
+    <element name="_my_tactic"/>
+    <element name="tools"/>
+<!-- DEPRECATED: None of this works anymore
+    <element name="application"/>
+-->
+    <element name="schedule"/>
+    <element name="review"/>
+    <element name="separator006"/>
+    <element name="manage_lists"/>
+    <element name="development"/>
+  </project_view>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-20 19:20:21""")
+insert.set_value('view', """project_view""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00006""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="shot_list" title="Shot List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/shot</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="leica_list" title="Leica List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/leica</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_category_list" title="Asset Category List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/asset_category</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_in_shot_list" title="Asset In Shot List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/asset_in_shot</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="asset_in_sequence_list">
+      <display class="LinkWdg">
+        <search_type>vfx/asset_in_sequence</search_type>
+        <search_view>link_search:asset_in_sequence_list</search_view>
+        <view>asset_in_sequence_list</view>
+      </display>
+    </element>
+    <element name="asset_in_episode_list" title="Asset In Episode List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/asset_in_episode</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="review_list" title="Review List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/review</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="layer_list" title="Layer List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/layer</search_type>
+        <view>layer_list</view>
+      </display>
+    </element>
+    <element name="plate_list">
+      <display class="LinkWdg">
+        <search_type>vfx/plate</search_type>
+        <search_view>link_search:plate_list</search_view>
+        <view>plate_list</view>
+      </display>
+    </element>
+    <element name="sequence_list" title="Sequence List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/sequence</search_type>
+        <view>sequence_list</view>
+      </display>
+    </element>
+    <element name="episode_list" title="Episode List" icon="FAS_EDIT" state="" is_visible="on">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/episode</search_type>
+        <view>episode_list</view>
+      </display>
+    </element>
+    <element name="art_reference_list" title="Art Reference List" icon="FAS_PHOTO_VIDEO" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/art_reference</search_type>
+        <view>art_reference_list</view>
+      </display>
+    </element>
+    <element name="script_list" title="Script List" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/script</search_type>
+        <view>script_list</view>
+      </display>
+    </element>
+    <element name="storyboard_list" title="Storyboard List" icon="FAS_PHOTO_VIDEO" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/storyboard</search_type>
+        <view>storyboard_list</view>
+      </display>
+    </element>
+    <element name="manage_lists" title="Manage Lists">
+      <display class="SideBarSectionLinkWdg">
+        <view>manage_lists</view>
+      </display>
+    </element>
+    <element name="tools" title="Tools">
+      <display class="SideBarSectionLinkWdg">
+        <view>tools</view>
+      </display>
+    </element>
+    <element name="review" title="Review">
+      <display class="SideBarSectionLinkWdg">
+        <view>review</view>
+      </display>
+    </element>
+    <element name="separator" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator098" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator097" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator003" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="hidden_views" title="Hidden Views">
+      <display class="SideBarSectionLinkWdg">
+        <view>hidden_views</view>
+      </display>
+    </element>
+    <element name="development" title="Development">
+      <display class="SideBarSectionLinkWdg">
+        <view>development</view>
+      </display>
+    </element>
+    <element name="asset_list" title="Asset List" icon="FAS_CUBE" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/asset</search_type>
+        <view>asset_list</view>
+      </display>
+    </element>
+    <element name="separator006" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="schedule" title="Schedule">
+      <display class="SideBarSectionLinkWdg">
+        <view>schedule</view>
+      </display>
+    </element>
+    <element name="review_tracking">
+      <display class="LinkWdg">
+        <search_type>vfx/review</search_type>
+        <search_view>link_search:review_tracking</search_view>
+        <view>review_tracking</view>
+      </display>
+    </element>
+    <element name="schedule_list" title="Schedule List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/schedule</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="schedule_task_list" title="Schedule Task List">
+      <display class="LinkWdg">
+        <search_type>sthpw/task</search_type>
+        <search_view>link_search:schedule_task_list</search_view>
+        <view>schedule_task_list</view>
+      </display>
+    </element>
+    <element name="schedule_bidding" title="Schedule Bidding">
+      <display class="LinkWdg">
+        <search_type>vfx/schedule</search_type>
+        <search_view>link_search:schedule_bidding</search_view>
+        <view>schedule_bidding</view>
+      </display>
+    </element>
+    <element name="separator020" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="checkin_history">
+      <display class="LinkWdg">
+        <search_type>sthpw/snapshot</search_type>
+        <search_view>link_search:checkin_history</search_view>
+        <view>checkin_history</view>
+      </display>
+    </element>
+    <element name="review_submission_list" title="Review Submission List">
+      <display class="LinkWdg">
+        <search_type>vfx/submission</search_type>
+        <search_view>link_search:review_submission_list</search_view>
+        <view>review_submission_list</view>
+      </display>
+    </element>
+    <element name="config_shot_sheet_wdg" title="CONFIG - Shot Sheet Wdg">
+      <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <search_view>link_search:config_shot_sheet_wdg</search_view>
+        <view>config_shot_sheet_wdg</view>
+      </display>
+    </element>
+    <element name="shot_sheet_wdg_plates" title="Shot Sheet Wdg Plates">
+      <display class="LinkWdg">
+        <search_type>vfx/plate</search_type>
+        <search_view>link_search:shot_sheet_wdg_plates</search_view>
+        <view>shot_sheet_wdg_plates</view>
+      </display>
+    </element>
+    <element name="shot_planner" title="Shot Planner" icon="" state="" is_visible="on">
+      <display class="LinkWdg">
+        <widget_key>custom_layout</widget_key>
+        <view>shot_planner_wdg</view>
+      </display>
+    </element>
+    <element name="config_shot_planner" title="CONFIG - Shot Planner">
+      <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <search_view>link_search:config_shot_planner</search_view>
+        <view>config_shot_planner</view>
+      </display>
+    </element>
+    <element name="configs" title="Configs">
+      <display class="SideBarSectionLinkWdg">
+        <view>configs</view>
+      </display>
+    </element>
+    <element name="episode" title="Episode">
+      <display class="LinkWdg">
+        <search_type>vfx/episode</search_type>
+        <search_view>link_search:episode</search_view>
+        <view>episode</view>
+      </display>
+    </element>
+    <element name="sequence" title="Sequence" icon="PHOTOS" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/sequence</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:sequence</search_view>
+        <view>sequence</view>
+      </display>
+    </element>
+    <element name="shot" icon="FAS_FILM" title="Shot" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/shot</search_type>
+        <simple_search_view>shot_custom_filter</simple_search_view>
+        <search_view>link_search:shot</search_view>
+        <view>shot</view>
+      </display>
+    </element>
+    <element name="asset" icon="FAS_CUBE" title="Asset">
+      <display class="LinkWdg">
+        <search_type>vfx/asset</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:asset</search_view>
+        <view>asset</view>
+      </display>
+    </element>
+    <element name="layer" title="Layer">
+      <display class="LinkWdg">
+        <search_type>vfx/layer</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:layer</search_view>
+        <view>layer</view>
+      </display>
+    </element>
+    <element name="plate" title="Plate" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/plate</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <view>plate</view>
+        <search_view>link_search:plate</search_view>
+      </display>
+    </element>
+    <element name="asset_category" title="Asset Category">
+      <display class="LinkWdg">
+        <search_type>vfx/asset_category</search_type>
+        <search_view>link_search:asset_category</search_view>
+        <view>asset_category</view>
+      </display>
+    </element>
+    <element name="art_reference" title="Art Reference" icon="FAS_PHOTO_VIDEO" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/art_reference</search_type>
+        <search_view>link_search:art_reference</search_view>
+        <view>art_reference</view>
+      </display>
+    </element>
+    <element name="script" title="Script" icon="FAS_SCROLL" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/script</search_type>
+        <search_view>link_search:script</search_view>
+        <view>script</view>
+      </display>
+    </element>
+    <element name="storyboard" title="Storyboard" icon="PROCESS" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/storyboard</search_type>
+        <search_view>link_search:storyboard</search_view>
+        <view>storyboard</view>
+      </display>
+    </element>
+    <element name="leica" title="Leica" icon="FAS_FILM" state="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>vfx/leica</search_type>
+        <search_view>link_search:leica</search_view>
+        <view>leica</view>
+      </display>
+    </element>
+    <element name="separator096" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator100" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="asset_loader" icon="folder_go">
+      <display class="LinkWdg">
+        <search_type>vfx/asset</search_type>
+        <view>load</view>
+      </display>
+    </element>
+    <element name="asset_checkin" icon="FAS_UPLOAD">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.AssetCheckinWdg</class_name>
+        <search_type>vfx/asset</search_type>
+        <texture_search_type>vfx/texture</texture_search_type>
+      </display>
+    </element>
+    <element name="shot_loader" icon="FAS_FILM">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.AppShotPanelWdg</class_name>
+        <search_type>vfx/shot</search_type>
+        <asset_search_type>vfx/asset</asset_search_type>
+        <instance_search_type>vfx/asset_in_shot</instance_search_type>
+        <view>load</view>
+      </display>
+    </element>
+    <element name="shot_checkin" icon="FAS_UPLOAD">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.ShotCheckinWdg</class_name>
+        <search_type>vfx/shot</search_type>
+        <sequence_search_type>vfx/sequence</sequence_search_type>
+        <texture_search_type>vfx/shot_texture</texture_search_type>
+      </display>
+    </element>
+    <element name="session" icon="connect">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.cgapp.SessionWdg</class_name>
+        <search_type>vfx/asset</search_type>
+        <view>load</view>
+      </display>
+    </element>
+    <element name="_my_tactic" title="My TACTIC">
+      <display class="SideBarSectionLinkWdg">
+        <view>_my_tactic</view>
+      </display>
+    </element>
+    <element name="planner_shot" title="Planner Shot">
+      <display class="LinkWdg">
+        <search_type>vfx/shot</search_type>
+        <search_view>link_search:planner_shot</search_view>
+        <view>planner_shot</view>
+      </display>
+    </element>
+    <element name="planner_asset" title="Planner Asset">
+      <display class="LinkWdg">
+        <search_type>vfx/asset</search_type>
+        <search_view>link_search:planner_asset</search_view>
+        <view>planner_asset</view>
+      </display>
+    </element>
+    <element name="planner_sequence" title="Planner Sequence">
+      <display class="LinkWdg">
+        <search_type>vfx/sequence</search_type>
+        <search_view>link_search:planner_sequence</search_view>
+        <view>planner_sequence</view>
+      </display>
+    </element>
+    <element name="config_sequence_planner" title="Sequence Planner" icon="" state="">
+      <display class="LinkWdg">
+        <widget_key>custom_layout</widget_key>
+        <view>sequence_planner_wdg</view>
+      </display>
+    </element>
+    <element name="my_tasks" icon="FAS_TASKS">
+      <display class="LinkWdg">
+        <show_insert>false</show_insert>
+        <search_type>sthpw/task</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <view>my_task</view>
+        <filter>
+       [{"prefix":"main_body","main_body_enabled":"on","main_body_column":"assigned","main_body_relation":"is","main_body_value":"{$LOGIN}"},{"prefix":"main_body","main_body_enabled":"on","main_body_column":"project_code","main_body_relation":"is","main_body_value":"{$PROJECT}"},{"prefix": "group", "group": "true", "order": "parent"}]
+      </filter>
+      </display>
+    </element>
+    <element name="extra_views" title="Extra Views">
+      <display class="SideBarSectionLinkWdg">
+        <view>extra_views</view>
+      </display>
+    </element>
+    <element name="config_snapshot_to_review" title="CONFIG - Snapshot to Review">
+      <display class="LinkWdg">
+        <search_type>config/widget_config</search_type>
+        <search_view>link_search:config_snapshot_to_review</search_view>
+        <view>config_snapshot_to_review</view>
+      </display>
+    </element>
+    <element name="snapshot_in_submission_list" title="Snapshot In Submission List">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
+        <search_type>vfx/snapshot_in_submission</search_type>
+        <view>table</view>
+      </display>
+    </element>
+  </definition>
+</config>""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-20 21:24:13""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00091""")
+insert.set_value('config', """<config>
+  <manage_lists>
+    <element name="episode_list"/>
+    <element name="sequence_list"/>
+    <element name="shot_list"/>
+    <element name="layer_list"/>
+    <element name="plate_list"/>
+    <element name="separator098"/>
+    <element name="asset_category_list"/>
+    <element name="asset_list"/>
+    <element name="separator097"/>
+    <element name="art_reference_list"/>
+    <element name="script_list"/>
+    <element name="storyboard_list"/>
+    <element name="leica_list"/>
+    <element name="separator003"/>
+    <element name="schedule_list"/>
+    <element name="review_list"/>
+  </manage_lists>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-26 03:01:59""")
+insert.set_value('view', """manage_lists""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00092""")
+insert.set_value('config', """<config>
+  <hidden_views>
+    <element name="snapshot_in_submission_list"/>
+    <element name="planner_sequence"/>
+    <element name="planner_asset"/>
+    <element name="planner_shot"/>
+    <element name="shot_sheet_wdg_plates"/>
+    <element name="review_submission_list"/>
+    <element name="checkin_history"/>
+    <element name="schedule_task_list"/>
+    <element name="asset_in_episode_list"/>
+    <element name="asset_in_sequence_list"/>
+    <element name="asset_in_shot_list"/>
+  </hidden_views>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-26 03:03:15""")
+insert.set_value('view', """hidden_views""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00093""")
+insert.set_value('config', """<config>
+  <development>
+    <element name="extra_views"/>
+    <element name="configs"/>
+    <element name="hidden_views"/>
+  </development>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-26 03:03:50""")
+insert.set_value('view', """development""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00094""")
+insert.set_value('config', """<config>
+  <review>
+    <element name="review_tracking"/>
+  </review>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-26 03:03:50""")
+insert.set_value('view', """review""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00117""")
+insert.set_value('config', """<config>
+  <schedule>
+    <element name="schedule_bidding"/>
+  </schedule>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-10-26 04:08:07""")
+insert.set_value('view', """schedule""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00150""")
+insert.set_value('config', """<config>
+  <configs>
+    <element name="config_snapshot_to_review"/>
+    <element name="config_sequence_planner"/>
+    <element name="config_shot_planner"/>
+    <element name="config_shot_sheet_wdg"/>
+  </configs>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-11-10 20:19:43""")
+insert.set_value('view', """configs""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00151""")
+insert.set_value('config', """<config>
+  <tools>
+    <element name="config_sequence_planner"/>
+    <element name="shot_planner"/>
+  </tools>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-11-10 20:20:00""")
+insert.set_value('view', """tools""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00181""")
+insert.set_value('config', """<config>
+  <_application>
+    <element name="asset_loader"/>
+    <element name="asset_checkin"/>
+    <element name="shot_loader"/>
+    <element name="shot_checkin"/>
+    <element name="session"/>
+    <element name="checkin_log"/>
+  </_application>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-12-15 16:11:31""")
+insert.set_value('view', """_application""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00204""")
+insert.set_value('config', """<config>
+  <_my_tactic>
+    <element name="my_tasks"/>
+  </_my_tactic>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-12-21 23:34:35""")
+insert.set_value('view', """_my_tactic""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """VFX00208""")
+insert.set_value('config', """<config>
+  <extra_views>
+    <element name="asset_category"/>
+    <element name="plate"/>
+    <element name="layer"/>
+    <element name="episode"/>
+  </extra_views>
+</config>
+""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('timestamp', """2011-12-22 18:29:59""")
+insert.set_value('view', """extra_views""")
+#-- End Entry --#
+

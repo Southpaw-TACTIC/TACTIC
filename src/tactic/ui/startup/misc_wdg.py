@@ -120,13 +120,17 @@ class QuickLinksWdg(BaseRefreshWdg):
         links_div.add(link_div)
 
 
-        icon = IconWdg("Documentation", IconWdg.DOCUMENTATION)
+        #icon = IconWdg("Documentation", IconWdg.DOCUMENTATION)
+        icon = IconWdg("Documentation", "FAS_BOOK", size=16)
 
         icon.set_box_shadow("2px 2px 5px")
         icon.add_border()
-        icon.add_style("padding: 5px 3px 5px 7px")
+        icon.add_style("padding: 5px 3px 5px 3px")
         icon.set_round_corners()
-        icon.add_color("background", "background3")
+        #icon.add_color("background", "background3")
+        icon.add_style("width: 32")
+        icon.add_style("display: inline-block")
+        icon.add_style("text-align: center")
 
         link_div.add(icon)
         link_div.add("&nbsp;"*2)
@@ -161,14 +165,14 @@ class QuickLinksWdg(BaseRefreshWdg):
         link_div.add_style("padding-left: 10px")
         links_div.add(link_div)
 
-        icon = IconWdg("Community", IconWdg.COMMUNITY)
+        #icon = IconWdg("Community", IconWdg.COMMUNITY)
+        icon = IconWdg("Community", "FAS_USERS", size=16)
 
         icon.set_box_shadow("2px 2px 5px")
         icon.add_border()
-        icon.add_style("padding: 5px 3px 5px 7px")
+        icon.add_style("padding: 5px 3px 5px 3px")
         icon.set_round_corners()
-        icon.set_round_corners()
-        icon.add_color("background", "background3")
+        #icon.add_color("background", "background3")
 
         link_div.add(icon)
         link_div.add("&nbsp;"*2)
@@ -193,13 +197,16 @@ class QuickLinksWdg(BaseRefreshWdg):
         link_div.add_style("padding-left: 10px")
         links_div.add(link_div)
 
-        icon = IconWdg("Support", IconWdg.WEBSITE)
+        #icon = IconWdg("Support", IconWdg.WEBSITE)
+        icon = IconWdg("Support", "FAS_PHONE")
 
         icon.set_box_shadow("2px 2px 5px")
         icon.add_border()
-        icon.add_style("padding: 5px 3px 5px 7px")
+        icon.add_style("padding: 5px 3px 5px 3px")
+        icon.add_style("width: 30px")
+        icon.add_style("display: inline-block")
         icon.set_round_corners()
-        icon.add_color("background", "background3")
+        #icon.add_color("background", "background3")
 
 
         link_div.add(icon)
