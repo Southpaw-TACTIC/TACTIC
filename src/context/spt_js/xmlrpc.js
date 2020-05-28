@@ -197,7 +197,7 @@ AjaxService.prototype.getMessage = function( method, arguments )
     if ( arguments.length > 0 )
     {
         message += '<params>';
-        
+
         for ( var i = 0; i < arguments.length; i++ )
         {
             var argument = arguments[ i ];
