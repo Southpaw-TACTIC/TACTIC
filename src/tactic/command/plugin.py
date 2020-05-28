@@ -181,8 +181,14 @@ class PluginBase(Command):
             # In case there is extra plugins folder which is the case when the user 
             # is developing. 
             relative_dir = plugin.get_value("rel_dir")
+            if not relative_dir:
+                relative_dir = plugin.get_value("code")
              
-            plugin_base_dir = Environment.get_plugin_dir()
+            if self.code.startswith("TACTIC"):
+                plugin_base_dir = Environment.get_builtin_plugin_dir()
+            else:
+                plugin_base_dir = Environment.get_plugin_dir()
+
             self.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
             
             # TODO: fix the ZipUtil.zip_dir()
