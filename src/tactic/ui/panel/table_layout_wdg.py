@@ -8909,27 +8909,29 @@ spt.table.save_view = function(table, new_view, kwargs) {
         // Copy the value of the "icon" attribute from the previous XML widget
         // config.
         var icon = null;
-        var widget_config_before = server.get_config_definition(search_type, "definition", last_element_name);
-        // Skip if there is no previous matching XML widget config.
-        if (widget_config_before != "") {
-            xmlDoc = spt.parse_xml(widget_config_before);
-            var elem_nodes = xmlDoc.getElementsByTagName("element");
+        if (last_element_name) {
+            var widget_config_before = server.get_config_definition(search_type, "definition", last_element_name);
+            // Skip if there is no previous matching XML widget config.
+            if (widget_config_before != "") {
+                xmlDoc = spt.parse_xml(widget_config_before);
+                var elem_nodes = xmlDoc.getElementsByTagName("element");
 
-            if (elem_nodes.length > 0) {
-                var attr_node = elem_nodes[0].getAttributeNode("icon")
+                if (elem_nodes.length > 0) {
+                    var attr_node = elem_nodes[0].getAttributeNode("icon")
 
-                // Skip if there is no icon to copy over from the old link.
-                if (attr_node != null) {
-                    icon = attr_node.nodeValue;
+                    // Skip if there is no icon to copy over from the old link.
+                    if (attr_node != null) {
+                        icon = attr_node.nodeValue;
+                    }
+
+                    // keep title
+                    if ( save_mode == 'save_view_only' ) {
+                        var title_node = elem_nodes[0].getAttributeNode("title")
+                        if (title_node)
+                            new_title = title_node.nodeValue;
+                    }
+
                 }
-
-                // keep title
-                if ( save_mode == 'save_view_only' ) {
-                    var title_node = elem_nodes[0].getAttributeNode("title")
-                    if (title_node)
-                        new_title = title_node.nodeValue;
-                }
-
             }
         }
 

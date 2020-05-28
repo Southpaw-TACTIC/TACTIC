@@ -852,11 +852,12 @@ class RadioWdg(BaseInputWdg):
             self.set_attr(name,option)
 
         if self.label:
-            span = SpanWdg()
+            self.add_style("display: inline-flex")
+            self.add_style("margin-right: 5px")
+
+            span = DivWdg()
             span.add(" %s" % self.label)
             self.add(span)
-            span.add_style("top: 3px")
-            span.add_style("position: relative")
 
         return super(RadioWdg,self).get_display()
 
