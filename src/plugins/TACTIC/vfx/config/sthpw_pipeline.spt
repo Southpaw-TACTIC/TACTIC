@@ -5,18 +5,17 @@ insert.set_value('code', """vfx/asset""")
 insert.set_value('color', """#b07f4a""")
 insert.set_value('data', """{"node_index": 0}""")
 insert.set_value('description', """VFX - Asset""")
-insert.set_value('pipeline', """<?xml version="1.0" encoding="UTF-8"?>
-<pipeline>
-  <process name="design" xpos="100" ypos="100"/>
-  <process name="model" xpos="253" ypos="122"/>
-  <process name="texture" xpos="414" ypos="150"/>
-  <process name="rig" xpos="571" ypos="172"/>
+insert.set_value('pipeline', """<pipeline>
+  <process name="design" type="manual" xpos="100" ypos="100"/>
+  <process name="model" type="manual" xpos="253" ypos="122"/>
+  <process name="texture" type="manual" xpos="414" ypos="150"/>
+  <process name="rig" type="manual" xpos="571" ypos="172"/>
   <connect from="design" to="model"/>
   <connect from="model" to="texture"/>
   <connect from="texture" to="rig"/>
 </pipeline>
 """)
-insert.set_value('project_code', """vfx3""")
+insert.set_value('project_code', """vfx""")
 insert.set_value('search_type', """vfx/asset""")
 insert.set_value('timestamp', """2011-10-26 03:12:57""")
 insert.set_value('use_workflow', True)
@@ -29,25 +28,24 @@ insert.set_value('code', """vfx/shot""")
 insert.set_value('color', """#5784c2""")
 insert.set_value('data', """{"node_index": 0}""")
 insert.set_value('description', """VFX - Shot""")
-insert.set_value('pipeline', """<?xml version="1.0" encoding="UTF-8"?>
-<pipeline>
-  <process name="layout" xpos="282" ypos="153"/>
-  <process name="animation" xpos="450" ypos="141"/>
-  <process name="lighting" xpos="624" ypos="173"/>
-  <process name="comp" xpos="970" ypos="211"/>
-  <process name="render" xpos="812" ypos="196"/>
-  <process name="fx" xpos="450" ypos="198"/>
-  <process name="assets" xpos="100" ypos="100"/>
-  <connect from="layout" to="animation"/>
+insert.set_value('pipeline', """<pipeline>
+  <process name="assets" type="manual" xpos="100" ypos="100"/>
+  <process name="layout" type="manual" xpos="282" ypos="153"/>
+  <process name="animation" type="manual" xpos="450" ypos="141"/>
+  <process name="fx" type="manual" xpos="450" ypos="198"/>
+  <process name="lighting" type="manual" xpos="624" ypos="173"/>
+  <process name="render" type="manual" xpos="812" ypos="196"/>
+  <process name="comp" type="manual" xpos="970" ypos="211"/>
+  <connect from="animation" to="lighting"/>
+  <connect from="assets" to="layout"/>
   <connect from="fx" to="lighting"/>
+  <connect from="layout" to="animation"/>
   <connect from="layout" to="fx"/>
   <connect from="lighting" to="render"/>
   <connect from="render" to="comp"/>
-  <connect from="assets" to="layout"/>
-  <connect from="animation" to="lighting"/>
 </pipeline>
 """)
-insert.set_value('project_code', """vfx3""")
+insert.set_value('project_code', """vfx""")
 insert.set_value('search_type', """vfx/shot""")
 insert.set_value('timestamp', """2011-10-26 03:14:01""")
 insert.set_value('use_workflow', True)

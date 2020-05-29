@@ -627,6 +627,8 @@ class TopWdg(Widget):
         Container.put("TopWdg::content", content_div)
 
 
+
+
         # add a dummy button for global behaviors
         from tactic.ui.widget import ButtonNewWdg, IconButtonWdg
         ButtonNewWdg(title="DUMMY", icon=IconWdg.FILM)
@@ -665,6 +667,7 @@ class TopWdg(Widget):
             admin_bar = DivWdg()
             top.add(admin_bar)
             admin_bar.add_class("spt_admin_bar")
+            admin_bar.add_class("hand")
             admin_bar.add(HtmlElement.style('''
             .spt_admin_bar { 
                 display: flex;

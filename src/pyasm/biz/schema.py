@@ -1279,8 +1279,13 @@ class Schema(SObject):
         assert(code)
         schema = Container.get("Schema:%s" % code)
         if not schema:
+
+            schema_xml = SCHEMA_XML.get("code")
+            if not schema_xml:
+                schema_xml = ""
+
             schema = Schema("sthpw/schema", dependencies=False)
-            schema.set_value("schema", SCHEMA_XML[code])
+            schema.set_value("schema", schema_xml)
             schema.set_value("code", code)
             schema.init()
             Container.put("Schema:%s" % code, schema)
