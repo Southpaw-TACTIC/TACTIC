@@ -385,7 +385,7 @@ class File(SObject):
             filename = filename.replace(" ", "_")
 
             filename_base, ext = os.path.splitext(filename)
-            ext = string.lower(ext)
+            ext = ext.lower()
             filename = "%s%s" % (filename_base, ext)
 
         return filename
