@@ -85,7 +85,6 @@ display class, it will adopt the one defined here-->
 
 
 
-
     <element name="detail" title="Details" edit="false">
         <display class="tactic.ui.table.SObjectDetailElementWdg">
         </display>
@@ -154,11 +153,6 @@ display class, it will adopt the one defined here-->
 
     <element name="info">
         <display class="pyasm.flash.widget.FlashAssetInfoWdg"/>
-    </element>
-
-    <element name="discussion" edit="false" title="Discussion [old]">
-        <display class="pyasm.widget.DiscussionWdg">
-        </display>
     </element>
 
     <element name="forum" edit="false">

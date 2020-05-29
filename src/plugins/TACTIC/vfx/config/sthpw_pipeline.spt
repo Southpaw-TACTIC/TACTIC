@@ -7,9 +7,9 @@ insert.set_value('data', """{"node_index": 0}""")
 insert.set_value('description', """VFX - Asset""")
 insert.set_value('pipeline', """<pipeline>
   <process name="design" type="manual" xpos="100" ypos="100"/>
-  <process name="model" type="manual" xpos="253" ypos="122"/>
-  <process name="texture" type="manual" xpos="414" ypos="150"/>
-  <process name="rig" type="manual" xpos="571" ypos="172"/>
+  <process name="model" type="manual" xpos="257" ypos="129"/>
+  <process name="texture" type="manual" xpos="418" ypos="157"/>
+  <process name="rig" type="manual" xpos="575" ypos="179"/>
   <connect from="design" to="model"/>
   <connect from="model" to="texture"/>
   <connect from="texture" to="rig"/>

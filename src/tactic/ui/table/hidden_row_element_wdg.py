@@ -16,7 +16,7 @@ from pyasm.web import DivWdg, SpanWdg
 from pyasm.search import Search
 
 from tactic.ui.common import BaseTableElementWdg, BaseRefreshWdg
-from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
+from tactic.ui.widget import SwapDisplayWdg
 
 class HiddenRowElementWdg(BaseTableElementWdg):
 

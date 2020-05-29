@@ -1,99 +1,110 @@
 #-- Start Entry --#
 insert = SearchType.create('config/process')
-insert.set_value('code', """1VFX""")
-insert.set_value('pipeline_code', """vfx/asset""")
-insert.set_value('process', """design""")
-insert.set_value('sort_order', 0)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """2VFX""")
-insert.set_value('pipeline_code', """vfx/asset""")
-insert.set_value('process', """model""")
-insert.set_value('sort_order', 1)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """3VFX""")
-insert.set_value('pipeline_code', """vfx/asset""")
-insert.set_value('process', """texture""")
-insert.set_value('sort_order', 2)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """4VFX""")
-insert.set_value('pipeline_code', """vfx/asset""")
-insert.set_value('process', """rig""")
-insert.set_value('sort_order', 3)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """5VFX""")
-insert.set_value('pipeline_code', """vfx/shot""")
-insert.set_value('process', """layout""")
-insert.set_value('sort_order', 1)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """6VFX""")
-insert.set_value('pipeline_code', """vfx/shot""")
-insert.set_value('process', """animation""")
-insert.set_value('sort_order', 2)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """7VFX""")
-insert.set_value('pipeline_code', """vfx/shot""")
-insert.set_value('process', """fx""")
-insert.set_value('sort_order', 3)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """8VFX""")
-insert.set_value('pipeline_code', """vfx/shot""")
-insert.set_value('process', """lighting""")
-insert.set_value('sort_order', 4)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """9VFX""")
-insert.set_value('pipeline_code', """vfx/shot""")
-insert.set_value('process', """comp""")
-insert.set_value('sort_order', 6)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """10VFX""")
-insert.set_value('pipeline_code', """vfx/shot""")
-insert.set_value('process', """render""")
-insert.set_value('sort_order', 5)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/process')
-insert.set_value('code', """12VFX""")
+insert.set_value('code', """SPT_PROCESS00191""")
 insert.set_value('pipeline_code', """vfx/shot""")
 insert.set_value('process', """assets""")
-insert.set_value('sort_order', 0)
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
+insert.set_value('sort_order', 1)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00192""")
+insert.set_value('pipeline_code', """vfx/shot""")
+insert.set_value('process', """layout""")
+insert.set_value('sort_order', 2)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00193""")
+insert.set_value('pipeline_code', """vfx/shot""")
+insert.set_value('process', """animation""")
+insert.set_value('sort_order', 3)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00194""")
+insert.set_value('pipeline_code', """vfx/shot""")
+insert.set_value('process', """fx""")
+insert.set_value('sort_order', 4)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00195""")
+insert.set_value('pipeline_code', """vfx/shot""")
+insert.set_value('process', """lighting""")
+insert.set_value('sort_order', 5)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00196""")
+insert.set_value('pipeline_code', """vfx/shot""")
+insert.set_value('process', """render""")
+insert.set_value('sort_order', 6)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00197""")
+insert.set_value('pipeline_code', """vfx/shot""")
+insert.set_value('process', """comp""")
+insert.set_value('sort_order', 7)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:25:33.720897""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00198""")
+insert.set_value('pipeline_code', """vfx/asset""")
+insert.set_value('process', """design""")
+insert.set_value('sort_order', 1)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:52:39.347893""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00199""")
+insert.set_value('pipeline_code', """vfx/asset""")
+insert.set_value('process', """model""")
+insert.set_value('sort_order', 2)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:52:39.347893""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00200""")
+insert.set_value('pipeline_code', """vfx/asset""")
+insert.set_value('process', """texture""")
+insert.set_value('sort_order', 3)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:52:39.347893""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00201""")
+insert.set_value('pipeline_code', """vfx/asset""")
+insert.set_value('process', """rig""")
+insert.set_value('sort_order', 4)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-29 07:52:39.347893""")
 #-- End Entry --#
 

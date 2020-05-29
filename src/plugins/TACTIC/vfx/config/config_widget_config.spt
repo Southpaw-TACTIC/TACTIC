@@ -10,11 +10,14 @@ insert.set_value('config', """<config>
     </element>
     <element name="description"/>
     <element name="sequence_code"/>
+    <!--
     <element name="detail" edit="false">
       <display class="HiddenRowToggleWdg">
         <dynamic_class>pyasm.prod.web.ShotDetailWdg</dynamic_class>
       </display>
     </element>
+    -->
+    <element name="detail"/>
     <element name="shot">
       <display class="pyasm.prod.web.ShotInfoWdg"/>
     </element>
@@ -56,11 +59,6 @@ insert.set_value('config', """<config>
       <display class="tactic.ui.cgapp.LoaderElementWdg">
         <search_type>vfx/shot</search_type>
         <mode>output</mode>
-      </display>
-    </element>
-    <element name="discussion" edit="false">
-      <display class="pyasm.widget.DiscussionWdg">
-        <sticky>new</sticky>
       </display>
     </element>
     <element name="asset_in_shot" edit="false">
@@ -1125,11 +1123,6 @@ insert.set_value('config', """<config>
         <width>250</width>
         <simple_date>true</simple_date>
         <bid_edit>false</bid_edit>
-      </display>
-    </element>
-    <element name="discussion" edit="false">
-      <display class="pyasm.widget.DiscussionWdg">
-        <sticky>new</sticky>
       </display>
     </element>
     <element name="task_edit" width="46.7167px" edit="false">
@@ -4425,5 +4418,27 @@ insert.set_value('config', """
 """)
 insert.set_value('timestamp', """2011-12-23 22:18:18""")
 insert.set_value('view', """review_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG06166""")
+insert.set_value('config', """<config>
+<tab_element_names>
+  <element name="tasks"/>
+  <element name="notes" count="@COUNT(sthpw/note)"/>
+  <element name="vfx/layer" title="Layers"/>
+  <element name="vfx/plate" title="Plates"/>
+  <!--
+  <element name="vfx/submission" title="Submissions"/>
+  -->
+  <element name="checkin"/>
+  <element name="edit"/>
+
+</tab_element_names>
+</config>""")
+insert.set_value('search_type', """vfx/shot""")
+insert.set_value('timestamp', """2020-05-29 06:44:56.272886""")
+insert.set_value('view', """tab_element_names""")
 #-- End Entry --#
 

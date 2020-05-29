@@ -375,11 +375,12 @@ class SnapshotDirListWdg(DirListWdg):
             tip = path
 
         icon_div = DivWdg()
+        icon_div.add_style("display: flex")
+
         item_div.add(icon_div)
         icon = IconWdg(tip, icon_string)
         icon_div.add(icon)
-        icon_div.add_style("float: left")
-        icon_div.add_style("margin-top: -1px")
+        icon_div.add_style("margin-right: 3px")
 
 
 
@@ -437,6 +438,7 @@ class SnapshotDirListWdg(DirListWdg):
         filesize_div.add(size)
         #filesize_div.add_style("width: 200px")
         filesize_div.add_style("text-align: right")
+        filesize_div.add_style("margin-left: 15px")
 
 
 
@@ -482,8 +484,8 @@ spt.selection.select = function(el) {
 
 spt.selection.unselect = function(el) {
     el.removeClass("spt_select");
-    el.setStyle("background", "#FFF");
-    el.setAttribute("spt_background", '#FFF');
+    el.setStyle("background", "");
+    el.setAttribute("spt_background", '');
 }
 
 
@@ -709,6 +711,7 @@ class SObjectDirListWdg(DirListWdg):
         top = self.top
         top.add_style("padding: 10px")
         top.add_color("background", "background")
+        top.add_color("color", "color")
         top.add_style("min-width: 500px")
         top.add_style("font-size: 12px")
         top.add_class("spt_sobject_dir_list_top")
@@ -724,6 +727,7 @@ class SObjectDirListWdg(DirListWdg):
             inner.add(title_wdg)
             title_wdg.add("File Browser [%s]" % self.sobject.get_code())
             title_wdg.add_color("background", "background3")
+            title_wdg.add_color("color", "color3")
             title_wdg.add_style("padding: 16px 10px")
             title_wdg.add_style("margin: -10px -10px 10px -10px")
             title_wdg.add_style("font-weight: bold")

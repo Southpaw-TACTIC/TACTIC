@@ -1108,7 +1108,9 @@ TacticServerStub = function() {
             if (kwargs.mode == 'client_repo'){
                 applet.copytree(path, dst);
             }
-            else if (kwargs.mode =='web'){
+            else if (kwargs.mode =='webX'){
+                // NOTE: this is no long supported due to lack of Java support on
+                // the browser.  Web mode is now the same as browser mode.
                 var url = server_root + path;
                 if (spt.url.exists(url)){
                     applet.download_file(url, dst);
@@ -1117,7 +1119,7 @@ TacticServerStub = function() {
                     alert(url + ' does not exist on the server. It may have been backed up.');
                 }
             }
-            else if (kwargs.mode == 'browser'){
+            else if (kwargs.mode == 'browser' || kwargs.mode == 'web'){
                 var download_el = document.createElement("a");
                 download_el.setAttribute("href",path);
                 download_el.setAttribute("download",basename);

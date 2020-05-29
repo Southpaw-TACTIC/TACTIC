@@ -1451,18 +1451,19 @@ class IconButtonWdg(DivWdg):
     def get_display(self):
         self.add_style("position: relative")
         self.add_class("spt_button_top")
-        self.add_style("height: %spx" % self.get_height() )
-        self.add_style("width: %spx" % self.get_width() )
+        #self.add_style("height: %spx" % self.get_height() )
+        #self.add_style("width: %spx" % self.get_width() )
 
         display = DivWdg()
         self.add(display)
         display.add_class("spt_icon_button_top")
 
+
+        """
         offset = self.get_offset()
 
-
         out_div = DivWdg()
-        display.add(out_div)
+        #display.add(out_div)
         out_div.add_class("spt_button_out")
         out_img = self.get_out_img()
         out_div.add_style("left: %spx" % offset[0])
@@ -1473,7 +1474,7 @@ class IconButtonWdg(DivWdg):
 
 
         over_div = DivWdg()
-        display.add(over_div)
+        #display.add(over_div)
         over_div.add_class("spt_button_over")
         over_img = self.get_over_img()
         over_div.add_style("left: %spx" % offset[0])
@@ -1484,7 +1485,7 @@ class IconButtonWdg(DivWdg):
 
 
         click_div = DivWdg()
-        display.add(click_div)
+        #display.add(click_div)
         click_div.add_class("spt_button_click")
         click_img = self.get_click_img()
         click_div.add_style("left: %spx" % offset[0])
@@ -1492,6 +1493,8 @@ class IconButtonWdg(DivWdg):
         click_div.add(click_img)
         click_div.add_style("position: absolute")
         click_div.add_style("display: none")
+
+        """
 
 
 
@@ -1502,9 +1505,9 @@ class IconButtonWdg(DivWdg):
             tip = title
 
         icon_div = DivWdg()
-        icon_div.add_class("hand")
-        icon_div.add_style("top: 3px")
-        icon_div.add_style("left: 5px")
+        display.add_class("btn bmd-btn-icon")
+        icon_div.add_style("top: 8px")
+        icon_div.add_style("left: 8px")
         display.add(icon_div)
         icon_div.add_style("position: absolute")
         if self.get_width() < 30:
@@ -1515,6 +1518,7 @@ class IconButtonWdg(DivWdg):
 
         icon = IconWdg(title, icon_str, width=width)
         icon_div.add(icon)
+
         if tip:
             display.add_attr("title", tip)
 
@@ -1531,9 +1535,9 @@ class IconButtonWdg(DivWdg):
 
 
 
-        spacer = DivWdg()
-        display.add(spacer)
-        spacer.add("")
+        #spacer = DivWdg()
+        #display.add(spacer)
+        #spacer.add("")
 
 
         return super(IconButtonWdg, self).get_display()

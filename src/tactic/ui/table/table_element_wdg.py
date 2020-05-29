@@ -21,7 +21,7 @@ from pyasm.widget import IconWdg, TextWdg, TextAreaWdg, SelectWdg, ThumbWdg, Pub
 from pyasm.biz import Project, NamingUtil, ExpressionParser, Snapshot
 from tactic.ui.common import BaseTableElementWdg, SimpleTableElementWdg
 from tactic.ui.filter import FilterData
-from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 
 class TypeTableElementWdg(SimpleTableElementWdg):
     '''The element widget that displays according to type'''
@@ -657,7 +657,7 @@ class CheckinButtonElementWdg(ButtonElementWdg):
 
 class CheckoutButtonElementWdg(ButtonElementWdg):
 
-    def get_display(self):
+    def preprocess(self):
         mode = self.get_option('mode')
         size = self.get_option('icon_size')
         if mode == 'add':
@@ -667,15 +667,11 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
                 self.set_option('icon', "CHECK_OUT_LG")
             else:
                 self.set_option('icon', "CHECK_OUT_SM")
+                self.set_option('icon', "FA_DOWNLOAD")
 
 
-        top = DivWdg()
-        icon = IconButtonWdg( "Checkout", eval( "IconWdg.%s" % self.get_option('icon') ) )
-        top.add(icon)
-        top.add_style("width: 26px")
-        top.add_style("margin-left: auto")
-        top.add_style("margin-right: auto")
-
+        #icon = IconButtonWdg( name="Checkout", icon=self.get_option('icon') )
+        #top.add(icon)
 
 
         self.process = self.get_option('process')
@@ -779,16 +775,12 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
                 spt.alert('No script found. <checkout_panel_script_path> display option should refer to a valid script path.');
             }
 
-            spt.app_busy.hide();
             }, 50);
         }
         else {
             if (bvr.snapshot_code) {
                 if (!bvr.checkout_script_path){
-                    
-
-                    spt.app_busy.show("Checking out files", 'To: '+ bvr.sandbox_dir);
-                
+                    spt.notify.show_message("Checking out files", 'To: '+ bvr.sandbox_dir);
                     setTimeout( function() {
                         try {
                             var server = TacticServerStub.get();
@@ -803,16 +795,14 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
                             server.checkout_snapshot(bvr.snapshot_code, sandbox_dir, {mode: transfer_mode, filename_mode: filename_mode, file_types: file_types} );
                             var checkin_top = bvr.src_el.getParent(".spt_checkin_top");
                             if (checkin_top) {
-                                spt.app_busy.show("Reading file system ...")
+                                spt.notify.show_message("Reading file system ...")
                                 spt.panel.refresh(checkin_top);
-                                spt.app_busy.hide();
                             }
 
                         }
                         catch(e) {
                             spt.alert(spt.exception.handler(e));
                         }
-                        spt.app_busy.hide();
                     }, 50);
                 }
                 else {
@@ -825,7 +815,6 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
                     catch(e) {
                         spt.alert(spt.exception.handler(e));
                     }
-                    spt.app_busy.hide();
                     }, 50);
                 }
 
@@ -857,9 +846,8 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         self.behavior['type'] = 'click_up'
         self.behavior['cbjs_action'] = cbjs_action
 
-        icon.add_behavior(self.behavior)
+        self.add_behavior(self.behavior)
 
-        return top
 
 class RecipientElementWdg(BaseTableElementWdg):
 
