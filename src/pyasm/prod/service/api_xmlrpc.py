@@ -1710,13 +1710,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_connection_info(self, ticket):
         '''simple test to get connection info'''
-        import thread
         data = {}
-        data['thread'] = thread.get_ident()
+
+        # This breaks for Python3 because of longint issues and is not used
+        # anyways
+        #import threading
+        #data['thread'] = threading.get_ident() 
 
         web = WebContainer.get_web()
         keys = web.get_env_keys()
-        data['keys'] = keys
+        data['keys'] = list(keys)
 
         # get the current port
         port = web.get_env("SERVER_PORT")
@@ -1727,7 +1730,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         databases = {}
         global_pool = DbContainer.get_global_connection_pool()
         if global_pool:
-            global_databases = global_pool.keys()
+            global_databases = list(global_pool.keys())
             data['global_pool'] = global_databases
             num_db_connections = len(global_databases)
             for database in global_databases:
@@ -1738,7 +1741,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         # get the connection pool
-        import thread
         containers = Container.get_all_instances()
         for thread_id, cont in containers.items():
             thread_pool = cont.info.get("DbContainer::thread_pool")
