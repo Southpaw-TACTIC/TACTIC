@@ -643,6 +643,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
             'type': 'mouseleave',
             'cbjs_action': '''
             spt.named_events.fire_event("side_bar|toggle")
+            bvr.src_el.getParent().setStyle("overflow-y", "hidden");
             '''
         } )
 
@@ -665,8 +666,18 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         inner_div.set_id("side_bar_scroll")
         outer_div.add(inner_div)
 
+        # Try regular scroll for now
+        div.add_style("overflow-y: hidden")
+        div.add_behavior( {
+            'type': 'mouseenter',
+            'cbjs_action': '''
+            bvr.src_el.setStyle("overflow-y", "auto");
+            '''
+        } )
+
+
         behavior = {
-            'type': 'wheel',
+            'type': 'wheelX',
             'cbjs_action': 'spt.side_bar.scroll(evt,bvr)',
         }
         inner_div.add_behavior(behavior)
