@@ -1359,6 +1359,8 @@ class IconButtonWdg(DivWdg):
 
         self.show_arrow_menu = self.kwargs.get("show_arrow") or False
 
+        # DEPRECATED when switching to BMD class.
+        """
         if not Container.get_dict("JSLibraries", "spt_icon_button"):
             doc_top = Container.get("TopWdg::top")
             if doc_top:
@@ -1424,6 +1426,7 @@ class IconButtonWdg(DivWdg):
                 click.setStyle("display", "none");
             '''
             } )
+        """
 
 
 
@@ -1515,8 +1518,10 @@ class IconButtonWdg(DivWdg):
         else:
             width = None
 
+        if self.kwargs.get("size"):
+            width = self.kwargs.get("size")
 
-        icon = IconWdg(title, icon_str, width=width)
+        icon = IconWdg(title, icon_str, size=width)
         icon_div.add(icon)
 
         if tip:
