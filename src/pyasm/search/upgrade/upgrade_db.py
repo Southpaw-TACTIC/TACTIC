@@ -157,7 +157,16 @@ class Upgrade(object):
             else:
                 upgrade_class = "%sUpgrade" % type.capitalize()
                 conf_upgrade = eval("ConfigUpgrade()")
-            upgrade = eval("%s()" % upgrade_class)
+
+            try:
+                upgrade = eval("%s()" % upgrade_class)
+            except:
+                if database_type != 'PostgreSQL':
+                    upgrade_class = "%sSimpleUpgrade" % (database_type)
+                else:
+                    upgrade_class = "SimpleUpgrade"
+
+                upgrade = eval("%s()" % upgrade_class)
 
             # upgrade config (done for every project but sthpw)
             conf_upgrade.set_project(project.get_code())

@@ -350,7 +350,7 @@ class WizardWdg(BaseRefreshWdg):
         div.add_style("margin: 10px 10px 0px 0px")
 
 
-        back = ActionButtonWdg(title="< Back", tip="Go back to last page")
+        back = ActionButtonWdg(title="< Back", tip="Go back to last page", color="secondary")
         div.add(back)
         back.add_class("spt_wizard_back")
         back.add_style("float: left")
@@ -482,8 +482,9 @@ class WizardWdg(BaseRefreshWdg):
         submit.add_style("float: right")
 
 
-        next = ActionButtonWdg(title="Next >", tip="Go to next page")
+        next = ActionButtonWdg(title="Next >", tip="Go to next page", color="secondary")
         div.add(next)
+        next.add_style("margin-right: 5px")
         next.add_class("spt_wizard_next")
         next.add_style("float: right")
 

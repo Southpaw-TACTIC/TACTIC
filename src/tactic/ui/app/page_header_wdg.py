@@ -658,7 +658,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         inner.add(wizard)
 
 
-        help_button = ActionButtonWdg(title="?", tip="Create Project Help", size='s')
+        help_button = ActionButtonWdg(title="?", tip="Create Project Help", size='s', color="secondary")
         title.add(help_button)
         help_button.add_style("float: right")
         help_button.add_style("margin-top: -20px")
@@ -876,7 +876,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         }
             spt.app_busy.hide();
         '''
-        button = UploadButtonWdg(title="Browse", on_complete=on_complete) 
+        button = UploadButtonWdg(title="Browse", on_complete=on_complete, color="secondary") 
         button.add_style("margin-left: 280px")
         image_div.add(button)
 
@@ -921,7 +921,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
 
-        template = ActionButtonWdg(title="Manage", tip="Manage Templates")
+        template = ActionButtonWdg(title="Manage", tip="Manage Templates", color="secondary")
         copy_div.add(template)
         template.add_style("float: right")
         template.add_behavior( {
