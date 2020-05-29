@@ -1,0 +1,30 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/pipeline')
+insert.set_value('pipeline', """<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+  <process name="product"/>
+</pipeline>
+""")
+insert.set_value('code', """product""")
+insert.set_value('autocreate_tasks', False)
+insert.set_value('timestamp', """2018-02-09 15:24:20.417104""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('use_workflow', True)
+insert.set_value('project_code', """scrum""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('sthpw/pipeline')
+insert.set_value('pipeline', """<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+  <process name="sprint"/>
+</pipeline>
+""")
+insert.set_value('code', """scrum/sprint""")
+insert.set_value('autocreate_tasks', False)
+insert.set_value('timestamp', """2018-02-09 15:24:20.417104""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('use_workflow', True)
+insert.set_value('project_code', """scrum""")
+#-- End Entry --#
+

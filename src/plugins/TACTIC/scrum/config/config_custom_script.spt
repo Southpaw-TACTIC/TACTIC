@@ -1,0 +1,314 @@
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00001""")
+insert.set_value('script', """// Get the TACTIC Server stub.
+var server = TacticServerStub.get();
+
+// Get the Ticket table from the Scrum database.
+var feature_code_expression ="@SOBJECT(scrum/ticket)";
+var tickets = server.eval(feature_code_expression );
+
+// Loop through each row of the ticket table.
+for (i=0; i<tickets.length ; i++){
+
+  // Get the value from the "feature_code" column which is actually the feature "title".
+  var feature_title = tickets[i].feature_code;
+
+  // From the feature table, get the feature code associated with the title from the last step.
+  var feature_code_expression = "@GET(scrum/feature['title','"+ feature_title +"'].code)";
+  var feature_code = server.eval(feature_code_expression)[0];
+
+  // Output to the TACTIC Web Output Client Log.
+  spt.js_log.warning(feature_code); 
+
+  // Create a new package to update the server with.
+  var pkg = { 'feature_code':feature_code };
+
+  // Update the server with the new data package.
+  var search_key = tickets[i].__search_key__;
+  server.update(search_key, pkg);
+}""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """update feature code""")
+insert.set_value('folder', """util""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00002""")
+insert.set_value('script', """var server = TacticServerStub.get()
+
+var sobject_expr = "@SOBJECT(sthpw/note)";
+
+var sobjects = server.eval(sobject_expr);
+
+for (i=0; i<sobjects.length; i++) {
+    var message = i + " of " + sobjects.length;
+    spt.app_busy.show("Updating", message);
+    var search_key = sobjects[i].__search_key__;
+    var data = {
+        'project_code': 'scrum',
+        'search_type': 'scrum/ticket?project=scrum'
+    }
+    server.update(search_key, data)
+
+}
+
+var message = "Finished updating " + sobjects.length + " Entries";
+alert(message)
+spt.app_busy.hide();""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """update_note_stype""")
+insert.set_value('folder', """util""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00003""")
+insert.set_value('script', """var server = TacticServerStub.get()
+
+var sobject_expr = "@SOBJECT(sthpw/note)";
+
+var sobjects = server.eval(sobject_expr);
+
+for (i=0; i<sobjects.length; i++) {
+    var message = i + " of " + sobjects.length;
+    spt.app_busy.show("Updating", message);
+    var orig_search_id = sobjects[i].search_id;
+    var parent_expr = "@GET(scrum/ticket['orig_id', '"+orig_search_id+"'].id)"
+    var parent_id = server.eval(parent_expr)[0];
+    
+    var search_key = sobjects[i].__search_key__;
+    var data = {
+        'search_id': parent_id,
+        'search_type': 'scrum/ticket?project=scrum'
+    }
+    server.update(search_key, data)
+
+}
+
+var message = "Finished updating " + sobjects.length + " Entries";
+alert(message)
+spt.app_busy.hide();""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """update_note_search_id""")
+insert.set_value('folder', """util""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00004""")
+insert.set_value('script', """//Called by the cancel button when inserting a ticket
+spt.dg_table_action.edit_form_cbk(evt, bvr);
+
+if (confirm("Are you sure you wish to cancel?")) {
+
+    var class_name = "tactic.ui.panel.ViewPanelWdg";
+    var view = "ticket_list";
+    var search_type = "scrum/ticket";
+
+    //spt.panel.load('main_body', class_name, {view: view, search_type:search_type})
+}
+""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """add_ticket_cancel""")
+insert.set_value('folder', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00005""")
+insert.set_value('script', """//Called by the insert button when inserting a ticket
+
+
+try {  
+
+    spt.dg_table_action.edit_form_cbk(evt, bvr);
+
+    alert("Ticket Created");   
+    
+    //spt.tab.set_main_body_tab();
+    spt.tab.reload_selected();
+
+
+}  
+catch(e) {  
+  alert( spt.exception.handler(e) );
+}  """)
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """add_ticket_insert""")
+insert.set_value('folder', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00006""")
+insert.set_value('script', """# Python trigger to automatically set the product_code for a ticket
+
+update_data = input.get("update_data")
+search_key = input.get("search_key")
+
+feature_code = update_data.get("feature_code")
+
+expr = "@GET(scrum/feature.product_code)"
+
+product_code = server.eval(expr, search_keys=search_key, single=True)
+
+data = {'product_code': product_code}
+
+server.update(search_key, data)""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """update_ticket_feature_code""")
+insert.set_value('folder', """triggers""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00007""")
+insert.set_value('script', """# Update the category of the work hours based on the parent type
+
+search_key = input.get("search_key")
+sobject = server.get_by_search_key(search_key)
+search_type = sobject.get("search_type")
+search_id = sobject.get("search_id")
+
+
+if search_type.find('ticket') != -1:
+    parent_sk = "%s&id=%s" %( search_type, search_id )
+    parent_so = server.get_by_search_key(parent_sk)
+    customer_code = parent_so.get("customer_code")    
+    subject = parent_so.get("subject")
+
+    data = {\\
+        'category': 'ticket',\\
+        'description': subject,\\
+        'customer_code': customer_code\\
+    }
+    server.update(search_key, data)
+""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """work_hour_category""")
+insert.set_value('folder', """triggers""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00008""")
+insert.set_value('script', """# Python trigger to add information to the ticket_log when data is entered
+
+COLUMN = "status"
+#server.log("info", str(input))
+
+from pyasm.common import Environment
+login = Environment.get_user_name()
+
+search_key = input.get("search_key")
+ticket = server.get_by_search_key(search_key)
+ticket_code = ticket.get("code")
+ticket_id = ticket.get("id")
+
+prev_data = input.get("prev_data")
+update_data = input.get("update_data")
+
+changed_from = prev_data.get("status")
+changed_to = update_data.get("status")
+
+data = {\\
+    'column': COLUMN,\\
+    'changed_from': changed_from,\\
+    'changed_to': changed_to,\\
+    'ticket_code': ticket_code,\\
+    'ticket_id': ticket_id,\\
+    'login': login\\
+}
+
+server.insert("scrum/ticket_log", data)
+#server.log("info", str(data))""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """log_ticket_status""")
+insert.set_value('folder', """triggers""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/custom_script')
+insert.set_value('code', """CUSTOM_SCRIPT00009""")
+insert.set_value('script', """// This script applies to a select to change the values of another select
+
+// value, display_target_el, and bvr are assumed variables
+
+update_select_options = function(column_name, values, labels, empty) {
+
+    var el_name = display_target_el.name;
+    //alert(el_name)
+    // Check if in Edit or Table
+    // Edit
+    if (el_name) {
+        var edit_top_el = display_target_el.getParent(".spt_edit_top")
+        var select_el = edit_top_el.getElement("select[name=edit|"+column_name+"]")
+    }
+    // Table
+    else {
+        var table_top_el = display_target_el.getParent(".spt_table");
+        var hidden_row_el = table_top_el.getElement(".spt_edit_row");
+        var select_td_el = hidden_row_el.getElement("td[spt_element_name="+ column_name +"]")
+        var select_el = select_td_el.getElement(".spt_input")
+    }
+    
+    var new_options = [];
+    if (empty == true) {
+        new_options.push("<option value=''>-Select-</option>")
+    }
+
+    for (v=0; v<new_values.length; v++) {
+        var new_value = new_values[v];
+        var new_label = new_labels[v];        
+        var new_option = "<option value='"+new_value+"'>"+new_label+"</option>"
+        //var new_option = document.createElement("<option></option>");
+        //new_option.setAttribute('value', new_value);
+        //new_option.innerHTML = new_value + "BLA;"
+        new_options.push(new_option);
+    }
+    new_options = new_options.join("");
+    select_el.innerHTML = new_options; 
+}
+
+
+
+var COLUMN_NAME = "feature_code";
+var server = TacticServerStub.get();
+
+//var values_expr = "@GET(scrum/feature['product_code', '"+ value +"'].code)";
+//var labels_expr = "@GET(scrum/feature['product_code', '"+ value +"'].title)";
+//var new_values = server.eval(values_expr);
+//var new_labels = server.eval(labels_expr);
+//alert(new_values);
+
+var filters = [];
+filters.push( ["product_code", value] )
+var order_bys = ['title asc']
+var features = server.query("scrum/feature", {'filters':filters, 'order_bys':order_bys})
+
+
+var new_values = []
+var new_labels = []
+
+for (f=0; f<features.length; f++) {
+    new_values.push(features[f].code)
+    new_labels.push(features[f].title)
+}
+update_select_options(COLUMN_NAME, new_values, new_labels, true);
+
+return true;
+
+
+
+
+//var table_row_el = display_target_el.getParent('.spt_table_tr');
+//var cell_b_el = table_row_el.getElement('td[spt_element_name=category_b]');
+
+""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('title', """ticket_select_product""")
+insert.set_value('folder', """validation""")
+#-- End Entry --#
+

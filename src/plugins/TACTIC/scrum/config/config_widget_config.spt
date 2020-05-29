@@ -1,0 +1,4293 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG000000""")
+insert.set_value('timestamp', """2018-02-09 15:24:03.823822""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <project_view>
+    <element name="project_dashboard_wdg"/>
+    <element name="_my_tactic"/>
+    <element name="tickets"/>
+    <element name="sprints"/>
+    <element name="planning"/>
+    <element name="products"/>
+    <element name="separator079"/>
+    <element name="audit"/>
+    <element name="manage"/>
+    <element name="admin"/>
+  </project_view>
+</config>
+""")
+insert.set_value('view', """project_view""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00011""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+    <element name="pipeline_code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00012""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="pipeline_code"/>
+    <element name="date_start" edit="true">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+    <element name="date_end" edit="true">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+    <element name="sprint_schedule" width="500px" edit="false">
+      <display class="tactic.ui.table.GanttElementWdg">
+        <options>[
+        {
+          "start_date_expr":  "@MIN(.date_start)",
+          "end_date_expr":    "@MAX(.date_end)",
+          "color":            "{@CASE(@GET(.status) == 'active', '#7abc14', @GET(.status)=='incomplete', 'red', @GET(.status)=='waiting', '#e3df68', @GET(.status)=='complete', '#4f7fc2')}",
+          "edit":             "false",
+          "default":          "true"
+        }
+        ]</options>
+      </display>
+    </element>
+    <element name="product_code" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="sprint_tickets" title="Sprint Tickets" width="132.5px" edit="false">
+      <display widget="hidden_row">
+        <search_type>scrum/ticket</search_type>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <expression>@SOBJECT(scrum/ticket['status', 'not in', 'archived|invalid'])</expression>
+        <view>sprint_tickets_list</view>
+      </display>
+    </element>
+    <element name="status" width="33.6333px" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="completed_tickets" title="Completed Tickets" edit="true">
+      <display widget="expression">
+        <expression>@COUNT(scrum/ticket['status','closed'])</expression>
+      </display>
+    </element>
+    <element name="total_tickets" title="Total Tickets" width="33.4833px" edit="true">
+      <display widget="expression">
+        <expression>@COUNT(scrum/ticket['status', 'not in', 'archived|invalid'])</expression>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00013""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="date_start"/>
+    <element name="date_end"/>
+    <element name="product_code">
+      <display widget="select">
+        <values_expr>@GET(scrum/product.code)</values_expr>
+      </display>
+    </element>
+    <element name="status"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00014""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="pipeline_code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00015""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="preview"/>
+    <element name="code" title="Product Code" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="pipeline_code"/>
+    <element name="title" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="features" title="Product Features" width="380.633px" edit="false">
+      <display widget="hidden_row">
+        <search_type>scrum/feature</search_type>
+        <icon_tip>Show Product Features</icon_tip>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <view>product_features_list</view>
+      </display>
+    </element>
+    <element name="product_versions" title="Product Versions" width="387.067px" edit="false">
+      <display widget="hidden_row">
+        <search_type>scrum/product_version</search_type>
+        <icon_tip>Show Product Versions</icon_tip>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <view>product_version_list</view>
+      </display>
+    </element>
+    <element name="sprints" title="Sprints" edit="false">
+      <display widget="hidden_row">
+        <search_type>scrum/sprint</search_type>
+        <icon_tip>Show Sprints</icon_tip>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <view>sprint_list</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00016""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="pipeline_code"/>
+    <element name="title"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00017""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00018""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code" edit="false">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="feature_code" title="Feature" width="254.5px" edit="true">
+      <display widget="expression">
+        <expression>@GET(scrum/feature.title)</expression>
+      </display>
+    </element>
+    <element name="sprint_code" title="Sprint" width="115.933px" edit="true">
+      <display widget="expression">
+        <expression>@GET(scrum/sprint['status', 'not in', 'complete'].title)</expression>
+      </display>
+    </element>
+    <element name="subject" width="501.217px" edit="true">
+      <display widget="raw_data">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="type" width="39px" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="status" width="93px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="priority" width="20px" edit="true">
+      <display widget="raw_data">
+        <type>integer</type>
+      </display>
+    </element>
+    <element name="comments" edit="false">
+      <display class="tactic.ui.widget.DiscussionElementWdg">
+        <context>comment</context>
+      </display>
+    </element>
+    <element name="pipeline_code" title="Pipeline Code" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="assigned" width="212.017px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="summary" title="Summary" edit="true">
+      <display widget="raw_data">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="notes" width="395px" edit="false">
+      <display class="tactic.ui.widget.DiscussionElementWdg">
+        <process>comment</process>
+        <show_note_expand>false</show_note_expand>
+        <context_hidden>true</context_hidden>
+      </display>
+    </element>
+    <element name="orig_id" edit="true">
+      <display widget="raw_data">
+        <type>integer</type>
+      </display>
+    </element>
+    <element name="ticket_ids" title="Ticket IDs" width="20px" edit="true">
+      <display widget="custom_layout">
+        <include_mako>true</include_mako>
+        <view>ticket_id_link_wdg</view>
+      </display>
+    </element>
+    <element name="product_code" title="Product" width="51px" edit="true">
+      <display widget="expression">
+        <expression>@GET(scrum/product.title)</expression>
+      </display>
+    </element>
+    <element name="total_work_hours" title="Total Work Hours" edit="false">
+      <display widget="expression">
+        <group_bottom>@SUM(.total_work_hours)</group_bottom>
+        <expression>@SUM(sthpw/work_hour.straight_time)</expression>
+        <bottom>@SUM(.total_work_hours)</bottom>
+      </display>
+    </element>
+    <element name="ticket_log">
+      <display widget="hidden_row">
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>scrum/ticket_log</search_type>
+        <view>table</view>
+        <mode>simple</mode>
+      </display>
+    </element>
+    <element name="customer_code" width="61px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="effort" title="Effort" width="40px" edit="true">
+      <display widget="format">
+        <type>float</type>
+        <total_summary>total</total_summary>
+        <format>-1234.12</format>
+      </display>
+    </element>
+    <element name="ticket_summary" title="Summary" edit="false">
+      <display widget="hidden_row">
+        <icon_tip>Ticket Summary</icon_tip>
+        <search_type>scrum/ticket</search_type>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <mode>simple</mode>
+        <show_row_select>false</show_row_select>
+        <view>ticket_summary</view>
+      </display>
+    </element>
+    <element name="timestamp" width="37px" edit="true">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+    <element name="preview" edit="false">
+      <display class="ThumbWdg">
+        <icon_size>100%</icon_size>
+        <icon_context>attachment</icon_context>
+        <detail>true</detail>
+      </display>
+    </element>
+    <element name="attachments" title="Attachments" edit="false" color="false">
+      <display widget="hidden_row">
+        <search_type>sthpw/snapshot</search_type>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <expression>@SOBJECT(sthpw/snapshot)</expression>
+        <mode>simple</mode>
+        <view>checkin_history</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00019""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="sprint_code"/>
+    <element name="assigned"/>
+    <element name="product_code"/>
+    <element name="feature_code"/>
+    <element name="type"/>
+    <element name="status"/>
+    <element name="priority"/>
+    <element name="customer_code"/>
+    <element width="300px" name="subject"/>
+    <element name="summary" title="Summary"/>
+    <element name="ticket_ids"/>
+    <element name="effort"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00020""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="product_code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00021""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="product_code" edit="true">
+      <display widget="raw_data"/>
+    </element>
+    <element name="version_type" title="Version Type" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="release_notes" edit="false">
+      <display widget="hidden_row">
+        <search_type>scrum/release_note</search_type>
+        <icon_tip>Show Release Notes</icon_tip>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <view>release_note_list</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00022""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="preview"/>
+    <element name="code"/>
+    <element name="product_code">
+      <display widget="select">
+        <values_expr>@GET(scrum/product.code)</values_expr>
+      </display>
+    </element>
+    <element name="version_type">
+      <display widget="select">
+        <labels>Alpha|Beta|Release Candidate|Version</labels>
+        <values>a|b|rc|v</values>
+      </display>
+    </element>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00023""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/release_note""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00024""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/release_note""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="sprint_code" type="string"/>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00025""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/release_note""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00026""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="add" title="Add">
+      <display class="SideBarSectionLinkWdg">
+        <view>add</view>
+      </display>
+    </element>
+    <element name="manage" title="Manage">
+      <display class="SideBarSectionLinkWdg">
+        <view>manage</view>
+      </display>
+    </element>
+    <element name="sprint_add" title="Add Sprint">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.EditWdg</class_name>
+        <search_type>scrum/sprint</search_type>
+        <view>edit</view>
+      </display>
+    </element>
+    <element name="ticket_add" title="Add Ticket" icon="" state="">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.EditWdg</class_name>
+        <search_type>scrum/ticket</search_type>
+        <view>add_ticket</view>
+      </display>
+    </element>
+    <element name="sprint_list" title="Sprint List">
+      <display class="LinkWdg">
+        <search_type>scrum/sprint</search_type>
+        <search_view>link_search:sprint_list</search_view>
+        <view>sprint_list</view>
+      </display>
+    </element>
+    <element name="product_add" title="Add Product">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.EditWdg</class_name>
+        <search_type>scrum/product</search_type>
+        <view>edit</view>
+      </display>
+    </element>
+    <element name="product_list" title="Products">
+      <display class="LinkWdg">
+        <search_type>scrum/product</search_type>
+        <search_view>link_search:product_list</search_view>
+        <view>product_list</view>
+      </display>
+    </element>
+    <element name="ticket_list" title="Ticket List">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:ticket_list</search_view>
+        <view>ticket_list</view>
+      </display>
+    </element>
+    <element name="product_version_add" title="Add Product_version">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.EditWdg</class_name>
+        <search_type>scrum/product_version</search_type>
+        <view>edit</view>
+      </display>
+    </element>
+    <element name="product_version_list" title="Product Versions">
+      <display class="LinkWdg">
+        <search_type>scrum/product_version</search_type>
+        <search_view>link_search:product_version_list</search_view>
+        <view>product_version_list</view>
+      </display>
+    </element>
+    <element name="release_note_add" title="Add Release_note">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.EditWdg</class_name>
+        <search_type>scrum/release_note</search_type>
+        <view>edit</view>
+      </display>
+    </element>
+    <element name="release_note_list" title="Release Notes">
+      <display class="LinkWdg">
+        <search_type>scrum/release_note</search_type>
+        <search_view>link_search:release_note_list</search_view>
+        <view>release_note_list</view>
+      </display>
+    </element>
+    <element name="feature_add" title="Add Feature">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.EditWdg</class_name>
+        <search_type>scrum/feature</search_type>
+        <view>edit</view>
+      </display>
+    </element>
+    <element name="feature_list" title="Features">
+      <display class="LinkWdg">
+        <search_type>scrum/feature</search_type>
+        <search_view>link_search:feature_list</search_view>
+        <view>feature_list</view>
+      </display>
+    </element>
+    <element name="project_dashboard_wdg" title="Dashboard" icon="IMAGE" state="" is_visible="on">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+        <view>project_dashboard_wdg</view>
+      </display>
+    </element>
+    <element name="tickets" title="Tickets" icon="" state="">
+      <display class="SideBarSectionLinkWdg">
+        <view>tickets</view>
+      </display>
+    </element>
+    <element name="products" title="Product">
+      <display class="SideBarSectionLinkWdg">
+        <view>products</view>
+      </display>
+    </element>
+    <element name="admin" title="Admin">
+      <display class="SideBarSectionLinkWdg">
+        <view>admin</view>
+      </display>
+    </element>
+    <element name="separator" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="separator079" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+    <element name="sprints" title="Sprints" icon="" state="">
+      <display class="SideBarSectionLinkWdg">
+        <view>sprints</view>
+      </display>
+    </element>
+    <element name="my_dashboard" title="My Dashboard" icon="">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+        <include_mako>true</include_mako>
+        <view>my_dashboard_wdg</view>
+      </display>
+    </element>
+    <element name="product_features_list">
+      <display class="LinkWdg">
+        <search_type>scrum/feature</search_type>
+        <search_view>link_search:product_features_list</search_view>
+        <view>product_features_list</view>
+      </display>
+    </element>
+    <element name="feature_tickets_list" title="Feature Tickets List">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <search_view>link_search:feature_tickets_list</search_view>
+        <view>feature_tickets_list</view>
+      </display>
+    </element>
+    <element name="hidden_rows" title="Hidden Rows">
+      <display class="SideBarSectionLinkWdg">
+        <view>hidden_rows</view>
+      </display>
+    </element>
+    <element name="ticket_status_list" title="Ticket Status List">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket_status</search_type>
+        <search_view>link_search:ticket_status_list</search_view>
+        <view>ticket_status_list</view>
+      </display>
+    </element>
+    <element name="development" title="Development">
+      <display class="SideBarSectionLinkWdg">
+        <view>development</view>
+      </display>
+    </element>
+    <element name="my_assigned_tickets" title="My Assigned Tickets">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:my_assigned_tickets</search_view>
+        <view>my_assigned_tickets</view>
+      </display>
+    </element>
+    <element name="my_work_hours_this_week" title="My Work Hours this Week" icon="DATE_EDIT">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>sthpw/work_hour</search_type>
+        <search_view>link_search:my_work_hours_this_week</search_view>
+        <view>my_work_hours_this_week</view>
+      </display>
+    </element>
+    <element name="ticket_log_list" title="Ticket Log List" icon="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>scrum/ticket_log</search_type>
+        <search_view>link_search:ticket_log_list</search_view>
+        <view>ticket_log_list</view>
+      </display>
+    </element>
+    <element name="goat" title="Goat">
+      <display class="SideBarSectionLinkWdg">
+        <view>goat</view>
+      </display>
+    </element>
+    <element name="customer_list" title="Customer List" icon="">
+      <display class="LinkWdg">
+        <widget_key>view_panel</widget_key>
+        <search_type>goat/customer</search_type>
+        <view>table</view>
+      </display>
+    </element>
+    <element name="closed_tickets_no_sprint" title="Closed Tickets - No Sprint">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:closed_tickets_no_sprint</search_view>
+        <view>closed_tickets_no_sprint</view>
+      </display>
+    </element>
+    <element name="audit" title="Audit">
+      <display class="SideBarSectionLinkWdg">
+        <view>audit</view>
+      </display>
+    </element>
+    <element name="open_tickets_backlog" title="Open Tickets - Backlog">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:open_tickets_backlog</search_view>
+        <view>open_tickets_backlog</view>
+      </display>
+    </element>
+    <element name="open_tickets_no_sprint" title="Open Tickets - No Sprint">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:open_tickets_no_sprint</search_view>
+        <view>open_tickets_no_sprint</view>
+      </display>
+    </element>
+    <element name="tickets_no_feature" title="Tickets - No Feature">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:tickets_no_feature</search_view>
+        <view>tickets_no_feature</view>
+      </display>
+    </element>
+    <element name="plan_list" title="Plan List">
+      <display class="LinkWdg">
+        <search_type>scrum/plan</search_type>
+        <search_view>link_search:plan_list</search_view>
+        <view>plan_list</view>
+      </display>
+    </element>
+    <element name="plan_item_list">
+      <display class="LinkWdg">
+        <search_type>scrum/plan_item</search_type>
+        <search_view>link_search:plan_item_list</search_view>
+        <view>plan_item_list</view>
+      </display>
+    </element>
+    <element name="plan_items" title="Plan Items">
+      <display class="LinkWdg">
+        <search_type>scrum/plan_item</search_type>
+        <search_view>link_search:plan_items</search_view>
+        <view>plan_items</view>
+      </display>
+    </element>
+    <element name="plan_tracking" title="Plan tracking">
+      <display class="LinkWdg">
+        <search_type>scrum/plan</search_type>
+        <search_view>link_search:plan_tracking</search_view>
+        <view>plan_tracking</view>
+      </display>
+    </element>
+    <element name="planning" title="Planning">
+      <display class="SideBarSectionLinkWdg">
+        <view>planning</view>
+      </display>
+    </element>
+    <element name="product_tracking" title="Product Tracking">
+      <display class="LinkWdg">
+        <search_type>scrum/product</search_type>
+        <search_view>link_search:product_tracking</search_view>
+        <view>product_tracking</view>
+      </display>
+    </element>
+    <element name="feature_tracking" title="Feature Tracking">
+      <display class="LinkWdg">
+        <search_type>scrum/feature</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:feature_tracking</search_view>
+        <view>feature_tracking</view>
+      </display>
+    </element>
+    <element name="version_tracking" title="Version Tracking">
+      <display class="LinkWdg">
+        <search_type>scrum/product_version</search_type>
+        <search_view>link_search:version_tracking</search_view>
+        <view>version_tracking</view>
+      </display>
+    </element>
+    <element name="separator066" title="Separator">
+      <display class="SeparatorWdg"/>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00027""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <add>
+    <element name="product_add"/>
+    <element name="feature_add"/>
+    <element name="product_version_add"/>
+    <element name="release_note_add"/>
+    <element name="sprint_add"/>
+  </add>
+</config>
+""")
+insert.set_value('view', """add""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00028""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <manage>
+    <element name="product_list"/>
+    <element name="feature_list"/>
+    <element name="product_version_list"/>
+    <element name="release_note_list"/>
+    <element name="separator066"/>
+    <element name="plan_list"/>
+    <element name="plan_item_list"/>
+    <element name="ticket_log_list"/>
+    <element name="ticket_status_list"/>
+  </manage>
+</config>
+""")
+insert.set_value('view', """manage""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00029""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00030""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="title" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="product_code" title="Product" width="294.367px" edit="true">
+      <display widget="expression">
+        <expression>@GET(scrum/product.title)</expression>
+      </display>
+    </element>
+    <element name="description" edit="true">
+      <display widget="raw_data">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="feature_tickets" width="88.5333px" edit="false">
+      <display widget="hidden_row">
+        <search_type>scrum/ticket</search_type>
+        <icon_tip>Show Tickets</icon_tip>
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <expression>@SOBJECT(scrum/ticket['status', 'not in' 'closed|archived|invalid'])</expression>
+        <view>feature_tickets_list</view>
+      </display>
+    </element>
+    <element name="status" width="105.833px" edit="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="total_tickets" title="Total Tickets" edit="true">
+      <display widget="expression">
+        <expression>@COUNT(scrum/ticket)</expression>
+      </display>
+    </element>
+    <element name="avg_priority" title="Avg. Priority" width="299.417px" edit="true">
+      <display widget="expression">
+        <expression>(@AVG(scrum/ticket['status', 'not in' 'closed|archived|invalid'].priority) / 5) 
+</expression>
+        <display_expression>{@GET(.avg_priority) * 100,%d}%</display_expression>
+      </display>
+    </element>
+    <element name="plan_item">
+      <display widget="hidden_row">
+        <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
+        <search_type>scrum/plan_item</search_type>
+        <view>table</view>
+        <mode>simple</mode>
+      </display>
+    </element>
+    <element name="total_active_tickets" title="Active Tickets" width="98.6167px" edit="false" color="false">
+      <display widget="expression">
+        <group_bottom>@SUM(.total_active_tickets)</group_bottom>
+        <expression>@COUNT(scrum/ticket['status', 'not in' 'future|on_hold|closed|archived|invalid'])</expression>
+        <bottom>@SUM(.total_active_tickets)</bottom>
+      </display>
+    </element>
+    <element name="total_pending_tickets" title="Pending Tickets" width="98.6px" edit="false" color="false">
+      <display widget="expression">
+        <group_bottom>@SUM(.total_pending_tickets)</group_bottom>
+        <expression>@COUNT(scrum/ticket['status', 'in' 'future|on_hold'])</expression>
+        <bottom>@SUM(.total_pending_tickets)</bottom>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00031""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="title"/>
+    <element name="product_code"/>
+    <element name="description"/>
+    <element name="status"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00032""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="title">
+      <colors>
+
+      </colors>
+    </element>
+    <element name="features">
+</element>
+    <element name="product_versions">
+</element>
+    <element name="sprints">
+</element>
+    <element name="code">
+      <colors>
+        <value name="20SCRUM"/>
+        <value name="20SCRUM"/>
+      </colors>
+    </element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00033""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="status">
+      <colors>
+        <value name="cmpt">-click-</value>
+        <value name="complete">#26de35</value>
+        <value name="future">#a6a6a6</value>
+        <value name="in_dev">#d9b145</value>
+        <value name="pending">#e0e647</value>
+      </colors>
+    </element>
+    <element name="product_code">
+      <colors>
+        <value name="21SCRUM"/>
+        <value name="21SCRUM"/>
+      </colors>
+    </element>
+    <element name="total_tickets">
+      <colors>
+        <value name="Art Project"/>
+        <value name="Art Project"/>
+      </colors>
+    </element>
+    <element name="avg_priority">
+</element>
+    <element name="total_active_tickets">
+</element>
+    <element name="total_pending_tickets">
+</element>
+    <element name="feature_tickets">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00034""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:_feature_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00035""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <feature_list layout="TableLayoutWdg" >
+    <element name="product_code" width="258.967px"/>
+    <element name="title" width="449.25px"/>
+    <element name="feature_tickets" width="88.5333px"/>
+    <element name="status" width="105.833px"/>
+    <element name="total_tickets" width="99px"/>
+    <element name="avg_priority" width="299.417px"/>
+  </feature_list>
+</config>
+""")
+insert.set_value('view', """feature_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00036""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:product_version_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00037""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('config', """<config>
+  <product_version_list layout="TableLayoutWdg" >
+    <element name="product_code" width="29px"/>
+    <element name="code" width="478.417px"/>
+    <element name="version_type" width="196.417px"/>
+    <element name="release_notes" width="728.167px"/>
+  </product_version_list>
+</config>
+""")
+insert.set_value('view', """product_version_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00038""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="product_code">
+</element>
+    <element name="version_type">
+      <colors>
+
+      </colors>
+    </element>
+    <element name="release_notes">
+      <colors>
+
+      </colors>
+    </element>
+  </color>
+</config>""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00039""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/search_type""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:release_note_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00040""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/release_note""")
+insert.set_value('config', """<config>
+  <release_note_list layout="TableLayoutWdg" >
+    <element name="product_version_code" width="467.667px"/>
+    <element name="feature_code" width="467.667px"/>
+    <element name="code" width="467.667px"/>
+  </release_note_list>
+</config>""")
+insert.set_value('view', """release_note_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00041""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="date_start">
+</element>
+    <element name="date_end">
+</element>
+    <element name="sprint_schedule">
+</element>
+    <element name="product_code">
+</element>
+    <element name="sprint_tickets">
+</element>
+    <element name="status">
+      <colors>
+        <value name="active">-click-</value>
+        <value name="active">#7abc14</value>
+        <value name="complete">#4f7fc2</value>
+        <value name="waiting">#e3df68</value>
+        <value name="incomplete">#f21616</value>
+      </colors>
+    </element>
+    <element name="completed_tickets">
+</element>
+    <element name="total_tickets">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00042""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/search_type""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sprint_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00043""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('config', """<config>
+  <sprint_list layout="TableLayoutWdg" >
+    <element name="title" width="163px"/>
+    <element name="status" width="33.6333px"/>
+    <element name="completed_tickets" width="59px"/>
+    <element name="total_tickets" width="70px"/>
+    <element name="sprint_tickets" width="84px"/>
+    <element name="date_start" width="107.783px"/>
+    <element name="date_end" width="107.783px"/>
+    <element name="sprint_schedule" width="500px"/>
+  </sprint_list>
+</config>
+""")
+insert.set_value('view', """sprint_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00044""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="type">
+      <colors>
+
+      </colors>
+    </element>
+    <element name="status">
+      <colors>
+        <value name="closed">#2ABBD1</value>
+        <value name="in_dev">#D1A42A</value>
+        <value name="invalid">#371B85</value>
+        <value name="need_info">#7ab948</value>
+        <value name="need_validation">#ffff33</value>
+        <value name="new">#cdfaf1</value>
+        <value name="on_hold">#4e4e4e</value>
+        <value name="open">#D1352A</value>
+      </colors>
+    </element>
+    <element name="sprint_code">
+</element>
+    <element name="subject">
+      <colors>
+        <value name="AE Development/release directory structure">-click-</value>
+      </colors>
+    </element>
+    <element name="priority">
+</element>
+    <element name="description">
+      <colors>
+        <value name="AE Development/release directory structure">-click-</value>
+        <value name="AE Development/release directory structure">-click-</value>
+      </colors>
+    </element>
+    <element name="comments">
+</element>
+    <element name="pipeline_code">
+      <colors>
+        <value name="100SCRUM">-click-</value>
+        <value name="100SCRUM">-click-</value>
+      </colors>
+    </element>
+    <element name="assigned">
+      <colors>
+        <value name="admin">-click-</value>
+        <value name="admin">-click-</value>
+      </colors>
+    </element>
+    <element name="feature_code">
+      <colors>
+        <value name="100SCRUM">-click-</value>
+      </colors>
+    </element>
+    <element name="summary">
+      <colors>
+        <value name="closed">#D1352A</value>
+        <value name="in_dev">#D1352A</value>
+        <value name="invalid">#D1352A</value>
+        <value name="need_info">#D1352A</value>
+        <value name="need_validation">#D1352A</value>
+        <value name="on_hold">#D1352A</value>
+        <value name="open">#D1352A</value>
+      </colors>
+    </element>
+    <element name="notes">
+</element>
+    <element name="orig_id">
+      <colors>
+        <value name="1000"/>
+        <value name="1000"/>
+      </colors>
+    </element>
+    <element name="ticket_ids">
+      <colors>
+        <value name="AE Development/release directory structure">-click-</value>
+      </colors>
+    </element>
+    <element name="product_code">
+</element>
+    <element name="total_work_hours">
+</element>
+    <element name="effort">
+      <colors>
+        <value name="0.5"/>
+        <value name=" Tactic 3.5.0.rc03 TSI fail to load in VMPlayer"/>
+        <value name="AE Development/release directory structure">-click-</value>
+      </colors>
+    </element>
+    <element name="ticket_summary">
+</element>
+    <element name="customer_code">
+</element>
+    <element name="timestamp">
+</element>
+    <element name="preview">
+</element>
+    <element name="attachments">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00045""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/search_type""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:ticket_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00046""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <ticket_list layout="TableLayoutWdg" >
+    <element name="id" width="50px"/>
+    <element name="ticket_ids" width="72px"/>
+    <element name="customer_code" width="104px"/>
+    <element name="product_code" width="71px"/>
+    <element name="feature_code" width="70px"/>
+    <element name="type" width="54px"/>
+    <element name="subject" width="89px"/>
+    <element name="ticket_summary" width="84px"/>
+    <element name="status" width="62px"/>
+    <element name="assigned" width="81px"/>
+    <element name="priority" width="66px"/>
+    <element name="sprint_code" width="62px"/>
+    <element name="notes" width="156px"/>
+    <element name="total_work_hours" width="100px"/>
+    <element name="effort" width="55px"/>
+    <element name="work_hours" width="80px"/>
+    <element name="attachments" width="87px"/>
+  </ticket_list>
+</config>
+""")
+insert.set_value('view', """ticket_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00047""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:product_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00048""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <product_list layout="TableLayoutWdg" >
+    <element name="title" width="791.333px"/>
+    <element name="features" width="303.267px"/>
+    <element name="product_versions" width="308.4px"/>
+  </product_list>
+</config>
+""")
+insert.set_value('view', """product_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00049""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 9", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:product_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00050""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 5", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sprint_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00051""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 3", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "product_code", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:product_version_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00052""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+<project_dashboard_wdg>
+
+
+<html>
+  <style type="text/css">
+    table {color:#FFF; vertical-align:top; padding:5px}
+  </style>
+  
+
+
+  <table width="100%">
+    <tr style="background-color:#242424">
+      <td width="300">
+        <img width="300" 
+             src="/assets/[expr]{@GET(sthpw/project['code', $PROJECT].sthpw/snapshot.sthpw/file.relative_dir)}/{@GET(sthpw/project['code', $PROJECT].sthpw/snapshot.sthpw/file.file_name)}[/expr]"
+        />
+      </td>
+      <td valign='top'>
+        <table>
+          <tr>
+            <td><b>Products</b></td>
+            <td><div>[expr]@COUNT(scrum/product)[/expr]</div></td>
+          </tr>
+          <tr>
+            <td><b>Tickets</b></td>
+            <td><div>[expr]@COUNT(scrum/sprint['status', 'active'].scrum/ticket)[/expr]</div></td>
+          </tr>
+          <tr>
+            <td><b>Current Sprint</b></td>
+            <td><div>[expr]@GET(scrum/sprint['status', 'active'].title)[/expr]</div></td>
+          </tr>
+
+
+
+        </table>
+      </td>
+
+      <td valign='top'>       
+        <element name="ticket_status">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>ticket_status_report_wdg</view>
+            <include_mako>true</include_mako>
+          </display>
+        </element>
+      </td>
+
+ 
+    </tr>
+    <tr>
+      <td colspan='3'>       
+        <element name="tabs">
+          <display class="tactic.ui.container.TabWdg">
+            <view>project_dashboard_wdg_tabs</view>
+          </display>
+        </element>
+      </td>
+    </tr>
+    </table>
+
+    </html>
+  </project_dashboard_wdg>
+</config>""")
+insert.set_value('view', """project_dashboard_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """TabWdg""")
+insert.set_value('code', """WIDGET_CONFIG00053""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """TabWdg""")
+insert.set_value('config', """<config>
+<project_dashboard_wdg_tabs>
+
+
+  <element name="tickets_active_sprint" selected="false">
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <search_type>scrum/ticket</search_type>
+      <view>ticket_list</view>
+      <simple_search_view>custom_filter</simple_search_view>
+      <expression>@SOBJECT(scrum/sprint['status', 'active'].scrum/ticket)</expression>
+    </display>
+  </element>
+
+  <element name="sprints">
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <search_type>scrum/sprint</search_type>
+      <view>sprint_list</view>
+      <search_view>link_search:sprint_list</search_view>
+    </display>
+  </element>
+
+
+  <element name="products">
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <search_type>scrum/product</search_type>
+      <view>product_list</view>
+      <search_view>link_search:product_list</search_view>
+      <mode>simple</mode>
+    </display>
+  </element>
+
+
+  <element name="features">
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <search_type>scrum/feature</search_type>
+      <view>feature_list</view>
+      <search_view>link_search:feature_list</search_view>
+      <simple_search_view>custom_filter</simple_search_view>
+    </display>
+  </element>
+
+
+  <element name="tickets">
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <search_type>scrum/ticket</search_type>
+      <view>ticket_list</view>
+      <search_view>link_search:ticket_list</search_view>
+      <simple_search_view>custom_filter</simple_search_view>
+    </display>
+  </element>
+
+
+</project_dashboard_wdg_tabs>
+</config>""")
+insert.set_value('view', """project_dashboard_wdg_tabs""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00054""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <admin>
+    <element name="development"/>
+    <element name="hidden_rows"/>
+    <element name="add"/>
+  </admin>
+</config>
+""")
+insert.set_value('view', """admin""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00055""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <_my_tactic>
+    <element name="my_assigned_tickets"/>
+    <element name="my_work_hours_this_week"/>
+    <element name="my_work_hours"/>
+    <element name="my_notification"/>
+  </_my_tactic>
+</config>
+""")
+insert.set_value('view', """_my_tactic""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00056""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <tickets>
+    <element name="ticket_add"/>
+    <element name="ticket_list"/>
+  </tickets>
+</config>
+""")
+insert.set_value('view', """tickets""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00057""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <products>
+    <element name="product_tracking"/>
+    <element name="feature_tracking"/>
+    <element name="version_tracking"/>
+  </products>
+</config>
+""")
+insert.set_value('view', """products""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00058""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <sprints>
+    <element name="sprint_list"/>
+  </sprints>
+</config>
+""")
+insert.set_value('view', """sprints""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00059""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+<my_dashboard_wdg>
+
+
+<html>
+  <style type="text/css">
+    table {color:#FFF}
+  </style>
+  <![CDATA[
+
+  <% 
+    login_so = server.eval("@GET(sthpw/login['login', $LOGIN].login)")
+    #thumbnail = server.get_snapshot(login_so[0])
+    context.write(str(login_so))
+  %>
+
+  ]]>
+
+
+  <table width="100%">
+    <tr style="background-color:#242424">
+      <td>
+        ${thumbnail}
+      </td>
+      <td>
+        <table>
+          <tr>
+            <td><b>Current Sprint</b></td>
+            <td><div>[expr]@GET(scrum/sprint.code)[/expr]</div></td>
+          </tr>
+          <tr>
+            <td><b>Assigned Tickets</b></td>
+            <td><div>[expr]@COUNT(scrum/ticket['login', $LOGIN])[/expr]</div></td>
+          </tr>
+
+
+        </table>
+      </td> 
+    </tr>
+    <tr>
+      <td colspan='2'>       
+        <element name="products">
+          <display class="tactic.ui.container.TabWdg">
+            <view>my_dashboard_wdg_tabs</view>
+          </display>
+        </element>
+      </td>
+    </tr>
+    </table>
+ 
+    </html>
+  </my_dashboard_wdg>
+</config>""")
+insert.set_value('view', """my_dashboard_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00060""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "scrum/ticket_log", "prefix": "children", "children_enabled": ""}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>""")
+insert.set_value('view', """link_search:ticket_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00061""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 83", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:product_features_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00062""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <product_features_list layout="TableLayoutWdg" >
+    <element name="title" width="357px"/>
+    <element name="description" width="737.4px"/>
+    <element name="resource_type" width="102.383px"/>
+    <element name="due date" width="50.2167px"/>
+    <element name="status" width="72px"/>
+  </product_features_list>
+</config>
+""")
+insert.set_value('view', """product_features_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00063""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:ticket_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00064""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 81", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "product_code", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:feature_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00065""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:feature_tickets_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00066""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <feature_tickets_list layout="TableLayoutWdg" >
+    <element name="id" width="44px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="feature_code" width="254.5px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="type" width="39px"/>
+    <element name="status" width="93px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="priority" width="20px"/>
+    <element name="sprint_code" width="115.933px"/>
+    <element name="timestamp" width="37px"/>
+    <element name="total_work_hours" width="20px"/>
+    <element name="effort" width="40px"/>
+  </feature_tickets_list>
+</config>
+""")
+insert.set_value('view', """feature_tickets_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00067""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sprint_tickets_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00068""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <sprint_tickets_list layout="TableLayoutWdg" >
+    <element name="id" width="44px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="product_code" width="51px"/>
+    <element name="feature_code" width="254.5px"/>
+    <element name="type" width="39px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="status" width="93px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="priority" width="20px"/>
+    <element name="timestamp" width="37px"/>
+    <element name="notes" width="395px"/>
+    <element name="total_work_hours" width="20px"/>
+    <element name="effort" width="40px"/>
+    <element name="sprint_code" width="115.933px"/>
+  </sprint_tickets_list>
+</config>
+""")
+insert.set_value('view', """sprint_tickets_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00069""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <hidden_rows>
+    <element name="plan_items"/>
+    <element name="feature_tickets_list"/>
+    <element name="product_features_list"/>
+  </hidden_rows>
+</config>
+""")
+insert.set_value('view', """hidden_rows""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00070""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <add_ticket>
+    <element name="sprint_code"/>
+    <element name="assigned"/>
+    <element name="product_code"/>
+    <element name="feature_code"/>
+    <element name="type"/>
+    <element name="status"/>
+    <element name="priority"/>
+    <element name="customer_code"/>
+    <element name="subject"/>
+    <element name="summary"/>
+    <element name="ticket_ids"/>
+    <element name="effort"/>
+    <element name="preview"/>
+  </add_ticket>
+</config>
+""")
+insert.set_value('view', """add_ticket""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00071""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+  
+    <element name='assigned'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(sthpw/login.login)</values_expr> 
+          <column>assigned</column> 
+        </display> 
+    </element>
+  
+    <element name='status'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values>new|open|in_dev|need_info|on_hold|need_validation|closed|invalid</values> 
+          <column>status</column> 
+        </display> 
+    </element>
+
+    <element name='type'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@UNIQUE(@GET(scrum/ticket.type))</values_expr> 
+          <column>type</column> 
+        </display> 
+    </element>
+
+
+    <element name='sprint'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/sprint.title)</values_expr> 
+          <column>scrum/sprint.title</column> 
+        </display> 
+    </element>
+
+    <element name='feature'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/feature.title)</values_expr> 
+          <column>scrum/feature.title</column> 
+        </display> 
+    </element>
+
+    <element name='product'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/product.title)</values_expr> 
+          <column>scrum/feature.scrum/product.title</column> 
+        </display> 
+    </element>
+
+    <element name='customer'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@UNIQUE(@GET(scrum/ticket.customer_code))</values_expr> 
+          <column>customer_code</column> 
+        </display> 
+    </element>
+
+
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00072""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <custom_filter> 
+  
+    <element name='product'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/product.title)</values_expr> 
+          <column>scrum/product.title</column> 
+        </display> 
+    </element>
+
+
+
+  </custom_filter>
+</config>""")
+insert.set_value('view', """custom_filter""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00073""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_status""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00074""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_status""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="label" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="value" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+    <element name="description" edit="true">
+      <display widget="raw_data">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="sort_order" edit="true">
+      <display widget="raw_data">
+        <type>integer</type>
+      </display>
+    </element>
+    <element name="background" edit="true">
+      <display widget="raw_data">
+        <type>string</type>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00075""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_status""")
+insert.set_value('login', """admin""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="label"/>
+    <element name="value"/>
+    <element name="description"/>
+    <element name="sort_order"/>
+    <element name="background"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00076""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_status""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="label">
+</element>
+    <element name="value">
+</element>
+    <element name="description">
+</element>
+    <element name="sort_order">
+      <colors>
+        <value name="archived">-click-</value>
+        <value name="archived">-click-</value>
+      </colors>
+    </element>
+    <element name="background">
+      <colors>
+        <value name="Archived">-click-</value>
+        <value name="Archived">-click-</value>
+      </colors>
+    </element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00077""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/search_type""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "simple", "simple_enabled": "", "simple_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:ticket_status_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00078""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_status""")
+insert.set_value('config', """<config>
+  <ticket_status_list layout="TableLayoutWdg" >
+    <element name="value" width="467.667px"/>
+    <element name="label" width="467.667px"/>
+    <element name="description" width="467.667px"/>
+  </ticket_status_list>
+</config>
+""")
+insert.set_value('view', """ticket_status_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00079""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+<ticket_status_report_wdg>
+
+
+<html>
+  <style type="text/css">
+
+  </style>
+
+  <![CDATA[
+
+  <% 
+    total = server.eval("@COUNT(scrum/sprint['status', 'active'].scrum/ticket)") * 1.0
+    #context.write("<div>Total [%s%%]</div>" %(total))    
+    CHART_WIDTH = 400
+    BAR_HEIGHT = 15
+    
+    table = []
+    table.append("<table>")
+
+    statuses = server.eval("@SOBJECT(scrum/ticket_status)")
+    for status in statuses:
+        label = status.get("label")
+        value = status.get("value")
+        total_in_status = server.eval("@COUNT(scrum/sprint['status', 'active'].scrum/ticket['status', '%s'])" %value) * 1.0
+        percent = (total_in_status / total) * 100
+        width = (total_in_status / total) * CHART_WIDTH
+        if width < 1:         
+            width = 3 
+       
+        color = status.get("background")
+        if not color:
+            color = "#FFF"      
+
+
+        table.append("<tr>")
+
+        table.append("<td width='120'>")
+        table.append("%s" %label)
+        table.append("</td>")
+
+        table.append("<td width='50'>")
+        table.append("%2d%%" %percent)
+        table.append("</td>")
+
+        table.append("<td width='50'>")
+        table.append("%s" %total_in_status)
+        table.append("</td>")
+
+
+        table.append("<td>")
+        table.append("<div style='width:%s;height:%s;background-color:%s'><div/></div>" %(width, BAR_HEIGHT, color))
+        table.append("</td>")
+        table.append("</tr>")
+
+    table.append("</table>")
+    
+    table = "".join(table)
+    context.write(table)
+    
+
+  %>
+
+  ]]>
+
+
+
+ 
+    </html>
+  </ticket_status_report_wdg>
+</config>""")
+insert.set_value('view', """ticket_status_report_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00080""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <development>
+    <element name="goat"/>
+    <element name="my_dashboard"/>
+  </development>
+</config>
+""")
+insert.set_value('view', """development""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00081""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter_tickets_active_sprint> 
+  
+    <element name='assigned'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(sthpw/login.login)</values_expr> 
+          <column>assigned</column> 
+        </display> 
+    </element>
+  
+    <element name='status'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values>open|in_dev|need_info|on_hold|need_validation|closed|invalid</values> 
+          <column>status</column> 
+        </display> 
+    </element>
+
+    <element name='sprint'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/sprint.title)</values_expr> 
+          <column>scrum/sprint.title</column> 
+        </display> 
+    </element>
+
+    <element name='feature'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/feature.title)</values_expr> 
+          <column>scrum/feature.title</column> 
+        </display> 
+    </element>
+
+    <element name='product'> 
+        <display class='tactic.ui.filter.SelectFilterElementWdg'> 
+          <values_expr>@GET(scrum/product.title)</values_expr> 
+          <column>scrum/feature.scrum/product.title</column> 
+        </display> 
+    </element>
+
+
+
+  </filter_tickets_active_sprint>
+</config>""")
+insert.set_value('view', """filter_tickets_active_sprint""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00082""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "{$LOGIN}", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "assigned"}, {"main_body_value": "invalid|archived|future|on_hold", "prefix": "main_body", "main_body_relation": "not in", "main_body_enabled": "on", "main_body_column": "status"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "1 - 10", "Next": "", "prefix": "search_limit", "search_limit": "10", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "type", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:my_assigned_tickets""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00083""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <my_assigned_tickets layout="TableLayoutWdg" >
+    <element name="id" width="44px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="product_code" width="48px"/>
+    <element name="feature_code" width="68.6333px"/>
+    <element name="type" width="27px"/>
+    <element name="subject" width="502.467px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="status" width="93px"/>
+    <element name="assigned" width="44px"/>
+    <element name="priority" width="20px"/>
+    <element name="timestamp" width="50.25px"/>
+    <element name="sprint_code" width="76.65px"/>
+    <element name="notes" width="395px"/>
+    <element name="work_hours" width="29px"/>
+    <element name="total_work_hours" width="31.9167px"/>
+    <element name="effort" width="40px"/>
+  </my_assigned_tickets>
+</config>
+""")
+insert.set_value('view', """my_assigned_tickets""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00084""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <add>
+    <element name="login"/>
+    <element name="category"/>
+    <element name="description"/>
+    <element name="day"/>
+    <element name="straight_time"/>
+  </add>
+</config>
+""")
+insert.set_value('view', """add""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00085""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "{$LOGIN}", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "login"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": ""}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 12", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "day", "order": "day desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:my_work_hours""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00086""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <my_work_hours layout="TableLayoutWdg" >
+    <element name="ticket_id" width="156.083px"/>
+    <element name="category" width="90px"/>
+    <element name="description" width="536.45px"/>
+    <element name="day" width="130px"/>
+    <element name="straight_time" width="115.617px"/>
+    <element name="login" width="36px"/>
+  </my_work_hours>
+</config>
+""")
+insert.set_value('view', """my_work_hours""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00087""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="ticket_id" title="Ticket ID" edit="true">
+      <display widget="expression">
+        <expression>@GET(scrum/ticket.id)</expression>
+      </display>
+    </element>
+    <element name="category" width="185.35px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00088""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="ticket_id"/>
+    <element name="category">
+      <display widget="select">
+        <values>meeting|webex|ticket|support|forums|documentation|holiday|misc</values>
+        <empty>true</empty>
+      </display>
+    </element>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00089""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="ticket_id">
+</element>
+    <element name="category">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00090""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "{$LOGIN}", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "login"}, {"main_body_value": "", "main_body_select": "1 week", "main_body_relation": "is newer than", "main_body_value|hour": "12", "main_body_column": "day", "prefix": "main_body", "main_body_value|minute": "00", "main_body_enabled": "on"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": ""}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "day", "order": "day desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:my_work_hours_this_week""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00091""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/work_hour""")
+insert.set_value('config', """<config>
+  <my_work_hours_this_week layout="TableLayoutWdg" >
+    <element name="ticket_id" width="156.083px"/>
+    <element name="category" width="90px"/>
+    <element name="description" width="536.45px"/>
+    <element name="day" width="130px"/>
+    <element name="straight_time" width="115.617px"/>
+    <element name="login" width="36px"/>
+  </my_work_hours_this_week>
+</config>
+""")
+insert.set_value('view', """my_work_hours_this_week""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00092""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_log""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+    <element name="changed_to"/>
+    <element name="changed_from"/>
+    <element name="column"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00093""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_log""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="changed_to"/>
+    <element name="changed_from"/>
+    <element name="column"/>
+    <element name="ticket_code"/>
+    <element name="ticket_id" title="ticket_id" edit="true">
+      <display widget="format">
+        <type>integer</type>
+        <format>-1234</format>
+      </display>
+    </element>
+    <element name="login" title="Changed By" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00094""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_log""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="changed_to"/>
+    <element name="changed_from"/>
+    <element name="column"/>
+    <element name="ticket_code">
+      <display class="SelectWdg">
+        <empty>true</empty>
+        <query>scrum/ticket|code|code</query>
+      </display>
+    </element>
+    <element name="ticket_id"/>
+    <element name="login"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00095""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_log""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="ticket_id">
+</element>
+    <element name="login">
+      <colors>
+        <value name="dan"/>
+        <value name="dan"/>
+      </colors>
+    </element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00096""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """config/trigger""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:ticket_log_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00097""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket_log""")
+insert.set_value('config', """<config>
+  <ticket_log_list layout="TableLayoutWdg" >
+    <element name="timestamp" width="434.7px"/>
+    <element name="column" width="225.817px"/>
+    <element name="changed_from" width="293.567px"/>
+    <element name="changed_to" width="293.55px"/>
+    <element name="login" width="169.367px"/>
+  </ticket_log_list>
+</config>
+""")
+insert.set_value('view', """ticket_log_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00098""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('config', """<config>
+<ticket_id_link_wdg>
+<html>
+<style type="text/css">
+.spt_ticket_links div {margin-bottom:5px;padding:2px;background:#999999;color:000000;-moz-border-radius:5px;-webkit-border-radius:5px;}
+    .spt_ticket_links div:hover {background:#DADADA;}
+</style>
+<div class="spt_ticket_links">
+<![CDATA[
+<% 
+    base_url = "http://tickets.southpawtech.com/tactic/support/#/ticket"
+    
+    ticket_ids = sobject.get("ticket_ids")
+
+    if ticket_ids:
+
+        ids = ticket_ids.split(",")
+
+        list_arr = []
+
+        for id in ids:
+            id = id.replace(" ", "")
+            href = "%s/%s" %( base_url, id )
+
+            list_arr.append("<div><a target='_BLANK' href='%s'>%s</a></div> " %( href, id) )
+    
+        list = "".join(list_arr)
+        context.write(list)
+
+%>]]>
+</div>
+</html>
+</ticket_id_link_wdg>
+</config>""")
+insert.set_value('view', """ticket_id_link_wdg""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00099""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <goat>
+    <element name="customer_list"/>
+  </goat>
+</config>
+""")
+insert.set_value('view', """goat""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00100""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <ticket_summary>
+    <element name="summary"/>
+  </ticket_summary>
+</config>
+""")
+insert.set_value('view', """ticket_summary""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00101""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/trigger""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:ticket_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00102""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="type">
+      <display widget="select">
+        <empty>true</empty>
+        <labels>Feature|Bug|Question</labels>
+        <values>feature|bug|question</values>
+      </display>
+    </element>
+    <element name="status">
+      <display widget="select">
+        <labels>New|Open|Need Info|In Development|Need Validation|On Hold|Future|Closed|Archived|Invalid</labels>
+        <values>new|open|need_info|in_dev|need_validation|on_hold|future|closed|archived|invalid</values>
+      </display>
+    </element>
+    <element name="priority">
+      <display widget="select">
+        <default>3</default>
+        <labels>1- Low|2|3|4|5 - High</labels>
+        <values>1|2|3|4|5</values>
+      </display>
+    </element>
+    <element name="assigned">
+      <display widget="select">
+        <empty>true</empty>
+        <values_expr>@GET(sthpw/login.login)</values_expr>
+      </display>
+    </element>
+    <element name="product_code">
+      <display widget="select">
+        <values_expr>@GET(scrum/product.code)</values_expr>
+        <empty>true</empty>
+        <labels_expr>@GET(scrum/product.title)</labels_expr>
+        <validation_script_path>validation/ticket_select_product</validation_script_path>
+      </display>
+    </element>
+    <element name="feature_code">
+      <display widget="select">
+        <values_expr>@GET(scrum/feature.code)</values_expr>
+        <empty>true</empty>
+        <labels_expr>@GET(scrum/feature.title)</labels_expr>
+      </display>
+    </element>
+    <element name="sprint_code">
+      <display widget="select">
+        <values_expr>@GET(scrum/sprint.code)</values_expr>
+        <labels_expr>@GET(scrum/sprint.title)</labels_expr>
+        <empty>true</empty>
+      </display>
+    </element>
+    <element width="300px" name="subject">
+      <display class="TextAreaWdg">
+        <cols>80</cols>
+        <rows>2</rows>
+      </display>
+    </element>
+    <element name="summary" title="Summary">
+      <display class="TextAreaWdg">
+        <cols>80</cols>
+        <rows>20</rows>
+      </display>
+    </element>
+    <element name="customer_code">
+      <display widget="text"/>
+    </element>
+    <element name="ticket_ids">
+      <display widget="text">
+      </display>
+    </element>
+    <element name="effort">
+      <display widget="text">
+      </display>
+    </element>
+    <element name="preview">
+      <display class="tactic.ui.widget.SimpleUploadWdg"/>
+      <action class="pyasm.command.UploadAction"/>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00103""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="completed_tickets"/>
+    <element name="total_tickets"/>
+    <element name="status">
+      <display widget="select">
+        <labels>Waiting|Active|Incomplete|Complete</labels>
+        <values>waiting|active|incomplete|complete</values>
+        <empty>false</empty>
+      </display>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00104""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 7", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "assigned", "order": "date_start desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sprint_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00105""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('login', """albert""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "albert", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "SQL Server Port", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "1 - 80", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:albert.alberts_tasks""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00106""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('login', """albert""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="albert.alberts_tasks" title="Albert's tasks">
+      <display class="LinkWdg">
+        <search_type>scrum/ticket</search_type>
+        <simple_search_view>custom_filter</simple_search_view>
+        <search_view>link_search:albert.alberts_tasks</search_view>
+        <view>albert.alberts_tasks</view>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00107""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('login', """albert""")
+insert.set_value('config', """<config>
+  <albert.alberts_tasks layout="TableLayoutWdg" >
+    <element name="id" width="41.0833px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="status" width="20px"/>
+    <element name="notes" width="113px"/>
+    <element name="total_work_hours" width="27.5px"/>
+    <element name="effort" width="40px"/>
+    <element name="work_hours" width="29px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="sprint_code" width="115.933px"/>
+  </albert.alberts_tasks>
+</config>
+""")
+insert.set_value('view', """albert.alberts_tasks""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00108""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('login', """albert""")
+insert.set_value('config', """<config>
+  <my_view_albert>
+    <element name="albert.alberts_tasks"/>
+  </my_view_albert>
+</config>
+""")
+insert.set_value('view', """my_view_albert""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00109""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "closed", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "status"}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is empty", "main_body_enabled": "on", "main_body_column": "sprint_code"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "scrum/ticket_log", "prefix": "children", "children_enabled": ""}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:closed_tickets_no_sprint""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00110""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <closed_tickets_no_sprint layout="TableLayoutWdg" >
+    <element name="id" width="41.0833px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="customer_code" width="61px"/>
+    <element name="product_code" width="51px"/>
+    <element name="feature_code" width="254.5px"/>
+    <element name="type" width="39px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="status" width="20px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="priority" width="20px"/>
+    <element name="sprint_code" width="115.933px"/>
+    <element name="notes" width="395px"/>
+    <element name="total_work_hours" width="27.5px"/>
+    <element name="effort" width="40px"/>
+    <element name="work_hours" width="29px"/>
+  </closed_tickets_no_sprint>
+</config>
+""")
+insert.set_value('view', """closed_tickets_no_sprint""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00111""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <audit>
+    <element name="tickets_no_feature"/>
+    <element name="open_tickets_backlog"/>
+    <element name="open_tickets_no_sprint"/>
+    <element name="closed_tickets_no_sprint"/>
+  </audit>
+</config>
+""")
+insert.set_value('view', """audit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00112""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "open", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "status"}, {"main_body_value": "11SCRUM", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": "sprint_code"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "scrum/ticket_log", "prefix": "children", "children_enabled": ""}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "1 - 14", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:open_tickets_backlog""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00113""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <open_tickets_backlog layout="TableLayoutWdg" >
+    <element name="id" width="41.0833px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="customer_code" width="61px"/>
+    <element name="product_code" width="51px"/>
+    <element name="feature_code" width="254.5px"/>
+    <element name="type" width="39px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="status" width="20px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="priority" width="20px"/>
+    <element name="sprint_code" width="115.933px"/>
+    <element name="notes" width="395px"/>
+    <element name="total_work_hours" width="27.5px"/>
+    <element name="effort" width="40px"/>
+    <element name="work_hours" width="29px"/>
+  </open_tickets_backlog>
+</config>
+""")
+insert.set_value('view', """open_tickets_backlog""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00114""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "new|open", "prefix": "main_body", "main_body_relation": "in", "main_body_enabled": "on", "main_body_column": "status"}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is empty", "main_body_enabled": "on", "main_body_column": "sprint_code"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "scrum/ticket_log", "prefix": "children", "children_enabled": ""}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:open_tickets_no_sprint""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00115""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <open_tickets_no_sprint layout="TableLayoutWdg" >
+    <element name="id" width="41.0833px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="customer_code" width="61px"/>
+    <element name="product_code" width="51px"/>
+    <element name="feature_code" width="254.5px"/>
+    <element name="type" width="39px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="status" width="20px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="priority" width="20px"/>
+    <element name="sprint_code" width="115.933px"/>
+    <element name="notes" width="395px"/>
+    <element name="total_work_hours" width="27.5px"/>
+    <element name="effort" width="40px"/>
+    <element name="work_hours" width="29px"/>
+  </open_tickets_no_sprint>
+</config>
+""")
+insert.set_value('view', """open_tickets_no_sprint""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00116""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="product_code">
+      <display widget="select">
+        <values_expr>@GET(scrum/product.code)</values_expr>
+        <labels_expr>@GET(scrum/product.title)</labels_expr>
+      </display>
+    </element>
+    <element name="total_tickets"/>
+    <element name="avg_priority"/>
+    <element name="status">
+      <display widget="select">
+        <values>pending|future|in_dev|complete</values>
+      </display>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00117""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 89", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "title"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:feature_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00118""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is empty", "main_body_enabled": "on", "main_body_column": "feature_code"}, {"main_body_value": "archived|invalid|closed", "prefix": "main_body", "main_body_relation": "not in", "main_body_enabled": "on", "main_body_column": "status"}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [0], "modes": ["sobject"], "ops": ["and"]}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "assigned", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "status", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "type", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sprint", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "feature", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "product", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "customer", "op": "="}, {"Showing": "1 - 100", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "id desc"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:tickets_no_feature""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00119""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/ticket""")
+insert.set_value('config', """<config>
+  <tickets_no_feature layout="TableLayoutWdg" >
+    <element name="id" width="41.0833px"/>
+    <element name="ticket_ids" width="20px"/>
+    <element name="customer_code" width="61px"/>
+    <element name="product_code" width="51px"/>
+    <element name="feature_code" width="254.5px"/>
+    <element name="type" width="39px"/>
+    <element name="subject" width="501.217px"/>
+    <element name="ticket_summary" width="29px"/>
+    <element name="status" width="20px"/>
+    <element name="assigned" width="212.017px"/>
+    <element name="priority" width="20px"/>
+    <element name="sprint_code" width="115.933px"/>
+    <element name="notes" width="395px"/>
+    <element name="total_work_hours" width="27.5px"/>
+    <element name="effort" width="40px"/>
+    <element name="work_hours" width="29px"/>
+  </tickets_no_feature>
+</config>
+""")
+insert.set_value('view', """tickets_no_feature""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00120""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="code"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00121""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """sthpw/search_object""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="search_type"/>
+    <element name="namespace"/>
+    <element name="description"/>
+    <element name="database"/>
+    <element name="table_name"/>
+    <element name="class_name"/>
+    <element name="color"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00122""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00123""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="plan_item" title="Plan Items" edit="false">
+      <display widget="hidden_row">
+        <search_view>link_search:plan_items</search_view>
+        <search_type>scrum/plan_item</search_type>
+        <width>100%</width>
+        <dynamic_class>tactic.ui.panel.ViewPanelWdg</dynamic_class>
+        <mode>insert</mode>
+        <view>plan_items</view>
+      </display>
+    </element>
+    <element name="description" title="Description" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="date_start" title="Date Start" edit="true" color="false">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+    <element name="date_end" title="Date End" edit="true" color="false">
+      <display widget="format">
+        <type>date</type>
+        <format>1999-12-31</format>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00124""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="code"/>
+    <element name="description"/>
+    <element name="date_start"/>
+    <element name="date_end"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00125""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <table>
+    <element name="code"/>
+  </table>
+</config>
+""")
+insert.set_value('view', """table""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00126""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <definition>
+    <element name="code"/>
+    <element name="plan_code" edit="true">
+      <display widget="expression">
+        <expression>@GET(scrum/plan.description)</expression>
+      </display>
+    </element>
+    <element name="description" title="Description" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="status" title="Status" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="notes" edit="false">
+      <display class="tactic.ui.widget.DiscussionElementWdg">
+        <process>comment</process>
+        <context>comment</context>
+      </display>
+    </element>
+    <element name="feature_code" title="Feature" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="category" title="Category" edit="true" color="false">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="number" title="Item #" width="56px" edit="true">
+      <display widget="format">
+        <type>text</type>
+      </display>
+    </element>
+    <element name="category_number" title="Category Number" edit="true" color="false">
+      <display widget="format">
+        <type>integer</type>
+        <format>-1234</format>
+      </display>
+    </element>
+  </definition>
+</config>
+""")
+insert.set_value('view', """definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00127""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('login', """dan""")
+insert.set_value('config', """<config>
+  <edit>
+    <element name="plan_code"/>
+    <element name="category_number"/>
+    <element name="number"/>
+    <element name="category"/>
+    <element name="status"/>
+    <element name="feature_code">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <query>scrum/feature|code|code</query>
+      </display>
+    </element>
+    <element name="description"/>
+  </edit>
+</config>
+""")
+insert.set_value('view', """edit""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00128""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="description"/>
+    <element name="date_start"/>
+    <element name="date_end"/>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00129""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="description">
+</element>
+    <element name="plan_item">
+</element>
+    <element name="date_start">
+</element>
+    <element name="date_end">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00130""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <edit_definition>
+    <element name="description"/>
+    <element name="status">
+      <display widget="text"/>
+    </element>
+    <element name="number">
+      <display widget="text"/>
+    </element>
+    <element name="category"/>
+    <element name="category_number"/>
+    <element name="plan_code">
+      <display class="SelectWdg">
+        <query>scrum/plan|code|description</query>
+        <empty>true</empty>
+      </display>
+    </element>
+  </edit_definition>
+</config>
+""")
+insert.set_value('view', """edit_definition""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00131""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <color>
+    <element name="description">
+</element>
+    <element name="status">
+</element>
+    <element name="notes">
+</element>
+    <element name="number">
+</element>
+    <element name="category">
+</element>
+    <element name="feature_code">
+</element>
+    <element name="category_number">
+</element>
+    <element name="plan_code">
+</element>
+  </color>
+</config>
+""")
+insert.set_value('view', """color""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00132""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 1", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:plan_item_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00133""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <plan_item_list layout="TableLayoutWdg" >
+    <element name="plan_code" width="80px"/>
+    <element name="number" width="56px"/>
+    <element name="category" width="91px"/>
+    <element name="feature_code" width="90px"/>
+    <element name="description" width="316px"/>
+    <element name="status" width="81px"/>
+    <element name="notes" width="677px"/>
+  </plan_item_list>
+</config>
+""")
+insert.set_value('view', """plan_item_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00134""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 53", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "category_number", "order": "category_number"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:plan_items""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00135""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <plan_items layout="TableLayoutWdg" >
+    <element name="number" width="56px"/>
+    <element name="category" width="91px"/>
+    <element name="feature_code" width="90px"/>
+    <element name="description" width="316px"/>
+    <element name="status" width="81px"/>
+    <element name="notes" width="677px"/>
+  </plan_items>
+</config>
+""")
+insert.set_value('view', """plan_items""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00136""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:plan_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00137""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('config', """<config>
+  <plan_list layout="TableLayoutWdg" >
+    <element name="plan_item" width="148.033px"/>
+    <element name="description" width="1270.97px"/>
+  </plan_list>
+</config>
+""")
+insert.set_value('view', """plan_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00138""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 2", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:plan_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00139""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('config', """<config>
+  <plan_tracking layout="TableLayoutWdg" >
+    <element name="plan_item" width="128.683px"/>
+    <element name="description" width="1104.83px"/>
+    <element name="date_start" width="88.75px"/>
+    <element name="date_end" width="88.7333px"/>
+  </plan_tracking>
+</config>
+""")
+insert.set_value('view', """plan_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """SideBarWdg""")
+insert.set_value('code', """WIDGET_CONFIG00140""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """SideBarWdg""")
+insert.set_value('config', """<config>
+  <planning>
+    <element name="plan_tracking"/>
+  </planning>
+</config>
+""")
+insert.set_value('view', """planning""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00141""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 13", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:product_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00142""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product""")
+insert.set_value('config', """<config>
+  <product_tracking layout="TableLayoutWdg" >
+    <element name="title" width="791.333px"/>
+    <element name="features" width="303.267px"/>
+    <element name="product_versions" width="308.4px"/>
+  </product_tracking>
+</config>
+""")
+insert.set_value('view', """product_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00143""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "TACTIC", "element_name": "product", "op": "="}, {"Showing": "1 - 81", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "status", "order": "title"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:feature_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00144""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/feature""")
+insert.set_value('config', """<config>
+  <feature_tracking layout="TableLayoutWdg" >
+    <element name="product_code" width="67px"/>
+    <element name="title" width="357px"/>
+    <element name="status" width="105.833px"/>
+    <element name="feature_tickets" width="88.5333px"/>
+    <element name="total_active_tickets" width="98.6167px"/>
+    <element name="total_pending_tickets" width="98.6px"/>
+    <element name="avg_priority" width="299.417px"/>
+  </feature_tracking>
+</config>
+""")
+insert.set_value('view', """feature_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00145""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 5", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:version_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00146""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/product_version""")
+insert.set_value('config', """<config>
+  <version_tracking layout="TableLayoutWdg" >
+    <element name="product_code" width="29px"/>
+    <element name="code" width="478.417px"/>
+    <element name="version_type" width="196.417px"/>
+    <element name="release_notes" width="728.167px"/>
+  </version_tracking>
+</config>
+""")
+insert.set_value('view', """version_tracking""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00147""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/plan_item""")
+insert.set_value('config', """<config>
+  <insert>
+    <element name="plan_code"/>
+    <element name="category_number"/>
+    <element name="number"/>
+    <element name="category"/>
+    <element name="feature_code"/>
+    <element name="description"/>
+  </insert>
+</config>""")
+insert.set_value('view', """insert""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('code', """WIDGET_CONFIG00148""")
+insert.set_value('timestamp', """2018-02-09 15:24:20.511326""")
+insert.set_value('search_type', """scrum/sprint""")
+insert.set_value('config', """<config>
+  <filter>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"Showing": "1 - 4", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": "date_start"}]</values>
+  </filter>
+</config>
+""")
+insert.set_value('view', """link_search:sprint_list""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00184""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
+insert.set_value('config', """<config>
+<default_theme.menu>
+<html>
+<style type="text/css">
+<![CDATA[
+<%
+num_menus = 5;
+menu_width = 100;
+%>]]>
+
+
+.web_menu_wdg {
+    color: [expr]@COLOR('color')[/expr];
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: -1px;
+    position: relative;
+    padding: 0px;
+    //border: solid 1px [expr]@COLOR('border')[/expr];
+    
+    width: 100%;
+ 
+}
+
+.web_menu_wdg .main_link {
+  list-style-type: none;
+  display: block;
+  //background: [expr]@GRADIENT('background', 0, -20)[/expr];
+  height: 28px;
+  cursor: pointer;
+}
+
+.web_menu_wdg .main_ul {
+  list-style-type: none;
+  display: block;
+  margin: -1px 0px 0px 0px;
+  padding: 0px;
+  background: [expr]@GRADIENT('background', 0, -20)[/expr];
+  height: 30px;
+}
+
+.web_menu_wdg .main_li {
+    margin-left: 0px;
+    padding: 0px;
+}
+
+.web_menu_wdg .menu_header {
+    float: left;
+    padding: 6px 1px 5px 10px;
+    font-weight: bold;
+    border-style: solid;
+    border-width: 1 1 0 1;
+    border-color: [expr]@COLOR('border')[/expr];
+    margin-left: -1px;
+    height: 19px;
+
+    width: ${menu_width};
+}
+
+.web_menu_wdg .sub_ul {
+    list-style-type: none;
+    display: block;
+    border-style: solid;
+    border-width: 0 1 1 1;
+    border-color: [expr]@COLOR('border')[/expr];
+    padding: 3px;
+    display: none;
+    //border: solid 1px red;
+    float: left;
+    margin-left: ${-menu_width-13};
+    margin-top: 30px;
+    background: [expr]@COLOR('background', -20)[/expr];
+    position: relative;
+    z-index: 1000;
+
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    width: ${menu_width+5};
+    //width: 155px;
+}
+
+.web_menu_wdg .sub_ul li {
+  padding: 5px;
+  text-align: left;
+}
+
+.web_menu_wdg a {
+  text-decoration: none;
+}
+
+.web_menu_wdg .sub_ul a:link {
+    color: #FFF;
+}
+</style>
+<div class="menu">
+  <div>
+    <element name="menu">
+      <display class="tactic.ui.panel.SimpleSideBarWdg">
+        <use_href>true</use_href>
+        <view>project_view</view>
+        <target>web_content</target>
+      </display>
+    </element>
+  </div>
+</div>
+</html>
+<behavior class="main_li" event="mouseenter"><![CDATA[
+// make sure they are all closed
+var top = bvr.src_el.getParent(".main_ul");
+var sub_els = top.getElements(".sub_ul");
+for ( var i = 0; i < sub_els.length; i++) {
+    sub_els[i].setStyle("display", "none");
+}
+
+var sub_el = bvr.src_el.getElement(".sub_ul");
+if (sub_el) {
+    sub_el.setStyle("opacity", 0);
+    new Fx.Tween(sub_el, {duration: "short"}).start('opacity', 1.0);
+    sub_el.setStyle("display", "block");
+}
+]]></behavior>
+
+
+<behavior class="main_li" event="mouseleave"><![CDATA[
+var sub_el = bvr.src_el.getElement(".sub_ul");
+if (sub_el) {
+    sub_el.setStyle("display", "none");
+}
+]]></behavior>
+
+
+<behavior class="sub_li" event="mouseenter"><![CDATA[
+bvr.src_el.setStyle("background-color", "#999");
+]]></behavior>
+
+
+<behavior class="sub_li" event="click_up"><![CDATA[
+var el = bvr.src_el.getParent(".sub_ul");
+el.setStyle("display", "none");
+]]></behavior>
+
+
+<behavior class="sub_li" event="mouseleave"><![CDATA[
+bvr.src_el.setStyle("background-color", "");
+]]></behavior>
+
+
+<behavior class="menu" event="mouseleave"><![CDATA[
+var els = bvr.src_el.getElements(".sub_ul");
+for ( var i = 0; i < els.length; i++) {
+    els[i].setStyle("display", "none");
+}
+]]></behavior>
+</default_theme.menu>
+</config>""")
+insert.set_value('view', """default_theme.menu""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00185""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
+insert.set_value('config', """<config>
+<default_theme.content>
+<html>
+<div style="margin-left: -3px; margin-right: -3px">
+  <element name="home">
+    <display class="tactic.ui.container.TabWdg">
+      <config>
+        <element name="home" title="Home">
+          <display class="tactic.ui.panel.CustomLayoutWdg">
+            <view>default_theme.home</view>
+          </display>
+        </element>
+      </config>
+      <show_add>false</show_add>
+      <tab_offset>5px</tab_offset>
+    </display>
+  </element>
+</div>
+</html>
+</default_theme.content>
+</config>""")
+insert.set_value('view', """default_theme.content""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00186""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
+insert.set_value('config', """<config>
+<default_theme.footer>
+<html>
+<style type="text/css">
+.web_footer {
+    min-height: 150px;
+    background-color: [expr]@COLOR('background3')[/expr];
+    //border: solid 1px [expr]@COLOR('border')[/expr];
+    margin-top: -1px;
+    padding: 10px;
+}
+</style>
+<div class="web_footer">
+
+</div>
+</html>
+</default_theme.footer>
+</config>""")
+insert.set_value('view', """default_theme.footer""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00187""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
+insert.set_value('config', """<config>
+<default_theme.header>
+<html>
+<div>
+  <div>
+<![CDATA[
+<%
+expr = "@GET(login.sthpw/login_in_group.login_group)"
+login_groups = server.eval(expr)
+
+
+plugin_path = server.get_plugin_dir("TACTIC/default_theme")
+path = "%s/media/logo.png" % plugin_path
+
+
+project_code = server.get_project()
+project = server.get_by_code("sthpw/project", project_code)
+
+%>]]>
+</div>
+  <div>
+    <div style="float: right">
+      <div class="sign_out hand" style="float: right; padding: 15px">Sign Out</div>
+      <div style="float: right; padding: 15px">[abs_expr]@GET(login.display_name)[/abs_expr]</div>
+    </div>
+    <div>
+      <div style="position: absolute; top: 15px; left: 15px;">
+        <a href="/jobs">
+          <img style="padding: 0px; width: 50%" src="${path}"/>
+        </a>
+      </div>
+      <div style="position: absolute; top: 15px; left: 200px; font-size: 1.5em;">
+          ${project.get("title")}
+      </div>
+      <div style="height: 20px"> </div>
+      <div class="web_menu">
+        <element view=".menu"/>
+      </div>
+    </div>
+  </div>
+</div>
+</html>
+<behavior class="sign_out"><![CDATA[
+var ok = function(){
+var server = TacticServerStub.get();
+server.execute_cmd("SignOutCmd", {login: bvr.login} );
+var href = document.location.href;
+var parts = href.split("#");
+
+window.location.href=parts[0];
+}
+spt.confirm("Are you sure you wish to sign out?", ok )
+]]></behavior>
+</default_theme.header>
+</config>""")
+insert.set_value('view', """default_theme.header""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00188""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
+insert.set_value('config', """<config>
+<default_theme.styles>
+<html>
+<style type="text/css">
+body {
+    #background: [expr]@COLOR('background')[/expr] !important;
+}
+
+.web_main {
+    width: 100%;
+    //padding: 0px 100px;
+}
+
+
+.web_inner {
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+
+    margin: auto;
+    width: 90%;
+    min-width: 800px;
+}
+
+.web_header {
+    background-color: [expr]@COLOR('background', -10)[/expr];
+    color: [expr]@COLOR('color')[/expr];
+    height: 80px;
+    margin: 0px auto;
+    position: relative;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-color: [expr]@COLOR('border')[/expr];
+}
+
+
+.web_menu {
+    text-align: center; 
+    margin-top: 20px;
+    position: absolute;
+    width: 100%;
+   
+}
+
+
+
+
+.web_content {
+    //width: 1280px; 
+    min-width: 800px;
+    margin: 0px auto;
+    padding-top: 10px;
+    //padding: 20px 20px; 
+    background: [expr]@COLOR('background2')[/expr];
+}
+
+
+
+.web_footer {
+    background-color: #706F6F; 
+    padding: 20px; 
+    //width: 960px; 
+    //height: 150px;
+    overflow: auto;
+}
+</style>
+<div> </div>
+</html>
+</default_theme.styles>
+</config>""")
+insert.set_value('view', """default_theme.styles""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00189""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
+insert.set_value('config', """<config>
+<default_theme.index>
+<html>
+<div class="web_main">
+  <div>
+<![CDATA[
+<%
+%>]]>
+</div>
+  <element view=".styles"/>
+  <div class="web_inner">
+    <table style="width: 100%">
+      <tr>
+        <td>
+          <div class="web_header">
+            <element view=".header"/>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="web_content" style="min-height: 200px">
+            <element name="web_content" view=".content"/>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="web_footer">
+            <element name="web_footer" view=".footer"/>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+</html>
+</default_theme.index>
+</config>""")
+insert.set_value('view', """default_theme.index""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """TabWdg""")
+insert.set_value('code', """WIDGET_CONFIG00190""")
+insert.set_value('timestamp', """2013-02-09 11:38:47""")
+insert.set_value('config', """<config>
+<default_theme.tabs>
+   <element name="home" title="Home">
+    <display class="tactic.ui.panel.CustomLayoutWdg">
+      <view>default_theme.home</view>
+    </display>
+  </element>
+</default_theme.tabs>
+</config>""")
+insert.set_value('view', """default_theme.tabs""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00191""")
+insert.set_value('timestamp', """2013-03-03 06:15:48""")
+insert.set_value('config', """<config>
+<default_theme.login>
+<html>
+<style type="text/css">
+body {
+    //background: #FFF !important;
+}
+
+
+.custom_login {
+    width: 350px;
+    font-size: 14px;
+    padding: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    margin-bottom: 100px;
+    background: [expr]@GRADIENT('background', -25, 10)[/expr];
+    border: solid 1px #555;
+
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -moz-box-shadow: 0px 5px 5px 0px #555;
+    -webkit-box-shadow: 0px 5px 5px 0px #555;
+    box-shadow: 0px 5px 5px 0px #555;
+    overflow: hidden;
+
+}
+
+.custom_login .title {
+    color: #000;
+    //background-color: [expr]@COLOR('background3')[/expr];
+    background-color: #EEE;
+    padding: 20px;
+    width: 410px;
+    height: 100px;
+    margin: -50 -50 30 -50;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+</style>
+<div class="custom_login" onkeyup="if (!e) var e = window.event;if (e.keyCode == 13) {document.form.submit()};">
+  <div>
+<![CDATA[
+<%
+plugin_path = server.get_plugin_dir("TACTIC/default_theme")
+img = "%s/media/logo.png" % plugin_path
+
+
+%>]]>
+    
+    
+</div>
+  <div class="title">
+    <img src="${img}" style="position: absolute; top: 50; left: 110"/>
+  </div>
+  <form>
+Name:
+    <element name="login"><display class="tactic.ui.input.TextInputWdg"/></element>
+
+<br/>
+
+
+Password:
+    <element name="password"><display class="tactic.ui.input.PasswordInputWdg"/></element>
+
+<br/>
+
+
+<div style="float: right" class="custom_button" onclick="document.form.submit()"><input type="button" value="Enter >>"/></div>
+
+</form>
+</div>
+</html>
+</default_theme.login>
+</config>""")
+insert.set_value('view', """default_theme.login""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00192""")
+insert.set_value('timestamp', """2013-03-13 11:15:45""")
+insert.set_value('config', """<config>
+<default_theme.home>
+<mako>
+<![CDATA[
+project_code = server.get_project()
+
+project = server.eval("@SOBJECT(sthpw/project['code','%s'])" % project_code, single=True)
+]]>
+</mako>
+<html>
+<style type="text/css">
+.theme_content {
+  padding: 10px;
+  color: #000;
+  border: solid 1px #AAA;
+  min-height: 500px;
+  background: #FFF
+}
+
+
+.theme_msg {
+  font-size: 18px;
+  padding: 10px;
+  background: #D1D7E2;
+  font-weight: bold;
+  margin: -10px -10px 10px -10px;
+  text-align: center; 
+}
+
+
+.theme_title {
+  font-size: 1.5em;
+  border: solid 1px #AAA;
+  padding: 30px;
+  width: 450px;
+  font-weight: bold;
+  margin: 150px auto;
+}
+</style>
+<div class="theme_content">
+  <div class="theme_msg">${project.get("title")}</div>
+  <div class="theme_title">
+        Welcome to Project [${project.get("title")}] start page.
+        </div>
+</div>
+</html>
+</default_theme.home>
+</config>""")
+insert.set_value('view', """default_theme.home""")
+#-- End Entry --#
+

@@ -1675,8 +1675,9 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
                     if status_process_sobj:
                         workflow_data = status_process_sobj.get_json_value("workflow", {})
                         mapping = workflow_data.get("mapping")
-                        #print("Remapped %s to %s." % (task_status, mapping))
-                        task_status = mapping
+                        if mapping:
+                            #print("Remapped %s to %s." % (task_status, mapping))
+                            task_status = mapping
                 if task_status.lower().replace(" ","_") not in ['complete','approved','not_required']:
                     is_complete = False
                     break

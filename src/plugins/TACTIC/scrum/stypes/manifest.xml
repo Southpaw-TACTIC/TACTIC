@@ -1,0 +1,19 @@
+<manifest>
+  <data>
+    <code>TACTIC/scrum/stypes</code>
+    <title>Scrum Search Types</title>
+    <description>Search Types for TACTIC Scrum Open Source</description>
+    <version>1</version>
+  </data>
+  <!-- # STypes -->
+  <search_type code="scrum/feature"/>
+  <search_type code="scrum/plan"/>
+  <search_type code="scrum/plan_item"/>
+  <search_type code="scrum/product"/>
+  <search_type code="scrum/product_version"/>
+  <search_type code="scrum/release_note"/>
+  <search_type code="scrum/sprint"/>
+  <search_type code="scrum/ticket"/>
+  <search_type code="scrum/ticket_log"/>
+  <search_type code="scrum/ticket_status"/>
+</manifest>

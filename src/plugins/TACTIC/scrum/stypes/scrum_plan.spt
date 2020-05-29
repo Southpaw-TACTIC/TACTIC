@@ -1,0 +1,24 @@
+#-- Start Entry --#
+insert = SearchType.create('sthpw/search_object')
+insert.set_value('code', """scrum/plan""")
+insert.set_value('class_name', """pyasm.search.SObject""")
+insert.set_value('database', """{project}""")
+insert.set_value('title', """Plan""")
+insert.set_value('namespace', """scrum""")
+insert.set_value('search_type', """scrum/plan""")
+insert.set_value('table_name', """plan""")
+insert.set_value('schema', """public""")
+#-- End Entry --#
+
+#-- Start Entry --#
+table = CreateTable('scrum/plan')
+table.add('code',                     'varchar', length='256' )
+table.add('date_end',                 'timestamp' )
+table.add('date_start',               'timestamp' )
+table.add('description',              'text' )
+table.add('id',                       'serial', primary_key=True)
+table.add('login',                    'varchar', length='256' )
+table.add('s_status',                 'varchar', length='256' )
+table.add('timestamp',                'timestamp' )
+#-- End Entry --#
+

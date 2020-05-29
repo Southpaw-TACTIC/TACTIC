@@ -2017,10 +2017,10 @@ TacticServerStub = function() {
         args.push(ticket);
 
         // Trims off undefined kwargs
-        if (typeof(passed_args) == undefined) {
+        if (typeof(passed_args) == "undefined") {
             passed_args = [];
         } else {
-            if (typeOf(passed_args) == "arguments") {
+            if (typeof(passed_args) == "arguments") {
                 passed_args = Array.from(passed_args);
             } 
             if (passed_args.length > 0) {

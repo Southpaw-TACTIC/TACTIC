@@ -20,10 +20,7 @@ import subprocess
 import re
 import os.path
 import six
-
-
-if six.PY2:
-    input = raw_input
+from six.moves import input
 
 
 class InstallException(Exception):
@@ -122,7 +119,7 @@ class Install:
         if line.find('connected to database') != -1:
             print("Database '%s' already exists. Do you want to drop the database '%s' and continue?, If you choose 'y', It will be backed up to the current directory.  (y/n)" %(project_code, project_code))
             print()
-            answer = input("(n) -> " )
+            answer = input("(n) -> ")
             if answer in ['y','Y']:
                 # can't read from config file at this point, just make these default assumptions
                 db_host = 'localhost'
@@ -608,13 +605,13 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         if os.name != 'nt':
             default_apache_user = self.get_default_web_server_user()
             if not install_defaults:
-                print()
+                print("")
                 print("Please enter the user Apache Web Server is run under:")
-                print()
+                print("")
                 tactic_apache_user = input("(%s) -> " % default_apache_user)
                 if not tactic_apache_user:
                     tactic_apache_user = default_apache_user
-                print ()
+                print("")
             else:
                 tactic_apache_user = default_apache_user
 
@@ -772,7 +769,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
         if src_dir != current_dir:
 
             if os.path.exists(src_dir):
-                print
+                print("")
                 output = input("Custom install directory [%s] already exists. It will be removed and copied over. Continue? (y/n) -> "%src_dir)
                 if output.lower() not in ['yes', 'y']:
                     print("Installation has been stopped.")
