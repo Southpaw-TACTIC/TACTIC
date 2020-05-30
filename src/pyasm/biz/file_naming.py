@@ -217,11 +217,15 @@ class FileNaming(object):
         self.ext = ext
 
 
-    def get_file_name(self):
+    def get_file_name(self, expression=""):
         assert self.sobject != None
         assert self.snapshot != None
         # File object can be none
         #assert self.file_object != None
+
+        if expression:
+            file_name = self.get_from_expression(expression)
+            return file_name
 
         # determine whether naming is used
         file_type = self.get_file_type()
@@ -251,8 +255,8 @@ class FileNaming(object):
             return file_name
 
 
+        # try naming class function
         func_name = search_type.replace("/", "_")
-
         try:
             file_name = eval( "self.%s()" % func_name)
         except AttributeError as e:
@@ -260,8 +264,14 @@ class FileNaming(object):
         except Exception as e:
             raise
 
-        file_name = Common.get_filesystem_name(file_name)
+        if file_name:
+            file_name = Common.get_filesystem_name(file_name)
+            return file_name
 
+
+        # use a default expression
+        default_expression = "{basefile}_{process}_v{version}.{ext}"
+        file_name = self.get_from_expression(default_expression)
         return file_name
 
 

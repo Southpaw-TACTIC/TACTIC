@@ -626,34 +626,49 @@ class FileCheckin(BaseCheckin):
         if not parent:
             parent = snapshot.get_parent()
         assert parent
+
+        # if no file name is given, then we are just going to return a directory
+        """
         if not file_name:
             file_name = parent.get_code()
             if not file_name:
                 file_name = parent.get_name()
             if not file_name:
                 file_name = "unknown"
+        """
 
-        file_object = SearchType.create("sthpw/file")
-        file_object.set_value("file_name", file_name)
-        file_object.set_value("type", file_type)
-        #file_object.set_value("code", file_code)
-        #file_object.set_value("range", file_range)
-        
-        # build the file name
-        file_naming = Project.get_file_naming()
-        file_naming.set_sobject(parent)
-        file_naming.set_snapshot(snapshot)
-        file_naming.set_file_object(file_object)
-        file_naming.set_ext(ext)
-        naming_file_name = file_naming.get_file_name()
+        # if there is no file name override, see if there is a file_object
+        if file_type and not file_name:
+            file_object = snapshot.get_file_by_type(file_type)
+        else:
+            file_object = None
+
+
+        if file_object:
+            naming_file_name = file_object.get_value("file_name")
+        elif file_name:
+            # if no file object exists the go through naming to find
+            # the name
+            file_object = SearchType.create("sthpw/file")
+            file_object.set_value("file_name", file_name)
+            file_object.set_value("type", file_type)
+    
+            # build the file name
+            file_naming = Project.get_file_naming()
+            file_naming.set_sobject(parent)
+            file_naming.set_snapshot(snapshot)
+            file_naming.set_file_object(file_object)
+            file_naming.set_ext(ext)
+            naming_file_name = file_naming.get_file_name()
+        else:
+            naming_file_name = None
 
         # if naming returns a file name, then use that one
         if naming_file_name:
             file_name = naming_file_name
-
         
-        # update the file_name of the file_object from file_naming
-        file_object.set_value("file_name", file_name)
+            # update the file_name of the file_object from file_naming
+            file_object.set_value("file_name", file_name)
       
         context = snapshot.get_context()
         process = snapshot.get_process()
@@ -681,7 +696,11 @@ class FileCheckin(BaseCheckin):
 
         # put some protection in for ending slash
         client_lib_dir = client_lib_dir.rstrip("/")
-        path = "%s/%s" % (client_lib_dir, file_name)
+
+        if file_name:
+            path = "%s/%s" % (client_lib_dir, file_name)
+        else:
+            path = client_lib_dir
         return path
 
     get_preallocated_path = classmethod(get_preallocated_path)
