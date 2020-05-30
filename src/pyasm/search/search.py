@@ -6080,6 +6080,9 @@ class SearchType(SObject):
             search_type = search_type.get_search_type()
 
         column_info = cls.get_column_info(search_type)
+        if column.find("->"):
+            parts = column.split("->")
+            column = parts[0]
         has_column = column_info.get(column) != None
         return has_column
     column_exists = classmethod(column_exists)

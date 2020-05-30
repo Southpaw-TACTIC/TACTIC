@@ -132,7 +132,7 @@ def get_simple_cmd(self, meth, ticket, args):
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
 
-                    if args and args[0].startswith("$"):
+                    if len(args) > 1 and args[0].startswith("$"):
                         class_name = args[0]
                         key = class_name.lstrip("$")
                         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
