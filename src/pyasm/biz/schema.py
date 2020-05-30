@@ -1280,7 +1280,7 @@ class Schema(SObject):
         schema = Container.get("Schema:%s" % code)
         if not schema:
 
-            schema_xml = SCHEMA_XML.get("code")
+            schema_xml = SCHEMA_XML.get(code)
             if not schema_xml:
                 schema_xml = ""
 

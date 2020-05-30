@@ -1625,6 +1625,13 @@ TacticServerStub = function() {
 
     this.execute_cmd = function(class_name, args, values, kwargs, on_complete, on_error) {
 
+        if (typeof(values) == 'undefined') {
+            values = {};
+        }
+        if (typeof(kwargs) == 'undefined') {
+            kwargs = {};
+        }
+
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
         passed_args = [class_name, args, values, kwargs];
         var ret_val = this._delegate("execute_cmd", passed_args, kwargs, null, on_complete, on_error);
