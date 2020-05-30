@@ -324,7 +324,10 @@ class FileCheckin(BaseCheckin):
                         else:
                             parts.append("{id}")
                         parts.append("{snapshot.process}")
-                        parts.append(".versions")
+
+                        # icons don't have the need for this
+                        if context != "icon":
+                            parts.append("versions")
 
                         if subdir:
                             parts.append(subdir)

@@ -679,8 +679,11 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         transfer_mode = self.get_option('transfer_mode')
         
         sobject = self.get_current_sobject()
-        if sobject.get_id() == -1:
+        if sobject and sobject.get_id() == -1:
             sobject = None 
+
+        if not sobject:
+            return
 
 
         snapshot_code = self.get_option("snapshot_code")

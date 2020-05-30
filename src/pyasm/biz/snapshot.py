@@ -2105,6 +2105,12 @@ class Snapshot(SObject):
 
     def update_versionless(self, snapshot_mode='current', sobject=None, checkin_type=None, naming=None):
 
+        print("update_versionless: ", snapshot_mode)
+        if self.get_value("context") == "icon":
+            print("... skipping")
+            return
+
+
         # NOTE: no triggers are run on this operation (for performance reasons)
 
         if not checkin_type:
