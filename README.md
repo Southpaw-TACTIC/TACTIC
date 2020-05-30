@@ -94,15 +94,11 @@ Complete documentation can be found on the [TACTIC Developer Documentation](http
 
 ## Resources
 
-For more information, visit the community site for TACTIC:
+For more information, visit the [community site](http://community.southpawtech.com) for TACTIC.
 
-http://tactic.southpawtech.com
+Or participate in the [TACTIC forum](http://forum.southpawtech.com) if you have any questions.
 
-
-Or participate in the forum if you have any questions:
-
-http://forum.southpawtech.com
-
+There is also a collection of [YouTube videos](https://www.youtube.com/playlist?list=PLGuW4vwnoult0iXF83Y2HnkLbrTJ-3pxO) that you can browser through.
 
 
 ## Visual Effects (VFX)
