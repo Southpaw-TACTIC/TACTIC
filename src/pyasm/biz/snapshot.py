@@ -945,7 +945,7 @@ class Snapshot(SObject):
             use_naming = xml.get_value('snapshot/file[@type="%s"]/@use_naming' % file_type)
         else:
             use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
-        if use_naming == "false":
+        if use_naming in ["false"]:
             return False
         else:
             return True

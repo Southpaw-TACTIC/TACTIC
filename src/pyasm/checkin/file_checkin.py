@@ -645,7 +645,12 @@ class FileCheckin(BaseCheckin):
         file_naming.set_snapshot(snapshot)
         file_naming.set_file_object(file_object)
         file_naming.set_ext(ext)
-        file_name = file_naming.get_file_name()
+        naming_file_name = file_naming.get_file_name()
+
+        # if naming returns a file name, then use that one
+        if naming_file_name:
+            file_name = naming_file_name
+
         
         # update the file_name of the file_object from file_naming
         file_object.set_value("file_name", file_name)
