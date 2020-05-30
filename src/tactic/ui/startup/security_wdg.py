@@ -1924,7 +1924,8 @@ class LinkSecurityWdg(ProjectSecurityWdg):
             display_handler = config.get_display_handler(element_name)
 
             if attrs.get("icon"):
-                icon.add( IconWdg("Link", eval("IconWdg.%s" % attrs.get('icon').upper()) ) )
+                icon_str = attrs.get('icon').upper()
+                icon.add( IconWdg("Link", icon_str ))
             elif display_handler == 'LinkWdg':
                 icon.add( IconWdg("Link", IconWdg.VIEW) )
             elif display_handler == 'SeparatorWdg':
