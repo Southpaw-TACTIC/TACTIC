@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/Showreel.gif"/>
+  <img width="600px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/Showreel.gif"/>
 </p>
 
 
@@ -12,9 +12,6 @@
 
 TACTIC is a comprensive, open-source platform for creating and executing digital workflows.  TACTIC has been used in many exciting projects in a wide variety on industries.
 
-<p align="center">
-  <img width="75%" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
-</p>
 
 
 ## Features
@@ -22,9 +19,29 @@ TACTIC is a comprensive, open-source platform for creating and executing digital
 TACTIC has a number of key components:
 
 * Workflow Engine and Manager:
+
+<p align="center">
+  <img width="400px" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
+</p>
+
 * Data Management
-* File System Management
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/vfx_data_model.png"/>
+</p>
+* Digital Asset Manager
+
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/collections.jpg"/>
+</p>
+
 * Web Framework
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/custom_layout.jpg"/>
+</p>
+
 
 ## Installation
 
