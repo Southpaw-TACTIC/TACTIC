@@ -18,25 +18,25 @@ TACTIC is a comprensive, open-source platform for creating and executing digital
 
 TACTIC has a number of key components:
 
-* Workflow Engine and Manager:
+* **Workflow Engine and Manager:**
 
 <p align="center">
   <img width="400px" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
 </p>
 
-* Data Management
+* **Data Management**
 
 <p align="center">
   <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/vfx_data_model.png"/>
 </p>
-* Digital Asset Manager
 
+* **Digital Asset Manager**
 
 <p align="center">
   <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/collections.jpg"/>
 </p>
 
-* Web Framework
+* **Web Framework**
 
 <p align="center">
   <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/custom_layout.jpg"/>
