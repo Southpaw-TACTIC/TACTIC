@@ -66,7 +66,7 @@
 
     <element name="template_update" edit="false">
         <display class="tactic.ui.table.ProjectTemplateUpdateWdg">
-            <icon>SAVE</icon>
+            <icon>FAS_SAVE</icon>
         </display>
     </element>
 

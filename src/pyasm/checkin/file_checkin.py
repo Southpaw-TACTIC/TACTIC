@@ -564,7 +564,7 @@ class FileCheckin(BaseCheckin):
     
     def get(cls, sobject, file_paths, file_types, \
             context="publish", snapshot_type="file", column="snapshot", \
-            description=""):
+            description="", mode=""):
 
         handler_cls = FileCheckin
 
@@ -584,7 +584,7 @@ class FileCheckin(BaseCheckin):
                         handler_cls = eval(handler_cls_name)
 
 
-        handler = handler_cls(sobject, file_paths, file_types, context=context, snapshot_type=snapshot_type, column=column, description=description)
+        handler = handler_cls(sobject, file_paths, file_types, context=context, snapshot_type=snapshot_type, column=column, description=description, mode=mode)
 
         return handler
 

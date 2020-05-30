@@ -666,7 +666,7 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
             if size == 'large':
                 self.set_option('icon', "CHECK_OUT_LG")
             else:
-                self.set_option('icon', "CHECK_OUT_SM")
+                #self.set_option('icon', "CHECK_OUT_SM")
                 self.set_option('icon', "FA_DOWNLOAD")
 
 
