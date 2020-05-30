@@ -88,12 +88,17 @@ http://forum.southpawtech.com
 
 
 
-## Visual FX
+## Visual Effects (VFX)
 
 TACTIC has a built-in VFX module that has been used as a template for countless productions around the world.  Over the years, it's popularity has grown considerably and more and more people become familiar with TACTIC features.  Because TACTIC is Open Source, it can configured and connected seamleassly into any studio producing content.
+
+
+<p align="center">
+  <img width="75%" src="doc/github/images/vfx_data_model.png"/>
+</p>
 
 Easily start up your production by creating a project with TACTIC nad selecting the VFX template.  Create your own template and reuse your own template for all future productions.
 
 ## License
 
-[Eclipse Public License 1.0](https://github.com/Southpaw-TACTIC/TACTIC/blob/4.8/LICENSE)
+[Eclipse Public License 1.0](LICENSE)
