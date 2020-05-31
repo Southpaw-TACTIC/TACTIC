@@ -1023,7 +1023,8 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
 
             /* Saved searches */
             .spt_saved_searches_top {
-                background: #F9F9F9
+                color: var(--spt_palette_color2);
+                background: var(--spt_palette_background2);
 
             }
 

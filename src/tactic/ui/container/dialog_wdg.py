@@ -232,14 +232,15 @@ class DialogWdg(BaseRefreshWdg):
                 }
 
                 else if (bvr.position == "center") {
-                    width = 800;
-                    height = 400;
                     dialog.setStyle("position", "fixed");
-                    dialog.setStyle("width", width);
-                    dialog.setStyle("height", height);
-                    dialog.setStyle("top", win_size.y/2-height/2);
-                    dialog.setStyle("left", win_size.x/2-width/2);
                     dialog.setStyle("overflow-y", "auto");
+
+                    var percent = 75;
+
+                    dialog.setStyle("width", "calc("+percent+"vw");
+                    dialog.setStyle("height", "calc("+percent+"vh)");
+                    dialog.setStyle("left", "calc(50vw - "+(percent/2)+"%)");
+                    dialog.setStyle("top", "calc(50vh - "+(percent/2)+"%)");
  
                 }
 
