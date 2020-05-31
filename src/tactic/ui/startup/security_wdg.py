@@ -1925,7 +1925,7 @@ class LinkSecurityWdg(ProjectSecurityWdg):
                 # usually folder_view = element_name , but it could be manually changed 
                 sub_config = SideBarBookmarkMenuWdg.get_config( "SideBarWdg", folder_view)
                 self.get_info(sub_config, names, links, titles, descriptions, icons, level+1)
-            
+
 
     def get_sobjects(self, group_names):
         #from pyasm.widget import WidgetConfig, WidgetConfigView
