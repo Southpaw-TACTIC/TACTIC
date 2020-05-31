@@ -1094,9 +1094,6 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
     def preprocess(self):
         self.all = False
 
-        # FIXME: should move Login
-        from pyasm.security import Login
-
         self.security_type = Container.get("SecurityWdg:security_type")
 
 
@@ -1159,40 +1156,13 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         'bvr_match_class': 'spt_format_checkbox_%s' %name.replace("/","_") ,
 
         'cbjs_action': '''
-      
         var layout = bvr.src_el.getParent(".spt_layout");
         var value_wdg = bvr.src_el;
         var checkbox = value_wdg.getElement(".spt_input");
-        // FIXME: Not sure why we have to replicate checkbox basic behavior ...
-        /*
-        if (checkbox && checkbox.type =='checkbox'){
-            if (checkbox.checked) 
-                checkbox.checked = false;
-            else
-                checkbox.checked = true;
-        }
-        */
-        /*
-        var cell = bvr.src_el.getParent(".spt_cell_edit");
-        var element_name = spt.table.get_element_name_by_cell(cell);
-
-        // check all of these
-        var cells = spt.table.get_cells(element_name);
-        for (var i = 0; i < cells.length; i++) {
-            var x = cells[i].getElement(".spt_checkbox");
-            if (checkbox.checked == true) {
-                x.checked = true;
-            }
-            else {
-                x.checked = false;
-            }
-        }
-        */
-
         spt.table.set_layout(layout);
-        if (checkbox)
+        if (checkbox) {
             spt.table.accept_edit(checkbox, checkbox.checked, false)
-
+        }
         '''
         } )
 
@@ -1298,11 +1268,14 @@ class SecurityAddGroupToProjectAction(DatabaseAction):
 
 
 
-
-class ProjectSecurityWdg(BaseRefreshWdg):
+class BaseSecurityWdg(BaseRefreshWdg):
 
     def get_security_type(self):
-        return "project"
+        raise Exception("Need to override get_security_type()")
+
+    def get_save_cbk(self):
+        raise Exception("Need to override get_save_cbk()")
+
 
 
     def get_value(self, name):
@@ -1567,10 +1540,6 @@ class ProjectSecurityWdg(BaseRefreshWdg):
         return []
 
 
-    def get_save_cbk(self):
-        return 'tactic.ui.startup.ProjectSecurityCbk'
-
-
 
     def set_access_levels(self, sobjects, group_names):
         # set access levels
@@ -1639,6 +1608,21 @@ class ProjectSecurityWdg(BaseRefreshWdg):
                     project.set_value("_%s" % group_name, False)
 
         return projects
+
+
+
+class ProjectSecurityWdg(BaseSecurityWdg):
+
+    def get_security_type(self):
+        return "project"
+
+
+    def get_save_cbk(self):
+        return 'tactic.ui.startup.ProjectSecurityCbk'
+
+
+    def get_display_columns(self):
+        return ['preview', 'title']
 
 
 
