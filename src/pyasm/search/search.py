@@ -259,7 +259,7 @@ class Search(Base):
         user = Environment.get_user_name()
 
         search_type = self.get_base_search_type()
-        api_mode = Config.get_value("security", "api_mode")
+        api_mode = Environment.get_api_mode()
 
         if api_mode in ['open', '', None]:
             return

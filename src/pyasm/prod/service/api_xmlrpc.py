@@ -468,7 +468,7 @@ def xmlrpc_decorator(meth):
             # environment.
 
             if self.get_protocol() != 'local':
-                api_mode = Config.get_value("security", "api_mode") or "open"
+                api_mode = Environment.get_api_mode()
 
                 allowed = False
 
@@ -2454,7 +2454,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
         if "@UPDATE" in expression:
-            api_mode = Config.get_value("security", "api_mode")
+            api_mode = Environment.get_api_mode()
             if api_mode in ["query", "closed"]:
                 security = Environment.get_security()
                 user_name = security.get_user_name()
