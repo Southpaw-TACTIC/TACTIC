@@ -16,7 +16,7 @@ insert.set_value('pipeline', """<pipeline>
   <connect to="shot/lighting" from="shader"/>
 </pipeline>
 """)
-insert.set_value('project_code', """vfx2""")
+insert.set_value('project_code', """vfx""")
 insert.set_value('search_type', """prod/asset""")
 insert.set_value('timestamp', """2007-06-27 23:16:02.733281""")
 insert.set_value('use_workflow', True)
@@ -44,7 +44,7 @@ insert.set_value('pipeline', """<?xml version="1.0" encoding="UTF-8"?> \r
   <connect to="lighting" from="char_final"/> \r
   <connect to="compositing" from="lighting"/> \r
 </pipeline>""")
-insert.set_value('project_code', """vfx2""")
+insert.set_value('project_code', """vfx""")
 insert.set_value('search_type', """prod/shot""")
 insert.set_value('timestamp', """2007-06-27 23:16:02.735433""")
 insert.set_value('use_workflow', True)
