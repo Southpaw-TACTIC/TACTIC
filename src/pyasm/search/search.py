@@ -907,8 +907,14 @@ class Search(Base):
 
         attrs = schema.get_relationship_attrs(search_type, related_type, path=path, type=type)
 
+        relationship = attrs.get('relationship')
+
+
         # handle case where both search types are the same
-        if search_type == related_type and not attrs:
+        # NOTE: currently instances don't work well when the src and dst search
+        # type are the same as it produces an incorrect SQL reference the
+        # table twice.  Until this is resolved, use this more inefficeint method
+        if search_type == related_type and (not attrs or relationship == 'instance'):
             has_code = SearchType.column_exists(search_type, "code")
             if has_code:
                 self.add_filters("code", [x.get_value("code") for x in sobjects], op=op)
@@ -927,7 +933,6 @@ class Search(Base):
             return
 
 
-        relationship = attrs.get('relationship')
         my_is_from = attrs['from'] == search_type
 
         from_col = attrs.get('from_col')
