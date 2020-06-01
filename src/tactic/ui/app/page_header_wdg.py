@@ -9,7 +9,7 @@
 #
 #
 #
-__all__ = ["PageHeaderWdg", "ProjectSelectWdg", "PasswordEditWdg", 'AppBusyWdg', 'ProjectCreateWdg']
+__all__ = ["PageHeaderWdg", "ProjectLoginEditWdg", "ProjectSelectWdg", "PasswordEditWdg", 'AppBusyWdg', 'ProjectCreateWdg']
 
 import re
 from pyasm.common import Environment, TacticException, Common, Config
@@ -255,10 +255,15 @@ class PageHeaderWdg(Widget):
 
     def get_smart_menu(cls):
 
+        user = Environment.get_login()
+        display_name = user.get("display_name")
+        if not display_name:
+            display_name = user.get_value("login")
+
         menu_data = []
 
         menu_data.append( {
-            "type": "title", "label": "Account"
+            "type": "title", "label": "Account (%s)" % display_name
         } )
 
         menu_data.append( {
@@ -273,7 +278,7 @@ class PageHeaderWdg(Widget):
                        view: 'edit_account',
                        mode: 'edit'
                     }
-                    var class_name = 'tactic.ui.panel.EditWdg';
+                    var class_name = 'tactic.ui.app.ProjectLoginEditWdg';
 
                     spt.panel.load_popup("My Account", class_name, kwargs);
                 ''' 
@@ -349,6 +354,31 @@ class PageHeaderWdg(Widget):
 
         return js_popup
 
+
+
+class ProjectLoginEditWdg(BaseRefreshWdg):
+
+    def get_display(self):
+        from tactic.ui.panel import EditWdg
+        from pyasm.security import Sudo
+
+        user = Environment.get_login()
+        search_key = user.get_search_key()
+        self.kwargs['search_key'] = search_key
+
+        edit = EditWdg(
+            search_type="sthpw/login",
+            search_key=search_key,
+            mode="edit",
+        ) 
+
+        sudo = Sudo()
+        try:
+            edit.get_buffer_display()
+        finally:
+            sudo.exit()
+
+        return edit
 
 
 class ProjectSelectWdg(BaseRefreshWdg):

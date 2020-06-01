@@ -1583,12 +1583,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             # get start link from default config
             config = self.get_default_config()
 
-        config = self.get_default_config()
-        
         from pyasm.common import Xml
         self.config_xml = Xml()
         self.config_xml.read_string(config)
- 
+
         """
         if not self.widget:
             config = WidgetConfig.get(xml=self.config_xml, view="application")
@@ -1610,6 +1608,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
     def get_default_config(self):
         use_sidebar = self.kwargs.get('use_sidebar')
+
+        top_xml = self._get_top_nav_xml()
+        startup_xml = self._get_startup_xml()
+
         if use_sidebar==False:
             config = '''
             <config>
@@ -1618,8 +1620,9 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                     %s
                 </application>
             </config>
-            ''' % (self._get_top_nav_xml(), _get_startup_xml())
+            ''' % (top_xml, startup_xml)
         else:
+            left_xml = self._get_left_nav_xml()
             config = '''
             <config>
                 <application>
@@ -1628,7 +1631,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                     %s
                 </application>
             </config>
-            ''' % (self._get_top_nav_xml(), self._get_left_nav_xml(), self._get_startup_xml())
+            ''' % (top_xml, left_xml, startup_xml)
 
         return config
 

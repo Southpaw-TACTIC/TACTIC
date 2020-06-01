@@ -244,8 +244,9 @@ class EditWdg(BaseRefreshWdg):
             self.search_type = sobject.get_base_search_type()
             self.mode = 'edit'
 
-
         elif self.ticket_key:
+            raise Exception("EditWdg: ticket_key no long supported")
+            """
             from pyasm.security import Ticket, Login
             ticket = Ticket.get_by_valid_key(self.ticket_key)
             if not ticket:
@@ -255,6 +256,7 @@ class EditWdg(BaseRefreshWdg):
             self.search_type = "sthpw/login"
             self.search_id = login.get_id()
             self.mode = 'edit'
+            """
 
         elif self.code:
             self.search_type = self.kwargs.get("search_type")
@@ -1272,7 +1274,15 @@ class EditWdg(BaseRefreshWdg):
             edit_event = div.get_unique_event("edit")
         bvr['edit_event'] = edit_event
 
+        if self.search_key:
+            cmd_key = div.generate_command_key( "tactic.ui.panel.EditCmd", {
+                "search_key": self.search_key
+            } )
+        else:
+            cmd_key = "tactic.ui.panel.EditCmd"
 
+        
+        bvr['cmd_class'] = cmd_key
 
         bvr['named_event'] = 'edit_pressed'
 
@@ -1502,7 +1512,7 @@ spt.edit.edit_form_cbk = function( evt, bvr )
     var values = spt.api.Utility.get_input_values(content, null, false, false, {cb_boolean: true});
     var server = TacticServerStub.get();
 
-    var class_name = "tactic.ui.panel.EditCmd";
+    var class_name = bvr.cmd_class;
     var args = {};
 
     args['element_names'] = bvr.element_names;

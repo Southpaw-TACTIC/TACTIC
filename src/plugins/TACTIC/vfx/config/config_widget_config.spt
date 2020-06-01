@@ -4458,8 +4458,9 @@ div = DivWdg()
 shadow_color = div.get_color("shadow")
 
 num_shots = Search.eval("@COUNT(vfx/shot)")
-num_project = 5
-num_members_invited = 99
+num_assets = Search.eval("@COUNT(vfx/asset)")
+
+num_checkins = Search.eval("@COUNT(sthpw/snapshot['project_code','$PROJECT'])")
 storage_space = "5GB"
 num_tasks = Search.eval("@COUNT(sthpw/task['project_code','$PROJECT']['status','not in','Complete'])")
 
@@ -4470,7 +4471,7 @@ max_members = 10
 </mako>
 <html>
 <div style="width: 1000px; margin: 20px;">
-  <h1>TACTIC VFX Template</h1>
+  <h1>TACTIC VFX</h1>
 </div>
 <hr/>
 <div class="spt_dashboard_top">
@@ -4487,11 +4488,11 @@ max_members = 10
           Click to view Shot List
       </div>
     </div>
-    <div class="spt_db_stats tactic_load hand" style="background: #400" value="members" target="spt_header_top.spt_home_content" view="user.site.members">
+    <div class="spt_db_stats tactic_load hand" style="background: #400" value="Asset List" target="spt_header_top.spt_home_content" view="user.site.members">
       <div class="d-flex" style="height: 100px">
-        <i class="fas fa-users"> </i>
+        <i class="fas fa-cube"> </i>
         <div class="spt_stats_block">
-          <div class="spt_num">${num_members_invited} / ${max_members}</div>
+          <div class="spt_num">${num_assets}</div>
           <div class="spt_text">Assets</div>
         </div>
       </div>
@@ -4501,14 +4502,14 @@ max_members = 10
     </div>
     <div class="spt_db_stats tactic_load hand" style="background: #004" value="storage" target="spt_header_top.spt_home_content" view="user.site.storage">
       <div class="d-flex" style="height: 100px">
-        <i class="fas fa-memory"> </i>
+        <i class="fas fa-upload"> </i>
         <div class="spt_stats_block">
-          <div class="spt_num">${storage_space}</div>
-          <div class="spt_text">Storage Used</div>
+          <div class="spt_num">${num_checkins}</div>
+          <div class="spt_text">Number of Check-ins</div>
         </div>
       </div>
       <div class="spt_stats_text">
-          Upgrade Plan to get more storage for your projects.
+          Click to see latest check-ins.
       </div>
     </div>
     <div class="spt_db_stats" style="background: #960">
@@ -4528,6 +4529,8 @@ max_members = 10
       <display class="tactic.ui.panel.ViewPanelWdg">
         <search_type>vfx/shot</search_type>
         <expression>@SEARCH(vfx/shot['status','not in','Complete']['status','is not','NULL']['or'])</expression>
+        <show_border>horizontal</show_border>
+        <show_shelf>false</show_shelf>
       </display>
     </element>
   </div>
@@ -4547,11 +4550,25 @@ max_members = 10
     text-align: center;
 }
 
+.spt_dashboard_top .spt_db_stats .spt_stats_block {
+    width: 100%;
+}
+
+.spt_dashboard_top .spt_db_stats .spt_num {
+    font-size: 32px;
+}
+
 .spt_dashboard_top .spt_db_stats .spt_text {
-    font-size: 26px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 300;
     //text-align: center;
     //width: 100%;
+}
+
+.spt_dashboard_top .spt_db_stats .spt_stats_text {
+    border-style: solid;
+    border-width: 1px 0px 0px 0px;
+    border-color: (--var_palette_border);
 }
 
 .spt_dashboard_top .spt_db_stats i {

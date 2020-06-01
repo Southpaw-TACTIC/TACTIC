@@ -829,6 +829,10 @@ class CalendarInputWdg(BaseInputWdg):
  
     }
 
+    def __init__(self, name=None, **kwargs):
+        super(CalendarInputWdg,self).__init__(name, "calendar", **kwargs)
+
+
     def init(self):
         self.top = DivWdg()
         self.value = ''
