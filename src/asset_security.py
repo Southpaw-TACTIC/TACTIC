@@ -3,11 +3,12 @@ from __future__ import print_function
 
 import sys, os
 
-sys.path.insert(0, "/spt/tactic/tactic_data/plugins")
-sys.path.insert(0, "/spt/tactic/tactic/3rd_party/common/site-packages")
-sys.path.insert(0, "/spt/tactic/tactic/3rd_party/python2/site-packages")
+sys.path.insert(0, "/opt/tactic/tactic_data/plugins")
+sys.path.insert(0, "/opt/tactic/tactic/3rd_party/common/site-packages")
+sys.path.insert(0, "/opt/tactic/tactic/3rd_party/python3/site-packages")
 
 import tacticenv
+
 
 from pyasm.common import Environment
 from pyasm.search import Search
@@ -23,13 +24,12 @@ def authenticate(environ):
     cookie = environ.get("HTTP_COOKIE")
     cookies = cookie.split(";")
 
-
     login_ticket = None
     for cookie in cookies:
         cookie = cookie.strip()
         if not cookie:
             return None
-        (name, value) = cookie.split("=")
+        (name, value) = cookie.split("=", 1)
         if name == "login_ticket" and value:
             login_ticket = value
             break
@@ -38,10 +38,7 @@ def authenticate(environ):
     if not login_ticket:
         return None
 
-
-    from spt.modules.portal.master_project import PortalSite
     from pyasm.security import Batch, XmlRpcInit
-
     try:
         XmlRpcInit(ticket=login_ticket)
     except Exception as e:
@@ -49,12 +46,11 @@ def authenticate(environ):
         return None
 
 
-
     #from pyasm.common import Environment
     #user = Environment.get_user_name().encode()
     #print("user: ", user)
 
-    return login_ticket
+    return login_ticket.encode()
 
 
 def error403(msg, start_response):
@@ -62,7 +58,7 @@ def error403(msg, start_response):
     redirect = False
     if redirect:
         status = "300 Redirect"
-        output = ""
+        output = ''
         response_headers = [
             ('Location', '/default/user/sign_in')
         ]
@@ -74,12 +70,15 @@ def error403(msg, start_response):
 
         output = '''
         <h1>%s</h1>
+        <meta http-equiv="refresh" content="0;/default/user/sign_in" />
         '''  % msg
 
         response_headers = [
                 ('Content-Type', 'text/html'),
                 ('Content-Length', str(len(output))),
         ]
+
+    output = output.encode()
 
     start_response(status, response_headers)
     return [output]
@@ -110,7 +109,6 @@ def application(environ, start_response):
         site = parts[0]
         #assert(parts[1] == "assets")
         project_code = parts[2]
-
 
     # authenticate the user
     login_ticket = authenticate(environ)
@@ -147,6 +145,8 @@ def application(environ, start_response):
                             ('Content-Length', str(len(output))),
         ]
 
+        output.encode()
+
         start_response(status, response_headers)
         return [output]
 
@@ -170,7 +170,7 @@ def application(environ, start_response):
             #('Content-Type', 'image/jpg'),
     ]
 
-    output = ""
+    output = "".encode()
 
 
     start_response(status, response_headers)
