@@ -491,7 +491,8 @@
 
   <element name="manage_search_types" title="Manage sTypes" icon="db_gear" help='stype-register'>
     <display class="LinkWdg">
-      <class_name>tactic.ui.app.SearchTypeToolWdg</class_name>
+        <!--<class_name>tactic.ui.app.SearchTypeToolWdg</class_name>-->
+        <class_name>tactic.ui.startup.ProjectConfigWdg</class_name>
     </display>
   </element>
 
