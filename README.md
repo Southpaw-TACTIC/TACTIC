@@ -45,7 +45,7 @@ TACTIC has a number of key components:
 
 ## Contribute
 
-We are always encouraging people to contribute to the project.  This can be in any form starting from asking a question, requesting a feature to fixing bugs or adding new features.  If you do make any changes to the code, please use your own fork and submit a pull request.
+We are always encouraging people to contribute to the project.  This can be in any form starting from asking a question, requesting a feature to fixing bugs or adding new features.  We always welcome feedback as that is the driving force that gives us direction on where to go.  If you do make any changes to the code, please use your own fork and submit a pull request.
 
 
 ## Installation
