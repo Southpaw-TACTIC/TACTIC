@@ -43,6 +43,11 @@ TACTIC has a number of key components:
 </p>
 
 
+## Contribute
+
+We are always encouraging people to contribute to the project.  This can be in any form starting from asking a question, requesting a feature to fixing bugs or adding new features.  If you do make any changes to the code, please use your own fork and submit a pull request.
+
+
 ## Installation
 
 You can download the latest distributions from any of number of formats from the [community downloads](http://community.southpawtech.com/community/link/downloads) 
