@@ -423,7 +423,7 @@ class DirListWdg(BaseRefreshWdg):
             if not background:
                 background = "background"
             bg_color = dir_title.get_color(background)
-            hilight_color =  dir_title.get_color(background, -20)
+            hilight_color =  dir_title.get_color(background, -10)
 
             if show_selection:
                 select_wdg = self.get_selection_wdg(bg_color, hilight_color)

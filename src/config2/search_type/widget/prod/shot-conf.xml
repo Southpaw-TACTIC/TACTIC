@@ -103,9 +103,7 @@
     </element>
 
     <element name="discussion" edit="false">
-       <display class="pyasm.widget.DiscussionWdg">
-           <sticky>new</sticky>
-       </display>
+        <display class="tactic.ui.widget.DiscussionWdg"/>
    </element> 
     
 
@@ -144,10 +142,7 @@
 
 
   <element name="discussion">
-      <display class="pyasm.widget.DiscussionWdg">
-          <sticky>new</sticky>
-          <append_setting>notes_prod_context</append_setting>
-      </display>
+      <display class="tactic.ui.widget.DiscussionWdg"/>
   </element>
 
 
@@ -176,11 +171,13 @@
 
 
 <supe layout="TableWdg">
+    <!--
     <element name="detail">
         <display class="HiddenRowToggleWdg">
             <dynamic_class>pyasm.prod.web.ShotDetailWdg</dynamic_class>
         </display>
     </element>
+    -->
 
     <element name="shot">
         <display class="pyasm.prod.web.ShotInfoWdg"/>
@@ -196,10 +193,7 @@
     </element>
 
     <element name="discussion">
-        <display class="pyasm.widget.DiscussionWdg">
-            <sticky>new</sticky>
-            <append_setting>notes_prod_context</append_setting>
-        </display>
+        <display class="tactic.ui.widget.DiscussionWdg"/>
     </element>
 
 </supe>
@@ -364,11 +358,13 @@
         </display>
     </element>
 
+    <!--
     <element name="detail">
         <display class="HiddenRowToggleWdg">
             <dynamic>pyasm.prod.web.ShotDetailWdg</dynamic>
         </display>
     </element>
+    -->
 
     <element name="images">
         <display class="ThumbWdg">
@@ -439,13 +435,13 @@
         </display>
     </element>
 
-<!--
+    <!--
     <element name="detail">
         <display class="HiddenRowToggleWdg">
             <dynamic>pyasm.prod.web.ShotDetailWdg</dynamic>
         </display>
     </element>
--->
+    -->
 
     <element name="images">
         <display class="ThumbWdg">
@@ -497,7 +493,7 @@
   </element>
 
   <element name="discussion">
-    <display class="DiscussionWdg"/>
+    <display class="tactic.ui.widget.DiscussionWdg"/>
   </element>
 </animation>
 
@@ -516,7 +512,7 @@
 
 
   <element name="discussion">
-      <display class="pyasm.widget.DiscussionWdg">
+      <display class="tactic.ui.widget.DiscussionWdg">
           <sticky>new</sticky>
       </display>
   </element>

@@ -192,18 +192,21 @@ class SwapDisplayWdg(BaseRefreshWdg):
         if icon_str and isinstance(icon_str, basestring):
             icon_div = DivWdg()
 
+            from tactic.ui.widget import IconButtonWdg
+
             if icon_str.startswith("BS_"):
-                icon = IconWdg(name=title, icon=icon_str, size=12 )
+                icon = IconButtonWdgWdg(name=title, icon=icon_str, size=12 )
                 icon_div.add_style("margin: -2px 10px 0px 10px")
             else:
-                icon = IconWdg(name=title, icon=icon_str )
+                icon = IconButtonWdg(name=title, icon=icon_str )
+                icon_div.add_style("margin-left: -8px")
 
             icon_div.add(icon)
             table.add(icon_div)
 
         elif icon_str:
             table.add(icon_str)
-            icon_str.add_style("margin-left: -6px")
+            #icon_str.add_style("margin-left: -6px")
 
         else:
             show_border = self.kwargs.get("show_border")

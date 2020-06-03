@@ -30,9 +30,7 @@
     <element name="login" edit="false"/>
     <element name="project_code" title="project" edit="false"/>
     <element name="discussion">
-        <display class="pyasm.widget.DiscussionWdg">
-            <setting>timecard_context</setting>
-        </display>
+        <display class="tactic.ui.widget.DiscussionWdg"/>
     </element>
     
 </definition>

@@ -973,12 +973,12 @@ class Url(Base):
                 for item in value:
                     if not isinstance(value, basestring):
                         value = str(value)
-                    encoded = urllib.quote_plus(value.encode('utf'))
+                    encoded = urlparse.quote_plus(value.encode('utf'))
                     options_list.append("%s=%s" % (name,encoded) )
             else:
                 if not isinstance(value, basestring):
                     value = str(value)
-                encoded = urllib.quote_plus(value.encode('utf'))
+                encoded = urlparse.quote_plus(value.encode('utf'))
                 options_list.append("%s=%s" % (name,encoded) )
 
         options_str = "&".join(options_list)

@@ -1641,7 +1641,10 @@ class WorkflowManualNodeHandler(BaseWorkflowNodeHandler):
 
         # Handle remapped status.
         process_sobj = self.get_process_sobj(pipeline, process)
-        workflow = process_sobj.get_json_value("workflow", {})
+        if process_sobj:
+            workflow = process_sobj.get_json_value("workflow", {})
+        else:
+            workflow = {}
         version = workflow.get("version") or 1
         version_2 = version in [2, '2']
 

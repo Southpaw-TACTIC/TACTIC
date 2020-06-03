@@ -40,7 +40,7 @@
     </element>
 
     <element name="discussion" edit="false">
-        <display class="pyasm.widget.DiscussionWdg">
+        <display class="tacic.ui.widget.DiscussionWdg">
             <sticky>new</sticky>
         </display>
     </element>
@@ -181,13 +181,7 @@
         </display>
     </element>
 
-    <element name="discussion">
-        <display class="pyasm.widget.DiscussionWdg">
-            <append_setting>notes_asset_prod_context</append_setting>
-            <sticky>new</sticky>
-        </display>
-    </element>
-
+    <element name="discussion"/>
 
 </supe>
 

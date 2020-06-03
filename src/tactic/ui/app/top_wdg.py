@@ -666,30 +666,43 @@ class TopWdg(Widget):
 
             admin_bar = DivWdg()
             top.add(admin_bar)
+
             admin_bar.add_class("spt_admin_bar")
             admin_bar.add_class("hand")
+            #admin_bar.add_style("display: none")
             admin_bar.add(HtmlElement.style('''
             .spt_admin_bar { 
                 display: flex;
+                align-items: center;
                 justify-content: space-between;
-                padding: 3px 0px 3px 15px;
+                padding: 0px 0px 0px 15px;
                 position: fixed;
                 top: 0px;
                 left: 0px;
-                opacity: 0.7;
+                height: 20px;
+                opacity: 0.1;
                 width: 100%;
                 background-color: rgb(0, 0, 0);
                 color: rgb(255, 255, 255);
                 z-index: 1000;
-                box-shadow: rgba(0, 0, 0, 0.1) 0px 5px 5px;
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 5px 5px;A
+
+                overflow: hidden;
+                font-size: 0.8em;
             }
             
             .spt_admin_bar:hover {
                 opacity: 1.0;
             }
 
-            .spt_admin_bar_left {display: flex;}
-            .spt_admin_bar_right {display: flex;}
+            .spt_admin_bar_left {
+                display: flex;
+                align-items: center;
+            }
+            .spt_admin_bar_right {
+                display: flex;
+                align-items: center;
+            }
 
             '''))
 
@@ -702,7 +715,7 @@ class TopWdg(Widget):
             # home
             icon_div = DivWdg()
             admin_bar_left.add(icon_div)
-            icon_button = IconButtonWdg(icon="FA_HOME", title="Go to index")
+            icon_button = IconButtonWdg(icon="FA_HOME", title="Go to index", size=14)
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -714,7 +727,7 @@ class TopWdg(Widget):
             # remove
             icon_div = DivWdg()
             admin_bar_right.add(icon_div)
-            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="FA_TIMES")
+            icon_button = IconButtonWdg(title="Remove Admin Bar", icon="FA_TIMES", size=14)
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -727,7 +740,7 @@ class TopWdg(Widget):
             # sign-out
             icon_div = DivWdg()
             admin_bar_right.add(icon_div)
-            icon_button = IconButtonWdg(title="Sign Out", icon="FA_SIGN_OUT_ALT")
+            icon_button = IconButtonWdg(title="Sign Out", icon="FA_SIGN_OUT_ALT", size=14)
             icon_div.add(icon_button)
             icon_button.add_behavior( {
                 'type': 'click_up',
@@ -742,7 +755,7 @@ class TopWdg(Widget):
                 '''
             } )
 
-            admin_bar_left.add("<b>ADMIN >></b>")
+            admin_bar_left.add("<div><b>ADMIN >></b></div>")
 
             admin_bar.add_behavior( {
                 'type': 'listen',
