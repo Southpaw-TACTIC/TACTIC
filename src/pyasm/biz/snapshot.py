@@ -945,7 +945,7 @@ class Snapshot(SObject):
             use_naming = xml.get_value('snapshot/file[@type="%s"]/@use_naming' % file_type)
         else:
             use_naming = xml.get_value("snapshot/file[@type='%s']/@use_naming" % file_type)
-        if use_naming == "false":
+        if use_naming in ["false"]:
             return False
         else:
             return True
@@ -2105,8 +2105,11 @@ class Snapshot(SObject):
 
     def update_versionless(self, snapshot_mode='current', sobject=None, checkin_type=None, naming=None):
 
-        # NOTE: no triggers a run on this operation (for performance reasons)
+        if self.get_value("context") == "icon":
+            return
 
+
+        # NOTE: no triggers are run on this operation (for performance reasons)
 
         if not checkin_type:
             # find out from the snapshot itself
@@ -2280,10 +2283,14 @@ class Snapshot(SObject):
             else: # otherwise make use of the updated file name from the original file object
                 file_object.set_value("file_name", file_name)
 
-            # get all of the files from this snapshot
-            lib_dir = self.get_lib_dir(file_type=file_type, file_object=file_object)
 
+            # get the path from the reference file_object
+            ref_file_object = self.get_file_by_type(file_type)
+            lib_dir = self.get_lib_dir(file_type=file_type, file_object=ref_file_object)
             file_path = "%s/%s" % (lib_dir, file_name)
+            if not os.path.exists(file_path):
+                raise Exception("Cannot create versionless.  Referenced path [%s] from file_object [%s] does not exist" % (file_path, file_object.get_code()))
+
 
             # build the file name
             # if there is a versionless naming, use it
@@ -2386,9 +2393,9 @@ class Snapshot(SObject):
 
             file_object.set_value("checkin_dir", new_lib_dir)
             file_object.set_value("relative_dir", new_relative_dir)
+
             # commit again
             file_object.commit(triggers="none")
-
 
             FileUndo.symlink(file_path, new_path, mode=versionless_mode)
 
@@ -2398,7 +2405,7 @@ class Snapshot(SObject):
         versionless.commit(triggers="none")
 
         versionless_code = versionless.get_code()
-        # FIXME: set snapshot_code to file objects
+
         for file_object in file_objects:
             file_object.set_value("snapshot_code", versionless_code)
             # add commit again

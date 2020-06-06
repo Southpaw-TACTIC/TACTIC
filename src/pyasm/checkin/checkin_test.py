@@ -95,6 +95,7 @@ class CheckinTest(unittest.TestCase, Command):
         data = {}
         Container.put(Config.CONFIG_KEY, data)
 
+
         Xml.XML_FILE_CACHE = {}
         Xml.XML_FILE_MTIME = {}
 
@@ -271,8 +272,6 @@ class CheckinTest(unittest.TestCase, Command):
 
         """
 
-        return
-
         snapshot_type="file"
         context="preallocation"
         file_name = 'whatever.jpg'
@@ -285,10 +284,8 @@ class CheckinTest(unittest.TestCase, Command):
         # preallocate with no name or type
         path = snapshot.get_preallocated_path()
         server = Config.get_value("install", "server")
-        if server:
-            expected = "%s_preallocation_%s_v001" % (self.person.get_code(), server)
-        else:
-            expected = "%s_preallocation_v001" % (self.person.get_code())
+
+        expected = "%s/preallocation/versions" % (self.person.get_code())
 
         self.assertEqual(True, path.endswith( expected ) )
 
@@ -303,7 +300,7 @@ class CheckinTest(unittest.TestCase, Command):
         # create a file directly in the path location and register in
         # transaction
         f = open(path, 'wb')
-        f.write("wowow")
+        f.write(b"wowow")
         f.close()
 
         # add this file to the snapshot and force the name
@@ -329,7 +326,7 @@ class CheckinTest(unittest.TestCase, Command):
         for i in range(1,6):
             cur_path = path % i
             f = open(cur_path, 'wb')
-            f.write("wowow")
+            f.write(b"wowow")
             f.close()
 
         # register these files
@@ -412,8 +409,6 @@ class CheckinTest(unittest.TestCase, Command):
         Tests versionless snapshot and symbolic links.
         """
 
-        return
-
         if os.name == 'nt':
             return
 
@@ -436,7 +431,7 @@ class CheckinTest(unittest.TestCase, Command):
         self.assertEqual(True, isinstance(versionless_snap, Snapshot))
 
         main_lib_path = snap.get_lib_path_by_type('main')
-        self.assertEqual(main_lib_path.endswith('/sym_test/.versions/symlink_sym_test_v001.txt'), True)
+        self.assertEqual(main_lib_path.endswith('/sym_test/versions/symlink_sym_test_v001.txt'), True)
         if versionless_snap:
             lib_path =versionless_snap.get_lib_path_by_type('main')
             self.assertEqual(True, os.path.exists(lib_path)) 
@@ -461,7 +456,7 @@ class CheckinTest(unittest.TestCase, Command):
         main_lib_path = snap.get_lib_path_by_type('add')
         self.assertEqual(snap.get_value('is_current'), True)
         self.assertEqual(snap.get_value('is_latest'), True)
-        self.assertEqual(main_lib_path.endswith('/sym_test/.versions/symlink_append_sym_test_v001.txt'), True)
+        self.assertEqual(main_lib_path.endswith('/sym_test/versions/symlink_append_sym_test_v001.txt'), True)
         versionless_snap = Snapshot.get_versionless(self.person.get_search_type(), self.person.get_id(), "sym_test", mode='latest', create=False)
         if versionless_snap:
             lib_path = versionless_snap.get_lib_path_by_type('add')
@@ -474,10 +469,6 @@ class CheckinTest(unittest.TestCase, Command):
         """
         Tests file checkin and correctness/functionality of snapshots for multiple subdirectories.
         """
-
-
-        return
-
 
         server = Config.get_value("install", "server")
         process = "process"
@@ -541,9 +532,9 @@ class CheckinTest(unittest.TestCase, Command):
 
             relative_dir = file_object.get_value("relative_dir")
             if subdir:
-                expected = "unittest/person/%s/process/.versions/%s" % (person_code, subdir)
+                expected = "unittest/person/%s/process/versions/%s" % (person_code, subdir)
             else:
-                expected = "unittest/person/%s/process/.versions" % person_code
+                expected = "unittest/person/%s/process/versions" % person_code
             self.assertEqual(expected, relative_dir)
 
             asset_dir = Config.get_value("checkin", "asset_base_dir", sub_key="default")
@@ -584,10 +575,12 @@ class CheckinTest(unittest.TestCase, Command):
 
 
 
+
     def _test_strict_checkin(self):
         """
         Tests functionality of checkin/snapshot with different subcontexts and with the strict checkin type.
         """
+
         return
 
         server = Config.get_value("install", "server")

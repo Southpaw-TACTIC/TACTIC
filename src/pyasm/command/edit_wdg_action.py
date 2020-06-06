@@ -627,8 +627,6 @@ class UploadAction(DatabaseAction):
         if handoff_path:
             handoff_path = handoff_path.replace("\\", "/")
 
-            # This check causes issues.. Just assume it's in the upload location
-            #if not os.path.exists(handoff_path):
             security = Environment.get_security()
             ticket = security.get_ticket_key()
 
@@ -655,15 +653,16 @@ class UploadAction(DatabaseAction):
             icon_path = icon_creator.get_web_path()
             if icon_path:
                 self.files.append(icon_path)
-                file_types.append("icon")
+                file_types.append("web")
+
             web_path = icon_creator.get_icon_path()
             if web_path:
                 self.files.append(web_path)
-                file_types.append("web")
+                file_types.append("icon")
 
 
         elif field_storage != "":
-        #else:
+
             # process and get the uploaded files
             upload = FileUpload()
             upload.set_field_storage(field_storage)
@@ -688,9 +687,10 @@ class UploadAction(DatabaseAction):
             self.checkin = Common.create_from_class_path(checkin_class, [self.sobject, self.files, file_types, context, snapshot_type])
 
         else:
+
             from pyasm.checkin import FileCheckin
-            self.checkin = FileCheckin.get( self.sobject, self.files, file_types,  \
-                context=context, column=column, snapshot_type="file" )
+            self.checkin = FileCheckin.get( self.sobject, self.files, file_types,
+                context=context, column=column, snapshot_type="file", mode="uploaded" )
 
         self.sobjects.append(self.sobject)
 

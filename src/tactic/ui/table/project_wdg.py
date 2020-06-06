@@ -91,8 +91,7 @@ class ProjectTemplateUpdateWdg(ButtonElementWdg):
   
     def preprocess(self):
 
-        icon = self.kwargs.get('icon')
-        icon_link = eval("IconWdg.%s" % icon.upper() )
+        icon_link = self.kwargs.get('icon')
         self.kwargs['icon_tip'] = "Update Template"
         self.kwargs['cbjs_action'] = '''
          var row = bvr.src_el.getParent(".spt_table_row");

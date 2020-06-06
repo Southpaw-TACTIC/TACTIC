@@ -212,8 +212,7 @@ spt.html5upload.upload_file = function(kwargs) {
     if(!upload_dir){
         upload_dir = "";
     }
-   
-   
+
    
     // build the form data structure
     var fd = new FormData();
@@ -524,7 +523,7 @@ class UploadButtonWdg(BaseUploadWdg):
 
     def get_activator_wdg(self, title):
 
-        color = self.kwargs.get("color")
+        color = self.kwargs.get("color") or "secondary"
         width = self.kwargs.get("width")
 
         mode = self.kwargs.get("mode")
