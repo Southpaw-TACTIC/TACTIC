@@ -259,8 +259,8 @@ class ThumbWdg(BaseTableElementWdg):
 
 
 
-            layout.add_behavior( {
-            'type': 'smart_click_up',
+            layout.add_relay_behavior( {
+            'type': 'click',
             'bvr_match_class': 'spt_thumb_href',
             'class_name': class_name,
             'cbjs_action': '''

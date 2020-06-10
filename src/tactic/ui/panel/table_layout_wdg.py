@@ -6764,15 +6764,16 @@ spt.table.save_changes = function(kwargs) {
         var result = server.execute_cmd(class_name, kwargs2, {'web_data': web_data});
         var info = result.info;
         if (info) {
-            search_keys = info.search_keys;
-
             // temp set the search keys in the row
             for (var index = 0; index < rows.length; index++) {
                 rows[index].setAttribute("spt_search_key_v2", search_keys[index])
             }
 
-
             var rtn_search_keys = info.search_keys;
+            if (!rtn_search_keys) {
+                rtn_search_keys = search_keys;
+            }
+
             if (do_refresh ) {
                 var kw = {refresh_bottom : true, json: search_dict, expand_on_load: expand_on_load};
                 spt.table.refresh_rows(rows, rtn_search_keys, web_data, kw);
