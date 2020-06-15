@@ -547,32 +547,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
 
 
-        bg_color = left_div.get_color("background")
-        bg_color2 = left_div.get_color("background", -10)
-
-        left_div.add_relay_behavior( {
-            'type': 'mouseover',
-            'bg_color': bg_color2,
-            'bvr_match_class': 'spt_custom_layout_item',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background-color", bvr.bg_color);
-            '''
-        } )
-
-        left_div.add_relay_behavior( {
-            'type': 'mouseout',
-            'bg_color': bg_color2,
-            'bvr_match_class': 'spt_custom_layout_item',
-            'cbjs_action': '''
-            bvr.src_el.setStyle("background-color", "");
-            '''
-        } )
-        
         error_msgs = []
-
-
-        
-
 
         title_wdg = DivWdg()
         title_wdg.add_style("display: flex")
@@ -901,6 +876,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             icon.add_style("margin-right: 5px")
             icon.add_style("opacity: 0.8")
             config_div.add(icon)
+            config_div.add_class("tactic_hover")
 
             display_view_wdg = DivWdg()
             display_view_wdg.add_class("spt_title")

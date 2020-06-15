@@ -1498,23 +1498,48 @@ class BootstrapIndexWdg(PageNavContainerWdg):
          </element> """
 
     def _get_startup_xml(self):
-         security = Environment.get_security()
-         start_link = security.get_start_link()
-         if start_link:
-             return """
-                 <element name="main_body">
-                     <display class="tactic.ui.panel.HashPanelWdg">
-                         <hash>%s</hash>
-                     </display>
-                 </element>
-             """ % start_link
-         
-         return """
-            <element name="main_body">
-              <display class="tactic.ui.startup.MainWdg"/>
-              <web/>
-            </element>
-         """
+        security = Environment.get_security()
+        start_link = security.get_start_link()
+        if start_link:
+            return """
+                <element name="Startup">
+                    <display class="tactic.ui.panel.HashPanelWdg">
+                        <hash>%s</hash>
+                    </display>
+                </element>
+            """ % start_link
+        
+
+
+        #start_view = "vfx.home.main"
+        start_view = ""
+        if start_view:
+            return """
+                <element name="Startup">
+                    <display class="tactic.ui.panel.CustomLayoutWdg">
+                        <view>%s</view>
+                    </display>
+                </element>
+            """ % start_view
+
+
+        is_admin = False
+        security = Environment.get_security()
+        if security.check_access("builtin", "view_site_admin", "allow"):
+            is_admin = True
+
+        if is_admin:
+            return """
+                <element name="Startup">
+                  <display class="tactic.ui.startup.MainWdg"/>
+                  <web/>
+                </element>
+            """
+        else:
+            # FIXME: add a default widget for non-admin users
+            return ""
+
+
 
     def init(self):
 
@@ -1797,7 +1822,6 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         main_body_panel.add(tab)
 
 
-        # TODO: Fix the quick box.
         is_admin = False
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
