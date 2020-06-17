@@ -856,7 +856,7 @@ class Site(object):
         return False
     start_site = classmethod(start_site)
 
-    def get_api_mode(cls, site):
+    def get_api_mode(cls):
         return
     get_api_mode = classmethod(get_api_mode)
 
