@@ -243,8 +243,9 @@ class ManageViewPanelWdg(BaseRefreshWdg):
         title_div.add("Side Bar Preview")
         #td.add("<b>Preview of Side Bar</b><hr/>")
         title_div.add_style("font-weight: bold")
+        title_div.add_style("font-size: 16px")
         title_div.add_style("padding: 10px")
-        title_div.add_style("margin: -11px -30px 10px -30px")
+        title_div.add_style("margin: -11px -30px 10px -10px")
 
 
 
@@ -950,7 +951,7 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             class_labels = ['Layout with Search', 'Custom Layout', 'Edit Layout', 'Tile Layout', 'Fast Table Layout', '-- Class Path --']
             class_values = ['view_panel', 'custom_layout', 'edit_layout', 'tile_layout', 'fast_layout', '__class__']
             default_class='view_panel'
-            class_selector = WidgetClassSelectorWdg(display_class=display_class,widget_key=widget_key,display_options=display_options,class_values=class_values,class_labels=class_labels, default_class=default_class, show_action=False)
+            class_selector = WidgetClassSelectorWdg(display_class=display_class,widget_key=widget_key,display_options=display_options,class_values=class_values,class_labels=class_labels, default_class=default_class, show_action=False, mode="layout")
             def_wdg.add(class_selector) 
 
         elif display_class in ['TitleWdg']:
@@ -969,17 +970,8 @@ class ManageSideBarDetailWdg(BaseRefreshWdg):
             class_labels = ['Table with Search Layout', 'Custom Layout', 'Edit Layout', 'Tile Layout', '-- Class Path --']
             class_values = ['view_panel', 'custom_layout', 'edit_layout', 'tile_layout', '__class__']
             default_class='view_panel'
-            class_selector = WidgetClassSelectorWdg(display_class=display_class,widget_key=widget_key,display_options=display_options,class_values=class_values,class_labels=class_labels, default_class=default_class)
+            class_selector = WidgetClassSelectorWdg(display_class=display_class,widget_key=widget_key,display_options=display_options,class_values=class_values,class_labels=class_labels, default_class=default_class, mode="layout")
             def_wdg.add(class_selector) 
-
-            #from tactic.ui.manager import WidgetClassSelectorWdg
-            #display_class = None
-            #display_options = None
-            #class_labels = ['FolderWdg']
-            #class_values = ['folder_wdg']
-            #default_class='folder_wdg'
-            #class_selector = WidgetClassSelectorWdg(class_values=class_values,class_labels=class_labels, default_class=default_class)
-            #def_wdg.add(class_selector)
 
         return def_wdg
 

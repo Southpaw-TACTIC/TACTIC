@@ -4,6 +4,7 @@ insert.set_value('category', """SideBarWdg""")
 insert.set_value('code', """VFX00001""")
 insert.set_value('config', """<config>
   <project_view>
+    <element name="dashboard"/>
     <element name="art_reference"/>
     <element name="script"/>
     <element name="storyboard"/>
@@ -38,6 +39,12 @@ insert.set_value('category', """SideBarWdg""")
 insert.set_value('code', """VFX00006""")
 insert.set_value('config', """<config>
   <definition>
+    <element name="dashboard">
+      <display class="LinkWdg">
+        <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
+        <view>vfx.home.main</view>
+      </display>
+    </element>
     <element name="shot_list" title="Shot List" icon="" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
@@ -290,12 +297,12 @@ insert.set_value('config', """<config>
         <view>shot</view>
       </display>
     </element>
-    <element name="asset" icon="FAS_CUBE" title="Asset">
+    <element name="asset" title="Asset" icon="FAS_CUBE">
       <display class="LinkWdg">
         <search_type>vfx/asset</search_type>
-        <simple_search_view>custom_filter</simple_search_view>
-        <search_view>link_search:asset</search_view>
         <view>asset</view>
+        <search_view>link_search:asset</search_view>
+        <simple_search_view>custom_filter</simple_search_view>
       </display>
     </element>
     <element name="layer" title="Layer">
@@ -460,7 +467,8 @@ insert.set_value('config', """<config>
       </display>
     </element>
   </definition>
-</config>""")
+</config>
+""")
 insert.set_value('search_type', """SideBarWdg""")
 insert.set_value('timestamp', """2011-10-20 21:24:13""")
 insert.set_value('view', """definition""")

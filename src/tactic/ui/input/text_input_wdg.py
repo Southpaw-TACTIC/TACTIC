@@ -252,7 +252,7 @@ class TextInputWdg(BaseInputWdg):
         self.height = height
 
 
-        super(TextInputWdg, self).__init__(self.name)
+        super(TextInputWdg, self).__init__(self.name, "text")
 
 
         self.icon = self.kwargs.get("icon")

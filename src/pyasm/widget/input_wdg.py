@@ -53,6 +53,7 @@ class BaseInputWdg(HtmlElement):
 
     #def __init__(self, name=None, type=None, label=None):
     def __init__(self, name=None, type=None, label=None, **kwargs):
+        #assert(type)
         super(BaseInputWdg,self).__init__(type)
 
         # the name of the input element
@@ -561,6 +562,7 @@ class BaseInputWdg(HtmlElement):
            bvr.src_el.value to values'''
         return "var top=spt.get_parent_panel(bvr.src_el); spt.panel.refresh(top, {}, true)"
 
+
 class BaseTextWdg(BaseInputWdg):
     def handle_mode(self):
         return
@@ -598,7 +600,7 @@ class TextWdg(BaseTextWdg):
  
 
     def __init__(self,name=None, label=None, **kwargs):
-        super(TextWdg,self).__init__(name,"input", label=label, **kwargs)
+        super(TextWdg,self).__init__(name, "input", label=label, **kwargs)
         self.css = "inputfield"
         self.add_class("spt_input")
     
@@ -642,6 +644,8 @@ class TextWdg(BaseTextWdg):
 
         else:    
             return super(TextWdg,self).get_display()
+
+
 
 class FilterTextWdg(TextWdg):
     '''This composite text acts as a filter and can be, for instance, 
@@ -1880,7 +1884,7 @@ class ThumbInputWdg(BaseInputWdg):
     '''Wrapper around the thumb widget, so that it can be display in the
     input form'''
     def __init__(self,name=None):
-        super(ThumbInputWdg,self).__init__(name)
+        super(ThumbInputWdg,self).__init__(name, "preview")
 
     def get_title(self):
         return '&nbsp;'

@@ -2195,7 +2195,7 @@ class WidgetClassSelectorWdg(BaseRefreshWdg):
         #if not display_class:
         #    display_class = "pyasm.widget.SimpleTableElementWdg"
         #display_class = "tactic.ui.panel.ViewPanelWdg"
-        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix, element_name=element_name, column_config_view=column_config_view)
+        widget_options_wdg = WidgetClassOptionsWdg(widget_key=widget_key, display_class=display_class, display_options=display_options, prefix=prefix, element_name=element_name, column_config_view=column_config_view, mode="layout")
         table.add_row()
         td = table.add_cell()
         td.add(widget_options_wdg)
@@ -2340,8 +2340,10 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         'display_class': 'the display class to show all of the options',
         'display_options': 'the display options for this class',
         'prefix': 'the prefix to put before the input names',
-        'args_keys': 'explicitly set an args_keys data structure'
+        'args_keys': 'explicitly set an args_keys data structure',
+        'mode': 'column|layout'
         }
+
 
     def init(self):
         top = DivWdg()
@@ -2430,9 +2432,9 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
             widget_key = web.get_form_value("xxx_%s|widget_key" % prefix)
 
 
-        display_class = ''
-        #if widget_key and widget_key not in ['__class__', 'custom_layout']:
+        mode = self.kwargs.get("mode") or "column"
 
+        display_class = ''
 
         if widget_key and widget_key not in ['__class__']:
 
@@ -2457,10 +2459,13 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
                     if column_config:
                         display_class = column_config.get_display_handler(widget_key)
 
-
                 if not display_class:
                     # or get from the central class handler
-                    handler = TableElementClassHandler()
+                    if mode == "layout":
+                        handler = WidgetClassHandler()
+                    else:
+                        handler = TableElementClassHandler()
+
                     display_class = handler.get_display_handler(widget_key)
 
 
@@ -2469,8 +2474,13 @@ class WidgetClassOptionsWdg(BaseRefreshWdg):
         if not display_class:
             display_class = self.kwargs.get("display_class")
 
+        assert(mode == "layout")
+
         if not display_class:
-            display_class = "pyasm.widget.SimpleTableElementWdg"
+            if mode == "layout":
+                display_class = "tactic.ui.panel.CustomLayoutWdg"
+            else:
+                display_class = "pyasm.widget.SimpleTableElementWdg"
 
 
 

@@ -92,10 +92,8 @@ class Widget(object):
         self.name = name
         self.title = ''
         self.search = None
-        #self.sobjects = []
         self._sobjects = None
         self.current_index = -1
-        #self.widgets = []
         self._widgets = None
         self._named_widgets = None
         self.typed_widgets = None
@@ -488,7 +486,6 @@ class Widget(object):
         buffer = self.get_buffer(cls)
         value = buffer.getvalue()
         buffer.clear()
-
         return value
 
     def render(self, cls=None):

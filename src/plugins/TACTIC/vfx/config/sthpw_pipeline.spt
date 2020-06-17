@@ -1,53 +1,52 @@
 #-- Start Entry --#
 insert = SearchType.create('sthpw/pipeline')
 insert.set_value('autocreate_tasks', False)
-insert.set_value('code', """vfx/asset""")
-insert.set_value('color', """#b07f4a""")
+insert.set_value('code', """model""")
+insert.set_value('color', """#AAAAB0""")
 insert.set_value('data', """{"node_index": 0}""")
-insert.set_value('description', """VFX - Asset""")
 insert.set_value('pipeline', """<pipeline>
-  <process name="design" type="manual" xpos="100" ypos="100"/>
-  <process name="model" type="manual" xpos="257" ypos="129"/>
-  <process name="texture" type="manual" xpos="418" ypos="157"/>
-  <process name="rig" type="manual" xpos="575" ypos="179"/>
-  <connect from="design" to="model"/>
-  <connect from="model" to="texture"/>
-  <connect from="texture" to="rig"/>
+  <process name="model" type="manual" xpos="100" ypos="100"/>
+  <process name="texture" type="manual" xpos="250" ypos="150"/>
+  <process name="shader" type="manual" xpos="400" ypos="200"/>
+  <process name="rig" type="manual" xpos="550" ypos="250"/>
+  <connect from="model" to="texture" context="model"/>
+  <connect from="texture" to="shader" context="texture"/>
+  <connect from="texture" to="rig" context="texture"/>
+  <connect to="shot/layout" from="rig" context="rig"/>
+  <connect to="shot/lighting" from="shader"/>
 </pipeline>
 """)
 insert.set_value('project_code', """vfx""")
-insert.set_value('search_type', """vfx/asset""")
-insert.set_value('timestamp', """2011-10-26 03:12:57""")
+insert.set_value('search_type', """prod/asset""")
+insert.set_value('timestamp', """2007-06-27 23:16:02.733281""")
 insert.set_value('use_workflow', True)
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('sthpw/pipeline')
 insert.set_value('autocreate_tasks', False)
-insert.set_value('code', """vfx/shot""")
-insert.set_value('color', """#5784c2""")
-insert.set_value('data', """{"node_index": 0}""")
-insert.set_value('description', """VFX - Shot""")
-insert.set_value('pipeline', """<pipeline>
-  <process name="assets" type="manual" xpos="100" ypos="100"/>
-  <process name="layout" type="manual" xpos="282" ypos="153"/>
-  <process name="animation" type="manual" xpos="450" ypos="141"/>
-  <process name="fx" type="manual" xpos="450" ypos="198"/>
-  <process name="lighting" type="manual" xpos="624" ypos="173"/>
-  <process name="render" type="manual" xpos="812" ypos="196"/>
-  <process name="comp" type="manual" xpos="970" ypos="211"/>
-  <connect from="animation" to="lighting"/>
-  <connect from="assets" to="layout"/>
-  <connect from="fx" to="lighting"/>
-  <connect from="layout" to="animation"/>
-  <connect from="layout" to="fx"/>
-  <connect from="lighting" to="render"/>
-  <connect from="render" to="comp"/>
-</pipeline>
-""")
+insert.set_value('code', """shot""")
+insert.set_value('pipeline', """<?xml version="1.0" encoding="UTF-8"?> \r
+<pipeline type="parallel"> \r
+  <process name="layout"/> \r
+  <process name="anim"/> \r
+  <process name="char_final"/> \r
+  <process name="effects"/> \r
+  <process name="lighting"/> \r
+  <process name="compositing"/> \r
+  <connect to="layout" from="model/model" context="model"/>\r
+  <connect to="layout" from="model/rig" context="rig"/> \r
+  <connect to="anim" from="layout"/> \r
+  <connect to="char_final" from="anim"/> \r
+  <connect to="char_final" from="model/texture" context="texture"/> \r
+  <connect to="effects" from="char_final"/> \r
+  <connect to="lighting" from="effects"/> \r
+  <connect to="lighting" from="char_final"/> \r
+  <connect to="compositing" from="lighting"/> \r
+</pipeline>""")
 insert.set_value('project_code', """vfx""")
-insert.set_value('search_type', """vfx/shot""")
-insert.set_value('timestamp', """2011-10-26 03:14:01""")
+insert.set_value('search_type', """prod/shot""")
+insert.set_value('timestamp', """2007-06-27 23:16:02.735433""")
 insert.set_value('use_workflow', True)
 #-- End Entry --#
 

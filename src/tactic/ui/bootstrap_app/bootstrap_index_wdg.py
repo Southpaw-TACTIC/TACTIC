@@ -1515,7 +1515,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         start_view = ""
         if start_view:
             return """
-                <element name="Startup">
+                <element name="main_body" title="Startup">
                     <display class="tactic.ui.panel.CustomLayoutWdg">
                         <view>%s</view>
                     </display>
@@ -1523,21 +1523,24 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             """ % start_view
 
 
-        is_admin = False
         security = Environment.get_security()
-        if security.check_access("builtin", "view_site_admin", "allow"):
-            is_admin = True
-
-        if is_admin:
+        if security.is_admin():
             return """
-                <element name="Startup">
+                <element name="main_body" title="Startup">
                   <display class="tactic.ui.startup.MainWdg"/>
-                  <web/>
                 </element>
             """
         else:
             # FIXME: add a default widget for non-admin users
-            return ""
+            return '''
+                <element name="main_body" title="My Tasks">
+                  <display class="tactic.ui.panel.ViewPanelWdg">
+                    <search_type>sthpw/task</search_type>
+                    <expression>@SOBJECT(sthpw/task['assigned','$LOGIN']))</expression>
+                    <show_shelf>false</show_shelf>
+                  </display>
+                </element>
+            '''
 
 
 
@@ -1579,11 +1582,11 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         if not config:
             # get start link from default config
             config = self.get_default_config()
-        
+
         from pyasm.common import Xml
         self.config_xml = Xml()
         self.config_xml.read_string(config)
- 
+
         """
         if not self.widget:
             config = WidgetConfig.get(xml=self.config_xml, view="application")
@@ -1605,6 +1608,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
     def get_default_config(self):
         use_sidebar = self.kwargs.get('use_sidebar')
+
+        top_xml = self._get_top_nav_xml()
+        startup_xml = self._get_startup_xml()
+
         if use_sidebar==False:
             config = '''
             <config>
@@ -1613,8 +1620,9 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                     %s
                 </application>
             </config>
-            ''' % (self._get_top_nav_xml(), _get_startup_xml())
+            ''' % (top_xml, startup_xml)
         else:
+            left_xml = self._get_left_nav_xml()
             config = '''
             <config>
                 <application>
@@ -1623,7 +1631,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                     %s
                 </application>
             </config>
-            ''' % (self._get_top_nav_xml(), self._get_left_nav_xml(), self._get_startup_xml())
+            ''' % (top_xml, left_xml, startup_xml)
 
         return config
 

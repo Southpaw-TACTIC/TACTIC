@@ -29,7 +29,7 @@ class SimpleUploadWdg(BaseInputWdg):
         name = kwargs.get("key")
         self.kwargs = kwargs
 
-        super(SimpleUploadWdg,self).__init__(name)
+        super(SimpleUploadWdg,self).__init__(name, "upload")
         
     ARGS_KEYS = {
 
