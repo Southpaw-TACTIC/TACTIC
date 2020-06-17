@@ -620,7 +620,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
 
         self.init_data()
 
-        color = "#000"
+        color = self.top.get_color("color")
 
         if self.mode == 'critical':
             background = "#e84a4d"
@@ -724,6 +724,9 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         div.add_attr("spt_color", color)
         div.add_class("spt_background")
 
+        div.add_style("color", color)
+        div.add_style("background", background)
+
         #self.init_data()
 
         value = self.get_value()
@@ -766,7 +769,7 @@ class TaskDaysDueElementWdg(BaseTableElementWdg):
         elif mode == "done":
             pass
         else:
-            div.add_style("color: #000")
+            div.add_style("color: %s" % color)
             days = abs((date_due - date_today).days)
             div.add_attr("title", "Due in %s Day(s)" % days)
             if days == 1:

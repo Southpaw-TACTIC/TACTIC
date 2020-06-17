@@ -13,7 +13,7 @@ __all__ = ['BaseRefreshWdg']
 
 import types
 
-from pyasm.common import Common, Xml, jsondumps
+from pyasm.common import Common, Xml, jsondumps, SecurityException, Environment
 from pyasm.search import Search, SObject
 from pyasm.web import Widget, WebContainer, WidgetException, HtmlElement, DivWdg, WidgetSettings
 
@@ -29,6 +29,27 @@ class BaseRefreshWdg(Widget):
         self.widget_styles = {}
 
         super(BaseRefreshWdg,self).__init__()
+
+
+    def init(self):
+        try:
+            self.check_security()
+
+            security = Environment.get_security()
+            if not security.is_admin() and self.admin_only():
+                raise SecurityException("Admin Only Widget")
+
+        except SecurityException as e:
+            raise
+            #self.__cripple_widget(e)
+
+        return super(BaseRefreshWdg,self).init()
+
+
+    def admin_only(self):
+        return False
+
+
 
     #
     # Define a standard format for widgets
@@ -55,6 +76,7 @@ class BaseRefreshWdg(Widget):
         '''external settings which populate the widget'''
         return cls.ARGS_OPTIONS
     get_args_options = classmethod(get_args_options)
+
 
 
     def handle_args(self, kwargs):

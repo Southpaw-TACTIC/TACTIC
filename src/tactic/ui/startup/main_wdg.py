@@ -169,11 +169,16 @@ class SectionWdg(BaseRefreshWdg):
 
 
 
+from pyasm.common import SecurityException
 
 class MainWdg(BaseRefreshWdg):
     '''This is the welcome widget widget will appear on creation of a new
     project
     '''
+
+    def admin_only(self):
+        return True
+
 
     def get_args_keys(self):
         return {
@@ -182,6 +187,7 @@ class MainWdg(BaseRefreshWdg):
     def init(self):
         # clear the widget settings of last_search:sthpw/sobject_list
         SearchWdg.clear_search_data('sthpw/sobject_list')
+        super(MainWdg,self).init()
 
 
 

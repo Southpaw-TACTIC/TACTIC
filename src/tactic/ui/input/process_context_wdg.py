@@ -28,9 +28,7 @@ class ProcessInputWdg(BaseInputWdg):
     it acts as a context display instead'''
 
 
-
     def get_display(self):
-
 
         show_context = self.get_option('context') == 'true'
 

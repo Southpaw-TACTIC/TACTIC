@@ -1663,6 +1663,7 @@ class ThumbCmd(Command):
             snapshot = server.simple_checkin(search_key, "icon", path, mode="copy")
             """
 
+            print("path: ", path)
             if not os.path.exists(path):
                 print("WARNING: path [%s] does not exist" % path)
                 return

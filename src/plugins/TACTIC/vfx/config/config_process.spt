@@ -108,3 +108,43 @@ insert.set_value('subcontext_options', """(main)""")
 insert.set_value('timestamp', """2020-05-29 07:52:39.347893""")
 #-- End Entry --#
 
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00202""")
+insert.set_value('pipeline_code', """model""")
+insert.set_value('process', """model""")
+insert.set_value('sort_order', 1)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-31 22:51:29.655733""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00203""")
+insert.set_value('pipeline_code', """model""")
+insert.set_value('process', """texture""")
+insert.set_value('sort_order', 2)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-31 22:51:29.655733""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00204""")
+insert.set_value('pipeline_code', """model""")
+insert.set_value('process', """shader""")
+insert.set_value('sort_order', 3)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-31 22:51:29.655733""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/process')
+insert.set_value('code', """SPT_PROCESS00205""")
+insert.set_value('pipeline_code', """model""")
+insert.set_value('process', """rig""")
+insert.set_value('sort_order', 4)
+insert.set_value('subcontext_options', """(main)""")
+insert.set_value('timestamp', """2020-05-31 22:51:29.655733""")
+#-- End Entry --#
+

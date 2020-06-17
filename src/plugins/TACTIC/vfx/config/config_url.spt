@@ -1,0 +1,11 @@
+#-- Start Entry --#
+insert = SearchType.create('config/url')
+insert.set_value('code', """SPT_URL00006""")
+insert.set_value('timestamp', """2020-06-01 04:16:07.201686""")
+insert.set_value('url', """/index""")
+insert.set_value('widget', """<element name='index'>
+  <display class='TACTIC.vfx.VFXIndexWdg'>
+  </display>
+</element>""")
+#-- End Entry --#
+

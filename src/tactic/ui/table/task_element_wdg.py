@@ -21,7 +21,7 @@ import functools
 from pyasm.common import jsonloads, jsondumps, Common, Environment, TacticException, SPTDate
 from pyasm.web import WebContainer, Widget, DivWdg, SpanWdg, HtmlElement, Table, FloatDivWdg, WidgetSettings
 from pyasm.biz import ExpressionParser, Snapshot, Pipeline, Project, Task, Schema, ProjectSetting
-from pyasm.command import DatabaseAction
+from pyasm.command import DatabaseAction, Command
 from pyasm.search import SearchKey, Search, SObject, SearchException, SearchType
 from pyasm.security import Sudo
 from pyasm.widget import IconWdg, SelectWdg, HiddenWdg, TextWdg, CheckboxWdg
@@ -3766,6 +3766,21 @@ class TaskCheckoutManageWdg(BaseRefreshWdg):
 class TaskCheckinManageWdg(TaskCheckoutManageWdg):
     pass
 
+
+
+__all__.append("WorkElementTabTitleCmd")
+class WorkElementTabTitleCmd(Command):
+
+    def execute(self):
+        search_key = self.kwargs.get("search_key")
+        sobject = Search.get_by_search_key(search_key)
+        assert(sobject.get_base_search_type() == "sthpw/task")
+        code = Search.eval( "@GET(parent.code)", sobject, single=True );
+        return code
+
+
+
+
 #from tactic.ui.widget import IconButtonElementWdg
 class WorkElementWdg(ButtonElementWdg):
 
@@ -3878,7 +3893,8 @@ class WorkElementWdg(ButtonElementWdg):
 
       try {
         var server = TacticServerStub.get();
-        var code = server.eval( "@GET(parent.code)", {search_keys: search_key} );
+        var ret_val = server.execute_cmd("tactic.ui.table.WorkElementTabTitleCmd", {search_key: search_key} );
+        var code = ret_val.info;
 
         spt.tab.set_main_body_tab();
         var kwargs = {
@@ -3896,7 +3912,7 @@ class WorkElementWdg(ButtonElementWdg):
 
         }
         var title = "Task: " + code;
-        var class_name = "tactic.ui.tools.sobject_wdg.TaskDetailWdg";
+        var class_name = "tactic.ui.tools.TaskDetailWdg";
         spt.tab.add_new(search_key, title, class_name, kwargs);
 
       } catch(e) {

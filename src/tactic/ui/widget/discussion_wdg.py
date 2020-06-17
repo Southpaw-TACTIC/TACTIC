@@ -125,7 +125,16 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'type': 'SelectWdg',
         'category': 'Options',
         'order': 10
+    },
+    'dialog_position': {
+        'description': 'Determine where the popup dialog will appear for the nots',
+        'values': 'side|center',
+        'type': 'SelectWdg',
+        'category': 'Options',
+        'order': 10
     }
+
+
 
     }
 

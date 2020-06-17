@@ -83,6 +83,12 @@ class HtmlElement(Widget):
 
 
     def __init__(self, type=None, child=None, css=None, id=None):
+
+        if not type or type == "None":
+            type = "div"
+            #raise Exception("No type defined in HTML widget")
+
+
         self._attrs = None
         self.events = None
         self.type = type
@@ -151,11 +157,11 @@ class HtmlElement(Widget):
 
 
     def clear(self):
-        #print("clear: ", self)
+
+        #self.type = None
+        #self.classes = None
         self.attrs = None
         self.events = None
-        self.type = None
-        self.classes = None
         self.styles = None
         self.behaviors = None
         self.updates = None
@@ -168,6 +174,7 @@ class HtmlElement(Widget):
         '''Set the type of html element.  This constitutes all of the elements
         that define html. For example: p, hr, br, img, a ...
         '''
+        assert(type)
         self.type = type
 
 
@@ -721,7 +728,11 @@ class HtmlElement(Widget):
         that actually draws the html element to the buffer'''
         html = WebContainer.get_buffer()
         buffer = html.get_buffer()
-       
+
+        if not self.type:
+            #raise Exception("No type defined in HTML widget [%s]" % self)
+            self.type = "div"
+      
         buffer.write("<%s" % self.type)
 
         attrs = []
@@ -825,6 +836,7 @@ class HtmlElement(Widget):
             #buffer.write("</%s>\n" % self.type)
             buffer.write("</%s>" % self.type)
 
+        # clean up the widget
         self.clear()
 
 

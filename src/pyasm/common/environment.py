@@ -750,9 +750,22 @@ class Environment(Base):
 
 
 
+    def get_api_mode(cls):
+        # let the site override
+        from pyasm.security import Site
+        api_mode = Site.get().get_api_mode()
+
+        # else use the config
+        if not api_mode:
+            api_mode = Config.get_value("security", "api_mode")
 
 
+        if not api_mode:
+            api_mode = "open"
 
+        return api_mode
+
+    get_api_mode = classmethod(get_api_mode)
 
 
 

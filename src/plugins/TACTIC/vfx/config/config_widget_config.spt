@@ -3083,10 +3083,11 @@ insert.set_value('view', """shot""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
+insert.set_value('category', """search_filter""")
 insert.set_value('code', """VFX00159""")
 insert.set_value('config', """<config>
   <filter>
-    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "quick", "quick_enabled": "", "quick_search_text": ""}, {"custom_enabled": "on", "prefix": "custom", "custom_column": ""}, {"main_body_value": "", "prefix": "main_body", "main_body_relation": "is", "main_body_enabled": "on", "main_body_column": ""}, {"parent_relation": "is", "parent_search_type": "", "prefix": "parent", "parent_column": "", "parent_value": "", "parent_enabled": "on"}, {"children_column": "", "children_value": "", "children_relation": "is", "children_search_type": "", "prefix": "children", "children_enabled": "on"}, {"prefix": "search_ops", "levels": [], "modes": [], "ops": []}, {"prefix": "simple", "handler": "", "partial": "", "value": "", "element_name": "keywords"}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "asset_category", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "sequence", "op": "="}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "value": "", "element_name": "shot", "op": "="}, {"Showing": "1 - 15", "Next": "", "prefix": "search_limit", "search_limit": "", "limit_select": "10", "custom_limit": "", "Prev": "", "Showing_last_search_offset": "0"}, {"show_retired": "", "prefix": "group", "group": "", "order": ""}]</values>
+    <values type="json">[{"prefix": "filter_mode", "filter_mode": "and"}, {"prefix": "custom", "custom_enabled": "on", "filter_type": "_column", "custom_column": ""}, {"prefix": "main_body", "main_body_enabled": "on", "filter_type": "_column", "main_body_column": "", "main_body_relation": "is", "main_body_value": ""}, {"prefix": "search_ops", "levels": [], "ops": [], "modes": []}, {"prefix": "simple", "handler": "", "element_name": "keywords", "value": ""}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "element_name": "asset_category", "op": "=", "value": ""}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "element_name": "sequence", "op": "=", "value": ""}, {"prefix": "simple", "handler": "tactic.ui.filter.SelectFilterElementWdg", "element_name": "shot", "op": "=", "value": ""}, {"prefix": "keyword", "value": ""}, {"prefix": "search_limit", "Prev": "", "Showing": "1 - 3", "Next": "", "search_limit": "", "limit_select": "100", "custom_limit": "", "Showing_last_search_offset": "0"}, {"prefix": "group", "group": "", "interval": "", "order": "", "show_retired": ""}]</values>
   </filter>
 </config>
 """)
@@ -3100,15 +3101,15 @@ insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00160""")
 insert.set_value('config', """<config>
   <asset layout="TableLayoutWdg" >
-    <element name="preview" width="30px"/>
-    <element name="asset_category" width="36.25px"/>
-    <element name="code" width="98.2667px"/>
-    <element name="description" width="222.017px"/>
-    <element name="history" width="42px"/>
-    <element name="task_edit" width="46.7167px"/>
-    <element name="task_status_edit" width="439px"/>
-    <element name="notes" width="293px"/>
-    <element name="completion" width="170px"/>
+    <element name="preview" hidden="false" width="45px"/>
+    <element name="asset_category" hidden="false" width="45px"/>
+    <element name="code" hidden="false" width="98.2667px"/>
+    <element name="description" hidden="false" width="222.017px"/>
+    <element name="history" hidden="false" width="45px"/>
+    <element name="task_edit" hidden="false" width="46.7167px"/>
+    <element name="task_status_edit" hidden="false" width="439px"/>
+    <element name="notes" hidden="false" width="293px"/>
+    <element name="completion" hidden="false" width="414px"/>
   </asset>
 </config>
 """)
@@ -4440,5 +4441,145 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/shot""")
 insert.set_value('timestamp', """2020-05-29 06:44:56.272886""")
 insert.set_value('view', """tab_element_names""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG06168""")
+insert.set_value('config', """<config>
+<vfx.home.main>
+<mako>
+<![CDATA[
+from pyasm.search import Search
+
+from pyasm.web import DivWdg
+div = DivWdg()
+shadow_color = div.get_color("shadow")
+
+num_shots = Search.eval("@COUNT(vfx/shot)")
+num_assets = Search.eval("@COUNT(vfx/asset)")
+
+num_checkins = Search.eval("@COUNT(sthpw/snapshot['project_code','$PROJECT'])")
+storage_space = "5GB"
+num_tasks = Search.eval("@COUNT(sthpw/task['project_code','$PROJECT']['status','not in','Complete'])")
+
+
+num_members_invited = 5
+max_members = 10
+]]>
+</mako>
+<html>
+<div style="width: 1000px; margin: 20px;">
+  <h1>TACTIC VFX</h1>
+</div>
+<hr/>
+<div class="spt_dashboard_top">
+  <div class="spt_db_summary">
+    <div class="spt_db_stats tactic_new_tab hand" style="background: #040" title="Shot List" value="start" view="vfx.shot.main">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-film"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_shots}</div>
+          <div class="spt_text">Shots</div>
+        </div>
+      </div>
+      <div class="spt_stats_text">
+          Click to view Shot List
+      </div>
+    </div>
+    <div class="spt_db_stats tactic_load hand" style="background: #400" value="Asset List" target="spt_header_top.spt_home_content" view="user.site.members">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-cube"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_assets}</div>
+          <div class="spt_text">Assets</div>
+        </div>
+      </div>
+      <div class="spt_stats_text">
+          Click to view Asset List
+      </div>
+    </div>
+    <div class="spt_db_stats tactic_load hand" style="background: #004" value="storage" target="spt_header_top.spt_home_content" view="user.site.storage">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-upload"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_checkins}</div>
+          <div class="spt_text">Number of Check-ins</div>
+        </div>
+      </div>
+      <div class="spt_stats_text">
+          Click to see latest check-ins.
+      </div>
+    </div>
+    <div class="spt_db_stats" style="background: #960">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-calendar-times"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_tasks}</div>
+          <div class="spt_text">Tasks In Progress</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br/>
+  <h3>Shots In Progress</h3>
+  <div style="box-sizing: border-box; margin: 20px">
+    <element>
+      <display class="tactic.ui.panel.ViewPanelWdg">
+        <search_type>vfx/shot</search_type>
+        <expression>@SEARCH(vfx/shot['status','not in','Complete']['status','is not','NULL']['or'])</expression>
+        <show_border>horizontal</show_border>
+        <show_shelf>false</show_shelf>
+      </display>
+    </element>
+  </div>
+</div>
+<style type="text/css">
+.spt_dashboard_top .spt_db_summary {
+    display: flex;
+    justify-content: space-between;
+}
+
+.spt_dashboard_top .spt_db_stats {
+    margin: 10px;
+    width: 25%;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px ${shadow_color};
+    text-align: center;
+}
+
+.spt_dashboard_top .spt_db_stats .spt_stats_block {
+    width: 100%;
+}
+
+.spt_dashboard_top .spt_db_stats .spt_num {
+    font-size: 32px;
+}
+
+.spt_dashboard_top .spt_db_stats .spt_text {
+    font-size: 16px;
+    font-weight: 300;
+    //text-align: center;
+    //width: 100%;
+}
+
+.spt_dashboard_top .spt_db_stats .spt_stats_text {
+    border-style: solid;
+    border-width: 1px 0px 0px 0px;
+    border-color: (--var_palette_border);
+}
+
+.spt_dashboard_top .spt_db_stats i {
+    font-size: 30px;
+}
+</style>
+</html>
+
+</vfx.home.main>
+</config>""")
+insert.set_value('timestamp', """2020-05-31 17:58:06.290027""")
+insert.set_value('view', """vfx.home.main""")
 #-- End Entry --#
 
