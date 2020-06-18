@@ -36,7 +36,7 @@ from tactic.ui.panel import TableLayoutWdg
 from pyasm.widget import ProdIconButtonWdg, IconWdg, IconButtonWdg, TextWdg, CheckboxWdg, HiddenWdg, SelectWdg, TextAreaWdg, RadioWdg
 from tactic.ui.container import ResizableTableWdg, TabWdg
 from tactic.ui.container import GearMenuWdg, Menu, MenuItem
-from tactic.ui.widget import ActionButtonWdg
+from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 from tactic.ui.input import TextInputWdg, LookAheadTextInputWdg
 
 import os
@@ -114,6 +114,10 @@ class TriggerToolWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
         left.add(title_div)
+        title_div.add_style("display: flex")
+        title_div.add_style("align-items: center")
+        title_div.add_style("justify-content: flex-end")
+
         title_div.add_style("height: 30px")
         title_div.add_style("padding: 5px 8px")
         title_div.add_color("background", "background")
@@ -121,9 +125,9 @@ class TriggerToolWdg(BaseRefreshWdg):
 
 
         from tactic.ui.app import HelpButtonWdg
-        help_button = HelpButtonWdg(alias="project-automation-triggers|project-automation-notifications")
+        help_button = HelpButtonWdg(alias="project-automation-triggers|project-automation-notifications", use_icon=True)
 
-        add_button = ActionButtonWdg(title='+', size='small', tip='Add a new trigger')
+        add_button = IconButtonWdg(icon="FA_PLUS", size='small', name='Add a new trigger')
         add_button.add_behavior( {
         'type': 'click_up',
         'kwargs': {
@@ -142,9 +146,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         } )
 
         title_div.add(add_button)
-        add_button.add_style("float: right")
         title_div.add(help_button)
-        help_button.add_style("float: right")
 
         left.add("<br clear='all'/>")
 
@@ -2221,11 +2223,10 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script_sobj = None
             script = ''
 
-     
+
         self.add_script_wdg(div, script_path, is_admin, trigger_code, language)
 
-
-        edit_button = ActionButtonWdg(title="Script Editor", tip="Open Script Editor")
+        edit_button = ActionButtonWdg(title="Script Editor", tip="Open Script Editor", color="secondary")
         edit_button.add_style("float: right")
         edit_button.add_style("padding: 5px 0px")
         div.add(edit_button)
@@ -2246,6 +2247,9 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
     def add_script_wdg(self, div, script_path, is_admin, trigger_code, language):
 
+
+        # This referes to a class that doesn't exist
+        return
 
         if is_admin:
             div.add("Language:")
@@ -2436,7 +2440,8 @@ class PythonClassTriggerEditWdg(BaseRefreshWdg):
 
         test_button = ActionButtonWdg(title="Test", tip="Click to test if the class can be found")
         div.add(test_button)
-        test_button.add_styles("display: inline-block; margin: 5px")
+        test_button.add_style("display: inline-block")
+        test_button.add_style("margin: 5px")
         test_button.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''

@@ -1628,12 +1628,25 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             var node = bvr.src_el.getParent(".spt_pipeline_node");
             var node_name = spt.pipeline.get_node_name(node);
             var pipeline_code = spt.pipeline.get_current_group();
+
+            var class_name = "tactic.ui.tools.PipelineGetInfoCmd";
+            var kwargs = {
+                pipeline_code: pipeline_code,
+                node_name: node_name
+            }
+            var ret_val = server.exeucte_cmd(class_name, kwargs);
+            var pipeline = ret_val.info.pipeline;
+            var process = ret_val.info.process;
+            alert("cow")
+
+            /*
             var pipeline = server.eval("@SOBJECT(sthpw/pipeline['code','"+pipeline_code+"'])", {single: true});
             var search_type = pipeline.search_type;
 
 
             var expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
             var process = server.eval(expr, {single: true});
+            */
 
             var subpipeline = null;
             if (process) { 
@@ -2882,8 +2895,6 @@ spt.pipeline.first_init = function(bvr) {
         if (sobj.data)
             data.default_templates[sobj[key]] = sobj.data.default_template;
     }
-
-
 
 }
 
@@ -7723,6 +7734,21 @@ spt.pipeline.get_connectors_to_node = function(to_name) {
 }
 
     '''
+
+
+__all__.append("PipelineGetInfoCmd")
+class PipelineGetInfoCmd(Command):
+
+    def execute(self):
+        pipeline_code = self.kwargs.get("pipeline_code")
+        node_name = self.kwargs.get("node_name")
+
+        pipeline = Search.eval("@SOBJECT(sthpw/pipeline['code','"+pipeline_code+"'])", {single: true});
+        self.info['pipeline'] = pipeline
+
+        expr = "@SOBJECT(config/process['pipeline_code','"+pipeline_code+"']['process','"+node_name+"'])";
+        process = Search.eval(expr, {single: true});
+        self.info['process'] = process
 
 
 

@@ -1396,10 +1396,12 @@ class Schema(SObject):
             search.add_filter("code", project_code)
         search.add_filter("project_code", project_code)
         search.add_op("or")
+        search.add_order_by("id asc")
         schemas = search.get_sobjects()
 
         if project_code in ['unittest']:
             schemas.insert(0, schema)
+
 
         if len(schemas) > 1:
             schema = SearchType.create("sthpw/schema")

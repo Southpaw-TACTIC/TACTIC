@@ -3807,7 +3807,6 @@ class DefaultInfoWdg(BaseInfoWdg):
             var class_name = 'tactic.ui.tools.TableLayoutWdg';
             var kwargs = {
                 search_type: "config/naming",
-                //expression: "@SOBJECT(config/naming['context','like','"+bvr.process+"'])",
                 show_shelf: true,
             }
             spt.panel.load_popup("Naming Conventions ["+bvr.process+"]", class_name, kwargs);
@@ -7314,12 +7313,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         // rename the process on the server
         var group_name = spt.pipeline.get_current_group();
-
-        // var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
-
-        // if (process) {
-        //    server.update(process, {process: name});
-        // }
 
         // select the node
         node.click();
