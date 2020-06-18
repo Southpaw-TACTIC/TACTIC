@@ -1625,10 +1625,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                     if self.group_interval and group_value:
                         group_value = self._get_simplified_time(group_value)
-                    elif isinstance(group_value, basestring):
-                        group_value = group_value.encode('utf-8')
-                    else:
-                        group_value = str(group_value)
+                    elif not Common.IS_Pv3:
+                        if isinstance(group_value, basestring):
+                            group_value = group_value.encode('utf-8')
+                        else:
+                            group_value = str(group_value)
 
                     if not group_value:
                         group_value = "__NONE__"

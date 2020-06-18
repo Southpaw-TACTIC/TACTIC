@@ -345,10 +345,14 @@ class DiscussionWdg(BaseRefreshWdg):
             // refresh dialogs (if loaded) and note counts for all contexts
             var dialog_contents = top.getElements(".spt_discussion_content");
             var parent_key = top.getAttribute("spt_search_key");
-            var s = TacticServerStub.get();
-            var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
 
-            if (dialog_contents.length == num_processes) {
+            spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
+            return;
+
+            /*
+            var s = TacticServerStub.get();
+            //var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
+            if (true || dialog_contents.length == num_processes) {
                 for (var i = 0; i < dialog_contents.length; i++) {
                     var dialog_content = dialog_contents[i];
                     var group_top = dialog_content.getParent(".spt_discussion_process_top");
@@ -388,6 +392,7 @@ class DiscussionWdg(BaseRefreshWdg):
             } else {
                 spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
             }
+            */
         }
         '''
 
@@ -1108,7 +1113,11 @@ class DiscussionWdg(BaseRefreshWdg):
                 var top = bvr.src_el.getParent(".spt_discussion_top");
                 var dialog_contents = top.getElements(".spt_discussion_content");
                 var parent_key = top.getAttribute("spt_search_key");
+                spt.panel.refresh(top);
 
+                return;
+
+                /*
                 // update dialogs (if loaded) and note counts
                 var s = TacticServerStub.get();
                 var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
@@ -1141,6 +1150,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 } else {
                     spt.panel.refresh(top);
                 }
+                */
 
 
                 '''
