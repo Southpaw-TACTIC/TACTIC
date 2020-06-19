@@ -883,6 +883,7 @@ class EditWdg(BaseRefreshWdg):
                 title_div.add_style("font-size: 0.9em")
                 title_div.add_style("text-transform: uppercase")
                 title_div.add_style("opacity: 0.5")
+                title_div.add_style("padding-right: 15px")
 
 
                 td = table.add_cell(title_div)
