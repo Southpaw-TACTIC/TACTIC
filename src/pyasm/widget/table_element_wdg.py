@@ -878,7 +878,8 @@ class DateWdg(SimpleTableElementWdg):
         if not pattern:
             pattern = "%b %d, %Y"
 
-        return time.strftime(pattern, time_seq )
+
+        return time.strftime(pattern, tuple(time_seq) )
 
     def get_simple_display(self):
         return self.get_display()

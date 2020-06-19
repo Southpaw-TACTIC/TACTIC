@@ -3179,7 +3179,7 @@ class UserExtraInfoWdg(ExtraInfoWdg):
         '''get and cache the thumb image'''
         img = Container.get('UserExtraInfoWdg:%s' %login.get_login())
         if not img:
-            from file_wdg import ThumbWdg
+            from .file_wdg import ThumbWdg
             
             thumb = ThumbWdg()
             thumb.set_sobject( login )
