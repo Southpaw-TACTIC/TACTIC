@@ -357,10 +357,15 @@ TRANS_OPTIONAL_METHODS = {
 API_MODE = {
     "closed": {
         "execute_cmd",
-        #"execute_python_script", # should this be allowed?
         "get_widget",
         "get_ticket",
         "ping",
+
+        # These are questionable?
+        "get_widget_setting",
+        "set_widget_setting"
+
+        #"execute_python_script", # should this be allowed?
     },
     "query": {
         "get_by_search_key",

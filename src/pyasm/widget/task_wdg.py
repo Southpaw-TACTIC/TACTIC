@@ -773,7 +773,7 @@ class SObjectTaskTableElement(BaseTableElementWdg, AjaxWdg):
             dependent_processes = pipeline.get_input_contexts(task_process)
 
 
-            from parallel_status import ParallelStatusWdg
+            from .parallel_status import ParallelStatusWdg
             dep_status_div = DivWdg()
             dep_status_div.add_style("padding-right: 10px")
             dep_status_wdg = ParallelStatusWdg()
