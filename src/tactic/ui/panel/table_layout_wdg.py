@@ -5674,6 +5674,15 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         var is_calendar = false;
         if (spt.has_class(input, 'spt_calendar_input')){
             is_calendar = true;
+            if (input.getAttribute("type") == "date") {
+                var parts = value.split(" ");
+                value = parts[0];
+            }
+            else {
+                var parts = value.split(".");
+                value = parts[0];
+            }
+
         }
 
 
@@ -5694,8 +5703,8 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        input.value = value;
-        console.log(value);
+        //input.value = value;
+        input.setAttribute("value", value);
         // for calendar input
         if (is_calendar) {
             accept_event = 'change';
