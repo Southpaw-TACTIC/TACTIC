@@ -927,8 +927,14 @@ class CalendarInputWdg(BaseInputWdg):
         #display_mode = "inline"
 
 
-        default_display_mode = ProdSetting.get_value_by_key("calendar_display_mode") or "browser"
-        display_mode = self.get_option("display_mode") or default_display_mode
+        display_mode = self.get_option("display_mode")
+        if not display_mode:
+            display_mode = ProdSetting.get_value_by_key("calendar_display_mode")
+        if not display_mode:
+            display_mode = Config.get_value("global_setting","calendar_display_mode")
+        if not display_mode:
+            display_mode = "browser"
+
 
         if display_mode == "table":
             input = TextWdg(name=name, required=required)
