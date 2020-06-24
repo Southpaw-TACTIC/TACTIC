@@ -5671,11 +5671,31 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
     else if (input.nodeName == "INPUT") {
         set_focus = true;
 
+        var is_calendar = false;
+        if (spt.has_class(input, 'spt_calendar_input')){
+            is_calendar = true;
+            if (input.getAttribute("type") == "date") {
+                var parts = value.split(" ");
+                value = parts[0];
+            }
+            else {
+                var parts = value.split(".");
+                value = parts[0];
+            }
 
-        if (input.type != "color") {
+        }
+
+
+        if (is_calendar) {
+            input.setStyle("height", "");
+            if (size.x > 300) {
+                size.x = 300;
+            }
+            input.setStyle( "width", size.x+'px');
+        }
+        else if (input.type != "color") {
             input.setStyle( "width", size.x+'px');
             input.setStyle( "height", size.y+'px');
-
 
             if (size.y > 500) {
                 input.setStyle( "height", '500px');
@@ -5683,9 +5703,10 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        input.value = value;
+        //input.value = value;
+        input.setAttribute("value", value);
         // for calendar input
-        if (spt.has_class(input, 'spt_calendar_input')){
+        if (is_calendar) {
             accept_event = 'change';
             input.setStyle( "width", size.x+125 + 'px');
 

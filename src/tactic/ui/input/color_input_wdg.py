@@ -232,6 +232,7 @@ class ColorInputWdg(BaseInputWdg):
 
             start_color = [r, g, b]
 
+        return top
 
 
 

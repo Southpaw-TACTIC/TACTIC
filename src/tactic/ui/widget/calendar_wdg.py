@@ -822,7 +822,7 @@ class CalendarInputWdg(BaseInputWdg):
             'category': 'Display',
             'order': 10,
         },
-        "edit_mode": {
+        "display_mode": {
             'description': "Determines whether to use the TACTIC calendar or the browser calendar",
             'type': 'SelectWdg',
             'values': 'browser|inline',
@@ -924,17 +924,26 @@ class CalendarInputWdg(BaseInputWdg):
 
         value = self.get_value()
 
-        #edit_mode = "inline"
-        edit_mode = self.get_option("edit_mode") or "browser"
+        #display_mode = "inline"
 
-        if edit_mode == "table":
+
+        display_mode = self.get_option("display_mode")
+        if not display_mode:
+            display_mode = ProdSetting.get_value_by_key("calendar_display_mode")
+        if not display_mode:
+            display_mode = Config.get_value("global_setting","calendar_display_mode")
+        if not display_mode:
+            display_mode = "browser"
+
+
+        if display_mode == "table":
             input = TextWdg(name=name, required=required)
             text = input
             text.add_class("spt_calendar_input") 
             if value:
                 input.set_value(value)
 
-        elif edit_mode == "browser":
+        elif display_mode == "browser":
 
             if show_time:
                 input = TextInputWdg(name=name, type="datetime-local", required=required, read_only=read_only)
@@ -1014,17 +1023,23 @@ class CalendarInputWdg(BaseInputWdg):
             #text.set_option("read_only", read_only)
             text.set_disabled_look(False)
             # This is needed because of lack of support for behaviors
-            text.add_event('onclick', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
+            text.add_event('onclick', '''
+                    var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
                     if (el)
                         spt.show(el);
                   
-                    spt.show(el);spt.body.add_focus_element(el); event.stopPropagation();''')
+                    spt.show(el);
+                    spt.body.add_focus_element(el); 
+                    event.stopPropagation();
+            ''')
 
-            text.add_behavior({'type': 'focus', 'cbjs_action': 
+            text.add_behavior( {
+                'type': 'focus', 
+                'cbjs_action': 
                     '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
                     if (!el)  {
                         el = spt.calendar.get(); 
-                        el.setStyle("width", "200px");
+                        el.setStyle("width", "220px");
                        
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
@@ -1037,7 +1052,7 @@ class CalendarInputWdg(BaseInputWdg):
                     ''', 
                     'offset_x' : offset_x,
                     'offset_y' : offset_y
-                    })
+                })
 
             """
             # FIXME: keyup 'tab' occurs after blur
