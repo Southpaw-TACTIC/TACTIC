@@ -379,6 +379,7 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         # add in the simple search configs
+        element_names = []
         if self.filter_template_config:
             element_names = self.filter_template_config.get_element_names()
             for element_name in element_names:
@@ -418,6 +419,9 @@ class GeneralFilterWdg(BaseFilterWdg):
         filter_container = DivWdg()
         filter_container.set_id("%s_filter_container" % self.prefix)
         filter_container.add_class("spt_filter_container")
+
+        filter_container.add_style("display: flex")
+        filter_container.add_style("flex-direction: column")
 
         top_wdg.add(filter_container)
 
@@ -473,8 +477,15 @@ class GeneralFilterWdg(BaseFilterWdg):
             if not filter_type and "children_search_type" in filter_data_map:
                 filter_type = "_related"
 
+
+            # Default filter type
             if not filter_type:
-                filter_type = "_column"
+
+                filter_type = self.kwargs.get("default_filter")
+                if not filter_type and element_names:
+                    filter_type = element_names[0]
+                if not filter_type:
+                    filter_type = "_column"
 
 
             filter_wdg =  self._get_filter_wdg_with_op(i, op, level, filter_type=filter_type)
@@ -1137,14 +1148,13 @@ class GeneralFilterWdg(BaseFilterWdg):
 
 
         element_names = []
-        #element_names.insert(0, "Column Filter")
-        #element_names.insert(2, "Related Filter")
         if self.filter_template_config:
             config_element_names = self.filter_template_config.get_element_names()
             element_names.extend(config_element_names)
 
-        element_names.append("Column Filter")
-        element_names.append("Related Filter")
+        if self.kwargs.get("show_general_filters") not in ['false', False]:
+            element_names.append("Column Filter")
+            element_names.append("Related Filter")
 
         for element_name in element_names:
 

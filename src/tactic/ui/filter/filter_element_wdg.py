@@ -175,7 +175,13 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
         parts = expression.split(".")
         search_types = parts[:-1]
         column = parts[-1]
-    
+ 
+        # op should come from self.values
+        op = self.values.get("op")
+        if not op:
+            op = '='
+
+   
 
 
         value = self.values.get("value")
@@ -190,14 +196,10 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
             default = self.kwargs.get('default')
             if not self.values and default:
                 value = default
+            elif op == "is empty":
+                pass
             else:
                 return
-
-        # op should come from self.values
-        op = self.values.get("op")
-        if not op:
-            op = '='
-
        
         # go through the hierarchy
         search2 = None
@@ -266,6 +268,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 search.add_op_filters(filters)
             elif op == 'is on':
                 search.add_day_filter(column, value)               
+            elif op == 'is empty':
+                search.add_empty_filter(column)
             else:
                 search.add_filter(column, value, op)
             return
@@ -400,8 +404,8 @@ class SelectFilterElementWdg(BaseFilterElementWdg):
                 op_select.set_option("labels", "is|is not")
                 op_select.set_option("values", "=|!=")
             else:
-                op_select.set_option("labels", "is|is not|contains")
-                op_select.set_option("values", "=|!=|~")
+                op_select.set_option("labels", "is|is not|contains|is empty")
+                op_select.set_option("values", "=|!=|~|is empty")
 
             value = self.values.get("op")
             if value:

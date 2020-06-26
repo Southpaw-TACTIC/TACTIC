@@ -482,6 +482,14 @@ class Search(Base):
         self.add_filter(name, "NULL", quoted=False, op="is")
 
 
+    def add_empty_filter(self, name):
+        self.add_op("begin")
+        self.add_filter(name, "NULL", quoted=False, op="is")
+        self.add_filter(name, "", op="=")
+        self.add_op("or")
+        print("sss: ", self.get_statement())
+
+
     def add_search_filter(self, name, search, op='in', table=''):
         '''combines results of one search filter with another search filter
         as a subselect

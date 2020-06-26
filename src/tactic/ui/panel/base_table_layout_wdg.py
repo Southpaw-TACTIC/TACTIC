@@ -1491,7 +1491,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add_style("box-shadow: none")
         xx.add_style("width: 100%")
         xx.add_style("box-sizing: border-box")
-        xx.add_style("z-index: 1")
+        xx.add_style("z-index: 2")
 
         left_div = DivWdg()
         left_div.add_class("d-flex")
@@ -1967,7 +1967,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
             button.add_behavior( {
-                'type': 'click_up',
+                'type': 'click',
                 'dialog_id': search_dialog_id,
                 'cbjs_action': '''
                 var dialog = document.id(bvr.dialog_id);
@@ -1977,7 +1977,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 var offset = bvr.src_el.getPosition();
                 var size = bvr.src_el.getSize();
-                offset = {x:offset.x-265, y:offset.y+size.y+10};
+                offset = {x:offset.x-265, y:offset.y+size.y+5};
 
                 var body = document.id(document.body);
                 var scroll_top = body.scrollTop;
@@ -1989,8 +1989,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var rect = body.getBoundingClientRect();
                 var pointer = dialog.getElement(".spt_popup_pointer");
                 var left = offset.x + rect.x;
-                if (left < 0) {
-                    offset.x = offset.x - left;
+                if (left < 8) {
+                    offset.x = offset.x - left + 8;
                     if (pointer) {
                         pointer.hide();
                     }
