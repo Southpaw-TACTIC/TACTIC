@@ -583,6 +583,17 @@ class HtmlElement(Widget):
                 f();
             };
             bvr.src_el.addEvent(event_key, func);
+
+            // find all of the PUW
+            setTimeout( function() {
+                var stubs = bvr.src_el.getElements(".SPT_PUW_STUB");
+                stubs.forEach( function(stub) {
+                    var puw =  stub.spt_puw_el;
+                    puw.addEvent(event_key, func);
+                } );
+
+            }, 0 );
+
         '''
         }
         self.add_behavior(relay_behavior)

@@ -93,6 +93,19 @@ spt.puw.process_new = function( start )
 }
 
 
+
+spt.puw.get_all_puws = function(start_el) {
+    var stub_list = document.id(start_el).getElements(".SPT_PUW_STUB");
+    var puws = [];
+    stubs.forEach( function(stub) {
+        var puw =  stub.spt_puw_el;
+        puws.push(puw);
+    } )
+    return puws
+}
+             
+
+
 spt.puw.stubs_get_element = function( start_el, mt_search_str )
 {
     var found_el = null;

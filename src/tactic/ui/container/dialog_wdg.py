@@ -304,7 +304,8 @@ class DialogWdg(BaseRefreshWdg):
             widget.add_style("display: none")
 
         #widget.add_style("position: fixed")
-        #widget.add_class("SPT_PUW")
+        if self.kwargs.get("is_puw") in ['true', True]:
+            widget.add_class("SPT_PUW")
 
         widget.add_behavior( {
         'type': 'listen',
