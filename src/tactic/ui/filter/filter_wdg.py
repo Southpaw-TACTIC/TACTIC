@@ -487,9 +487,14 @@ class GeneralFilterWdg(BaseFilterWdg):
                 if not filter_type:
                     filter_type = "_column"
 
+            try:
+                filter_wdg =  self._get_filter_wdg_with_op(i, op, level, filter_type=filter_type)
+                filter_container.add(filter_wdg)
+            except Exception as e:
+                print("WARNING: filter type [%s] gives an error", e)
+                filter_wdg =  self._get_filter_wdg_with_op(i, op, level, filter_type="_column")
+                filter_container.add(filter_wdg)
 
-            filter_wdg =  self._get_filter_wdg_with_op(i, op, level, filter_type=filter_type)
-            filter_container.add(filter_wdg)
 
 
 
@@ -893,6 +898,7 @@ class GeneralFilterWdg(BaseFilterWdg):
                 "filter_search_type": self.search_type
             }
             widget = self.filter_template_config.get_display_widget(filter_type, extra_options=extra_options)
+
             widget.set_values(filter_data_map)
             widget.set_name(filter_type)
 

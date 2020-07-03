@@ -165,7 +165,10 @@ spt.puw.get_elements_thru_stubs = function( start_el, mt_search_str, puw_ids )
         
         els = puw_el.getElements( mt_search_str )
         if (els.length > 0 )
-            elements = elements.concat( els );
+            els.forEach( function(el) {
+                elements.push(el);
+            })
+            //elements = elements.concat( els ); // This doesn't work because els is not an array
     }
 
     return elements;

@@ -834,12 +834,14 @@ class TopWdg(Widget):
             if xml.get_value("element/@tactic_kbd") in [True, "true"]:
                 tactic_kbd = True
 
-         
+
+        # Set the palette for the admin site
         if not palette_key:
             web = WebContainer.get_web()
             if web.is_admin_page():
-                palette_key = 'AQUA'
-                #palette_key = 'SILVER'
+                palette = ProjectSetting.get_value_by_key("palette/admin")
+                if not palette:
+                    palette_key = 'AQUA'
 
         if palette_key:
             from pyasm.web import Palette
@@ -855,6 +857,7 @@ class TopWdg(Widget):
 
         colors = palette.get_colors()
         colors = jsondumps(colors)
+
 
         script = HtmlElement.script('''
             var env = spt.Environment.get();
@@ -1312,21 +1315,27 @@ class TitleTopWdg(TopWdg):
         self.body = HtmlElement("body")
 
         web = WebContainer.get_web()
-        self.body.add_color("color", "color")
-
-
-        #if web.is_title_page():
-        #    self.body.add_gradient("background", "background", 0, -20)
-        #else:
-        #    self.body.add_gradient("background", "background", 0, -15)
-        self.body.add_color("background", "background")
 
         self.body.add_style("background-attachment: fixed !important")
-        #self.body.add_style("min-height: 1200px")
         self.body.add_style("height: 100%")
         self.body.add_style("width: 100%")
         self.body.add_style("margin: 0px")
         self.body.add_style("overflow: auto")
+
+        style = self.get_styles()
+        self.body.add(style);
+
+    def get_styles(self):
+        style = HtmlElement.style()
+        style.add( '''
+        body {
+            color: var(--spt_palette_color);
+            background: var(--spt_palette_background);
+        }
+        ''')
+
+        return style
+
 
 
     def get_display(self):

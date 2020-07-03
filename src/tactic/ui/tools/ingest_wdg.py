@@ -154,26 +154,24 @@ class IngestUploadWdg(BaseRefreshWdg):
         left.add( self.get_content_wdg() )
 
         if not self.search_key or self.show_settings:
-            if False and self.show_settings:
-                middle = table.add_cell()
-                middle.add_style("height: 10px") # not sure why we need this height
-                middle.add_style("padding: 30px 20px")
-                line = DivWdg()
-                middle.add(line)
-                line.add_style("height: 100%")
-                line.add_style("border-style: solid")
-                line.add_style("border-width: 0px 0px 0px 1px")
-                line.add_style("border-color: #DDD")
-                line.add(" ")
-
-
-
             right = table.add_cell()
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
             right.add( self.get_settings_wdg() )
             if self.show_settings in [False, 'false', 'hidden']:
                 right.add_style("display: none")
+
+
+            process = self.kwargs.get("process")
+            if process:
+                hidden = HiddenWdg(name="process")
+                right.add(hidden)
+                hidden.add_class("spt_process")
+                hidden.set_value(process)
+
+
+
+
 
         else:
             if self.orig_sobject and self.orig_sobject.column_exists("process"):

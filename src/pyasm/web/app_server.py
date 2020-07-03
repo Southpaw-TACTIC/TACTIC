@@ -240,9 +240,6 @@ class BaseAppServer(Base):
         top = TitleTopWdg()
         widget.add(top)
         body = top.get_body()
-        #body.add_gradient("background", "background", 5, -20)
-        body.add_color("background", "background")
-        body.add_color("color", "color")
 
         reset_msg = web.get_form_value('reset_msg')
         if reset_msg:
@@ -465,9 +462,6 @@ class BaseAppServer(Base):
             top = TitleTopWdg()
             widget.add(top)
             body = top.get_body()
-            body.add_color("background", "background")
-            body.add_color("color", "color")
-
 
             has_site = False
 

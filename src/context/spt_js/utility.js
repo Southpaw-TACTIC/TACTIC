@@ -243,7 +243,7 @@ spt.get_element = function( top_el, mt_search_str, puw_ids )
     if( ! found_el ) {
         // if not immediately found in normal DOM heirarchy then look through PUW_STUBS ...
         var elements = spt.puw.get_elements_thru_stubs( top_el, mt_search_str, puw_ids );
-        if( elements ) {
+        if( elements.length ) {
             found_el = elements[0];
         }
     }

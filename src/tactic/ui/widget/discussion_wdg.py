@@ -426,6 +426,7 @@ class DiscussionWdg(BaseRefreshWdg):
             'process': '__WIDGET_UNKNOWN__',
             'context': '__WIDGET_UNKNOWN__',
             'search_key': '__WIDGET_UNKNOWN__',
+            'display': True,
         }
         widget_key = layout.generate_widget_key('tactic.ui.widget.DiscussionAddNoteWdg', inputs=widget_kwargs)
 
@@ -443,9 +444,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 top = bvr.src_el.getParent(".spt_discussion_top");
             }
 
-
-            var container = top.getElement(".spt_add_note_container");
-            var add_note = container.getElement(".spt_discussion_add_note");
+            var container = spt.get_element(top, ".spt_add_note_container");
+            var add_note = spt.get_element(container, ".spt_discussion_add_note");
 
             if (! add_note) {
                 var kwargs = container.getAttribute("spt_kwargs");
@@ -466,10 +466,8 @@ class DiscussionWdg(BaseRefreshWdg):
                     }
                 var class_name = bvr.widget_key;
                 spt.panel.load(container, class_name, kwargs, widget_kwargs,  {fade: false, async: false});
-
-                add_note = top.getElement(".spt_discussion_add_note");
-                //var popup = spt.panel.load_popup("Add Note", class_name, kwargs);
-                //add_note = popup.getElement(".spt_discussion_add_note");
+                //add_note = top.getElement(".spt_discussion_add_note");
+                add_note = spt.get_element(top, ".spt_discussion_add_note");
             }
             
             if (bvr.src_el.getAttribute('force_show') == 'true')
@@ -1234,7 +1232,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
 
             else:
-                add_wdg = IconWdg("Add Note", "FAR_PLUS_SQUARE", size=8)
                 add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
                 add_wdg.add_style("margin: 0px 10px")
 
@@ -2448,8 +2445,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             parent = Search.get_by_search_key(parent)
 
 
-
-
         # explicitly set the contexts
         self.contexts = self.kwargs.get("context")
         # need the process to predict the notification to and cc
@@ -2483,7 +2478,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         display = self.kwargs.get("display")
         if not display:
-            display = "none"
+            display = ""
         content_div.add_style("display: %s" % display)
 
         content_div.add_color("background", "background")
