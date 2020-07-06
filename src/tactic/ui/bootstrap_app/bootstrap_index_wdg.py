@@ -4,6 +4,7 @@ from pyasm.biz import Project
 from pyasm.common import Environment, Common
 from pyasm.web import HtmlElement, DivWdg, WebContainer, SpanWdg, Palette
 from pyasm.widget import WidgetConfig, IconWdg
+from pyasm.security import Sudo
 
 from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ButtonNewWdg, ActionButtonWdg, BootstrapButtonRowWdg
@@ -940,17 +941,24 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             display_name = login.get_login()
        
         from pyasm.biz import Snapshot
+
+
         snapshot = Snapshot.get_latest_by_sobject(login)
         if snapshot:
-            path = snapshot.get_web_path_by_type()
- 
-            user_wdg.add(HtmlElement.style("""
-                .spt_hit_wdg.spt_nav_user_btn {                
-                    background-image: url(%s);
-                    background-size: cover;
-                    background-repeat: no-repeat;
-                } 
-            """ % path))
+            sudo = Sudo()
+            try:
+                path = snapshot.get_web_path_by_type()
+
+     
+                user_wdg.add(HtmlElement.style("""
+                    .spt_hit_wdg.spt_nav_user_btn {                
+                        background-image: url(%s);
+                        background-size: cover;
+                        background-repeat: no-repeat;
+                    } 
+                """ % path))
+            finally:
+                sudo.exit()
 
             icon = "FA_USERX"
         else:
@@ -1502,7 +1510,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         start_link = security.get_start_link()
         if start_link:
             return """
-                <element name="Startup">
+                <element name="main_body" title="Startup">
                     <display class="tactic.ui.panel.HashPanelWdg">
                         <hash>%s</hash>
                     </display>

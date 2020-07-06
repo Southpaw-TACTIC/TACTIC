@@ -193,6 +193,13 @@ class SearchWdg(BaseRefreshWdg):
         ''' % (self.search_type, custom_filter_view) )
 
 
+        
+        show_general_filters = self.kwargs.get("show_general_filters") or "true"
+        security = Environment.get_security()
+        if security.is_admin():
+            show_general_filters = "true"
+
+        default_filter_type = self.kwargs.get("default_filter") or ""
         config.append('''
         <element name='Search Parameters'>
           <display class='tactic.ui.filter.GeneralFilterWdg'>
@@ -201,9 +208,11 @@ class SearchWdg(BaseRefreshWdg):
              <modeX>sobject</modeX>
              <mode>child</mode>
             <filter_view>%s</filter_view>
+            <show_general_filters>%s</show_general_filters>
+            <default_filter>%s</default_filter>
            </display>
         </element>
-        ''' % (self.search_type, filter_view) )
+        ''' % (self.search_type, filter_view, show_general_filters, default_filter_type) )
 
 
         """
@@ -227,8 +236,6 @@ class SearchWdg(BaseRefreshWdg):
 
         config = ''.join(config)
 
-        
-        
         config_xml = Xml()
         config_xml.read_string(config)
         config = WidgetConfig.get(xml=config_xml, view='filter')

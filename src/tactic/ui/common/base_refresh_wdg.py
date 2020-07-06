@@ -132,6 +132,10 @@ class BaseRefreshWdg(Widget):
         self.top.add_color(name, palette_key, modifier=modifier, default=default)
 
 
+    def set_id(self, id):
+        self.top.set_id(id)
+
+
             
     def get_kwargs(self):
         return self.kwargs

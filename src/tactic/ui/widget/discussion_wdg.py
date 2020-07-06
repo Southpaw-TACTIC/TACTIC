@@ -14,7 +14,7 @@ __all__ = ['DiscussionElementWdg', 'DiscussionWdg', 'DiscussionAddNoteWdg', 'Dis
 
 from tactic.ui.common import BaseRefreshWdg, BaseTableElementWdg
 
-from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate, Common
+from pyasm.common import Environment, TacticException, jsondumps, jsonloads, SPTDate, Common, Container
 from pyasm.biz import Pipeline, Project, File, IconCreator, Schema
 from pyasm.command import Command, EmailTrigger2
 from pyasm.web import DivWdg, Table, WikiUtil, HtmlElement, SpanWdg, Widget
@@ -317,6 +317,8 @@ class DiscussionWdg(BaseRefreshWdg):
         self.show_task_process = self.kwargs.get('show_task_process')
         
         self.allow_email = self.kwargs.get('allow_email')
+
+        self.use_puw = self.kwargs.get("use_puw") or True
         
 
 
@@ -327,7 +329,7 @@ class DiscussionWdg(BaseRefreshWdg):
         return '''
         spt.discussion = {};
         spt.discussion.refresh = function(src_el) {
-            var discussion_top = spt.has_class(src_el, 'spt_discussion_top') ? src_el: src_el.getParent(".spt_discussion_top");
+            var discussion_top = spt.has_class(src_el, 'spt_discussion_top') ? src_el: spt.get_parent(src_el, ".spt_discussion_top");
 
             // find out which contexts are open
             var contexts = discussion_top.getElements(".my_context");
@@ -426,8 +428,10 @@ class DiscussionWdg(BaseRefreshWdg):
             'process': '__WIDGET_UNKNOWN__',
             'context': '__WIDGET_UNKNOWN__',
             'search_key': '__WIDGET_UNKNOWN__',
+            'display': True,
         }
         widget_key = layout.generate_widget_key('tactic.ui.widget.DiscussionAddNoteWdg', inputs=widget_kwargs)
+
 
         layout.add_relay_behavior( {
             'type': 'mouseup',
@@ -443,9 +447,8 @@ class DiscussionWdg(BaseRefreshWdg):
                 top = bvr.src_el.getParent(".spt_discussion_top");
             }
 
-
-            var container = top.getElement(".spt_add_note_container");
-            var add_note = container.getElement(".spt_discussion_add_note");
+            var container = spt.get_element(top, ".spt_add_note_container");
+            var add_note = spt.get_element(container, ".spt_discussion_add_note");
 
             if (! add_note) {
                 var kwargs = container.getAttribute("spt_kwargs");
@@ -458,7 +461,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     kwargs.upload_id = upload_id; 
                 }
 
-
                 var widget_kwargs = {
                         'hidden': bvr.hidden,
                         'allow_email': bvr.allow_email,
@@ -466,10 +468,9 @@ class DiscussionWdg(BaseRefreshWdg):
                     }
                 var class_name = bvr.widget_key;
                 spt.panel.load(container, class_name, kwargs, widget_kwargs,  {fade: false, async: false});
-
-                add_note = top.getElement(".spt_discussion_add_note");
-                //var popup = spt.panel.load_popup("Add Note", class_name, kwargs);
-                //add_note = popup.getElement(".spt_discussion_add_note");
+                //add_note = top.getElement(".spt_discussion_add_note");
+                add_note = spt.get_element(top, ".spt_discussion_add_note");
+                spt.toggle_show_hide(add_note);
             }
             
             if (bvr.src_el.getAttribute('force_show') == 'true')
@@ -542,8 +543,6 @@ class DiscussionWdg(BaseRefreshWdg):
             spt.alert("Please enter a note before saving");
         }
         else {
-            spt.app_busy.show("Adding note ...");
-
             var top = bvr.src_el.getParent(".spt_discussion_add_note");
             var attach_top = top.getElement(".spt_attachment_top");
             var ticket_key = attach_top.getAttribute('ticket_key');
@@ -553,14 +552,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 server.start({title: 'New Note', transaction_ticket: ticket_key});
 
             if (typeof(files) != 'undefined') {
-                /*
-                for (var i = 0; i < files.length; i++) {
-                    spt.app_busy.show("Uploading ...", files[i]);
-                    server.upload_file(files[i], ticket_key);
-                }
-                */
-                spt.app_busy.hide()
-
                 values['files'] = files;
                 values['ticket'] = ticket_key;
             }
@@ -588,13 +579,13 @@ class DiscussionWdg(BaseRefreshWdg):
             }
 
             attach_top.files = [];
-            var attach_list = attach_top.getElement(".spt_attachment_list");
+            var attach_list = spt.get_element(attach_top, ".spt_attachment_list");
             attach_list.innerHTML = "";
             if (bvr.refresh) {
               spt.discussion.refresh(top);
             }
 
-            spt.app_busy.hide();
+            spt.notify.show_message("Note added");
 
             %s
         }
@@ -1234,7 +1225,6 @@ class DiscussionWdg(BaseRefreshWdg):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
 
             else:
-                add_wdg = IconWdg("Add Note", "FAR_PLUS_SQUARE", size=8)
                 add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
                 add_wdg.add_style("margin: 0px 10px")
 
@@ -1299,7 +1289,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 dialog_position = self.kwargs.get("dialog_position")
                 if not dialog_position:
                     dialog_position = "right"
-                note_dialog = DialogWdg(display=False)
+                note_dialog = DialogWdg(display=False, is_puw=self.use_puw)
                 note_dialog.add_style("font-size: 12px")
                 note_dialog.add_title("Add Note")
                 note_dialog.add_style("overflow-y: auto")
@@ -1362,7 +1352,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 'cbjs_action': '''
 
                 var value = bvr.src_el.checked;
-                var top = bvr.src_el.getParent(".spt_discussion_top");
+                var top = spt.get_parent( bvr.src_el, ".spt_discussion_top");
                 var contexts = top.getElements(".my_context");
                 for (var i = 0; i < contexts.length; i++) {
                     if (contexts[i].getAttribute("self_context") == bvr.context) {
@@ -1531,7 +1521,7 @@ class DiscussionWdg(BaseRefreshWdg):
  
 
             else:
-                note_dialog = DialogWdg(display=False)
+                note_dialog = DialogWdg(display=False, is_puw=self.use_puw)
                 note_dialog_div.add(note_dialog)
                 unique_id = None
                 note_dialog.add_title("Notes for: %s" % context)
@@ -1646,7 +1636,8 @@ class DiscussionWdg(BaseRefreshWdg):
                         parent_key: bvr.parent_key,
                     }
 
-                    var el = top.getElement(".spt_discussion_content");
+                    //var el = top.getElement(".spt_discussion_content");
+                    var el = spt.get_element(top, ".spt_discussion_content");
                     spt.panel.load(el, class_name, kwargs);
 
                     top.setAttribute("spt_is_loaded", "true");
@@ -2448,8 +2439,6 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             parent = Search.get_by_search_key(parent)
 
 
-
-
         # explicitly set the contexts
         self.contexts = self.kwargs.get("context")
         # need the process to predict the notification to and cc
@@ -2483,7 +2472,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         display = self.kwargs.get("display")
         if not display:
-            display = "none"
+            display = ""
         content_div.add_style("display: %s" % display)
 
         content_div.add_color("background", "background")

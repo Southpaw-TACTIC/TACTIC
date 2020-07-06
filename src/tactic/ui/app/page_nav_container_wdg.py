@@ -157,6 +157,12 @@ class PageNavContainerWdg(BaseRefreshWdg):
 
         # set the class name
         display_node = self.config_xml.get_node("config/application/element[@name='%s']/display" % (panel_name) )
+        if not display_node:
+            print("config: ", self.config_xml.to_string() )
+            print("xpath: config/application/element[@name='%s']/display" % (panel_name) )
+            print("No display node found")
+            return
+
         self.config_xml.set_attribute(display_node, "class", widget_class)
 
         # remove all the old options

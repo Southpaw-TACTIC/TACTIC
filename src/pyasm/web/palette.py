@@ -22,7 +22,7 @@ class Palette(object):
 
 
     # default color palette
-    DEFAULT = {
+    DARK = {
     'color':        '#CCC',         # main font color
     'color2':       '#BBB',         # secondary font color
     'color3':       '#222222',      # tertiary font color
@@ -51,12 +51,9 @@ class Palette(object):
     "md_secondary_dark": "#00628b",
     "md_secondary": "#1d90bb",
     "md_secondary_light": "#61c0ee"
-
- 
-
     
     }
-    DARK = DEFAULT
+    DEFAULT = DARK
 
 
     BLACK = {

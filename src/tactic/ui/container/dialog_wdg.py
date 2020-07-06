@@ -112,7 +112,13 @@ class DialogWdg(BaseRefreshWdg):
 
         self.offset = {'x':0, 'y':0}
 
-        self.widget = DivWdg()
+        self.widget = self.get_top()
+
+        self.widget.set_box_shadow()
+        #self.widget.add_style("border: solid 1px %s" % self.widget.get_color("border"))
+        self.widget.add_style("border-radius: 5px")
+        self.widget.add_style("overflow: hidden")
+
 
         title = self.kwargs.get("title")
         if title:
@@ -276,7 +282,6 @@ class DialogWdg(BaseRefreshWdg):
     def get_display(self):
 
         widget = self.widget
-        widget.set_box_shadow()
 
         widget.add_class("spt_dialog_top")
         widget.add_class("spt_popup")
@@ -298,7 +303,9 @@ class DialogWdg(BaseRefreshWdg):
         if self.kwargs.get("display") not in [True, "true"]:
             widget.add_style("display: none")
 
-        widget.add_style("position: absolute")
+        #widget.add_style("position: fixed")
+        if self.kwargs.get("is_puw") in ['true', True]:
+            widget.add_class("SPT_PUW")
 
         widget.add_behavior( {
         'type': 'listen',
@@ -351,7 +358,7 @@ class DialogWdg(BaseRefreshWdg):
         close_wdg.add( IconWdg("Close", "FA_TIMES") )
         close_wdg.add_style("float: right")
         close_wdg.add_class("hand")
-        close_wdg.add_style("margin: 3px 1px 3px 1px")
+        close_wdg.add_style("margin: 3px 4px 3px 1px")
 
         close_wdg.add_behavior({
             'type': 'click_up',
@@ -403,9 +410,6 @@ class DialogWdg(BaseRefreshWdg):
 
         drag_div.add_style("text-align: left")
         drag_div.add_class("spt_popup_width")
-        #drag_div.add_style("border-style: solid")
-        #drag_div.add_color("border-color", "border")
-        #drag_div.add_style("border-size: 0 0 1 0")
 
 
         drag_handle_div = DivWdg(id='%s_title' %self.name)
