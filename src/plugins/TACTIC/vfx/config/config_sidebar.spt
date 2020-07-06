@@ -12,8 +12,9 @@ insert.set_value('config', """<config>
     <element name="separator096"/>
     <element name="sequence"/>
     <element name="shot"/>
-    <element name="separator100"/>
     <element name="asset"/>
+    <element name="separator100"/>
+    <element name="pipeline"/>
     <element name="separator020"/>
     <element name="_my_tactic"/>
     <element name="tools"/>
@@ -108,7 +109,7 @@ insert.set_value('config', """<config>
         <view>plate_list</view>
       </display>
     </element>
-    <element name="sequence_list" title="Sequence List" icon="" state="">
+    <element name="sequence_list" title="Sequence List" icon="FAS_FILM" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/sequence</search_type>
@@ -136,7 +137,7 @@ insert.set_value('config', """<config>
         <view>script_list</view>
       </display>
     </element>
-    <element name="storyboard_list" title="Storyboard List" icon="FAS_PHOTO_VIDEO" state="">
+    <element name="storyboard_list" title="Storyboard List" icon="FAS_BOOK_OPEN" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/storyboard</search_type>
@@ -272,14 +273,14 @@ insert.set_value('config', """<config>
         <view>configs</view>
       </display>
     </element>
-    <element name="episode" title="Episode">
+    <element name="episode" title="Episode" icon="FAS_FILM">
       <display class="LinkWdg">
         <search_type>vfx/episode</search_type>
         <search_view>link_search:episode</search_view>
         <view>episode</view>
       </display>
     </element>
-    <element name="sequence" title="Sequence" icon="PHOTOS" state="">
+    <element name="sequence" title="Sequence" icon="FAS_FILM" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/sequence</search_type>
@@ -288,7 +289,7 @@ insert.set_value('config', """<config>
         <view>sequence</view>
       </display>
     </element>
-    <element name="shot" icon="FAS_FILM" title="Shot" state="">
+    <element name="shot" icon="FAS_VIDEO" title="Shot" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/shot</search_type>
@@ -345,7 +346,7 @@ insert.set_value('config', """<config>
         <view>script</view>
       </display>
     </element>
-    <element name="storyboard" title="Storyboard" icon="PROCESS" state="">
+    <element name="storyboard" title="Storyboard" icon="FAS_BOOK_OPEN" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/storyboard</search_type>
@@ -353,7 +354,7 @@ insert.set_value('config', """<config>
         <view>storyboard</view>
       </display>
     </element>
-    <element name="leica" title="Leica" icon="FAS_FILM" state="">
+    <element name="leica" title="Leica Reel" icon="FAS_FILM" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/leica</search_type>
@@ -464,6 +465,11 @@ insert.set_value('config', """<config>
         <class_name>tactic.ui.panel.ViewPanelWdg</class_name>
         <search_type>vfx/snapshot_in_submission</search_type>
         <view>table</view>
+      </display>
+    </element>
+    <element name="pipeline" title="Pipelines" icon="FAS_PROJECT_DIAGRAM">
+      <display class="tactic.ui.tools.PipelineToolWdg">
+        
       </display>
     </element>
   </definition>

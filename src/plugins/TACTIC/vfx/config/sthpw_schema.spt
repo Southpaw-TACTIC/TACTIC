@@ -45,6 +45,7 @@ insert.set_value('schema', """<?xml version="1.0" encoding="UTF-8"?>
   <connect from="vfx/shot_texture" to="vfx/shot" relationship="search_type" type="hierarchy"/>
   <connect from="vfx/submission" to="sthpw/snapshot" relationship="code" from_col="snapshot_code" to_col="code"/>
   <connect from="vfx/composite" to="vfx/shot" relationship="code" type="hierarchy"/>
+  <connect to="*" type="connection" from="vfx/art_reference" relationship="general"/>
   <connect to="*" from="vfx/render" type="hierarchy" relationship="search_type"/>
 </schema>
 """)
