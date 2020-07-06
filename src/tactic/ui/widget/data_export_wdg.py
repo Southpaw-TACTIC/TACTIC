@@ -1592,7 +1592,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         entry_error_msg = CsvImportCmd.ENTRY_ERROR_MSG
 
         import_button = ActionButtonWdg(title="Import")
-        import_button.set_id('CsvImportButton')
+        # import_button.set_id('CsvImportButton')
         import_button.add_behavior({
             'type':'click_up', 
             'entry_error_msg': entry_error_msg,
