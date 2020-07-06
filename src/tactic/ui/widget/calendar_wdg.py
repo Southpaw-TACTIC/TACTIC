@@ -821,12 +821,14 @@ class CalendarInputWdg(BaseInputWdg):
             'type': 'TextWdg',
             'category': 'Display',
             'order': 10,
-        }
-
-
-
-
- 
+        },
+        "display_mode": {
+            'description': "Determines whether to use the TACTIC calendar or the browser calendar",
+            'type': 'SelectWdg',
+            'values': 'browser|inline',
+            'category': 'Display',
+            'order': 3
+        },
     }
 
     def __init__(self, name=None, **kwargs):
@@ -918,10 +920,48 @@ class CalendarInputWdg(BaseInputWdg):
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
 
-        edit_mode = "inline"
-        if edit_mode == "table":
+        show_time = self.get_option("show_time") in [True, 'true']
+
+        value = self.get_value()
+
+        #display_mode = "inline"
+
+
+        display_mode = self.get_option("display_mode")
+        if not display_mode:
+            display_mode = ProdSetting.get_value_by_key("calendar_display_mode")
+        if not display_mode:
+            display_mode = Config.get_value("global_setting","calendar_display_mode")
+        if not display_mode:
+            display_mode = "browser"
+
+
+        if display_mode == "table":
             input = TextWdg(name=name, required=required)
             text = input
+            text.add_class("spt_calendar_input") 
+            if value:
+                input.set_value(value)
+
+        elif display_mode == "browser":
+
+            if show_time:
+                input = TextInputWdg(name=name, type="datetime-local", required=required, read_only=read_only)
+            else:
+                input = TextInputWdg(name=name, type="date", required=required, read_only=read_only)
+            text = input.get_text()
+            text.add_class("spt_calendar_input") 
+
+            if value:
+                input.set_value(value)
+
+
+            input_div = DivWdg()
+            input_div.add(input)
+            self.top.add(input_div)
+            return self.top
+
+
         else:
             # TODO: add a kwarg - hint_text
             hint_text = self.get_option('hint_text')
@@ -929,6 +969,11 @@ class CalendarInputWdg(BaseInputWdg):
                 hint_text = None
             input = TextInputWdg( name=name, read_only=read_only, hint_text=hint_text, required=required, icon=activator, width=width)
             text = input.get_text()
+            text.add_class("spt_calendar_input") 
+
+            if value:
+                input.set_value(value)
+
 
 
         if read_only == True:
@@ -936,11 +981,11 @@ class CalendarInputWdg(BaseInputWdg):
         elif read_only == False:
             read_only = 'false'
 
-        show_time = self.get_option("show_time") in [True, 'true']
+
         time_input_default = self.get_option('time_input_default')
         if show_time:
-            if not width:
-                input.add_style("width: 130px")
+            #if not width:
+            #    input.add_style("width: 130px")
             self.top.add_attr("show_time", "true")
             show_time = True
         else:
@@ -968,9 +1013,6 @@ class CalendarInputWdg(BaseInputWdg):
             offset_y = offsets[1]
 
 
-
-
-        text.add_class("spt_calendar_input") 
         # explicity true means no calendar on click
         if read_only == 'true':
             text.set_option("read_only", read_only)
@@ -981,17 +1023,23 @@ class CalendarInputWdg(BaseInputWdg):
             #text.set_option("read_only", read_only)
             text.set_disabled_look(False)
             # This is needed because of lack of support for behaviors
-            text.add_event('onclick', '''var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
+            text.add_event('onclick', '''
+                    var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
                     if (el)
                         spt.show(el);
                   
-                    spt.show(el);spt.body.add_focus_element(el); event.stopPropagation();''')
+                    spt.show(el);
+                    spt.body.add_focus_element(el); 
+                    event.stopPropagation();
+            ''')
 
-            text.add_behavior({'type': 'focus', 'cbjs_action': 
+            text.add_behavior( {
+                'type': 'focus', 
+                'cbjs_action': 
                     '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
                     if (!el)  {
                         el = spt.calendar.get(); 
-                        el.setStyle("width", "200px");
+                        el.setStyle("width", "220px");
                        
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
@@ -1004,7 +1052,7 @@ class CalendarInputWdg(BaseInputWdg):
                     ''', 
                     'offset_x' : offset_x,
                     'offset_y' : offset_y
-                    })
+                })
 
             """
             # FIXME: keyup 'tab' occurs after blur
@@ -1030,70 +1078,9 @@ class CalendarInputWdg(BaseInputWdg):
             #spt.show(el);'''
             #} )
 
-        # has to use self.value instead of self.get_value() 
-        # to avoid a display bug with multiple inputs
-        default = self.get_option("default")
 
-        value = ""
-        if not self.value and default:
-            default_value = NamingUtil.eval_template(default)
-            value = default_value
-            if value:
-                value = parser.parse(value)
-                # NOTE: it's better not to do auto-convert for passed in value 
-                # since it could be already in local time
-                #if not SObject.is_day_column(self.get_name()):
-                #    value = SPTDate.convert_to_local(value)
 
-        current = self.get_current_sobject()
-        
-        if current and not current.is_insert():
-            column = self.get_option("column")
-            if not column:
-                column = self.get_name()
 
-            db_date = current.get_value(column, no_exception=True)
-            
-            if db_date:
-                # This date is assumed to be GMT
-                try:
-                    value = parser.parse(db_date)
-                except:
-                    value = datetime.now()
-                
-
-                #from pyasm.common import SPTDate
-                #from pyasm.search import SObject
-                if not SObject.is_day_column(self.get_name()):
-                    date = self.get_timezone_value(value)
-                    
-                try:
-                    encoding = locale.getlocale()[1]		
-                    value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
-                except:
-                    value = date.strftime("%b %d, %Y - %H:%M")
-               
-
-        if show_time:
-            key = 'DATETIME'
-        else:
-            key = 'DATE'
-       
-        if not value:
-            value = self.value
-
-            
-        if value:
-            format = self.get_option("display_format")
-
-            if not format:
-                format = key
-            
-            from pyasm.common import FormatValue
-            f = FormatValue()
-            value = f.get_format_value(value, format)
-
-            input.set_value(value)
 
 
         kbd_bvr = {
@@ -1121,6 +1108,12 @@ class CalendarInputWdg(BaseInputWdg):
         date_format = self.get_option('date_format')
       
         if not date_format:
+
+            if show_time:
+                key = 'DATETIME'
+            else:
+                key = 'DATE'
+
             setting = ProdSetting.get_value_by_key(key)
             if setting:
                 date_format = setting
@@ -1331,6 +1324,79 @@ class CalendarInputWdg(BaseInputWdg):
         #self.top.add(calendar)
         #self.top.add_class("spt_no_alter")
         return self.top
+
+
+
+
+    def get_value(self):
+
+
+        # has to use self.value instead of self.get_value() 
+        # to avoid a display bug with multiple inputs
+        default = self.get_option("default")
+
+        value = ""
+        if not self.value and default:
+            default_value = NamingUtil.eval_template(default)
+            value = default_value
+            if value:
+                value = parser.parse(value)
+                # NOTE: it's better not to do auto-convert for passed in value 
+                # since it could be already in local time
+                #if not SObject.is_day_column(self.get_name()):
+                #    value = SPTDate.convert_to_local(value)
+
+        current = self.get_current_sobject()
+        
+        if current and not current.is_insert():
+            column = self.get_option("column")
+            if not column:
+                column = self.get_name()
+
+            db_date = current.get_value(column, no_exception=True)
+            
+            if db_date:
+                # This date is assumed to be GMT
+                try:
+                    value = parser.parse(db_date)
+                except:
+                    value = datetime.now()
+                
+
+                #from pyasm.common import SPTDate
+                #from pyasm.search import SObject
+                if not SObject.is_day_column(self.get_name()):
+                    date = self.get_timezone_value(value)
+                    
+                try:
+                    encoding = locale.getlocale()[1]
+                    value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
+                except:
+                    value = date.strftime("%b %d, %Y - %H:%M")
+               
+
+
+        show_time = self.get_option("show_time") in [True, 'true']
+        if show_time:
+            key = 'DATETIME'
+        else:
+            key = 'DATE'
+       
+        if not value:
+            value = self.value
+
+            
+        if value:
+            format = self.get_option("display_format")
+
+            if not format:
+                format = key
+            
+            from pyasm.common import FormatValue
+            f = FormatValue()
+            value = f.get_format_value(value, format)
+
+        return value
 
 
 

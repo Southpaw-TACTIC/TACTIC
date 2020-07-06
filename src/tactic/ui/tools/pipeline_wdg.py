@@ -3807,7 +3807,6 @@ class DefaultInfoWdg(BaseInfoWdg):
             var class_name = 'tactic.ui.tools.TableLayoutWdg';
             var kwargs = {
                 search_type: "config/naming",
-                //expression: "@SOBJECT(config/naming['context','like','"+bvr.process+"'])",
                 show_shelf: true,
             }
             spt.panel.load_popup("Naming Conventions ["+bvr.process+"]", class_name, kwargs);
@@ -5852,7 +5851,11 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
         top = self.top
         top.add_class("spt_status_top")
+        top.add_class("spt_section_top")
+
         self.initialize_session_behavior(top)
+
+        SessionalProcess.add_relay_session_behavior(top)
 
         top.add_behavior({
             'type': 'load',
@@ -6080,7 +6083,7 @@ class TaskStatusInfoWdg(BaseInfoWdg):
 
         return {
             "direction": direction,
-            "to_status": to_status,
+            "status": to_status,
             "mapping": mapping
         }
 
@@ -6957,6 +6960,8 @@ class NewProcessInfoCmd(Command):
             self.handle_hierarchy()
         elif node_type == 'progress':
             self.handle_progress()
+        elif node_type == 'status':
+            self.handle_status()
 
 
         # set node workflow data
@@ -7154,12 +7159,23 @@ class NewProcessInfoCmd(Command):
 
     def handle_status(self):
 
-        status_kwargs = self.kwargs.get("status")
+        status_kwargs = self.kwargs.get("default") or {}
+
         color = status_kwargs.get("color")
         if color:
             self.process_sobj.set_value("color", color)
 
+        mapping = status_kwargs.get("mapping")
+        if mapping:
+            self.kwargs['mapping'] = mapping
 
+        direction = status_kwargs.get("direction")
+        if direction:
+            self.kwargs['direction'] = direction
+
+        status = status_kwargs.get("status")
+        if status:
+            self.kwargs['status'] = status
 
 
 class PipelineEditorWdg(BaseRefreshWdg):
@@ -7314,12 +7330,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
         // rename the process on the server
         var group_name = spt.pipeline.get_current_group();
-
-        // var process = server.eval("@SOBJECT(config/process['process','"+old_name+"']['pipeline_code','"+group_name+"'])", {single: true});
-
-        // if (process) {
-        //    server.update(process, {process: name});
-        // }
 
         // select the node
         node.click();

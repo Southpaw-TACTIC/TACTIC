@@ -10,7 +10,9 @@
 
 ## Workflow Platform
 
-TACTIC is a comprensive, open-source platform for creating and executing digital workflows.  TACTIC has been used in many exciting projects in a wide variety on industries.
+TACTIC is an open-source remote collaboration platform used for configuring and deploying enterprise Workflow solutions. 
+These solutions simplify the development and delivery of digital assets through a well defined set of processes. 
+This is accomplished by integrating a core Workflow Engine with Digital Asset Management and Content Management components to provide a complete platform for individualized enterprise Workflow solutions
 
 
 

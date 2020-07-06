@@ -759,7 +759,6 @@ class Environment(Base):
         if not api_mode:
             api_mode = Config.get_value("security", "api_mode")
 
-
         if not api_mode:
             api_mode = "open"
 

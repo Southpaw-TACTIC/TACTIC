@@ -1396,12 +1396,14 @@ class Schema(SObject):
             search.add_filter("code", project_code)
         search.add_filter("project_code", project_code)
         search.add_op("or")
+        search.add_order_by("id asc")
         schemas = search.get_sobjects()
 
         if project_code in ['unittest']:
             schemas.insert(0, schema)
 
-        if len(schemas) > 1:
+
+        if len(schemas) > 1 and False:      # Need to merge these only under certain conditions
             schema = SearchType.create("sthpw/schema")
             schema.set_value("code", project_code)
             schema.set_value("project_code", project_code)

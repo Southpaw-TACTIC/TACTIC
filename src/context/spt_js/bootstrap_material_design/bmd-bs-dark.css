@@ -12615,7 +12615,8 @@ fieldset[disabled][disabled] .custom-file-control .form-control, fieldset[disabl
   color: #1d90bb;
 }
 .custom-file-control .is-focused .bmd-label-placeholder, .custom-file-control.is-focused .bmd-label-placeholder {
-  color: rgba(0, 0, 0, 0.26);
+  //color: rgba(0, 0, 0, 0.26);
+  color: var(--spt_palette_color2)
 }
 .custom-file-control .is-focused .form-control, .custom-file-control .is-focused .custom-file-control, .custom-file-control.is-focused .form-control, .custom-file-control.is-focused .custom-file-control {
   border-color: rgba(0, 0, 0, 0.26);
@@ -13699,7 +13700,15 @@ fieldset[disabled][disabled] .has-danger .form-control, fieldset[disabled][disab
 .bmd-form-group .bmd-label-floating,
 .bmd-form-group .bmd-label-placeholder {
   top: 2rem;
+  color: var(--spt_palette_color2);
 }
+.form-group .bmd-label-floating,
+.form-group .bmd-label-placeholder {
+  top: 2rem;
+  color: var(--spt_palette_color2);
+}
+
+
 .bmd-form-group.is-focused .bmd-label-floating,
 .bmd-form-group .is-focused .bmd-label-floating, .bmd-form-group.is-filled .bmd-label-floating,
 .bmd-form-group .is-filled .bmd-label-floating {
