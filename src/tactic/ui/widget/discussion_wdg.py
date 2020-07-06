@@ -317,6 +317,8 @@ class DiscussionWdg(BaseRefreshWdg):
         self.show_task_process = self.kwargs.get('show_task_process')
         
         self.allow_email = self.kwargs.get('allow_email')
+
+        self.use_puw = self.kwargs.get("use_puw") or True
         
 
 
@@ -1287,7 +1289,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 dialog_position = self.kwargs.get("dialog_position")
                 if not dialog_position:
                     dialog_position = "right"
-                note_dialog = DialogWdg(display=False)
+                note_dialog = DialogWdg(display=False, is_puw=self.use_puw)
                 note_dialog.add_style("font-size: 12px")
                 note_dialog.add_title("Add Note")
                 note_dialog.add_style("overflow-y: auto")
@@ -1519,7 +1521,7 @@ class DiscussionWdg(BaseRefreshWdg):
  
 
             else:
-                note_dialog = DialogWdg(display=False)
+                note_dialog = DialogWdg(display=False, is_puw=self.use_puw)
                 note_dialog_div.add(note_dialog)
                 unique_id = None
                 note_dialog.add_title("Notes for: %s" % context)
