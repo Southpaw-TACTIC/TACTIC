@@ -18,4 +18,5 @@
   <sobject expression="@SOBJECT(sthpw/login_group['project_code',$PROJECT])" search_type="sthpw/login_group" unique="true"/>
   <sobject expression="@SOBJECT(sthpw/pipeline['project_code',$PROJECT])" search_type="sthpw/pipeline" unique="true"/>
   <sobject expression="@SOBJECT(sthpw/notification['project_code',$PROJECT])" search_type="sthpw/notification"/>
+  <sobject search_type="config/prod_setting" ignore_columns="id,timestamp" expression="@SOBJECT(config/prod_setting['code','like','VFX%'])" unique="true"/>
 </manifest>

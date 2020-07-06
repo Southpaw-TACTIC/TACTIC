@@ -1,8 +1,8 @@
 #-- Start Entry --#
 insert = SearchType.create('sthpw/schema')
-insert.set_value('code', """vfx""")
+insert.set_value('code', """vfx2""")
 insert.set_value('description', """Schema for project [vfx]""")
-insert.set_value('project_code', """vfx""")
+insert.set_value('project_code', """vfx2""")
 insert.set_value('schema', """<?xml version="1.0" encoding="UTF-8"?>
 <schema>
   <search_type name="vfx/art_reference" xpos="415" ypos="178"/>
