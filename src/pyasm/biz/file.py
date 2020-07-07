@@ -454,7 +454,7 @@ class IconCreator(object):
     '''Utility class that creates icons of an image or document in the
     same directory as the image'''
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, web_path=None, icon_path=None):
         self.file_path = file_path
 
         # check if it exists
@@ -464,8 +464,8 @@ class IconCreator(object):
 
         self.tmp_dir = os.path.dirname(file_path)
 
-        self.icon_path = None
-        self.web_path = None
+        self.icon_path = icon_path
+        self.web_path = web_path
 
         self.texture_mode = False
         self.icon_mode = False
@@ -606,8 +606,15 @@ class IconCreator(object):
         icon_file_name = "%s_icon.png" % base
         web_file_name = "%s_web.jpg" % base
 
-        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
-        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+        if self.icon_path:
+            tmp_icon_path = "%s/%s" % (self.icon_path, icon_file_name)
+        else:
+            tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+
+        if self.web_path:
+            tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
+        else:
+            tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
 
         #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 1 -s %sx%s -vframes 1 "%s"''' % (ffmpeg, self.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
         #os.system(cmd)
