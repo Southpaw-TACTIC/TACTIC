@@ -986,8 +986,14 @@ class CheckboxWdg(BaseInputWdg):
             return super(CheckboxWdg, self).get_display()
         else:
             cb = BaseInputWdg.get_class_display(self)
-            span = SpanWdg(cb, css=self.css)
-            span.add(self.label)
+            span = DivWdg(cb, css=self.css)
+            span.add_style("display: inline-block")
+
+            label_div = DivWdg()
+            span.add(label_div)
+            label_div.add_style("display: inline-block")
+            label_div.add_style("margin-left: 5px")
+            label_div.add(self.label)
             return span
 
         return super(CheckboxWdg,self).get_display()

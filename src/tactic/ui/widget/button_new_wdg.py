@@ -1016,6 +1016,10 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         self.button_wdg = ButtonHtmlWdg()
         self.collapsible_wdg = DivWdg()
 
+        self.top.add_class("spt_action_button")
+        self.top.add_style("display: inline-block")
+
+
         super(BootstrapButtonWdg, self).__init__(**kwargs)
 
     def add_class(self, class_name, redirect=True):
@@ -1045,9 +1049,6 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         title = self.kwargs.get("title")
 
         top = self.top
-
-        top.add_class("spt_action_button")
-        top.add_style("display: inline-block")
         
         top.add(self.button_wdg)
         self.button_wdg.add_class("btn")

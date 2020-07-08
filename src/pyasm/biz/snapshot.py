@@ -2289,7 +2289,8 @@ class Snapshot(SObject):
             lib_dir = self.get_lib_dir(file_type=file_type, file_object=ref_file_object)
             file_path = "%s/%s" % (lib_dir, file_name)
             if not os.path.exists(file_path):
-                raise Exception("Cannot create versionless.  Referenced path [%s] from file_object [%s] does not exist" % (file_path, file_object.get_code()))
+                #raise Exception("Cannot create versionless.  Referenced path [%s] from file_object [%s] does not exist" % (file_path, file_object.get_code()))
+                continue
 
 
             # build the file name
