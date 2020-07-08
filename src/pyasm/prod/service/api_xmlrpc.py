@@ -6779,7 +6779,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 dir_path = os.path.join(tmp_dir, "temp", ticket)
 
                 # only do this if there actually is a dir_path
-                print("here: ", dir_path)
                 if os.path.exists(dir_path):
                     dest = os.path.join(tmp_dir, "temp", transaction_ticket)
                     if not os.path.exists(dest):
@@ -6787,7 +6786,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
                     files = os.listdir(dir_path)
                     for f in files:
-                        print("copy ...")
                         full_path = os.path.join(dir_path, f)
                         des_full_path = os.path.join(dest, f)
                         if os.path.isfile(full_path) and not os.path.isfile(des_full_path):
