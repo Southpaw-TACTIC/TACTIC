@@ -652,7 +652,7 @@ class CheckinWdg(BaseRefreshWdg):
         return '''
 
 if (spt.checkin) {
-    return;
+    //return;
 }
 
 spt.Environment.get().add_library("spt_checkin");
@@ -1155,7 +1155,7 @@ i   }
 
 
 
-spt.checkin.drop_files = function(evt, el) {
+spt.checkin.drop_files = function(evt, el, files) {
     el = document.id(el);
     var search_key = el.getAttribute("spt_search_key");
     var process = el.getAttribute("spt_process");
@@ -1167,8 +1167,11 @@ spt.checkin.drop_files = function(evt, el) {
     
     evt.stopPropagation();
     evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy';
-    var files = evt.dataTransfer.files;
+
+    if (!files) {
+        evt.dataTransfer.dropEffect = 'copy';
+        files = evt.dataTransfer.files;
+    }
 
     el.files = files
 
@@ -1201,16 +1204,25 @@ spt.checkin.drop_files = function(evt, el) {
     }
 
     var class_name = 'tactic.ui.checkin.CheckinDirListWdg';
-    spt.panel.load(el, class_name, kwargs);
-    var top = el.getParent(".spt_checkin_top");
-    var button1 = top.getElement(".spt_checkin_button");
-    spt.hide(button1);
-    var button2 = top.getElement(".spt_checkin_html5_button");
-    spt.show(button2);
+    spt.panel.load(el, class_name, kwargs, null, {
+        callback: function(panel) {
+            var items = spt.checkin_list.get_all_rows();
+            items.forEach( function(item) {
+                spt.checkin_list.select(item);
+            } );
+
+
+            var top = el.getParent(".spt_checkin_top");
+            var button1 = top.getElement(".spt_checkin_button").getParent();
+            spt.hide(button1);
+            var button2 = top.getElement(".spt_checkin_html5_button").getParent();
+            spt.show(button2);
+
+        }
+    } );
+
 
 }
-
-
 
 
 
@@ -1968,6 +1980,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         top.add_style("padding: 10px")
         margin_top = '20px'
 
+
         top.add_style("margin-top", margin_top)
         top.add_style("position: relative")
 
@@ -2175,16 +2188,34 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         self.sandbox_dir = self.sandbox_dir.rstrip('/') 
 
 
+        checkin_api_key = top.generate_api_key("simple_checkin", inputs=[
+            search_key,
+            "__API_UNKNOWN__",   # context
+            "__API_UNKNOWN__",   # file_path
+            "__API_UNKNOWN__",   # kwargs
+        ], attr="checkin")
+        note_api_key = top.generate_api_key("create_note", inputs=[
+            search_key,
+            "__API_UNKNOWN__",   # note
+            "__API_UNKNOWN__",   # kwargs
+        ], attr="checkin")
+
+
+
+
         # separate behavior for html5 check-in
         html5_behavior = {
             'type': 'click_up',
             'validate_script_path': self.validate_script_path,
             'script_path': script_path,
+            'checkin_api_key': checkin_api_key,
+            'note_api_key': note_api_key,
             'cbjs_action': '''
 
 var top = bvr.src_el.getParent(".spt_checkin_top");
 var progress = top.getElement(".spt_checkin_progress");
 progress.setStyle("display", "");
+
 
 
 spt.checkin._get_context = function(process, context, subcontext, is_context, file_path, use_file_name) {
@@ -2279,7 +2310,14 @@ spt.checkin.html5_checkin = function(files) {
             if (add_note) {
                 note.push('CHECK-IN');
             } 
+
+
+            var checkin_api_key = bvr.checkin_api_key;
+            server.set_api_key(checkin_api_key);
+
             for (var i = 0; i < files.length; i++) {
+
+
                 var file = files[i];
                 var file_path = file.name;
                
@@ -2305,8 +2343,10 @@ spt.checkin.html5_checkin = function(files) {
                 }
                 var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
 
-
                 snapshot = server.simple_checkin(search_key, this_context, file_path, {description: description, mode: mode, is_current: is_current, checkin_type: checkin_type, process: process});
+
+
+
                 // Add to check-in note 
                 if (add_note) {
                     var version = snapshot.version;
@@ -2324,17 +2364,20 @@ spt.checkin.html5_checkin = function(files) {
             throw("Check-in failed: " + e);
             has_error = true;
         }
+        server.clear_api_key();
 
         if (! has_error) {
             if (add_note) {
                 note.push(': '); 
                 note.push(description);
                 note = note.join(" ");
+                server.set_api_key(bvr.note_api_key);
                 server.create_note(search_key, note, {process: process});
+                server.clear_api_key();
             }
             server.finish();
             spt.panel.refresh(top);
-            spt.info("Check-in finished.");
+            spt.notify.show_message("Check-in finished.");
         }
 
     }
@@ -2366,17 +2409,23 @@ var selected = spt.checkin.get_selected_items();
 var selected_files = [];
 
 // check in only the highlighted files uploaded
-for (var j=0; j < selected.length; j++){
+for (var j=0; j < selected.length; j++) {
     for (var k=0; k < files.length; k++) {
-        var expr = new RegExp(files[k].name + '$')
-        if (selected[j].getAttribute('spt_path').test(expr)) {
+        var expr = "/" + files[k].name;
+        if (selected[j].getAttribute('spt_path').endsWith(expr)) {
             selected_files.push(files[k]);
             break;
         }
     }
             
 }
-spt.checkin.html5_checkin(selected_files);
+
+if (selected_files.length == 0 ) {
+    spt.alert("No files selected");
+}
+else {
+    spt.checkin.html5_checkin(selected_files);
+}
         '''
         }
 
@@ -2759,7 +2808,7 @@ try {
 
                 }
                 else {
-                    var this_context =spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
+                    var this_context = spt.checkin._get_context(process, context, subcontext, is_context, file_path, use_file_name);
                     padding = 0 ;
                     spt.app_busy.show("Checking in ...", file_path)
                     if (transfer_mode == 'preallocate')
@@ -2870,25 +2919,27 @@ else {
         }
 
 
+        button_div = DivWdg()
+        top.add(button_div)
+        button_div.add_style("display: flex")
+        button_div.add_style("justify-content: space-around")
+
         button = ActionButtonWdg(title="Check-in")
-        top.add(button)
+        button_div.add(button)
         button.add_class("spt_checkin_button")
         button.add_behavior(behavior)
-        button.add_style("float: right")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
-
+        button.add_style("display: none")
 
 
 
         button = ActionButtonWdg(title="Check-in")
-        top.add(button)
+        button_div.add(button)
         button.add_class("spt_checkin_html5_button")
         button.add_behavior(html5_behavior)
-        button.add_style("float: right")
         button.add_style("margin-top: 20px")
         button.add_style("margin-bottom: 20px")
-
         button.add_style("display: none")
 
         top.add("<br clear='all'/>")
@@ -3181,9 +3232,14 @@ class FileSelectorWdg(BaseRefreshWdg):
         content.add_style("margin: 0px 5px 0px 5px")
 
 
+
         # add the local files in the sandbox
         self.use_applet = self.kwargs.get("use_applet")
         if not self.use_applet:
+
+            button = self.get_browse_button()
+            content.add(button)
+
             content.add( self.get_drag_files_wdg() )
         else:
             content.add( self.get_dir_list_wdg() )
@@ -3195,8 +3251,52 @@ class FileSelectorWdg(BaseRefreshWdg):
             return top
 
 
+
+    def get_browse_button(self):
+
+        browse_div = DivWdg()
+        browse_div.add_class("spt_browse_top")
+        browse_div.add_style("text-align: right")
+
+        button = ActionButtonWdg(title="Choose File", tip="Select Files to Check in", color="secondary", size="small")
+        browse_div.add(button)
+        button.add_style("margin-top: -30px")
+
+
+        from tactic.ui.input import Html5UploadWdg
+        upload = Html5UploadWdg(multiple=True)
+        browse_div.add(upload)
+
+
+        button.add_behavior( {
+            'type': 'click_up',
+            #'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_file_selector");
+            var el = top.getElement(".spt_files_list_top");
+
+            spt.html5upload.set_form( top );
+            spt.html5upload.clear();
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.checkin.drop_files(event, el, files);
+            }
+
+            spt.html5upload.select_files( onchange );
+
+            '''
+        } )
+
+
+        return browse_div
+
+
+
+
     def get_drag_files_wdg(self):
         div = DivWdg()
+        div.add_class("spt_files_list_top")
         
         title = DivWdg()
 
@@ -3207,10 +3307,15 @@ class FileSelectorWdg(BaseRefreshWdg):
         div.add(title)
         title.add_style("width: 220px")
         title.add_style("height: 100px")
-        title.add_style("margin: 100px auto")
+        title.add_style("margin: 100px auto 50px auto")
         title.add_style("opacity: 0.3")
         title.add_style("font-size: 2.0em")
         title.add("Drag Files Here")
+        title.add("<br/><br/>")
+        title.add_style("text-align: center")
+
+        title.add("<i class='fas fa-cloud-upload-alt' style='font-size: 48px'> </i>")
+
 
         div.add_class("spt_checkin_content")
         div.add_style("min-height: 400px")
