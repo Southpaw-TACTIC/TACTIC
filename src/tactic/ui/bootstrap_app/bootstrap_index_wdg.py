@@ -759,7 +759,8 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         styles = self.get_bootstrap_styles()
         top_nav_wdg.add(styles)
 
-        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top")
+        #top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top")
+        top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark")
         
         nav_header = DivWdg()
         top_nav_wdg.add(nav_header)
@@ -1676,7 +1677,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             @media (min-width: 576px) {
 
                 .spt_bs_content {
-                    padding-top: 40px
+                    //padding-top: 40px
                 }
 
                 .spt_bs_top_nav {
@@ -1697,7 +1698,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             @media (max-width: 575.98px) {
 
                 .spt_bs_content {
-                    padding-top: 49px;
+                    //padding-top: 49px;
                 }
                 
             }

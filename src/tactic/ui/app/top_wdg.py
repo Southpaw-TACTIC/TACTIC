@@ -665,7 +665,11 @@ class TopWdg(Widget):
         if not web.is_admin_page() and security.check_access("builtin", "view_site_admin", "allow"):
 
             admin_bar = DivWdg()
-            top.add(admin_bar)
+            #top.add(admin_bar)
+            top.widgets.insert(0, admin_bar)
+
+            admin_bar_pos = ProjectSetting.get_value_by_key("admin/bar_position") or "fixed"
+            assert(admin_bar_pos in ['fixed', 'relative'])
 
             admin_bar.add_class("spt_admin_bar")
             admin_bar.add_class("hand")
@@ -676,12 +680,12 @@ class TopWdg(Widget):
                 align-items: center;
                 justify-content: space-between;
                 padding: 0px 0px 0px 15px;
-                position: fixed;
+                position: %s;
                 top: 0px;
                 left: 0px;
                 height: 20px;
                 opacity: 0.1;
-                width: 100%;
+                width: 100%%;
                 background-color: rgb(0, 0, 0);
                 color: rgb(255, 255, 255);
                 z-index: 1000;
@@ -704,7 +708,7 @@ class TopWdg(Widget):
                 align-items: center;
             }
 
-            '''))
+            ''' % admin_bar_pos))
 
             admin_bar_left = DivWdg(css="spt_admin_bar_left")
             admin_bar.add(admin_bar_left)
