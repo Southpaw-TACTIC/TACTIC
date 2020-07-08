@@ -3258,7 +3258,7 @@ class FileSelectorWdg(BaseRefreshWdg):
         browse_div.add_class("spt_browse_top")
         browse_div.add_style("text-align: right")
 
-        button = ActionButtonWdg(title="Browse", tip="Select Files to Check in", color="secondary", size="small")
+        button = ActionButtonWdg(title="Choose File", tip="Select Files to Check in", color="secondary", size="small")
         browse_div.add(button)
         button.add_style("margin-top: -30px")
 
