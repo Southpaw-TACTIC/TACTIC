@@ -273,14 +273,14 @@ insert.set_value('config', """<config>
         <view>configs</view>
       </display>
     </element>
-    <element name="episode" title="Episode" icon="FAS_FILM">
+    <element name="episode" title="Episodes" icon="FAS_FILM">
       <display class="LinkWdg">
         <search_type>vfx/episode</search_type>
         <search_view>link_search:episode</search_view>
         <view>episode</view>
       </display>
     </element>
-    <element name="sequence" title="Sequence" icon="FAS_FILM" state="">
+    <element name="sequence" title="Sequences" icon="FAS_FILM" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/sequence</search_type>
@@ -289,7 +289,7 @@ insert.set_value('config', """<config>
         <view>sequence</view>
       </display>
     </element>
-    <element name="shot" icon="FAS_VIDEO" title="Shot" state="">
+    <element name="shot" icon="FAS_VIDEO" title="Shots" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/shot</search_type>
@@ -298,7 +298,7 @@ insert.set_value('config', """<config>
         <view>shot</view>
       </display>
     </element>
-    <element name="asset" title="Asset" icon="FAS_CUBE">
+    <element name="asset" title="Assets" icon="FAS_CUBE">
       <display class="LinkWdg">
         <search_type>vfx/asset</search_type>
         <view>asset</view>
@@ -306,7 +306,7 @@ insert.set_value('config', """<config>
         <simple_search_view>custom_filter</simple_search_view>
       </display>
     </element>
-    <element name="layer" title="Layer">
+    <element name="layer" title="Layers">
       <display class="LinkWdg">
         <search_type>vfx/layer</search_type>
         <simple_search_view>custom_filter</simple_search_view>
@@ -314,7 +314,7 @@ insert.set_value('config', """<config>
         <view>layer</view>
       </display>
     </element>
-    <element name="plate" title="Plate" icon="" state="">
+    <element name="plate" title="Plates" icon="" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/plate</search_type>
@@ -338,7 +338,7 @@ insert.set_value('config', """<config>
         <view>art_reference</view>
       </display>
     </element>
-    <element name="script" title="Script" icon="FAS_SCROLL" state="">
+    <element name="script" title="Scripts" icon="FAS_SCROLL" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/script</search_type>
@@ -346,7 +346,7 @@ insert.set_value('config', """<config>
         <view>script</view>
       </display>
     </element>
-    <element name="storyboard" title="Storyboard" icon="FAS_BOOK_OPEN" state="">
+    <element name="storyboard" title="Storyboards" icon="FAS_BOOK_OPEN" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/storyboard</search_type>
@@ -354,7 +354,7 @@ insert.set_value('config', """<config>
         <view>storyboard</view>
       </display>
     </element>
-    <element name="leica" title="Leica Reel" icon="FAS_FILM" state="">
+    <element name="leica" title="Leica Reels" icon="FAS_FILM" state="">
       <display class="LinkWdg">
         <widget_key>view_panel</widget_key>
         <search_type>vfx/leica</search_type>
@@ -410,21 +410,21 @@ insert.set_value('config', """<config>
         <view>_my_tactic</view>
       </display>
     </element>
-    <element name="planner_shot" title="Planner Shot">
+    <element name="planner_shot" title="Shot Planner">
       <display class="LinkWdg">
         <search_type>vfx/shot</search_type>
         <search_view>link_search:planner_shot</search_view>
         <view>planner_shot</view>
       </display>
     </element>
-    <element name="planner_asset" title="Planner Asset">
+    <element name="planner_asset" title="Asset Planner">
       <display class="LinkWdg">
         <search_type>vfx/asset</search_type>
         <search_view>link_search:planner_asset</search_view>
         <view>planner_asset</view>
       </display>
     </element>
-    <element name="planner_sequence" title="Planner Sequence">
+    <element name="planner_sequence" title="Sequence Planner">
       <display class="LinkWdg">
         <search_type>vfx/sequence</search_type>
         <search_view>link_search:planner_sequence</search_view>
