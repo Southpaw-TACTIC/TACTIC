@@ -696,8 +696,16 @@ class IconCreator(object):
             pass
 
         try:
+            free_aspect_ratio = thumb_web_size[1] == -1
+            if free_aspect_ratio:
+                size_option = "-vf"
+                size = "scale=%s:-1" % thumb_icon_size[0]
+            else:
+                size_option = "-s"
+                size =  "%sx%s" % (thumb_icon_size[0], thumb_icon_size[1])
+
             subprocess.call([ffmpeg_exe, '-i', self.file_path, "-y", "-ss", "00:00:00","-t","1",\
-                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
+                    size_option,size,"-vframes","1","-f","image2", tmp_icon_path])
 
             if os.path.exists(tmp_icon_path):
                 self.icon_path = tmp_icon_path
