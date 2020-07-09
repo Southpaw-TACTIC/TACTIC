@@ -1603,6 +1603,13 @@ class ThumbCmd(Command):
             file_type = "main"
             path = sobject.get_lib_path_by_type(file_type)
 
+            from pyasm.search import SearchType
+            file_object = SearchType.create("sthpw/file")
+            file_object.set_value("type", "web")
+            web_path = sobject.get_dir("lib", "web", file_object)
+            file_object.set_value("type", "icon")
+            icon_path = sobject.get_dir("lib", "icon", file_object)
+
             if path.find("#") != -1:
                 lib_dir = sobject.get_lib_dir()
                 file_name = sobject.get_expanded_file_names()[0]
@@ -1617,7 +1624,7 @@ class ThumbCmd(Command):
                     return
             """
 
-            icon_creator = IconCreator(path)
+            icon_creator = IconCreator(path, web_path, icon_path)
             icon_creator.execute()
 
             web_path = icon_creator.get_web_path()
