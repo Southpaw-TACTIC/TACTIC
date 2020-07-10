@@ -630,6 +630,7 @@ class CheckinWdg(BaseRefreshWdg):
             virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(type)
             virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
             virtual_snapshot.set_value("process", process)
+            virtual_snapshot.set_value("version", 1)
 
             # for purposes of the sandbox folder for the checkin widget,
             # the context is the process
@@ -1244,22 +1245,20 @@ class CheckoutWdg(CheckinWdg):
         'transfer_mode': '',
         }
 
-    def init(self):
-        super(CheckoutWdg, self).init()
-        self.show_file_selector = 'false'
-   
-    def get_title_wdg(self):
-        
-        title_div = DivWdg()
-        title_div.add_class("maq_search_bar")
-        
-        title = "Check-out [%s]" % self.sobject.get_code() 
-        if self.snapshot:
-            title = "Check-out snapshot [%s]" % self.sobject.get_code() 
-            title_div.add_style('background: #5B7A3A')
-        title_div.add(title)
-        return title_div
 
+
+    def get_display(self):
+
+        self.search_key = self.kwargs.get("search_key")
+
+        top = self.top
+
+        new_context = self.context 
+        if re.match(r'.*/.*\d{3}', self.context):
+            new_context = self.context.split("/")[0]
+        history = SObjectCheckinHistoryWdg(search_key=self.search_key, history_context=new_context)
+        top.add(history)
+        return top
 
 
 

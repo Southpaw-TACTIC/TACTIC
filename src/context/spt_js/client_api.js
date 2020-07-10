@@ -1061,7 +1061,7 @@ TacticServerStub = function() {
 
         var applet;
         var dst_paths = [];
-        if (kwargs.mode in {'client_repo':'', 'web':''}) {
+        if (kwargs.mode in {'client_repo':''}) {
             applet = spt.Applet.get();
         } 
         var env = spt.Environment.get();

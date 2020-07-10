@@ -453,8 +453,11 @@ class EditWdg(BaseRefreshWdg):
                 continue
 
 
-
             widget.set_sobject(self.sobjects[0])
+            widget.set_state( {
+                "search_type": self.search_type
+            } )
+
 
             default_value = default_data.get(element_name)
             if default_value:

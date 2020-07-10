@@ -89,9 +89,9 @@ class ContentBoxWdg(BaseRefreshWdg):
             width: auto;
             margin-top: -1px;
             margin-bottom: 5px;
-            border: solid 1px #AAA;
+            border: solid 1px var(--spt_palette_border);
             padding: 15px 0px 0px 0px;
-            background: #FFF;
+            //background: #FFF;
             overflow-x: auto;
 
         }

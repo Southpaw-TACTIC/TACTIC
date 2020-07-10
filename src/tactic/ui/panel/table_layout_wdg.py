@@ -4236,7 +4236,6 @@ spt.table.drop_row = function(evt, el) {
     if (thumb_el) {
         var size = thumb_el.getSize();
     }
-
     for (var i = 0; i < files.length; i++) {
         var size = files[i].size;
         var file = files[i];
@@ -4250,6 +4249,12 @@ spt.table.drop_row = function(evt, el) {
             var server = TacticServerStub.get();
             var insert_key = el.getAttribute("SPT_INSERT_API_KEY");
             server.set_api_key(insert_key);
+            if (search_type == "sthpw/snapshot") {
+                var data = {};
+            }
+            else {
+                var data = { name: filename };
+            }
             var sobject = server.insert(search_type, {name: filename})
             server.clear_api_key();
             search_key = sobject.__search_key__;

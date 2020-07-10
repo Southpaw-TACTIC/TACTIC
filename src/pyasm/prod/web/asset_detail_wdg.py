@@ -372,7 +372,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         dailies_head.add(dailies_title)
 
         dailies_title.add("Dailies")
-        search = Search("prod/submission")
+        search = Search("vfx/submission")
         search.add_filter("search_type", search_type)
         search.add_filter("search_id", search_id)
         count = search.get_count()
@@ -821,9 +821,9 @@ class LayerDetailWdg(AssetDetailWdg):
 
 
         # renders
-        render_head, render_div = self.get_sobject_wdg(sobject, "prod/render")
-        main_div.add(render_head)
-        main_div.add(render_div)
+        #render_head, render_div = self.get_sobject_wdg(sobject, "vfx/render")
+        #main_div.add(render_head)
+        #main_div.add(render_div)
 
 
 

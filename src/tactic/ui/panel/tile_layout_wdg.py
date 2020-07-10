@@ -1202,6 +1202,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 var file = files[i];
 
                                 var filename = file.name;
+                                var search_type = bvr.search_type;
 
                                 var search_key;
                                 var data = {
@@ -1213,13 +1214,14 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                                 server.set_api_key(insert_api_key);
 
-                                if (mode == "insert") {
-                                    var search_type = bvr.search_type;
+                                if (search_type == "sthpw/snapshot") {
+                                    search_key = bvr.search_key;
+                                }
+                                else if (mode == "insert") {
                                     var item = server.insert(search_type, data, { collection_key: bvr.collection_key});
                                     search_key = item.__search_key__;
                                 }
                                 else if (mode == "child") {
-                                    var search_type = bvr.search_type;
                                     var item = server.insert(search_type, data, { parent_key: bvr.search_key, collection_key: bvr.collection_key });
                                     search_key = item.__search_key__;
                                 }
@@ -2524,7 +2526,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_delete_wdg(self):
         '''Get Delete button'''
-        button = ActionButtonWdg(title='Delete')
+        button = ActionButtonWdg(title='Delete', color="secondary")
         button.add_style('float','left')
         button.add_style('margin-right: 25px')
         button.add_behavior({'type':'click_up',
