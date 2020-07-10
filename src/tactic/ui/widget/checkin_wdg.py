@@ -630,6 +630,7 @@ class CheckinWdg(BaseRefreshWdg):
             virtual_snapshot_xml = '<snapshot><file type=\'%s\'/></snapshot>' %(type)
             virtual_snapshot.set_value("snapshot", virtual_snapshot_xml)
             virtual_snapshot.set_value("process", process)
+            virtual_snapshot.set_value("version", 1)
 
             # for purposes of the sandbox folder for the checkin widget,
             # the context is the process
