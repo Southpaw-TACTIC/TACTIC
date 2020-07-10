@@ -545,7 +545,8 @@ class IconCreator(object):
             if not Common.which(convert_exe):
                 return
             try:
-                self.file_path = self.file_path.encode('utf-8')
+                if not Common.IS_Pv3 and isinstance(self.file_path, unicode):
+                    self.file_path = self.file_path.encode('utf-8')
                 import shlex, subprocess
                 subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%self.file_path,\
                         "%s"%tmp_icon_path])
