@@ -21,9 +21,9 @@ class PipelineInputWdg(BaseInputWdg):
     
     def get_display(self):
 
-
         state = self.get_state()
         search_type = state.get("search_type")
+
         sobj = self.get_current_sobject()
 
         if search_type:
