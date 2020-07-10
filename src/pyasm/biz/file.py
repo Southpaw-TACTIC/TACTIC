@@ -533,12 +533,19 @@ class IconCreator(object):
         # naming convetion should take care of inserting a suffix like icon, web
         # but these paths need a unique name
         icon_file_name = base + "_icon.png"
-        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+        if self.icon_path:
+            tmp_icon_path = "%s/%s" % (self.icon_path, icon_file_name)
+        else:
+            tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
 
         thumb_web_size = self.get_web_file_size()
 
         web_file_name = base + "_web.png"
-        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+        if self.web_path:
+            tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
+        else:
+            tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+
         if sys.platform == 'darwin':
             return
         else:
@@ -742,8 +749,15 @@ class IconCreator(object):
             icon_file_name = "%s_icon.png" % base
             web_file_name = "%s_web.jpg" % base
 
-        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
-        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+        if self.icon_path:
+            tmp_icon_path = "%s/%s" % (self.icon_path, icon_file_name)
+        else:
+            tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+
+        if self.web_path:
+            tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
+        else:
+            tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
 
         # create the web image
         try:
