@@ -540,7 +540,7 @@ class IconCreator(object):
 
         thumb_web_size = self.get_web_file_size()
 
-        web_file_name = base + "_web.png"
+        web_file_name = base + "_web.jpg"
         if self.web_path:
             tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
         else:
