@@ -634,7 +634,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 hidden = HiddenWdg("file_path", self.file_path)
                 widget.add(hidden)
 
-                button = ActionButtonWdg(title='Start Again')
+                button = ActionButtonWdg(title='Start Again', color="secondary")
                 button.add_style('float','right')
                 button.add_behavior( {
                     'type': 'click_up', 
@@ -717,6 +717,7 @@ class CsvImportWdg(BaseRefreshWdg):
             browse_div.add(browse)
             browse_div.add_style("width: 250")
             browse_div.add_style("margin: 0px auto")
+            browse_div.add_style("text-align: center")
 
 
             
@@ -742,7 +743,7 @@ class CsvImportWdg(BaseRefreshWdg):
             msg.add("<br/>"*3)
 
 
-            button = ActionButtonWdg(title="Parse List", color="default", width=250)
+            button = ActionButtonWdg(title="Parse List", color="secondary", width=250)
             button.add_style("margin: 5px auto")
             msg.add(button)
             button.add_behavior( {
@@ -1483,10 +1484,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 'are skipped.' %','.join(skipped_columns), css='warning'))
             div.add(HtmlElement.br(2))
 
-
         div.add(table)
-
-
 
 
      
@@ -1576,7 +1574,8 @@ class PreviewDataWdg(BaseRefreshWdg):
         div.add(h3)
         div.add("<br/>")
         
-        refresh_button = ActionButtonWdg(title="Refresh")
+        refresh_button = ActionButtonWdg(title="Refresh Preview", color="secondary")
+        refresh_button.add_style("margin-right: 10px")
 
         refresh_button.add_behavior({
             'type' : 'click_up',
@@ -1591,7 +1590,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         entry_error_msg = CsvImportCmd.ENTRY_ERROR_MSG
 
-        import_button = ActionButtonWdg(title="Import")
+        import_button = ActionButtonWdg(title="Import Data")
         import_button.set_id('CsvImportButton')
         import_button.add_behavior({
             'type':'click_up', 
@@ -1690,8 +1689,13 @@ class PreviewDataWdg(BaseRefreshWdg):
 
         table_div = DivWdg()
         widget.add(table_div)
+
+
         table_div.add_style("max-width: 800px")
         table_div.add_style("overflow-x: auto")
+
+        table_div.add_style("max-height: 500px")
+        table_div.add_style("overflow-y: auto")
 
 
         # draw the actual table of data
