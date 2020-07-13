@@ -2555,6 +2555,7 @@ class SObject(object):
         self._prev_update_data = None
         self.update_description = None
         self._skip_invalid_column = False
+        self.last_statement = None
         #self.database_impl = None
 
         # id override
@@ -2746,6 +2747,10 @@ class SObject(object):
 
     def get_sql(self):
         return self.db_resource.get_sql()
+
+
+    def get_last_statement(self):
+        return self.last_statement
 
 
 
@@ -3501,6 +3506,11 @@ class SObject(object):
         return self.set_value(name, value, quoted)
 
 
+    def set_random_code(self):
+        search_code = self.generate_code()
+        self.set_value("code", search_code)
+        return search_code
+
 
     def set_now(self, column="timestamp"):
         sql = DbContainer.get(self.db_resource)
@@ -4130,6 +4140,8 @@ class SObject(object):
             if not statement:
                 return
 
+            self.last_statement = statement
+
             if return_sql:
                 return statement
 
@@ -4142,7 +4154,7 @@ class SObject(object):
                 if id_statement:
                     sql.do_update(id_statement)
 
-            #print("statement: ", statement)
+            print("statement: ", statement)
             sql.do_update(statement)
 
 
@@ -4413,7 +4425,7 @@ class SObject(object):
 
 
 
-    def generate_code(self, id):
+    def generate_code(self, id=None):
         search_type = self.get_base_search_type()
 
 
@@ -4431,7 +4443,7 @@ class SObject(object):
 
 
         from pyasm.biz import ProjectSetting
-        if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
+        if id == None or ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
             log_key = self.get_code_key()
             random_code = Common.generate_random_key(digits=10)

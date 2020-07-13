@@ -427,7 +427,13 @@ class FileCheckin(BaseCheckin):
             self.context, self.column, self.description, snapshot_xml,
             is_current=self.is_current, is_revision=self.is_revision,
             level_type=self.level_type, level_id=self.level_id, is_latest=is_latest,
-            is_synced=is_synced, version=self.version, triggers="integral", set_booleans=False, process=self.process)
+            is_synced=is_synced, version=self.version, triggers="integral",
+            set_booleans=False, process=self.process,
+            commit=False)
+
+        self.snapshot.commit()
+        last_statement = self.snapshot.get_last_statement()
+        self.statements.append(last_statement)
 
         if self.single_snapshot and self.snapshot.get_version() > 1:
             raise SingleSnapshotException("There is an existing snapshot for \
@@ -524,6 +530,9 @@ class FileCheckin(BaseCheckin):
             assert(checkin_dir)
 
             file_object.commit()
+            last_statement = file_object.get_last_statement()
+            self.statements.append(last_statement)
+
 
         return self.snapshot
 

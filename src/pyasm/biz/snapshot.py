@@ -1926,9 +1926,9 @@ class Snapshot(SObject):
 
 
 
-    def create(sobject, snapshot_type, context, column="snapshot", \
-            description="No description", \
-            snapshot_data=None, is_current=None, is_revision=False, \
+    def create(sobject, snapshot_type, context, column="snapshot",
+            description="No description",
+            snapshot_data=None, is_current=None, is_revision=False,
             level_type=None, level_id=None, commit=True, is_latest=True,
             is_synced=True, process=None, version=None, triggers=True,
             set_booleans=True):

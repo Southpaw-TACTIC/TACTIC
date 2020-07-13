@@ -45,6 +45,9 @@ class BaseCheckin(Command):
         self.mode = None
         self.repo_type = 'tactic'
 
+        # store all of the statements
+        self.statements = []
+
         self.file_objects = []
         super(BaseCheckin,self).__init__()
 
@@ -127,6 +130,8 @@ class BaseCheckin(Command):
         for idx, file_object in enumerate(self.file_objects):
             file_object.set_value("snapshot_code", self.snapshot.get_code())
             file_object.commit()
+            statement = file_object.get_last_statement()
+            self.statements.append(statement)
  
         # handle file naming conventions
         self.handle_file_naming()
@@ -266,7 +271,12 @@ class BaseCheckin(Command):
                 requires_file=requires_file,
                 repo_type=self.repo_type,
                 file_type=file_type,
+                commit=False,
             )
+
+            file_object.commit()
+            last_statement = file_object.get_last_statement()
+            self.statements.append(last_statement)
 
             if not file_object:
                 raise FileException("File object id=[%s] is None" % file_code)
