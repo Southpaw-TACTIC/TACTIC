@@ -529,9 +529,9 @@ class FileCheckin(BaseCheckin):
             checkin_dir = file_object.get_value("checkin_dir")
             assert(checkin_dir)
 
-            file_object.commit()
-            last_statement = file_object.get_last_statement()
-            self.statements.append(last_statement)
+            #file_object.commit()
+            #last_statement = file_object.get_last_statement()
+            #self.statements.append(last_statement)
 
 
         return self.snapshot
@@ -562,7 +562,7 @@ class FileCheckin(BaseCheckin):
 
         # get the repo set it up
         repo = self.sobject.get_repo(self.snapshot)
-        repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths)
+        repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths, commit=False)
        
         # Call the checkin/move pipeline event
         #event_caller = PipelineEventCaller(self, "checkin/move")
@@ -991,7 +991,11 @@ class FileGroupCheckin(FileCheckin):
                     md5_checksum = File.get_md5(to_path)
                     if md5_checksum:
                         file_object.set_value("md5", md5_checksum)
+
                         file_object.commit()
+                        last_statement = file_object.get_last_statement()
+                        self.statements.append(last_statement)
+
                     st_size = file_object.get_value("st_size")
                     FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action, extra={ "md5": md5_checksum, "st_size": st_size } )
 

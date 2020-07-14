@@ -21,10 +21,11 @@ from .checkin import CheckinException
 
 class BaseRepo(object):
     '''abstract class defining repositories'''
+
     def has_file_codes(self):
         return True
 
-    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], commit=True):
         pass
 
 
@@ -32,12 +33,19 @@ class BaseRepo(object):
 
 class TacticRepo(BaseRepo):
 
-    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[], commit=True):
         '''move the tmp files in the appropriate directory'''
 
         # if mode is local then nothing happens here
         if mode == 'local':
             return
+
+        if commit in ['false', False]:
+            commit = False
+        else:
+            commit = True
+
+        print("no commit")
 
         sobject = snapshot.get_sobject()
 
@@ -64,7 +72,8 @@ class TacticRepo(BaseRepo):
                     if md5_checksum:
                         file_object.set_value("md5", md5_checksum)
 
-                file_object.commit(triggers=False)
+                if commit:
+                    file_object.commit(triggers=False)
             return
             
    
@@ -149,6 +158,7 @@ class TacticRepo(BaseRepo):
                 if md5_checksum:
                     file_object.set_value("md5", md5_checksum)
 
-            file_object.commit(triggers=False)
+            if commit:
+                file_object.commit(triggers=False)
             
 

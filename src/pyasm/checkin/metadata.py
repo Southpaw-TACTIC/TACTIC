@@ -167,7 +167,8 @@ class CheckinMetadataHandler():
                 searchable = self.get_searchable(metadata)
                 file_object.set_value("metadata_search", searchable)
 
-                file_object.commit()
+                if commit:
+                    file_object.commit()
 
 
                 if i == 0:

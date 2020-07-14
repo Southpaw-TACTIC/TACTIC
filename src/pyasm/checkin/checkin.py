@@ -129,9 +129,9 @@ class BaseCheckin(Command):
         # update the files to reference back to the snapshot
         for idx, file_object in enumerate(self.file_objects):
             file_object.set_value("snapshot_code", self.snapshot.get_code())
-            file_object.commit()
-            statement = file_object.get_last_statement()
-            self.statements.append(statement)
+            #file_object.commit()
+            #statement = file_object.get_last_statement()
+            #self.statements.append(statement)
  
         # handle file naming conventions
         self.handle_file_naming()
@@ -146,10 +146,28 @@ class BaseCheckin(Command):
         # handle all system commands
         self.handle_system_commands(self.files, self.file_objects)
 
+
+        # make sure everything is commited
+        print()
+        print("doing all commits")
+        self.snapshot.commit(triggers="none")
+        last_statement = self.snapshot.get_last_statement()
+        self.statements.append(last_statement)
+        for file_object in self.file_objects:
+            file_object.commit(triggers="none")
+            last_statement = file_object.get_last_statement()
+            self.statements.append(last_statement)
+        print("... done")
+        print()
+
+
         # update the versionless snapshot explicitly
+        print()
+        print("update versionless")
         self.update_versionless("current")
         self.update_versionless("latest")
-
+        print("... done")
+        print()
 
         # commit snapshot again due to changes made after file commit
         # SnapshotIsLatestTrigger is suppressed earlier when is_latest was
@@ -348,7 +366,7 @@ class BaseCheckin(Command):
             assert(new_file_name)
 
             file_object.set_value("file_name", new_file_name)
-            file_object.commit(triggers=False)
+            #file_object.commit(triggers=False)
 
             count += 1
 
