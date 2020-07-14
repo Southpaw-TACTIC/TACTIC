@@ -45,8 +45,6 @@ class TacticRepo(BaseRepo):
         else:
             commit = True
 
-        print("no commit")
-
         sobject = snapshot.get_sobject()
 
         # inplace mode does not move the file.  It just registers the file

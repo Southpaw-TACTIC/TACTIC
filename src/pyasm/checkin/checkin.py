@@ -148,8 +148,8 @@ class BaseCheckin(Command):
 
 
         # make sure everything is commited
-        print()
-        print("doing all commits")
+        #print()
+        #print("doing all commits")
         self.snapshot.commit(triggers="none")
         last_statement = self.snapshot.get_last_statement()
         self.statements.append(last_statement)
@@ -157,17 +157,17 @@ class BaseCheckin(Command):
             file_object.commit(triggers="none")
             last_statement = file_object.get_last_statement()
             self.statements.append(last_statement)
-        print("... done")
-        print()
+        #print("... done")
+        #print()
 
 
         # update the versionless snapshot explicitly
-        print()
-        print("update versionless")
-        self.update_versionless("current")
-        self.update_versionless("latest")
-        print("... done")
-        print()
+        #print()
+        #print("update versionless")
+        #self.update_versionless("current")
+        #self.update_versionless("latest")
+        #print("... done")
+        #print()
 
         # commit snapshot again due to changes made after file commit
         # SnapshotIsLatestTrigger is suppressed earlier when is_latest was

@@ -4154,7 +4154,7 @@ class SObject(object):
                 if id_statement:
                     sql.do_update(id_statement)
 
-            print(self, ": ", statement)
+            #print(self, ": ", statement)
             sql.do_update(statement)
 
 
