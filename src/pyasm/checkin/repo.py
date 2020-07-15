@@ -25,7 +25,7 @@ class BaseRepo(object):
     def has_file_codes(self):
         return True
 
-    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], commit=True):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], commit=False):
         pass
 
 
@@ -33,7 +33,7 @@ class BaseRepo(object):
 
 class TacticRepo(BaseRepo):
 
-    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[], commit=True):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[], commit=False):
         '''move the tmp files in the appropriate directory'''
 
         # if mode is local then nothing happens here
@@ -45,7 +45,6 @@ class TacticRepo(BaseRepo):
         else:
             commit = True
 
-        sobject = snapshot.get_sobject()
 
         # inplace mode does not move the file.  It just registers the file
         # object
@@ -71,7 +70,7 @@ class TacticRepo(BaseRepo):
                         file_object.set_value("md5", md5_checksum)
 
                 if commit:
-                    file_object.commit(triggers=False)
+                    file_object.commit(triggers="none")
             return
             
    
@@ -157,6 +156,6 @@ class TacticRepo(BaseRepo):
                     file_object.set_value("md5", md5_checksum)
 
             if commit:
-                file_object.commit(triggers=False)
+                file_object.commit(triggers="none")
             
 

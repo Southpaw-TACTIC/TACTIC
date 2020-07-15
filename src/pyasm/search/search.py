@@ -1917,6 +1917,8 @@ class Search(Base):
             if not statement:
                 statement = self.select.get_statement()
 
+            #print("QUERY: ", statement)
+
             from pyasm.security import Site
             results = sql.do_query(statement)
 
@@ -4073,10 +4075,14 @@ class SObject(object):
         
         #is_mysql = impl.get_database_type() == 'MySQL'
 
+        is_code_set = False
         for key, value in self.update_data.items():
             quoted = self.quoted_flag.get(key)
             escape_quoted = False
             changed = False
+
+            if key == "code" and value:
+                is_code_set = True
 
             if isinstance(value, dict):
                 value = jsondumps(value)
@@ -4154,7 +4160,7 @@ class SObject(object):
                 if id_statement:
                     sql.do_update(id_statement)
 
-            #print(self, ": ", statement)
+            #print("UPDATE: ", self, ": ", statement)
             sql.do_update(statement)
 
 
@@ -4193,9 +4199,9 @@ class SObject(object):
 
 
         # Get the updated values and fill it into data.  This handles
-        # auto updated values in the database
+        # auto updated values in the database.  This is only done on insert
         sobject = None
-        if not is_search_type:
+        if not is_search_type and is_insert:
 
             from pyasm.security import Sudo
             sudo = Sudo()
@@ -4219,7 +4225,6 @@ class SObject(object):
 
         else:
             sobject = self
-            #sobject.data = self.update_data.copy()
             for key, value in self.update_data.items():
                 self.data[key] = self.update_data[key]
 

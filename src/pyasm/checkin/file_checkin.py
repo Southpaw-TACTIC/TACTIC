@@ -41,7 +41,8 @@ class FileCheckin(BaseCheckin):
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
-            checkin_type='', version=None, single_snapshot=False, process=None
+            checkin_type='', version=None, single_snapshot=False, process=None,
+            do_update_versionless=True,
             ):
 
         '''sobject - the sobject that this checkin belongs to
@@ -87,6 +88,7 @@ class FileCheckin(BaseCheckin):
         self.is_current = is_current
         self.is_revision = is_revision
         self.version = version
+        self.do_update_versionless = do_update_versionless
 
         if isinstance(file_paths, basestring):
             self.file_paths = [file_paths]
@@ -243,7 +245,7 @@ class FileCheckin(BaseCheckin):
         
         self.single_snapshot = single_snapshot
 
-
+        self.ingest_mode = "ingestX"
 
 
        
@@ -431,9 +433,13 @@ class FileCheckin(BaseCheckin):
             set_booleans=False, process=self.process,
             commit=False)
 
-        self.snapshot.commit()
-        last_statement = self.snapshot.get_last_statement()
-        self.statements.append(last_statement)
+        if self.ingest_mode == "ingest":
+            self.snapshot.set_random_code()
+        else:
+            self.snapshot.commit(triggers="none")
+            last_statement = self.snapshot.get_last_statement()
+            self.statements.append(last_statement)
+
 
         if self.single_snapshot and self.snapshot.get_version() > 1:
             raise SingleSnapshotException("There is an existing snapshot for \
@@ -556,14 +562,13 @@ class FileCheckin(BaseCheckin):
         '''delegate the system commands to the appropriate repo.'''
 
         if self.mode == 'inplace':
-            # TODO: ? MD5?
+            # NOTE: MD5?
             return
-
 
         # get the repo set it up
         repo = self.sobject.get_repo(self.snapshot)
-        repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths, commit=False)
-       
+        repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths)
+
         # Call the checkin/move pipeline event
         #event_caller = PipelineEventCaller(self, "checkin/move")
         #event_caller.run()

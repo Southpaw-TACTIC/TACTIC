@@ -419,7 +419,7 @@ class File(SObject):
                 err = value[1]
                 print(err)
 
-        return output
+        return output.decode()
 
     get_md5 = staticmethod(get_md5)
 
