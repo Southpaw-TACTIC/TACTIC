@@ -184,9 +184,10 @@ class BaseCheckin(Command):
         # commit snapshot again due to changes made after file commit
         # SnapshotIsLatestTrigger is suppressed earlier when is_latest was
         # changed, so triggers here doesn't do much
-        if self.ingest_mode == "ingest":
+        if self.ingest_mode == "ingestX":
             statement = self.snapshot.get_statement()
-            self.statements.append(statement)
+            if statement:
+                self.statements.append(statement)
             return
         else:
             self.snapshot.commit(triggers="none")

@@ -424,6 +424,10 @@ class FileCheckin(BaseCheckin):
 
         self.is_latest = is_latest
 
+        # set ingest version to 1 if it is not explicitly set
+        if not self.version and self.ingest_mode == "ingest":
+            self.version = 1
+
         # copy the snapshot and put it in the snapshot history
         self.snapshot = Snapshot.create( self.sobject, snapshot_type,
             self.context, self.column, self.description, snapshot_xml,

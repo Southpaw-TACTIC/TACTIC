@@ -151,6 +151,7 @@ class TacticRepo(BaseRepo):
                     md5_checksum = md5s[i]
                 if not md5_checksum:
                     md5_checksum = File.get_md5(to_path)
+                    #md5_checksum = ""
 
                 if md5_checksum:
                     file_object.set_value("md5", md5_checksum)
