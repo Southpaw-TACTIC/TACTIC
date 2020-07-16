@@ -151,7 +151,7 @@ class BaseCheckin(Command):
 
 
         # make sure everything is commited
-        if self.ingest_mode == "ingest":
+        if self.ingest_mode == "ingestX":
             statement = self.snapshot.get_statement()
             self.statements.append(statement)
             for file_object in self.file_objects:
@@ -177,15 +177,19 @@ class BaseCheckin(Command):
         else:
             do_update_versionless = True
 
-        if do_update_versionless or self.ingest_mode != "ingest":
+        if do_update_versionless and self.ingest_mode != "ingest":
             self.update_versionless("current")
             self.update_versionless("latest")
 
         # commit snapshot again due to changes made after file commit
         # SnapshotIsLatestTrigger is suppressed earlier when is_latest was
         # changed, so triggers here doesn't do much
-        #self.snapshot.commit(triggers=True)
-        self.snapshot.commit(triggers="none")
+        if self.ingest_mode == "ingest":
+            statement = self.snapshot.get_statement()
+            self.statements.append(statement)
+            return
+        else:
+            self.snapshot.commit(triggers="none")
 
         # add a note to the parent
         self.add_publish_note()

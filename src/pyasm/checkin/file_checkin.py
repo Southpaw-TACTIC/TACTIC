@@ -42,7 +42,7 @@ class FileCheckin(BaseCheckin):
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
             checkin_type='', version=None, single_snapshot=False, process=None,
-            do_update_versionless=True,
+            do_update_versionless=True, ingest_mode=None,
             ):
 
         '''sobject - the sobject that this checkin belongs to
@@ -245,7 +245,7 @@ class FileCheckin(BaseCheckin):
         
         self.single_snapshot = single_snapshot
 
-        self.ingest_mode = "ingestX"
+        self.ingest_mode = ingest_mode
 
 
        
