@@ -4,27 +4,51 @@
 </p>
 
 <p align="center">
-  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/Showreel.gif"/>
+  <img width="600px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/Showreel.gif"/>
 </p>
 
 
 ## Workflow Platform
 
-TACTIC is a comprensive, open-source platform for creating and executing digital workflows.  TACTIC has been used in many exciting projects in a wide variety on industries.
+TACTIC is an open-source remote collaboration platform used for configuring and deploying enterprise Workflow solutions. 
+These solutions simplify the development and delivery of digital assets through a well defined set of processes. 
+This is accomplished by integrating a core Workflow Engine with Digital Asset Management and Content Management components to provide a complete platform for individualized enterprise Workflow solutions
 
-<p align="center">
-  <img width="75%" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
-</p>
 
 
 ## Features
 
 TACTIC has a number of key components:
 
-* Workflow Engine and Manager:
-* Data Management
-* File System Management
-* Web Framework
+* **Workflow Engine and Manager:**
+
+<p align="center">
+  <img width="400px" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
+</p>
+
+* **Data Management**
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/vfx_data_model.png"/>
+</p>
+
+* **Digital Asset Manager**
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/collections.jpg"/>
+</p>
+
+* **Web Framework**
+
+<p align="center">
+  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/custom_layout.jpg"/>
+</p>
+
+
+## Contribute
+
+We are always encouraging people to contribute to the project.  This can be in any form starting from asking a question, requesting a feature to fixing bugs or adding new features.  We always welcome feedback as that is the driving force that gives us direction on where to go.  If you do make any changes to the code, please use your own fork and submit a pull request.
+
 
 ## Installation
 
@@ -77,23 +101,24 @@ Complete documentation can be found on the [TACTIC Developer Documentation](http
 
 ## Resources
 
-For more information, visit the community site for TACTIC:
+For more information, visit the [community site](http://community.southpawtech.com) for TACTIC.
 
-http://tactic.southpawtech.com
+Or participate in the [TACTIC forum](http://forum.southpawtech.com) if you have any questions.
 
-
-Or participate in the forum if you have any questions:
-
-http://forum.southpawtech.com
+There is also a collection of [YouTube videos](https://www.youtube.com/playlist?list=PLGuW4vwnoult0iXF83Y2HnkLbrTJ-3pxO) that you can browser through.
 
 
-
-## Visual FX
+## Visual Effects (VFX)
 
 TACTIC has a built-in VFX module that has been used as a template for countless productions around the world.  Over the years, it's popularity has grown considerably and more and more people become familiar with TACTIC features.  Because TACTIC is Open Source, it can configured and connected seamleassly into any studio producing content.
+
+
+<p align="center">
+  <img width="75%" src="doc/github/images/vfx_data_model.png"/>
+</p>
 
 Easily start up your production by creating a project with TACTIC nad selecting the VFX template.  Create your own template and reuse your own template for all future productions.
 
 ## License
 
-[Eclipse Public License 1.0](https://github.com/Southpaw-TACTIC/TACTIC/blob/4.8/LICENSE)
+[Eclipse Public License 1.0](LICENSE)

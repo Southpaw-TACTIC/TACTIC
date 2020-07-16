@@ -455,7 +455,7 @@ class IconCreator(object):
     '''Utility class that creates icons of an image or document in the
     same directory as the image'''
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, web_path=None, icon_path=None):
         self.file_path = file_path
 
         # check if it exists
@@ -465,8 +465,8 @@ class IconCreator(object):
 
         self.tmp_dir = os.path.dirname(file_path)
 
-        self.icon_path = None
-        self.web_path = None
+        self.icon_path = icon_path
+        self.web_path = web_path
 
         self.texture_mode = False
         self.icon_mode = False
@@ -534,19 +534,27 @@ class IconCreator(object):
         # naming convetion should take care of inserting a suffix like icon, web
         # but these paths need a unique name
         icon_file_name = base + "_icon.png"
-        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+        if self.icon_path:
+            tmp_icon_path = "%s/%s" % (self.icon_path, icon_file_name)
+        else:
+            tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
 
         thumb_web_size = self.get_web_file_size()
 
-        web_file_name = base + "_web.png"
-        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+        web_file_name = base + "_web.jpg"
+        if self.web_path:
+            tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
+        else:
+            tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+
         if sys.platform == 'darwin':
             return
         else:
             if not Common.which(convert_exe):
                 return
             try:
-                self.file_path = self.file_path.encode('utf-8')
+                if not Common.IS_Pv3 and isinstance(self.file_path, unicode):
+                    self.file_path = self.file_path.encode('utf-8')
                 import shlex, subprocess
                 subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%self.file_path,\
                         "%s"%tmp_icon_path])
@@ -607,8 +615,15 @@ class IconCreator(object):
         icon_file_name = "%s_icon.png" % base
         web_file_name = "%s_web.jpg" % base
 
-        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
-        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+        if self.icon_path:
+            tmp_icon_path = "%s/%s" % (self.icon_path, icon_file_name)
+        else:
+            tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+
+        if self.web_path:
+            tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
+        else:
+            tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
 
         #cmd = '''"%s" -i "%s" -r 1 -ss 00:00:01 -t 1 -s %sx%s -vframes 1 "%s"''' % (ffmpeg, self.file_path, thumb_web_size[0], thumb_web_size[1], tmp_web_path)
         #os.system(cmd)
@@ -690,8 +705,16 @@ class IconCreator(object):
             pass
 
         try:
+            free_aspect_ratio = thumb_web_size[1] == -1
+            if free_aspect_ratio:
+                size_option = "-vf"
+                size = "scale=%s:-1" % thumb_icon_size[0]
+            else:
+                size_option = "-s"
+                size =  "%sx%s" % (thumb_icon_size[0], thumb_icon_size[1])
+
             subprocess.call([ffmpeg_exe, '-i', self.file_path, "-y", "-ss", "00:00:00","-t","1",\
-                    "-s","%sx%s"%(thumb_icon_size[0], thumb_icon_size[1]),"-vframes","1","-f","image2", tmp_icon_path])
+                    size_option,size,"-vframes","1","-f","image2", tmp_icon_path])
 
             if os.path.exists(tmp_icon_path):
                 self.icon_path = tmp_icon_path
@@ -727,8 +750,15 @@ class IconCreator(object):
             icon_file_name = "%s_icon.png" % base
             web_file_name = "%s_web.jpg" % base
 
-        tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
-        tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
+        if self.icon_path:
+            tmp_icon_path = "%s/%s" % (self.icon_path, icon_file_name)
+        else:
+            tmp_icon_path = "%s/%s" % (self.tmp_dir, icon_file_name)
+
+        if self.web_path:
+            tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
+        else:
+            tmp_web_path = "%s/%s" % (self.tmp_dir, web_file_name)
 
         # create the web image
         try:
