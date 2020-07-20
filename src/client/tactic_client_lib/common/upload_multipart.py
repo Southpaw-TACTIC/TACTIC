@@ -136,7 +136,6 @@ class UploadMultipart(object):
 
         except Exception as e:
             print("Error: ", e)
-            raise
 
             # retry about 5 times
             print("... trying again")
