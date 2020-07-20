@@ -220,7 +220,7 @@ class FileUpload(Base):
 
         # Use base 64 decode if necessary.
         import base64
-        if base_decode and self.write_mode == "wb":
+        if base_decode and self.write_mode in ["wb", "ab"]:
             header = data.read(10)
             while 1:
                 char = data.read(1).decode()

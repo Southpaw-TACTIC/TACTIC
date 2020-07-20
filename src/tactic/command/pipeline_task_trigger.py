@@ -386,6 +386,12 @@ class RelatedTaskUpdateTrigger(Trigger):
     '''This is called on every task change.  It syncronizes tasks with
     the same context'''
     def execute(self):
+
+        # DISABLING this ... this is a rather tenuous trigger that attempts to allow for
+        # tasks to be "connected" to each other in a way that makes it look like you have
+        # multiple people assigned to a task.  While this may be desireable, the mechanism
+        # used below checks for the same process and context to identify tasks tat are connected.
+        # This is too broad and should be done more explicitly rather than implicitly
         return
 
         sudo = Sudo()
@@ -402,15 +408,6 @@ class RelatedTaskUpdateTrigger(Trigger):
         process = task.get_value("process")
         context = task.get_value("context")
         parent = task.get_parent()
-
-
-        # DISABLING this ... this is a rather tenuous trigger that attempts to allow for
-        # tasks to be "connected" to each other in a way that makes it look like you have
-        # multiple people assigned to a task.  While this may be desireable, the mechanism
-        # used below checks for the same process and context to identify tasks tat are connected.
-        # This is too broad and should be done more explicitly rather than implicitly
-
-
 
 
         # find all of the tasks with the same parent and same context

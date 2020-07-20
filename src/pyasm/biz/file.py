@@ -307,7 +307,7 @@ class File(SObject):
 
 
 
-    def create( file_path, search_type, search_id, file_type=None, requires_file=True, st_size=None, repo_type=None, search_code = None):
+    def create( file_path, search_type, search_id, file_type=None, requires_file=True, st_size=None, repo_type=None, search_code = None, commit=True):
 
         exists = os.path.exists(file_path)
         isdir = os.path.isdir(file_path)
@@ -356,8 +356,9 @@ class File(SObject):
         if repo_type:
             file.set_value("repo_type", repo_type)
 
+        if commit:
+            file.commit()
 
-        file.commit()
         return file
     create = staticmethod(create)
 
@@ -418,7 +419,7 @@ class File(SObject):
                 err = value[1]
                 print(err)
 
-        return output
+        return output.decode()
 
     get_md5 = staticmethod(get_md5)
 
@@ -1007,7 +1008,7 @@ class FileGroup(File):
 
 
 
-    def create( file_path, file_range, search_type, search_id, file_type=None ):
+    def create( file_path, file_range, search_type, search_id, file_type=None, commit=True ):
 
         expanded = FileGroup.check_paths(file_path, file_range)
 
@@ -1032,7 +1033,9 @@ class FileGroup(File):
         if file_type:
             file.set_value("type", file_type)
         file.set_value("base_type", File.BASE_TYPE_SEQ)
-        file.commit()
+
+        if commit:
+            file.commit()
 
         return file
     create = staticmethod(create)

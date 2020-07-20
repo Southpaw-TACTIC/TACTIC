@@ -9,6 +9,7 @@
 __all__ = ['UploadMultipart', 'TacticUploadException']
 
 import socket
+import base64
 
 try:
     import urlparse
@@ -31,12 +32,18 @@ class UploadMultipart(object):
     a file into chunks and upload separately for huge files'''
 
     def __init__(self):
-        self.count = 0
+        self.tries = 0
         self.chunk_size = 10*1024*1024
         self.ticket = None
         self.subdir = None
 
         self.server_url = None
+
+        self.offset = 0
+
+
+    def set_offset(self, offset):
+        self.offset = offset
 
 
     def set_upload_server(self, server_url):
@@ -61,13 +68,17 @@ class UploadMultipart(object):
         import codecs
         f = codecs.open(path, 'rb')
 
-        count = 0
+        if self.offset:
+            f.seek(self.offset * self.chunk_size)
+        else:
+            self.offset = 0
+
         while 1:
             buffer = f.read(self.chunk_size)
             if not buffer:
                 break
 
-            if count == 0:
+            if self.offset == 0:
                 action = "create"
             else:
                 action = "append"
@@ -107,30 +118,33 @@ class UploadMultipart(object):
             if reason != "OK":
                 raise TacticUploadException("Upload of '%s' failed: %s %s" % (path, status, reason))
 
-            count += 1
+            self.offset += 1
 
         f.close()
 
 
 
     def upload(self, url, fields, files):
+
         try:
-            while 1:
-                try:
-                    ret_value = self.posturl(url, fields, files)
+            ret_value = self.posturl(url, fields, files)
 
-                    return ret_value
-                except socket.error as e:
-                    print("Error: ", e)
+            if ret_value[0] != 200:
+                raise Exception(ret_value[1])
 
-                    # retry about 5 times
-                    print("... trying again")
-                    self.count += 1
-                    if self.count == 5:
-                        raise
-                    self.upload(url, fields, files)
+            return ret_value
+
+        except Exception as e:
+            print("Error: ", e)
+
+            # retry about 5 times
+            print("... trying again")
+            self.tries += 1
+            if self.tries < 5:
+                self.upload(url, fields, files)
+
         finally:
-            self.count = 0
+            self.tries = 0
 
 
 
@@ -180,10 +194,17 @@ class UploadMultipart(object):
         CRLF = '\r\n'
         L = []
 
+        mode = "base64"
+        if mode != "base64":
+            CRLF = CRLF.encode("UTF8")
+
         try:
             from cStringIO import StringIO as Buffer
         except:
-            from io import StringIO as Buffer
+            if mode == "base64":
+                from io import StringIO as Buffer
+            else:
+                from io import BytesIO as Buffer
 
 
         import sys
@@ -198,14 +219,24 @@ class UploadMultipart(object):
             L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
             L.append('')
 
-            L.append(value)
+
+            if mode == "base64":
+                # put in a fake header to show that it is base64 to the server
+                L.append("data:xyz/xyz;base64,")
+                L.append(base64.b64encode(value))
+            else:
+                L.append(value)
         L.append('--' + BOUNDARY + '--')
         L.append('')
 
         M = []
         for l in L:
             try:
-                l = l.decode()
+                if mode == "binary":
+                    l = l.encode("UTF8")
+                    #l = bytes(l)
+                else:
+                    l = l.decode()
             except UnicodeDecodeError as e:
                 pass
             except AttributeError as e:

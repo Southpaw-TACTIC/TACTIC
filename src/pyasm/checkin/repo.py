@@ -21,10 +21,11 @@ from .checkin import CheckinException
 
 class BaseRepo(object):
     '''abstract class defining repositories'''
+
     def has_file_codes(self):
         return True
 
-    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], commit=False):
         pass
 
 
@@ -32,14 +33,18 @@ class BaseRepo(object):
 
 class TacticRepo(BaseRepo):
 
-    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[]):
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[], commit=False):
         '''move the tmp files in the appropriate directory'''
 
         # if mode is local then nothing happens here
         if mode == 'local':
             return
 
-        sobject = snapshot.get_sobject()
+        if commit in ['false', False]:
+            commit = False
+        else:
+            commit = True
+
 
         # inplace mode does not move the file.  It just registers the file
         # object
@@ -64,7 +69,8 @@ class TacticRepo(BaseRepo):
                     if md5_checksum:
                         file_object.set_value("md5", md5_checksum)
 
-                file_object.commit(triggers=False)
+                if commit:
+                    file_object.commit(triggers="none")
             return
             
    
@@ -145,10 +151,12 @@ class TacticRepo(BaseRepo):
                     md5_checksum = md5s[i]
                 if not md5_checksum:
                     md5_checksum = File.get_md5(to_path)
+                    #md5_checksum = ""
 
                 if md5_checksum:
                     file_object.set_value("md5", md5_checksum)
 
-            file_object.commit(triggers=False)
+            if commit:
+                file_object.commit(triggers="none")
             
 

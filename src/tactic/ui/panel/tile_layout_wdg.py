@@ -2183,6 +2183,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         div = DivWdg()
         div.add_class("spt_thumb_top")
 
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
+        div.add_style("height: 100%")
+
         """
         # TODO: This logic should be handled in get_sobject_data
         path = self.path
@@ -3230,6 +3234,10 @@ class ThumbWdg2(BaseRefreshWdg):
 
         div = self.top
         div.add_class("spt_thumb_top")
+
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
+        div.add_style("height: 100%")
 
         path = self.path
         if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):

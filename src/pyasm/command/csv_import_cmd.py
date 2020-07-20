@@ -192,6 +192,10 @@ class CsvImportCmd(Command):
         error_entries = []
         error = False
         
+
+        statements = []
+        chunk = 100
+
         # create entries or update values
         for row_count, row in enumerate(csv_data):
             if self.start_index and row_count < self.start_index:
@@ -229,6 +233,8 @@ class CsvImportCmd(Command):
 
             new_columns = 0
             note = None
+
+
             for cell_count, cell in enumerate(row):
                 '''
                 column_override = self.columns[cell_count]
@@ -266,9 +272,11 @@ class CsvImportCmd(Command):
                 msg = "No column or only the id column is selected."
                 raise CommandException(msg)
 
-            
-            try:
-                sobject.commit(triggers=self.triggers_mode)
+         
+            if self.triggers_mode == "none":
+
+                statement = sobject.get_statement()
+                statements.append(statement)
 
                 if note:
                     note_obj = SearchType.create("sthpw/note")
@@ -280,19 +288,52 @@ class CsvImportCmd(Command):
                     note_obj.set_value("context", note_process)
                     note_obj.set_user()
                     note_obj.set_parent(sobject)
-                    note_obj.commit()
 
-            except SqlException as e:
-                msg = "%s [%s]: %s, %s" % (self.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
-                if self.test_run:
-                    error = True
-                    error_entries.append(sobject.get_code())
-                raise SqlException(msg)
-            else:
+                    statement = sobject.get_statement()
+                    statements.append(statement)
+
+ 
+                if len(statements) >= chunk or row_count == len(csv_data) - 1:
+                    sql = SearchType.get_sql_by_search_type(self.search_type)
+                    sql.do_update(";\n".join(statements))
+                    statements = []
+
                 if is_new_entry:
                     new_entries.append(sobject.get_code())
                 else:
                     updated_entries.append(sobject.get_code())
+
+
+
+            else:
+                try:
+                    sobject.commit(triggers=self.triggers_mode)
+
+                    if note:
+                        note_obj = SearchType.create("sthpw/note")
+                        note_obj.set_value("note", note)
+                        note_process = self.note_processes[i]
+                        if not note_process:
+                            note_process = "publish"
+                        note_obj.set_value("process", note_process)
+                        note_obj.set_value("context", note_process)
+                        note_obj.set_user()
+                        note_obj.set_parent(sobject)
+                        note_obj.commit()
+
+                except SqlException as e:
+                    msg = "%s [%s]: %s, %s" % (self.ENTRY_ERROR_MSG, row_count, str(row), e.__str__() )
+                    if self.test_run:
+                        error = True
+                        error_entries.append(sobject.get_code())
+                    raise SqlException(msg)
+                else:
+                    if is_new_entry:
+                        new_entries.append(sobject.get_code())
+                    else:
+                        updated_entries.append(sobject.get_code())
+
+
         #show 30 max
         new_entries_display = ''
         if new_entries:
