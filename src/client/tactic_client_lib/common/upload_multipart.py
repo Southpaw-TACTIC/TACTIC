@@ -194,10 +194,17 @@ class UploadMultipart(object):
         CRLF = '\r\n'
         L = []
 
+        mode = "base64"
+        if mode != "base64":
+            CRLF = CRLF.encode("UTF8")
+
         try:
             from cStringIO import StringIO as Buffer
         except:
-            from io import StringIO as Buffer
+            if mode == "base64":
+                from io import StringIO as Buffer
+            else:
+                from io import BytesIO as Buffer
 
 
         import sys
@@ -212,17 +219,24 @@ class UploadMultipart(object):
             L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
             L.append('')
 
-            #L.append(str(value))
-            # put in a fake header to show that it is base64 to the server
-            L.append("data:xyz/xyz;base64,")
-            L.append(base64.b64encode(value))
+
+            if mode == "base64":
+                # put in a fake header to show that it is base64 to the server
+                L.append("data:xyz/xyz;base64,")
+                L.append(base64.b64encode(value))
+            else:
+                L.append(value)
         L.append('--' + BOUNDARY + '--')
         L.append('')
 
         M = []
         for l in L:
             try:
-                l = l.decode()
+                if mode == "binary":
+                    l = l.encode("UTF8")
+                    #l = bytes(l)
+                else:
+                    l = l.decode()
             except UnicodeDecodeError as e:
                 pass
             except AttributeError as e:
