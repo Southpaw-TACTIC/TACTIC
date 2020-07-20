@@ -261,8 +261,16 @@ class ProjectTemplateInstallerCmd(Command):
         #self.template_project_code = re.sub( '_template$', '', self.template_code)
         self.template_project_code = self.template_code
         self.force_database = self.kwargs.get("force_database")
-    
-        self.import_template()
+   
+        try:
+            self.import_template()
+        except Exception as e:
+            #project = Project.get_by_code(self.project_code)
+            #if project:
+            #    print("Deleting project entry: ", project.get_code())
+            #    project.delete()
+            raise
+        fdsadffsd
 
 
     def get_template_dir(self, template_dir):
@@ -371,12 +379,18 @@ class ProjectTemplateInstallerCmd(Command):
             }
 
         else:
+            # is there a manifest in this folder
+            manifest_path = "%s/manifest.xml" % template_dir
+            if not os.path.exists(manifest_path):
+                raise Exception("No manifest file found")
+
             kwargs = {
                 'plugin_dir': template_dir
             }
 
         kwargs['filter_line_handler'] = self.filter_line_handler
         kwargs['filter_sobject_handler'] = self.filter_sobject_handler
+
 
         from .plugin import PluginCreator, PluginInstaller
         installer = PluginInstaller( **kwargs )
