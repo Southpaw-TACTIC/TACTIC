@@ -234,7 +234,8 @@ class FileUpload(Base):
         f_progress = None
         file_progress_path = "%s_progress" % tmp_file_path
 
-        if base_decode and not tmp_file_path.endswith(".png"):
+        if base_decode and not tmp_file_path.endswith(".pngX"):
+            # Note sure why this code is here.  Disabling because the other block seems to work
             buffer = data.read()
             length = len(buffer)
             buffer = base64.b64decode(buffer)
