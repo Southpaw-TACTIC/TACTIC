@@ -84,7 +84,7 @@ TACTIC has a very deep and mature API allow you to customize almost any part of 
 
 Python Example
 ```python
-from tactic_client_lib import TacticServerStub.get()
+from tactic_client_lib import TacticServerStub
 server = TacticServerStub.get()
 shots = server.query("vfx/shot", ['sequence_code', 'SEQ001'])
 for shot in shots:
