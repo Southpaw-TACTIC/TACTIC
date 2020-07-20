@@ -270,7 +270,6 @@ class ProjectTemplateInstallerCmd(Command):
             #    print("Deleting project entry: ", project.get_code())
             #    project.delete()
             raise
-        fdsadffsd
 
 
     def get_template_dir(self, template_dir):
