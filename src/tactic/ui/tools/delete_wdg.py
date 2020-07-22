@@ -72,11 +72,13 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         title = DivWdg()
         top.add(title)
+        title.add_style("display: flex")
+        title.add_style("align-items: center")
 
         #icon = IconWdg("WARNING", IconWdg.WARNING)
         icon = IconWdg("WARNING", "FA_EXCLAMATION-TRIANGLE", size="20px")
-        icon.add_style("float: left")
         title.add(icon)
+        icon.add_style("margin-right: 10px")
 
         if len(self.search_keys) > 1:
             title.add("Delete %s Items" % len(self.search_keys))
@@ -231,7 +233,8 @@ class DeleteToolWdg(BaseRefreshWdg):
 
 
 
-        button = ActionButtonWdg(title="Cancel", width=100)
+        button = ActionButtonWdg(title="Cancel", width=100, color="secondary")
+        button.add_style("margin-left: 10px")
         button_div.add(button)
         button.add_style("display: inline-block")
         button.add_behavior( {
@@ -1118,7 +1121,8 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
 
 
-        button = ActionButtonWdg(title="Cancel")
+        button = ActionButtonWdg(title="Cancel", color="secondary")
+        button.add_style("margin-left: 10px")
         buttons.add_cell(button)
         button.add_behavior( {
         'type': 'click_up',
