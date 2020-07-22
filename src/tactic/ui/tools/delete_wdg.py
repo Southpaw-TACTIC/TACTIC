@@ -12,7 +12,7 @@
 __all__ = ["DeleteToolWdg", "DeleteCmd", "DeleteSearchTypeToolWdg", 'DeleteSearchTypeCmd', "DeleteProjectToolWdg", "DeleteProjectCmd"]
 
 from pyasm.common import Common, TacticException, Container, Environment
-from pyasm.biz import Schema, Project
+from pyasm.biz import Schema, Project, Snapshot
 from pyasm.command import Command
 from pyasm.search import Search, SearchKey, SearchType, TableDropUndo, FileUndo, SqlException, SearchException
 from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement
@@ -421,6 +421,7 @@ class DeleteCmd(Command):
 
 
 
+
     def delete_snapshot(self, snapshot):
 
         # get all of the file paths
@@ -448,12 +449,25 @@ class DeleteCmd(Command):
             print("Removing path: ", file_path)
             FileUndo.remove(file_path)
 
+
+        # get info before deleting
+        search_type = snapshot.get("search_type")
+        search_code = snapshot.get("search_code")
+        context = snapshot.get_value("context")
+        version = snapshot.get_value("version")
+
         print("Deleting snapshot: ", snapshot.get_search_key())
         snapshot.delete()
 
 
-
-
+        # find the latest snapshot
+        latest = Snapshot.get_latest(search_type, search_code, context=context)
+        if latest:
+            if latest.get_value("version") == -1:
+                print("Deleting versionless")
+                self.delete_snapshot(latest)
+            else:
+                latest.update_versionless("latest")
 
 
 
