@@ -16,7 +16,7 @@ from pyasm.search import *
 from pyasm.biz import Note
 
 class Submission(SObject):
-    SEARCH_TYPE = "prod/submission"
+    SEARCH_TYPE = "vfx/submission"
 
     def get_search_columns():
         return ['artist', 'description', 'status', 'search_type']
@@ -90,7 +90,7 @@ class Submission(SObject):
 
     
 class Bin(SObject):
-    SEARCH_TYPE = "prod/bin"
+    SEARCH_TYPE = "vfx/bin"
 
     def get_search_columns():
         return ['code', 'type', 'label']
@@ -111,5 +111,5 @@ class Bin(SObject):
 
 
 class SubmissionInBin(SObject):
-    SEARCH_TYPE = "prod/submission_in_bin"
+    SEARCH_TYPE = "vfx/submission_in_bin"
 

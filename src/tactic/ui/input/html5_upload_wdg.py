@@ -61,6 +61,8 @@ class Html5UploadWdg(BaseRefreshWdg):
         if multiple in [True, 'true']:
             input.add_attr("multiple", "multiple")
 
+
+
         from pyasm.common import Container
         if not Container.get_dict("JSLibraries", "spt_html5upload"):
             form.add_behavior( {

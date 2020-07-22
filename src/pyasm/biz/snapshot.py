@@ -1926,9 +1926,9 @@ class Snapshot(SObject):
 
 
 
-    def create(sobject, snapshot_type, context, column="snapshot", \
-            description="No description", \
-            snapshot_data=None, is_current=None, is_revision=False, \
+    def create(sobject, snapshot_type, context, column="snapshot",
+            description="No description",
+            snapshot_data=None, is_current=None, is_revision=False,
             level_type=None, level_id=None, commit=True, is_latest=True,
             is_synced=True, process=None, version=None, triggers=True,
             set_booleans=True):
@@ -1963,39 +1963,40 @@ class Snapshot(SObject):
         rev = -1
         # to find the version number, we have to find the highest number
         # of a particular snapshot
-        old_snapshot = Snapshot._get_by_version(search_type, search_combo, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
-        # have to clear the cache here, because after it is created
-        # it shouldn't be None anymore
-        if not old_snapshot:
-            Snapshot.clear_cache()
+        if version is None:
+            old_snapshot = Snapshot._get_by_version(search_type, search_combo, context, version="max", revision=rev, use_cache=False, level_type=level_type, level_id=level_id, show_retired=True)
+            # have to clear the cache here, because after it is created
+            # it shouldn't be None anymore
+            if not old_snapshot:
+                Snapshot.clear_cache()
 
-        # handle revisions, with no previous version, revision starts at 1
-        revision = 1
-        if old_snapshot and is_revision:
-            revision = old_snapshot.get_value("revision", no_exception=True)
-            if revision:
-                revision = int(revision) + 1
-            else:
-                revision = 1
+            # handle revisions, with no previous version, revision starts at 1
+            revision = 1
+            if old_snapshot and is_revision:
+                revision = old_snapshot.get_value("revision", no_exception=True)
+                if revision:
+                    revision = int(revision) + 1
+                else:
+                    revision = 1
 
-            # keep the same version
-            version = old_snapshot.get_value("version")
-            if version:
-                version = int(version)
+                # keep the same version
+                version = old_snapshot.get_value("version")
+                if version:
+                    version = int(version)
+                else:
+                    version = 1
             else:
-                version = 1
-        else:
-            if version != None:
-                # force the version
-                pass
-            elif old_snapshot:
-                old_version = old_snapshot.get_value("version")
-                # in case only the versionless snapshot is left behind
-                if old_version == -1:
-                    old_version = 0
-                version = int(old_version) + 1
-            else:
-                version = 1
+                if version != None:
+                    # force the version
+                    pass
+                elif old_snapshot:
+                    old_version = old_snapshot.get_value("version")
+                    # in case only the versionless snapshot is left behind
+                    if old_version == -1:
+                        old_version = 0
+                    version = int(old_version) + 1
+                else:
+                    version = 1
 
         snapshot = Snapshot(Snapshot.SEARCH_TYPE)
         snapshot.set_value("search_type", search_type )
@@ -2289,7 +2290,8 @@ class Snapshot(SObject):
             lib_dir = self.get_lib_dir(file_type=file_type, file_object=ref_file_object)
             file_path = "%s/%s" % (lib_dir, file_name)
             if not os.path.exists(file_path):
-                raise Exception("Cannot create versionless.  Referenced path [%s] from file_object [%s] does not exist" % (file_path, file_object.get_code()))
+                #raise Exception("Cannot create versionless.  Referenced path [%s] from file_object [%s] does not exist" % (file_path, file_object.get_code()))
+                continue
 
 
             # build the file name

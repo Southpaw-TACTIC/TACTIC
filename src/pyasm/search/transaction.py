@@ -610,7 +610,7 @@ class FileUndo:
         filename = os.path.basename(src)
         tmp_file = "%s/%s" % (tmp_dir, filename)
 
-        if os.path.exists(src):
+        if os.path.exists(src) or os.path.islink(src):
             System().makedirs(tmp_dir)
             if os.path.exists(tmp_file):
                 # just write over

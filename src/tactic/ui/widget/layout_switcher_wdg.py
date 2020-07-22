@@ -98,7 +98,7 @@ class LayoutSwitcherWdgOld(BaseRefreshWdg):
             activator = IconButtonWdg( name="Layout Switcher", icon="BS_TH_LIST")
         
         activator.add_behavior( {
-            'type': 'click_up',
+            'type': 'click_upX',
             'cbjs_action': '''
             var activator = bvr.src_el;
             var top = activator.getParent(".spt_switcher_top");
@@ -501,7 +501,7 @@ class LayoutSwitcherWdg(LayoutSwitcherWdgOld):
         return """
             var menu_item = bvr.src_el;
             var top = menu_item.getParent(".spt_switcher_top");
-            var menu = menu_item.getParent(".spt_switcher_menu");
+            //var menu = menu_item.getParent(".spt_switcher_menu");
             
             // Get target class
             var target_class = bvr.target;

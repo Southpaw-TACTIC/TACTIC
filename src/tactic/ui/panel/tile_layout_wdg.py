@@ -1202,6 +1202,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                                 var file = files[i];
 
                                 var filename = file.name;
+                                var search_type = bvr.search_type;
 
                                 var search_key;
                                 var data = {
@@ -1213,13 +1214,14 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                                 server.set_api_key(insert_api_key);
 
-                                if (mode == "insert") {
-                                    var search_type = bvr.search_type;
+                                if (search_type == "sthpw/snapshot") {
+                                    search_key = bvr.search_key;
+                                }
+                                else if (mode == "insert") {
                                     var item = server.insert(search_type, data, { collection_key: bvr.collection_key});
                                     search_key = item.__search_key__;
                                 }
                                 else if (mode == "child") {
-                                    var search_type = bvr.search_type;
                                     var item = server.insert(search_type, data, { parent_key: bvr.search_key, collection_key: bvr.collection_key });
                                     search_key = item.__search_key__;
                                 }
@@ -2181,6 +2183,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         div = DivWdg()
         div.add_class("spt_thumb_top")
 
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
+        div.add_style("height: 100%")
+
         """
         # TODO: This logic should be handled in get_sobject_data
         path = self.path
@@ -2524,7 +2530,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
     def get_delete_wdg(self):
         '''Get Delete button'''
-        button = ActionButtonWdg(title='Delete')
+        button = ActionButtonWdg(title='Delete', color="secondary")
         button.add_style('float','left')
         button.add_style('margin-right: 25px')
         button.add_behavior({'type':'click_up',
@@ -3229,6 +3235,10 @@ class ThumbWdg2(BaseRefreshWdg):
         div = self.top
         div.add_class("spt_thumb_top")
 
+        div.add_style("display: flex")
+        div.add_style("align-items: center")
+        div.add_style("height: 100%")
+
         path = self.path
         if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
             path = ""
@@ -3437,14 +3447,31 @@ class ThumbWdg2(BaseRefreshWdg):
         if not snapshot:
             snapshot = Snapshot.get_snapshot("sthpw/search_object", base_search_type, process=processes)
 
-
         if snapshot:
+
             file_type = "web"
-            icon_path = snapshot.get_web_path_by_type(file_type)
+
+            file_object = snapshot.get_file_by_type(file_type)
+            if file_object:
+                file_name = file_object.get_full_file_name()
+                web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
+
+                icon_path = "%s/%s" % (web_dir, file_name)
+            else:
+                icon_path = snapshot.get_web_path_by_type(file_type)
 
             file_type = "main"
-            main_path = snapshot.get_web_path_by_type(file_type)
+
             lib_path = snapshot.get_lib_path_by_type(file_type)
+
+            file_object = snapshot.get_file_by_type(file_type)
+            if file_object:
+                file_name = file_object.get_full_file_name()
+                web_dir = sobject.get_web_dir(snapshot, file_object=file_object)
+
+                main_path = "%s/%s" % (web_dir, file_name)
+            else:
+                main_path = snapshot.get_web_path_by_type(file_type)
 
         if icon_path:
             path = icon_path

@@ -41,7 +41,8 @@ class FileCheckin(BaseCheckin):
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
-            checkin_type='', version=None, single_snapshot=False, process=None
+            checkin_type='', version=None, single_snapshot=False, process=None,
+            do_update_versionless=True, ingest_mode=None,
             ):
 
         '''sobject - the sobject that this checkin belongs to
@@ -87,6 +88,7 @@ class FileCheckin(BaseCheckin):
         self.is_current = is_current
         self.is_revision = is_revision
         self.version = version
+        self.do_update_versionless = do_update_versionless
 
         if isinstance(file_paths, basestring):
             self.file_paths = [file_paths]
@@ -243,7 +245,7 @@ class FileCheckin(BaseCheckin):
         
         self.single_snapshot = single_snapshot
 
-
+        self.ingest_mode = ingest_mode
 
 
        
@@ -422,12 +424,26 @@ class FileCheckin(BaseCheckin):
 
         self.is_latest = is_latest
 
+        # set ingest version to 1 if it is not explicitly set
+        if not self.version and self.ingest_mode == "ingest":
+            self.version = 1
+
         # copy the snapshot and put it in the snapshot history
         self.snapshot = Snapshot.create( self.sobject, snapshot_type,
             self.context, self.column, self.description, snapshot_xml,
             is_current=self.is_current, is_revision=self.is_revision,
             level_type=self.level_type, level_id=self.level_id, is_latest=is_latest,
-            is_synced=is_synced, version=self.version, triggers="integral", set_booleans=False, process=self.process)
+            is_synced=is_synced, version=self.version, triggers="integral",
+            set_booleans=False, process=self.process,
+            commit=False)
+
+        if self.ingest_mode == "ingest":
+            self.snapshot.set_random_code()
+        else:
+            self.snapshot.commit(triggers="none")
+            last_statement = self.snapshot.get_last_statement()
+            self.statements.append(last_statement)
+
 
         if self.single_snapshot and self.snapshot.get_version() > 1:
             raise SingleSnapshotException("There is an existing snapshot for \
@@ -523,7 +539,10 @@ class FileCheckin(BaseCheckin):
             checkin_dir = file_object.get_value("checkin_dir")
             assert(checkin_dir)
 
-            file_object.commit()
+            #file_object.commit()
+            #last_statement = file_object.get_last_statement()
+            #self.statements.append(last_statement)
+
 
         return self.snapshot
 
@@ -547,14 +566,13 @@ class FileCheckin(BaseCheckin):
         '''delegate the system commands to the appropriate repo.'''
 
         if self.mode == 'inplace':
-            # TODO: ? MD5?
+            # NOTE: MD5?
             return
-
 
         # get the repo set it up
         repo = self.sobject.get_repo(self.snapshot)
         repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths)
-       
+
         # Call the checkin/move pipeline event
         #event_caller = PipelineEventCaller(self, "checkin/move")
         #event_caller.run()
@@ -982,7 +1000,11 @@ class FileGroupCheckin(FileCheckin):
                     md5_checksum = File.get_md5(to_path)
                     if md5_checksum:
                         file_object.set_value("md5", md5_checksum)
+
                         file_object.commit()
+                        last_statement = file_object.get_last_statement()
+                        self.statements.append(last_statement)
+
                     st_size = file_object.get_value("st_size")
                     FileUndo.create( from_expanded[j], to_expanded[j], io_action=io_action, extra={ "md5": md5_checksum, "st_size": st_size } )
 

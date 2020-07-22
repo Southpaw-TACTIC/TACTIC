@@ -240,9 +240,6 @@ class BaseAppServer(Base):
         top = TitleTopWdg()
         widget.add(top)
         body = top.get_body()
-        #body.add_gradient("background", "background", 5, -20)
-        body.add_color("background", "background")
-        body.add_color("color", "color")
 
         reset_msg = web.get_form_value('reset_msg')
         if reset_msg:
@@ -378,7 +375,7 @@ class BaseAppServer(Base):
             if override_default:
                 project = override_default
         if is_upload:
-            print("IS UPLOAD")
+            #print("IS UPLOAD")
             access = True
 
         elif project != 'default':
@@ -451,6 +448,10 @@ class BaseAppServer(Base):
 
         # some extra precautions in guest mode
         if login_name == 'guest' and guest_mode != "full":
+
+            if is_upload:
+                raise Exception("Permission denied to upload file")
+
             # show a restricted guest mode
             from pyasm.widget import WebLoginWdg, BottomWdg
             from tactic.ui.app import TitleTopWdg
@@ -465,9 +466,6 @@ class BaseAppServer(Base):
             top = TitleTopWdg()
             widget.add(top)
             body = top.get_body()
-            body.add_color("background", "background")
-            body.add_color("color", "color")
-
 
             has_site = False
 
@@ -546,7 +544,6 @@ class BaseAppServer(Base):
 
                 if has_site:
                     Site.pop_site()
-
 
 
             if not web_wdg:
@@ -637,6 +634,7 @@ class BaseAppServer(Base):
             page_type = "dynamic_file"
         else:
             page_type = "normal"
+
 
         # TODO: the following could be combined into a page_init function
         # provide the opportunity to set some templates
@@ -883,8 +881,11 @@ class BaseAppServer(Base):
         web = WebContainer.get_web()
 
         # NOTE: is this needed anymore?
-        if request_type in ["upload", "dynamic_file"]:
-            print("DEPRECATED: dynamic file in app_server.py")
+        if request_type in ["dynamic_file"]:
+            err = "DEPRECATED: dynamic file in app_server.py"
+            raise Exception(err)
+
+        if request_type in ["upload"]:
             widget = Widget()
             page = self.get_page_widget()
             widget.add(page)

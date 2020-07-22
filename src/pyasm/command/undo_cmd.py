@@ -16,6 +16,7 @@ __all__ = ["UndoCmd", "RedoCmd"]
 from pyasm.common import *
 from pyasm.biz import Project
 from pyasm.search import *
+from pyasm.security import Sudo
 
 from .command import *
 
@@ -46,7 +47,12 @@ class UndoCmd(Command):
 
     def set_transaction_id(self, transaction_id):
         '''manually set the translation id'''
-        self.transaction_log = Search.get_by_id("sthpw/transaction_log", transaction_id)
+        sudo = Sudo()
+        try:
+            self.transaction_log = Search.get_by_id("sthpw/transaction_log", transaction_id)
+        finally:
+            sudo.exit()
+
         if not self.transaction_log:
             raise CommandException("Transaction with id [%s] does not exist" % transaction_id)
 

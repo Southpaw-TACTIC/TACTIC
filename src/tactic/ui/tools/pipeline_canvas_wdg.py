@@ -4067,6 +4067,7 @@ spt.pipeline.remove_group = function(group_name) {
 
 spt.pipeline.set_node_property = function(node, name, value) {
     node.properties[name] = value;
+    node.has_changes = true;
 }
 
 spt.pipeline.get_node_property = function(node, name) {
@@ -4099,8 +4100,8 @@ spt.pipeline.get_node_kwarg = function(node, name) {
 }
 
 spt.pipeline.set_node_kwargs = function(node, kwargs) {
-    var type = spt.pipeline.get_node_type(node);
-    type = "settings";
+    //var type = spt.pipeline.get_node_type(node);
+    var type = "settings";
     spt.pipeline.set_node_property(node, type, kwargs);
 }
 

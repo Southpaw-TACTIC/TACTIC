@@ -40,10 +40,14 @@ class BaseCheckin(Command):
 
         self.is_revision = False
         self.version = None
+        self.do_update_versionless = True
 
         self.keep_file_name = False
         self.mode = None
         self.repo_type = 'tactic'
+
+        # store all of the statements
+        self.statements = []
 
         self.file_objects = []
         super(BaseCheckin,self).__init__()
@@ -72,6 +76,10 @@ class BaseCheckin(Command):
         else:
             self.orig_project_code = Project.get_project_code()
             Project.set_project(project_code)
+
+        self.ingest_mode = None
+
+
 
     def get_snapshot(self):
         return self.snapshot
@@ -124,12 +132,12 @@ class BaseCheckin(Command):
         self.add_dependencies(self.snapshot_xml)
 
         # update the files to reference back to the snapshot
-        for idx, file_object in enumerate(self.file_objects):
-            file_object.set_value("snapshot_code", self.snapshot.get_code())
-            file_object.commit()
+        #for idx, file_object in enumerate(self.file_objects):
+        #    file_object.set_value("snapshot_code", self.snapshot.get_code())
  
         # handle file naming conventions
         self.handle_file_naming()
+
 
         # preprocess any files before they go into the repository
         self.preprocess_files(self.files)
@@ -141,21 +149,54 @@ class BaseCheckin(Command):
         # handle all system commands
         self.handle_system_commands(self.files, self.file_objects)
 
-        # update the versionless snapshot explicitly
-        self.update_versionless("current")
-        self.update_versionless("latest")
 
+        # make sure everything is commited
+        if self.ingest_mode == "ingestX":
+            statement = self.snapshot.get_statement()
+            self.statements.append(statement)
+            for file_object in self.file_objects:
+                statement = file_object.get_statement()
+                self.statements.append(statement)
+        else:
+            self.snapshot.commit(triggers="none")
+            last_statement = self.snapshot.get_last_statement()
+            self.statements.append(last_statement)
+            for file_object in self.file_objects:
+                # update the files to reference back to the snapshot
+                file_object.set_value("snapshot_code", self.snapshot.get_code())
+                file_object.commit(triggers="none")
+                last_statement = file_object.get_last_statement()
+                self.statements.append(last_statement)
+
+
+
+        # update the versionless snapshot explicitly
+        do_update_versionless = self.do_update_versionless
+        if do_update_versionless in ['false', False]:
+            do_update_versionless = False
+        else:
+            do_update_versionless = True
+
+        if do_update_versionless and self.ingest_mode != "ingest":
+            self.update_versionless("current")
+            self.update_versionless("latest")
 
         # commit snapshot again due to changes made after file commit
         # SnapshotIsLatestTrigger is suppressed earlier when is_latest was
         # changed, so triggers here doesn't do much
-        self.snapshot.commit(triggers=True)
-
+        if self.ingest_mode == "ingestX":
+            statement = self.snapshot.get_statement()
+            if statement:
+                self.statements.append(statement)
+            return
+        else:
+            self.snapshot.commit(triggers="none")
 
         # add a note to the parent
         self.add_publish_note()
         
         self.call_triggers()
+
 
     def get_trigger_prefix(self):
         return "checkin"
@@ -235,6 +276,11 @@ class BaseCheckin(Command):
 
 
     def check_lock(self):
+
+        # ingest mode does insert, so it bypasses a lock check
+        if self.ingest_mode == "ingest":
+            return
+
         # check if this is locked
         if Snapshot.is_locked(self.sobject, self.context):
             raise CheckinException("Context [%s] is locked." % self.context)
@@ -246,7 +292,6 @@ class BaseCheckin(Command):
 
 
     def create_file_objects(self, file_paths):
-
         file_objects = []
 
         for i, file_path in enumerate(file_paths):
@@ -257,6 +302,7 @@ class BaseCheckin(Command):
 
             file_type = self.file_types[i]
 
+
             # create file_object
             file_object = File.create(
                 file_path,
@@ -266,7 +312,17 @@ class BaseCheckin(Command):
                 requires_file=requires_file,
                 repo_type=self.repo_type,
                 file_type=file_type,
+                commit=False,
             )
+
+
+            if self.ingest_mode == "ingest":
+                file_object.set_random_code()
+            else:
+                # We need to commit in order to get the code
+                file_object.commit(triggers="none")
+                last_statement = file_object.get_last_statement()
+                self.statements.append(last_statement)
 
             if not file_object:
                 raise FileException("File object id=[%s] is None" % file_code)
@@ -338,7 +394,6 @@ class BaseCheckin(Command):
             assert(new_file_name)
 
             file_object.set_value("file_name", new_file_name)
-            file_object.commit(triggers=False)
 
             count += 1
 
@@ -362,8 +417,6 @@ class BaseCheckin(Command):
         self.snapshot_xml = xml.to_string()
         self.snapshot.set_value("snapshot", self.snapshot_xml)
 
-        # Commit is handled later
-        #self.snapshot.commit(triggers=False, commit=False)
 
 
     def move_file(self, file_path, new_file_path):

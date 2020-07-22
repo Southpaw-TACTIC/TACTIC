@@ -1821,7 +1821,7 @@ class TacticServerStub(object):
 
 
 
-    def upload_file(self, path, base_dir=None):
+    def upload_file(self, path, base_dir=None, chunk_size=None, offset=None):
         '''API Function: upload_file(path)
         Use http protocol to upload a file through http
 
@@ -1831,6 +1831,10 @@ class TacticServerStub(object):
         '''
         from .common import UploadMultipart
         upload = UploadMultipart()
+        if chunk_size:
+            upload.set_chunk_size(chunk_size)
+        if offset:
+            upload.set_offset(offset)
         upload.set_ticket(self.transaction_ticket)
        
         # If a portal set up is used, alter server name for upload
@@ -1856,17 +1860,18 @@ class TacticServerStub(object):
                 upload.set_subdir(sub_dir)
 
 
-
         upload.set_upload_server(upload_server_url)
-        #upload.set_subdir("blah")
-        upload.execute(path)
 
-        # upload a file
-        #filename = os.path.basename(path)
-        #file = open(path, 'rb')
-        #data = xmlrpclib.Binary( file.read() )
-        #file.close()
-        #return self.server.upload_file(self.transaction_ticket, filename, data)
+        while True:
+            try:
+                upload.execute(path)
+            except Exception as e:
+                print("offset: ", upload.offset)
+                raise
+
+
+            break
+
 
 
     def upload_group(self, path, file_range):

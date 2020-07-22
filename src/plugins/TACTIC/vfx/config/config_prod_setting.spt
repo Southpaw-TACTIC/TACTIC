@@ -1,0 +1,8 @@
+#-- Start Entry --#
+insert = SearchType.create('config/prod_setting')
+insert.set_value('code', """VFX00005""")
+insert.set_value('key', """palette""")
+insert.set_value('type', """string""")
+insert.set_value('value', """DARK""")
+#-- End Entry --#
+

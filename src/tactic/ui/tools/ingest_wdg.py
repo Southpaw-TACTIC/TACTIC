@@ -154,26 +154,24 @@ class IngestUploadWdg(BaseRefreshWdg):
         left.add( self.get_content_wdg() )
 
         if not self.search_key or self.show_settings:
-            if False and self.show_settings:
-                middle = table.add_cell()
-                middle.add_style("height: 10px") # not sure why we need this height
-                middle.add_style("padding: 30px 20px")
-                line = DivWdg()
-                middle.add(line)
-                line.add_style("height: 100%")
-                line.add_style("border-style: solid")
-                line.add_style("border-width: 0px 0px 0px 1px")
-                line.add_style("border-color: #DDD")
-                line.add(" ")
-
-
-
             right = table.add_cell()
             right.add_class("spt_right_content")
             right.add_style("vertical-align: top")
             right.add( self.get_settings_wdg() )
             if self.show_settings in [False, 'false', 'hidden']:
                 right.add_style("display: none")
+
+
+            process = self.kwargs.get("process")
+            if process:
+                hidden = HiddenWdg(name="process")
+                right.add(hidden)
+                hidden.add_class("spt_process")
+                hidden.set_value(process)
+
+
+
+
 
         else:
             if self.orig_sobject and self.orig_sobject.column_exists("process"):
@@ -638,7 +636,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         if self.show_settings:
             button_div = DivWdg()
             header_div.add(button_div)
-            button = IconButtonWdg(title="Expand Options", icon="BS_MENU_HAMBURGER")
+            button = IconButtonWdg(title="Expand Options", icon="FA_ELLIPSIS_V")
             button_div.add(button)
             button_div.add_style("float: right")
             button.add_behavior( {
@@ -1184,30 +1182,34 @@ class IngestUploadWdg(BaseRefreshWdg):
         spt.notify.show_message("Ingest Completed");
         server.finish();
 
-        var file_els = top.getElements(".spt_upload_file");
-        for ( var i = 0; i < file_els.length; i++) {
-            spt.behavior.destroy( file_els[i] );
-        };
-        var background = top.getElement(".spt_files_background");
-        background.setStyle("display", "");
-
         spt.message.stop_interval(message_key);
 
-        var info_el = top.getElement(".spt_upload_info");
-        info_el.innerHTML = '';
+        if (typeof(top) != "undefined") {
 
-        var progress_el = top.getElement(".spt_upload_progress");
-        var progress_top = top.getElement(".spt_upload_progress_top");
+            var file_els = top.getElements(".spt_upload_file");
+            for ( var i = 0; i < file_els.length; i++) {
+                spt.behavior.destroy( file_els[i] );
+            };
+            var background = top.getElement(".spt_files_background");
+            background.setStyle("display", "");
 
-        setTimeout( function() {
-            progress_el.setStyle("visibility", "hidden");
-            progress_top.setStyle("margin-top", "-30px");
-        }, 0);
 
-    
-        ingest_btn_top = top.getElement(".spt_ingest_btn");
-        ingest_btn_top.in_progress = false;
+            var info_el = top.getElement(".spt_upload_info");
+            info_el.innerHTML = '';
+
+            var progress_el = top.getElement(".spt_upload_progress");
+            var progress_top = top.getElement(".spt_upload_progress_top");
+
+            setTimeout( function() {
+                progress_el.setStyle("visibility", "hidden");
+                progress_top.setStyle("margin-top", "-30px");
+            }, 0);
+
         
+            ingest_btn_top = top.getElement(".spt_ingest_btn");
+            ingest_btn_top.in_progress = false;
+        }
+            
          
         '''
 
@@ -2050,7 +2052,7 @@ class IngestUploadCmd(Command):
                 if update_mode not in ['true', True, "update"]:
                     sobjects = []
 
-                self.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
+                #self.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
 
                 sobject = SearchType.create(search_type)
 
@@ -2390,6 +2392,8 @@ class IngestUploadCmd(Command):
         search_file.add_filter("search_type", file_search_type)
         search_file.add_filter("relative_dir", relative_dir)
         search_file.add_filter("file_name", search_name, op='like')
+
+        print(search_file.get_statement())
 
         file_sobjects = search_file.get_sobjects()
 

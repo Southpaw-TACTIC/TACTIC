@@ -677,6 +677,8 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
         self.process = self.get_option('process')
         self.context = ''
         transfer_mode = self.get_option('transfer_mode')
+        if not transfer_mode:
+            transfer_mode = "browser"
         
         sobject = self.get_current_sobject()
         if sobject and sobject.get_id() == -1:
@@ -754,7 +756,7 @@ class CheckoutButtonElementWdg(ButtonElementWdg):
             transfer_mode = spt.Environment.get().get_transfer_mode();
         }
         if (transfer_mode == null) {
-            transfer_mode = 'web';
+            transfer_mode = 'browser';
         }
 
         // NOTE: reusing checkin transfer mode

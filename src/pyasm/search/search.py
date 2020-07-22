@@ -482,6 +482,14 @@ class Search(Base):
         self.add_filter(name, "NULL", quoted=False, op="is")
 
 
+    def add_empty_filter(self, name):
+        self.add_op("begin")
+        self.add_filter(name, "NULL", quoted=False, op="is")
+        self.add_filter(name, "", op="=")
+        self.add_op("or")
+        print("sss: ", self.get_statement())
+
+
     def add_search_filter(self, name, search, op='in', table=''):
         '''combines results of one search filter with another search filter
         as a subselect
@@ -1909,6 +1917,8 @@ class Search(Base):
             if not statement:
                 statement = self.select.get_statement()
 
+            #print("QUERY: ", statement)
+
             from pyasm.security import Site
             results = sql.do_query(statement)
 
@@ -2547,6 +2557,7 @@ class SObject(object):
         self._prev_update_data = None
         self.update_description = None
         self._skip_invalid_column = False
+        self.last_statement = None
         #self.database_impl = None
 
         # id override
@@ -2738,6 +2749,10 @@ class SObject(object):
 
     def get_sql(self):
         return self.db_resource.get_sql()
+
+
+    def get_last_statement(self):
+        return self.last_statement
 
 
 
@@ -3493,6 +3508,11 @@ class SObject(object):
         return self.set_value(name, value, quoted)
 
 
+    def set_random_code(self):
+        search_code = self.generate_code()
+        self.set_value("code", search_code)
+        return search_code
+
 
     def set_now(self, column="timestamp"):
         sql = DbContainer.get(self.db_resource)
@@ -4055,10 +4075,14 @@ class SObject(object):
         
         #is_mysql = impl.get_database_type() == 'MySQL'
 
+        is_code_set = False
         for key, value in self.update_data.items():
             quoted = self.quoted_flag.get(key)
             escape_quoted = False
             changed = False
+
+            if key == "code" and value:
+                is_code_set = True
 
             if isinstance(value, dict):
                 value = jsondumps(value)
@@ -4122,6 +4146,8 @@ class SObject(object):
             if not statement:
                 return
 
+            self.last_statement = statement
+
             if return_sql:
                 return statement
 
@@ -4134,7 +4160,7 @@ class SObject(object):
                 if id_statement:
                     sql.do_update(id_statement)
 
-            #print("statement: ", statement)
+            #print("UPDATE: ", self, ": ", statement)
             sql.do_update(statement)
 
 
@@ -4173,9 +4199,9 @@ class SObject(object):
 
 
         # Get the updated values and fill it into data.  This handles
-        # auto updated values in the database
+        # auto updated values in the database.  This is only done on insert
         sobject = None
-        if not is_search_type:
+        if not is_search_type and is_insert:
 
             from pyasm.security import Sudo
             sudo = Sudo()
@@ -4199,7 +4225,6 @@ class SObject(object):
 
         else:
             sobject = self
-            #sobject.data = self.update_data.copy()
             for key, value in self.update_data.items():
                 self.data[key] = self.update_data[key]
 
@@ -4405,7 +4430,7 @@ class SObject(object):
 
 
 
-    def generate_code(self, id):
+    def generate_code(self, id=None):
         search_type = self.get_base_search_type()
 
 
@@ -4423,7 +4448,7 @@ class SObject(object):
 
 
         from pyasm.biz import ProjectSetting
-        if ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
+        if id == None or ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
             log_key = self.get_code_key()
             random_code = Common.generate_random_key(digits=10)

@@ -10709,6 +10709,9 @@ class SessionalProcess:
             ''' % (pre_processing, post_processing)
             })
 
+
+
+
         # on change(blur, change) - replace section data
         section.add_relay_behavior({
             'type': 'blur',
@@ -10721,6 +10724,7 @@ class SessionalProcess:
                     if (section != "task_detail") {
                         top.update_data();
                     } else {
+                        spt.task_detail.set_top(top);
                         var content = top.getElement(".spt_app_content_top");
                         var index = content.getAttribute("index");
                         spt.task_detail.update_data(content, index);
@@ -10741,6 +10745,7 @@ class SessionalProcess:
                 if (section != "task_detail") {
                     top.update_data();
                 } else {
+                    spt.task_detail.set_top(top);
                     var content = top.getElement(".spt_app_content_top");
                     var index = content.getAttribute("index");
                     spt.task_detail.update_data(content, index);
@@ -10761,6 +10766,7 @@ class SessionalProcess:
                 if (section != "task_detail") {
                     top.update_data();
                 } else {
+                    spt.task_detail.set_top(top);
                     var content = top.getElement(".spt_app_content_top");
                     var index = content.getAttribute("index");
                     spt.task_detail.update_data(content, index);

@@ -35,8 +35,6 @@ class UploadServerWdg(Widget):
         num_files = web.get_form_value("num_files")
         files = []
 
-        print("num_files: ", num_files)
-
         # HTML5 upload
         if num_files:
             num_files = int(num_files)
@@ -147,7 +145,8 @@ class UploadServerWdg(Widget):
 
         # Base 64 encoded files are uploaded and decoded in FileUpload
         base_decode = None
-        if action == "create":
+        print("action: ", action)
+        if action in ["create", "append"]:
             if os.name == 'nt':
                 f = field_storage.file
             else:
