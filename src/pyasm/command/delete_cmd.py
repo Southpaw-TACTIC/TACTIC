@@ -76,7 +76,6 @@ class ReactivateCmd(RetireCmd):
 
 
 class DeleteCmd(Command):
-    '''Base class for all command'''
 
     def __init__(self):
         super(DeleteCmd,self).__init__()
