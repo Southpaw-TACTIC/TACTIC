@@ -91,6 +91,7 @@ class TacticServerStub(object):
             except ImportError:
                 pass
         self.protocol = protocol
+        self.transport = None
 
         # if all of the necessary parameters are set, then
         if server and (ticket or login) and project:
@@ -237,7 +238,10 @@ class TacticServerStub(object):
                  )
 
         else:
-            self.server = xmlrpclib.Server(url, allow_none=True)
+            if self.transport:
+                self.server = xmlrpclib.Server(url, allow_none=True, transport=self.transport)
+            else:
+                self.server = xmlrpclib.Server(url, allow_none=True)
 
 
 
@@ -279,6 +283,11 @@ class TacticServerStub(object):
 
     def get_project(self):
         return self.project_code
+
+    def set_transport(my, transport=None):
+        '''Function: set_transport(transport=xmlrpclib.Transport)
+            Sets the transport that can be used to setup proxy'''
+        my.transport = transport
 
     def set_site(self, site=None):
         '''Function: set_site(site=None)
@@ -1959,7 +1968,6 @@ class TacticServerStub(object):
         return self.server.create_snapshot(self.ticket, search_key, context,
                                          snapshot_type, description, is_current,
                                          level_key, is_revision, triggers)
-        
 
 
 
