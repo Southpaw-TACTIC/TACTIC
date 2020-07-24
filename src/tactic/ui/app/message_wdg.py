@@ -19,6 +19,7 @@ from pyasm.search import Search, SearchType
 from pyasm.command import Command
 from pyasm.web import Table
 from pyasm.widget import TextWdg, IconWdg, ThumbWdg, TextWdg, TextAreaWdg
+from pyasm.security import Sudo
 from pyasm.biz import Project
 from tactic.ui.widget import ActionButtonWdg, IconButtonWdg
 from tactic.ui.input import TextInputWdg
@@ -530,7 +531,12 @@ class ChatSessionWdg(BaseRefreshWdg):
 
 
         current_user = Environment.get_user_name()
-        logins = Search.eval("@SOBJECT(sthpw/subscription['message_code','%s'].sthpw/login)" % key)
+        sudo = Sudo()
+        try:
+            logins = Search.eval("@SOBJECT(sthpw/subscription['message_code','%s'].sthpw/login)" % key)
+        finally:
+            sudo.exit()
+
         for login in logins:
             if login.get_value("login") == current_user:
                 continue
@@ -732,7 +738,7 @@ class ChatSessionWdg(BaseRefreshWdg):
         }
         else if (key == 'enter') {
             if (e.control == false) {
-                pass;
+                //pass;
             }
             else {
                  // TODO: check if it's multi-line first 
@@ -910,8 +916,8 @@ class SubscriptionWdg(BaseRefreshWdg):
         mode = "new"
 
         categories = ['chat','sobject','script','progress']
-        categories = [None]
-        categories = ['feedback']
+        #categories = [None]
+        #categories = ['feedback']
 
         has_entries = False
         for category in categories:
@@ -966,7 +972,8 @@ class SubscriptionWdg(BaseRefreshWdg):
 
         search_keys = [x.get_search_key() for x in subscriptions]
         button = ActionButtonWdg(title="Clear All")
-        button.add_styles('float: right; padding: 2px')
+        button.add_style("float: right")
+        button.add_style("padding: 2px")
         button_div = DivWdg(button)
         button_div.add_style('min-height: 26px')
         div.add(button_div)
