@@ -451,13 +451,15 @@ class TopWdg(Widget):
             } )
 
 
+        hover_color = self.body.get_color("background", -10)
         self.body.add_relay_behavior( {
             'type': 'mouseenter',
+            'hover_color': hover_color,
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
             var bgcolor = bvr.src_el.getStyle("background");
             bvr.src_el.setAttribute("spt_bgcolor", bgcolor);
-            bvr.src_el.setStyle("background", "#EEE");
+            bvr.src_el.setStyle("background", bvr.hover_color);
             '''
             } )
 

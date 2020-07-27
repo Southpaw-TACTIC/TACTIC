@@ -1340,6 +1340,9 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
 
     def get_folder(self, group_name):
+        div = DivWdg()
+
+        color = div.get_color("color")
 
         styles = HtmlElement.style('''
 
@@ -1367,14 +1370,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
             .spt_pipeline_folder .spt_content {
                 font-size: 14px;
-                color: #666;
+                color: %s;
                 padding: 10px;
                 text-align: center;
             }
 
-            ''')
+            ''' % color)
 
-        div = DivWdg()
         div.add_class("spt_pipeline_folder")
         div.add_class("spt_pipeline_folder_template")
 
