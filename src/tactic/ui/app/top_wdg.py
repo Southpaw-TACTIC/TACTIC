@@ -843,8 +843,10 @@ class TopWdg(Widget):
         if not palette_key:
             web = WebContainer.get_web()
             if web.is_admin_page():
-                palette = ProjectSetting.get_value_by_key("palette/admin")
-                if not palette:
+                palette_key = ProjectSetting.get_value_by_key("palette/admin")
+                if not palette_key:
+                    palette_key = ProjectSetting.get_value_by_key("palette")
+                if not palette_key:
                     palette_key = 'AQUA'
 
         if palette_key:

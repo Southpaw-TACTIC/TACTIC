@@ -220,6 +220,7 @@ class Palette(object):
         if not self.colors:
             self.colors = self.COLORS
 
+
         # make sure all of the colors are defined
         for name, value in self.DEFAULT.items():
             # make a special provision for theme!
