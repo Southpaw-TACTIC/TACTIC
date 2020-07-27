@@ -1526,13 +1526,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         project_code = Project.get_project_code()
 
-        subscription = SearchType.create("sthpw/subscription")
-        subscription.set_value("message_code", key)
-        subscription.set_value("project_code", project_code)
-        subscription.set_user()
-        if category:
-            subscription.set_value("category", category)
-        subscription.commit()
+        sudo = Sudo()
+        try:
+            subscription = SearchType.create("sthpw/subscription")
+            subscription.set_value("message_code", key)
+            subscription.set_value("project_code", project_code)
+            subscription.set_user()
+            if category:
+                subscription.set_value("category", category)
+            subscription.commit()
+        finally:
+            sudo.exit()
 
         sobject_dict = self._get_sobject_dict(subscription)
         return sobject_dict
@@ -1553,11 +1557,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         project_code = Project.get_project_code()
 
-        search = Search("sthpw/subscription")
-        search.add_user_filter()
-        search.add_filter("message_code", key)
-        search.add_filter("project_code", project_code)
-        subscription  = search.get_sobject()
+        sudo = Sudo()
+        try:
+            search = Search("sthpw/subscription")
+            search.add_user_filter()
+            search.add_filter("message_code", key)
+            search.add_filter("project_code", project_code)
+            subscription  = search.get_sobject()
+        finally:
+            sudo.exit()
 
         if not subscription:
             raise ApiException('[%s] is not subscribed to.'%key)

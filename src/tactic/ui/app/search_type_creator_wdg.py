@@ -480,16 +480,29 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         process_wdg = DivWdg()
         process_wdg.add_style("padding-left: 40px")
-        process_wdg.add("Process: ")
-        process_wdg.add( TextWdg("process") )
+        process_wdg.add_style("display", "flex")
+        process_wdg.add_style("align-items", "center")
+
+        process_wdg.add("<div>Process: </div>")
+        text = TextInputWdg(name="process")
+        process_wdg.add( text )
+        text.add_attr("spt_is_multiple", "true")
+        text.add_style("margin: 0px 20px")
+
         dynamic_list.add_template(process_wdg)
 
         for i in range(0,3):
             process_wdg = DivWdg()
             process_wdg.add_style("padding-left: 40px")
-            process_wdg.add("Process: ")
-            text = TextWdg("process")
+            process_wdg.add_style("display", "flex")
+            process_wdg.add_style("align-items", "center")
+
+            process_wdg.add("<div>Process: </div>")
+
+            text = TextInputWdg(name="process")
             text.add_attr("disabled", "disabled")
+            text.add_style("margin: 0px 20px")
+            text.add_attr("spt_is_multiple", "true")
             process_wdg.add( text )
             dynamic_list.add_item(process_wdg)
 
@@ -1891,6 +1904,7 @@ class SearchTypeCreatorCmd(Command):
 
 
         processes = self.get_values("process")
+
         filtered = []
         for process in processes:
             if process:

@@ -97,22 +97,30 @@ class DynamicListWdg(BaseRefreshWdg):
         item_div = DivWdg()
         item_div.add_style("margin-top: 3px")
 
+
         if is_template == True:
             item_div.add_style("display: none")
             #item_div.add_style("border: solid 1px blue")
             item_div.add_class("spt_list_template_item")
         else:
             item_div.add_class("spt_list_item")
+            item_div.add_style("display: flex")
+
+
+        item_div.add_style("align-items: center")
 
         outer = DivWdg()
-        outer.add_style("float: left")
+        #outer.add_style("float: left")
         outer.add_style("text-align: left")
         outer.add(item)
+
+        # for some reason, there is a spacing needed
+        outer.add_style("margin-right: 20px")
 
 
         if self.show_enabled:
             checkbox = CheckboxWdg("enabled")
-            checkbox.add_style("float: left")
+            #checkbox.add_style("float: left")
             checkbox.set_checked()
         else:
             checkbox = HiddenWdg("enabled")
@@ -128,9 +136,9 @@ class DynamicListWdg(BaseRefreshWdg):
         add_wdg.add_class("SPT_DTS")
         #add_wdg.add("(+)")
         add_wdg.add_class("spt_add")
-        button = IconButtonWdg(title="Add Entry", icon="FA_PLUS", size=8)
+        button = IconButtonWdg(title="Add Entry", icon="FA_PLUS", size=12)
         add_wdg.add(button)
-        add_wdg.add_style("float: left")
+        #add_wdg.add_style("float: left")
         add_wdg.add_style("opacity: 0.5")
         #add_wdg.add_style("margin: 3px")
         item_div.add(add_wdg)
@@ -142,9 +150,9 @@ class DynamicListWdg(BaseRefreshWdg):
         remove_wdg.add_class("SPT_DTS")
         #remove_wdg.add("(-)")
         remove_wdg.add_class("spt_remove")
-        button = IconButtonWdg(title="Remove Entry", icon="FA_TIMES", size=8)
+        button = IconButtonWdg(title="Remove Entry", icon="FA_TIMES", size=12)
         remove_wdg.add(button)
-        remove_wdg.add_style("float: left")
+        #remove_wdg.add_style("float: left")
         remove_wdg.add_style("opacity: 0.5")
         #remove_wdg.add_style("margin: 3px")
         item_div.add(remove_wdg)
@@ -214,7 +222,7 @@ spt.dynamic_list.add_item = function(src_el) {
     var new_item = spt.behavior.clone(template);
     new_item.removeClass("spt_list_template_item");
     new_item.addClass("spt_list_item")
-    new_item.setStyle("display", "");
+    new_item.setStyle("display", "flex");
 
     if (src_el) {
         var item = src_el.getParent(".spt_list_item");

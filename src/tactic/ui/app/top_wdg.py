@@ -689,7 +689,7 @@ class TopWdg(Widget):
                 background-color: rgb(0, 0, 0);
                 color: rgb(255, 255, 255);
                 z-index: 1000;
-                box-shadow: rgba(0, 0, 0, 0.1) 0px 5px 5px;A
+                box-shadow: rgba(0, 0, 0, 0.1) 0px 5px 5px;
 
                 overflow: hidden;
                 font-size: 0.8em;
@@ -1038,8 +1038,15 @@ class TopWdg(Widget):
         from .notify_wdg import NotifyWdg
         widget.add(NotifyWdg())
 
+
+        # add dynamic updates
         from tactic.ui.app import DynamicUpdateWdg
         widget.add( DynamicUpdateWdg() )
+
+
+        # add in a global uploader
+        from tactic.ui.input import Html5UploadWdg
+        widget.add( Html5UploadWdg() )
 
 
         return widget
@@ -1619,7 +1626,7 @@ class SitePage(AppServer):
         return self.top
 
 
-
+"""
 class BootstrapIndexWdg(BaseRefreshWdg):
 
     def get_display(self):
@@ -1631,7 +1638,7 @@ class BootstrapIndexWdg(BaseRefreshWdg):
         #widget = CustomLayoutWdg(view="bootstrap.basic.test2", is_top=True)
         top.add(widget)
         return top
-
+"""
 
 
 class CustomTopWdg(BaseRefreshWdg):

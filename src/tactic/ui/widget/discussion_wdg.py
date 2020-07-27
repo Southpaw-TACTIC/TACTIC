@@ -348,7 +348,7 @@ class DiscussionWdg(BaseRefreshWdg):
             var dialog_contents = top.getElements(".spt_discussion_content");
             var parent_key = top.getAttribute("spt_search_key");
 
-            spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
+            spt.panel.refresh_element(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
             return;
 
             /*
@@ -1539,6 +1539,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 shelf_wdg = DivWdg()
                 note_dialog.add(shelf_wdg)
                 shelf_wdg.add_style("height: 36px")
+                shelf_wdg.add_style("overflow: hidden")
                 #shelf_wdg.add_color("background", "background3")
 
                 #add_wdg = ActionButtonWdg(title="+", title2="-", tip='Add a new note', size='small', color="secondary")
@@ -2326,6 +2327,7 @@ class NoteWdg(BaseRefreshWdg):
 
         attached_div = DivWdg()
         attached_div.add_style("margin-top: 10px")
+        attached_div.add_style("display: flex")
         snapshots = attachments
 
         # Snapshot thumbnail code
@@ -2349,7 +2351,7 @@ class NoteWdg(BaseRefreshWdg):
 
             right.add("<hr/>")
             right.add('''
-            <div style="margin-bottom: -10px; font-size: 0.8em;">Attachments:</div>
+            <div style="margin-bottom: -5px; font-size: 0.8em;">Attachments:</div>
             ''')
 
             for snapshot in snapshots:
@@ -2360,9 +2362,11 @@ class NoteWdg(BaseRefreshWdg):
                 thumb.set_sobject(snapshot)
 
                 thumb_div = DivWdg()
-                thumb_div.add_style("float: left")
                 thumb_div.add_style("margin: 0px 5px")
+                thumb_div.add_style("border-radius: 5px")
                 thumb_div.add(thumb)
+                thumb_div.add_class("hand")
+                thumb_div.add_class("btn")
 
                 #thumb_div.add_class("spt_open_thumbnail")
                 # switch to the note attachment behaviour at the moment, instead of
