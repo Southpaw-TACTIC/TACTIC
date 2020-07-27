@@ -1650,13 +1650,14 @@ class BootstrapIndexWdg(PageNavContainerWdg):
     def get_bootstrap_styles(self):
 
         # Declare CSS variables
-        palette = Palette.get()
-        keys = palette.get_keys()
-        
         css_vars = ""
-        for key in keys:
-            value = palette.color(key)
-            css_vars += "--spt_palette_%s: %s;" % (key, value)
+
+        # This is moved to TopWdg
+        #palette = Palette.get()
+        #keys = palette.get_keys()
+        #for key in keys:
+        #    value = palette.color(key)
+        #    css_vars += "--spt_palette_%s: %s;" % (key, value)
 
         css_vars += "--left_modal_width: 300px;"
         style = ":root {%s}" % css_vars

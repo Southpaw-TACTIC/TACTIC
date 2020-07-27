@@ -863,6 +863,12 @@ class TopWdg(Widget):
         colors = jsondumps(colors)
 
 
+        # add palette
+        styles = self.get_palette_styles()
+        top.add(styles)
+
+
+
         script = HtmlElement.script('''
             var env = spt.Environment.get();
             env.set_colors(%s);
@@ -1226,7 +1232,28 @@ class TopWdg(Widget):
             if include:
                 widget.add('<link rel="stylesheet" href="%s" type="text/css" />\n' % include )
 
+
         return widget
+
+
+
+
+
+    def get_palette_styles(self):
+
+        # Declare CSS variables
+        palette = Palette.get()
+        keys = palette.get_keys()
+        
+        css_vars = ""
+        for key in keys:
+            value = palette.color(key)
+            css_vars += "--spt_palette_%s: %s;" % (key, value)
+
+        style = ":root {%s}" % css_vars
+        
+        return HtmlElement.style(style) 
+
 
 
 class JavascriptImportWdg(BaseRefreshWdg):

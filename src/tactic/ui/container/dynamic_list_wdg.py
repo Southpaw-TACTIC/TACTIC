@@ -115,7 +115,7 @@ class DynamicListWdg(BaseRefreshWdg):
         outer.add(item)
 
         # for some reason, there is a spacing needed
-        outer.add_style("margin-right: 20px")
+        #outer.add_style("margin-right: 20px")
 
 
         if self.show_enabled:
