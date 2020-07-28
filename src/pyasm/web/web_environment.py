@@ -234,18 +234,27 @@ class WebEnvironment(Environment):
         project_code = Project.get_project_code()
         request_url = self.get_request_url()
         request_str = request_url.to_string()
+        request_str = request_str.rstrip("/Index")
 
-        if request_str.endswith("/admin/Index"):
+        if project_code == "admin":
+            return True
+
+        #if request_str.endswith("/admin/Index"):
+        if request_str.endswith("/admin"):
             return True
 
         try:
             parts = request_str.split("//")
             parts = parts[1].split("/")
             parts = parts[1:]
+
+            # remove first tactic in url
             if parts[0] == "tactic":
                 parts = parts[1:]
+
             if parts[0] == site:
                 parts = parts[1:]
+
             if parts[0] == project_code:
                 parts = parts[1:]
 

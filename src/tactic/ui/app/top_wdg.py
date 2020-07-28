@@ -451,13 +451,15 @@ class TopWdg(Widget):
             } )
 
 
+        hover_color = self.body.get_color("background", -10)
         self.body.add_relay_behavior( {
             'type': 'mouseenter',
+            'hover_color': hover_color,
             'bvr_match_class': 'tactic_hover',
             'cbjs_action': '''
             var bgcolor = bvr.src_el.getStyle("background");
             bvr.src_el.setAttribute("spt_bgcolor", bgcolor);
-            bvr.src_el.setStyle("background", "#EEE");
+            bvr.src_el.setStyle("background", bvr.hover_color);
             '''
             } )
 
@@ -843,8 +845,10 @@ class TopWdg(Widget):
         if not palette_key:
             web = WebContainer.get_web()
             if web.is_admin_page():
-                palette = ProjectSetting.get_value_by_key("palette/admin")
-                if not palette:
+                palette_key = ProjectSetting.get_value_by_key("palette/admin")
+                if not palette_key:
+                    palette_key = ProjectSetting.get_value_by_key("palette")
+                if not palette_key:
                     palette_key = 'AQUA'
 
         if palette_key:

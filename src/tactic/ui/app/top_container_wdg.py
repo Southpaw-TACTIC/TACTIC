@@ -45,10 +45,10 @@ class TopContainerWdg(BaseRefreshWdg):
             top.add(widget)
 
         # This would provide a way to get the default index widget.
-        #elif hash == "/projects":
-        #    widget = self.get_default_wdg()
-        #    from tactic_sites.default.modules import IndexWdg
-        #    top.add( IndexWdg() )
+        elif is_admin and hash == "/_projects":
+            widget = self.get_default_wdg()
+            from tactic_sites.default.modules import IndexWdg
+            top.add( IndexWdg() )
         else:
             from tactic.ui.panel import HashPanelWdg
 
