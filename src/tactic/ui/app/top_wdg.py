@@ -1069,7 +1069,7 @@ class TopWdg(Widget):
 
         from datetime import datetime
         today = datetime.today()
-        year = datetime.year
+        year = today.year
 
         # add the copyright information
         widget.add( "<!--   -->\n")

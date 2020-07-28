@@ -18,11 +18,11 @@ from pyasm.common import Environment, TacticException
 from tactic.ui.common import BaseRefreshWdg
 
 
-# --------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #
 #   All widgets related to the TACTIC logo or name should be placed in this file
 #
-# --------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 class TacticCopyrightNoticeWdg(BaseRefreshWdg):
 
