@@ -303,7 +303,6 @@ class BaseMetadataParser(object):
             "EXIF": HAS_EXIF,
             "FFMPEG" : HAS_FFMPEG
         }
-
         # parsers for other file types and availability
         other_parser_mapping = {
             "ImageMagick": HAS_IMAGEMAGICK,
@@ -463,10 +462,12 @@ class ExifMetadataParser(BaseMetadataParser):
 
         path = self.kwargs.get("path")
 
-        from pyasm.checkin import exifread
-        #import exifread
+        try:
+            import exifread
+        except:
+            from pyasm.checkin import exifread
 
-        f = open(path)
+        f = open(path, 'rb')
         tags = exifread.process_file(f)
         f.close()
 
@@ -810,7 +811,7 @@ class XMPKeywordsParser(BaseMetadataParser):
             if cnt > 1000:
                 return False
             line = line.strip()
-            if line.startswith( "<x:xmpmeta"):
+            if line.startswith( b"<x:xmpmeta"):
                 return True
         f.close()
         return False

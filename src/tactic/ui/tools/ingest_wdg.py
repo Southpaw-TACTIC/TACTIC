@@ -633,7 +633,8 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add(header_div)
 
 
-        if self.show_settings:
+        #if self.show_settings:
+        if True:
             button_div = DivWdg()
             header_div.add(button_div)
             button = IconButtonWdg(title="Expand Options", icon="FA_ELLIPSIS_V")

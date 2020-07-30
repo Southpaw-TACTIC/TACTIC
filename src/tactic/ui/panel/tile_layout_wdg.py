@@ -2156,7 +2156,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             expand_div = DivWdg()
             detail_div.add(expand_div)
             expand_div.add_class("spt_tile_detail")
-            detail = IconButtonWdg(title="Detail", icon="FA_EXPAND", size=20)
+            detail = IconButtonWdg(title="Detail", icon="FA_EXPAND", size=16)
             expand_div.add(detail)
 
 

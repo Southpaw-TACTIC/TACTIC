@@ -2566,10 +2566,9 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             hidden = HiddenWdg("add_process", 'publish')
             #hidden.set_value("publish")
             content_div.add(hidden)
-            if self.contexts:
-                content_div.add("Warning: You should define %s in process display option. 'publish' will override." % self.contexts)
+            #if self.contexts:
+            #    content_div.add("Warning: You should define %s in process display option. 'publish' will override." % self.contexts)
         
-            # context is optional, only drawn if it's different from process
         elif len(process_names) == 1:
             wdg_label = "For Process:"
             span = SpanWdg(wdg_label)
