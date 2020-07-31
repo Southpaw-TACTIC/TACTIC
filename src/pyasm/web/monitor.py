@@ -544,7 +544,6 @@ class TacticSchedulerThread(threading.Thread):
         search.add_filter('code', 'sthpw', op='!=')
         projects = search.get_sobjects()
 
-
         # get the all of the timed triggers
         for project in projects:
             # do each project separately
@@ -587,11 +586,15 @@ class TacticSchedulerThread(threading.Thread):
 
 
                 data = trigger_sobj.get_json_value("data")
+                if not data:
+                    print("WARNING: Skipping trigger [%s] ... no data defined" % trigger_sobj.get_code() )
+                    continue
 
                 # ??? Why get process code from data (and not process column)
                 process_code = data.get("process")
                 if not process_code:
-                    process_code = trigger_sobj.get_value("process")
+                    process_code = trigger_sobj.get_value("process") or "publish"
+
 
                 if not trigger_class and not process_code:
                     print("WARNING: Skipping trigger [%s] ... no execution defined" % trigger_sobj.get_code() )
@@ -601,9 +604,6 @@ class TacticSchedulerThread(threading.Thread):
                 data['project_code'] = trigger_sobj.get_project_code()
 
 
-                if not process_code:
-                    print("WARNING: Skipping process trigger [%s] ... not implemented" % trigger_sobj.get_code() )
-                    continue
 
                 try:
                     timed_trigger = Common.create_from_class_path(trigger_class, [], data)
@@ -625,6 +625,7 @@ class TacticSchedulerThread(threading.Thread):
                 print("Found [%s] scheduled triggers in site [%s] - project [%s]..." % (project_triggers_count, site, project_code))
 
 
+         
         return timed_triggers
 
 
@@ -831,6 +832,8 @@ class TacticSchedulerThread(threading.Thread):
 class TacticMonitor(object):
 
     def __init__(self, num_processes=None):
+        
+
         self.check_interval = 120
         self.startup = True
         self.num_processes = num_processes
@@ -846,6 +849,7 @@ class TacticMonitor(object):
 
         self.tactic_threads = []
         self.mode = 'normal'
+        
 
 
     def write_log(self, msg):
@@ -926,7 +930,8 @@ class TacticMonitor(object):
         start_watch_folder = False
         start_async = False
         start_scheduler = False
-
+ 
+        
         services = Config.get_value("services", "enable")
         custom_services = []
         if services:
@@ -1070,6 +1075,9 @@ class TacticMonitor(object):
             sites = Config.get_value("services", "scheduler_sites")
             if sites:
                 sites = re.split("[|,]", sites)
+            else:
+                sites = [None]
+            
             from pyasm.security import Site
             for site in sites:
                 tactic_scheduler_thread = TacticSchedulerThread(site=site)
