@@ -1,11 +1,3 @@
-import sys
-import os
-import getopt
-import traceback
-
-import httplib
-import urllib
-
 # -------------------------------------------------------------------------------------------------------
 #
 #                        TACTIC Client API version bootstrap example script
@@ -65,6 +57,19 @@ import urllib
 #
 # -------------------------------------------------------------------------------------------------------
 
+import sys
+import os
+import getopt
+import traceback
+import six
+from six.moves import input
+
+try:
+    import httplib
+except:
+    # Python3
+    from http import client as httplib
+
 
 def bootstrap_get_tactic_server_stub( tactic_server_str, project_code, login, password ):
 
@@ -79,24 +84,24 @@ def bootstrap_get_tactic_server_stub( tactic_server_str, project_code, login, pa
 
     conn.close()
 
-    print
-    print "> Found TACTIC version '%s' running on server %s ..." % (tactic_version, tactic_server_str)
-    print
+    print("")
+    print("> Found TACTIC version '%s' running on server %s ..." % (tactic_version, tactic_server_str))
+    print("")
 
     client_lib_install_path = "C:/sthpw/client_api/tactic-%s/client" % tactic_version
 
-    print "  ... attempting to import 'TacticServerStub' from 'tactic_client_lib' located in:"
-    print
-    print "         %s" % client_lib_install_path
-    print
+    print("  ... attempting to import 'TacticServerStub' from 'tactic_client_lib' located in:")
+    print("")
+    print("         %s" % client_lib_install_path)
+    print("")
 
     try:
         sys.path.append( client_lib_install_path )
         from tactic_client_lib import TacticServerStub
         if not login or not password:
-            print
-            print "> Warning: login/password not provided, assuming the use of .tacticrc ticket ..."
-            print
+            print("")
+            print("> Warning: login/password not provided, assuming the use of .tacticrc ticket ...")
+            print("")
             tactic_server = TacticServerStub(server=tactic_server_str, project=project_code)
         else:
             tactic_server = TacticServerStub(
@@ -106,16 +111,16 @@ def bootstrap_get_tactic_server_stub( tactic_server_str, project_code, login, pa
                                 password=password
                             )
     except:
-        print "  ERROR: unable to access TACTIC client API for server version '%s'" % (tactic_version)
+        print("  ERROR: unable to access TACTIC client API for server version '%s'" % (tactic_version))
         if not login or not password:
-            print "           (likely there is no .tacticrc ticket that exists)"
+            print("           (likely there is no .tacticrc ticket that exists)")
 
-        print
-        print "Exception found:"
-        print '-'*60
+        print("")
+        print("Exception found:")
+        print('-' * 60)
         traceback.print_exc(file=sys.stdout)
-        print '-'*60
-        print
+        print('-' * 60)
+        print("")
         tactic_server = None
 
     return tactic_server
@@ -124,24 +129,24 @@ def bootstrap_get_tactic_server_stub( tactic_server_str, project_code, login, pa
 def usage():
 
     script_name = os.path.basename(sys.argv[0])
-    print
-    print "  Usage: %s [options] <tactic_server_str> <project_code>" % (script_name)
-    print
-    print "         ____ OPTIONS ____"
-    print
-    print "         -h, --help ... print this usage message"
-    print
-    print "         -i, --interactive ... interactive user prompts to enter login & password"
-    print
-    print "         -l <login>, --login <login> ... user login"
-    print "         -p <password>, --password <password> ... user password"
-    print
-    print "         NOTE: use only one of ... -i OR (-l <login> and -p <password>)"
-    print "               if none of those options are used it is assumed to use an"
-    print "               existing .tacticrc ticket"
-    print
-    print "    e.g. python %s -l dsmith -p mypassword 192.168.188.134 sample3d" % (script_name)
-    print
+    print("")
+    print("  Usage: %s [options] <tactic_server_str> <project_code>" % (script_name))
+    print("")
+    print("         ____ OPTIONS ____")
+    print("")
+    print("         -h, --help ... print this usage message")
+    print("")
+    print("         -i, --interactive ... interactive user prompts to enter login & password")
+    print("")
+    print("         -l <login>, --login <login> ... user login")
+    print("         -p <password>, --password <password> ... user password")
+    print("")
+    print("         NOTE: use only one of ... -i OR (-l <login> and -p <password>)")
+    print("               if none of those options are used it is assumed to use an")
+    print("               existing .tacticrc ticket")
+    print("")
+    print("    e.g. python %s -l dsmith -p mypassword 192.168.188.134 sample3d" % (script_name))
+    print("")
 
 
 if __name__ == '__main__':
@@ -181,18 +186,18 @@ if __name__ == '__main__':
 
     if prompt_user:
 
-        login = raw_input("  Enter TACTIC login (just ENTER for current user): ")
+        login = input("  Enter TACTIC login (just ENTER for current user): ")
         if not login:
             if sys.platform == 'win32':
                 login = os.environ.get('USERNAME')
             else:
                 login = os.environ.get('USER')
 
-        password = raw_input("  Enter TACTIC password for user '%s': " % login)
+        password = input("  Enter TACTIC password for user '%s': " % login)
         if not password:
-            print
-            print "*** password required to run script ... no password entered ... aborting."
-            print
+            print("")
+            print("*** password required to run script ... no password entered ... aborting.")
+            print("")
             sys.exit(1)
 
     else:
@@ -203,12 +208,12 @@ if __name__ == '__main__':
     tactic_server = bootstrap_get_tactic_server_stub(tactic_server_str, project_code, login, password)
 
     if tactic_server:
-        print
-        print "ping: [%s]" % tactic_server.ping()
-        print
+        print("")
+        print("ping: [%s]" % tactic_server.ping())
+        print("")
     else:
-        print
-        print "*** NO connection to TACTIC server obtained ... unable to ping server ***"
-        print
+        print("")
+        print("*** NO connection to TACTIC server obtained ... unable to ping server ***")
+        print("")
 
 

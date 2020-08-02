@@ -34,7 +34,7 @@ def main(args):
         context = args[2]
         file_path = args[3]
     else:
-        print usage
+        print(usage)
         return
 
     search_type = args[0]
@@ -65,7 +65,7 @@ def main(args):
         result = server.simple_checkin(search_key, context, file_path)
     except Exception as e:
         server.abort()
-        print "ERROR: ", e.__str__()
+        print("ERROR: %s" % e)
     else:
         server.finish()
 
