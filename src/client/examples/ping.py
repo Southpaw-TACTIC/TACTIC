@@ -25,7 +25,7 @@ def main():
     server.start("Ping Test")
     try:
         # ping the server
-        print server.ping()
+        print(server.ping())
     except:
         # in the case of an exception, abort all of the interactions
         server.abort()
