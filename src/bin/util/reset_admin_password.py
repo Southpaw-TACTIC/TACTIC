@@ -12,10 +12,13 @@
 
 import sys
 import os
+import six
+from six.moves import input
 
 import tacticenv
 from pyasm.security import Batch, Login
 from pyasm.search import Search, SearchType
+
 
 Batch()
 
@@ -38,5 +41,5 @@ admin.set_value("password", password)
 admin.commit()
 
 print("Successfully reset admin password.  You will be prompted to change it on startup of TACTIC.")
-raw_input()
+input()
 
