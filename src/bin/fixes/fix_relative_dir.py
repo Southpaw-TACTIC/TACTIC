@@ -16,7 +16,8 @@
 
 import tacticenv
 
-import os, time
+import os
+import time
 
 from pyasm.common import TacticException
 from pyasm.security import Batch
@@ -43,7 +44,8 @@ class FixRelativeDirCmd(Command):
 
             snapshot = Snapshot.get_by_code(snapshot_code)
             if not snapshot:
-                if WARNING: print "WARNING: Snapshot [%s] not found for file [%s]" % (snapshot_code, file.get_code() )
+                if WARNING:
+                    print("WARNING: Snapshot [%s] not found for file [%s]" % (snapshot_code, file.get_code() ))
                 continue
 
             try:
@@ -61,7 +63,8 @@ class FixRelativeDirCmd(Command):
 
                 cur_relative_dir = file.get_value("relative_dir")
                 if cur_relative_dir and cur_relative_dir != relative_dir:
-                    if WARNING: print "WARNING: current [%s] and build relative dir [%s] are not equal" % (cur_relative_dir, relative_dir)
+                    if WARNING:
+                        print("WARNING: current [%s] and build relative dir [%s] are not equal" % (cur_relative_dir, relative_dir))
 
                     #answer = raw_input("Fix (y/n): ")
                     #if answer == "n":

@@ -133,9 +133,9 @@ def run(kwargs=None):
         f.close()
 
 
-    except Exception, e:
+    except Exception as e:
         error = str(e)
-        print error
+        print(error)
         f = open(output_path, 'w')
 
 
