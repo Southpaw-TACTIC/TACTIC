@@ -56,7 +56,7 @@ def main(args):
         # checkin the uploaded file
         version = -1
         result = server.checkout(search_key, context, version=version, to_dir=to_dir)
-        print result
+        print(result)
     except:
         server.abort()
         raise

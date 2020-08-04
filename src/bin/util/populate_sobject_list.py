@@ -1,11 +1,13 @@
 import sys
+import six
+from six.moves import input
+
 import tacticenv
-
-
 from pyasm.biz import Project
 from pyasm.security import Batch
 from pyasm.command import Command
 from pyasm.search import Search, SearchType, DbContainer
+
 
 class PopulateSObjectListCmd(Command):
 
@@ -70,12 +72,12 @@ if __name__ == '__main__':
     batch = Batch()
     msg = "\nThis script will delete the existing entries in your sobject_list table used for storing keywords for searching purpose " \
             "and renew them with the updated entries for all projects" 
-    answer = raw_input(" %s. Continue (y/n): " %msg)
+    answer = input(" %s. Continue (y/n): " % msg)
     if answer == "y":
         sthpw_sql = DbContainer.get("sthpw")
         statement = 'DELETE from sobject_list;'
         sthpw_sql.do_update(statement)
-        print(" ")
+        print("")
         print("Deleting of existing entries finished.\n")
     elif answer == 'n':
         sys.exit(0)
@@ -84,6 +86,6 @@ if __name__ == '__main__':
         sys.exit(0)
     command = PopulateSObjectListCmd()
     Command.execute_cmd(command)
-    print(" ")
+    print("")
     print("Finished updating sobject_list table.")
 

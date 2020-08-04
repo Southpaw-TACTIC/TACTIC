@@ -47,21 +47,21 @@ if __name__ == '__main__':
     login = None
     try:
         opts, args = getopt.getopt(sys.argv[1:], "l:h", ["login=","help"])
-    except getopt.error, msg:
-        print msg
+    except getopt.error as e:
+        print(e)
         sys.exit(2)
     # process options
     for o, a in opts:
         if o in ("-l", "--login"):
             login = a
-            print 
+            print("")
         if o in ("-h", "--help"):
-            print "python checkin_shot.py -l <tactic_login> <code> <context> <file_path>"
-            print "python checkin_shot.py -l admin S0001 anim C:/shot_S0001.ma"
+            print("python checkin_shot.py -l <tactic_login> <code> <context> <file_path>")
+            print("python checkin_shot.py -l admin S0001 anim C:/shot_S0001.ma")
    
     if len(args) != 3:
-        print "python checkin_shot.py -l <tactic_login> <code> <context> <file_path>"
-        print "python checkin_shot.py -l admin S0001 anim C:/shot_S0001.ma"
+        print("python checkin_shot.py -l <tactic_login> <code> <context> <file_path>")
+        print("python checkin_shot.py -l admin S0001 anim C:/shot_S0001.ma")
         sys.exit(2)
     main(args, login=login)
 

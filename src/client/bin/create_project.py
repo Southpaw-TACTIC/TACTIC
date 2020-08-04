@@ -25,7 +25,7 @@ def main(args):
     assert project_type in ['prod','flash','simple','unittest']
     assert project_title
 
-    regexs = '^\d|\W'
+    regexs = r'^\d|\W'
     m = re.search(r'%s' % regexs, project_code) 
     if m:
         raise TacticApiException('<project_code> cannot contain special characters or start with a number.')
@@ -43,7 +43,7 @@ def main(args):
         
         class_name = "tactic.command.CreateProjectCmd";
         ret_val = server.execute_cmd(class_name, args=args);
-        print ret_val
+        print(ret_val)
     except:
         server.abort()
         raise
@@ -57,8 +57,6 @@ if __name__ == '__main__':
     executable = sys.argv[0]
     args = sys.argv[1:]
     if len(args) != 3:
-        print "python create_project.py <project_code> <project_title> <project_type>"
+        print("python create_project.py <project_code> <project_title> <project_type>")
         sys.exit(0)
     main(args)
-
-

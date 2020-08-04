@@ -29,14 +29,14 @@ def main(args, login=None):
         if results:
             id = results[0].get('id')
         else:
-            print "Plate with code [%s] not found. Please insert an entry in the Plates tab first." %code
+            print("Plate with code [%s] not found. Please insert an entry in the Plates tab first." % code)
             return
         search_key = server.build_search_key(SEARCH_TYPE, id, column='id')
 
 
         # move the file
         dir = server.get_handoff_dir()
-        print "Copied files to handoff dir\n"
+        print("Copied files to handoff dir\n")
         new_pattern = pattern
         file_type = 'main'
         
@@ -55,20 +55,20 @@ if __name__ == '__main__':
     login = None
     try:
         opts, args = getopt.getopt(sys.argv[1:], "l:h", ["login=","help"])
-    except getopt.error, msg:
-        print msg
+    except getopt.error as msg:
+        print(msg)
         sys.exit(2)
     # process options
     for o, a in opts:
         if o in ("-l", "--login"):
             login = a
-            print 
+            print("")
         if o in ("-h", "--help"):
-            print "python checkin_plates.py [-l <tactic_login>] <code> <file_range> <file_pattern>"
-            print "python checkin_plates.py S0001 1-20 D:/file_dir/plates.####.png"
+            print("python checkin_plates.py [-l <tactic_login>] <code> <file_range> <file_pattern>")
+            print("python checkin_plates.py S0001 1-20 D:/file_dir/plates.####.png")
     if len(args) != 3:
-        print "python checkin_plates.py <code> <file_range> <file_pattern>"
-        print "python checkin_plates.py S0001 1-20 D:/file_dir/plates.####.png"
+        print("python checkin_plates.py <code> <file_range> <file_pattern>")
+        print("python checkin_plates.py S0001 1-20 D:/file_dir/plates.####.png")
         sys.exit(2)
     main(args, login=login)
 

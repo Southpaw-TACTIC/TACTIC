@@ -1640,6 +1640,7 @@ class BaseSignInWdg(Widget):
             font-weight: normal;
             color: #aaa;
             font-size: 12px;
+            z-index: 1;
         }
 
         .sign-in-input input {
@@ -2326,7 +2327,7 @@ class WebLoginWdg2(BaseSignInWdg):
 
         if (not override_login):
             submit_btn = DivWdg("Sign In")
-            submit_btn.add_class("sign-in-btn hand")
+            submit_btn.add_class("btn btn-primary sign-in-btn hand")
             submit_btn.add(HiddenWdg("Submit"))
             submit_btn.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
             bottom_container.add(submit_btn)
