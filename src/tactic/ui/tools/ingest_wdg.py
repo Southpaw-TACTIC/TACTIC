@@ -163,6 +163,12 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
             process = self.kwargs.get("process")
+            if not process:
+                context = self.kwargs.get("context")
+                if context:
+                    parts = context.split("/")
+                    process = parts[0]
+
             if process:
                 hidden = HiddenWdg(name="process")
                 right.add(hidden)

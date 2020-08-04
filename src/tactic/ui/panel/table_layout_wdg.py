@@ -1466,7 +1466,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         .spt_layout_inner {
             display: flex;
             flex-direction: column;
-            height: 100%;
             position: relative;
             border-style: solid; 
             border-width: 0px;

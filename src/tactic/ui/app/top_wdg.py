@@ -1123,11 +1123,14 @@ class TopWdg(Widget):
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
         ''')
         """
-        widget.add('''
-<!-- Form builder -->
-<link rel='stylesheet' href='/context/spt_js/formio/formio.full.min.css'>
-<script src='/context/spt_js/formio/formio.full.min.js'></script>
-        ''')
+
+        use_formio = True
+        if use_formio:
+            widget.add('''
+    <!-- Form builder -->
+    <link rel='stylesheet' href='/context/spt_js/formio/formio.full.min.css'>
+    <script src='/context/spt_js/formio/formio.full.min.js'></script>
+            ''')
  
 
 
@@ -1385,6 +1388,7 @@ class TitleTopWdg(TopWdg):
         web = WebContainer.get_web()
 
         widget = Widget()
+
         html = HtmlElement("html")
         html.add_attr("xmlns:v", 'urn:schemas-microsoft-com:vml')
 

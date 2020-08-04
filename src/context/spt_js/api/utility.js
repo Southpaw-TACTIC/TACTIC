@@ -41,7 +41,7 @@ spt.api.Utility = new Class( {
 // @return
 //  dict: of all the name values pairs found under element_id
 //
-spt.api.Utility.get_input_values = function(element_id, filter, return_array, return_labels, kwargs, get_hidden=true) {
+spt.api.Utility.get_input_values = function(element_id, filter, return_array, return_labels, kwargs, get_hidden) {
 
     if (filter == undefined || filter == null)
         filter = ".spt_input";
@@ -51,6 +51,11 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
 
     if (return_labels == undefined || return_labels == null)
         return_labels = false;
+
+    if (get_hidden == undefined || get_hidden == null)
+        get_hidden = false;
+
+
 
     if (! kwargs) kwargs = {};
 
