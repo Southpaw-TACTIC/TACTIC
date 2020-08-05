@@ -53,7 +53,7 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
         return_labels = false;
 
     if (get_hidden == undefined || get_hidden == null)
-        get_hidden = false;
+        get_hidden = true;
 
 
 
