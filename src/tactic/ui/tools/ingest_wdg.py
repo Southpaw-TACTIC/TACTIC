@@ -148,6 +148,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         top.add(table)
         table.add_row()
         table.add_style("width: 100%")
+        table.add_color("background", "background")
 
         left = table.add_cell()
         left.add_style("vertical-align: top")
@@ -331,8 +332,20 @@ class IngestUploadWdg(BaseRefreshWdg):
         div.add_style("width: 400px")
         div.add_style("padding: 20px")
         # div.add_style("max-height: 510px")
-        div.add_style("overflow: auto")
-        div.add_style("margin-bottom: 20px")
+        div.add_style("overflow-x: hidden")
+        div.add_style("overflow-y: auto")
+        #div.add_style("margin-bottom: 20px")
+
+        # only make max height if in  a popup
+        div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+            var popup = bvr.src_el.getParent(".spt_popup");
+            if (popup) {
+                bvr.src_el.setStyle("height", "570px");
+            }
+            '''
+        } )
 
         title_wdg = DivWdg()
         div.add(title_wdg)
@@ -408,7 +421,13 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         # Metadata
         #hidden_options.append("metadata")
-        if "metadata" not in hidden_options:
+
+        ingest_data_view = self.kwargs.get('metadata_view')
+        if not ingest_data_view:
+            ingest_data_view = self.kwargs.get('ingest_data_view')
+        print("ingest_data_view: ", ingest_data_view)
+        if ingest_data_view and "metadata" not in hidden_options:
+
             process_wdg.add("<hr/>")
 
             title_wdg = DivWdg()
@@ -424,10 +443,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             from tactic.ui.panel import EditWdg
 
-            ingest_data_view = self.kwargs.get('metadata_view')
-            if not ingest_data_view:
-                ingest_data_view = self.kwargs.get('ingest_data_view')
-
             if self.search_key:
                 sobject = SearchType.create("sthpw/snapshot")
             else:
@@ -435,20 +450,22 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             metadata_element_names = self.kwargs.get("metadata_element_names")
 
-            if self.show_settings:
-                edit = EditWdg(
-                        search_key=sobject.get_search_key(),
-                        mode='view',
-                        view=ingest_data_view,
-                        element_names=metadata_element_names,
-                        show_header=False,
-                        width="100%",
-                        display_mode="single_cell",
-                        extra_data=self.kwargs.get("extra_data"),
-                        default=self.kwargs.get("default"),
-                )
+            edit_div = DivWdg()
+            div.add(edit_div)
+            edit_div.add_style("margin: -40px -40px")
+            edit = EditWdg(
+                    search_key=sobject.get_search_key(),
+                    mode='view',
+                    view=ingest_data_view,
+                    element_names=metadata_element_names,
+                    show_header=False,
+                    width="100%",
+                    display_mode="single_cell",
+                    extra_data=self.kwargs.get("extra_data"),
+                    default=self.kwargs.get("default"),
+            )
 
-                div.add(edit)
+            edit_div.add(edit)
 
 
             div.add("<br/>")

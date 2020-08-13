@@ -1226,10 +1226,10 @@ class DiscussionWdg(BaseRefreshWdg):
 
             else:
                 add_wdg = IconWdg("Add Note", "FA_PLUS", size=12)
-                add_wdg.add_style("margin: 0px 10px")
+                add_wdg.add_style("margin: 0px 5px 0px 0px")
 
                 no_notes_msg.add(add_wdg)
-                msg = "No notes."
+                msg = "No notes"
                 no_notes_msg.add("<div style='display: inline-block'><i> %s </i></div>" % _(msg))
                 no_notes_div.add_style("font-size: 0.9em")
             no_notes_div.add_class("hand")
@@ -1469,10 +1469,10 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             else:
-                process_wdg = IconWdg("View '%s' notes" % context, "FAS_PENCIL_ALT", size=10)
+                process_wdg = IconWdg("View '%s' notes" % context, "FAR_STICKY_NOTE", size=12)
                 process_top.add(process_wdg)
                 process_wdg.add_style("float: left")
-                process_wdg.add_style("margin: 0px 3px")
+                process_wdg.add_style("margin: 1px 4px")
 
                 # process arg is meaningless
                 process_wdg = self.get_context_wdg(process, context, count)
@@ -2147,14 +2147,14 @@ class NoteWdg(BaseRefreshWdg):
 
         title = DivWdg()
         title.add_class("spt_note_header")
-        title.add_style("margin: 5px 12px")
+        title.add_style("margin: 5px 12px 0px 12px")
         #title.add_style("font-weight: bold")
         #title.add_style("display: flex")
         #title.add_style("align-items: center")
 
 
         if context != process:
-            title.add("<div style='float: left; margin-bottom: 3px; margin-right: 10px;'>[%s]:</div>" % context)
+            title.add("<div style='float: left; margin-bottom: 0px; margin-right: 10px;'>[%s]:</div>" % context)
 
 
 
@@ -2168,6 +2168,7 @@ class NoteWdg(BaseRefreshWdg):
             icon.add_style("float: right")
             icon.add_style("margin-top: -5px")
             icon.add_style("margin-left: 3px")
+            icon.add_style("height: 10px")
 
 
             menus = [self.get_note_menu()]
@@ -2248,6 +2249,7 @@ class NoteWdg(BaseRefreshWdg):
             title.add("&nbsp;");
             btn.add_style("float: right");
             btn.add_style("margin-top: -3px");
+            btn.add_style("height: 10px");
             title.add(btn)
             btn.add_class("spt_note_attachment")
 

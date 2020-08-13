@@ -2124,7 +2124,7 @@ TacticServerStub = function() {
 
     this._show_login = function() {
         
-        var spinners = $$('.spt_spin');
+        var spinners = document.id(document.body).getElements('.spt_spin');
         spinners.each(function(x) {spt.hide(x)});
         var login_scr = document.getElement('.spt_login_screen');
         login_scr.setStyle('z-index','1100');

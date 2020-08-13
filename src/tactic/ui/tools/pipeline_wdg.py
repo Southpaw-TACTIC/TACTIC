@@ -5171,7 +5171,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         select.set_option("values", values)
         select.set_option("labels", labels)
 
-
         self.add_session_behavior(select, "select", "spt_hierarchy_top", "task_creation")
 
 
@@ -8612,8 +8611,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         check = CheckboxWdg(text_name)
         self.add_session_behavior(check, "checkbox", "spt_pipeline_properties_top", text_name)
 
+
         th = table.add_cell(check)
         th.add_style("height: 40px")
+
+
+
+
 
         # autocreate task
         table.add_row()
@@ -8626,6 +8630,25 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         th = table.add_cell(check)
         th.add_style("height: 40px")
+
+
+
+
+        # number of tasks
+        table.add_row()
+        td = table.add_cell('Number of Tasks Created:')
+        text_name = "task_number"
+        text = TextWdg(text_name)
+        text.add_class(text_name)
+        th = table.add_cell()
+        th.add(text)
+        text.set_option("type", "number")
+        text.add_style("width: 40px")
+
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
+
+
+
 
         # ---- Divider -----
         tr, td = table.add_row_cell()
