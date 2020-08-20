@@ -16,7 +16,7 @@ import tacticenv
 
 import os
 
-from ad_lookup import ADException
+from .ad_lookup import ADException
 
 
 ERROR = ""

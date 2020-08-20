@@ -2287,7 +2287,9 @@ class IngestUploadCmd(Command):
 
 
             status = sobject.get_value("status", no_exception=True)
-            is_verified = status in ['Verified']
+            is_verified = status in ['Verified', 'Complete']
+            # for now, ignore the update when not verified
+            is_verified = True
 
 
             create_icon = self.kwargs.get("create_icon")
@@ -2417,7 +2419,7 @@ class IngestUploadCmd(Command):
         search_file.add_filter("relative_dir", relative_dir)
         search_file.add_filter("file_name", search_name, op='like')
 
-        print(search_file.get_statement())
+        #print(search_file.get_statement())
 
         file_sobjects = search_file.get_sobjects()
 

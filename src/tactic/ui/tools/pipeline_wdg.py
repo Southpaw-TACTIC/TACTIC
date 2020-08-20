@@ -1069,7 +1069,9 @@ class PipelineListWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
 
-        button = ActionButtonWdg(title="+", tip="Add a new workflow", size='small')
+        button = ActionButtonWdg(title="+", tip="Add a new workflow", color="secondary")
+        button.add_class("bmd-btn-icon")
+        button.add_style("float: right")
 
         button.add_behavior( {
         'type': 'click_up',
