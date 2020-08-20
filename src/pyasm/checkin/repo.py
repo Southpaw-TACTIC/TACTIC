@@ -145,7 +145,7 @@ class TacticRepo(BaseRepo):
                 (files[i], to_path) )
 
             file_object.set_value('type', file_type)
-            if not os.path.isdir(to_path):
+            if md5s != "ignore" and not os.path.isdir(to_path):
                 md5_checksum = None
                 if md5s:
                     md5_checksum = md5s[i]

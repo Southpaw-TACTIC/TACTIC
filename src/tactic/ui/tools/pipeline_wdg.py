@@ -3717,9 +3717,12 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         # sobject count
         if search_type:
-            search = Search(search_type)
-            search.add_filter("pipeline_code", pipeline.get_code())
-            sobject_count = search.get_count()
+            try:
+                search = Search(search_type)
+                search.add_filter("pipeline_code", pipeline.get_code())
+                sobject_count = search.get_count()
+            except:
+                sobject_count = 0
         else:
             sobject_count = 0
 
