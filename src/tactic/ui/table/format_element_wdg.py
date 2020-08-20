@@ -246,6 +246,7 @@ class FormatElementWdg(SimpleTableElementWdg):
 
     def number_format(self, num, places=0):
         """Format a number according to locality and given places"""
+        num = float(num)
         import locale
         locale.setlocale(locale.LC_ALL, "")
         return locale.format("%.*f", (places, num), True)

@@ -136,6 +136,13 @@ class Watermark(object):
 
             mark = self.generate(texts, sizes)
             im_out = self.execute(im_in, mark, 'tile', 0.5)
+
+            if im_out.mode in ('RGBA', 'LA'):
+                fill_color = '#000'
+                background = Image.new(im_out.mode[:-1], im_out.size, fill_color)
+                background.paste(im_out, im_out.split()[-1])
+                im_out = background
+
             im_out.save(out_path)
         finally:
             if s_in:

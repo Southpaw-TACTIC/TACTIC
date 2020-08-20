@@ -691,7 +691,8 @@ class AdvancedSearchSaveWdg(BaseRefreshWdg):
                 display: grid;
                 grid-template-rows: 40px auto;
 
-                background: white;
+                color: var(--spt_palette_color2);
+                background: var(--spt_palette_background2);
                 color: grey;
             }
 
@@ -1140,9 +1141,9 @@ class AdvancedSearchSavedSearchesWdg(BaseRefreshWdg):
                 position: absolute;
                 top: 30px;
                 right: 40px;
-                box-shadow: 0px 2px 4px 0px #bbb;
-                border-radius: 3px;
-                background: white;
+                box-shadow: 0px 2px 4px 0px var(--spt_palette_shadow);
+                color: var(--spt_palette_color);;
+                background: var(--spt_palette_background);;
             }
             
             .spt_saved_searches_top .spt_search_category_template {
@@ -1689,10 +1690,6 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
             }
 
             .spt_advanced_search_buttons .spt_search_button {
-                background: #999;
-                color: #f4f4f4;
-                border-radius: 3px;
-                padding: 6px 14px;
             }
 
             .spt_search_top:not(.spt_has_changes) .spt_advanced_search_buttons .save-button[spt_action='save'] {
@@ -1723,12 +1720,12 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
 
             save_button = DivWdg("Save")
             save_buttons.add(save_button)
-            save_button.add_class("spt_save_button spt_save save-button enabled hand")
+            save_button.add_class("spt_save_button spt_save save-button enabled hand btn btn-secondary")
             save_button.add_style("margin-right: 5px;")
 
             save_as_button = DivWdg("Save As")
             save_buttons.add(save_as_button)
-            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand ")
+            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand btn btn-secondary")
             save_as_button.add_attr("spt_action", "save_as")
 
             if mode == "save":
@@ -1738,9 +1735,9 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
                 save_button.add_attr("spt_action", "save")
 
         # Search button
-        search_button = DivWdg("Search")
+        search_button = DivWdg("SEARCH")
         buttons_container.add(search_button)
-        search_button.add_class("spt_search_button")
+        search_button.add_class("spt_search_button btn btn-primary")
         search_button.add_class("hand")
 
         search_action = self.kwargs.get("search_action")

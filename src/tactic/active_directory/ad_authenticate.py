@@ -22,8 +22,8 @@ from pyasm.common import Environment
 
 try:
     #from ad import ADConnect, ADLookup, ADException
-    from ad_connect import ADConnect
-    from ad_lookup import ADLookup
+    from .ad_connect import ADConnect
+    from .ad_lookup import ADLookup
 except ImportError:
     print("WARNING: cannot import Active Directory classes")
     pass

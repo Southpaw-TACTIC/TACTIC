@@ -297,24 +297,13 @@ class SearchTypePanel(BaseRefreshWdg):
         top.center()
 
 
-
-        button = ActionButtonWdg(title="Setup", tip="Advanced Setup", icon=IconWdg.ADVANCED)
-        top.add(button)
-        button.add_style("float: right")
-        button.add_style("margin-top: 0px")
-        button.add_style("margin-right: 5px")
-        button.add_behavior( {
-            'type': 'click_up',
-            'cbjs_action': '''
-            var class_name = 'tactic.ui.app.ProjectStartWdg';
-            spt.tab.set_main_body_tab()
-            spt.tab.add_new("project_setup", "Project Setup", class_name)
-            '''
-        } )
-
+        shelf_wdg = DivWdg()
+        top.add(shelf_wdg)
+        shelf_wdg.add_style("display: flex")
+        shelf_wdg.add_style("align-items: center")
 
         button = ActionButtonWdg(title="Add", tip="Add New Searchable Type (sType)", icon="FAS_PLUS")
-        top.add(button)
+        shelf_wdg.add(button)
         button.add_style("display: inline-block")
         button.add_style("vertical-align: middle")
         button.add_style("margin-top: 0px")
@@ -348,14 +337,34 @@ class SearchTypePanel(BaseRefreshWdg):
             '''
             })
         span = SpanWdg(css='small')
-        top.add(span)
-        top.add(cb)
+        shelf_wdg.add(span)
+        shelf_wdg.add(cb)
+
+
+        button = ActionButtonWdg(title="Setup", tip="Advanced Setup", icon=IconWdg.ADVANCED, color="secondary")
+        shelf_wdg.add(button)
+        button.add_style("margin-top: 0px")
+        button.add_style("margin-left: 15px")
+        button.add_behavior( {
+            'type': 'click_up',
+            'cbjs_action': '''
+            var class_name = 'tactic.ui.app.ProjectStartWdg';
+            spt.tab.set_main_body_tab()
+            spt.tab.add_new("project_setup", "Project Setup", class_name)
+            '''
+        } )
+
+
+
+
         top.add("<br clear='all'/>")
         top.add("<br clear='all'/>")
+
         #search_type_objs = []
         if not search_type_objs:
+            """
             arrow_div = DivWdg()
-            top.add(arrow_div)
+            #top.add(arrow_div)
             icon = IconWdg("Click to Add", IconWdg.ARROW_UP_LEFT_32)
             icon.add_style("margin-top: -20")
             icon.add_style("margin-left: -15")
@@ -371,6 +380,7 @@ class SearchTypePanel(BaseRefreshWdg):
             arrow_div.set_box_shadow("0px 5px 20px")
             arrow_div.set_round_corners(30)
             arrow_div.add_color("background", "background")
+            """
 
             div = DivWdg()
             top.add(div)
@@ -379,7 +389,12 @@ class SearchTypePanel(BaseRefreshWdg):
             div.add_style("width: 600px")
             div.add_style("margin: 30px auto")
             div.add_style("padding: 20px")
+            div.add_color("color", "color3")
             div.add_color("background", "background3")
+            div.add_style("box-shadow: 0px 0px 15px %s" % div.get_color("shadow"))
+            div.add_style("border-radius: 10px")
+
+
             icon = IconWdg( "WARNING", IconWdg.WARNING )
             div.add(icon)
             div.add("<b>No Searchable Types have been created</b>")
@@ -389,6 +404,9 @@ class SearchTypePanel(BaseRefreshWdg):
             div.add("For more information, read the help docs: ")
             from tactic.ui.app import HelpButtonWdg
             help = HelpButtonWdg(alias="main")
+            help.add_style("text-align: center")
+            div.add("<br/>")
+            div.add("<br/>")
             div.add(help)
             div.add("<br/>")
             div.add("Click on the 'Add' button above to start adding new types.")

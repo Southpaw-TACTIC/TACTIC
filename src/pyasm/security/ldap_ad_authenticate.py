@@ -246,6 +246,8 @@ class LdapADAuthenticate(Authenticate):
         attrs_map = Config.get_value("security", "group_mapping")
         if attrs_map:
             attrs_map = jsonloads(attrs_map)
+        else:
+            attrs_map = {}
         
         return attrs_map
 

@@ -92,6 +92,9 @@ spt.update.add = function(el, update) {
     updates[el_id] = update;
     el.spt_update = updates;
     el.addClass("spt_update");
+
+    // Show all of the widgets that have dynamic updates
+    //el.setStyle("border", "solid 3px blue")
 }
 
 
@@ -181,7 +184,6 @@ top.spt_update_interval_id = setInterval( function() {
         if (!update_el.isVisible() || update_el.hasClass("spt_update_lock")) {
             continue;
         }
-
 
         sub_update = update_el.spt_update;
         
@@ -334,7 +336,7 @@ top.spt_update_interval_id = setInterval( function() {
             _debug: false,
         };
 
-
+        // async call
         server.execute_cmd(cmd, kwargs, {}, {on_complete: on_complete} );
 
     }

@@ -814,7 +814,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
-        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key)
+        expression = self.kwargs.get("expression")
+        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key, expression=expression)
         div.add(collections_div)
 
         return div
@@ -836,6 +837,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         group_elements = self.kwargs.get("group_elements") or []
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
 
+        expression = self.kwargs.get("expression")
+
         tile = CollectionContentWdg(
                 search_type=self.search_type,
                 show_shelf=False,
@@ -847,7 +850,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 group_elements=group_elements,
                 parent_key=parent_key,
                 collection_key=collection_key,
-                window_resize_offset=window_resize_offset
+                window_resize_offset=window_resize_offset,
+                expression=expression,
         )
         div.add(tile)
 
@@ -867,8 +871,12 @@ class CollectionFolderWdg(BaseRefreshWdg):
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
 
+        expression = self.kwargs.get("expression")
+        if expression:
+            search = Search.eval(expression)
+        else:
+            search = Search(self.search_type)
 
-        search = Search(self.search_type)
         search.add_filter("_is_collection", True)
 
         parent_key = self.kwargs.get("parent_key")
@@ -1082,15 +1090,21 @@ class CollectionContentWdg(BaseRefreshWdg):
             parts = self.kwargs.get("search_type").split("/")
             collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
-            search = Search(search_type)
+            expression = self.kwargs.get("expression")
+            if expression:
+                search = Search.eval(expression)
+                if not isinstance(search, Search):
+                    result = search
+                    search = Search(search_type)
+                    # TODO: maybe make the results be a filter
+            else:
+                search = Search(search_type)
+
+
             search2 = Search(collection_type)
             search2.add_column("search_code")
             search.add_search_filter("code", search2, op="not in")
 
-            #expression = "@SEARCH(%s['code','not in',@GET(%s.search_code)])" % (search_type, collection_type)
- 
-            #self.kwargs["expression"] = expression
-            #del(self.kwargs['sobjects'])
 
         mode = "tile"
         #mode = "table"

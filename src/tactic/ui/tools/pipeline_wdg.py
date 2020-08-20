@@ -1069,7 +1069,9 @@ class PipelineListWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
 
-        button = ActionButtonWdg(title="+", tip="Add a new workflow", size='small')
+        button = ActionButtonWdg(title="+", tip="Add a new workflow", color="secondary")
+        button.add_class("bmd-btn-icon")
+        button.add_style("float: right")
 
         button.add_behavior( {
         'type': 'click_up',
@@ -3715,9 +3717,12 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         # sobject count
         if search_type:
-            search = Search(search_type)
-            search.add_filter("pipeline_code", pipeline.get_code())
-            sobject_count = search.get_count()
+            try:
+                search = Search(search_type)
+                search.add_filter("pipeline_code", pipeline.get_code())
+                sobject_count = search.get_count()
+            except:
+                sobject_count = 0
         else:
             sobject_count = 0
 
@@ -5170,7 +5175,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
-
 
         self.add_session_behavior(select, "select", "spt_hierarchy_top", "task_creation")
 
@@ -8612,8 +8616,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         check = CheckboxWdg(text_name)
         self.add_session_behavior(check, "checkbox", "spt_pipeline_properties_top", text_name)
 
+
         th = table.add_cell(check)
         th.add_style("height: 40px")
+
+
+
+
 
         # autocreate task
         table.add_row()
@@ -8626,6 +8635,25 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         th = table.add_cell(check)
         th.add_style("height: 40px")
+
+
+
+
+        # number of tasks
+        table.add_row()
+        td = table.add_cell('Number of Tasks Created:')
+        text_name = "task_number"
+        text = TextWdg(text_name)
+        text.add_class(text_name)
+        th = table.add_cell()
+        th.add(text)
+        text.set_option("type", "number")
+        text.add_style("width: 40px")
+
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
+
+
+
 
         # ---- Divider -----
         tr, td = table.add_row_cell()

@@ -54,6 +54,9 @@ class TopWdg(Widget):
         Container.put("TopWdg::top", self.top)
 
 
+        self.handle_palette()
+
+
         self.body.add_attr("ondragover", "return false;")
         self.body.add_attr("ondragleave", "return false;")
         self.body.add_attr("ondrop", "return false;")
@@ -83,9 +86,6 @@ class TopWdg(Widget):
 
             '''
         } )
-
-        self.add_top_behaviors()
-
 
 
         
@@ -202,6 +202,85 @@ class TopWdg(Widget):
         #
         self.body.add_event( "oncontextmenu", "spt.force_default_context_menu = false;" )
 
+
+
+    def handle_palette(self):
+
+        # deal with the palette defined in /index which can override the palette
+
+        # tactic_kbd is only true for standard TACTIC index
+        self.tactic_kbd = True
+        palette_key = None
+
+        hash = self.kwargs.get("hash")
+        if isinstance(hash, tuple) and len(hash) > 0:
+            key = hash[0]
+            if key == "link":
+                key = "index"
+        elif hash == ():
+            key = "index"
+        else:
+            key = None
+        
+        url = None
+        if key:
+            search = Search("config/url")
+            search.add_filter("url", "/%s/%%"%key, "like")
+            search.add_filter("url", "/%s"%key)
+            search.add_where("or")
+            url = search.get_sobject()
+            
+        
+        if url:
+            xml = url.get_xml_value("widget")
+
+            palette_key = xml.get_value("element/@palette")
+
+            # Assume no TACTIC kbd functions for custom index
+            self.tactic_kbd = False
+            if xml.get_value("element/@tactic_kbd") in [True, "true"]:
+                self.tactic_kbd = True
+
+
+        # Set the palette for the admin site
+        if not palette_key:
+            web = WebContainer.get_web()
+            if web.is_admin_page():
+                palette_key = ProjectSetting.get_value_by_key("palette/admin")
+                if not palette_key:
+                    palette_key = ProjectSetting.get_value_by_key("palette")
+                if not palette_key:
+                    palette_key = 'AQUA'
+
+        if palette_key:
+            from pyasm.web import Palette
+            palette = Palette.get()
+            palette.set_palette(palette_key)
+
+        else:
+            from pyasm.web import Palette
+            palette = Palette.get()
+            palette_key = palette.get_theme()
+            if palette_key == "default":
+                palette_key = "AQUA"
+
+        colors = palette.get_colors()
+        colors = jsondumps(colors)
+
+
+        # add palette
+        styles = self.get_palette_styles()
+        self.top.add(styles)
+
+
+
+        script = HtmlElement.script('''
+            var env = spt.Environment.get();
+            env.set_colors(%s);
+            env.set_palette('%s');
+            ''' % (colors, palette_key)
+        )
+        self.top.add(script)
 
 
 
@@ -805,84 +884,8 @@ class TopWdg(Widget):
         '''} )
 
 
-        # deal with the palette defined in /index which can override the palette
-
-        # tactic_kbd is only true for standard TACTIC index
-        tactic_kbd = True
-        palette_key = None
-
-        hash = self.kwargs.get("hash")
-        if isinstance(hash, tuple) and len(hash) > 0:
-            key = hash[0]
-            if key == "link":
-                key = "index"
-        elif hash == ():
-            key = "index"
-        else:
-            key = None
         
-        url = None
-        if key:
-            search = Search("config/url")
-            search.add_filter("url", "/%s/%%"%key, "like")
-            search.add_filter("url", "/%s"%key)
-            search.add_where("or")
-            url = search.get_sobject()
-            
-        
-        if url:
-            xml = url.get_xml_value("widget")
-
-            palette_key = xml.get_value("element/@palette")
-
-            # Assume no TACTIC kbd functions for custom index
-            tactic_kbd = False
-            if xml.get_value("element/@tactic_kbd") in [True, "true"]:
-                tactic_kbd = True
-
-
-        # Set the palette for the admin site
-        if not palette_key:
-            web = WebContainer.get_web()
-            if web.is_admin_page():
-                palette_key = ProjectSetting.get_value_by_key("palette/admin")
-                if not palette_key:
-                    palette_key = ProjectSetting.get_value_by_key("palette")
-                if not palette_key:
-                    palette_key = 'AQUA'
-
-        if palette_key:
-            from pyasm.web import Palette
-            palette = Palette.get()
-            palette.set_palette(palette_key)
-
-        else:
-            from pyasm.web import Palette
-            palette = Palette.get()
-            palette_key = palette.get_theme()
-            if palette_key == "default":
-                palette_key = "AQUA"
-
-        colors = palette.get_colors()
-        colors = jsondumps(colors)
-
-
-        # add palette
-        styles = self.get_palette_styles()
-        top.add(styles)
-
-
-
-        script = HtmlElement.script('''
-            var env = spt.Environment.get();
-            env.set_colors(%s);
-            env.set_palette('%s');
-            ''' % (colors, palette_key)
-        )
-        top.add(script)
-
-        
-        if tactic_kbd == True:
+        if self.tactic_kbd == True:
             body.add_event('onload', 'spt.onload_startup(admin=true)')
         else:
             body.add_event('onload', 'spt.onload_startup(admin=false)')
@@ -1059,6 +1062,9 @@ class TopWdg(Widget):
         widget.add( Html5UploadWdg() )
 
 
+        # add top behaviors
+        self.add_top_behaviors()
+
         return widget
 
 
@@ -1069,7 +1075,7 @@ class TopWdg(Widget):
 
         from datetime import datetime
         today = datetime.today()
-        year = datetime.year
+        year = today.year
 
         # add the copyright information
         widget.add( "<!--   -->\n")
@@ -1123,11 +1129,14 @@ class TopWdg(Widget):
 <script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
         ''')
         """
-        widget.add('''
-<!-- Form builder -->
-<link rel='stylesheet' href='/context/spt_js/formio/formio.full.min.css'>
-<script src='/context/spt_js/formio/formio.full.min.js'></script>
-        ''')
+
+        use_formio = True
+        if use_formio:
+            widget.add('''
+    <!-- Form builder -->
+    <link rel='stylesheet' href='/context/spt_js/formio/formio.full.min.css'>
+    <script src='/context/spt_js/formio/formio.full.min.js'></script>
+            ''')
  
 
 
@@ -1385,6 +1394,7 @@ class TitleTopWdg(TopWdg):
         web = WebContainer.get_web()
 
         widget = Widget()
+
         html = HtmlElement("html")
         html.add_attr("xmlns:v", 'urn:schemas-microsoft-com:vml')
 

@@ -366,9 +366,14 @@ class SearchLimitWdg(Widget):
 
         label_span = SpanWdg("Showing: ")
         showing_wdg.add(label_span)
-        showing_wdg.add("<br clear='all'/>")
-        showing_wdg.add("<br/>")
-        showing_wdg.add( prev )
+
+        range_wdg = DivWdg()
+        showing_wdg.add(range_wdg)
+        range_wdg.add_style("display: flex")
+        range_wdg.add_style("justify-content: space-around")
+        range_wdg.add_style("margin: 20px 10px")
+
+        range_wdg.add( prev )
        
 
         # this min calculation is used so that if self.sobjects is not set
@@ -387,7 +392,7 @@ class SearchLimitWdg(Widget):
         current_value = "%d - %d" % (left_bound, right_bound)
 
         if self.style == self.SIMPLE:
-            showing_wdg.add( current_value )
+            range_wdg.add( current_value )
         else:
             # add a range selector using ItemsNavigatorWdg
             from pyasm.widget import ItemsNavigatorWdg
@@ -407,13 +412,11 @@ class SearchLimitWdg(Widget):
             selector.set_value(current_value)
             selector.set_display_label(False)
 
-            showing_wdg.add( selector) 
+            range_wdg.add( selector) 
 
-        showing_wdg.add( next )
+        range_wdg.add( next )
 
 
-        showing_wdg.add("<br clear='all'/>")
-        showing_wdg.add("<br clear='all'/>")
 
 
         #showing_wdg.add( " x ")

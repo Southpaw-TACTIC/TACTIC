@@ -1050,7 +1050,7 @@ class BaseWorkflowNodeHandler(BaseProcessTrigger):
         package_names = ["default", "message"]
 
         # get the packages data structure
-        packages = self.packages
+        packages = self.packages or {}
 
         for package_name in package_names:
 

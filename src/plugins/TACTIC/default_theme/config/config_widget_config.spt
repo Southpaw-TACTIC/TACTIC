@@ -1,10 +1,20 @@
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('config', """<config>
 <default_theme.menu>
 <html>
+<div class="menu">
+  <div>
+    <element name="menu">
+      <display class="tactic.ui.panel.SimpleSideBarWdg">
+        <use_href>true</use_href>
+        <view>project_view</view>
+        <target>web_content</target>
+      </display>
+    </element>
+  </div>
+</div>
 <style type="text/css">
 <![CDATA[
 <%
@@ -20,17 +30,16 @@ menu_width = 140;
     margin-right: auto;
     margin-bottom: -1px;
     position: relative;
-    padding: 0px;
+    padding: 6px 0px 0px 0px;
     //border: solid 1px [expr]@COLOR('border')[/expr];
     
-    width: ${num_menus*(menu_width+12)};
+    width: max-content;
  
 }
 
 .web_menu_wdg .main_link {
   list-style-type: none;
   display: block;
-  //background: [expr]@GRADIENT('background', 0, -20)[/expr];
   height: 28px;
   cursor: pointer;
 }
@@ -40,7 +49,7 @@ menu_width = 140;
   display: block;
   margin: -1px 0px 0px 0px;
   padding: 0px;
-  background: [expr]@GRADIENT('background', 0, -20)[/expr];
+  background: [expr]@COLOR('background', 0)[/expr];
   height: 30px;
 }
 
@@ -57,7 +66,6 @@ menu_width = 140;
     border-width: 1 1 0 1;
     border-color: [expr]@COLOR('border')[/expr];
     margin-left: -1px;
-    height: 19px;
 
     width: ${menu_width};
 }
@@ -99,17 +107,6 @@ menu_width = 140;
     color: #FFF;
 }
 </style>
-<div class="menu">
-  <div>
-    <element name="menu">
-      <display class="tactic.ui.panel.SimpleSideBarWdg">
-        <use_href>true</use_href>
-        <view>project_view</view>
-        <target>web_content</target>
-      </display>
-    </element>
-  </div>
-</div>
 </html>
 <behavior class="main_li" event="mouseenter"><![CDATA[
 // make sure they are all closed
@@ -160,13 +157,13 @@ for ( var i = 0; i < els.length; i++) {
 ]]></behavior>
 </default_theme.menu>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('view', """default_theme.menu""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('config', """<config>
 <default_theme.content>
 <html>
@@ -193,38 +190,39 @@ insert.set_value('config', """<config>
 </html>
 </default_theme.content>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('view', """default_theme.content""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('config', """<config>
 <default_theme.footer>
 <html>
+<div class="web_footer">
+
+</div>
 <style type="text/css">
 .web_footer {
     min-height: 150px;
-    background-color: [expr]@COLOR('background3')[/expr];
+    background-color: [expr]@COLOR('background2')[/expr];
     //border: solid 1px [expr]@COLOR('border')[/expr];
     margin-top: -1px;
     padding: 10px;
 }
 </style>
-<div class="web_footer">
-
-</div>
 </html>
+
 </default_theme.footer>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('view', """default_theme.footer""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('config', """<config>
 <default_theme.header>
 <html>
@@ -259,8 +257,7 @@ project = server.get_by_code("sthpw/project", project_code)
       <div style="position: absolute; top: 15px; left: 200px; font-size: 1.5em;">
           ${project.get("title")}
       </div>
-      <div style="height: 87px"> </div>
-      <div class="web_menu">
+\\      <div class="web_menu">
         <element view=".menu"/>
       </div>
     </div>
@@ -280,16 +277,17 @@ spt.confirm("Are you sure you wish to sign out?", ok )
 ]]></behavior>
 </default_theme.header>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('view', """default_theme.header""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('config', """<config>
 <default_theme.styles>
 <html>
+<div> </div>
 <style type="text/css">
 body {
     #background: [expr]@COLOR('background')[/expr] !important;
@@ -312,7 +310,7 @@ body {
 .web_header {
     background-color: [expr]@COLOR('background', -10)[/expr];
     color: [expr]@COLOR('color')[/expr];
-    height: 136px;
+    height: 70px;
     margin: 0px auto;
     position: relative;
     border-style: solid;
@@ -351,18 +349,17 @@ body {
     overflow: auto;
 }
 </style>
-<div>
-</div>
 </html>
+
 </default_theme.styles>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('view', """default_theme.styles""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('config', """<config>
 <default_theme.index>
 <html>
@@ -402,13 +399,13 @@ insert.set_value('config', """<config>
 </html>
 </default_theme.index>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 05:08:25""")
 insert.set_value('view', """default_theme.index""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """TabWdg""")
-insert.set_value('timestamp', """2013-02-09 11:38:47""")
 insert.set_value('config', """<config>
 <default_theme.tabs>
    <element name="home" title="Home">
@@ -418,13 +415,13 @@ insert.set_value('config', """<config>
   </element>
 </default_theme.tabs>
 </config>""")
+insert.set_value('timestamp', """2013-02-09 11:38:47""")
 insert.set_value('view', """default_theme.tabs""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-03 06:15:48""")
 insert.set_value('config', """<config>
 <default_theme.login>
 <html>
@@ -502,13 +499,13 @@ Password:
 </html>
 </default_theme.login>
 </config>""")
+insert.set_value('timestamp', """2013-03-03 06:15:48""")
 insert.set_value('view', """default_theme.login""")
 #-- End Entry --#
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
 insert.set_value('category', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2013-03-13 11:15:45""")
 insert.set_value('config', """<config>
 <default_theme.home>
 <mako>
@@ -555,6 +552,7 @@ project = server.eval("@SOBJECT(sthpw/project['code','%s'])" % project_code, sin
 </html>
 </default_theme.home>
 </config>""")
+insert.set_value('timestamp', """2013-03-13 11:15:45""")
 insert.set_value('view', """default_theme.home""")
 #-- End Entry --#
 

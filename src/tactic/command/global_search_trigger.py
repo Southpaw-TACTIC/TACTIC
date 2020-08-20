@@ -161,7 +161,7 @@ class GlobalSearchTrigger(Trigger):
                 
             keywords_data = sobj.get_json_value("keywords_data", {})
             
-            update_data = input.get("update_data")
+            update_data = input.get("update_data") or {}
 
             # Add custom keywords
             keywords_handler = ProjectSetting.get_value_by_key("custom_keywords_data", search_type=base_search_type)

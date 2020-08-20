@@ -2304,6 +2304,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
                 select.add_style("border: none")
                 select.add_style("box-shadow: none")
+                select.add_style("background: transparent")
 
 
                 if node_type in ['auto', 'condition']:
@@ -2447,6 +2448,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     select.add_style("height: 18px")
                     select.add_style("padding: 0px")
                     select.add_style("margin: 2px 0px 2px 5px")
+                    select.add_style("background: transparent")
 
 
                     select.add_style("border: none")

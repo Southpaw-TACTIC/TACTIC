@@ -667,7 +667,7 @@ class ScriptDirListWdg(DirListWdg):
         return ""
 
     def get_dir_icon(self, dir, item):
-        return "FA_FOLDER_O"
+        return "FAS_FOLDER"
 
 
 

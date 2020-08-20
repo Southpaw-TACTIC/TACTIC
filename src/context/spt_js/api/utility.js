@@ -52,6 +52,8 @@ spt.api.Utility.get_input_values = function(element_id, filter, return_array, re
     if (return_labels == undefined || return_labels == null)
         return_labels = false;
 
+
+
     if (! kwargs) kwargs = {};
 
     var retrieve = kwargs.retrieve == true;

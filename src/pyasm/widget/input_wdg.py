@@ -1138,6 +1138,10 @@ class SelectWdg(BaseInputWdg):
         if bs != False:
             self.add_class("form-control")
 
+        self.add_color("color", "var(--spt_palette_color)")
+        self.add_color("background", "var(--spt_palette_background)")
+        self.add_style("padding", "0px 5px")
+
 
 
     def get_related_type(self):
