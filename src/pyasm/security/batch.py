@@ -21,8 +21,10 @@ from security import Security, Site
 
 class Batch(Environment):
     '''Environment object that is used for batch operations'''
-    def __init__(self, project_code=None, login_code=None, site=None):
+    def __init__(self, project_code=None, login_code=None, site=None, ticket=None):
         self.set_app_server("batch")
+
+        self.ticket = ticket
 
         if not site:
             # if not explicitly set, keep the current site
@@ -81,7 +83,7 @@ class Batch(Environment):
 
     def _do_login(self):
         security = Environment.get_security()
-        security.login_as_batch(self.login_code)
+        security.login_as_batch(self.login_code, ticket=self.ticket)
 
 
     def __del__(self):
