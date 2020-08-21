@@ -205,7 +205,7 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
         value_wdg.add_update( {
             'search_key': sobject.get_search_key(),
             'column': name,
-            'interval': 4,
+            'interval': 1,
             'cbjs_action': '''
             var parent = bvr.src_el.getParent(".spt_cell_edit");
             var colors = JSON.parse( bvr.src_el.getAttribute("spt_colors") );
