@@ -1900,10 +1900,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         # selection behaviors
-        table.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_table_select',
-            'cbjs_action': '''
+        embedded_table =  self.kwargs.get("__hidden__") in [True, 'true']
+        if not embedded_table:
+            table.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_table_select',
+                'cbjs_action': '''
+
                 if (evt.shift == true) return;
 
                 spt.table.set_table(bvr.src_el);
@@ -1917,56 +1920,57 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 }
 
 
-            
-        '''
-        } )
+                
+            '''
+            } )
 
 
-        table.add_relay_behavior( {
-        'type': 'click',
-        'bvr_match_class': 'spt_table_select',
-        #'modkeys': 'SHIFT',
-        'cbjs_action': '''
-        if (evt.shift != true) return;
+            table.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': 'spt_table_select',
+            'modkeys': 'SHIFT',
+            'cbjs_action': '''
+            if (evt.shift != true) return;
 
-        spt.table.set_table(bvr.src_el);
-        var row = bvr.src_el.getParent(".spt_table_row");
+            spt.table.set_table(bvr.src_el);
+            var row = bvr.src_el.getParent(".spt_table_row");
 
-        var rows = spt.table.get_all_rows();
-        var last_selected = spt.table.last_selected_row;
-        var last_index = -1;
-        var cur_index = -1;
-        for (var i = 0; i < rows.length; i++) {
-            if (rows[i] == last_selected) {
-                last_index = i;
+            var rows = spt.table.get_all_rows();
+            var last_selected = spt.table.last_selected_row;
+            var last_index = -1;
+            var cur_index = -1;
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i] == last_selected) {
+                    last_index = i;
+                }
+                if (rows[i] == row) {
+                    cur_index = i;
+                }
+
+                if (cur_index != -1 && last_index != -1) {
+                    break;
+                }
+
             }
-            if (rows[i] == row) {
-                cur_index = i;
+            var start_index;
+            var end_index;
+            if (last_index < cur_index) {
+                start_index = last_index;
+                end_index = cur_index;
+            }
+            else {
+                start_index = cur_index;
+                end_index = last_index;
             }
 
-            if (cur_index != -1 && last_index != -1) {
-                break;
+            for (var i = start_index; i < end_index+1; i++) {
+                spt.table.select_row(rows[i]);
             }
 
-        }
-        var start_index;
-        var end_index;
-        if (last_index < cur_index) {
-            start_index = last_index;
-            end_index = cur_index;
-        }
-        else {
-            start_index = cur_index;
-            end_index = last_index;
-        }
 
-        for (var i = start_index; i < end_index+1; i++) {
-            spt.table.select_row(rows[i]);
-        }
+            '''
+            } )
 
-
-        '''
-        } )
 
 
 
@@ -8796,7 +8800,6 @@ spt.table.save_view_cbk = function(table_id, login) {
 }
 
 //verify matching spt_view
-// NOTE: this is not really used anymore
 spt.table.is_embedded = function(table){
     var top = table.getParent(".spt_view_panel");
     // top is null if it's a pure Table Layout

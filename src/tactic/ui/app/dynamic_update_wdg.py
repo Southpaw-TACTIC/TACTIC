@@ -132,47 +132,42 @@ spt.update.display = function(el, column, value) {
 }
 
 
-var top = document.id(document.body);
 
-if (top.spt_update_interval_id) {
-    clearInterval( top.spt_update_interval_id );
-}
 
-top.spt_update_src_el = bvr.src_el;
+spt.update.run_update = function(options) {
 
-//setTimeout( function() {
-top.spt_update_interval_id = setInterval( function() {
-
-    var top = document.id(document.body);
+    // if update is active then return
     if (spt.body.is_active() == false) {
         return;
     }
 
+    var top = document.id(document.body);
+    var oldest_timestamp = top.spt_update_timestamp;
 
-    if ( document.id(top.spt_update_src_el).isVisible() == false) {
-        clearInterval( top.spt_update_interval_id );
-        top.spt_update_interval_id = 0;
-        top.spt_update_src_el = null;
-        return;
+    if (oldest_timestamp) {
+        var body = document.id(document.body);
+        oldest_timestamp = body.spt_update_timestamp;
+    }
+
+    if (typeOf(options) == "undefined" || options == null) {
+        options = {};
+    }
+
+
+    var reset_counter = options.reset_counter;
+    if (typeOf(reset_counter) == "undefined") {
+        reset_counter = true;
     }
 
 
     var server = TacticServerStub.get();
-
-    // find out if there are any changes in the last interval
-    //var expr = "@COUNT(sthpw/change_timestamp['timestamp','>','$PREV_HOUR'])";
-    //count = server.eval(expr);
-
-
-    cmd = "tactic.ui.app.DynamicUpdateCmd"
+    var cmd = "tactic.ui.app.DynamicUpdateCmd"
     
 
     var update = top.spt_update;
     if (!update) {
         update = {};
     }
-
-    var oldest_timestamp = top.spt_update_timestamp;
 
     // get all of the updates below as well
     var update_els = top.getElements(".spt_update");
@@ -204,9 +199,14 @@ top.spt_update_interval_id = setInterval( function() {
             // on elements that have intervals, set the counter
             var update_interval = sub_update[key].interval;
             if (update_interval) {
-                var counter = update_el.spt_update_count;
-                if (!counter) {
+                if (reset_counter) {
                     counter = 0;
+                }
+                else {
+                    var counter = update_el.spt_update_count;
+                    if (!counter) {
+                        counter = 0;
+                    }
                 }
                 counter += 1;
                 if (counter < update_interval) {
@@ -340,6 +340,45 @@ top.spt_update_interval_id = setInterval( function() {
         server.execute_cmd(cmd, kwargs, {}, {on_complete: on_complete} );
 
     }
+
+
+}
+
+
+
+
+
+
+
+// start the interval for refreshing
+
+var top = document.id(document.body);
+
+if (top.spt_update_interval_id) {
+    clearInterval( top.spt_update_interval_id );
+}
+
+top.spt_update_src_el = bvr.src_el;
+
+top.spt_update_interval_id = setInterval( function() {
+
+    var top = document.id(document.body);
+    if (spt.body.is_active() == false) {
+        return;
+    }
+
+
+    if ( document.id(top.spt_update_src_el).isVisible() == false) {
+        alert("clearing interval");
+        clearInterval( top.spt_update_interval_id );
+        top.spt_update_interval_id = 0;
+        top.spt_update_src_el = null;
+        return;
+    }
+
+    spt.update.run_update( {
+        reset_counter: false
+    } );
 
 
 }, bvr.interval);

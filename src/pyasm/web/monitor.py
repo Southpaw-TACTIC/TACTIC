@@ -138,7 +138,7 @@ class BaseProcessThread(threading.Thread):
 
         self.num_checks += 1
 
-        start = time.clock()
+        #start = time.time()
         try:
             response = self.check()
         except IOError as e:
@@ -162,7 +162,7 @@ class BaseProcessThread(threading.Thread):
 
         '''
         # check the time it took to respond
-        end = time.clock()
+        end = time.time()
         interval = end - start
 
         # if greater than 5 second, kill the process and restart
