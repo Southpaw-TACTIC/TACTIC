@@ -46,6 +46,8 @@ class LinkElementWdg(SimpleTableElementWdg):
     def get_display(self):
         
         sobject = self.get_current_sobject()
+        if not sobject or sobject.is_insert():
+            return ""
 
         value = sobject.get_value( self.get_name() )
         if value.startswith("{") and value.endswith("}"):
