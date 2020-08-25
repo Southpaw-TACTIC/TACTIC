@@ -17,6 +17,8 @@ __all__ = ['Install']
 
 
 import os, shutil, sys
+import six
+from six.moves import input
 
 import tacticenv
 from pyasm.common import Config
@@ -55,7 +57,7 @@ class ChangeDbPassword:
         while 1:
             if not default_vendor:
                 default_vendor = "PostgreSQL"
-            vendor = raw_input("(%s) -> " % default_vendor)
+            vendor = input("(%s) -> " % default_vendor)
             if not vendor:
                 vendor = default_vendor
             print(" ")
@@ -74,7 +76,7 @@ class ChangeDbPassword:
         print(" ")
         print("Please enter database server hostname or IP address:")
         print(" ")
-        server = raw_input("(%s) -> " % default_server)
+        server = input("(%s) -> " % default_server)
         if not server:
             server = default_server
         print(" ")
@@ -90,7 +92,7 @@ class ChangeDbPassword:
         if vendor == "Oracle":
             print("    (To access Oracle using schema names, type '__EMPTY__')")
         print(" ")
-        user = raw_input("(%s) -> " % default_user)
+        user = input("(%s) -> " % default_user)
         if not user:
             user = default_user
         print(" ")
@@ -133,7 +135,7 @@ class ChangeDbPassword:
         print("User:     [%s]" % user)
         print(" ")
 
-        ok = raw_input("Save to config (N/y) -> ")
+        ok = input("Save to config (N/y) -> ")
         if ok.lower() != "y":
             print("Aborted")
             return
@@ -157,7 +159,7 @@ class ChangeDbPassword:
         print(" ")
 
         '''
-        test = raw_input("Test Connection (N/y) -> ")
+        test = input("Test Connection (N/y) -> ")
         if test.lower() != "y":
             return
 

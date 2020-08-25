@@ -19,7 +19,7 @@ import unittest
 from pyasm.security import Batch
 from pyasm.search import SearchType
 
-from ad_authenticate import ADAuthenticate
+from .ad_authenticate import ADAuthenticate
 
 
 class ADTest(unittest.TestCase):

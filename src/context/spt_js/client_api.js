@@ -334,7 +334,11 @@ TacticServerStub = function() {
         return this._delegate("ping");
     }
 
-    this.async_ping = function(kwargs={}) {
+    this.async_ping = function(kwargs) {
+
+        if (!kwargs) {
+            kwargs = {};
+        }
     
         var callback = kwargs['cbjs_action'];
         if (!callback) {
@@ -389,11 +393,11 @@ TacticServerStub = function() {
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
         passed_args = [key, kwargs];
         var ret_val = this._delegate("get_message", passed_args, kwargs, null, on_complete, on_error);
-        // asynchronouse
+        // asynchronous
         if (on_complete) {
             return;
         }
-        // synchronouse
+        // synchronous
         if (ret_val && ret_val.status == "ERROR") {
             throw ret_val;
         }
@@ -503,10 +507,18 @@ TacticServerStub = function() {
     }
 
 
-    this.simple_checkin = function(search_key, context, file_path, kwargs) {
+
+
+    this.simple_checkin = function(search_key, context, file_path, kwargs, on_complete, on_error) {
+
         if (typeof(kwargs) == "undefined") {
             kwargs = {__empty__:true};
         }
+
+
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+        passed_args = [search_key, context, file_path, kwargs];
+
         var mode_options = ['upload','uploaded', 'copy', 'move', 'inplace','local'];
 
         // mode is no uploaded by default
@@ -565,7 +577,13 @@ TacticServerStub = function() {
 
 
         // do the checkin
-        var snapshot = this._delegate("simple_checkin", arguments, kwargs);
+        var snapshot = this._delegate("simple_checkin", passed_args, kwargs, null, on_complete, on_error);
+        // asynchronous
+        if (on_complete) {
+            return;
+        }
+
+
         var files = snapshot['__file_sobjects__'];
 
         if (mode == 'local') {
@@ -594,7 +612,23 @@ TacticServerStub = function() {
         }
 
         return snapshot;
+
     }
+
+
+
+
+    this.p_simple_checkin = function(search_key, context, file_path, kwargs) {
+        return new Promise( function(resolve, reject) {
+            if (!kwargs) kwargs = {};
+            kwargs.on_complete = function(x) { resolve(x); }
+            kwargs.on_error = function(x) { reject(x); }
+            return this.simple_checkin(search_key, context, file_path, kwargs);
+        }.bind(this) )
+    }
+
+
+
 
 
 
@@ -1250,7 +1284,7 @@ TacticServerStub = function() {
        
         passed_args = [search_type, kwargs];
         var value = this._delegate("query", passed_args, kwargs, "string", on_complete2, on_error);
-        // asynchronouse
+        // asynchronous
         if (on_complete) {
             return;
         }
@@ -1275,7 +1309,7 @@ TacticServerStub = function() {
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
         passed_args = [search_key, kwargs];
         var value = this._delegate("get_by_search_key", passed_args, kwargs, null, on_complete, on_error);
-        // asynchronouse
+        // asynchronous
         if (on_complete) {
             return;
         }
@@ -1403,11 +1437,11 @@ TacticServerStub = function() {
        
         passed_args = [expression, kwargs];
         var ret_val = this._delegate("eval", passed_args, kwargs, null, on_complete, on_error);
-        // asynchronouse
+        // asynchronous
         if (on_complete) {
             return;
         }
-        // synchronouse
+        // synchronous
         if (ret_val && ret_val.status == "ERROR") {
             throw ret_val;
         }
@@ -2090,7 +2124,7 @@ TacticServerStub = function() {
 
     this._show_login = function() {
         
-        var spinners = $$('.spt_spin');
+        var spinners = document.id(document.body).getElements('.spt_spin');
         spinners.each(function(x) {spt.hide(x)});
         var login_scr = document.getElement('.spt_login_screen');
         login_scr.setStyle('z-index','1100');

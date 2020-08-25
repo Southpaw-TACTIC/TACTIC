@@ -228,9 +228,21 @@ class FileCheckin(BaseCheckin):
 
         self.mode = mode
         self.keep_file_name = keep_file_name
-        
+
+
+        if not md5s:
+            calculate_md5 = Config.get_value("checkin", "calculate_md5")
+            if not calculate_md5:
+                calculate_md5 = ProjectSetting.get_value_by_key('checkin/calculate_md5')
+
+            if not calculate_md5:
+                md5s = "ignore"
+       
         if md5s:
-            assert len(md5s) == len(file_paths)
+            if isinstance(md5s, list):
+                assert len(md5s) == len(file_paths)
+            else:
+                assert md5s in ['ignore']
         else:
             # Checkin may not provide md5s, make a None list
             md5s = [ None for x in range(len(file_paths))]

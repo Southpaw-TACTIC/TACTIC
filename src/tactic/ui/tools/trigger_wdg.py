@@ -101,6 +101,7 @@ class TriggerToolWdg(BaseRefreshWdg):
         table.add_color("background", "background")
         table.add_color("color", "color")
         inner.add(table)
+        table.add_style("border-top: solid 1px %s" % inner.get_color("border") )
 
 
         table.add_row()
@@ -108,8 +109,8 @@ class TriggerToolWdg(BaseRefreshWdg):
         left.add_style("width: 200px")
         left.add_style("min-width: 250px")
         left.add_style("vertical-align: top")
-        left.add_style("border: solid 1px %s" % left.get_color("border") )
-        left.add_color("color", "color3")
+        left.add_style("border-right: solid 1px %s" % left.get_color("border") )
+        left.add_color("color", "color")
         left.add_color("background", "background")
 
         title_div = DivWdg()
@@ -260,17 +261,19 @@ class TriggerToolWdg(BaseRefreshWdg):
             div = DivWdg()
             right.add(div)
 
+            div.add_style("display: flex")
+            div.add_style("align-items: center")
+            div.add_style("justify-content: space-around")
+
             div.add_style("height: 100px")
             div.add_style("width: 300px")
             div.add_color("background", "background3")
             div.add_color("color", "color3")
             div.add_border()
             div.center()
-            div.add_style("margin-top: 50px")
-            div.add_style("padding-top: 75px")
+            div.add_style("margin: 50px auto")
 
-            div.add_style("text-align: center")
-            div.add("<b>No Triggers Selected</b>")
+            div.add("<div><b>No Triggers Selected</b></div>")
 
 
         if self.kwargs.get("is_refresh") in [True, 'true']:

@@ -316,6 +316,10 @@ class ButtonElementWdg(BaseTableElementWdg):
 
     def get_display(self):
         sobject = self.get_current_sobject()
+        if not sobject or sobject.is_insert():
+            return ""
+
+
         search_key = SearchKey.build_by_sobject(sobject)
 
         display = DivWdg()

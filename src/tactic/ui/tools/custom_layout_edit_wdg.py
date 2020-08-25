@@ -3416,7 +3416,6 @@ class CustomLayoutEditSaveCmd(Command):
         xml = Xml()
         xml.read_string(config_xml)
 
-
         if code:
             search = Search("config/widget_config")
             search.add_filter("code", code)

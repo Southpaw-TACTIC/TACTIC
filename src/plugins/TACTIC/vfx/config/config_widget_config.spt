@@ -2002,7 +2002,7 @@ insert.set_value('config', """<config>
     <element name="total_cost" title="Total Cost" edit="false" color="false">
       <display widget="expression">
         <expression>@SUM(sthpw/task.bid_cost)</expression>
-        <display_expression>${@GET(.total_cost, %0.2f)}</display_expression>
+        <display_expression>${@GET(.total_cost, '%0.2f')}</display_expression>
       </display>
     </element>
   </definition>

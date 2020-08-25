@@ -13,6 +13,8 @@
 
 import tacticenv
 import sys, re, getopt, os
+import six
+from six.moves import input
 
 from pyasm.security import Batch
 from pyasm.biz import Project
@@ -20,9 +22,6 @@ from pyasm.command import Command
 from pyasm.search import Search, DbContainer, SObject, Sql
 from pyasm.search.upgrade import Upgrade
 from pyasm.common import Container, Environment, Common
-
-if Common.IS_Pv3:
-    raw_input = input
 
 
 if __name__ == '__main__':
@@ -84,7 +83,7 @@ if __name__ == '__main__':
         if is_forced:
             msg = "Upgrading to version [%s] with force option" % current_version
         if not is_confirmed:
-            answer = raw_input(" %s. Continue (y/n): " %msg)
+            answer = input(" %s. Continue (y/n): " %msg)
             if answer == "y":
                 pass
             elif answer == 'n':
@@ -104,7 +103,7 @@ if __name__ == '__main__':
 
     if version != Environment.get_release_version():
         
-        answer = raw_input("[%s] does not match currently running TACTIC version [%s]. If it is a lower version number, it will probably not work. -f must be used to continue. For regular upgrade, you have not symlinked to the new TACTIC version. Continue (y/n): " \
+        answer = input("[%s] does not match currently running TACTIC version [%s]. If it is a lower version number, it will probably not work. -f must be used to continue. For regular upgrade, you have not symlinked to the new TACTIC version. Continue (y/n): " \
                 %(version, Environment.get_release_version()))
         if answer == "y":
             if not is_forced:
@@ -141,7 +140,7 @@ if __name__ == '__main__':
         if is_confirmed:
             answer = 'y'
         else:
-            answer = raw_input("Several projects are already in newer versions:\n%s\n"\
+            answer = input("Several projects are already in newer versions:\n%s\n"\
                     "These will not be upgraded unless their last_version_update is lowered. "\
                     "Continue (y/n): " %('\n'.join(data)))
                 

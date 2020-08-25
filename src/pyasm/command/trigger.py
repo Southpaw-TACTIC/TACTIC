@@ -856,6 +856,7 @@ class SnapshotIsLatestTrigger(Trigger):
 
 
     def execute(self):
+
         input = self.get_input()
         mode = input.get("mode")
         # NOTE: this could be run during update and insert of snapshot

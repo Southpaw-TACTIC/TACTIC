@@ -152,7 +152,7 @@ class SearchTypeToolWdg(BaseRefreshWdg):
         widget.add(manager_wdg)
         manager_wdg.add_style("border: solid 1px %s" % widget.get_color("border"))
         manager_wdg.add_style("border-radius: 10px")
-        manager_wdg.add_style("box-shadow: 0px 0px 15px %s" % widget.get_color("shadow"))
+        manager_wdg.add_style("box-shadow: 0px 0px 5px %s" % widget.get_color("shadow"))
         manager_wdg.add_style("padding: 20px")
         manager_wdg.add_style("width: 60%")
         manager_wdg.add_style("margin: 10px auto")
@@ -480,16 +480,29 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         process_wdg = DivWdg()
         process_wdg.add_style("padding-left: 40px")
-        process_wdg.add("Process: ")
-        process_wdg.add( TextWdg("process") )
+        process_wdg.add_style("display", "flex")
+        process_wdg.add_style("align-items", "center")
+
+        process_wdg.add("<div>Process: </div>")
+        text = TextInputWdg(name="process")
+        process_wdg.add( text )
+        text.add_attr("spt_is_multiple", "true")
+        text.add_style("margin: 0px 20px")
+
         dynamic_list.add_template(process_wdg)
 
         for i in range(0,3):
             process_wdg = DivWdg()
             process_wdg.add_style("padding-left: 40px")
-            process_wdg.add("Process: ")
-            text = TextWdg("process")
+            process_wdg.add_style("display", "flex")
+            process_wdg.add_style("align-items", "center")
+
+            process_wdg.add("<div>Process: </div>")
+
+            text = TextInputWdg(name="process")
             text.add_attr("disabled", "disabled")
+            text.add_style("margin: 0px 20px")
+            text.add_attr("spt_is_multiple", "true")
             process_wdg.add( text )
             dynamic_list.add_item(process_wdg)
 
@@ -628,7 +641,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         checkbox = CheckboxWdg("has_folder_naming")
         folder_div.add(checkbox)
-        span = SpanWdg(HtmlElement.b("enforce directory naming conventions"), css='small')
+        span = SpanWdg(HtmlElement.b(" enforce directory naming conventions"))
         folder_div.add(span)
 
         dirname_div = DivWdg()
@@ -673,7 +686,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
 
         checkbox = CheckboxWdg("has_file_naming")
         folder_div.add(checkbox)
-        span = SpanWdg(HtmlElement.b("enforce file naming conventions"), css='small')
+        span = SpanWdg(HtmlElement.b(" enforce file naming conventions"))
         folder_div.add(span)
 
         dirname_div = DivWdg()
@@ -911,6 +924,7 @@ class SearchTypeCreatorWdg(BaseRefreshWdg):
         span = DivWdg()
         image_div.add(span)
         span.add_style("padding: 10px 20px 10px 20px")
+        span.add_color("color", "color3")
         span.add_color("background", "background3")
         span.add(IconWdg("INFO", IconWdg.CREATE))
         span.add("The preview image is a small image that will be used in verious places as a visual representation of this searchable type.")
@@ -1891,6 +1905,7 @@ class SearchTypeCreatorCmd(Command):
 
 
         processes = self.get_values("process")
+
         filtered = []
         for process in processes:
             if process:

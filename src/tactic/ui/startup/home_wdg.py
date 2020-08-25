@@ -38,19 +38,17 @@ class HomeWdg(BaseRefreshWdg):
         section_wdg.add_style("height: 100px")
         section_wdg.add_style("overflow: hidden")
         section_wdg.add_style("margin: 5px")
-        section_wdg.set_box_shadow("1px 1px 1px 1px")
+        section_wdg.add_style("box-shadow: 0px 0px 5px %s" % section_wdg.get_color("shadow") )
 
         title_wdg = DivWdg()
         section_wdg.add(title_wdg)
         title_wdg.add(title)
-        title_wdg.add_style("height: 20px")
-        title_wdg.add_style("padding: 3px")
-        title_wdg.add_style("margin-top: 3px")
+        title_wdg.add_style("height: 26px")
+        title_wdg.add_style("padding: 6px 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -5)
 
         section_wdg.add_color("background", "background")
-        #section_wdg.add_gradient("background", "background", 0, -3)
         section_wdg.add_behavior( {
         'type': 'hover',
         'add_color_modifier': -5,
@@ -100,7 +98,7 @@ class HomeWdg(BaseRefreshWdg):
         title_wdg.add_style("padding: 3px")
         title_wdg.add_style("margin-top: 3px")
         title_wdg.add_style("font-weight: bold")
-        title_wdg.add_gradient("background", "background")
+        title_wdg.add_color("background", "background", -5)
 
         section_wdg.add_color("background", "background")
         section_wdg.add_behavior( {
@@ -156,7 +154,7 @@ class HomeWdg(BaseRefreshWdg):
         title.add_style("margin: -10px -10px 0px -10px")
 
         top.add(title)
-        title.add_gradient("background", "background3", 5, -10)
+        title.add_color("background", "background2")
         top.add("<br/>")
 
         button_div = DivWdg()

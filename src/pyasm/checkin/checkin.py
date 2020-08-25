@@ -191,6 +191,7 @@ class BaseCheckin(Command):
             return
         else:
             self.snapshot.commit(triggers="none")
+            self.snapshot.set_latest(update_versionless=False)
 
         # add a note to the parent
         self.add_publish_note()

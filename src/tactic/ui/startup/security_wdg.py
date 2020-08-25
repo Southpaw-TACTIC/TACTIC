@@ -1130,6 +1130,9 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         elif self.security_type == 'process' and self.access_level in ['low', 'medium','high']:
             is_set = True
 
+        elif self.security_type == 'search_type_status' and self.access_level in ['high']:
+            is_set = True
+
 
         if is_set:
             td.add_color("background", "background3", [5, 5, 5])
@@ -1209,6 +1212,9 @@ class SecurityCheckboxElementWdg(SimpleTableElementWdg):
         elif self.security_type == 'search_type' and self.access_level in ['min', 'low', 'medium', 'high']:
             is_set = True
         elif self.security_type == 'process' and self.access_level in ['low', 'medium', 'high']:
+            is_set = True
+
+        elif self.security_type == 'search_type_status' and self.access_level in ['high']:
             is_set = True
 
 
@@ -2530,6 +2536,10 @@ class SecurityBuilder(object):
         assert self.xml
 
         self.root = self.xml.get_root_node()
+
+
+    def get_xml(self):
+        return self.xml
 
 
     def to_string(self):

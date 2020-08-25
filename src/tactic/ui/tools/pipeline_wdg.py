@@ -115,7 +115,9 @@ class PipelineToolWdg(BaseRefreshWdg):
         colors = {
                 "color": color,
                 "background": background,
-                "border": styles.get_color("table_border")
+                "border": styles.get_color("table_border"),
+                "color2": styles.get_color("color2"),
+                "background2": styles.get_color("background2"),
         }
 
         styles.add('''
@@ -191,11 +193,13 @@ class PipelineToolWdg(BaseRefreshWdg):
             }
 
             .spt_pipeline_tool_top .search-result.hovered {
-                background: #eee;
+                background: %(background2)s;
+                color: %(color2)s;
             }
 
             .spt_pipeline_tool_top .search-result.selected {
-                background: #eee;
+                background: %(background2)s;
+                color: %(color2)s;
             }
 
             .spt_pipeline_tool_top .search-result.search-result-template {
@@ -681,6 +685,8 @@ class PipelineToolWdg(BaseRefreshWdg):
 
             #### process select toolbar content
             type_search = HtmlElement.text()
+            type_search.add_color("background", "background", -5)
+            type_search.add_color("color", "color")
             toolbar.add(type_search)
             type_search.add_class("spt_pipeline_type_search spt_toolbar_content")
             type_search.add_attr("placeholder", "Search for process nodes...")
@@ -1063,7 +1069,9 @@ class PipelineListWdg(BaseRefreshWdg):
 
         title_div = DivWdg()
 
-        button = ActionButtonWdg(title="+", tip="Add a new workflow", size='small')
+        button = ActionButtonWdg(title="+", tip="Add a new workflow", color="secondary")
+        button.add_class("bmd-btn-icon")
+        button.add_style("float: right")
 
         button.add_behavior( {
         'type': 'click_up',
@@ -1089,7 +1097,6 @@ class PipelineListWdg(BaseRefreshWdg):
         title_div.add_style("height: 30px")
         title_div.add_style("padding-left: 5px")
         title_div.add_style("padding-top: 10px")
-        #title_div.add_color("background", "background", -10)
         title_div.add("Workflows")
         title_div.add_style("font-size: 16px")
         title_div.add("<hr/>")
@@ -2534,11 +2541,13 @@ class ConnectorInfoWdg(BaseRefreshWdg):
                 '''
             } )
 
+            bg_color = atr_div.get_color("background2", -5)
+
             attr_div.add_behavior( {
                 'type': 'mouseenter',
                 'cbjs_action': '''
-                bvr.src_el.setStyle("background", "#EEE");
-                '''
+                bvr.src_el.setStyle("background", "%s");
+                ''' % bg_color
             } )
 
 
@@ -3708,9 +3717,12 @@ class DefaultInfoWdg(BaseInfoWdg):
 
         # sobject count
         if search_type:
-            search = Search(search_type)
-            search.add_filter("pipeline_code", pipeline.get_code())
-            sobject_count = search.get_count()
+            try:
+                search = Search(search_type)
+                search.add_filter("pipeline_code", pipeline.get_code())
+                sobject_count = search.get_count()
+            except:
+                sobject_count = 0
         else:
             sobject_count = 0
 
@@ -5163,7 +5175,6 @@ class HierarchyInfoWdg(BaseInfoWdg):
         settings_wdg.add(select)
         select.set_option("values", values)
         select.set_option("labels", labels)
-
 
         self.add_session_behavior(select, "select", "spt_hierarchy_top", "task_creation")
 
@@ -8605,8 +8616,13 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         check = CheckboxWdg(text_name)
         self.add_session_behavior(check, "checkbox", "spt_pipeline_properties_top", text_name)
 
+
         th = table.add_cell(check)
         th.add_style("height: 40px")
+
+
+
+
 
         # autocreate task
         table.add_row()
@@ -8619,6 +8635,25 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
         th = table.add_cell(check)
         th.add_style("height: 40px")
+
+
+
+
+        # number of tasks
+        table.add_row()
+        td = table.add_cell('Number of Tasks Created:')
+        text_name = "task_number"
+        text = TextWdg(text_name)
+        text.add_class(text_name)
+        th = table.add_cell()
+        th.add(text)
+        text.set_option("type", "number")
+        text.add_style("width: 40px")
+
+        self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
+
+
+
 
         # ---- Divider -----
         tr, td = table.add_row_cell()
@@ -10331,7 +10366,7 @@ spt.process_tool.item_drag_setup = function(evt, bvr, mouse_411) {
     var el = bvr.src_el.getElement(".spt_custom_node");
     var clone = spt.behavior.clone(el);
     clone.setStyle("position", "absolute");
-    clone.setStyle("background", "#FFF");
+    clone.setStyle("background", "transparent");
     clone.setStyle("z-index", "1000");
     clone.setStyle("pointer-events", "none");
     clone.inject(bvr.src_el);
@@ -10509,13 +10544,17 @@ spt.process_tool.show_side_bar = function(activator) {
             node_scale = DivWdg()
             node_container.add(node_scale)
 
+            border_color = node_container.get_color("border")
+
             node_container.add_style("width: 80px")
             node_container.add_style("height: 60px")
             node_container.add_style("overflow: hidden")
             node_container.add_style("position: relative")
-            node_container.add_style("border: 1px solid #eee")
+            node_container.add_style("border: 1px solid %s" % border_color)
 
 
+            node_container.add_style("margin-top: -1px")
+            node_container.add_style("margin-left: -1px")
 
             node_scale.add_style("transform-origin: top left")
             node_scale.add_class("spt_node_scale")
@@ -10576,9 +10615,17 @@ spt.process_tool.show_side_bar = function(activator) {
             item_div.add_class("spt_custom_node_container")
             item_div.add_color("background", "background")
 
+
+            border_color = item_div.get_color("border")
+            shadow_color = item_div.get_color("shadow")
+            title_color = item_div.get_color("background", -5)
+
             item_div.add_style("border-radius: 3px")
+            item_div.add_style("overflow: hidden")
+            item_div.add_style("margin: 0px 3px")
+
             item_div.add_style("text-align: center")
-            item_div.add_style("box-shadow: 0px 0px 5px rgba(0,0,0,0.1)")
+            item_div.add_style("box-shadow: 0px 0px 5px %s" % shadow_color)
 
             item_div.add_attr("spt_node_type", view)
 
@@ -10600,9 +10647,10 @@ spt.process_tool.show_side_bar = function(activator) {
             data_div.add(title_div)
             title_div.add(Common.get_display_title(view).upper())
             title_div.add_style("padding: 3px 10px")
-            title_div.add_style("background: #EEE")
+            title_div.add_style("background", title_color)
+            title_div.add_style("color", "color")
             title_div.add_style("text-align: center")
-            title_div.add_style("border-bottom: solid 1px #DDD")
+            title_div.add_style("border-bottom: solid 1px %s" % border_color)
             title_div.add_style("font-weight: 500")
 
 
@@ -10614,7 +10662,7 @@ spt.process_tool.show_side_bar = function(activator) {
             item_div.add_class("hand")
             item_div.add_class("tactic_hover")
 
-            item_div.add_style("border: solid 1px #DDD")
+            item_div.add_style("border: solid 1px %s" % border_color)
             item_div.add_style("margin: 3px 5px")
 
             item_div.add_behavior( {

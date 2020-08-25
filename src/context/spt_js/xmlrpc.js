@@ -178,9 +178,12 @@ AjaxService.prototype.invoke = function( method, arguments )
  */
 AjaxService.prototype.getMessage = function( method, arguments )
 {
-    if ( arguments == null )
-    {
-        arguments = new Array();
+    var arguments2;
+    if ( arguments == null ) {
+        arguments2 = new Array();
+    }
+    else {
+        arguments2 = arguments;
     }
 
 /*
@@ -198,9 +201,9 @@ AjaxService.prototype.getMessage = function( method, arguments )
     {
         message += '<params>';
 
-        for ( var i = 0; i < arguments.length; i++ )
+        for ( var i = 0; i < arguments2.length; i++ )
         {
-            var argument = arguments[ i ];
+            var argument = arguments2[ i ];
             if (argument == undefined) {
                 spt.js_log.debug("WARNING: argument index ["+i+"] of method ["+method+"] is undefined");
             }

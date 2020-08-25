@@ -12,9 +12,9 @@ def copy_file(file_paths, new_dir):
         new_file_path = '%s/%s' %(new_dir, file_name)
         #shutil.move(file_path, new_file_path)
         shutil.copy(file_path, new_file_path)
-        print new_file_path
+        print(new_file_path)
         if not os.path.exists(new_file_path):
-            print "[%s] does not exist!!!" % new_file_path
+            print("[%s] does not exist!!!" % new_file_path)
         new_file_paths.append(new_file_path)
     return new_file_paths
 
@@ -84,9 +84,9 @@ def main(args, login=None):
             id = results[0].get('id')
         else:
             if type =='layer':
-                print "%s Code [%s] name [%s] not found. Please insert an entry in TACTIC first." %(type, code, layer_name)
+                print("%s Code [%s] name [%s] not found. Please insert an entry in TACTIC first." % (type, code, layer_name))
             else:
-                print "%s Code [%s] not found. Please insert an entry in TACTIC first." %(type, code)
+                print("%s Code [%s] not found. Please insert an entry in TACTIC first." % (type, code))
         search_type = server.build_search_type(parent_search_type)
         file_type = 'main'
         render_type = '' # not used yet
@@ -97,7 +97,7 @@ def main(args, login=None):
 
         file_name = os.path.basename(pattern)
         new_pattern =  '%s/%s' %(dir, file_name)
-        print "Copied files to handoff dir\n"
+        print("Copied files to handoff dir\n")
         render = find_render(server, search_type, id, login, render_type)
         if not render:
             render_data = {
@@ -136,24 +136,24 @@ if __name__ == '__main__':
     login = None
     try:
         opts, args = getopt.getopt(sys.argv[1:], "l:h", ["login=","help"])
-    except getopt.error, msg:
-        print msg
+    except getopt.error as msg:
+        print(msg)
         sys.exit(2)
     # process options
     for o, a in opts:
         if o in ("-l", "--login"):
             login = a
-            print 
+            print("")
         if o in ("-h", "--help"):
-            print "python checkin_render.py -l <tactic_login> <type> <code> <file_range> <file_pattern>"
-            print "python checkin_render.py -l admin shot S0001 1-20 D:/file_dir/plates.####.png"
+            print("python checkin_render.py -l <tactic_login> <type> <code> <file_range> <file_pattern>")
+            print("python checkin_render.py -l admin shot S0001 1-20 D:/file_dir/plates.####.png")
     if not login:
-        print "-l <tactic_login> is required for this script"
-        print "python checkin_render.py -l <tactic_login> <type> <code> <file_range> <file_pattern>"
+        print("-l <tactic_login> is required for this script")
+        print("python checkin_render.py -l <tactic_login> <type> <code> <file_range> <file_pattern>")
         sys.exit(2)
     if len(args) != 4:
-        print "python checkin_render.py -l <tactic_login> <type> <code> <file_range> <file_pattern>"
-        print "python checkin_render.py -l admin shot S0001 1-20 D:/file_dir/render.####.png"
-        print 'python checkin_render.py -l admin layer "S0001|diffuse_layer" 1-20 D:/file_dir/render.####.png'
+        print("python checkin_render.py -l <tactic_login> <type> <code> <file_range> <file_pattern>")
+        print("python checkin_render.py -l admin shot S0001 1-20 D:/file_dir/render.####.png")
+        print('python checkin_render.py -l admin layer "S0001|diffuse_layer" 1-20 D:/file_dir/render.####.png')
         sys.exit(2)
     main(args, login=login)

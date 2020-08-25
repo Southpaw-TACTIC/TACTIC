@@ -62,8 +62,8 @@ def main(args, login=None):
         move_file(paths, dir)
 
         file_name = os.path.basename(pattern)
-        new_pattern =  '%s/%s' %(dir, file_name)
-        print "Files moved to handoff dir.\n"
+        new_pattern = '%s/%s' % (dir, file_name)
+        print("Files moved to handoff dir.\n")
         
         # checkin the moved files  
         filters = []
@@ -130,21 +130,21 @@ if __name__ == '__main__':
     login = None
     try:
         opts, args = getopt.getopt(sys.argv[1:], "l:h", ["login=","help"])
-    except getopt.error, msg:
-        print msg
+    except getopt.error as msg:
+        print(msg)
         sys.exit(2)
     # process options
     for o, a in opts:
         if o in ("-l", "--login"):
             login = a
         if o in ("-h", "--help"):
-            print "python checkin_render_layer.py <shot_code> <layer_name> <version> <context> <file_range> <file_pattern>"
-            print "python checkin_render_layer.py S0001 layer1 1 lgt 1-20 D:/file_dir/plates.####.png"
+            print("python checkin_render_layer.py <shot_code> <layer_name> <version> <context> <file_range> <file_pattern>")
+            print("python checkin_render_layer.py S0001 layer1 1 lgt 1-20 D:/file_dir/plates.####.png")
             sys.exit(0)
-    print args, len(args)
+    print(args, len(args))
     if len(args) != 6:
-        print "python checkin_render_layer.py <shot_code> <layer_name> <version> <context> <file_range> <file_pattern>"
-        print "python checkin_render_layer.py S0001 layer1 1 lgt 1-20 D:/file_dir/plates.####.png"
+        print("python checkin_render_layer.py <shot_code> <layer_name> <version> <context> <file_range> <file_pattern>")
+        print("python checkin_render_layer.py S0001 layer1 1 lgt 1-20 D:/file_dir/plates.####.png")
         sys.exit(2)
     main(args, login=login)
 

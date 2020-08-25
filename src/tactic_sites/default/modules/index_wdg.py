@@ -50,10 +50,7 @@ class IndexWdg(Widget):
 
 class IndexWdg2(Widget):
     def get_display(self):
-
-
         web = WebContainer.get_web()
-        palette = web.get_palette()
 
         widget = DivWdg()
         widget.add_style("width: 100%")
@@ -105,16 +102,20 @@ class IndexWdg2(Widget):
         div.center()
         widget.add(div)
 
-        #logo = TacticLogoWdg()
-        #div.add(logo)
         div.add("<br/>"*3)
 
-        bg_color = palette.color("background")
-        #div.add_color("color", "color")
+        bg_color = div.get_color("background")
+        bg_color_darker = div.get_color("background", -8)
 
         from tactic.ui.container import RoundedCornerDivWdg
-        div = RoundedCornerDivWdg(hex_color_code=bg_color,corner_size="10")
-        div.set_dimensions( width_str='%spx' % width, content_height_str='50px' )
+        #div = RoundedCornerDivWdg(hex_color_code=bg_color,corner_size="10")
+
+        div = DivWdg()
+        div.add_style("background", bg_color)
+        div.add_style("border-radius: 10px")
+        div.add_style("width: %s" % width)
+        #div.set_dimensions( width_str='%spx' % width, content_height_str='50px' )
+
         div.add_border()
         div.add_style("overflow: hidden")
         div.set_box_shadow()
@@ -131,8 +132,7 @@ class IndexWdg2(Widget):
 
         tr, td = table.add_row_cell()
         logo_div = DivWdg()
-        #logo_div.add_gradient("background", "background", -5, -10)
-        logo_div.add_color("background", "#999")
+        logo_div.add_color("background", bg_color_darker)
         td.add(logo_div)
         logo = TacticLogoWdg()
         logo_div.add(logo)
@@ -266,7 +266,7 @@ class IndexWdg2(Widget):
                     category_div.add_style("font-size: 16px")
                     category_div.add_style("font-weight: bold")
                     category_div.add_color("color", "color")
-                    category_div.add_gradient("background", "background3",0, -10)
+                    category_div.add_color("background", "background3",0)
                     category_div.add_color("color", "color3")
                     #category_div.set_round_corners()
                     if last_category == None:

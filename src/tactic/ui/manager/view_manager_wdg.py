@@ -177,6 +177,8 @@ class ViewManagerWdg(BaseRefreshWdg):
         div.add_style("min-width: 600px")
         div.add_class("spt_view_manager_filter")
 
+        div.add_color("background", "background2")
+
 
 
         from tactic.ui.app import HelpButtonWdg
@@ -187,10 +189,12 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
 
+        title_wdg = DivWdg()
+        div.add(title_wdg)
+        title_wdg.add_style("display: flex")
+        title_wdg.add_style("align-items: center")
 
-        div.add('<b>Search Type:</b> ')
-
-        div.add_gradient("background", "background", -10)
+        title_wdg.add('<div><b>Search Type:</b></div>')
 
 
         security = Environment.get_security()
@@ -209,16 +213,10 @@ class ViewManagerWdg(BaseRefreshWdg):
         select.set_option('labels', titles)
         select.add_empty_option('-- Select --')
         select.set_persistence()
-        #select.set_persist_on_submit()
+        select.add_style("display: inline")
+        select.add_style("width: 300px")
+        select.add_style("margin-left: 15px")
 
-
-        #security = Environment.get_security()
-        #if security.check_access("builtin", "view_site_admin", "allow"):
-        #    select_mode =  SearchTypeSelectWdg.ALL
-        #else:
-        #    select_mode =  SearchTypeSelectWdg.ALL_BUT_STHPW
-        #select = SearchTypeSelectWdg(name='search_type', \
-        #    mode=select_mode)
 
         behavior = {'type': 'change', 'cbjs_action': '''
             var manager_top = bvr.src_el.getParent(".spt_view_manager_top");
@@ -235,7 +233,7 @@ class ViewManagerWdg(BaseRefreshWdg):
         }
         select.add_behavior(behavior)
         select.set_value(self.search_type)
-        div.add(select)
+        title_wdg.add(select)
 
         if not self.search_type:
             content = DivWdg()
@@ -253,12 +251,21 @@ class ViewManagerWdg(BaseRefreshWdg):
             return div
 
         div.add('&nbsp;&nbsp;&nbsp;')
-        div.add('<b>View: </b>')
-        view_wdg = SelectWdg("view")
-        view_wdg.set_value(self.view)
-        view_wdg.add_empty_option("-- Select --")
-        view_wdg.add_behavior(behavior)
+
+        view_wdg = DivWdg()
         div.add(view_wdg)
+        view_wdg.add_style("display: flex")
+        view_wdg.add_style("align-items: center")
+
+
+        view_wdg.add('<b>View: </b>')
+        select_wdg = SelectWdg("view")
+        select_wdg.set_value(self.view)
+        select_wdg.add_empty_option("-- Select --")
+        select_wdg.add_behavior(behavior)
+        view_wdg.add(select_wdg)
+        select_wdg.add_style("width: 200px")
+        select_wdg.add_style("margin-left: 15px")
 
 
         search = Search("config/widget_config")
@@ -292,7 +299,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
         views_list = list(views)
         views_list.sort()
-        view_wdg.set_option("values", views_list)
+        select_wdg.set_option("values", views_list)
 
 
         return div
@@ -306,7 +313,13 @@ class ViewManagerWdg(BaseRefreshWdg):
         widget.add_style("width: 250px")
 
 
-        refresh = IconButtonWdg("Refresh", IconWdg.REFRESH)
+
+        widget.add_style("display: flex")
+        widget.add_style("align-items: center")
+        widget.add_style("justify-content: flex-start")
+
+
+        refresh = IconButtonWdg("Refresh", "FA_REFRESH")
         refresh.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -314,11 +327,10 @@ class ViewManagerWdg(BaseRefreshWdg):
             spt.panel.refresh(top);
             '''
         } )
-
+        refresh.add_style("margin-right: 10px")
 
 
         widget.add( refresh )
-        widget.add("&nbsp;&nbsp;&nbsp;")
 
         trash_div = SpanWdg()
         # reset some global variables on load
@@ -326,7 +338,7 @@ class ViewManagerWdg(BaseRefreshWdg):
 
         trash_div.set_id('trash_me')
 
-        trash_div.add(IconWdg('Trash', IconWdg.TRASH))
+        trash_div.add(IconWdg('Trash', "FAS_TRASH"))
         trash_div.add_class("hand")
         trash_div.add_class("spt_side_bar_trash")
       
@@ -334,11 +346,14 @@ class ViewManagerWdg(BaseRefreshWdg):
         bvr = { "type": "click_up",\
                 'cbjs_action': "alert('Drag and drop link or folder here to remove it.')"}
         trash_div.add_behavior(bvr)
+        trash_div.add_style("margin-right: 10px")
+
+
 
         widget.add(trash_div)
         
         save_div = SpanWdg(css='med hand spt_side_bar_trash')
-        save_div.add(IconWdg('Save Ordering', IconWdg.SAVE))
+        save_div.add(IconWdg('Save Ordering', "FAS_SAVE"))
       
         bvr = {
             "type": "click_up",
@@ -363,6 +378,7 @@ class ViewManagerWdg(BaseRefreshWdg):
             '''
         }
 
+        save_div.add_style("margin-right: 15px")
 
 
         save_div.add_behavior(bvr)
@@ -370,9 +386,6 @@ class ViewManagerWdg(BaseRefreshWdg):
 
 
         gear = self.get_gear_menu()
-        gear.add_style("float: right")
-
-
         widget.add( gear )
 
 

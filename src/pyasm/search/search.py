@@ -4201,7 +4201,10 @@ class SObject(object):
         # Get the updated values and fill it into data.  This handles
         # auto updated values in the database.  This is only done on insert
         sobject = None
-        if not is_search_type and is_insert:
+
+        # NOTE: is_insert causes prev_data == data so all triggers break
+        #if not is_search_type and is_insert:
+        if not is_search_type:
 
             from pyasm.security import Sudo
             sudo = Sudo()

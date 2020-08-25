@@ -1091,6 +1091,7 @@ class Task(SObject):
             task_generator = TaskGenerator()
             tasks = task_generator.execute(sobject, pipeline, start_date=start_date)
             old_generator_processes = []
+
         elif processes:
             old_generator_processes = processes
         else:
@@ -1810,7 +1811,9 @@ class TaskGenerator(object):
 
 
 
-        num_activities = 1
+        num_activities = workflow.get("task_number") or 1
+        if num_activities:
+            num_activities = int(num_activities)
 
         bid_duration_unit = ProdSetting.get_value_by_key("bid_duration_unit")
         if not bid_duration_unit:
@@ -1958,12 +1961,17 @@ class TaskGenerator(object):
                     full_process_name = process_name
 
                 # first check if it already exists when skip_duplicate is True
-                key1 = '%s:%s' %(full_process_name, context)
-                task_existed = False
-                for item in self.existing_task_set:
-                    if item.startswith(key1):
-                        task_existed = True
-                        break
+                # FIXME: need to be smarter for processes with more that one task
+                if num_activities == 1:
+                    key1 = '%s:%s' %(full_process_name, context)
+                    task_existed = False
+                    for item in self.existing_task_set:
+                        if item.startswith(key1):
+                            task_existed = True
+                            break
+                else:
+                    task_existed = False
+
                 if skip_duplicate and task_existed:
                     continue
 

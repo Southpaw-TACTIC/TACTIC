@@ -1491,7 +1491,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add_style("box-shadow: none")
         xx.add_style("width: 100%")
         xx.add_style("box-sizing: border-box")
-        xx.add_style("z-index: 2")
+        xx.add_style("z-index: 101")
 
         left_div = DivWdg()
         left_div.add_class("d-flex")

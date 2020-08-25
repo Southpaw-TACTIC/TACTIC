@@ -153,7 +153,7 @@ class Install:
             keyword = 'C:/Program Files/Southpaw'
             data_keyword = 'C:/ProgramData/Southpaw'
         else:
-            keyword = '/home/apache'
+            keyword = '/opt/tactic'
         for line in f:
             if line.find(keyword) != -1:
                  line = line.replace(keyword, self.tactic_base_dir)
@@ -561,7 +561,7 @@ VALUES ('shot_attr_change', 'Attribute Changes For Shots', 'email', 'prod/shot',
             default_base_dir = "C:/Program Files/Southpaw"
             default_data_dir = "C:/ProgramData/Southpaw"
         else:
-            default_base_dir = "/home/apache"
+            default_base_dir = "/opt/tactic"
 
 
         

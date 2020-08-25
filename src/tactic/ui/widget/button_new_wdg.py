@@ -707,6 +707,7 @@ class ButtonNewWdg(ButtonWdg):
             top.set_attr("data-toggle", "dropdown")
             top.set_attr("aria-haspopup", "true")
             top.set_attr("aria-expanded", "false")
+            top.set_attr("type", "button")
 
         if self.navbar_collapse_target:
             self.add_class("collapsed")
