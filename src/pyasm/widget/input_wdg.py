@@ -1545,6 +1545,8 @@ class SelectWdg(BaseInputWdg):
             value = self.values[i]
             label = self.labels[i]
             option = HtmlElement("option")
+            option.add_style("background", "var(--spt_palette_background)")
+            option.add_style("color", "var(--spt_palette_color)")
 
             # always compare string values.  Not sure if this is a good
             # idea, but it should work for most cases

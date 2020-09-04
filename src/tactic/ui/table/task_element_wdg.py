@@ -2299,7 +2299,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
                 select.add_style("height: 18px")
-                select.add_style("padding: 0px")
                 select.add_style("margin: 2px 0px 2px 5px")
 
                 select.add_style("border: none")
