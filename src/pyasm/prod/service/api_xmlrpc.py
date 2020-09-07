@@ -132,23 +132,24 @@ def get_simple_cmd(self, meth, ticket, args):
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
 
-                    if len(args) > 1 and args[0].startswith("$"):
-                        class_name = args[0]
-                        key = class_name.lstrip("$")
-                        tmp_dir = Environment.get_tmp_dir(include_ticket=True)
-                        path = "%s/widget_key_%s.txt" % (tmp_dir,key)
-                        print("command key path: %s" % path)
-                        if not os.path.exists(path):
-                            path = "%s/key_%s.txt" % (tmp_dir,key)
+                    if meth.__name__ in ['get_widget', 'execute_cmd']:
+                        if len(args) > 1 and args[0].startswith("$"):
+                            class_name = args[0]
+                            key = class_name.lstrip("$")
+                            tmp_dir = Environment.get_tmp_dir(include_ticket=True)
+                            path = "%s/widget_key_%s.txt" % (tmp_dir,key)
+                            print("command key path: %s" % path)
                             if not os.path.exists(path):
-                                print("ERROR: Command path [%s] not found" % path)
-                                raise ApiException("Command key not valid")
+                                path = "%s/key_%s.txt" % (tmp_dir,key)
+                                if not os.path.exists(path):
+                                    print("ERROR: Command path [%s] not found" % path)
+                                    raise ApiException("Command key not valid")
 
-                        f = open(path, 'r')
-                        data = f.read()
-                        f.close()
-                        data = jsonloads(data)
-                        Common.pretty_print(data)
+                            f = open(path, 'r')
+                            data = f.read()
+                            f.close()
+                            data = jsonloads(data)
+                            Common.pretty_print(data)
 
                     print()
  
@@ -4745,12 +4746,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if not versionless:
             snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
+
+            print("search_type: ", search_type)
+            print("search_code: ", search_code)
+            print("snapshot: ", snapshot)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'
             else:
                 versionless_mode = 'current'
             snapshot = Snapshot.get_versionless(search_type, search_code, context=context , mode=versionless_mode, create=False)
+
 
         if not snapshot:
             return {}
