@@ -836,8 +836,16 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             "position": "relative",
             "font-size": "%spx" % (self.font_size-1),
             "color": "black",
-            #"margin": "2px 2px 6px 0"
             } )
+ 
+
+        layout.add_smart_styles("spt_task_assigned_select", {
+            "position": "relative",
+            "font-size": "%spx" % (self.font_size-1),
+            "color": "black",
+            } )
+
+
         # This is done per item and can't be done at the global level
         #table.add_style("spt_task_status_select", "background-color: %s" %bgColor)
 
@@ -2299,7 +2307,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 select.add_empty_option('-- Status --')
                 select.add_attr("spt_context", context)
                 select.add_style("height: 18px")
-                select.add_style("padding: 0px")
                 select.add_style("margin: 2px 0px 2px 5px")
 
                 select.add_style("border: none")
@@ -2421,7 +2428,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         if self.show_assigned != 'false' and self.permission['assigned']['is_viewable'] :
 
             assigned_div = DivWdg()
-            assigned_div.add_style("font-size: %spx" % (self.font_size-1))
             if self.layout in ['horizontal', 'vertical']:
                 table.add_cell(assigned_div)
             else:
@@ -2434,6 +2440,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     assigned_div.add("Automated")
                     assigned_div.add_style("padding: 8px")
 
+
                 if node_type != "auto" and self.edit_assigned == 'true' and self.permission['assigned']['is_editable']:
                     select_div = DivWdg()
                     assigned_div.add(select_div)
@@ -2443,6 +2450,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     else:
                         name = 'assigned|EDIT|%s' % task.get_id()
                     select = SelectWdg(name)
+                    select.add_class("spt_task_assigned_select")
                     select_div.add(select)
                     # just use the same class name as the status select for simplicity
                     select.add_style("height: 18px")

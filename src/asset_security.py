@@ -25,6 +25,9 @@ cache = set()
 def authenticate(environ):
 
     cookie = environ.get("HTTP_COOKIE")
+    if not cookie:
+        print("NO COOKIE")
+        return None
     cookies = cookie.split(";")
 
     login_ticket = None

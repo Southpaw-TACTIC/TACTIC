@@ -87,8 +87,12 @@ class LinkElementWdg(SimpleTableElementWdg):
             from pyasm.widget import IconWdg
             icon = icon.upper()
             icon = IconWdg( value, icon )
+
+            top.add("<a href='%s'>" % value)
+
             top.add(icon)
         
+            top.add("</a>")
 
         return top
 
