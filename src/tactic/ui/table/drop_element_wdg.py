@@ -528,13 +528,13 @@ spt.drop.sobject_drop_action = function( evt, bvr )
     var dst_layout = dst_el.getParent(".spt_layout");
     var src_layout = src_el.getParent(".spt_layout");
 
-    // backwards compatibiity to old table
+    // backwards compatibility to old table
     var dst_version = dst_layout? dst_layout.getAttribute("spt_version") : '2';
     if (dst_version != "2") {
         return spt.dg_table_action.sobject_drop_action(evt, bvr);
     }
 
-    // get the source serach_type
+    // get the source search_type
     var search_type = src_layout.getAttribute("spt_search_type");
 
     var accepted_search_type = bvr.accepted_search_type;
@@ -650,7 +650,7 @@ spt.drop.clone_src_to_droppable = function(top_el, src_search_keys, src_display_
 
     // get the value
     var cell = top_el.getParent(".spt_cell_edit");
-    spt.table.accept_edit(cell, value, false);
+    spt.table.accept_edit(cell, value, false, {ignore_multi: true});
 }
 
 
@@ -690,7 +690,7 @@ spt.drop.sobject_drop_remove = function( evt, bvr ) {
     */
 
     var cell = top_el.getParent(".spt_cell_edit");
-    spt.table.accept_edit(cell, value, false);
+    spt.table.accept_edit(cell, value, false, {ignore_multi: true});
  
 }
     '''
