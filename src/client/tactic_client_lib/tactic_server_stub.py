@@ -1830,7 +1830,7 @@ class TacticServerStub(object):
 
 
 
-    def upload_file(self, path, base_dir=None, chunk_size=None, offset=None):
+    def upload_file(self, path, base_dir=None, chunk_size=None, offset=None, num_chunks=0):
         '''API Function: upload_file(path)
         Use http protocol to upload a file through http
 
@@ -1840,8 +1840,22 @@ class TacticServerStub(object):
         '''
         from .common import UploadMultipart
         upload = UploadMultipart()
-        if chunk_size:
-            upload.set_chunk_size(chunk_size)
+        if not chunk_size:
+            # set the chunk size based on size of the file
+            size = os.stat(path).st_size
+
+            # try for a chunk size of 1/10 of the file size
+            if not num_chunks:
+                num_chunks = 5
+
+            chunk_size = int(size/num_chunks) + 1024 # add an extra size as a small buffer
+
+            # The mimimum chunk size is 1024Mb
+            if chunk_size < 10*1024*1024:
+                chunk_size = 10*1024*1024
+
+        upload.set_chunk_size(chunk_size)
+
         if offset:
             upload.set_offset(offset)
         upload.set_ticket(self.transaction_ticket)
