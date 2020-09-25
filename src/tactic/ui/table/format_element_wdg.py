@@ -27,7 +27,6 @@ from dateutil import parser
 
 class FormatElementWdg(SimpleTableElementWdg):
 
-
     ARGS_KEYS = {
     'type': {
         'description': 'Determines the type it should be displayed as',

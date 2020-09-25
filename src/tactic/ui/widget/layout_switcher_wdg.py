@@ -259,6 +259,7 @@ class LayoutSwitcherWdgOld(BaseRefreshWdg):
 
         top = self.top
         top.add_class("spt_switcher_top")
+        top.add_class("SPT_TEMPLATE")
 
         '''
         This supports supports two menu definitions:

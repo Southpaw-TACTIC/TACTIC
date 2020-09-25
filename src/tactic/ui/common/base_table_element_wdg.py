@@ -200,7 +200,7 @@ class BaseTableElementWdg(BaseRefreshWdg, FormerBaseTableElementWdg):
         from pyasm.web import DivWdg
         from tactic.ui.widget import IconButtonWdg
         filter_wdg = DivWdg()
-        button = IconButtonWdg(title="Show Filter", icon="BS_SEARCH")
+        button = IconButtonWdg(title="Show Filter", icon="FA_SEARCH")
         filter_wdg.add_class("spt_filter_button")
 
 
