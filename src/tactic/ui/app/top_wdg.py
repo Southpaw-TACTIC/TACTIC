@@ -1740,6 +1740,16 @@ class CustomTopWdg(BaseRefreshWdg):
         #
         if accept == "application/json":
             value = hash_widget.get_display()
+            if isinstance(value, basestring):
+                try:
+                    data = jsonloads(value)
+                except:
+                    data = value
+            else:
+                data = value
+            if isinstance(data, dict) and data.get("error"):
+                raise Exception(data.get("error").get("message"))
+
             value = jsondumps(value)
             web.set_content_type(accept)
 

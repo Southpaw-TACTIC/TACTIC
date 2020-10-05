@@ -805,6 +805,11 @@ class Common(Base):
             file_type = 'file'
 
         info['size'] = dir_size
+
+        from .format_value import FormatValue
+        display_size = FormatValue().get_format_value(dir_size, "KB")
+        info['display_size'] = display_size
+
         info['count'] = count
         info['file_type'] = file_type
             
