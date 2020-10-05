@@ -557,7 +557,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 var content_div = bvr.src_el.getElement(".spt_content");
                 
                 Object.keys(bvr.sobject_data).forEach(function(item) {
-                    data = bvr.sobject_data[item];
+                    let data = bvr.sobject_data[item];
 
                     var tile = spt.behavior.clone(template_tile);
                     tile.removeClass("spt_template_tile_top");
@@ -587,6 +587,14 @@ class TileLayoutWdg(ToolLayoutWdg):
 		    tile.setAttribute("spt_is_collection", data.spt_is_collection);
 		    tile.setAttribute("spt_display_value", data.spt_display_value);
 		    tile.setAttribute("spt_main_path", data.main_path);
+
+                    if (data.status == "Locked") {
+                        var locked = tile.getElement(".spt_locked");
+                        if (locked) {
+                            locked.setStyle("display", "block");
+                            tile.setStyle("pointer-events", "none");
+                        }
+                    }
 
                     is_collection = data.spt_is_collection;
                     if (is_collection) {
@@ -1814,6 +1822,10 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
                 tile_data['collection_count'] = num_items
+
+
+            tile_data['status'] = sobject.get_value("status", no_exception=True)
+
  
             sobject_data[sobject.get_search_key()] = tile_data
 
@@ -1870,19 +1882,17 @@ class TileLayoutWdg(ToolLayoutWdg):
         css += """
             .spt_ext_icon {
                 padding-top: 10px;
+                width: 100%;
             }
 
             .spt_ext_ext {
-                display: inline-block;
-                vertical-align: middle;
-                margin-top: 40%;
             }
 
             .spt_ext_icon_inner {
-                text-align: center;
-                width: 53%;
-                height: 80%;
-                margin: 30px auto;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                width: 100%;
                 font-size: 20px;
                 font-weight: bold;
                 color: #fff;
@@ -2072,6 +2082,39 @@ class TileLayoutWdg(ToolLayoutWdg):
         # TODO: Dynamically preprocess bottom wdg
         if self.bottom:
             div.add(self.bottom.get_buffer_display())
+
+
+
+        locked_div = DivWdg()
+        div.add(locked_div)
+        locked_div.add_style("display: none")
+        locked_div.add_class("spt_locked")
+
+        bg_div = DivWdg()
+        locked_div.add(bg_div)
+        bg_div.add_style("position: absolute")
+        bg_div.add_style("top: 0px")
+        bg_div.add_style("left: 0px")
+        bg_div.add_style("height: 100%")
+        bg_div.add_style("width: 100%")
+        bg_div.add_style("opacity: 0.6")
+        bg_div.add_style("background: #FFF")
+
+        icon_div = DivWdg()
+        locked_div.add(icon_div)
+        icon_div.add_style("position: absolute")
+        icon_div.add_style("top: 0px")
+        icon_div.add_style("left: 0px")
+        icon_div.add_style("height: 100%")
+        icon_div.add_style("width: 100%")
+        icon_div.add("<i class='fa fa-5x fa-lock'> </i>")
+        icon_div.add_style("display: flex")
+        icon_div.add_style("opacity: 0.5")
+        icon_div.add_style("align-items: center")
+        icon_div.add_style("justify-content: space-around")
+
+
+
 
 
         div.add_attr("ondragenter", "spt.thumb.noop_enter(event, this)")
@@ -3135,6 +3178,8 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
         title_div.add_attr("title", title)
         title_div.add_style("text-overflow: ellipsis")
         title_div.add_style("white-space: nowrap")
+        title_div.add_style("width: 80%")
+        title_div.add_style("overflow: hidden")
         title_div.add_style("color: #FFF")
         title_div.add_class("hand")
 

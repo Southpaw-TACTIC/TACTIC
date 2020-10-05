@@ -784,6 +784,28 @@ class TaskElementWdg(BaseTableElementWdg):
 
     def handle_layout_behaviors(self, layout):
 
+
+        # add a style for this layout
+        styles = HtmlElement.style()
+        layout.add(styles)
+        styles.add('''
+        .spt_layout .spt_all_task_top {
+            white-space: nowrap;
+        }
+
+        .spt_layout .spt_all_task_top td {
+            vertical-align: top;
+        }
+
+        .spt_layout .spt_all_task_top .spt_task_top {
+            float: left;
+            white-space: nowrap:
+        }
+
+
+        ''')
+
+
         # add the accept behavior
 
         layout.add_behavior( {
@@ -1423,7 +1445,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         if self.show_track == 'true' and not self._startup_tips:
             self.startup_tips(div)
         div.add_class("spt_all_task_top")
-        div.add_style("white-space: nowrap")
         self.width = '100px'
         # this is more for layout = panel
         if self.panel_width:
@@ -1636,7 +1657,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         table.add_row()
 
                     td = table.add_cell()
-                    td.add_style("vertical-align: top")
+                    #td.add_style("vertical-align: top")
 
 
                     for task in tasks:
@@ -1833,8 +1854,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         panel_width = int(width) + 15
         div.add_style('width', '%spx'%panel_width)
         div.add_class("spt_task_top")
-        div.add_style("float: left")
-        div.add_style("white-space: nowrap")
+        #div.add_style("float: left")
+        #div.add_style("white-space: nowrap")
 
 
 

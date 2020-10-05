@@ -104,6 +104,8 @@ class BaseCheckin(Command):
     def execute(self):
         try:
             self._execute()
+
+            return self.snapshot
         finally:
             if self.orig_project_code:
                 Project.set_project(self.orig_project_code)

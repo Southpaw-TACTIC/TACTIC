@@ -248,6 +248,9 @@ class Document(object):
 class DocumentWdg(BaseRefreshWdg):
 
     def set_document(self, document):
+        if isinstance(document, Document):
+            document = document.get_document()
+
         self.document = document
 
 
@@ -807,7 +810,6 @@ spt.document.drag_row_motion = function(evt, bvr, mouse_411) {
 
 
         var clone = spt.document.clone;
-        clone.setStyle("diplay", "inline-block");
         clone.getElement("td").setStyle("diplay", "inline-block");
         group_level = clone.getAttribute("spt_group_level");
         if (group_level != 2){
@@ -817,15 +819,26 @@ spt.document.drag_row_motion = function(evt, bvr, mouse_411) {
         clone.setStyle("position", "absolute");
         clone.setStyle("left", "15px");
         clone.setStyle("width", "300px");
-        clone.setStyle("background", "#FFF");
+        clone.setStyle("background", "var(--spt_palette_background)");
         clone.setStyle("box-shadow", "0px 0px 15px rgba(0,0,0,0.5)");
         clone.setStyle("z-index", "200");
         clone.setStyle("cursor", "pointer");
         clone.setStyle("pointer-events", "none");
 
-        clone.getElement("td").setStyle("max-width", "");
-        clone.getElement("td").setStyle("width", "100%");
-        clone.setStyle("width", "100%");
+
+        var tds = clone.getElements("td")
+        if (tds[0].hasClass("spt_table_select")) {
+            spt.behavior.destroy_element(tds[0]);
+        }
+        else {
+            tds[0].setStyle("max-width", "");
+            tds[0].setStyle("width", "100%");
+        }
+
+
+
+        clone.setStyle("width", "calc(100% - 5px)");
+        clone.setStyle("height", "fit-content");
 
         document.id(document.body).setStyle("cursor", "ns-resize");
         bvr.src_el.setStyle("cursor", "ns-resize");
