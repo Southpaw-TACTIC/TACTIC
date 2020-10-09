@@ -108,6 +108,14 @@ display class, it will adopt the one defined here-->
 </definition>
 
 
+<edit_collection>
+   <element name="preview"/>
+   <element name="name"/>
+   <element name="description"/>
+   <element name="keywords"/>
+   <element name="is_collection"/>
+</edit_collection>
+
 
 <edit>
     <element name="preview">

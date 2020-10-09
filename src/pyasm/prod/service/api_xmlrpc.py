@@ -4747,9 +4747,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if not versionless:
             snapshot = Snapshot.get_snapshot(search_type, search_combo, context=context, version=version, revision=revision, level_type=level_type, level_id=level_id, process=process)
 
-            print("search_type: ", search_type)
-            print("search_code: ", search_code)
-            print("snapshot: ", snapshot)
         else:
             if version in [-1, 'latest']:
                 versionless_mode = 'latest'

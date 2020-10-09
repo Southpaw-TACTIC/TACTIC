@@ -1065,6 +1065,19 @@ display class, it will adopt the one defined here-->
 </default_edit_definition>
 
 
+<edit_collection>
+   <element name="preview"/>
+   <element name="name"/>
+   <element name="description"/>
+   <element name="keywords"/>
+   <element name="is_collection">
+     <display class="HiddenWdg">
+         <default>true</default>
+         <column>_is_collection</column>
+     </display>
+   </element>
+</edit_collection>
+
 
 
 <preview_edit>
