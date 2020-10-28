@@ -1933,6 +1933,7 @@ class SearchTypeCreatorCmd(Command):
                 process_sobj.set_value("pipeline_code", pipeline_code)
                 process_sobj.set_value("process", process)
                 process_sobj.set_value("sort_order", i)
+                process_sobj.set_json_value("workflow", {"version": 2})
                 process_sobj.commit()
 
             last_process = None
