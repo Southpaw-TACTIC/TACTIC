@@ -3593,11 +3593,13 @@ class DefaultInfoWdg(BaseInfoWdg):
         self.process_sobj = search.get_sobject()
         process_sobj = self.process_sobj
 
-        self.workflow  = {}
+        self.workflow  = {
+            "version": 2
+        }
         if process_sobj:
-            self.workflow  = process_sobj.get_json_value("workflow")
-        if not self.workflow:
-            self.workflow  = {}
+            workflow  = process_sobj.get_json_value("workflow")
+            if workflow:
+                self.workflow = workflow
 
         top = self.top
         self.initialize_session_behavior(top)
@@ -9054,6 +9056,11 @@ class PipelineSaveCbk(Command):
         node_kwargs = self.kwargs.get("node_kwargs") or {}
 
 
+        default_workflow = {
+            'version': 2
+        }
+
+
         for i in range(len(process_nodes)):
             node = process_nodes[i]
 
@@ -9078,6 +9085,7 @@ class PipelineSaveCbk(Command):
                 process = SearchType.create("config/process")
                 process.set_value("process", process_name)
                 process.set_value("pipeline_code", pipeline_code)
+                process.set_json_value("workflow", default_workflow)
 
             # set the process code
             xml.set_attribute(node, "process_code", process.get_code())
@@ -9093,7 +9101,7 @@ class PipelineSaveCbk(Command):
             node_type = xml.get_attribute(node, "type")
 
             if curr_settings:
-                workflow = process.get_json_value("workflow", default={})
+                workflow = process.get_json_value("workflow", default=default_workflow)
 
                 # On change of node type, clear the workflow data
                 orig_node_type = workflow.get("node_type")
@@ -9113,7 +9121,7 @@ class PipelineSaveCbk(Command):
                     kwargs['node_type'] = node_type
                     kwargs['pipeline_code'] = pipeline_code
 
-                    version_str = kwargs.get('version') or 1
+                    version_str = kwargs.get('version') or 2
                     version = int(version_str)
 
                     if version is 1:
@@ -9258,11 +9266,10 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             /* general icons styles in PipelineToolWdg*/
 
             .spt_pipeline_document .floating-icon .fa-file,  .spt_pipeline_document .floating-icon .fa-copy{
-                color: green;
             }
 
             .spt_pipeline_document .floating-icon .fa-trash {
-                color: red;
+                color: #C33;
             }
 
             .spt_pipeline_document .document-group-content {
@@ -9728,7 +9735,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
         group_level = self.kwargs.get("group_level")
 
         add_btn_title = "Add New Category" if group_level == 0 else "Add New Workflow"
-        add_btn_icon = "fa-plus" if group_level == 0 else "fa-file"
+        add_btn_icon = "fa-plus"
         delete_display = "none" if group_level == 0 or uncategorized else ""
 
         top = self.top
@@ -9996,8 +10003,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     addBtn.title = "Add New Workflow";
 
                     addIcon = addBtn.getElement("i");
-                    addIcon.removeClass("fa-plus");
-                    addIcon.addClass("fa-file");
 
                     deleteBtn = groupTop.getElement(".spt_delete_btn");
                     deleteBtn.setStyle("display", "");
@@ -10056,8 +10061,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     addBtn.title = "Add New Workflow";
 
                     addIcon = addBtn.getElement("i");
-                    addIcon.removeClass("fa-plus");
-                    addIcon.addClass("fa-file");
 
                     deleteBtn = groupTop.getElement(".spt_delete_btn");
                     deleteBtn.setStyle("display", "");
@@ -10695,7 +10698,7 @@ class SessionalProcess:
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var version = kwargs.version;
 
-                if (version != 2)
+                if (version && version == 1)
                     return;
 
                 node.has_changes = true;
@@ -10727,7 +10730,7 @@ class SessionalProcess:
 
             var node = spt.pipeline.get_info_node();
             var version = spt.pipeline.get_node_kwarg(node, 'version');
-            if (version != 2)
+            if (version && version == 1)
                 return;
 
             var top = bvr.src_el.hasClass("spt_section_top") ? bvr.src_el : bvr.src_el.getParent(".spt_section_top");
