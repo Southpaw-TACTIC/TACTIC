@@ -9258,11 +9258,10 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             /* general icons styles in PipelineToolWdg*/
 
             .spt_pipeline_document .floating-icon .fa-file,  .spt_pipeline_document .floating-icon .fa-copy{
-                color: green;
             }
 
             .spt_pipeline_document .floating-icon .fa-trash {
-                color: red;
+                color: #C33;
             }
 
             .spt_pipeline_document .document-group-content {
@@ -9728,7 +9727,7 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
         group_level = self.kwargs.get("group_level")
 
         add_btn_title = "Add New Category" if group_level == 0 else "Add New Workflow"
-        add_btn_icon = "fa-plus" if group_level == 0 else "fa-file"
+        add_btn_icon = "fa-plus"
         delete_display = "none" if group_level == 0 or uncategorized else ""
 
         top = self.top
@@ -9996,8 +9995,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     addBtn.title = "Add New Workflow";
 
                     addIcon = addBtn.getElement("i");
-                    addIcon.removeClass("fa-plus");
-                    addIcon.addClass("fa-file");
 
                     deleteBtn = groupTop.getElement(".spt_delete_btn");
                     deleteBtn.setStyle("display", "");
@@ -10056,8 +10053,6 @@ class PipelineDocumentGroupLabel(BaseRefreshWdg):
                     addBtn.title = "Add New Workflow";
 
                     addIcon = addBtn.getElement("i");
-                    addIcon.removeClass("fa-plus");
-                    addIcon.addClass("fa-file");
 
                     deleteBtn = groupTop.getElement(".spt_delete_btn");
                     deleteBtn.setStyle("display", "");
