@@ -210,7 +210,10 @@ class IngestUploadWdg(BaseRefreshWdg):
             file_template.add_class("SPT_TEMPLATE")
         else:
             file_template.add_class("spt_upload_file")
+            file_template.add_style("display: flex")
 
+        file_template.add_style("align-items: center")
+        file_template.add_style("justify-content: space-between")
         file_template.add_style("overflow: hidden")
         file_template.add_style("margin-bottom: 3px")
         file_template.add_style("padding: 3px")
@@ -933,7 +936,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             clone.removeClass("spt_upload_file_template");
             clone.addClass("spt_upload_file");
-            clone.setStyle("display", "");
+            clone.setStyle("display", "flex");
 
             if (typeof(delay) == 'undefined') {
                 delay = 0;

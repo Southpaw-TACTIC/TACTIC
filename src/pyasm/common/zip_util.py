@@ -16,7 +16,7 @@ import zipfile, os, codecs, datetime
 
 class ZipUtil(object):
 
-    def zip_dir(cls, dir, zip_path=None, ignore_dirs=[], include_dirs=[]):
+    def zip_dir(cls, dir, zip_path=None, ignore_dirs=[], include_dirs=[], include_root=True):
 
         if not zip_path:
             zip_path = "./%s.zip" % os.path.basename(dir)
@@ -36,6 +36,12 @@ class ZipUtil(object):
         # Probably not, this may work better in windows without compression
         #zip = zipfile.ZipFile(f, 'w', compression=zipfile.ZIP_STORED)
 
+        if include_root in [False,"false"]:
+            root_name = "%s/" % os.path.basename(dir)
+        else:
+            root_name = ""
+
+
         try:
             count = 0
             for root, dirs, files in os.walk(dir):
@@ -52,7 +58,8 @@ class ZipUtil(object):
 
                 for file in files:
                     path = "%s/%s" % (root, file)
-                    relpath = path.replace("%s/" % os.path.dirname(dir), "")
+                    #relpath = path.replace("%s/" % os.path.dirname(dir), "")
+                    relpath = path.replace("%s/%s" % (os.path.dirname(dir), root_name), "")
                     #relpath = "%s/%s" % (os.path.basename(root), file)
                     if os.path.islink(path):
                         zip_info = zipfile.ZipInfo(root)
@@ -68,6 +75,7 @@ class ZipUtil(object):
                         zip.write(path, relpath)
 
                     count += 1
+                print("---")
         finally:
             zip.close()
 

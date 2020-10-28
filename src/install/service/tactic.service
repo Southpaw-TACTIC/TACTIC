@@ -1,0 +1,22 @@
+
+# TACTIC Service: a very simple barebones one
+
+Unit]
+Description=TACTIC Application Server
+After=network.target
+
+[Service]
+Type=simple
+
+User=tactic
+Group=tactic
+
+Environment=TACTIC_INSTALL_DIR=/opt/tactic/tactic
+Environment=TACTIC_DATA_DIR=/opt/tactic/tactic_data
+
+ExecStart=python3 /opt/tactic/tactic/src/bin/monitor.py
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

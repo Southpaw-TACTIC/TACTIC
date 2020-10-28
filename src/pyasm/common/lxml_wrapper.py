@@ -147,8 +147,8 @@ class Xml(Base):
             raise XmlException(e)
 
 
-    def create_doc(self, root_name="snapshot"):
-        self.doc = etree.Element(root_name)
+    def create_doc(self, root_name="snapshot", nsmap={}):
+        self.doc = etree.Element(root_name, nsmap=nsmap)
         # since we assume the use of Element in most places, avoid using ElementTree here
         #self.doc = etree.ElementTree(etree.Element(root_name))
         return self.doc
@@ -165,9 +165,9 @@ class Xml(Base):
         #return self.doc.importNode(element, deep)
         return self.doc.insert(0, element)
 
-    def create_element(self, name, node=None, attrs=None):
+    def create_element(self, name, node=None, attrs=None, nsmap={}):
         '''create a new element with this document'''
-        element = etree.Element(name)
+        element = etree.Element(name, nsmap=nsmap)
 
         if node is not None:
             node.append(element)

@@ -443,7 +443,7 @@ class IconWdg(DivWdg):
             if not self.opacity:
                 self.opacity = 0.6
 
-        elif icon_path.startswith("FA_") or icon_path.startswith("FAR_") or icon_path.startswith("FAS_"):
+        elif icon_path.startswith("FA_") or icon_path.startswith("FAR_") or icon_path.startswith("FAS_") or icon_path.startswith("FAB_"):
             icon = HtmlElement.i()
             parts = icon_path.split("_")
             prefix = icon_path.split("_")[0].lower()

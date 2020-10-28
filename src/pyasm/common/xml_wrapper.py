@@ -12,7 +12,7 @@
 
 __all__ = ["XmlException", "Xml"]
 
-# DEPREACATED: use lxml_wrapper
+# DEPRECATED: use lxml_wrapper
 
 
 import time, string, types, os
@@ -154,7 +154,7 @@ class Xml(Base):
             raise XmlException(e)
 
 
-    def create_doc(self, root_name="snapshot"):
+    def create_doc(self, root_name="snapshot", nsmap={}):
         #from xml.dom.minidom import getDOMImplementation
         #impl = getDOMImplementation()
         #self.doc = impl.createDocument(None, root_name, None)

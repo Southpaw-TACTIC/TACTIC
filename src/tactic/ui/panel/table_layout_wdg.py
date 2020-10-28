@@ -665,6 +665,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                 padding: 3px 8px;
                 vertical-align: middle;
+                overflow: hidden;
 
                 background-repeat: no-repeat;
                 background-position: bottom right;
@@ -1982,9 +1983,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             bvr.src_el.addEvent('mouseover:relay(.spt_cell_edit)',
                 function(event, src_el) {
 
-                    src_el.setStyle("background-repeat", "no-repeat");
-                    src_el.setStyle("background-position", "bottom right");
-
                     if (src_el.hasClass("spt_cell_never_edit")) {
                     }
                     else if (src_el.hasClass("spt_cell_insert_no_edit")) {
@@ -2091,10 +2089,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
 
 
-            table.add_smart_styles( "spt_table_header", {
-                "background-repeat": "no-repeat",
-                "background-position": "top center"
-            } )
+            #table.add_smart_styles( "spt_table_header", {
+            #    "background-repeat": "no-repeat",
+            #    "background-position": "top center"
+            #} )
 
 
 
@@ -3172,41 +3170,52 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #reac_api_key = tr.generate_api_key("reactivate_sobject", inputs=[search_key], attr="reac")
 
 
-        # TEST TEST TEST
+        # Set document mode
         document_mode = self.kwargs.get("document_mode") or False
-        if document_mode in [True, 'true']:
+        if document_mode in ['true', True]:
             tr.add_behavior( {
                 'type': 'drag',
                 "drag_el": '@',
                 "cb_set_prefix": 'spt.document.drag_row'
             } )
 
-            tr.add_behavior({
-                'type': 'click',
-                'cbjs_action': '''
 
-                 var row = bvr.src_el;
-                 row.addClass("spt_table_selected");
+            # This disables the select
+            if self.kwargs.get("show_select") in [False, 'false']:
 
-                 var item = bvr.src_el.getElement(".spt_document_item");
-                 var pipeline_code = item.getAttribute("spt_pipeline_code");
-                 var title = item.getAttribute("spt_title");
-                 var event = "pipeline_" + pipeline_code + "|click";
+                tr.add_behavior({
+                    'type': 'click',
+                    'cbjs_action': '''
 
-                 var temp = {
-                     "pipeline_code": pipeline_code,
-                     "title" : title,
-                 }
+                     var row = bvr.src_el;
+                     row.addClass("spt_table_selected");
 
-                 var kwargs = {};
-                 kwargs.options = temp;
 
-                 spt.named_events.fire_event(event, kwargs);
-                 spt.command.clear();
-                 spt.pipeline.fit_to_canvas();
+                     // FIXME: this code should not be here
 
-                 '''
-                 })
+                     var item = bvr.src_el.getElement(".spt_document_item");
+                     if (item) {
+                         var pipeline_code = item.getAttribute("spt_pipeline_code");
+                         if (pipeline_code) {
+                             var title = item.getAttribute("spt_title");
+                             var event = "pipeline_" + pipeline_code + "|click";
+
+                             var temp = {
+                                 "pipeline_code": pipeline_code,
+                                 "title" : title,
+                             }
+
+                             var kwargs = {};
+                             kwargs.options = temp;
+
+                             spt.named_events.fire_event(event, kwargs);
+                             spt.command.clear();
+                             spt.pipeline.fit_to_canvas();
+                        }
+                    }
+
+                     '''
+                     })
 
 
 
@@ -3282,7 +3291,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
-            td.add_style("overflow: hidden")
 
             if sobject.is_insert():
                 onload_js = widget.get_onload_js()
@@ -3501,10 +3509,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     } )
 
             # Qt webkit ignores these
-            if self.browser == 'Qt':
-                td.add_style("background-repeat: no-repeat")
-                td.add_style("background-position: bottom right")
-                td.add_style("vertical-align: top")
+            #if self.browser == 'Qt':
+            #    td.add_style("background-repeat: no-repeat")
+            #    td.add_style("background-position: bottom right")
+            #    td.add_style("vertical-align: top")
 
             # add spacing
             if level and element_name == self.level_name:
