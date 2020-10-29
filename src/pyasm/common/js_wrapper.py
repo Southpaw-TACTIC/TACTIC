@@ -257,7 +257,7 @@ def test():
     print("---")
     js = '''
     return ['stream1','stream2'];
-    ''';
+    '''
     ret_val = cmd.execute_func(js)
     print("ret_val: ", ret_val)
 
@@ -265,7 +265,7 @@ def test():
     print("---")
     js = '''
     spt_file.copy("tactic.png", "tactic2.png"); 
-    ''';
+    '''
     cmd.execute_func(js)
 
 
@@ -277,7 +277,7 @@ def test():
     }
     js = '''
     spt_file.copy("tactic.png", "tactic2.png"); 
-    ''';
+    '''
     cmd.execute_func(js, kwargs)
 
 
