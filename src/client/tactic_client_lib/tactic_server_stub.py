@@ -284,10 +284,10 @@ class TacticServerStub(object):
     def get_project(self):
         return self.project_code
 
-    def set_transport(my, transport=None):
+    def set_transport(self, transport=None):
         '''Function: set_transport(transport=xmlrpclib.Transport)
             Sets the transport that can be used to setup proxy'''
-        my.transport = transport
+        self.transport = transport
 
     def set_site(self, site=None):
         '''Function: set_site(site=None)
@@ -2008,7 +2008,7 @@ class TacticServerStub(object):
         file_path - path of the file that was previously uploaded
 
         @keyparam:
-        snapshot_type - [optional] descibes what kind of a snapshot this is.
+        snapshot_type - [optional] describes what kind of a snapshot this is.
             More information about a snapshot type can be found in the
             prod/snapshot_type sobject
         description - [optional] optional description for this checkin
