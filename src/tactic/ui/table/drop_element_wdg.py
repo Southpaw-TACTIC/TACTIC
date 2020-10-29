@@ -408,7 +408,7 @@ class DropElementAction(DatabaseAction):
         for src_sobject in src_sobjects:
 
             instance = SearchType.create(instance_type)
-            instance.add_related_connection(src_sobject, dst_sobject, src_path=src_path)
+            instance.add_related_connection(dst_sobject, src_sobject, src_path=src_path)
 
             instance.commit()
 
