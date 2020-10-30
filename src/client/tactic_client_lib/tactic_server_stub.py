@@ -16,9 +16,9 @@
 
 import datetime
 import re
-import os, getpass, shutil, sys, urllib, types, hashlib
+import os, getpass, shutil, sys, types, hashlib
 import six
-from six.moves import input
+from six.moves import input, urllib
 
 
 try:
@@ -1790,7 +1790,7 @@ class TacticServerStub(object):
                 pass
 
 
-        f = urllib.urlopen(url)
+        f = urllib.request.urlopen(url)
         file = open(to_path, "wb")
         file.write( f.read() )
         file.close()
