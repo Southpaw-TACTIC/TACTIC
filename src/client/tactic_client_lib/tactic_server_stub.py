@@ -935,16 +935,6 @@ class TacticServerStub(object):
             title, description, transaction_ticket)
         self.set_transaction_ticket(ticket)
 
-        #client_version = self.get_client_version()
-        #server_version = self.get_server_version()
-
-        # Switch to using api versions
-        client_api_version = self.get_client_api_version()
-        server_api_version = self.get_server_api_version()
-        if client_api_version != server_api_version:
-            raise TacticApiException("Server version [%s] does not match client api version [%s]"
-                                     % (server_api_version, client_api_version))
-
         self.set_server(self.server_name)
         # clear the handoff dir
         self.handoff_dir = None
@@ -4131,6 +4121,8 @@ class TacticServerStub(object):
 
     def get_server_api_version(self):
         '''API Function: get_server_api_version()
+        DEPRECATED: This was introduced at a time when the API was changing a lot.
+                    The server will not return an api version anymore.
         
         @return: 
             string - server API version'''
