@@ -3050,7 +3050,7 @@ class RepoBrowserActionCmd(Command):
                     context = "%s/%s" % (process, new_name)
                 elif len(parts) == 3:
                     subcontext = parts[2]
-                    context = "%s/%s/%s" (process, new_name, subcontext)
+                    context = "%s/%s/%s" % (process, new_name, subcontext)
 
                 snapshot.set_value("context", context)
                 snapshot.commit()
