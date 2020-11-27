@@ -78,15 +78,11 @@ spt.validation.check = function( new_value, validation_bvr_list, display_target_
     if( edit_top ) {
 
         // get insert button ...
-        var btn_list = edit_top.getElements(".spt_button_top");
+        var btn_list = edit_top.getElements(".btn-primary");
         var insert_btn = null;
         for( var c=0; c < btn_list.length; c++ ) {
             var btn = btn_list[c];
-            var btn_label_el = btn.getElement('.spt_label')
-            if (btn_label_el) {
-              var btn_label = btn_label_el.getProperty("spt_text_label");
-            }
-            if( btn_label && ['Insert', 'Edit', 'Add', 'Save'].contains(btn_label) ) {
+            if( ['Insert', 'Edit', 'Add', 'Save'].contains(btn.textContent) ) {
                 insert_btn = btn;
                 break;
             }
