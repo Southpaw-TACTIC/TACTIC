@@ -9124,10 +9124,10 @@ class PipelineSaveCbk(Command):
                     version_str = kwargs.get('version') or 2
                     version = int(version_str)
 
-                    if version is 1:
+                    if version == 1:
                         cmd = ProcessInfoCmd(**kwargs)
                         cmd.execute()
-                    elif version is 2:
+                    elif version == 2:
                         cmd = NewProcessInfoCmd(**kwargs)
                         cmd.execute()
 

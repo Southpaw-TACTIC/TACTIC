@@ -29,6 +29,7 @@ from .misc_input_wdg import SearchTypeSelectWdg
 from .upload_wdg import SimpleUploadWdg
 
 import os
+import six
 
 
 
@@ -434,8 +435,8 @@ class CheckinWdg(BaseRefreshWdg):
                 'validate_script_path': self.validate_script_path,
                 'create_sandbox_script_path': self.create_sandbox_script_path,
                 'sandbox_dir': self._get_sandbox_dir(),
-                'checkin_relative_dir':checkin_relative_dir,
-                'checkin_ui_options' : self.checkin_ui_options,
+                'checkin_relative_dir': checkin_relative_dir,
+                'checkin_ui_options': self.checkin_ui_options,
                 'show_history': show_history,
                 'show_links': show_links,
                 'options': options
@@ -1399,7 +1400,7 @@ class CheckinInfoPanelWdg(BaseRefreshWdg):
         self.checkin_relative_dir = self.kwargs.get('checkin_relative_dir')
         self.checkin_ui_options = self.kwargs.get('checkin_ui_options')
 
-        if self.checkin_ui_options and isinstance(self.checkin_ui_options, basestring):
+        if self.checkin_ui_options and isinstance(self.checkin_ui_options, six.string_types):
             # avoid using jsonloads for simple dict,
             # since it requires replacing ' with ''
 

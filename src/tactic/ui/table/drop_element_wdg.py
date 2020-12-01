@@ -70,7 +70,8 @@ class DropElementWdg(SimpleTableElementWdg):
         sobject = self.get_current_sobject()
 
         instance_type = self.get_option("instance_type")
-        instances = sobject.get_related_sobjects(instance_type)
+        src_path = self.get_option("path")
+        instances = sobject.get_related_sobjects(instance_type, path=src_path)
         # sorting now
         name_dict ={}
         for inst in instances:
@@ -392,7 +393,7 @@ class DropElementAction(DatabaseAction):
 
         
         # get all of the current instances and see if any were removed
-        instances = dst_sobject.get_related_sobjects(instance_type)
+        instances = dst_sobject.get_related_sobjects(instance_type, path=src_path)
         for instance in instances:
             exists = False
             for src_instance in src_instances:
@@ -407,7 +408,7 @@ class DropElementAction(DatabaseAction):
         for src_sobject in src_sobjects:
 
             instance = SearchType.create(instance_type)
-            instance.add_related_connection(src_sobject, dst_sobject, src_path=src_path)
+            instance.add_related_connection(dst_sobject, src_sobject, src_path=src_path)
 
             instance.commit()
 
@@ -428,8 +429,8 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
     var ghost_el = document.id("drag_ghost_copy");
     if (!ghost_el) {
         ghost_el =  new Element('div', {
-			styles: {
-				background: '#393950',
+                            styles: {
+                                background: '#393950',
                                 color: '#c2c2c2',
                                 border: 'solid 1px black',
                                 textAlign: 'left',
@@ -441,11 +442,11 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
                                 left: '0px', top: '0px',
                                 zIndex: '400'
                                     
-			},
+                            },
             element_copied: '_NONE_',
-			id: 'drag_ghost_copy',
+            id: 'drag_ghost_copy',
             class: 'SPT_PUW'
-		});
+        });
             ghost_el.inject(document.body);
             bvr.drag_el = ghost_el
     }
