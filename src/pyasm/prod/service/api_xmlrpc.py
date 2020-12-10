@@ -1380,23 +1380,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         project_code = Project.get_project_code()
 
-        from pyasm.search import Update, Select, Insert
-        select = Select()
-        select.add_table("message")
-        select.set_database(sql)
-        select.add_filter("code", key)
-        statement = select.get_statement()
-        
-        last_message = sql.do_query(statement)
-
        
         if impl_type == 'Sqlite':
-            if not last_message:
+            message_obj = Search.eval("@SOBJECT(sthpw/message['code','%s'])"%key, single=True)
+            if not message_obj:
                 message_obj = SearchType.create("sthpw/message")
                 message_obj.set_value("code", key)
                 message_obj.set_value("project_code", project_code)
-            else:
-                message_obj = Search.eval("@SOBJECT(sthpw/message['code','%s'])"%key, single=True)
         
             message_obj.set_value("category", category)
             if message != None:
@@ -1425,7 +1415,16 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             return 
 
-      
+        from pyasm.search import Update, Select, Insert
+        select = Select()
+        select.add_table("message")
+        select.set_database(sql)
+        select.add_filter("code", key)
+        statement = select.get_statement()
+        
+        last_message = sql.do_query(statement)
+
+     
     
         if not last_message:
             update = Insert()

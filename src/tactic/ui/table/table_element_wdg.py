@@ -607,6 +607,8 @@ class CheckinButtonElementWdg(ButtonElementWdg):
         self.context = ''
         sobject = self.get_current_sobject()
 
+        self.process = "publish"
+
         if sobject.get_base_search_type() in ['sthpw/task', 'sthpw/note']:
             self.process = sobject.get_value('process')
             if not self.process:

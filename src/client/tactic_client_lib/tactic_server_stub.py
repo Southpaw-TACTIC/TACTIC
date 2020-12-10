@@ -16,9 +16,9 @@
 
 import datetime
 import re
-import os, getpass, shutil, sys, urllib, types, hashlib
+import os, getpass, shutil, sys, types, hashlib
 import six
-from six.moves import input
+from six.moves import input, urllib
 
 
 try:
@@ -284,10 +284,10 @@ class TacticServerStub(object):
     def get_project(self):
         return self.project_code
 
-    def set_transport(my, transport=None):
+    def set_transport(self, transport=None):
         '''Function: set_transport(transport=xmlrpclib.Transport)
             Sets the transport that can be used to setup proxy'''
-        my.transport = transport
+        self.transport = transport
 
     def set_site(self, site=None):
         '''Function: set_site(site=None)
@@ -934,16 +934,6 @@ class TacticServerStub(object):
         ticket = self.server.start(self.ticket, self.project_code, \
             title, description, transaction_ticket)
         self.set_transaction_ticket(ticket)
-
-        #client_version = self.get_client_version()
-        #server_version = self.get_server_version()
-
-        # Switch to using api versions
-        client_api_version = self.get_client_api_version()
-        server_api_version = self.get_server_api_version()
-        if client_api_version != server_api_version:
-            raise TacticApiException("Server version [%s] does not match client api version [%s]"
-                                     % (server_api_version, client_api_version))
 
         self.set_server(self.server_name)
         # clear the handoff dir
@@ -1790,7 +1780,7 @@ class TacticServerStub(object):
                 pass
 
 
-        f = urllib.urlopen(url)
+        f = urllib.request.urlopen(url)
         file = open(to_path, "wb")
         file.write( f.read() )
         file.close()
@@ -2008,7 +1998,7 @@ class TacticServerStub(object):
         file_path - path of the file that was previously uploaded
 
         @keyparam:
-        snapshot_type - [optional] descibes what kind of a snapshot this is.
+        snapshot_type - [optional] describes what kind of a snapshot this is.
             More information about a snapshot type can be found in the
             prod/snapshot_type sobject
         description - [optional] optional description for this checkin
@@ -4131,6 +4121,8 @@ class TacticServerStub(object):
 
     def get_server_api_version(self):
         '''API Function: get_server_api_version()
+        DEPRECATED: This was introduced at a time when the API was changing a lot.
+                    The server will not return an api version anymore.
         
         @return: 
             string - server API version'''

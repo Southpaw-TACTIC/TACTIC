@@ -673,6 +673,7 @@ class Pipeline(SObject):
                     process_sobj.set_value('subcontext_options', '(main)')
                 process_sobj.set_value("pipeline_code", pipeline_code)
                 process_sobj.set_value("process", process_name)
+                process_sobj.set_json_value("workflow", {"version": 2})
 
 
             # copy information over from the template

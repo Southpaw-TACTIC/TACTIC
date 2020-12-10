@@ -1599,6 +1599,8 @@ class TextInputResultsWdg(BaseRefreshWdg):
             top.add(div)
             div.add_style("padding: 3px 3px")
             div.add_style("height: 45px")
+            div.add_style("display: flex")
+            div.add_style("align-items: center")
 
             thumb = ThumbWdg2()
             thumb.set_sobject(result)
@@ -1614,7 +1616,6 @@ class TextInputResultsWdg(BaseRefreshWdg):
             info_div = DivWdg()
             div.add(info_div)
             info_div.add(display)
-            info_div.add_style("display: inline-block")
             info_div.add_style("overflow-x: hidden")
             info_div.add_style("text-overflow: ellipsis")
             info_div.add_style("white-space: nowrap")
