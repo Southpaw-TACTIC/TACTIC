@@ -377,7 +377,7 @@ class SendPasswordResetCmd(Command):
             raise TacticException(error_msg)
 
         # auto pass generation
-        unique_code = ''.join([ random.choice('abcdefghijklmnopqrstuvwxyz123456789') for i in xrange(0, 10)])
+        unique_code = ''.join([ random.choice('abcdefghijklmnopqrstuvwxyz123456789') for i in range(0, 10)])
         auto_password = unique_code
 
         # send the email

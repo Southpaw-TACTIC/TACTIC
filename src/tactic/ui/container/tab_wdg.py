@@ -1880,9 +1880,22 @@ spt.tab.view_definition = function(bvr) {
         } )
 
 
+        # This is to ensure no duplicates are loaded.  It's a bit convoluted
+        # because the main tab uses a /Project_view" prefix.
+        widget_names = []
+        for widget in self.widgets:
+            widget_names.append("/Project_view/%s" % widget.get_name())
+            widget_names.append(widget.get_name())
+
 
         loaded_dict = {}
         for element_name in element_names:
+
+            # To avoid duplicating tab in main view
+            if element_name in widget_names or element_name in widget_names:
+                continue
+
+
             attrs = config.get_element_attributes(element_name)
             title = attrs.get("title")
             if not title:
@@ -1936,6 +1949,7 @@ spt.tab.view_definition = function(bvr) {
         # add widgets that have been manually added
         for i, widget in enumerate(self.widgets):
             name = widget.get_name()
+
             if not name:
                 num = Common.randint(0, 10000)
                 name = "noname%s" % num
@@ -2027,6 +2041,13 @@ spt.tab.view_definition = function(bvr) {
 
         # put in a content box for each element
         for element_name in element_names:
+
+            # To avoid duplicating tab in main view
+            if element_name in widget_names or element_name in widget_names:
+                continue
+
+
+
             content_div = DivWdg()
             content_top.add(content_div)
 
@@ -2091,6 +2112,7 @@ spt.tab.view_definition = function(bvr) {
 
         for widget in self.widgets:
             name = widget.get_name()
+
             content_div = DivWdg()
             content_div.add_class("spt_tab_content")
             content_div.add_attr("spt_tab_id", self.unique_id)
