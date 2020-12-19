@@ -2338,9 +2338,16 @@ TacticServerStub = function() {
  * same reference from various parts of the code.
  */
 TacticServerStub.server = null;
-TacticServerStub.get = function() {
+TacticServerStub.servers = {};
+TacticServerStub.get = function(name) {
+    if (!name) {
+        name = "default";
+    }
+    this.server = this.servers[name];
+
     if (this.server == null) {
         this.server = new TacticServerStub();
+        this.servers[name] = this.server;
 
         var env = spt.Environment.get();
         var login_ticket = env.get_ticket();
@@ -2356,12 +2363,18 @@ TacticServerStub.get = function() {
     return this.server;
 }
 
-TacticServerStub.get_master = function() {
+TacticServerStub.get_master = function(name) {
     var env = spt.Environment.get();
     var master_slave_setup = env.get_master_enabled();
 
+    if (!name) {
+        name = "default";
+    }
+
     if (['true', true].indexOf(master_slave_setup) > -1) {
         this.server = new TacticServerStub();
+        this.servers[name] = this.server;
+
         var master_slave_setup = env.get_master_enabled();
         var url = env.get_master_url();
         var login_ticket = env.get_master_login_ticket();
@@ -2374,7 +2387,7 @@ TacticServerStub.get_master = function() {
         this.server.set_project(project_code);
         this.server.set_transaction_ticket(login_ticket);
     } else {
-        this.server = this.get(); 
+        this.server = this.get(name); 
     }
     return this.server;
 }

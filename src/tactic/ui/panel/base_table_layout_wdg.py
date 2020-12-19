@@ -91,6 +91,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.search_type = kwargs.get('search_type')
         if not self.search_type:
             raise TacticException("Must define a search type")
+
+        # remember the site and project for this table based on the seearch type given
+        from pyasm.security import Site
+        self.site = Site.get_site()
+        search_type_sobj = SearchType.get(self.search_type)
+        self.project = search_type_sobj.get_project()
+
+
         self.view = kwargs.get('view')
         if not self.view or self.view == "None":
             self.view = 'table'
@@ -133,8 +141,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if self.js_load in ['true', True]:
             self.js_load = True
         else:
-            self.js_laod = False
-
+            self.js_load = False
 
 
         self.group_info = DivWdg()
@@ -337,14 +344,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.look_row_hilite = 'dg_row_hilite'
         self.look_row_selected = 'dg_row_selected'
         self.look_row_selected_hilite = 'dg_row_selected_hilite'
-
-        # MMS_COLOR_OVERRIDE ...
-        #if self.skin == 'MMS':
-        #    self.look_row = 'mms_dg_row'
-        #    self.look_row_hilite = 'mms_dg_row_hilite'
-        #    self.look_row_selected = 'mms_dg_row_selected'
-        #    self.look_row_selected_hilite = 'mms_dg_row_selected_hilite'
-
 
         self.palette = web.get_palette()
 

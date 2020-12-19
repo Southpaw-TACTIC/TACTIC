@@ -2028,8 +2028,10 @@ pre code {
   opacity: 1;
 }
 .form-control:disabled, .custom-file-control:disabled, .form-control[readonly], [readonly].custom-file-control {
-  background-color: #e9ecef;
-  opacity: 1;
+  //background-color: #e9ecef;
+  //opacity: 1;
+  background-color: transparent;
+  opacity: 0.4;
 }
 
 select.form-control:focus::-ms-value, select.custom-file-control:focus::-ms-value {
@@ -12957,7 +12959,8 @@ fieldset[disabled] .is-focused .switch label:focus {
 
 [class^=bmd-label],
 [class*=" bmd-label"] {
-  color: rgba(0, 0, 0, 0.26);
+  //color: rgba(0, 0, 0, 0.26);
+  color: var(--spt_palette_color2);
 }
 
 .form-control, .custom-file-control, .is-focused .form-control {

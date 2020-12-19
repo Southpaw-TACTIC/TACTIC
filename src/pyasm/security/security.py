@@ -771,11 +771,6 @@ class Site(object):
     def get_authenticate_class(self):
         return
 
-    def get_site_root(self):
-        return ""
-
-    def break_up_request_path(self, path):
-        return {}
 
     def get_site_redirect(self):
         return
@@ -787,11 +782,20 @@ class Site(object):
         return
 
 
-    def get_guest_hashes(self):
-        return []
 
-    def get_guest_wdg(self, hash):
+    def allow_guest(cls, url=None):
         return None
+    allow_guest = classmethod(allow_guest)
+
+    def get_guest_hashes(cls):
+        return []
+    get_guest_hashes = classmethod(get_guest_hashes)
+
+
+    def get_user_project(cls):
+        return Config.get_value("install", "default_project")
+    get_user_project = classmethod(get_user_project)
+
 
 
     def get_by_login(cls, login):
@@ -800,6 +804,7 @@ class Site(object):
 
 
     def build_ticket(cls, ticket):
+        '''Provide the opportunity to alter the ticket customized for the site'''
         return ticket
     build_ticket = classmethod(build_ticket)
 
@@ -830,20 +835,11 @@ class Site(object):
     get_web_dir = classmethod(get_web_dir)
 
 
-    def get_default_project(cls):
-        return Config.get_value("install", "default_project")
-    get_default_project = classmethod(get_default_project)
-
-
     def get_login_wdg(cls, hash=None):
         from tactic.ui.panel import HashPanelWdg
         web_wdg = HashPanelWdg.get_widget_from_hash("/login", return_none=True)
         return web_wdg
     get_login_wdg = classmethod(get_login_wdg)
-
-
-    def allow_guest(cls, url=None):
-        return None
 
 
     def init_site(cls, site, options={}):
@@ -856,9 +852,134 @@ class Site(object):
         return False
     start_site = classmethod(start_site)
 
+
+
+    #
+    # common methods
+    #
+
+    def get_site_root(self):
+        site = self.get_site()
+        if site:
+            return site
+        else:
+            return ""
+
+
+
+    def break_up_request_path(self, path):
+        path = path.strip("/")
+        parts = path.split("/")
+
+        if parts[0] != "tactic":
+            parts.insert(0, "tactic")
+
+        if len(parts) == 1:
+            site = "default"
+            project_code = ""
+        elif len(parts) == 2:
+            # for a path like tactic/default, site is default
+            site = parts[1]
+            project_code = ""
+        else:
+            site = parts[1]
+            project_code = parts[2]
+
+        info = {
+            'site': site,
+            'project_code': project_code
+        }
+
+        return info
+
+
+    def get_guest_wdg(self, hash):
+        from pyasm.web import Widget
+        from pyasm.widget import BottomWdg
+        from pyasm.biz import Project
+        from tactic.ui.app import TopWdg
+        from tactic.ui.panel import HashPanelWdg
+
+        if not hash:
+            hash = "/guest"
+        else:
+            hash = "/" + "/".join(hash)
+
+
+        path_info = self.get_request_path_info()
+        if path_info.get("site") == "default":
+            return None
+
+
+        # use the path to set the project and/or site
+        if hash == "/guest" and path_info:
+            path_site = path_info.get("site")
+            Site.set_site(path_site)
+            Project.set_project(path_info.get("project_code"))
+
+        #else:
+        #    Site.set_site("default")
+        #    Project.set_project("user")
+
+        widget = Widget()
+        top = TopWdg()
+        widget.add(top)
+        link = "/%s" % "/".join(hash)
+
+
+        web_wdg = HashPanelWdg.get_widget_from_hash(hash, return_none=True, kwargs={"hash": link})
+        widget.add(web_wdg)
+        widget.add( BottomWdg() )
+
+        return widget
+
+
+    def get_default_project(cls):
+        site_obj = Site().get()
+
+        site = Site().get().get_site()
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+
+        # sometimes it mistakes the current site being default when the URL is short like
+        # <IP>/tactic/<site>
+        if site == 'default' and web and web.get_context_name() not in ['default','user']:
+            site = web.get_context_name()
+
+
+        #default_project = "user"
+        default_project = site_obj.get_user_project()
+
+
+        # set the user project as the default
+        if site == "default":
+            return default_project
+        if not site:
+            return default_project
+
+        if site != "default":
+            site_data = cls.get_site_data(site)
+            default_site_project = site_data.get("default_project")
+            if default_site_project:
+                return default_site_project
+            else:
+                return default_project
+        else:
+            return default_project
+
+    get_default_project = classmethod(get_default_project)
+
+
+
+
+
+
     def get_api_mode(cls):
-        return
+        site = Site.get_site()
+        if site == "default":
+            return "closed"
     get_api_mode = classmethod(get_api_mode)
+
 
 
 
@@ -909,6 +1030,7 @@ class Site(object):
         '''Set the global site for this "session"'''
 
         if not site:
+            print("WARNING: site is empty")
             return
 
 
