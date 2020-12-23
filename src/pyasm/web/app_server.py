@@ -674,10 +674,11 @@ class BaseAppServer(Base):
             Site.set_site(path_info.get("site"))
             project_code = path_info.get("project_code")
 
-
         # handle the case where the project does not exist
         project = Project.get(no_exception=True)
         if not project:
+            if self.hash and self.hash[0] == "REST":
+                raise Exception("No project found")
             from pyasm.widget import BottomWdg, Error404Wdg
             Project.set_project("admin")
             widget = Widget()

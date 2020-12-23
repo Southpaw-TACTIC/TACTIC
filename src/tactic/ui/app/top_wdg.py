@@ -1787,6 +1787,7 @@ class CustomTopWdg(BaseRefreshWdg):
             if not current_type:
                 web.set_content_type("text/html")
 
+
         widget.add(value)
 
         return widget

@@ -4885,7 +4885,6 @@ class SObject(object):
         if id == -1:
             return
 
-
         current_project_code = self.get_project_code()
         
         # special conditions of task, note and work_hour

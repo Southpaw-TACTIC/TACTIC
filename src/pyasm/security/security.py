@@ -1325,6 +1325,7 @@ class Ticket(SObject):
         ticket.set_value("timestamp", now, quoted=0)
         if category:
             ticket.set_value("category", category)
+
         """
         if category == 'gui':
             search = Search("sthpw/ticket")

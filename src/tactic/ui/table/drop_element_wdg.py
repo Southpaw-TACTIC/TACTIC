@@ -18,6 +18,7 @@ import re
 from pyasm.common import Common, jsonloads, jsondumps
 from pyasm.command import Command, DatabaseAction
 from pyasm.search import Search, SearchKey, SearchType
+from pyasm.security import Sudo
 from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
 from pyasm.biz import Schema, Project
 from pyasm.prod.biz import ShotInstance
@@ -71,7 +72,15 @@ class DropElementWdg(SimpleTableElementWdg):
 
         instance_type = self.get_option("instance_type")
         src_path = self.get_option("path")
-        instances = sobject.get_related_sobjects(instance_type, path=src_path)
+
+        # This is done for the login and login_groups table ... maybe need to subclass
+        # at some point so only this use case is allowed
+        sudo = Sudo()
+        try:
+            instances = sobject.get_related_sobjects(instance_type, path=src_path)
+        finally:
+            sudo.exit()
+
         # sorting now
         name_dict ={}
         for inst in instances:

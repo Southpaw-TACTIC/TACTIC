@@ -38,6 +38,7 @@ sys.path.insert(0, tactic_site_dir)
 
 def startup(port, server=""):
 
+
     from tactic.startup import FirstRunInit
     cmd = FirstRunInit()
     cmd.execute()
@@ -46,7 +47,6 @@ def startup(port, server=""):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-   
     try:
         file = open("%s/pid.%s" % (log_dir,port), "w")
         pid = os.getpid()
@@ -122,6 +122,8 @@ def startup(port, server=""):
 
     hostname = None
     server_default = '127.0.0.1'
+
+
     
     if not server:
         hostname = Config.get_value("install", "hostname") 
