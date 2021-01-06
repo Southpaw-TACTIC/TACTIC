@@ -970,6 +970,8 @@ class Site(object):
     get_default_project = classmethod(get_default_project)
 
 
+    def get_site_data(cls, site):
+        return {}
 
 
 
