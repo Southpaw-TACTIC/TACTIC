@@ -300,8 +300,8 @@ class EditCmd(Command):
 
         sobject = None
         if self.search_key:
+            sudo = Sudo()
             try:
-                sudo = Sudo()
                 sobject = SearchKey.get_by_search_key(self.search_key)
             finally:
                 sudo.exit()
@@ -326,8 +326,8 @@ class EditCmd(Command):
                 sobject = SearchType.create(self.search_type)
             
             else:
+                sudo = Sudo()
                 try:
-                    sudo = Sudo()
                     search = Search(self.search_type)
                     search.add_id_filter( search_id )
                     sobject = search.get_sobject()
@@ -590,8 +590,8 @@ class RelatedDatabaseAction(DatabaseAction):
                     related.commit()
 
                 # create a new one dynamically
+                sudo = Sudo()
                 try:
-                    sudo = Sudo()
                     related = SearchType.create(related_type)
                     related.add_relationship(sobject)
                 finally:
