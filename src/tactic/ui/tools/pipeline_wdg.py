@@ -7587,7 +7587,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         if self.kwargs.get("show_wrench") not in [False, "false"]:
-            button = ButtonNewWdg(title="Add node", icon="FA_ADD", sub_icon="FA_PLUS")
+            button = ButtonNewWdg(title="Add node", icon="FA_PLUS", sub_icon="FA_PLUS")
             button_row.add(button)
 
             button.add_behavior({
