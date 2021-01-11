@@ -4020,8 +4020,12 @@ spt.table.get_server = function() {
     let layout = spt.table.get_layout();
     let key = layout.site + ":" + layout.project;
     var server = TacticServerStub.get_master(key);
-    server.set_site(layout.site)
-    server.set_project(layout.project);
+    if (layout.site) {
+        server.set_site(layout.site)
+    }
+    if (layout.project) {
+        server.set_project(layout.project);
+    }
     return server;
 }
 
