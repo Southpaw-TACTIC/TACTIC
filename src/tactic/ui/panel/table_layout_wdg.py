@@ -652,6 +652,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         inner.add_class("spt_layout_inner")
 
 
+        # TODO: may need to generalize this for other layouts
+        inner.add_behavior( {
+            'type': 'load',
+            'site': self.site,
+            'project': self.project.get_code(),
+            'cbjs_action': '''
+            bvr.src_el.site = bvr.site;
+            bvr.src_el.project = bvr.project;
+            '''
+        } )
+
+
         has_extra_header = self.kwargs.get("has_extra_header")
         if has_extra_header in [True, "true"]:
             inner.add_attr("has_extra_header", "true")
@@ -4003,6 +4015,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         cbjs_action =  '''
 
+spt.table.get_server = function() {
+    // actually do the update
+    let layout = spt.table.get_layout();
+    let key = layout.site + ":" + layout.project;
+    var server = TacticServerStub.get_master(key);
+    server.set_site(layout.site)
+    server.set_project(layout.project);
+    return server;
+}
+
+
+
 spt.table.get_total_count = function() {
      var inner = spt.table.get_layout();
      return inner.getAttribute('total_count');
@@ -6598,13 +6622,13 @@ spt.table.save_changes = function(kwargs) {
 
     var search_keys = []
 
+    var layout = spt.table.get_layout();
 
     // collapse updates from undo_queue for be classified by search_type
     var use_undo_queue = spt.table.undo_queue_save;
 
     if (use_undo_queue == "true") {
 
-        var layout = spt.table.get_layout();
         var layout_top = layout.getParent(".spt_layout_top")
         var undo_queue = layout_top.undo_queue;
 
@@ -6740,7 +6764,7 @@ spt.table.save_changes = function(kwargs) {
     element_names = element_names.join(",");
 
     // actually do the update
-    var server = TacticServerStub.get_master();
+    var server = spt.table.get_server();
 
     // use the edit command to understand what do do with the update data
     var layout = spt.table.get_layout()
@@ -7027,7 +7051,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     //var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
-    var server = TacticServerStub.get();
+    let server = spt.table.get_server();
 
     var group_elements = spt.table.get_group_elements();
 

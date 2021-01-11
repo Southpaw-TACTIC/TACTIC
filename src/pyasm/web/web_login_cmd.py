@@ -49,13 +49,20 @@ class WebLoginCmd(Command):
         security = WebContainer.get_security()
         return security.is_logged_in()
 
+
+    def get_message(self):
+        from pyasm.widget import WebLoginWdg
+        from pyasm.web import WebContainer
+        web = WebContainer.get_web()
+        return web.get_form_value(WebLoginWdg.LOGIN_MSG)
+
               
     def execute(self):
 
+        from pyasm.widget import WebLoginWdg
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
 
-        from pyasm.widget import WebLoginWdg
         # If the tag <force_lowercase_login> is set to "true"
         # in the TACTIC config file,
         # then force the login string argument to be lowercase.
@@ -70,10 +77,6 @@ class WebLoginCmd(Command):
         self.domain = web.get_form_value("domain")
 
 
-
-
-        
-        
         if self.login == "" and self.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
                 "Username and password are empty") 

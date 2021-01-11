@@ -821,5 +821,3 @@ class CherryPyStartup(CherryPyStartup20):
                 settings['tools.xmlrpc.allow_none'] = True
 
 
-
-

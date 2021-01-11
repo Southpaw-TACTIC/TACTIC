@@ -2115,7 +2115,7 @@ class WebLoginWdg2(BaseSignInWdg):
         name_container = DivWdg()
         reset_div.add(name_container)
         name_container.add_class("sign-in-input")
-        name_container.add("<div class='label'>Name</div>")
+        name_container.add("<div class='label'>User Name</div>")
 
         name_wdg = TextWdg("login")
         name_container.add(name_wdg)
@@ -2150,7 +2150,7 @@ class WebLoginWdg2(BaseSignInWdg):
     def get_login_content(self):
         '''Return default login form.'''
 
-        name_label = self.kwargs.get('name_label') or "Name"
+        name_label = self.kwargs.get('name_label') or "User Name"
         password_label = self.kwargs.get('password_label') or "Password"
         override_password = self.kwargs.get('override_password') == "true"
         override_login = self.kwargs.get('override_login') == "true"

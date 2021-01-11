@@ -45,6 +45,14 @@ class UploadServerWdg(Widget):
                     continue
 
                 file_name = web.get_form_value("file_name%s"% i)
+                file_path = web.get_form_value("file_path%s" % i)
+
+                if file_path:
+                    file_name = file_path
+                    file_name = file_path.lstrip("/")
+
+                print("file_name: ", file_name)
+
                 if not file_name:
                     file_name = self.get_file_name(field_storage)
                 items = self.dump(field_storage, file_name)
@@ -173,10 +181,13 @@ class UploadServerWdg(Widget):
                 XX-dev-2924f964921857bf239acef4f9bcf3bf/miso_ramen.jpg
             '''
 
-            if not os.path.exists(file_dir):
-                os.makedirs(file_dir)
             basename = os.path.basename(path)
             to_path = "%s/%s" % (file_dir, file_name)
+
+            to_dir = os.path.dirname(to_path)
+            if not os.path.exists(to_dir):
+                os.makedirs(to_dir)
+
             shutil.move(path, to_path)
             
             '''

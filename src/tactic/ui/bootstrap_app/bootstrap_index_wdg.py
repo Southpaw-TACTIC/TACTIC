@@ -1799,7 +1799,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             # Sets default xml when no WidgetSetting exists
             save_state = self._get_tab_save_state()
             tab = BootstrapTabWdg(config_xml=startup_xml, save_state=save_state)
-            
+
             # Hash is additive
             if self.widget:
                 tab.add(self.widget)
