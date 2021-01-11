@@ -3489,6 +3489,12 @@ class SObject(object):
             self.update_data[name] = value
             self.quoted_flag[name] = quoted
 
+        # dictionaries are always update because of possibility of difference
+        # that shallow != cannot detect
+        elif isinstance(value, dict):
+            self.update_data[name] = value
+            self.quoted_flag[name] = quoted
+
         self.has_updates = True
 
 
