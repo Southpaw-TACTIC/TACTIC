@@ -18,6 +18,7 @@ import re
 from pyasm.common import Common, jsonloads, jsondumps
 from pyasm.command import Command, DatabaseAction
 from pyasm.search import Search, SearchKey, SearchType
+from pyasm.security import Sudo
 from pyasm.web import DivWdg, WebContainer, SpanWdg, Widget
 from pyasm.biz import Schema, Project
 from pyasm.prod.biz import ShotInstance
@@ -70,7 +71,16 @@ class DropElementWdg(SimpleTableElementWdg):
         sobject = self.get_current_sobject()
 
         instance_type = self.get_option("instance_type")
-        instances = sobject.get_related_sobjects(instance_type)
+        src_path = self.get_option("path")
+
+        # This is done for the login and login_groups table ... maybe need to subclass
+        # at some point so only this use case is allowed
+        sudo = Sudo()
+        try:
+            instances = sobject.get_related_sobjects(instance_type, path=src_path)
+        finally:
+            sudo.exit()
+
         # sorting now
         name_dict ={}
         for inst in instances:
@@ -392,7 +402,7 @@ class DropElementAction(DatabaseAction):
 
         
         # get all of the current instances and see if any were removed
-        instances = dst_sobject.get_related_sobjects(instance_type)
+        instances = dst_sobject.get_related_sobjects(instance_type, path=src_path)
         for instance in instances:
             exists = False
             for src_instance in src_instances:
@@ -407,7 +417,7 @@ class DropElementAction(DatabaseAction):
         for src_sobject in src_sobjects:
 
             instance = SearchType.create(instance_type)
-            instance.add_related_connection(src_sobject, dst_sobject, src_path=src_path)
+            instance.add_related_connection(dst_sobject, src_sobject, src_path=src_path)
 
             instance.commit()
 
@@ -428,8 +438,8 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
     var ghost_el = document.id("drag_ghost_copy");
     if (!ghost_el) {
         ghost_el =  new Element('div', {
-			styles: {
-				background: '#393950',
+                            styles: {
+                                background: '#393950',
                                 color: '#c2c2c2',
                                 border: 'solid 1px black',
                                 textAlign: 'left',
@@ -441,11 +451,11 @@ spt.drop.sobject_drop_setup = function( evt, bvr )
                                 left: '0px', top: '0px',
                                 zIndex: '400'
                                     
-			},
+                            },
             element_copied: '_NONE_',
-			id: 'drag_ghost_copy',
+            id: 'drag_ghost_copy',
             class: 'SPT_PUW'
-		});
+        });
             ghost_el.inject(document.body);
             bvr.drag_el = ghost_el
     }
@@ -528,13 +538,13 @@ spt.drop.sobject_drop_action = function( evt, bvr )
     var dst_layout = dst_el.getParent(".spt_layout");
     var src_layout = src_el.getParent(".spt_layout");
 
-    // backwards compatibiity to old table
+    // backwards compatibility to old table
     var dst_version = dst_layout? dst_layout.getAttribute("spt_version") : '2';
     if (dst_version != "2") {
         return spt.dg_table_action.sobject_drop_action(evt, bvr);
     }
 
-    // get the source serach_type
+    // get the source search_type
     var search_type = src_layout.getAttribute("spt_search_type");
 
     var accepted_search_type = bvr.accepted_search_type;
@@ -650,7 +660,7 @@ spt.drop.clone_src_to_droppable = function(top_el, src_search_keys, src_display_
 
     // get the value
     var cell = top_el.getParent(".spt_cell_edit");
-    spt.table.accept_edit(cell, value, false);
+    spt.table.accept_edit(cell, value, false, {ignore_multi: true});
 }
 
 
@@ -690,7 +700,7 @@ spt.drop.sobject_drop_remove = function( evt, bvr ) {
     */
 
     var cell = top_el.getParent(".spt_cell_edit");
-    spt.table.accept_edit(cell, value, false);
+    spt.table.accept_edit(cell, value, false, {ignore_multi: true});
  
 }
     '''

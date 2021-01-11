@@ -10,5 +10,5 @@
 #
 #
 
-from sql_convert import *
+from .sql_convert import *
 

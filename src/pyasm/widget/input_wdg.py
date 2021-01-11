@@ -1827,8 +1827,6 @@ class PasswordWdg(BaseInputWdg):
         self.css = "inputfield"
         self.add_class(self.css)
         self.add_class("spt_input")
-        self.add_color("background", "background", 10)
-        self.add_color("color", "color")
         self.add_style("border: solid 1px %s" % self.get_color("border_color") )
         #self.add_style("width: 200px") 
 

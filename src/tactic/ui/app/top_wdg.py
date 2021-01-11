@@ -146,7 +146,6 @@ class TopWdg(Widget):
 
             }
 
-
             var dialog = evt.target.getParent(".MooDialog");
             if (dialog) {
                 targets.push(dialog);
@@ -455,6 +454,7 @@ class TopWdg(Widget):
 
             var name = bvr.src_el.getAttribute("name");
             var title = bvr.src_el.getAttribute("title");
+            var hash = bvr.src_el.getAttribute("hash");
 
             if (!name) {
                 name = title;
@@ -505,6 +505,11 @@ class TopWdg(Widget):
 
             try {
                 spt.tab.add_new(name, title, cls, kwargs);
+
+                if (hash) {
+                    spt.hash.set_hash( {}, title, hash);
+                }
+
             } catch(e) {
                 spt.alert(e);
             }
@@ -1740,6 +1745,16 @@ class CustomTopWdg(BaseRefreshWdg):
         #
         if accept == "application/json":
             value = hash_widget.get_display()
+            if isinstance(value, basestring):
+                try:
+                    data = jsonloads(value)
+                except:
+                    data = value
+            else:
+                data = value
+            if isinstance(data, dict) and data.get("error"):
+                raise Exception(data.get("error").get("message"))
+
             value = jsondumps(value)
             web.set_content_type(accept)
 
@@ -1771,6 +1786,7 @@ class CustomTopWdg(BaseRefreshWdg):
             current_type = web.get_content_type()
             if not current_type:
                 web.set_content_type("text/html")
+
 
         widget.add(value)
 

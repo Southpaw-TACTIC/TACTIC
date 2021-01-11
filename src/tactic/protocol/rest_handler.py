@@ -176,10 +176,14 @@ class APIRestHandler(BaseRestHandler):
         except Exception as e:
             import cherrypy
             cherrypy.response.status = "405"
+            try:
+                message = e.message
+            except:
+                message = e
             return {
                 "error": {
                     "args": e.args,
-                    "message": e.message,
+                    "message": message,
                     "type": e.__class__.__name__
                 }
             }

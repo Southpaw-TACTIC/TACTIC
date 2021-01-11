@@ -69,14 +69,16 @@ if os.name == "nt":
 else:
     # in other systems (e.g. unix) 'convert' is expected to be in PATH
     try:
-        convert_process = Popen(['convert','-version'], stdout=PIPE, stderr=PIPE)
-        convert_return,convert_err = convert_process.communicate()
-        if Common.IS_Pv3:
-            convert_return = convert_return.decode()
+        exe = Common.which("convert")
+        if exe:
+            convert_process = Popen([exe,'-version'], stdout=PIPE, stderr=PIPE)
+            convert_return,convert_err = convert_process.communicate()
+            if Common.IS_Pv3:
+                convert_return = convert_return.decode()
         
-        if 'ImageMagick' in convert_return:
-            convert_exe = 'convert'
-            HAS_IMAGE_MAGICK = True
+            if 'ImageMagick' in convert_return:
+                convert_exe = 'convert'
+                HAS_IMAGE_MAGICK = True
     except Exception as e:
         print(e)
         pass

@@ -2889,7 +2889,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'description': "determines whether or not showing the default layout switching options",
             'type': 'SelectWdg',
             'values': 'true|false',
-            'default': 'true (displays the default layout switching options)',
+            'default': 'true', #displays the default layout switching options
             'category': 'Optional'
         },
         "layout_switcher_custom_views": {

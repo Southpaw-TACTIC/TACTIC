@@ -536,7 +536,7 @@ class Sql(Base):
                 # immediately cache all of the columns in the database.  This
                 # is because get_column_info in Sqlite requires a PRAGMA
                 # statement which forces a transaction to commit
-                from database_impl import SqliteImpl
+                from .database_impl import SqliteImpl
                 SqliteImpl.cache_database_info(self)
 
 

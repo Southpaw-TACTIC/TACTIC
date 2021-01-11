@@ -473,8 +473,8 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         table.add(right)
 
 
-        left.add_color("background", "background3")
-        left.add_color("color", "color3")
+        left.add_color("background", "background2")
+        left.add_color("color", "color2")
         #left.add_style("max-width: 250px")
         # use width instead so the left div doesn't jiggle when clicked on
         left.add_style("width: 300px")
@@ -557,7 +557,6 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         title_wdg.add("<b>Views</b>")
         title_wdg.add_color("color", "color")
         title_wdg.add_color("background", "background", -10)
-        title_wdg.add_color("color", "color")
         title_wdg.add_style("padding: 15px 10px 10px 10px")
         title_wdg.add_style("height: 35px")
         left_div.add_style("width: 100%")
@@ -719,7 +718,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         content_div = DivWdg()
         content_div.add_class("spt_custom_layout_view_top")
         left_div.add_widget(content_div, "content")
-        content_div.add_color("color", "color3")
+        content_div.add_color("color", "color")
 
         content_div.add_style("padding-top: 5px")
 
@@ -812,8 +811,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     #icon.add_style("margin-left: -5px")
 
                     icon = IconWdg(folder, "FAR_FOLDER_OPEN", inline=False, size=12)
-                    icon.add_style("margin-top: 1px")
-                    icon.add_style("margin-left: -3px")
+                    icon.add_style("margin-top: 3px")
                     icon.add_style("margin-right: 3px")
 
 
@@ -851,7 +849,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     folder_header.add(title)
                     folder_header.add_style("margin-top: 3px")
                     folder_header.add_style("margin-bottom: 3px")
-                    folder_header.add_color("color", "color3")
+                    folder_header.add_color("color", "color2")
                     if folder == "-- no folder --":
                         folder_header.add_style("opacity: 0.5")
                         folder_header.add_style("font-style: italic")

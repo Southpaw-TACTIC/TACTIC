@@ -454,6 +454,7 @@ class BaseAppServer(Base):
 
             # show a restricted guest mode
             from pyasm.widget import WebLoginWdg, BottomWdg
+            from pyasm.web import Palette
             from tactic.ui.app import TitleTopWdg
 
             from pyasm.biz import Project
@@ -466,6 +467,25 @@ class BaseAppServer(Base):
             top = TitleTopWdg()
             widget.add(top)
             body = top.get_body()
+
+
+            # Declare CSS variables
+            palette = Palette.push_palette("DARK")
+            palette = Palette.get()
+            keys = palette.get_keys()
+            
+            css_vars = ""
+            for key in keys:
+                value = palette.color(key)
+                css_vars += "--spt_palette_%s: %s;" % (key, value)
+
+            style = ":root {%s}" % css_vars
+            
+            body.add(HtmlElement.style(style))
+
+
+
+
 
             has_site = False
 
@@ -654,10 +674,11 @@ class BaseAppServer(Base):
             Site.set_site(path_info.get("site"))
             project_code = path_info.get("project_code")
 
-
         # handle the case where the project does not exist
         project = Project.get(no_exception=True)
         if not project:
+            if self.hash and self.hash[0] == "REST":
+                raise Exception("No project found")
             from pyasm.widget import BottomWdg, Error404Wdg
             Project.set_project("admin")
             widget = Widget()

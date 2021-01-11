@@ -79,7 +79,7 @@ class BaseSQLConverter(object):
         for line in lines:
             f2.write(line)
 
-        for line in f.xreadlines():
+        for line in f.readlines():
             line = self.handle_line(line)
             if line == None:
                 continue

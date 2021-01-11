@@ -171,7 +171,7 @@ class CherryPyStartup(object):
                 # before batch, clean up the ticket with a NULL code
                 if os.getenv('TACTIC_MODE') != 'production':
                     try:
-                        sql.do_update('DELETE from "ticket" where "code" is NULL')
+                        sql.do_update('DELETE from "ticket" where "code" is NULL and category is NULL')
                     except SqlException as e:
                         print("Sql error has occured.")
                 else:
@@ -182,7 +182,7 @@ class CherryPyStartup(object):
                         start_port = 8081
                     if port and int(port) == start_port:
                         try:
-                            sql.do_update('DELETE from "ticket" where "code" is NULL')
+                            sql.do_update('DELETE from "ticket" where "code" is NULL and "category" is NULL')
                         except SqlException as e:
                             print("Sql error has occured.")
         except DatabaseException as e:
