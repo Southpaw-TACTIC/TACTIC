@@ -734,6 +734,8 @@ class BaseAppServer(Base):
         is_from_login = web.get_form_value("is_from_login")
         
         ticket_key = web.get_form_value("login_ticket")
+        if not ticket_key:
+            ticket_key = Container.get("TICKET")
 
         # attempt to login in with a ticket
         if not ticket_key and is_from_login !='yes':

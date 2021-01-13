@@ -205,6 +205,7 @@ def get_simple_cmd(self, meth, ticket, args):
 
 # wrap in a transaction
 def get_full_cmd(self, meth, ticket, args):
+
     class ApiClientCmd(Command):
 
         def get_title(self):

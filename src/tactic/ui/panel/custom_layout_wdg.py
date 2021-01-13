@@ -1438,8 +1438,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-
+    """
     def get_smart_header_context_menu_data(self):
+
         from pyasm.widget import IconWdg
         menu_data = { 'menu_tag_suffix': 'MAIN', 'width': 200 }
 
@@ -1504,6 +1505,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         menu_data['opt_spec_list'] = opt_spec_list
 
         return menu_data
+    """
 
 
 
