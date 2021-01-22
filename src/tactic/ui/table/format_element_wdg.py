@@ -124,7 +124,7 @@ class FormatElementWdg(SimpleTableElementWdg):
 
 
         if widget_type in ['integer', 'float', 'timecode', 'currency']:
-            if not self.jsityf:
+            if not self.justify:
                 top.add_style("float: right")
                 self.justify = "right"
 
