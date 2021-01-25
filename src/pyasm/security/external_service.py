@@ -19,6 +19,8 @@ import os
 from pyasm.common import jsonloads, jsondumps
 from pyasm.search import Search, SObject
 
+from .security import Site
+
 class ExternalService(SObject):
 
     SEARCH_TYPE = "config/authenticate"
@@ -33,9 +35,23 @@ class ExternalService(SObject):
 
     def get_base_dir(self):
         code = self.get_code()
-        base_dir = "%s/authenticate/%s" % (tacticenv.get_data_dir(), code)
+
+        base_dir = None
+
+        site = Site.get_site()
+        site_obj = Site.get()
+        if site != "default":
+            site_dir = site_obj.get_site_dir(site)
+            data_dir = "%s/tactic_data" % site_dir
+        else:
+            data_dir = tacticenv.get_data_dir()
+
+        if not base_dir:
+            base_dir = "%s/authenticate/%s" % (data_dir, code)
+
         if not os.path.exists(base_dir):
             os.makedirs(base_dir)
+
         return base_dir
 
 
