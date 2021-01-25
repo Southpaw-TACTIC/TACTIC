@@ -4023,7 +4023,7 @@ spt.table.get_server = function() {
     if (layout.site) {
         server.set_site(layout.site)
     }
-    if (layout.project) {
+    if (layout.project && layout.project != "sthpw") {
         server.set_project(layout.project);
     }
     return server;
