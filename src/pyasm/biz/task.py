@@ -1129,7 +1129,7 @@ class Task(SObject):
                 workflow = {}
             else:
                 workflow = process_sobject.get_json_value("workflow") or {}
-            version = workflow.get("version") or 1
+            version = workflow.get("version") or 2
             version_2 = version in [2, '2']
 
 
