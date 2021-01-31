@@ -361,8 +361,9 @@ class DropElementWdg(SimpleTableElementWdg):
     def _add_icon(self, sobject, item_div):
         '''add icon to the item_div'''
         if sobject.get_base_search_type() == 'sthpw/login_in_group':
-            icon = IconWdg(icon=IconWdg.USER)
+            icon = IconWdg(icon="FA_USER", size=12)
             item_div.add(icon)
+            icon.add_style("margin-right: 3px")
 
 
 class DropElementAction(DatabaseAction):

@@ -3168,7 +3168,7 @@ input[type=button].btn-block {
 .dropdown-item:hover, .dropdown-item:focus {
   color: #16181b;
   text-decoration: none;
-  background-color: #f8f9fa;
+  background-color: var(--spt_palette_background);
 }
 .dropdown-item.active, .dropdown-item:active {
   color: #fff;
@@ -5479,7 +5479,7 @@ a.close.disabled {
   background-clip: padding-box;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 0.3rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0.25rem 0.5rem var(--spt_palette_shadow);
   outline: 0;
 }
 
@@ -5567,7 +5567,7 @@ a.close.disabled {
   }
 
   .modal-content {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0.5rem 1rem var(--spt_palette_shadow);
   }
 
   .modal-sm {
@@ -14289,6 +14289,9 @@ h6 {
   transform-origin: 0 0;
   will-change: transform, opacity;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: var(--spt_palette_background2);
+  color: var(--spt_palette_color2);
 }
 @media (min-width: 768px) {
   .dropdown-menu {
@@ -14336,6 +14339,7 @@ h6 {
   line-height: 1;
   text-overflow: ellipsis;
   word-wrap: break-word;
+  color: var(--spt_palette_color2);
 }
 .dropdown-menu .dropdown-item.active, .dropdown-menu .dropdown-item:active {
   background-color: inherit;

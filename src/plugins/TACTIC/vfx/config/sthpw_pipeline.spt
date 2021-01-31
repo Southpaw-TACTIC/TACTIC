@@ -20,7 +20,7 @@ insert.set_value('pipeline', """<pipeline>
 </pipeline>
 """)
 insert.set_value('project_code', """vfx""")
-insert.set_value('search_type', """prod/asset""")
+insert.set_value('search_type', """vfx/asset""")
 insert.set_value('timestamp', """2007-06-27 23:16:02""")
 insert.set_value('use_workflow', True)
 #-- End Entry --#
@@ -50,7 +50,7 @@ insert.set_value('pipeline', """<pipeline>
 </pipeline>
 """)
 insert.set_value('project_code', """vfx""")
-insert.set_value('search_type', """prod/shot""")
+insert.set_value('search_type', """vfx/shot""")
 insert.set_value('timestamp', """2007-06-27 23:16:02""")
 insert.set_value('use_workflow', True)
 #-- End Entry --#
