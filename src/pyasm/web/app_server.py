@@ -341,7 +341,7 @@ class BaseAppServer(Base):
         except Exception as e:
             print("AppServer Exception: ", e)
             raise
-            return self.handle_not_logged_in()
+            #return self.handle_not_logged_in()
 
 
         guest_mode = Config.get_value("security", "guest_mode")
@@ -355,6 +355,9 @@ class BaseAppServer(Base):
 
         # if not logged in, then log in as guest
         if not is_logged_in:
+            if self.hash and self.hash[0] == "REST":
+                raise Exception("Permission Denied")
+
             if not allow_guest:
                 return self.handle_not_logged_in()
             else:
@@ -741,6 +744,22 @@ class BaseAppServer(Base):
         if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
+        # cherrypy
+        import cherrypy
+        headers = web.get_request_headers()
+        authorization = headers.get("X-Authorization")
+        if authorization and authorization.startswith("Bearer "):
+            parts = authorization.split(" ")
+            assert(parts[0]) == "Bearer"
+            ticket_key = parts[1]
+
+
+        print("---")
+        print(headers)
+        print("---")
+
+
+
 
         # We can define another place to look at ticket values and use
         # that. ie: Drupal session key
@@ -834,8 +853,9 @@ class BaseAppServer(Base):
                 login_cmd.execute()
                 ticket_key = security.get_ticket_key()
 	
-        # clear the password
-        web.set_form_value('password','')
+        # clear the password from the form data
+        if web.has_form_key("password"):
+            web.set_form_value('password','')
 
         if session_key:
             web.set_cookie("login_ticket", ticket_key)

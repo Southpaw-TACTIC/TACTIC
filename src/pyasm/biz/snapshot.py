@@ -13,7 +13,7 @@
 __all__ = ["Snapshot","SnapshotType","SObjectNotFoundException"]
 
 
-import os, string, types
+import os
 import re
 
 from pyasm.common import Container, Xml, Environment, Common, Config
@@ -23,6 +23,7 @@ from .file import File, FileRange, FileGroup
 
 import six
 basestring = six.string_types
+
 
 class SObjectNotFoundException(Exception):
     pass
@@ -1174,13 +1175,13 @@ class Snapshot(SObject):
             assert mode in ['move', 'copy', 'preallocate', 'upload', 'manual','inplace']
 
         # file_path can be an array of files:
-        if type(file_path) != types.ListType:
+        if not isinstance(file_path, list):
             is_array = False
             file_paths = [file_path]
         else:
             is_array = True
             file_paths = file_path
-        if type(file_type) != types.ListType:
+        if not isinstance(file_type, list):
             file_types = [file_type]
         else:
             file_types = file_type

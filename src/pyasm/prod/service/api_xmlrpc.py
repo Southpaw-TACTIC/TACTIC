@@ -14,13 +14,10 @@ from __future__ import print_function
 __all__ = ["ApiXMLRPC", 'profile_execute', 'ApiClientCmd','ApiException', 'RemoteApiException', "API_MODE"]
 
 import decimal
-import shutil, os, types, sys
-try:
-    import _thread as thread
-    types.DictType = type({})
-except:
-    # Python 2.7
-    import thread
+import os
+import sys
+import shutil
+from six.moves import _thread as thread
 import re
 import random
 import datetime
@@ -680,7 +677,7 @@ def trace_decorator(meth):
 
             # TODO: this should move to a common ticket handling function
             # This code is similar to init()
-            if type(ticket) == types.DictType:
+            if isinstance(ticket, dict):
                 language = ticket.get("language")
                 if language:
                     self.set_language(language)
@@ -857,7 +854,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         assert ticket
       
         # if the project code is in the ticket, then set the project
-        if type(ticket) == types.DictType:
+        if isinstance(ticket, dict):
             site = ticket.get("site")
             project_code = ticket.get("project")
             language = ticket.get("language")
@@ -929,7 +926,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         sobjects = []
         for search_key in search_keys:
             # if it is a dict type, the extract the search type
-            if type(search_key) == types.DictType:
+            if isinstance(search_key, dict):
                 search_key = search_key.get('__search_key__')
                 if not search_key:
                     raise ApiException("Not a valid search key [%s]" % search_key)
@@ -1364,7 +1361,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
 
 
-        if type(message) == types.DictType:
+        if isinstance(message, dict):
             message = jsondumps(message)
 
         # go low level
@@ -2711,7 +2708,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - a dictionary that represents values of the sobject in the
             form name/value pairs
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -2736,7 +2733,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - a dictionary that represents values of the sobject in the
             form name/value pairs
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -2832,7 +2829,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject - the parent sobject
         '''
 
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -2955,9 +2952,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         from pyasm.biz import SObjectConnection
 
-        if type(src_sobject) == types.DictType:
+        if isinstance(src_sobject, dict):
             src_sobject = src_sobject.get('__search_key__')
-        if type(dst_sobject) == types.DictType:
+        if isinstance(dst_sobject, dict):
             dst_sobject = dst_sobject.get('__search_key__')
 
         sobject_a = SearchKey.get_by_search_key(src_sobject)
@@ -2983,7 +2980,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         a list of connected sobjects
         '''
         from pyasm.biz import SObjectConnection
-        if type(src_sobject) == types.DictType:
+        if isinstance(src_sobject, dict):
             src_sobject = src_sobject.get('__search_key__')
 
         sobject_a = SearchKey.get_by_search_key(src_sobject)
@@ -3011,7 +3008,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         a single sobject
         '''
         from pyasm.biz import SObjectConnection
-        if type(src_sobject) == types.DictType:
+        if isinstance(src_sobject, dict):
             src_sobject = src_sobject.get('__search_key__')
 
         sobject_a = SearchKey.get_by_search_key(src_sobject)
@@ -3197,7 +3194,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         #web = WebContainer.get_web()
         #return web.get_client_handoff_dir(ticket)
-        if type(ticket) == types.DictType:
+        if isinstance(ticket, dict):
             ticket = ticket.get("ticket")
         env = Environment.get_env_object()
 
@@ -3281,7 +3278,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
 
         if snapshot_code.find("?") == -1:
@@ -3340,7 +3337,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if not snapshot_code:
             return ''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
 
         if snapshot_code.find("?") == -1:
@@ -3393,7 +3390,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -3426,7 +3423,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
 
         if snapshot_code.find("?") == -1:
@@ -3478,7 +3475,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -3627,7 +3624,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         the path where () expects the file to be checked into
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
 
@@ -4029,7 +4026,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             base_dir = web.get_server_handoff_dir()
 
 
-        if type(file_path) != types.ListType:
+        if not isinstance(file_path, list):
             file_path = file_path.replace("\\", "/")
             filename = os.path.basename(file_path)
             file_paths = ["%s/%s" % (base_dir, filename)]
@@ -4186,7 +4183,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return:
         the resulting snapshot
         '''
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -4306,7 +4303,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return:
         the resulting snapshot
         '''
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -4338,7 +4335,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''
         file_range = FileRange.get(file_range)
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -4480,7 +4477,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def lock_sobject(self, ticket, search_key, context):
         '''locks the context for checking in and out
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -4497,7 +4494,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def unlock_sobject(self, ticket, search_key, context):
         '''unlocks the context for checking in and out
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -4711,7 +4708,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         the resulting snapshot
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -4814,7 +4811,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         the resulting snapshot xml
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -4838,7 +4835,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         the resulting snapshot xml
         '''
 
-        if type(snapshot_code) == types.DictType:
+        if isinstance(snapshot_code, dict):
             snapshot_code = snapshot_code.get('code')
         snapshot = Snapshot.get_by_code(snapshot_code)
         if not snapshot:
@@ -4875,7 +4872,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         ''' 
 
 
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -4939,7 +4936,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         list of tasks created
         
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -4970,7 +4967,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         list of tasks
         '''
 
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
         sobject = Search.get_by_search_key(search_key)
 
@@ -5017,7 +5014,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return:
         list of input_tasks
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         task = SearchKey.get_by_search_key(search_key)
@@ -5051,7 +5048,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return:
         list of output
         '''
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         task = SearchKey.get_by_search_key(search_key)
@@ -5097,7 +5094,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         ''' 
 
 
-        if type(search_key) == types.DictType:
+        if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
 
         sobject = SearchKey.get_by_search_key(search_key)
@@ -5452,7 +5449,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         # set the web form values
         web = WebContainer.get_web()
-        if type(values) == types.DictType:
+        if isinstance(values, dict):
             for name, value in values.items():
                 web.set_form_value(name, value)
 
@@ -5765,7 +5762,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         try:
             # set the web form values
             web = WebContainer.get_web()
-            if type(values) == types.DictType:
+            if isinstance(values, dict):
                 for name, value in values.items():
                     web.set_form_value(name, value)
             else:

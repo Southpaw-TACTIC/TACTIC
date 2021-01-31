@@ -11,7 +11,7 @@
 #
 
 __all__ = ['PipelineToolWdg', 'PipelineToolCanvasWdg', 'PipelineEditorWdg', 'PipelinePropertyWdg','PipelineSaveCbk',
-'ConnectorInfoWdg', 'BaseInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg', 'NewConnectorInfoWdg']
+'ConnectorInfoWdg', 'BaseInfoWdg', 'DefaultInfoWdg', 'ProcessInfoWdg', 'PipelineInfoWdg', 'ProcessInfoCmd', 'ScriptSettingsWdg', 'PipelineDocumentWdg', 'PipelineDocumentItem', 'PipelineDocumentGroupLabel', 'PipelineDocumentItemWdg', 'PipelineSaveCmd', 'PipelinePropertyCbk', 'SessionalProcess', 'NewProcessInfoCmd', 'PipelineListWdg', 'NewConnectorInfoWdg']
 
 import re
 import os
@@ -3190,6 +3190,10 @@ class BaseInfoWdg(BaseRefreshWdg):
         SessionalProcess.add_relay_session_behavior(widget)
 
 
+    def get_node_type_description(self):
+        return "-- Node Description --"
+
+
     def get_description_wdg(self):
         desc_div = DivWdg()
 
@@ -3580,6 +3584,10 @@ class DefaultInfoWdg(BaseInfoWdg):
     '''Process info panel for manual nodes.'''
 
 
+    def get_node_type_description(self):
+        return "A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished"
+
+
     def get_display(self):
         process = self.kwargs.get("process")
         pipeline_code = self.kwargs.get("pipeline_code")
@@ -3620,7 +3628,7 @@ class DefaultInfoWdg(BaseInfoWdg):
         title_wdg = self.get_title_wdg(process, node_type)
         top.add( title_wdg )
 
-        top.add("<p>A manual process is a process where work is done by a person.  The status of the process is determined by tasks added to this process which must be manually set to complete when finished<p>")
+        top.add("<p>%s</p>" % self.get_node_type_description())
 
 
         desc_div = self.get_description_wdg()
@@ -3655,6 +3663,7 @@ class DefaultInfoWdg(BaseInfoWdg):
             # FIXME: this does not belong here
 
             from spt.modules.workflow import TaskButtonDetailSettingWdg, TaskDetailSettingWdg
+
             #detail_wdg = TaskDetailSettingWdg(
             detail_wdg = TaskButtonDetailSettingWdg(
                     **self.kwargs
@@ -7578,7 +7587,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
         project_code = Project.get_project_code()
 
         if self.kwargs.get("show_wrench") not in [False, "false"]:
-            button = ButtonNewWdg(title="Add node", icon="FA_WRENCH", sub_icon="FA_PLUS")
+            button = ButtonNewWdg(title="Add node", icon="FA_PLUS", sub_icon="FA_PLUS")
             button_row.add(button)
 
             button.add_behavior({

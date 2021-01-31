@@ -17,7 +17,7 @@ import cherrypy
 
 from pyasm.web.app_server import AppServer
 
-from pyasm.common import Environment, Container, Config, Common
+from pyasm.common import Environment, Container, Config, Common, jsonloads, jsondumps
 from pyasm.web import WebEnvironment, WebContainer, DivWdg, HtmlElement
 from pyasm.biz import Project
 from pyasm.security import Site
@@ -274,14 +274,18 @@ class CherryPyStartup(CherryPyStartup20):
                 # Add the path (e.g. /tactic/xxxx/yyyy/REST) to the base_url.
                 url = base_url + str(path)
                 print("Sending the request again to URL:" + str(url))
+                headers = cherrypy.request.headers
                 if request.method == 'POST':
-                    r = requests.post(url, data = request.body.params)
+                    body = request.body.read().decode()
+                    r = requests.post(url, headers=headers, data=body, params=request.params)
+                    cherrypy.response.status = 200
                     return r.text
                 elif request.method == 'GET':
                     # The query string is in cherrypy.request.params. So we are
                     # sending it as a POST request here without reconstructing the query string
                     # and sending it as GET.
-                    r = requests.post(url, data = request.params)
+                    r = requests.post(url, headers=headers, data=request.params)
+                    cherrypy.response.status = 200
                     return r.text
 
             """
@@ -393,7 +397,9 @@ class CherryPyStartup(CherryPyStartup20):
                 'tools.log_headers.on': True,
                 'server.log_file': "%s/tactic_log" % log_dir,
                 'server.max_request_body_size': 0,
-                #'server.socket_timeout': 60,
+
+                'server.socket_timeout': 0,
+
                 'response.timeout': 3600,
 
                 'tools.encode.on': True,

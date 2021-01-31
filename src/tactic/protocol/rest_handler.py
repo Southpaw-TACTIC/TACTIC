@@ -121,12 +121,32 @@ class APIRestHandler(BaseRestHandler):
         web = WebContainer.get_web()
 
         method = web.get_form_value("method")
-        print("method: %s" % method)
+
+        # process the data
+        data = web.get_form_data()
+
+        body_data = {}
+
+        import cherrypy
+        if cherrypy.request.body:
+            body = cherrypy.request.body.read()
+            if body:
+                body = jsonloads(body.decode())
+                print("body: ", body)
+
+                for name, value in body.items():
+                    if name == "method":
+                        method = value
+                    else:
+                        body_data[name] = value
+
+
 
         # make sure there are no special characters in there ie: ()
         p = re.compile('^\w+$')
         if not re.match(p, method):
             raise Exception("Method [%s] does not exist" % method)
+
 
 
         from tactic_client_lib import TacticServerStub
@@ -166,6 +186,11 @@ class APIRestHandler(BaseRestHandler):
                         kwargs[name] = value
                 else:
                     kwargs[key] = web.get_form_value(key)
+
+
+            for key, value in body_data.items():
+                kwargs[key] = value
+
 
             print("kwargs: %s" % kwargs)
             call = "server.%s(**kwargs)" % method

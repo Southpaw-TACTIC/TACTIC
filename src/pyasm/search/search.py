@@ -533,7 +533,6 @@ class Search(Base):
     def add_op_filters(self, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
-
         if isinstance(filters, basestring):
             filters =  filters.replace("&gt;", ">")
             filters =  filters.replace("&lt;", "<")
@@ -3486,6 +3485,12 @@ class SObject(object):
 
         if name in self.update_data or name not in self.data or value != self.data[name]:
 
+            self.update_data[name] = value
+            self.quoted_flag[name] = quoted
+
+        # dictionaries are always update because of possibility of difference
+        # that shallow != cannot detect
+        elif isinstance(value, dict):
             self.update_data[name] = value
             self.quoted_flag[name] = quoted
 
