@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "Ticket", "TicketHandler", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
+__all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "TacticSite", "Ticket", "TicketHandler", "Security", "NoDatabaseSecurity", "License", "LicenseException", "get_security_version"]
 
 import hashlib, os, sys, types, six
 #import tacticenv
