@@ -1638,6 +1638,14 @@ class SitePage(AppServer):
             return self.top
 
 
+        # REST API
+        if self.hash and self.hash[0] == 'GraphQL':
+            handler = 'tactic.protocol.APIGraphQLHandler' 
+            hash = "/".join(self.hash)
+            hash = "/%s" % hash
+            self.top = CustomTopWdg(url=None, hash=hash, handler=handler)
+            return self.top
+
 
 
         

@@ -273,10 +273,14 @@ class CherryPyStartup(CherryPyStartup20):
 
                 # Add the path (e.g. /tactic/xxxx/yyyy/REST) to the base_url.
                 url = base_url + str(path)
-                print("Sending the request again to URL:" + str(url))
+                print("Sending the request again to URL:", str(url))
                 headers = cherrypy.request.headers
                 if request.method == 'POST':
                     body = request.body.read().decode()
+                    headers = {
+                        "X-Authorization": headers.get("X-Authorization"),
+                        "Authorization": headers.get("Authorization")
+                    }
                     r = requests.post(url, headers=headers, data=body, params=request.params)
                     cherrypy.response.status = 200
                     return r.text

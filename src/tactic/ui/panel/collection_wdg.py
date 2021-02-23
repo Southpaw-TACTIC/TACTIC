@@ -1129,7 +1129,19 @@ class CollectionContentWdg(BaseRefreshWdg):
                 **self.kwargs
             )
         if sobjects:
+            # put the collectiosn at the end
+            x = []
+            collections = []
+            for sobject in sobjects:
+                if sobject.get("_is_collection") == True:
+                    collections.append(sobject)
+                else:
+                    x.append(sobject)
+            x.extend(collections)
+            sobjects = x
+
             tile.set_sobjects(sobjects)
+
         parent_dict = self.kwargs.get("parent_dict")
         has_parent=False
         if parent_dict:

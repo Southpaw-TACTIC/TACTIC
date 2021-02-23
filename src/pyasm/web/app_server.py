@@ -745,7 +745,9 @@ class BaseAppServer(Base):
         # cherrypy
         import cherrypy
         headers = web.get_request_headers()
-        authorization = headers.get("X-Authorization")
+        authorization = headers.get("Authorization")
+        if not authorization:
+            authorization = headers.get("X-Authorization")
         if authorization and authorization.startswith("Bearer "):
             parts = authorization.split(" ")
             assert(parts[0]) == "Bearer"
