@@ -149,6 +149,7 @@ class PluginBase(Command):
                 self.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
                 manifest_path = "%s/manifest.xml" % self.plugin_dir
 
+
             f = open(manifest_path, 'r')
             self.manifest = f.read()
             f.close()
