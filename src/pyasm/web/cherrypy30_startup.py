@@ -398,7 +398,7 @@ class CherryPyStartup(CherryPyStartup20):
                 'server.log_file': "%s/tactic_log" % log_dir,
                 'server.max_request_body_size': 0,
 
-                'server.socket_timeout': 0,
+                #'server.socket_timeout': 0,
 
                 'response.timeout': 3600,
 
