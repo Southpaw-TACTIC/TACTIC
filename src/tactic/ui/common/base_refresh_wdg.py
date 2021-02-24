@@ -184,7 +184,7 @@ class BaseRefreshWdg(Widget):
         '''provide the ability for a widget to serialize itself'''
 
         xml = Xml()
-        xml.create_doc("config")
+        xml.create_doc("onfig")
 
         # create the top element
         element = xml.create_element("element")
@@ -235,7 +235,7 @@ class BaseRefreshWdg(Widget):
    
 
     def get_persistent_key(self):
-        return "whatever"
+        return "__NO_KEY__"
 
     def commit(self):
         # store the widget persistently
@@ -276,8 +276,11 @@ class BaseRefreshWdg(Widget):
                     value = str(value)
             elif not isinstance(value, basestring):
                 value = str(value)
-            # replace " with ' in case the kwargs is a dict
-            value = value.replace('"', "'")
+
+            # replace " with &quot in case the kwargs is a dict
+            #value = value.replace('"', "'")
+            value = value.replace('"', '&quot;')
+
             if value:
                 widget.add_attr("spt_%s" % name, value)
 

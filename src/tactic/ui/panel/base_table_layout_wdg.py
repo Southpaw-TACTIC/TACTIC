@@ -771,7 +771,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-
     def element_process_sobjects(self, search):
         # give each widget a chance to alter the order post search
         for widget in self.widgets:

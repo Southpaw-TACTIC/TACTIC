@@ -533,7 +533,6 @@ class Search(Base):
     def add_op_filters(self, filters):
         '''method to add many varied filters to search.  This is used in
         the Client API, for example.'''
-
         if isinstance(filters, basestring):
             filters =  filters.replace("&gt;", ">")
             filters =  filters.replace("&lt;", "<")
