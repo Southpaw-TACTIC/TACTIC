@@ -11,7 +11,7 @@
 
 __all__ = [
 # DEPRECATED: these really haven't been used in a long time
-'PyMayaInit', 'PyFlashInit', 'PyPerforceInit', 'PyHoudiniInit', 'PyXSIInit',
+#'PyMayaInit', 'PyFlashInit', 'PyPerforceInit', 'PyHoudiniInit', 'PyXSIInit',
 ##
 
 'BottomWdg', 'DynTopWdg', 'DynBottomWdg', 'EditLinkWdg', 'ProdSettingLinkWdg', 'SubmissionLinkWdg', 'RenderLinkWdg', 'FileAppendLinkWdg',
@@ -48,6 +48,9 @@ from pyasm.common import jsonloads
 import os, re
 
 
+
+# DEPRECATED
+"""
 class PyMayaInit(Widget):
 
     def get_display(self):
@@ -207,7 +210,7 @@ class PyXSIInit(Widget):
         html.writeln("<script>app.project_code = '%s'</script>" % Project.get_project_code())
 
         return html
-
+"""
 
 
 
