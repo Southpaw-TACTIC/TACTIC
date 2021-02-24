@@ -1,0 +1,5 @@
+
+These javascript files are standalone API files for TACTIC.
+
+NOTE: although they do work, they are a concatenation of a number of files in spt_js folder.   There is still some clean up that has to occur as it is messy, however, the API can be used through these js files
+
