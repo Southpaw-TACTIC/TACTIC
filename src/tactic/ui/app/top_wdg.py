@@ -1632,13 +1632,18 @@ class SitePage(AppServer):
         # REST API
         if self.hash and self.hash[0] == 'REST':
             handler = 'tactic.protocol.APIRestHandler' 
+            if len(self.hash) > 1:
+                method = self.hash[1]
+                # communicated through web form value to the REST Handler
+                web = WebContainer.get_web()
+                web.set_form_value("method", method)
             hash = "/".join(self.hash)
             hash = "/%s" % hash
             self.top = CustomTopWdg(url=None, hash=hash, handler=handler)
             return self.top
 
 
-        # REST API
+        # GraphQL API
         if self.hash and self.hash[0] == 'GraphQL':
             handler = 'tactic.protocol.APIGraphQLHandler' 
             hash = "/".join(self.hash)

@@ -184,7 +184,7 @@ class BaseRefreshWdg(Widget):
         '''provide the ability for a widget to serialize itself'''
 
         xml = Xml()
-        xml.create_doc("onfig")
+        xml.create_doc("config")
 
         # create the top element
         element = xml.create_element("element")
