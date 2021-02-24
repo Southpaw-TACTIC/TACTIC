@@ -742,9 +742,6 @@ class BaseAppServer(Base):
         if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
-
-        ticket_key = None
-
         if not ticket_key:
             # cherrypy
             import cherrypy
@@ -760,12 +757,12 @@ class BaseAppServer(Base):
                 ticket_key = parts[1]
 
 
-        print("---")
-        print("headers: ")
-        import pprint
-        pprint.pprint( headers)
-        print("ticket: ", ticket_key)
-        print("---")
+        #print("---")
+        #print("headers: ")
+        #import pprint
+        #pprint.pprint( headers)
+        #print("ticket: ", ticket_key)
+        #print("---")
 
 
 
