@@ -760,7 +760,6 @@ class BaseAppServer(Base):
 
 
 
-
         # We can define another place to look at ticket values and use
         # that. ie: Drupal session key
         session_key = Config.get_value("security", "session_key")
