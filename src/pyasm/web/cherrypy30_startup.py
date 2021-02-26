@@ -278,8 +278,8 @@ class CherryPyStartup(CherryPyStartup20):
                 if request.method == 'POST':
                     body = request.body.read().decode()
                     headers = {
-                        "X-Authorization": headers.get("X-Authorization"),
-                        "Authorization": headers.get("Authorization")
+                        "Authorization": headers.get("Authorization"),
+                        "Accept": 'application/json'
                     }
                     r = requests.post(url, headers=headers, data=body, params=request.params)
                     print("... received response")
@@ -388,7 +388,7 @@ class CherryPyStartup(CherryPyStartup20):
         def CORS():
             #cherrypy.response.headers["Access-Control-Allow-Origin"] = "http://192.168.0.15:8100"
             cherrypy.response.headers["Access-Control-Allow-Origin"] = "*"
-            cherrypy.response.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
+            cherrypy.response.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
         cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
 
 
