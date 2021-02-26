@@ -282,6 +282,7 @@ class CherryPyStartup(CherryPyStartup20):
                         "Authorization": headers.get("Authorization")
                     }
                     r = requests.post(url, headers=headers, data=body, params=request.params)
+                    print("... received response")
                     cherrypy.response.status = 200
                     return r.text
                 elif request.method == 'GET':

@@ -359,10 +359,10 @@ class BaseAppServer(Base):
                 import cherrypy
                 import pprint
                 pprint.pprint(cherrypy.request.headers)
-                cherrypy.response.status = 200
+                cherrypy.response.status = 403
+                raise Exception("Permission Denied")
                 return
 
-                #raise Exception("Permission Denied")
 
             if not allow_guest:
                 return self.handle_not_logged_in()
