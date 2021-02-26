@@ -356,7 +356,13 @@ class BaseAppServer(Base):
         # if not logged in, then log in as guest
         if not is_logged_in:
             if self.hash and self.hash[0] == "REST":
-                raise Exception("Permission Denied")
+                import cherrypy
+                import pprint
+                pprint.pprint(cherrypy.request.headers)
+                cherrypy.response.status = 200
+                return
+
+                #raise Exception("Permission Denied")
 
             if not allow_guest:
                 return self.handle_not_logged_in()
