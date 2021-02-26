@@ -263,7 +263,7 @@ class CherryPyStartup(CherryPyStartup20):
             # For REST requests, we will send the request again after registering the project.
             # NOTE: cherrypy.request.path_info only gives us the URL without the query string.
             # So path.endswith('/REST') will work both for GET and POST.
-            if path.endswith('/REST'):
+            if path.find('/REST') != -1:
                 import requests
                 base_url = 'http://localhost'
 

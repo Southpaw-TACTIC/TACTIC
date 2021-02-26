@@ -358,7 +358,6 @@ class IngestUploadWdg(BaseRefreshWdg):
         # Build list of process names
         process_names = set()
         from pyasm.biz import Pipeline
-        from pyasm.widget import SelectWdg
         search_type_obj = SearchType.get(self.search_type)
         base_type = search_type_obj.get_base_key()
 
@@ -433,15 +432,16 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             process_wdg.add("<hr/>")
 
-            title_wdg = DivWdg()
-            div.add(title_wdg)
-            title_wdg.add("Metadata")
-            title_wdg.add_style("margin-top: 20px")
-            title_wdg.add_style("font-size: 16px")
-            title_wdg.add_style("margin-bottom: 5px")
+            #title_wdg = DivWdg()
+            #div.add(title_wdg)
+            #title_wdg.add("Metadata")
+            #title_wdg.add_style("margin-top: 20px")
+            #title_wdg.add_style("font-size: 16px")
+            #title_wdg.add_style("margin-bottom: 5px")
 
             desc_wdg = DivWdg("The following metadata will be added to the ingested files.")
             desc_wdg.add_style("margin-bottom: 10px")
+            desc_wdg.add_style("margin-top: 20px")
             div.add(desc_wdg)
 
             from tactic.ui.panel import EditWdg
@@ -750,12 +750,15 @@ class IngestUploadWdg(BaseRefreshWdg):
         shelf_div.add(upload)
 
 
+        buttons_div = DivWdg()
+        shelf_div.add(buttons_div)
+        buttons_div.add_style("display: flex")
+        buttons_div.add_style("align-items: center")
 
-        button = ActionButtonWdg(title="Add Files to Queue", width=150, color="secondary")
+
+        button = ActionButtonWdg(title="Add Files", width=150, color="secondary")
         #button.add_style("float: right")
-        button.add_style("display: inline-block")
-        button.add_style("margin-top: -3px")
-        shelf_div.add(button)
+        buttons_div.add(button)
 
         button.add_behavior( {
             'type': 'load',
@@ -798,10 +801,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         button = ActionButtonWdg(title="Clear", color="secondary")
         #button.add_style("float: right")
-        button.add_style("display: inline-block")
-        button.add_style("margin-top: -3px")
         button.add_style("margin-left: 5px")
-        shelf_div.add(button)
+        buttons_div.add(button)
         button.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -833,9 +834,33 @@ class IngestUploadWdg(BaseRefreshWdg):
          '''
          } )
 
+
+
+        # add a selction for collections
+        """
+        collection_div = DivWdg()
+        collection_div.add_style("margin-left: 20px")
+
+        label = DivWdg("ADD TO COLECTION")
+        label.add_style("font-size", "0.9em")
+        label.add_style("opacity: 0.5")
+        collection_div.add(label)
+
+        select = SelectWdg(name="collection")
+        collection_div.add(select)
+        select.set_option("values", "reference|final|approved")
+        select.add_empty_option("-- Collection --")
+        select.add_style("width: auto")
+        buttons_div.add(collection_div)
+        """
+
+
+
+
+        # Add the ingest button
         ingest = self.get_ingest_button()
-        shelf_div.add(ingest)
-        ingest.add_style("float: right")
+        buttons_div.add(ingest)
+        ingest.add_style("margin-left: auto")
 
         shelf_div.add("<br clear='all'/>")
 
@@ -1160,14 +1185,9 @@ class IngestUploadWdg(BaseRefreshWdg):
     def get_ingest_button(self):
 
         div = DivWdg()
-       
-
 
         library_mode = self.kwargs.get("library_mode") or False
         dated_dirs = self.kwargs.get("dated_dirs") or False
-
-
-
 
 
         # NOTE: files variable is passed in automatically
@@ -1470,7 +1490,6 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         button.add_class("spt_ingest_btn")
-        upload_div.add("<br clear='all'/>")
 
 
         action_handler = self.kwargs.get("action_handler")
