@@ -356,7 +356,13 @@ class BaseAppServer(Base):
         # if not logged in, then log in as guest
         if not is_logged_in:
             if self.hash and self.hash[0] == "REST":
+                import cherrypy
+                import pprint
+                pprint.pprint(cherrypy.request.headers)
+                cherrypy.response.status = 403
                 raise Exception("Permission Denied")
+                return
+
 
             if not allow_guest:
                 return self.handle_not_logged_in()
@@ -744,20 +750,27 @@ class BaseAppServer(Base):
         if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
-        # cherrypy
-        import cherrypy
-        headers = web.get_request_headers()
-        authorization = headers.get("X-Authorization")
-        if authorization and authorization.startswith("Bearer "):
-            parts = authorization.split(" ")
-            assert(parts[0]) == "Bearer"
-            ticket_key = parts[1]
+        if not ticket_key:
+            # cherrypy
+            import cherrypy
+            headers = web.get_request_headers()
+            authorization = headers.get("Authorization")
+            if not authorization:
+                authorization = headers.get("X-Authorization")
+            if authorization and authorization.startswith("Bearer "):
+                parts = authorization.split(" ")
+                if parts[0] != "Bearer":
+                    raise Exception("Permission denied")
+
+                ticket_key = parts[1]
 
 
-        print("---")
-        print(headers)
-        print("---")
-
+        #print("---")
+        #print("headers: ")
+        #import pprint
+        #pprint.pprint( headers)
+        #print("ticket: ", ticket_key)
+        #print("---")
 
 
 

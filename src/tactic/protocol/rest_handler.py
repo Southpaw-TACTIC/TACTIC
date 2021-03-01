@@ -12,7 +12,7 @@
 
 __all__ = ['BaseRestHandler', 'TestCustomRestHandler', 'SObjectRestHandler','APIRestHandler']
 
-from pyasm.common import jsonloads
+from pyasm.common import jsonloads, jsondumps
 from tactic.ui.common import BaseRefreshWdg
 
 import re
@@ -197,7 +197,8 @@ class APIRestHandler(BaseRestHandler):
 
         print("call: %s" % call)
         try:
-            return eval(call)
+            ret = eval(call)
+            return ret
         except Exception as e:
             import cherrypy
             cherrypy.response.status = "405"

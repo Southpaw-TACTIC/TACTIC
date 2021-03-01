@@ -18,6 +18,21 @@ from pyasm.search.upgrade.project import *
 
 class SthpwUpgrade(BaseUpgrade):
 
+    #
+    # 4.8.0.a01
+    #
+
+    def upgrade_v4_8_0_b01_001(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "login" ADD COLUMN data jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "login" ADD COLUMN data json;
+            ''')
+
+
 
     #
     # 4.8.0.a01

@@ -2870,6 +2870,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                         var parent_collection_names = rtn_message['parent_collection_names'].join(", ");
                         var msg = "Collection [" + parent_name + " ] is a child of the source [" + parent_collection_names + "]";
                         spt.notify.show_message(msg);
+                        spt.panel.refresh_element(dst_el);
 
                         return;
                     }

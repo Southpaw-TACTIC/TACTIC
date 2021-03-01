@@ -263,7 +263,7 @@ class CherryPyStartup(CherryPyStartup20):
             # For REST requests, we will send the request again after registering the project.
             # NOTE: cherrypy.request.path_info only gives us the URL without the query string.
             # So path.endswith('/REST') will work both for GET and POST.
-            if path.endswith('/REST'):
+            if path.find('/REST') != -1:
                 import requests
                 base_url = 'http://localhost'
 
@@ -273,11 +273,16 @@ class CherryPyStartup(CherryPyStartup20):
 
                 # Add the path (e.g. /tactic/xxxx/yyyy/REST) to the base_url.
                 url = base_url + str(path)
-                print("Sending the request again to URL:" + str(url))
+                print("Sending the request again to URL:", str(url))
                 headers = cherrypy.request.headers
                 if request.method == 'POST':
                     body = request.body.read().decode()
+                    headers = {
+                        "X-Authorization": headers.get("X-Authorization"),
+                        "Authorization": headers.get("Authorization")
+                    }
                     r = requests.post(url, headers=headers, data=body, params=request.params)
+                    print("... received response")
                     cherrypy.response.status = 200
                     return r.text
                 elif request.method == 'GET':
@@ -398,7 +403,7 @@ class CherryPyStartup(CherryPyStartup20):
                 'server.log_file': "%s/tactic_log" % log_dir,
                 'server.max_request_body_size': 0,
 
-                'server.socket_timeout': 0,
+                #'server.socket_timeout': 0,
 
                 'response.timeout': 3600,
 
@@ -545,11 +550,11 @@ class CherryPyStartup(CherryPyStartup20):
                             continue
                         
                         latest_version = xml.get_value("manifest/data/version") or None
-                        if not latest_version:
-                            continue
+                        #if not latest_version:
+                        #    continue
 
-                        if version and latest_version == version:
-                            continue
+                        #if version and latest_version == version:
+                        #    continue
                         
                         order = xml.get_value("manifest/data/order") or '9'
                         order = int(order)
@@ -591,7 +596,8 @@ class CherryPyStartup(CherryPyStartup20):
                     last_version_update = x.get_value("last_version_update")
                     last_version_update = last_version_update.split("_")
                     last_version_update = ".".join(last_version_update)
-                    if last_version_update != newest_version:
+                    #if last_version_update != newest_version:
+                    if True:
                         db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
             

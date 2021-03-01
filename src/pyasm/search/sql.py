@@ -2991,6 +2991,7 @@ class Insert(object):
             value = 'NULL'
             quoted = False
 
+
         if not column_type and self.sql:
             # get column type from database
             column_types = self.impl.get_column_types(self.db_resource, self.table)

@@ -12,6 +12,9 @@
 __all__ = ['BaseFilterWdg', 'GeneralFilterWdg', 'HierarchicalFilterWdg', 'SObjectSearchFilterWdg', 'SubmissionFilterWdg', 'SnapshotFilterWdg', 'WorkHourFilterWdg', 'NotificationLogFilterWdg', 'ShotFilterWdg' ]
 
 import re
+import six
+basestring = six.string_types
+
 from pyasm.common import Environment, Common, SetupException, Date, TacticException, TimeCode
 from pyasm.search import SearchType, Search, SObject, Sql, SearchInputException, SqlException, DbContainer, SearchException
 from pyasm.biz import Schema, Project
