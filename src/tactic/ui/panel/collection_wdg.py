@@ -879,6 +879,10 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
         search.add_filter("_is_collection", True)
 
+        # make sure the collections are order by name
+        search.remove_order_bys()
+        search.add_order_by("name")
+
         parent_key = self.kwargs.get("parent_key")
         if parent_key:
             parent = Search.get_by_search_key(parent_key)
@@ -1037,7 +1041,6 @@ class CollectionFolderWdg(BaseRefreshWdg):
         } )
 
 
-
         for collection in collections:
 
             collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"))
@@ -1104,6 +1107,14 @@ class CollectionContentWdg(BaseRefreshWdg):
             search2 = Search(collection_type)
             search2.add_column("search_code")
             search.add_search_filter("code", search2, op="not in")
+            sobjects = None
+        else:
+            sobjects = self.kwargs.get("sobjects")
+
+
+        # always go by id desc
+        self.kwargs['order_by'] = 'id desc'
+
 
 
         mode = "tile"
@@ -1112,7 +1123,6 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         # remove the sobjects from the kwargs so on refresh, the stringified sobjects
         # don't cause a stack trace
-        sobjects = self.kwargs.get("sobjects")
         if "sobjects" in self.kwargs:
             del(self.kwargs["sobjects"])
         if sobjects is None:

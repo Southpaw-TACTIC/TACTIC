@@ -12,7 +12,7 @@
 
 __all__ = ['BaseRestHandler', 'TestCustomRestHandler', 'SObjectRestHandler','APIRestHandler']
 
-from pyasm.common import jsonloads, jsondumps
+from pyasm.common import jsonloads, jsondumps, Environment
 from tactic.ui.common import BaseRefreshWdg
 
 import re
@@ -151,6 +151,11 @@ class APIRestHandler(BaseRestHandler):
 
         from tactic_client_lib import TacticServerStub
         server = TacticServerStub.get()
+
+        if method == "get_ticket":
+            security = Environment.get_security()
+            ticket = security.get_ticket_key()
+            return ticket
 
         if not eval("server.%s" % method):
             raise Exception("Method [%s] does not exist" % method)
