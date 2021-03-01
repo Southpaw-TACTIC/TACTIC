@@ -368,8 +368,9 @@ API_MODE = {
 
         # These are questionable?
         "get_widget_setting",
-        "set_widget_setting"
+        "set_widget_setting",
 
+        "simple_checkin",
         #"execute_python_script", # should this be allowed?
     },
     "query": {

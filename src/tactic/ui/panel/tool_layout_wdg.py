@@ -378,13 +378,12 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
 
         td = table.add_cell()
-        td.add_border(color="#EEE")
+        td.add_style("border-left: solid 1px %s" % td.get_color("border_color"))
         td.add_style("vertical-align: top")
 
         content = DivWdg()
         td.add(content)
         content.add_class("spt_tool_content")
-        content.add_border(color="#EEE")
         content.add_style("margin: -1px")
         content.add_style("height: auto")
         #content.add_style("padding: 0px 20px")
