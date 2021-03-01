@@ -1195,6 +1195,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             WebContainer.set_web(adapter)
 
             security = WebContainer.get_security()
+
             ticket = security.get_ticket_key()
 
         finally:
