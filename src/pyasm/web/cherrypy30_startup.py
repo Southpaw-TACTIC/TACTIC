@@ -282,6 +282,7 @@ class CherryPyStartup(CherryPyStartup20):
                         "Authorization": headers.get("Authorization")
                     }
                     r = requests.post(url, headers=headers, data=body, params=request.params)
+                    print("... received response")
                     cherrypy.response.status = 200
                     return r.text
                 elif request.method == 'GET':
@@ -549,11 +550,11 @@ class CherryPyStartup(CherryPyStartup20):
                             continue
                         
                         latest_version = xml.get_value("manifest/data/version") or None
-                        if not latest_version:
-                            continue
+                        #if not latest_version:
+                        #    continue
 
-                        if version and latest_version == version:
-                            continue
+                        #if version and latest_version == version:
+                        #    continue
                         
                         order = xml.get_value("manifest/data/order") or '9'
                         order = int(order)
@@ -595,7 +596,8 @@ class CherryPyStartup(CherryPyStartup20):
                     last_version_update = x.get_value("last_version_update")
                     last_version_update = last_version_update.split("_")
                     last_version_update = ".".join(last_version_update)
-                    if last_version_update != newest_version:
+                    #if last_version_update != newest_version:
+                    if True:
                         db_update.append(x.get_value("code")) 
                         need_upgrade[0] = True
             

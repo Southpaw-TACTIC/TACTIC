@@ -44,7 +44,7 @@ class SiteUpgradeCmd(Command):
 
                 python = Common.get_python()
                 for x in db_update:          
-                    args = [python, upgrade_db_path, "-y", "-p", x, "-s", site]
+                    args = [python, upgrade_db_path, "-f", "-y", "-p", x, "-s", site]
                     subprocess.call(args)
                
 

@@ -362,7 +362,6 @@ class BaseAppServer(Base):
                 cherrypy.response.status = 403
                 return
 
-                #raise Exception("Permission Denied")
 
             if not allow_guest:
                 return self.handle_not_logged_in()
@@ -769,7 +768,6 @@ class BaseAppServer(Base):
         #pprint.pprint( headers)
         #print("ticket: ", ticket_key)
         #print("---")
-
 
 
 
