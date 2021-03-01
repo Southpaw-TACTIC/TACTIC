@@ -360,7 +360,6 @@ class BaseAppServer(Base):
                 import pprint
                 pprint.pprint(cherrypy.request.headers)
                 cherrypy.response.status = 403
-                raise Exception("Permission Denied")
                 return
 
 
@@ -780,7 +779,6 @@ class BaseAppServer(Base):
 
         login = web.get_form_value("login")
         password = web.get_form_value("password")
-
 
         site_obj = Site.get()
         path_info = site_obj.get_request_path_info()

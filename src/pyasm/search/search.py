@@ -1744,6 +1744,9 @@ class Search(Base):
             else:
                 return False
 
+    def remove_order_bys(self):
+        self.select.order_bys = []
+
 
     def add_enum_order_by(self, column, values, table=None):
         self.select.add_enum_order_by(column, values, table)
