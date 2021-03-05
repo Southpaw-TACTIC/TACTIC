@@ -1,5 +1,4 @@
 ###########################################################
-        irint "values: ", values
 #
 # Copyright (c) 2012, Southpaw Technology
 #                     All Rights Reserved
