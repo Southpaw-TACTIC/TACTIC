@@ -99,6 +99,25 @@ display class, it will adopt the one defined here-->
     </element>
 
 
+    <element name="preview_25" title="Preview">
+        <display class="ThumbWdg">
+            <icon_size>25%</icon_size>
+      </display>
+    </element>
+
+    <element name="preview_50" title="Preview">
+        <display class="ThumbWdg">
+            <icon_size>50%</icon_size>
+      </display>
+    </element>
+
+    <element name="preview_150" title="Preview">
+        <display class="ThumbWdg">
+            <icon_size>150%</icon_size>
+      </display>
+    </element>
+
+
 
     <element name="images" edit='false'>
         <display class="ThumbWdg">

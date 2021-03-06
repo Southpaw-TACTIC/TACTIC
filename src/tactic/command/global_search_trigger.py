@@ -456,6 +456,9 @@ class GlobalSearchTrigger(Trigger):
         
         parent_sobject = Search.get_by_code(asset_stype, parent_code)
         child_sobject = Search.get_by_code(asset_stype, search_code)
+
+        if not child_sobject or not parent_sobject:
+            return
         
         collection_keywords_dict = {}
         parent_collection_keywords_dict = {}
