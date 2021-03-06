@@ -318,6 +318,17 @@ class BaseAppServer(Base):
         web = WebContainer.get_web()
 
 
+        import cherrypy
+        is_rest = False
+        if self.hash and self.hash[0] == "REST":
+            is_rest = True
+
+        if is_rest:
+            if cherrypy.request.method == "OPTIONS":
+                cherrypy.response.status = 200
+                return
+
+
         
         # guest mode
         #
@@ -355,12 +366,10 @@ class BaseAppServer(Base):
 
         # if not logged in, then log in as guest
         if not is_logged_in:
-            if self.hash and self.hash[0] == "REST":
-                import cherrypy
+            if is_rest:
                 import pprint
                 pprint.pprint(cherrypy.request.headers)
                 cherrypy.response.status = 403
-                return
 
 
             if not allow_guest:

@@ -275,7 +275,10 @@ class CherryPyStartup(CherryPyStartup20):
                 url = base_url + str(path)
                 print("Sending the request again to URL:", str(url))
                 headers = cherrypy.request.headers
-                if request.method == 'POST':
+                if request.method == 'OPTIONS':
+                    cherrypy.response.status = 200
+                    return
+                elif request.method == 'POST':
                     body = request.body.read().decode()
                     headers = {
                         "X-Authorization": headers.get("X-Authorization"),
