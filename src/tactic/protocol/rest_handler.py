@@ -147,15 +147,15 @@ class APIRestHandler(BaseRestHandler):
         if not re.match(p, method):
             raise Exception("Method [%s] does not exist" % method)
 
-
-
-        from tactic_client_lib import TacticServerStub
-        server = TacticServerStub.get()
-
+        # special handling for get_ticket
         if method == "get_ticket":
             security = Environment.get_security()
             ticket = security.get_ticket_key()
             return ticket
+
+
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
 
         if not eval("server.%s" % method):
             raise Exception("Method [%s] does not exist" % method)

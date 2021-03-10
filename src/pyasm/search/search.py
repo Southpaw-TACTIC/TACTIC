@@ -622,7 +622,7 @@ class Search(Base):
                     value = Search.eval(value, single=True)
 
 
-                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
+                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@', 'has')
                 #self.add_where( "\"%s\" %s '%s'" % (name,op,value))
                 if op in ('in', 'not in'):
                     if isinstance(value, basestring):
@@ -637,6 +637,15 @@ class Search(Base):
                 elif op in ['@@']:
                     value = value.replace('"', "'")
                     self.add_text_search_filter(name, value, table=table)
+
+                elif op in ['has']:
+                    if isinstance(value, basestring):
+                        values = value.split('|')
+                    else:
+                        values = value
+
+                    #self.add_keyword_filter(name, values, table=table)
+                    self.add_startswith_keyword_filter(name, values)
 
                 else:
                     if op == 'is after':
