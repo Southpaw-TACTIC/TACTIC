@@ -1670,6 +1670,7 @@ class MultiSelectWdg(SelectWdg):
         super(MultiSelectWdg,self).__init__(name, label=label, css=css)
         self.set_attr("multiple", "1")
         self.set_attr("size", "6")
+        self.set_attr("spt_is_multiple", "true")
 
     def _is_selected(self, value, current_values):
         if not current_values:
