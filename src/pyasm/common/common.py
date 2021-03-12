@@ -752,13 +752,18 @@ class Common(Base):
 
 
 
-    def get_dir_info(dir, skip_dir_details=False, file_range=None):
+    def get_dir_info(dir, skip_dir_details=False, file_range=None, follow_symlinks=True):
         '''Finds the disk size of a path'''
 
         info = {}
 
         count = 0
         dir_size = 0
+
+
+        if follow_symlinks and os.path.islink(dir):
+            dir = os.path.realpath(dir)
+
 
         if dir.find("##") != -1:
             dir_size = 0

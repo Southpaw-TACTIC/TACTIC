@@ -13,7 +13,17 @@ spt.mouse = {};
 
 spt.mouse.get_mouse_btn = function( evt )
 {
-    var btn = evt.button;
+    // Mootools 1.6: evt.button is no longer there
+    if (typeof(evt.button) == 'undefined') {
+        if (evt.rightClick == false) {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    let btn = evt.button;
     if( spt.browser.is_IE() ) {
         if( btn | 1 ) { btn = 0; }          // left mouse button mask is set
         else if( btn | 2 ) { btn = 1; }     // middle mouse button mask is set
@@ -126,6 +136,8 @@ spt.mouse._click_core_action = function( evt, bvr_type )
         }
     }
 
+
+
     var target_el = spt.get_event_target( evt );
 
     // -- DISABLING FOR NOW -- Check for popup focus for this click ...
@@ -154,7 +166,6 @@ spt.mouse._click_core_action = function( evt, bvr_type )
         else {
             bvr_list_ok = spt.mouse.get_input_validated_bvr_list( evt, bvrs[ bvr_type ] );
         }
-
 
         for( var b=0; b < bvr_list_ok.length; b++ )
         {

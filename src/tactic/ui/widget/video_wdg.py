@@ -31,6 +31,22 @@ class VideoWdg(BaseRefreshWdg):
         'width': 'The width to display the video',
         'height': 'The height to display the video',
         'poster': 'Link to an image for the poster representing the video',
+
+        'autoplay': {
+            'description': 'Start playing video immediately',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': 10,
+            'category': 'Options'
+        },
+
+        'loop': {
+            'description': 'Play video in loop mode',
+            'type': 'SelectWdg',
+            'values': 'true|false',
+            'order': 11,
+            'category': 'Options'
+        }
     }
 
     def init(self):
@@ -60,6 +76,7 @@ class VideoWdg(BaseRefreshWdg):
         preload = self.kwargs.get("preload")
         controls = self.kwargs.get("controls")
         autoplay = self.kwargs.get("autoplay")
+        loop = self.kwargs.get("loop")
 
         video = self.video
         top.add(video)
@@ -95,17 +112,19 @@ class VideoWdg(BaseRefreshWdg):
         if poster:
             video.add_attr("poster", poster)
 
+        if loop in [True, 'true']:
+            video.add_attr("loop", controls)
+
         if preload == None:
             preload = "auto"
         elif preload == False:
             preload = "none"
 
-
-        autoplay = "false"
+        if autoplay in [True, 'true']:
+            video.add_attr("autoplay", autoplay)
 
         video.add_attr("preload", preload)
 
-        #video.add_attr("autoplay", autoplay)
         if controls not in [False, 'false']:
             video.add_attr("controls", "controls")
 

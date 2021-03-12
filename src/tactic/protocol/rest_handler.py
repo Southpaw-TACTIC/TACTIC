@@ -12,12 +12,15 @@
 
 __all__ = ['BaseRestHandler', 'TestCustomRestHandler', 'SObjectRestHandler','APIRestHandler']
 
-from pyasm.common import jsonloads, jsondumps
+from pyasm.common import jsonloads, jsondumps, Environment, Container
 from tactic.ui.common import BaseRefreshWdg
 
 import re
 
 class BaseRestHandler(BaseRefreshWdg):
+
+    def authenticate(self):
+        raise Exception("Must override authenticate")
 
     def get_display(self):
 
@@ -106,8 +109,29 @@ class SObjectRestHandler(BaseRestHandler):
 
 
 class APIRestHandler(BaseRestHandler):
+
     def get_content_type(self):
         return "application/json"
+
+
+    def get_body(self):
+        return self.body
+
+
+    def get_body(self):
+
+        body = Container.get("REST:body")
+        if body == None:
+            import cherrypy
+            if cherrypy.request.body:
+                body = cherrypy.request.body.read()
+                if body:
+                    body = jsonloads(body.decode())
+                    Container.put("REST:body", body)
+
+        return body
+
+
 
     def GET(self):
 
@@ -127,18 +151,15 @@ class APIRestHandler(BaseRestHandler):
 
         body_data = {}
 
-        import cherrypy
-        if cherrypy.request.body:
-            body = cherrypy.request.body.read()
-            if body:
-                body = jsonloads(body.decode())
-                print("body: ", body)
+        body = self.get_body()
+        if body:
+            #print("body: ", body)
 
-                for name, value in body.items():
-                    if name == "method":
-                        method = value
-                    else:
-                        body_data[name] = value
+            for name, value in body.items():
+                if name == "method":
+                    method = value
+                else:
+                    body_data[name] = value
 
 
 
@@ -147,6 +168,11 @@ class APIRestHandler(BaseRestHandler):
         if not re.match(p, method):
             raise Exception("Method [%s] does not exist" % method)
 
+        # special handling for get_ticket
+        if method == "get_ticket":
+            security = Environment.get_security()
+            ticket = security.get_ticket_key()
+            return ticket
 
 
         from tactic_client_lib import TacticServerStub

@@ -546,8 +546,7 @@ class HtmlElement(Widget):
             # representation of a behavior specification dictionary
             self.behaviors.append( self.convert_behavior_str(bvr_spec) )
         else:
-            raise Exception( "Behavior specification should be a dictionary, %s spec is not supported." %
-                             type(bvr_spec) )
+            raise Exception( "Behavior specification should be a dictionary, %s spec is not supported." % type(bvr_spec) )
 
         count = Container.get("Widget:bvr_count")
         if not count:

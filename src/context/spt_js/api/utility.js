@@ -18,9 +18,9 @@ spt.api = {}
 //
 // Utility functions for the api
 //
-spt.api.Utility = new Class( {
-} )
-
+//spt.api.Utility = new Class( {
+//} )
+spt.api.Utility = {};
 
 
 // Method to get all of the input values under an element.

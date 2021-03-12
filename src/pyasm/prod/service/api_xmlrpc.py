@@ -202,6 +202,7 @@ def get_simple_cmd(self, meth, ticket, args):
 
 # wrap in a transaction
 def get_full_cmd(self, meth, ticket, args):
+
     class ApiClientCmd(Command):
 
         def get_title(self):
@@ -367,8 +368,9 @@ API_MODE = {
 
         # These are questionable?
         "get_widget_setting",
-        "set_widget_setting"
+        "set_widget_setting",
 
+        "simple_checkin",
         #"execute_python_script", # should this be allowed?
     },
     "query": {
@@ -1195,6 +1197,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             WebContainer.set_web(adapter)
 
             security = WebContainer.get_security()
+
             ticket = security.get_ticket_key()
 
         finally:

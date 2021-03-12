@@ -546,6 +546,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.search_limit.alter_search(search)
 
 
+
     def handle_search(self):
         '''method where the table handles it's own search on refresh'''
 

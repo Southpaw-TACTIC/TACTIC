@@ -1124,7 +1124,9 @@ Element.implement({
 		return this[this.isDisplayed() ? 'hide' : 'show']();
 	},
 
-	hide: function(){
+    // SOUTHPAW: this interferes with Bootstrap Material Design dropdowns
+    // (makes activator disappear);
+	hideX: function(){
 		var d;
 		try {
 			//IE fails here if the element is not in the dom

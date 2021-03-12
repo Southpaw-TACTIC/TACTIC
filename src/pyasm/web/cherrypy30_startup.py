@@ -275,8 +275,12 @@ class CherryPyStartup(CherryPyStartup20):
                 url = base_url + str(path)
                 print("Sending the request again to URL:", str(url))
                 headers = cherrypy.request.headers
-                if request.method == 'POST':
+                if request.method == 'OPTIONS':
+                    cherrypy.response.status = 200
+                    return
+                elif request.method == 'POST':
                     body = request.body.read().decode()
+                    print("cherrypy_startup body: ", body)
                     headers = {
                         "Authorization": headers.get("Authorization"),
                         "Accept": 'application/json'
@@ -388,7 +392,7 @@ class CherryPyStartup(CherryPyStartup20):
         def CORS():
             #cherrypy.response.headers["Access-Control-Allow-Origin"] = "http://192.168.0.15:8100"
             cherrypy.response.headers["Access-Control-Allow-Origin"] = "*"
-            cherrypy.response.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+            cherrypy.response.headers["Access-Control-Allow-Headers"] = "Origin,X-Requested-With,Content-Type,Accept,Authorization"
         cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
 
 
@@ -762,8 +766,9 @@ class CherryPyStartup(CherryPyStartup20):
             exec("cherrypy.root.tactic.%s = TacticIndex()" % project)
             exec("cherrypy.root.projects.%s = TacticIndex()" % project)
         except SyntaxError as e:
-            print(e.__str__())
             print("WARNING: skipping project [%s]" % project)
+            print("... possibly project or site contains special characters")
+            raise
 
 
 

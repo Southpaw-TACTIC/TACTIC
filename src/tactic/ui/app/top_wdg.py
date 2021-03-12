@@ -1633,6 +1633,7 @@ class SitePage(AppServer):
         if self.hash and self.hash[0] == 'REST':
             handler = 'tactic.protocol.APIRestHandler' 
             if len(self.hash) > 1:
+
                 method = self.hash[1]
                 # communicated through web form value to the REST Handler
                 web = WebContainer.get_web()
@@ -1765,6 +1766,7 @@ class CustomTopWdg(BaseRefreshWdg):
                     data = value
             else:
                 data = value
+            #print("data: ", data)
             if isinstance(data, dict) and data.get("error"):
                 raise Exception(data.get("error").get("message"))
 

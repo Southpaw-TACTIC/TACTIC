@@ -45,17 +45,17 @@ class DeleteToolWdg(BaseRefreshWdg):
 
         search_key = self.kwargs.get("search_key")
         search_keys = self.kwargs.get("search_keys")
-        if search_key:
-            try:
-                sudo = Sudo()
+        sudo = Sudo()
+        try:
+            if search_key:
                 sobject = Search.get_by_search_key(search_key)
                 sobjects = [sobject]
-            finally:
-                sudo.exit()
-            search_keys = [search_key]
-        elif search_keys:
-            sobjects = Search.get_by_search_keys(search_keys)
-            sobject = sobjects[0]
+                search_keys = [search_key]
+            elif search_keys:
+                sobjects = Search.get_by_search_keys(search_keys)
+                sobject = sobjects[0]
+        finally:
+            sudo.exit()
 
         if not sobjects or not sobject:
             msg =  "%s not found" %search_key

@@ -318,6 +318,16 @@ class BaseAppServer(Base):
         web = WebContainer.get_web()
 
 
+        import cherrypy
+        is_rest = False
+        if self.hash and self.hash[0] == "REST":
+            is_rest = True
+
+        if is_rest:
+            if cherrypy.request.method == "OPTIONS":
+                cherrypy.response.status = 200
+                return
+
         
         # guest mode
         #
@@ -355,14 +365,10 @@ class BaseAppServer(Base):
 
         # if not logged in, then log in as guest
         if not is_logged_in:
-            if self.hash and self.hash[0] == "REST":
-                import cherrypy
+            if is_rest:
                 import pprint
                 pprint.pprint(cherrypy.request.headers)
                 cherrypy.response.status = 403
-                raise Exception("Permission Denied")
-                return
-
 
             if not allow_guest:
                 return self.handle_not_logged_in()
@@ -742,15 +748,20 @@ class BaseAppServer(Base):
         web = WebContainer.get_web()
         is_from_login = web.get_form_value("is_from_login")
         
+        is_rest = False
+        if self.hash and self.hash[0] == "REST":
+            is_rest = True
+
         ticket_key = web.get_form_value("login_ticket")
+        if not ticket_key:
+            ticket_key = Container.get("TICKET")
 
         # attempt to login in with a ticket
         if not ticket_key and is_from_login !='yes':
             ticket_key = web.get_cookie("login_ticket")
 
-        if not ticket_key:
-            # cherrypy
-            import cherrypy
+
+        if is_rest and not ticket_key:
             headers = web.get_request_headers()
             authorization = headers.get("Authorization")
             if not authorization:
@@ -763,22 +774,46 @@ class BaseAppServer(Base):
                 ticket_key = parts[1]
 
 
+        login = ""
+        password = ""
+        if is_rest and not ticket_key:
+
+            authorization = headers.get("Authorization")
+            if authorization and authorization.startswith("Basic "):
+                parts = authorization.split(" ")
+                if parts[0] != "Basic":
+                    raise Exception("Permission denied")
+
+                login, password = parts[1].split(":")
+
+
+            # use body
+            body = Container.get("REST:body")
+            if not login and body == None:
+                import cherrypy
+                body = cherrypy.request.body.read()
+                body = jsonloads( body.decode() )
+                Container.put("REST:body", body)
+            if body:
+                login = body.get('login')
+                password = body.get('password')
+                web.set_form_value("login", login)
+                web.set_form_value("password", password)
+
+
+
+        else:
+            login = web.get_form_value("login")
+            password = web.get_form_value("password")
+
         #print("---")
         #print("headers: ")
         #import pprint
         #pprint.pprint( headers)
         #print("ticket: ", ticket_key)
+        #print("login: ", login)
+        #print("password: ", password)
         #print("---")
-
-
-
-        # We can define another place to look at ticket values and use
-        # that. ie: Drupal session key
-        session_key = Config.get_value("security", "session_key")
-
-        login = web.get_form_value("login")
-        password = web.get_form_value("password")
-
 
         site_obj = Site.get()
         path_info = site_obj.get_request_path_info()
@@ -792,10 +827,15 @@ class BaseAppServer(Base):
         else:
             site = web.get_form_value("site")
 
+
+        # We can define another place to look at ticket values and use
+        # that. ie: Drupal session key
+        session_key = Config.get_value("security", "session_key")
         if session_key:
             ticket_key = web.get_cookie(session_key)
             if ticket_key:
                 security.login_with_session(ticket_key, add_access_rules=False)
+
         elif login and password:
 
             # get the site for this user
@@ -818,6 +858,7 @@ class BaseAppServer(Base):
                 login_cmd.execute()
 
                 ticket_key = security.get_ticket_key()
+                print("ticket: ", ticket_key)
               
                 if not ticket_key:
                     if site:

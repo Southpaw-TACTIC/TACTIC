@@ -22,7 +22,9 @@ class JSIncludes(object):
         # add mootools
         "mootools/mootools-core-1.4.1-full-nocompat-yc.js",
         "mootools/mootools-more-1.4.0.1-yc.js",
-        "json2.js",
+        #"json2.js",
+        #"mootools/MooTools-Core-1.6.0.js",
+        #"mootools/MooTools-More-1.6.0.js",
     ]
 
 
@@ -82,7 +84,7 @@ class JSIncludes(object):
         "api/api.js",       # add in the new api
 
         # TEST
-        "mooScrollable/Scrollable.js",
+        #"mooScrollable/Scrollable.js",
 
         "chart/Chart.min.js",
         "chart/utils.js",

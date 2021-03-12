@@ -1368,9 +1368,6 @@ class WidgetConfigView(Base):
 
 
 
-
-
-    
     def get_by_search_type(search_type, view, use_cache=True, local_search=False,layout=None):
         '''gets all the widget configs that have the view asked for
         @keyparam: 
