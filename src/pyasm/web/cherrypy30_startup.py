@@ -280,7 +280,7 @@ class CherryPyStartup(CherryPyStartup20):
                     return
                 elif request.method == 'POST':
                     body = request.body.read().decode()
-                    print("body: ", body)
+                    print("cherrypy_startup body: ", body)
                     headers = {
                         "X-Authorization": headers.get("X-Authorization"),
                         "Authorization": headers.get("Authorization")

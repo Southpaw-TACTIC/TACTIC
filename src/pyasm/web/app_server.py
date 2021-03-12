@@ -775,19 +775,30 @@ class BaseAppServer(Base):
         login = ""
         password = ""
         if is_rest and not ticket_key:
-            import cherrypy
-            body = cherrypy.request.body.read()
-            print("body: ", body)
-
 
             authorization = headers.get("Authorization")
-            print("auth: ", authorization)
             if authorization and authorization.startswith("Basic "):
                 parts = authorization.split(" ")
                 if parts[0] != "Basic":
                     raise Exception("Permission denied")
 
                 login, password = parts[1].split(":")
+
+
+            # use body
+            body = Container.get("REST:body")
+            if not login and body == None:
+                import cherrypy
+                body = cherrypy.request.body.read()
+                body = jsonloads( body.decode() )
+                Container.put("REST:body", body)
+            if body:
+                login = body.get('login')
+                password = body.get('password')
+                web.set_form_value("login", login)
+                web.set_form_value("password", password)
+
+
 
         else:
             login = web.get_form_value("login")
@@ -798,8 +809,8 @@ class BaseAppServer(Base):
         #import pprint
         #pprint.pprint( headers)
         #print("ticket: ", ticket_key)
-        print("login: ", login)
-        print("password: ", password)
+        #print("login: ", login)
+        #print("password: ", password)
         #print("---")
 
         site_obj = Site.get()
@@ -845,6 +856,7 @@ class BaseAppServer(Base):
                 login_cmd.execute()
 
                 ticket_key = security.get_ticket_key()
+                print("ticket: ", ticket_key)
               
                 if not ticket_key:
                     if site:
