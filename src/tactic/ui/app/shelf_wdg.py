@@ -863,10 +863,11 @@ class AceEditorWdg(BaseRefreshWdg):
 
         select = SelectWdg("keybinding")
         select.add_style("width: 100px")
-        #options_div.add(select)
-        select.set_option("labels", "Ace|Vim|Emacs")
-        select.set_option("values", "ace|vim|emacs")
-        select.set_value("10pt")
+        select.add_style("display: inline")
+        options_div.add(select)
+        select.set_option("labels", "Ace|Vim|Emacs|Sublime")
+        select.set_option("values", "ace|vim|emacs|sublime")
+        select.set_value("ace")
         select.add_behavior( {
             'type': 'change',
             'editor_id': self.get_editor_id(),
@@ -874,9 +875,15 @@ class AceEditorWdg(BaseRefreshWdg):
             spt.ace_editor.set_editor(bvr.editor_id);
             var editor = spt.ace_editor.editor;
             var editor_id = spt.ace_editor.editor_id;
-
-            var vim = require("ace/keyboard/keybinding/vim").Vim;
-            editor.setKeyboardHandler(vim)
+            var value = bvr.src_el.value;
+            var keyboard_handler = "";
+            
+            if(value == "ace")
+                keyboard_handler = null;
+            else
+                keyboard_handler = "ace/keyboard/" + bvr.src_el.value;
+            
+            editor.setKeyboardHandler(keyboard_handler)
             '''
         } )
 
