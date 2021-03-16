@@ -12,6 +12,7 @@
 __all__ = ['ShelfWdg', 'ShelfEditWdg', 'ScriptEditorWdg']
 
 from pyasm.common import Environment, Common, SecurityException, Container
+from pyasm.biz import ProjectSetting
 from pyasm.search import Search
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget, WebContainer
 from pyasm.widget import TextAreaWdg, ButtonWdg, TextWdg, HiddenWdg, ProdIconButtonWdg, SelectWdg, IconWdg
@@ -833,14 +834,17 @@ class AceEditorWdg(BaseRefreshWdg):
 
             '''
         } )
- 
+
+        # check if a font size is set in project settings
+        font_size = ProjectSetting.get_value_by_key("editor_font_size") or "9pt"
+
         select = SelectWdg("font_size")
         select.add_style("width: 100px")
         select.add_style("display: inline")
         options_div.add(select)
         select.set_option("labels", "8 pt|9 pt|10 pt|11 pt|12 pt|14 pt|16 pt")
         select.set_option("values", "8pt|9pt|10pt|11pt|12pt|14pt|16pt")
-        select.set_value("10pt")
+        select.set_value(font_size)
         select.add_behavior( {
             'type': 'change',
             'editor_id': self.get_editor_id(),
@@ -848,9 +852,9 @@ class AceEditorWdg(BaseRefreshWdg):
             spt.ace_editor.set_editor(bvr.editor_id);
             var editor = spt.ace_editor.editor;
             var editor_id = spt.ace_editor.editor_id;
-
             var value = bvr.src_el.value;
-            document.id(editor_id).setStyle("font-size", value)
+            
+            editor.setFontSize(value);
             //editor.resize();
             '''
         } )
@@ -859,10 +863,11 @@ class AceEditorWdg(BaseRefreshWdg):
 
         select = SelectWdg("keybinding")
         select.add_style("width: 100px")
-        #options_div.add(select)
-        select.set_option("labels", "Ace|Vim|Emacs")
-        select.set_option("values", "ace|vim|emacs")
-        select.set_value("10pt")
+        select.add_style("display: inline")
+        options_div.add(select)
+        select.set_option("labels", "Ace|Vim|Emacs|Sublime")
+        select.set_option("values", "ace|vim|emacs|sublime")
+        select.set_value("ace")
         select.add_behavior( {
             'type': 'change',
             'editor_id': self.get_editor_id(),
@@ -870,9 +875,15 @@ class AceEditorWdg(BaseRefreshWdg):
             spt.ace_editor.set_editor(bvr.editor_id);
             var editor = spt.ace_editor.editor;
             var editor_id = spt.ace_editor.editor_id;
-
-            var vim = require("ace/keyboard/keybinding/vim").Vim;
-            editor.setKeyboardHandler(vim)
+            var value = bvr.src_el.value;
+            var keyboard_handler = "";
+            
+            if(value == "ace")
+                keyboard_handler = null;
+            else
+                keyboard_handler = "ace/keyboard/" + bvr.src_el.value;
+            
+            editor.setKeyboardHandler(keyboard_handler)
             '''
         } )
 
@@ -1035,6 +1046,7 @@ class AceEditorWdg(BaseRefreshWdg):
             'type': 'load',
             'unique_id': self.get_editor_id(),
             'theme': theme,
+            'font_size': font_size,
             'cbjs_action': '''
 
 if (typeof(ace) == 'undefined') {
@@ -1315,6 +1327,8 @@ else {
     spt.ace_editor.editor_id = bvr.unique_id;
     spt.ace_editor.editor = editor;
     document.id(bvr.unique_id).editor = editor;
+    spt.ace_editor.editor.setFontSize(bvr.font_size);
+
 
 }
             '''
