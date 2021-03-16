@@ -602,6 +602,10 @@ class Search(Base):
 
             elif len(filter) == 3:
                 name, op, value = filter
+
+                if name is None or op is None or value in [None, ""]:
+                    continue
+
                
                 op = op.replace("lte", "<=")
                 op = op.replace("gte", ">=")
@@ -622,9 +626,43 @@ class Search(Base):
                     value = Search.eval(value, single=True)
 
 
-                assert op in ('like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@')
+                assert op in {'like', 'not like', '<=', '>=', '>', '<', 'is','is not', '~', '!~','~*','!~*','=','!=','in','not in','EQ','NEQ','EQI','NEQI','is after','is before','is on','@@','starts with', 'contains', 'does not contain', 'ends with', 'does not start with', 'does not end with'}
                 #self.add_where( "\"%s\" %s '%s'" % (name,op,value))
-                if op in ('in', 'not in'):
+
+
+                # moved from filter_wdg
+                if op == "is":
+                    self.add_filter(name, value)
+
+                elif op == "is not":
+                    self.add_op('begin')
+                    self.add_filter(name, value, op='!=')
+                    self.add_filter(name, None)
+                    self.add_op('or')
+
+                elif op == "contains":
+                    self.add_regex_filter(name, value, op="EQI")
+
+                elif op == "does not contain":
+                    self.add_op('begin')
+                    self.add_regex_filter(name, value, op="NEQI")
+                    self.add_filter(name, None)
+                    self.add_op('or')
+
+                elif op == "starts with":
+                    self.add_filter(name, "%s%%" % value, op="like")
+                elif op == "ends with":
+                    self.add_filter(name, "%%%s" % value, op="like")
+
+                elif op == "does not start with":
+                    self.add_filter(name, "%s%%" % value, op="not like")
+                elif op == "does not end with":
+                    self.add_filter(name, "%%%s" % value, op="not like")
+
+
+
+
+                elif op in ('in', 'not in'):
                     if isinstance(value, basestring):
                         values = value.split('|')
                     else:
@@ -655,6 +693,21 @@ class Search(Base):
                         self.add_day_filter(name, value)
                     else:
                         self.add_filter( name, value, op=op, quoted=quoted, table=table)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def add_day_filter(self, name, value):
