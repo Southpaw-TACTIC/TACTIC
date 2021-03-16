@@ -899,7 +899,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
         right.add_style("vertical-align: top")
         right.add_color("background", "background", -3)
         right.add_style("width: 100%")
-        right.add_style("height: calc(100vh - 130px)")
+        # right.add_style("height: calc(100vh - 130px)")
 
 
         right_div = DivWdg()
@@ -1106,7 +1106,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             # add the editor
             from tactic.ui.app import AceEditorWdg
-            editor = AceEditorWdg(width="100%", language="xml", code=html, show_options=False, editor_id='custom_layout_html')
+            editor = AceEditorWdg(width="100%", height="calc(100% - 31px)", language="xml", code=html, show_options=False, show_bottom=False, editor_id='custom_layout_html')
             self.editor_id = editor.get_editor_id()
             html_div.add(editor)
 
@@ -1234,7 +1234,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
             tab.add(mako_div)
             mako_div.set_name("python")
             
-            editor = AceEditorWdg(width="100%", language="python", code=mako, show_options=False, editor_id='custom_layout_mako')
+            editor = AceEditorWdg(width="100%", height="calc(100% - 31px)", language="python", code=mako, show_options=False, show_bottom=False, editor_id='custom_layout_mako')
             self.mako_editor_id = editor.get_editor_id()
             title_wdg = self.get_title_wdg("Python", self.mako_editor_id, is_on=True)
             
@@ -1254,7 +1254,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 tab.add(style_div)
                 style_div.set_name("Styles")
                 
-                editor = AceEditorWdg(width="100%", language="css", code=style, show_options=False, editor_id='custom_layout_css')
+                editor = AceEditorWdg(width="100%", height="calc(100% - 31px)", language="css", code=style, show_options=False, show_bottom=False, editor_id='custom_layout_css')
                 self.style_editor_id = editor.get_editor_id()
                 title_wdg = self.get_title_wdg("Style", self.style_editor_id, is_on=True)
                 
@@ -1547,10 +1547,12 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
          
                         editor_id = Common.generate_random_key()
                         editor = AceEditorWdg(
-                            width="100%", 
+                            width="100%",
+                            height="calc(100% - 31px)",
                             language="javascript", 
                             code=value, 
                             show_options=False, 
+                            show_bottom=False,
                             editor_id=editor_id,
                             dynamic_height=True
                         )
@@ -1571,7 +1573,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             callback_div.add(text)
             text.add_style("width: 100%")
-            text.add_style("height: 450px")
+            text.add_style("height: calc(100% - 31px)")
             text.add_style("min-height: 300px")
             text.add_style("font-size: 12px")
             text.add_style("font-family: courier")
@@ -1599,7 +1601,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
 
             kwargs_div.add(text)
             text.add_style("width: 100%")
-            text.add_style("height: 300px")
+            text.add_style("height: calc(100% - 31px)")
             text.add_style("min-height: 300px")
             text.add_style("font-size: 12px")
             text.add_style("font-family: courier")
