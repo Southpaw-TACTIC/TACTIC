@@ -676,6 +676,15 @@ class Search(Base):
                     value = value.replace('"', "'")
                     self.add_text_search_filter(name, value, table=table)
 
+                elif op in ['has']:
+                    if isinstance(value, basestring):
+                        values = value.split('|')
+                    else:
+                        values = value
+
+                    #self.add_keyword_filter(name, values, table=table)
+                    self.add_startswith_keyword_filter(name, values)
+
                 else:
                     if op == 'is after':
                         op = '>='
