@@ -927,18 +927,21 @@ TacticServerStub = function() {
 
 
     this.get_ticket = function(login, password, kwargs) {
-        var func_name = "get_ticket";
-        var client = new AjaxService( this.url, '' );
+        let func_name = "get_ticket";
+        let client = new AjaxService( this.url, '' );
 
-        var args = [login, password];
+        let args = [login, password];
         if (kwargs && kwargs.site)
             args.push(kwargs.site);
 
      
-        var ret_val = client.invoke( func_name, args );
+        let ret_val = client.invoke( func_name, args );
         ret_val = this._handle_ret_val(func_name, ret_val, 'string');
-        ret_val = ret_val.replace(/(\r\n|\n|\r)/gm, '');
-        return ret_val;
+        let ticket = ret_val.replace(/(\r\n|\n|\r)/gm, '');
+
+        this.set_ticket(ticket);
+
+        return ticket;
     }
 
 
