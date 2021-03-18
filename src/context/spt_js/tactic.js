@@ -2769,18 +2769,12 @@ TacticServerStub.get = function() {
 
         var env = spt.Environment.get();
         var login_ticket = env.get_ticket();
-        var url = env.get_api_url();
         var site = env.get_site();
         var project_code = env.get_project();
 
-        if (url) {
-            this.server.set_url(url);
-        } else {
-            let location = document.location;
-            let server = location.protocol + "//" + document.host;
-            this.server.set_server(server)
-
-        }
+        let location = document.location;
+        let server = location.protocol + "//" + location.host;
+        this.server.set_server(server)
  
         this.server.set_ticket(login_ticket);
         this.server.set_site(site);
