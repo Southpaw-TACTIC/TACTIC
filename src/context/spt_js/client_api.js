@@ -244,17 +244,17 @@ TacticServerStub = function() {
 
         [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
 
-        var func_name = "get_ticket";
-        var client = new AjaxService( this.url, '' );
+        let func_name = "get_ticket";
+        let client = new AjaxService( this.url, '' );
 
-        var args = [login, password];
+        let args = [login, password];
         if (kwargs && kwargs.site)
             args.push(kwargs.site);
 
     
         // handle asynchronous mode
         if (typeof(on_complete) != 'undefined' && on_complete != null) {
-            var self = this;
+            let self = this;
             client.set_callback( function(request) {
                 self.async_callback(client, request, on_error);
             } );
@@ -270,13 +270,15 @@ TacticServerStub = function() {
         // just do it synchronously
         else {
      
-            var ret_val = client.invoke( func_name, args );
+            let ret_val = client.invoke( func_name, args );
             ret_val = this._handle_ret_val(func_name, ret_val, 'string');
-            ret_val = ret_val.replace(/(\r\n|\n|\r)/gm, '');
+            let ticket = ret_val.replace(/(\r\n|\n|\r)/gm, '');
+
+            this.set_ticket(ticket);
+
+            return ticket;
         }
 
-
-        return ret_val;
     }
 
 

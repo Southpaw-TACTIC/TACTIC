@@ -1571,7 +1571,6 @@ class Common(Base):
 
 
 
-
 class KillProcessThread(threading.Thread):
     '''Kill a Windows process'''
     def __init__(self, pid):
