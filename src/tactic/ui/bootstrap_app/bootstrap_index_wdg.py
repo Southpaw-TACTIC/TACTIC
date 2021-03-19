@@ -919,8 +919,10 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         project_select_wdg = BootstrapProjectSelectWdg()
         button_row.add(project_select_wdg)
 
-        gear_menu_wdg = BootstrapIndexGearMenuWdg()
-        button_row.add(gear_menu_wdg)
+        security = Environment.get_security()
+        if security.check_access("builtin", "index_gear_menu", "allow"):
+            gear_menu_wdg = BootstrapIndexGearMenuWdg()
+            button_row.add(gear_menu_wdg)
 
         user_wdg = self.get_user_wdg()
         right_wdg.add(user_wdg)
