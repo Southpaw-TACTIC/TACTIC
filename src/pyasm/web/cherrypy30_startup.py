@@ -197,7 +197,13 @@ class CherryPyStartup(CherryPyStartup20):
             config = startup.config
             startup.register_project(project_code, config, site=site, need_upgrade=need_upgrade)
 
+            # handle change upload on first call
             if path.endswith("/UploadServer/"):
+
+                if request.method == 'OPTIONS':
+                    cherrypy.response.status = 200
+                    return
+
                 from pyasm.widget import UploadServerWdg
                 try:
                     # clear the buffer
@@ -212,7 +218,6 @@ class CherryPyStartup(CherryPyStartup20):
 
             else:
                 widget = "ERROR 404"
-
 
             return widget
 
