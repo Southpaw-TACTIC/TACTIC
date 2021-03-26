@@ -1487,7 +1487,19 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
 
 
 class BootstrapIndexWdg(PageNavContainerWdg):
-  
+
+    ARGS_KEYS = {
+
+    'start_link': {
+        'description': 'Default startup view',
+        'type': 'TextWdg',
+        'category': 'Display',
+        'order': 1
+    }
+
+    }
+
+
     def _get_tab_save_state(self):
         return "main_body_tab_state"
 
@@ -1508,7 +1520,8 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
     def _get_startup_xml(self):
         security = Environment.get_security()
-        start_link = security.get_start_link()
+        # Use start_link from group security or from kwargs
+        start_link = security.get_start_link() or self.kwargs.get('start_link')
         if start_link:
             return """
                 <element name="main_body" title="Startup">
@@ -1520,16 +1533,16 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         
 
 
-        #start_view = "vfx.home.main"
-        start_view = ""
-        if start_view:
-            return """
-                <element name="main_body" title="Startup">
-                    <display class="tactic.ui.panel.CustomLayoutWdg">
-                        <view>%s</view>
-                    </display>
-                </element>
-            """ % start_view
+        # start_view = "vfx.home.main"
+        # start_view = ""
+        # if start_view:
+        #     return """
+        #         <element name="main_body" title="Startup">
+        #             <display class="tactic.ui.panel.CustomLayoutWdg">
+        #                 <view>%s</view>
+        #             </display>
+        #         </element>
+        #     """ % start_view
 
 
         security = Environment.get_security()
