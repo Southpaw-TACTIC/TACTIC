@@ -631,10 +631,7 @@ class Search(Base):
 
 
                 # moved from filter_wdg
-                if op == "is":
-                    self.add_filter(name, value)
-
-                elif op == "is not":
+                if op == "is not":
                     self.add_op('begin')
                     self.add_filter(name, value, op='!=')
                     self.add_filter(name, None)

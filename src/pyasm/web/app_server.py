@@ -311,6 +311,15 @@ class BaseAppServer(Base):
 
     def _get_display(self):
 
+
+
+        # if the request is to handle CORS, then return OK
+        if cherrypy.request.method == "OPTIONS":
+            cherrypy.response.status = 200
+            return
+
+
+
         # set up the security object
         from pyasm.security import Security, Sudo
         from pyasm.biz import Project
@@ -322,11 +331,6 @@ class BaseAppServer(Base):
         is_rest = False
         if self.hash and self.hash[0] == "REST":
             is_rest = True
-
-        if is_rest:
-            if cherrypy.request.method == "OPTIONS":
-                cherrypy.response.status = 200
-                return
 
         
         # guest mode
@@ -778,6 +782,7 @@ class BaseAppServer(Base):
         password = ""
         if is_rest and not ticket_key:
 
+            headers = web.get_request_headers()
             authorization = headers.get("Authorization")
             if authorization and authorization.startswith("Basic "):
                 parts = authorization.split(" ")
@@ -809,7 +814,7 @@ class BaseAppServer(Base):
         #print("---")
         #print("headers: ")
         #import pprint
-        #pprint.pprint( headers)
+        #headers = web.get_request_headers()
         #print("ticket: ", ticket_key)
         #print("login: ", login)
         #print("password: ", password)
