@@ -157,7 +157,7 @@ class TopWdg(Widget):
                 var el = spt.body.focus_elements[i];
                 var hit = false;
 
-                if (spt.has_class(el, 'spt_popup_top')) {
+                if (spt.has_class(el,'spt_popup_top') && !spt.has_class(el, 'spt_popup_focus') ) {
                     continue;
                 }
 
@@ -1372,8 +1372,11 @@ class TitleTopWdg(TopWdg):
 
         web = WebContainer.get_web()
 
+        self.body.add_style("position: fixed")
+        self.body.add_style("top: 0px")
+        self.body.add_style("left: 0px")
         self.body.add_style("background-attachment: fixed !important")
-        self.body.add_style("height: 100%")
+        self.body.add_style("height: 100vh")
         self.body.add_style("width: 100%")
         self.body.add_style("margin: 0px")
         self.body.add_style("overflow: auto")

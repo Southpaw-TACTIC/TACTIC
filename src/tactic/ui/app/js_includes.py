@@ -89,6 +89,8 @@ class JSIncludes(object):
         "chart/Chart.min.js",
         "chart/utils.js",
 
+        "upload.js",
+
 
 
     ]

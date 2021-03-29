@@ -798,7 +798,6 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
 spt.popup.open = function( popup_el_or_id, use_safe_position )
 {
 
-    
     var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     if( ! popup ) { return; }
     $(popup_el_or_id).modal("show");
@@ -811,24 +810,18 @@ spt.popup.open = function( popup_el_or_id, use_safe_position )
         }
         spt.behavior.add(backdrop, bvr);
     }
+
+
+    /* Disapper on click out
+    popup.on_complete = function(el) {
+        spt.popup.close(el);
+    }
+    popup.addClass("spt_popup_focus");
+    spt.body.add_focus_element(popup);
+    */
+
     return;
 
-    spt.popup._position( popup, use_safe_position );
-    spt.show( popup.getElement('.spt_popup_content') );
-
-    spt.show( popup );
-
-    spt.popup.show_background();
-
-
-    // @@@
-    var rsw_content_box = popup.getElement(".SPT_RSW_CONTENT_BOX");
-    if( rsw_content_box ) {
-        alert("WARNING: resize_scroll dependency");
-        spt.resize_scroll.adjust_for_scroll( rsw_content_box );
-    }
-
-    spt.popup.get_focus( popup );
 }
 
 
