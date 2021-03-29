@@ -314,6 +314,7 @@ class BaseAppServer(Base):
 
 
         # if the request is to handle CORS, then return OK
+        import cherrypy
         if cherrypy.request.method == "OPTIONS":
             cherrypy.response.status = 200
             return
