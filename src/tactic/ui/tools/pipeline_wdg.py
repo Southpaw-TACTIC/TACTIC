@@ -1656,10 +1656,12 @@ class PipelineListWdg(BaseRefreshWdg):
         ''' % color)
 
 
+
         pipeline_div.add_behavior( {'type': 'click_up',
 
             'event': 'pipeline_%s|click' %pipeline_code,
             'cbjs_action': '''
+
              var top = bvr.src_el.getParent(".spt_pipeline_list_top");
              var items = top.getElements(".spt_pipeline_selected");
 
@@ -2161,16 +2163,66 @@ class PipelineInfoWdg(BaseRefreshWdg):
         title_wdg = DivWdg()
         title_wdg.add_style("margin: -20px 0px 10px 0px")
         top.add(title_wdg)
+        title_wdg.add_style("padding: 15px 10px")
 
         name = pipeline.get("name")
         if not name:
             name = pipeline.get("code")
-        title_wdg.add(name)
-        title_wdg.add_style("font-size: 16px")
-        #title_wdg.add_style("font-weight: bold")
-        #title_wdg.add_color("background", "background", -5)
-        title_wdg.add_style("padding: 15px 10px")
-        title_wdg.add("<hr/>")
+
+        title_label = DivWdg()
+        title_label.add("Name:")
+        title_label.add_style("font-size: 1.0em")
+        title_label.add_style("font-weight: bold")
+        #title_label.add_style("opacity: 0.6")
+        title_wdg.add(title_label)
+
+        title_text = TextInputWdg(name="name")
+        title_wdg.add(title_text)
+        title_text.set_value(name)
+        title_text.add_style("font-size: 1.2em")
+
+        title_text.add_behavior( {
+            'type': 'load',
+            'cbjs_action': '''
+
+            var node = spt.pipeline.get_info_node();
+
+            var data = spt.pipeline.get_data();
+            var group_name = spt.pipeline.get_current_group();
+            var name = data.names[group_name] || "";
+            bvr.src_el.value = name;
+
+            '''
+        } )
+
+        title_text.add_behavior( {
+            'type': 'blur',
+            'search_key': pipeline.get_search_key(),
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_pipeline_tool_top");
+
+            var name = bvr.src_el.value;
+            var node = spt.pipeline.get_info_node();
+
+            var group_name = spt.pipeline.get_current_group();
+            var group = spt.pipeline.get_group(group_name);
+            group.set_display_name(name);
+
+            spt.named_events.fire_event('pipeline|change', {});
+
+            let text = top.getElement(".spt_pipeline_editor_current2").getElement(".spt_pipeline_link");
+            text.innerHTML = name;
+
+
+
+            '''
+        } )
+
+
+
+
+
+
 
 
         top.add( self.get_description_wdg(pipeline) )
@@ -2235,7 +2287,7 @@ class PipelineInfoWdg(BaseRefreshWdg):
         description = pipeline.get_value("description")
         desc_div = DivWdg()
         desc_div.add_style("margin: 10px 10px 20px 10px")
-        desc_div.add("<div><b>Details:</b></div>")
+        desc_div.add("<div><b>Description:</b></div>")
         text = TextAreaWdg()
         desc_div.add(text)
         text.add_style("width: 100%")
@@ -7778,14 +7830,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
             spt.api.load_popup("Add New Workflow", class_name, kwargs);
         }
         else {
-            var data = spt.pipeline.get_data();
-            var color = data.colors[group_name];
-            var description = data.descriptions[group_name];
+            let data = spt.pipeline.get_data();
+            let name = data.names[group_name];
+            let color = data.colors[group_name];
+            let description = data.descriptions[group_name];
 
-            var group = spt.pipeline.get_group(group_name);
-            var default_template = data.default_templates[group_name];
-            var node_index = group.get_data("node_index");
-            var pipeline_data = {
+            let group = spt.pipeline.get_group(group_name);
+            let default_template = data.default_templates[group_name];
+            let node_index = group.get_data("node_index");
+            let pipeline_data = {
                 default_template: default_template,
                 node_index: node_index
             };
@@ -7799,8 +7852,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     continue;
                 }
 
-                var name = spt.pipeline.get_node_name(node);
-                name = name.replace(/&/g, "&amp;amp;");
+                let node_name = spt.pipeline.get_node_name(node);
+                node_name = node_name.replace(/&/g, "&amp;amp;");
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var node_description = kwargs.description;
                 var on_saves = node.on_saves;
@@ -7818,7 +7871,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
 
                 kwargs.description = node_description;
                 kwargs.version = version;
-                node_kwargs[name] = kwargs;
+                node_kwargs[node_name] = kwargs;
             }
 
             server = TacticServerStub.get();
@@ -7837,13 +7890,15 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     search_key: search_key,
                     pipeline:xml,
                     color:color,
+                    name: name,
                     description: description,
                     project_code: bvr.project_code,
                     node_kwargs: node_kwargs,
                     pipeline_data: pipeline_data
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
-                spt.named_events.fire_event('pipeline|save', {});
+                // calls itself?
+                //spt.named_events.fire_event('pipeline|save', {});
 
                 // reset all of the changes on the node
                 for (var i=0; i<nodes.length; i++) {
@@ -8506,6 +8561,9 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
             text_name = "completion"
             text = TextInputWdg(name=text_name, type="number")
+            text.add_style("width: 60px")
+            text.add_attr("max", "100")
+            text.add_attr("min", "0")
             text.add_class(text_name)
             self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
 
@@ -8666,10 +8724,6 @@ class PipelinePropertyWdg(BaseRefreshWdg):
 
 
 
-        # ---- Divider -----
-        tr, td = table.add_row_cell()
-        td.add("<hr/>")
-
         # Color
         table.add_row()
         td = table.add_cell('Color:')
@@ -8721,30 +8775,14 @@ class PipelinePropertyWdg(BaseRefreshWdg):
             '''
         } )
 
-        # text = TextWdg(text_name)
-        # color = ColorInputWdg(text_name)
-        # color.set_input(text)
-        # text.add_class(text_name)
-        # self.add_session_behavior(text, "text", "spt_pipeline_properties_top", text_name)
-        # text.add_behavior( {
-        #     'type': 'load',
-        #     'cbjs_action': '''
-
-        #     var node = spt.pipeline.get_info_node();
-        #     var properties = spt.pipeline.get_node_kwarg(node, "properties");
-        #     if (properties) {
-        #         var color = properties.color;
-        #         if (color)
-        #             bvr.src_el.setStyle("background", color);
-        #     }
-
-        #     '''
-        # } )
 
         td = table.add_cell(color)
         th.add_style("height: 40px")
 
         # label
+        # DEPRECATED: this doesn't do anything.  The label is now on the
+        # spt_process table (has been for a long time)
+        """
         table.add_row()
         td = table.add_cell('Label:')
 
@@ -8757,36 +8795,7 @@ class PipelinePropertyWdg(BaseRefreshWdg):
         td.add_style("height: 40px")
 
         tr, td = table.add_row_cell()
-
-        # button = ActionButtonWdg(title="Save", tip="Confirm properties change. Remember to save workflow at the end.", color="primary", width=200)
-        # td.add("<hr/>")
-        # td.add(button)
-        # #button.add_style("float: right")
-        # #button.add_style("margin-right: 20px")
-        # button.add_style("margin: 15px auto")
-        # td.add("<br clear='all'/>")
-        # td.add("<br clear='all'/>")
-        # button.add_behavior( {
-        # 'type': 'click_up',
-        # 'properties': properties,
-        # 'cbjs_action': '''
-        # var top = bvr.src_el.getParent(".spt_pipeline_properties_top");
-        # var node = spt.pipeline.get_selected_node();
-        # if (!node) {
-        #     alert("No node selected");
-        #     return;
-        # }
-        # spt.pipeline_properties.set_properties2(top, node, bvr.properties);
-
-
-        # var top = bvr.src_el.getParent(".spt_popup");
-        # spt.popup.close(top);
-
-        # spt.named_events.fire_event('pipeline|change', {});
-
-        # spt.named_events.fire_event('pipeline|save_button', bvr );
-        # '''
-        # } )
+        """
 
 
 
@@ -8993,6 +9002,7 @@ class PipelineSaveCbk(Command):
         pipeline_sk = self.kwargs.get('search_key')
 
         pipeline_xml = self.kwargs.get('pipeline')
+        pipeline_name = self.kwargs.get('name')
         pipeline_color = self.kwargs.get('color')
         pipeline_desc = self.kwargs.get('description')
         project_code = self.kwargs.get('project_code')
@@ -9027,6 +9037,8 @@ class PipelineSaveCbk(Command):
         pipeline_xml = xml.to_string()
         server = TacticServerStub.get(protocol='local')
         data =  {'pipeline':pipeline_xml, 'color':pipeline_color}
+        if pipeline_name:
+            data['name'] = pipeline_name
         if pipeline_desc:
             data['description'] = pipeline_desc
         if project_code:

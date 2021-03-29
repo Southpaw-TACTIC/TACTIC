@@ -402,6 +402,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
 
         canvas_title.add_class("spt_pipeline_editor_current2")
         canvas_title.add_class("hand")
+        """
         canvas_title.add_relay_behavior( {
             'type': 'click',
             'bvr_match_class': 'spt_pipeline_link',
@@ -428,6 +429,46 @@ class PipelineCanvasWdg(BaseRefreshWdg):
             spt.pipeline.fit_to_canvas();
             '''
         } )
+        """
+
+        widget_key = canvas_title.generate_widget_key('tactic.ui.tools.PipelineInfoWdg', inputs={'pipeline_code': '__WIDGET_UNKNOWN__'})
+        canvas_title.add_behavior({
+            'type': 'click',
+            "widget_key": widget_key,
+            'cbjs_action': '''
+
+            var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
+            spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
+            var info = toolTop.getElement(".spt_pipeline_tool_info");
+
+            if (!info) return;
+
+            var nodes = spt.pipeline.get_all_nodes();
+            for (var i=0; i<nodes.length; i++) {
+                var node = nodes[i];
+                spt.pipeline.unselect_node(node);
+            }
+
+            var group_name = spt.pipeline.get_current_group();
+
+            var class_name = bvr.widget_key;
+            var kwargs = {
+                pipeline_code: group_name,
+            }
+
+            var callback = function() {
+                spt.named_events.fire_event('pipeline|show_info', {});
+            }
+            spt.panel.load(info, class_name, kwargs, {}, {callback: callback});
+
+
+            '''
+
+            })
+
+
+
+
 
         canvas_title.add_relay_behavior( {
             'type': 'mouseover',
@@ -2886,11 +2927,13 @@ spt.pipeline.first_init = function(bvr) {
     }
     var sobjs = server.eval(expr);
 
+    data.names = {};
     data.colors = {};
     data.descriptions = {};
     data.default_templates = {};
     for (var i = 0; i < sobjs.length; i++) {
         var sobj = sobjs[i];
+        data.names[sobj[key]] = sobj.name;
         data.colors[sobj[key]] = sobj.color;
         data.descriptions[sobj[key]] = sobj.description;
 
@@ -6572,7 +6615,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
 // Group class
 spt.pipeline.Group = function(name) {
-    this.name = name;
+    this.name = name; // this is now really code
     this.nodes = [];
     this.connectors = [];
     this.dangling_connectors = [];
@@ -6693,6 +6736,16 @@ spt.pipeline.Group = function(name) {
     this.set_node_type = function(node_type) {
         this.node_type = node_type;
     }
+
+
+
+    this.set_display_name = function(display_name) {
+        this.display_name = display_name;
+
+        var data = spt.pipeline.get_data();
+        data.names[this.get_name()] = display_name;
+    }
+
 
     this.set_description = function(description) {
         this.description = description;
