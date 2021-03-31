@@ -7851,9 +7851,8 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     continue;
                 }
 
-                var name = spt.pipeline.get_node_name(node);
-                //name = name.replace(/&/g, "&amp;amp;");
-                name = encodeURIComponent(name);
+                let node_name = spt.pipeline.get_node_name(node);
+                node_name = encodeURIComponent(node_name);
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var node_description = kwargs.description;
                 var on_saves = node.on_saves;

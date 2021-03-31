@@ -543,7 +543,7 @@ class IconCreator(object):
 
         thumb_web_size = self.get_web_file_size()
 
-        web_file_name = base + "_web.jpg"
+        web_file_name = base + "_web.png"
         if self.web_path:
             tmp_web_path = "%s/%s" % (self.web_path, web_file_name)
         else:
@@ -558,8 +558,7 @@ class IconCreator(object):
                 if not Common.IS_Pv3 and isinstance(self.file_path, unicode):
                     self.file_path = self.file_path.encode('utf-8')
                 import shlex, subprocess
-                subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%self.file_path,\
-                        "%s"%tmp_icon_path])
+                subprocess.call([convert_exe, '-geometry','80','-raise','2x2','%s[0]'%self.file_path,"%s" % tmp_icon_path])
 
                 # Shrink image based on web_file_size
                 # (preserves aspect ratio regardless)
@@ -574,6 +573,7 @@ class IconCreator(object):
 
             except Exception as e:
                 print("Error extracting from pdf [%s]" % e)
+                dsfadsf
                 return
 
         # check that it actually got created
