@@ -3714,9 +3714,8 @@ class DefaultInfoWdg(BaseInfoWdg):
 
             # FIXME: this does not belong here
 
-            from spt.modules.workflow import TaskButtonDetailSettingWdg, TaskDetailSettingWdg
+            from spt.modules.workflow import TaskButtonDetailSettingWdg
 
-            #detail_wdg = TaskDetailSettingWdg(
             detail_wdg = TaskButtonDetailSettingWdg(
                     **self.kwargs
             )
