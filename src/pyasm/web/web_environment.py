@@ -236,6 +236,11 @@ class WebEnvironment(Environment):
         request_str = request_url.to_string()
         request_str = request_str.rstrip("/Index")
 
+        # guest is never in admin
+        if Environment.get_user_name() == "guest":
+            return False
+
+
         if project_code == "admin":
             return True
 

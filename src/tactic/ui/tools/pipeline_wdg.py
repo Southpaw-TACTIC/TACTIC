@@ -7851,8 +7851,9 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     continue;
                 }
 
-                let node_name = spt.pipeline.get_node_name(node);
-                node_name = node_name.replace(/&/g, "&amp;amp;");
+                var name = spt.pipeline.get_node_name(node);
+                //name = name.replace(/&/g, "&amp;amp;");
+                name = encodeURIComponent(name);
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var node_description = kwargs.description;
                 var on_saves = node.on_saves;
@@ -9012,6 +9013,7 @@ class PipelineSaveCbk(Command):
 
         from pyasm.common import Xml
         xml = Xml()
+        pipeline_xml = pipeline_xml.replace("&", '&amp;')
         xml.read_string(pipeline_xml)
         process_nodes = xml.get_nodes("pipeline/process")
         settings_list = []

@@ -51,8 +51,6 @@ class UploadServerWdg(Widget):
                     file_name = file_path
                     file_name = file_path.lstrip("/")
 
-                print("file_name: ", file_name)
-
                 if not file_name:
                     file_name = self.get_file_name(field_storage)
                 items = self.dump(field_storage, file_name)
