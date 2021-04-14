@@ -156,6 +156,9 @@ spt.tab.get_header = function(name) {
 spt.tab.resize_headers = function() {
 
     var top = spt.tab.top;
+    if (!top) {
+        return
+    }
     var header_top = top.getElement(".spt_tab_header_top");
 
     var offset = 120;

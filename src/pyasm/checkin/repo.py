@@ -160,3 +160,52 @@ class TacticRepo(BaseRepo):
                 file_object.commit(triggers="none")
             
 
+
+
+__all__.append("S3Repo")
+class S3Repo(BaseRepo):
+
+    def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[], commit=False):
+
+        try:
+            import boto3
+            from botocore.exceptions import ClientError
+        except:
+            raise("Python [boto3] module not installed")
+
+
+        session = boto3.Session()
+        s3_client = session.client('s3')
+        s3_resource = session.client('s3')
+
+        sobject = snapshot.get_parent()
+
+
+        from pyasm.security import Site
+        site = Site.get_site()
+        project_code = sobject.get_project_code()
+
+        #!!! TEST
+        bucket = "tactic01"
+
+
+        for i, file in enumerate(files):
+
+            file_object = file_objects[i]
+            to_name = file_object.get_full_file_name()
+            file_type = snapshot.get_type_by_file_name(to_name)
+
+            web_dir = snapshot.get_relative_dir(file_type=file_type, file_object=file_object)
+            object_name = "%s/%s/%s" % (site, web_dir, to_name)
+            print("objct: ", object_name)
+
+            # push these files to s3
+            try:
+                s3_client.upload_file(source_paths[i], bucket, object_name)
+            except ClientError as e:
+                raise
+
+
+
+
+

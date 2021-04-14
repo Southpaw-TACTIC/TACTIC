@@ -687,6 +687,9 @@ class Search(Base):
                         op = '>='
                     elif op == 'is before':
                         op = '<='
+
+                    elif op == "is":
+                        op = "="
                     
                     quoted = True
                     if isinstance(value, int) or isinstance(value, float):

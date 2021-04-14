@@ -151,7 +151,7 @@ class DirNaming(object):
                     alias = naming.get_value("base_dir_alias")
 
         dirs = []
-        dirs.extend( self.get_base_dir(alias=alias) )
+        dirs.extend( self.get_base_dir(alias=alias, file_object=self._file_object) )
         if not self.create:
            dir_dict = self._get_recorded_dir()
            if dir_dict.get('relative_dir'):
@@ -332,7 +332,7 @@ class DirNaming(object):
 
 
 
-    def get_base_dir(self, protocol=None, alias="default"):
+    def get_base_dir(self, protocol=None, alias="default", file_object=None):
         '''get the default base directory for this sobject'''
         dirs = []
         base_dir = ''
@@ -354,7 +354,7 @@ class DirNaming(object):
 
             repo_handler = self.sobject.get_repo_handler(self.snapshot)
             if repo_handler.is_tactic_repo():
-                base_dir = Environment.get_web_dir(alias=alias)
+                base_dir = Environment.get_web_dir(alias=alias, file_object=file_object)
             else:
                 alias_dict = Config.get_dict_value("perforce", "web_base_dir")
                 base_dir = alias_dict.get(alias)
@@ -369,7 +369,6 @@ class DirNaming(object):
 
             if not base_dir:
                 base_dir = "/assets"
-
 
         elif protocol == "remote":
             # NOTE: currently needs web to get the full http base url

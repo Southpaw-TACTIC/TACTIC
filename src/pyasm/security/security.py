@@ -85,6 +85,9 @@ class Login(SObject):
     def get_description(self):
         return self.get_full_name()
 
+    def get_code(self):
+        return self.get_value("code")
+
     def get_login(self):
         return self.get_value("login")
 

@@ -119,13 +119,25 @@ class FileCheckin(BaseCheckin):
         # for scms, we will, on first implementation, treat an scm check-in
         # as an inplace checkin and have a separate repo_type variable
         if mode in ['perforce']:
+            self.repo_type = mode
             mode = 'inplace'
-            self.repo_type = 'perforce'
+
+        elif mode in ['s3']:
+            self.repo_type = mode
+            mode = 'copy'
+
 
         # if a base_dir is passed, then store this
         if self.repo_type == 'perforce':
             depot = sobject.get_project_code()
             base_dir = "//%s" % depot
+
+        elif self.repo_type == 's3':
+
+            #base_dir = "s3://"
+            pass
+
+
         elif mode == "inplace" and not base_dir:
             # get base_dir_alias
             #alias_dict = Config.get_value("checkin", "base_dir_alias")
@@ -577,12 +589,20 @@ class FileCheckin(BaseCheckin):
     def handle_system_commands(self, files, file_objects):
         '''delegate the system commands to the appropriate repo.'''
 
-        if self.mode == 'inplace':
+        if self.repo_type != "s3" and self.mode == 'inplace':
             # NOTE: MD5?
             return
 
         # get the repo set it up
-        repo = self.sobject.get_repo(self.snapshot)
+        if self.repo_type == "s3":
+            from pyasm.checkin import S3Repo
+            repo = S3Repo()
+            #repo_handler.set_snapshot(snapshot)
+            #repo_handler.set_sobject(self.sobject)
+        else:
+            repo = self.sobject.get_repo(self.snapshot)
+
+
         repo.handle_system_commands(self.snapshot, files, file_objects, self.mode, self.md5s, self.source_paths)
 
         # Call the checkin/move pipeline event
@@ -721,6 +741,8 @@ class FileCheckin(BaseCheckin):
             client_lib_dir = snapshot.get_client_lib_dir(file_type=file_type, create=True, file_object=file_object, dir_naming=dir_naming)
         elif protocol =='sandbox':
             client_lib_dir = snapshot.get_sandbox_dir(file_type=file_type)
+        elif protocol =='web':
+            client_lib_dir = snapshot.get_web_dir(file_type=file_type, file_object=file_object)
         else:
             client_lib_dir = snapshot.get_lib_dir(file_type=file_type, create=True, file_object=file_object, dir_naming=dir_naming)
 
