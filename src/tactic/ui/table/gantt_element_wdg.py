@@ -1094,7 +1094,8 @@ class GanttElementWdg(BaseTableElementWdg):
             day_data = sobject.get_value("data", no_exception=True)
             if not day_data:
                 day_data = {}
-            else:
+
+            if isinstance(day_data, six.string_types):
                 day_data = jsonloads(day_data)
 
             for bar_idx, range_data in enumerate(sobject_data):
