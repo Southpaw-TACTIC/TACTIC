@@ -77,6 +77,7 @@ class TransactionState(SObject):
         <project>bar</project>
         </state>
         '''
+
         data = self.get_xml_value("data")
 
         # restore project

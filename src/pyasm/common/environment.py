@@ -271,7 +271,8 @@ class Environment(Base):
             ticket = security.get_ticket_key()
             if not ticket:
                 raise Exception("No ticket found")
-            tmp_dir = "%s/temp/%s" % (tmp_dir, ticket)
+
+            tmp_dir = "%s/temp/%s" % (tmp_dir, ticket[:20])
 
             # only if a ticket is needed, the make the directory
             if not os.path.exists(tmp_dir):

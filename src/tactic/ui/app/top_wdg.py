@@ -1756,6 +1756,7 @@ class CustomTopWdg(BaseRefreshWdg):
         except AttributeError as e:
             pass
 
+
         widget = Widget()
         #
         # Example implementation of custom script, run by hash_widget

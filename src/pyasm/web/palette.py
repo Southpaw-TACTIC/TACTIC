@@ -243,6 +243,11 @@ class Palette(object):
         if value:
             self.set_palette(value)
             if self.colors:
+                override = ProjectSetting.get_json_value_by_key("palette/colors")
+                if override:
+                    for n, v in override.items():
+                        self.colors[n] = v
+
                 return
 
         value = ProjectSetting.get_json_value_by_key("palette/colors")
