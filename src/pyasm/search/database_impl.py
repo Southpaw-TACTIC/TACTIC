@@ -2109,7 +2109,8 @@ class PostgresImpl(BaseSQLDatabaseImpl):
         #WHERE schemaname NOT IN ['information_schema', 'pg_catalog']
         #'''
         # or (this will not work if we define schema for projects
-        statement = '''SELECT viewname FROM pg_views WHERE schemaname = 'public';'''
+        schema = "public"
+        statement = '''SELECT viewname FROM pg_views WHERE schemaname = '%s';''' % schema
         results = sql.do_query(statement)
         for result in results:
             table = result[0]

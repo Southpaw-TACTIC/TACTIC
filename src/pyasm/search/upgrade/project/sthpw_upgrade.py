@@ -19,6 +19,39 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
     #
+    # 4.8.0
+    #
+
+    def upgrade_v4_8_0_b01_004(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE ticket ADD COLUMN data jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE ticket ADD COLUMN data json;
+            ''')
+
+
+    def upgrade_v4_8_0_b01_003(self):
+        self.run_sql('''
+        ALTER TABLE "transaction_state" alter column ticket type text;
+        ''')
+
+
+    def upgrade_v4_8_0_b01_002(self):
+        self.run_sql('''
+        ALTER TABLE "transaction_log" alter column ticket type text;
+        ''')
+
+
+    def upgrade_v4_8_0_b01_001(self):
+        self.run_sql('''
+        ALTER TABLE "ticket" alter column ticket type text;
+        ''')
+
+
+    #
     # 4.8.0.a01
     #
 

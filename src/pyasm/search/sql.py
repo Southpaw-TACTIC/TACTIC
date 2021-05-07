@@ -1115,7 +1115,8 @@ class DbResource(Base):
     DBRESOURCE_ID = 'DbResource'
 
 
-    def __init__(self, database, host=None, port=None, vendor=None, user=None, password=None, **options):
+    def __init__(self, database, host=None, port=None, vendor=None, user=None, password=None, schema=None, **options):
+
         # MySQL does allow empty.  This is needed to create a database
         if vendor != "MySQL":
             assert database
@@ -1147,6 +1148,7 @@ class DbResource(Base):
         if not self.host:
             self.host = 'localhost'
 
+        self.schema = schema
 
         # Fill in the defaults
         if self.vendor == 'MySQL':
@@ -1157,6 +1159,8 @@ class DbResource(Base):
                 self.user = "postgres"
             if not self.port:
                 self.port = '5432'
+            if not self.schema:
+                self.schema = 'public'
 
 
 
@@ -1174,6 +1178,9 @@ class DbResource(Base):
 
     def get_vendor(self):
         return self.vendor
+
+    def get_schema(self):
+        return self.schema
 
     def get_user(self):
         return self.user
@@ -1271,6 +1278,8 @@ class DbResource(Base):
 
 
         data = None
+        schema = None
+
         if not use_config and site:
             data = site_obj.get_connect_data(site)
             if data:
@@ -1279,6 +1288,7 @@ class DbResource(Base):
                 vendor = data.get('vendor')
                 user = data.get('user')
                 password = data.get('password')
+                schema = data.get('schema')
 
         # get the defaults
         if not data:
@@ -1291,7 +1301,7 @@ class DbResource(Base):
             password = DbPasswordUtil.get_password()
 
 
-        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
+        db_resource = DbResource(database, host=host, port=port, vendor=vendor, schema=schema, user=user, password=password)
         if use_cache:
             db_resource_dict[database] = db_resource
 
@@ -1912,7 +1922,7 @@ class Select(object):
 
         database_type = self.impl.get_database_type()
         if database_type == 'PostgreSQL':
-            self.schema = "public"
+            self.schema = self.db_resource.get_schema() or "public"
         elif database_type == 'SQLServer':
             self.schema = "dbo"
         elif database_type == 'Sqlite':
@@ -3162,7 +3172,6 @@ class Update(object):
     def set_database(self, database):
 
         assert database == "sthpw" or not isinstance(database, basestring)
-
         if isinstance(database, basestring):
             self.sql = DbContainer.get(database)
             self.db_resource = DbResource.get_default(database)
