@@ -3328,6 +3328,13 @@ class SObject(object):
         
         self.set_value(name, data)
 
+
+
+    def get_format_value(self, name, format):
+        value = self.get_value(name)
+        format_value = FormatValue().get_format_value(value, format)
+        return format_value
+
     
 
     def get_xml_root(self, name):

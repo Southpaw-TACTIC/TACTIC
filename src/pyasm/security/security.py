@@ -820,7 +820,7 @@ class Site(object):
         return True
     validate_ticket = classmethod(validate_ticket)
 
-    def get_connect_data(cls, site):
+    def get_connect_data(cls, site, project_code=None):
         return {}
     get_connect_data = classmethod(get_connect_data)
 
@@ -1073,6 +1073,15 @@ class Site(object):
         if not site:
             return None
         site_obj = cls.get()
+
+        """
+        if site != "default":
+            from pyasm.biz import Project
+            project_code = Project.get_project_code()
+        else:
+            project_code = None
+        """
+
         data = site_obj.get_connect_data(site)
         if data:
             host = data.get('host')

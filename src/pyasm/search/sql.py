@@ -1288,6 +1288,9 @@ class DbResource(Base):
                 vendor = data.get('vendor')
                 user = data.get('user')
                 password = data.get('password')
+                db = data.get("database")
+                if db:
+                    database = db
                 schema = data.get('schema')
 
         # get the defaults

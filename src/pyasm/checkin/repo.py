@@ -164,6 +164,7 @@ class TacticRepo(BaseRepo):
 
 __all__.append("S3Repo")
 class S3Repo(BaseRepo):
+    '''This uploads the files to s3 directly'''
 
     def handle_system_commands(self, snapshot, files, file_objects, mode, md5s, source_paths=[], file_sizes=[], commit=False):
 
