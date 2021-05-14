@@ -123,7 +123,10 @@ def get_simple_cmd(self, meth, ticket, args):
                     print("timestamp: %s" % now.strftime("%Y-%m-%d %H:%M:%S"))
                     print("user: %s" % Environment.get_user_name())
                     print("simple method: %s" % meth)
-                    print("ticket: %s" % ticket)
+                    if len(ticket) > 100:
+                        print("ticket: %s ... (%s)" % (ticket[:100], len(ticket)))
+                    else:
+                        print("ticket: %s" % ticket)
                    
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
@@ -223,6 +226,8 @@ def get_full_cmd(self, meth, ticket, args):
             if not transaction_id:
                 return Command.get_transaction(self2)
 
+            print("WARNING: ClientAPI:get_full_cmd - Getting transaction")
+
             # continue the transaction
             transaction_log = TransactionLog.get_by_id(transaction_id)
             if transaction_log:
@@ -262,7 +267,10 @@ def get_full_cmd(self, meth, ticket, args):
                 now = datetime.datetime.now()
                 print("timestamp: ", now.strftime("%Y-%m-%d %H:%M:%S"))
                 print("method: ", meth.__name__)
-                print("ticket: ", ticket)
+                if len(ticket) > 100:
+                    print("ticket: ", "%s ... (%s)" % (ticket[:100], len(ticket)))
+                else:
+                    print("ticket: ", ticket)
                 if debug_args:
                     Common.pretty_print(args)
             
@@ -1178,7 +1186,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     #@trace_decorator
     def get_ticket(self, login_name, password, site=None):
-        '''simple test to verify that the xmlrpc connection is working
+        '''authenticate a user/pasword and retrieve a ticket
 
         @params
         login_name - unique name of the user
@@ -1206,6 +1214,47 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return ticket
     get_ticket.exposed = True
+
+
+
+    #@trace_decorator
+    def get_ticket_data(self, login_name, password, site=None):
+        '''authenticate a user and return the full ticket object
+
+        @params
+        login_name - unique name of the user
+        password - unencrypted password of the user
+        '''
+        from pyasm.security import Site
+        if site:
+            Site.set_site(site)
+
+        ticket = ""
+        try:
+            XmlRpcLogin(login_name, password)
+
+            # initialize the web environment object and register it
+            adapter = self.get_adapter()
+            WebContainer.set_web(adapter)
+
+            security = WebContainer.get_security()
+
+            ticket = security.get_ticket()
+            if ticket:
+                ticket = ticket.get_sobject_dict()
+
+        finally:
+            if not self.get_protocol() == "local":
+                DbContainer.release_thread_sql()
+
+        return ticket
+    get_ticket.exposed = True
+
+
+
+
+
+
 
 
     @xmlrpc_decorator

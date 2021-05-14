@@ -703,7 +703,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             self.aspect_ratio = (int(parts[0]), int(parts[1]))
         else:
 
-            self.aspect_ratio = (240, 160)
+            #self.aspect_ratio = (240, 160)
+            self.aspect_ratio = (240, 200)
             #self.aspect_ratio = (240, 135)
             #self.aspect_ratio = (240, 240)
 
@@ -2306,6 +2307,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             img.add_style("height: %s" % height)
         else:
             img.add_style("height: auto")
+
+
         img.add_style('margin-left','auto')
         img.add_style('margin-right','auto')
         div.add(icon_div)
@@ -2361,6 +2364,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style('position','relative')
         div.add_style('vertical-align','top')
         div.add_style("z-index", "0")
+        div.add_border()
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
@@ -2412,6 +2416,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add_class("spt_tile_drag")
         thumb_drag_div.add_style("width: auto")
         thumb_drag_div.add_style("height: auto")
+        thumb_drag_div.add_style("margin-top: 20px")
         thumb_drag_div.add_behavior( {
             "type": "drag",
             "drag_el": '@',
@@ -2426,10 +2431,6 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_div.add_class("spt_tile_content")
 
         thumb_div.add_style("overflow: hidden")
-        thumb_div.add_style("width: %s" % self.aspect_ratio[0])
-
-        thumb_div.add_style("height: %s" % self.aspect_ratio[1])
-        #thumb_div.add_style("overflow: hidden")
 
         kwargs = {}
         kwargs['show_name_hover'] = self.show_name_hover
@@ -2444,7 +2445,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         else:
             thumb.set_sobject(sobject)
         thumb_div.add(thumb)
-        thumb_div.add_border()
+        #thumb_div.add_border()
 
 
         # FIXME: for some reason, the hidden overflow is not respected here
@@ -3269,7 +3270,7 @@ class ThumbWdg2(BaseRefreshWdg):
             width = "100%"
         height = self.kwargs.get("height")
         if not height:
-            height = "auto"
+            height = "100%"
 
         sobject = self.get_current_sobject()
         if not sobject:
@@ -3283,7 +3284,7 @@ class ThumbWdg2(BaseRefreshWdg):
 
         div.add_style("display: flex")
         div.add_style("align-items: center")
-        div.add_style("height: 100%")
+        div.add_style("height: %s" % height)
 
         path = self.path
         if self.lib_path and not FileGroup.is_sequence(self.lib_path) and not os.path.exists(self.lib_path):
@@ -3376,7 +3377,11 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
                 path = Common.pathname2url(path)
-                img = HtmlElement.img(src=path)
+                #img = HtmlElement.img(src=path)
+                img = HtmlElement.img()
+                img.add_style("background-image", '''url(%s)''' % path)
+                img.add_style("background-size", "cover")
+                img.add_style("background-position", "center")
 
                 div.add_attr("spt_main_path", self.get_main_path())
 
@@ -3428,11 +3433,11 @@ class ThumbWdg2(BaseRefreshWdg):
         img.add_class("spt_image")
         div.add(img)
 
-        #if height or self.show_name_hover in ["True","true",True]:
-        #    div.add_style("height: 100%")
+        img.add_style("width: 100%")
+        img.add_style("height: 100%")
 
 
-        # FIXE: what is this for???
+        # FIXME: what is this for???
         if self.show_name_hover in ["True","true",True]:
             name_hover = DivWdg()
             name_hover.add_class("spt_name_hover")

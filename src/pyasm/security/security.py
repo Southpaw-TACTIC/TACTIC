@@ -85,6 +85,9 @@ class Login(SObject):
     def get_description(self):
         return self.get_full_name()
 
+    def get_code(self):
+        return self.get_value("code")
+
     def get_login(self):
         return self.get_value("login")
 
@@ -817,7 +820,7 @@ class Site(object):
         return True
     validate_ticket = classmethod(validate_ticket)
 
-    def get_connect_data(cls, site):
+    def get_connect_data(cls, site, project_code=None):
         return {}
     get_connect_data = classmethod(get_connect_data)
 
@@ -1070,6 +1073,15 @@ class Site(object):
         if not site:
             return None
         site_obj = cls.get()
+
+        """
+        if site != "default":
+            from pyasm.biz import Project
+            project_code = Project.get_project_code()
+        else:
+            project_code = None
+        """
+
         data = site_obj.get_connect_data(site)
         if data:
             host = data.get('host')
@@ -1228,10 +1240,10 @@ class TicketHandler(object):
 
 
     def validate_key(cls, key):
-        '''validate a ticket key using some external source.  Simply return the key to create a
-        standard TACTIC ticket in the database or create a ticket directly in the function below
-        using the following create function:
+        '''validate a ticket key using some external source.  Simply return
+        a ticket instance using the folliowing create function:
 
+            from pyasm.security import Ticket
             return Ticket.create(key, login, expiry=None, interval=None, category=None)
 
         Return None is the ticket is not valid'''
@@ -1239,6 +1251,11 @@ class TicketHandler(object):
         return None
 
     validate_key = classmethod(validate_key)
+
+
+    def alter_ticket(cls, ticket):
+        '''provides the opportunity to alter the ticket'''
+        return None
 
 
 
@@ -1295,8 +1312,7 @@ class Ticket(SObject):
                 if handler_class:
                     handler = Common.create_from_class_path(handler_class)
                     ticket = handler.validate_key(key)
-                    if isinstance(ticket, six.string_types):
-                        ticket = Ticket.create(ticket, commit=None)
+
 
         finally:
             if site:
@@ -1426,7 +1442,7 @@ class NoDatabaseSecurity(Base):
         return License()
     def login_with_ticket(self, key, add_access_rules=True, allow_guest=False):
         None
-    def login_user(self, login_name, password, expiry=None, domain=None):
+    def login_user(self, login, password, expiry=None, domain=None):
         self.is_logged_in_flag = True
     def get_login(self):
         return None
@@ -1874,6 +1890,7 @@ class Security(Base):
             if site == "" or site == "default":
                 auth_class = "pyasm.security.TacticAuthenticate"
             else:
+                print("ERROR: Site must be default for admin to sign in")
                 raise SecurityException("Login/Password combination incorrect")
 
         # verify using the specified authenticate class
@@ -1911,6 +1928,7 @@ class Security(Base):
             raise
 
         if is_authenticated != True:
+            print("ERROR: authentication.verify failed")
             raise SecurityException("Login/Password combination incorrect")
 
         mode = authenticate.get_mode()
@@ -1973,6 +1991,7 @@ class Security(Base):
 
         # if it doesn't exist, then the login fails
         if not self._login:
+            print("ERROR: self._login is None")
             raise SecurityException("Login/Password combination incorrect")
 
 
@@ -2012,14 +2031,14 @@ class Security(Base):
         handler = None
 
         handler_class = Config.get_value("security", "authenticate_ticket_class")
+        handler = None
         if handler_class:
             handler = Common.create_from_class_path(handler_class)
             ticket_key = handler.generate_key(login_name, expiry, category)
         else:
             # create a new ticket for the user
             ticket_key = Common.generate_random_key()
-
-        ticket_key = Site.get().build_ticket(ticket_key)
+            ticket_key = Site.get().build_ticket(ticket_key)
 
 
         # make sure the ticket is always generated on the default site
@@ -2036,6 +2055,9 @@ class Security(Base):
                     ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
             else:
                 ticket = Ticket.create(ticket_key,login_name, expiry, category=category)
+
+            if handler:
+                handler.alter_ticket(ticket)
 
         finally:
             sudo.exit()

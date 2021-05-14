@@ -639,6 +639,10 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 template = Template(html, output_encoding=self.encoding, input_encoding=self.encoding)
         except Exception as e:
             print("Error in view [%s]" % self.view)
+            print("---")
+            for i, line in enumerate(html.split("\n")):
+                print("%.5d: " % (i-1), line)
+            print("---")
             raise
 
         # get the api version of the sobject

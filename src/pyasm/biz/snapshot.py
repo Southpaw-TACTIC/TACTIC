@@ -490,12 +490,15 @@ class Snapshot(SObject):
         ''' get the lib path by specifying a file type '''
         xml = self.get_snapshot_xml()
 
-        web_dir = self.get_web_dir()
 
         node = xml.get_node("snapshot/file[@type='%s']"%type)
         if node is None:
             return ''
 
+        file_code = xml.get_attribute(node, "file_code")
+        file_object = Search.get_by_code("sthpw/file", file_code)
+
+        web_dir = self.get_web_dir(file_object=file_object)
         file_name = self._get_file_name(node)
         web_path = "%s/%s" % (web_dir,file_name)
         
@@ -524,10 +527,13 @@ class Snapshot(SObject):
         ''' get the lib path by specifying a file type '''
         xml = self.get_snapshot_xml()
 
-        lib_dir = self.get_lib_dir(file_type=type)
         node = xml.get_node("snapshot/file[@type='%s']"%type)
         if node is None:
             return ''
+
+        file_code = xml.get_attribute(node, "file_code")
+        file_object = Search.get_by_code("sthpw/file", file_code)
+        lib_dir = self.get_lib_dir(file_type=type, file_object=file_object)
 
         file_name = self._get_file_name(node)
         file_path = "%s/%s" % (lib_dir,file_name)
@@ -586,7 +592,7 @@ class Snapshot(SObject):
 
 
 
-    def get_path_by_type(self, type, mode="lib", filename_mode=None):
+    def get_path_by_type(self, type="main", mode="lib", filename_mode=None):
         dirname = self.get_dir(mode, file_type=type, file_object=None)
 
         xml = self.get_snapshot_xml()

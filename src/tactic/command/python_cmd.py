@@ -88,7 +88,8 @@ spt_mako_results['spt_ret_val'] = spt_run_code()
             print(exceptions.text_error_template().render())
             print("---")
             print("Code:")
-            print(code)
+            for i, line in enumerate(code.split("\n")):
+                print("%.5d: " % (i-1), line)
             print("---")
             raise
 
