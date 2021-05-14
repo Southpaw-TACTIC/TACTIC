@@ -26,8 +26,7 @@ class Palette(object):
     'color':        '#CCC',         # main font color
     'color2':       '#BBB',         # secondary font color
     'color3':       '#222222',      # tertiary font color
-    #'background':   '#444444',      # main background color
-    'background':   '#0D1117',      # main background color
+    'background':   '#444444',      # main background color
     'background2':  '#2F2F2F',      # secondary background color
     'background3':  '#888888',      # tertiary background color
     'border':       '#737b79',      # main border color
@@ -244,6 +243,11 @@ class Palette(object):
         if value:
             self.set_palette(value)
             if self.colors:
+                override = ProjectSetting.get_json_value_by_key("palette/colors")
+                if override:
+                    for n, v in override.items():
+                        self.colors[n] = v
+
                 return
 
         value = ProjectSetting.get_json_value_by_key("palette/colors")

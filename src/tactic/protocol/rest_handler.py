@@ -173,6 +173,14 @@ class APIRestHandler(BaseRestHandler):
             security = Environment.get_security()
             ticket = security.get_ticket_key()
             return ticket
+        elif method == "get_ticket_data":
+            security = Environment.get_security()
+            ticket = security.get_ticket()
+            if ticket:
+                ticket = ticket.get_value("data")
+            return ticket
+
+
 
 
         from tactic_client_lib import TacticServerStub

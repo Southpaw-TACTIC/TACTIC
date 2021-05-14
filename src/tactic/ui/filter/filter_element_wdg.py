@@ -1234,7 +1234,7 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
         if (key == 'enter') {
             var top = bvr.src_el.getParent(".spt_input_text_top");
             var hidden_el = top.getElement(".spt_text_value");
-            if (bvr.src_el.value) hidden_el.value = bvr.src_el.value;
+            hidden_el.value = bvr.src_el.value;
             spt.dg_table.search_cbk( {}, {src_el: bvr.src_el} );
         }
         ''' } )

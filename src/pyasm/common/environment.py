@@ -272,11 +272,9 @@ class Environment(Base):
             if not ticket:
                 raise Exception("No ticket found")
 
-
             # with some ticket systems, the length of the ticket can be huge
             # so cut this off at about 100 characters and hope that it is unique enough
             ticket = ticket[:100]
-
             tmp_dir = "%s/temp/%s" % (tmp_dir, ticket)
 
             # only if a ticket is needed, the make the directory
