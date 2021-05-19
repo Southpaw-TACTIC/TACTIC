@@ -7795,13 +7795,14 @@ class PipelineEditorWdg(BaseRefreshWdg):
         '''
         } )
 
-
         button.add_behavior( {
         'type': 'listen',
         'event_name': 'pipeline|save_button',
         'project_code': project_code,
         'save_event': self.save_new_event,
+        'unique': True,
         'cbjs_action': '''
+
         var toolTop = bvr.src_el.getParent(".spt_pipeline_tool_top");
         spt.pipeline.set_top(toolTop.getElement(".spt_pipeline_top"));
 
@@ -7874,7 +7875,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
             }
 
             server = TacticServerStub.get();
-            spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
+            spt.notify.show_message("Saving project-specific pipeline ["+group_name+"]",null);
 
             try {
                 var xml = spt.pipeline.export_group(group_name);
@@ -7896,8 +7897,7 @@ class PipelineEditorWdg(BaseRefreshWdg):
                     pipeline_data: pipeline_data
                 };
                 server.execute_cmd('tactic.ui.tools.PipelineSaveCbk', args);
-                // calls itself?
-                //spt.named_events.fire_event('pipeline|save', {});
+                spt.named_events.fire_event('pipeline|save', {});
 
                 // reset all of the changes on the node
                 for (var i=0; i<nodes.length; i++) {
@@ -7916,7 +7916,6 @@ class PipelineEditorWdg(BaseRefreshWdg):
         }
 
 
-        spt.app_busy.hide();
 
         '''
         } )
@@ -9136,7 +9135,7 @@ class PipelineSaveCbk(Command):
             process.commit()
 
             if node_type:
-                kwargs = node_kwargs.get(process_name) or {}
+                kwargs = node_kwargs.get(process_name.replace(" ", "%20")) or {}
                 if len(kwargs) > 0:
                     kwargs['process'] = process_name
                     kwargs['node_type'] = node_type
@@ -9646,7 +9645,6 @@ class PipelineDocumentItem(BaseRefreshWdg):
                 };
 
                 server = TacticServerStub.get();
-                spt.app_busy.show("Saving project-specific pipeline ["+group_name+"]",null);
 
                 var xml = spt.pipeline.export_group(group_name);
                 var search_key = server.build_search_key("sthpw/pipeline", group_name);

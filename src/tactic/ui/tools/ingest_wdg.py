@@ -1532,7 +1532,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 return;
             }
 
-            var top = bvr.src_el.getParent(".spt_ingest_top");
+            let top = bvr.src_el.getParent(".spt_ingest_top");
 
             // upload in progress, prevent another upload through
             // multiple clicks.
@@ -1540,23 +1540,21 @@ class IngestUploadWdg(BaseRefreshWdg):
                 return;
             }
 
-            var file_els = top.getElements(".spt_upload_file");
-            var num_files = file_els.length;
-            var files_top = top.getElement(".spt_to_ingest_files");
-
-            spt.notify.show_message("Ingesting "+num_files+" Files");
+            let file_els = top.getElements(".spt_upload_file");
+            let num_files = file_els.length;
+            let files_top = top.getElement(".spt_to_ingest_files");
 
             // get the server that will be used in the callbacks
-            var server = TacticServerStub.get();
+            let server = TacticServerStub.get();
 
             // retrieved the stored file handles
-            var files = [];
-            for (var i = 0; i < file_els.length; i++) {
+            let files = [];
+            for (let i = 0; i < file_els.length; i++) {
                 if (file_els[i].file) {
                     files.push( file_els[i].file );
                 }
                 else {
-                    var search_key = file_els[i].getAttribute("spt_search_key");
+                    let search_key = file_els[i].getAttribute("spt_search_key");
                     files.push("search_key:"+search_key);
                 }
 
@@ -1567,20 +1565,25 @@ class IngestUploadWdg(BaseRefreshWdg):
             }
 
 
+
+            spt.notify.show_message("Ingesting "+num_files+" Files");
+
+
+
             // defined the callbacks
-            var upload_start = function(evt) {
+            let upload_start = function(evt) {
             }
 
-            var upload_progress = function(evt) {
+            let upload_progress = function(evt) {
             %s;
             }
 
-            var upload_complete = function(evt) {
+            let upload_complete = function(evt) {
             %s;
             }
 
 
-            var upload_file_kwargs =  {
+            let upload_file_kwargs =  {
                 files: files,
                 upload_start: upload_start,
                 upload_complete: upload_complete,
@@ -1699,6 +1702,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             '''
         } )
 
+
+        """
         button.add_behavior( {
             'type': 'click_upX',
             'normal_ext': File.NORMAL_EXT,
@@ -1745,6 +1750,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
          '''
         } )
+        """
 
         return button
 

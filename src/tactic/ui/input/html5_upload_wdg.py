@@ -192,14 +192,6 @@ spt.html5upload.upload_file = function(kwargs) {
         files = el.files;
     }
    
-    /* 
-    var file_name = el.value;
-    if (file_name.test(/,/)) {
-        spt.alert('Comma , is not allowed in file name.');
-        spt.html5upload.clear();
-        return;
-    }
-    */
    
     var upload_start = kwargs.upload_start;
     var upload_complete = kwargs.upload_complete;
@@ -254,6 +246,8 @@ spt.html5upload.upload_file = function(kwargs) {
 
     var env = spt.Environment.get();
     var site = env.get_site();
+
+    // Actually upload the files
 
     //xhr.addEventListener("abort", uploadCanceled, false);
     xhr.addEventListener("abort", function() {log.critical("abort")}, false);
