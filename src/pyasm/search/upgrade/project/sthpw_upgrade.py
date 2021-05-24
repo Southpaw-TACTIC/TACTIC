@@ -22,6 +22,17 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.8.0
     #
 
+    def upgrade_v4_8_0_b01_005(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "task" ALTER COLUMN "data" TYPE jsonb USING data::jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "task" ALTER COLUMN "data" TYPE json;
+            ''')
+
+
     def upgrade_v4_8_0_b01_004(self):
         if self.get_database_type() == 'PostgreSQL':
             self.run_sql('''
