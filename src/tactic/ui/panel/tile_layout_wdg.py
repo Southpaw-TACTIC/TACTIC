@@ -2364,7 +2364,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style('position','relative')
         div.add_style('vertical-align','top')
         div.add_style("z-index", "0")
-        div.add_border()
+        border_color = div.get_color("border")
+        div.add_style("border: solid 1px %s" % border_color)
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
@@ -2483,7 +2484,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             tool_div.add_style("width: 100%")
             tool_div.add_style("background: #FFF")
             tool_div.add_style("color: #000")
-            tool_div.add_style("height: 21px")
+            tool_div.add_style("height: 23px")
             tool_div.add_style("padding: 2px 5px")
             tool_div.add_style("margin-top: -21px")
             tool_div.add_border(size="0px 1px 1px 1px")
@@ -3378,7 +3379,8 @@ class ThumbWdg2(BaseRefreshWdg):
 
                 path = Common.pathname2url(path)
                 #img = HtmlElement.img(src=path)
-                img = HtmlElement.img()
+                #img = HtmlElement.img()
+                img = DivWdg()
                 img.add_style("background-image", '''url(%s)''' % path)
                 img.add_style("background-size", "cover")
                 img.add_style("background-position", "center")

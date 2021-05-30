@@ -152,7 +152,7 @@ class SampleBarChartJsWdg(BaseRefreshWdg):
             "b": 1.3,
             "c": 10 
         }
-        data = ChartData(chart_type='polynomial', data=data, color="rgba(128, 128, 128, 0.6)")
+        data = ChartData(chart_type='polynomial', data=data, color="rgba(198, 128, 128, 0.6)")
         chart.add(data)
 
         return top

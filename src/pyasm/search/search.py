@@ -5884,6 +5884,7 @@ class SObject(object):
 
             result[column] = value
         result['__search_key__'] = SearchKey.build_by_sobject(self, use_id=use_id)
+        result['__search_type__'] = self.get_base_search_type()
         return result
 
 

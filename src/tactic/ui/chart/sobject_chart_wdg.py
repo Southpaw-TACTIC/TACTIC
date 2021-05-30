@@ -489,7 +489,7 @@ class CalendarChartWdg(BaseChartWdg):
     'chart_type': {
         'description': 'Type of chart to display',
         'type': 'SelectWdg',
-        'values': 'line|bar|bar3d',
+        'values': 'line|bar',
         'category': 'Display'
     }
 
