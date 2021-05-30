@@ -518,6 +518,7 @@ class Sql(Base):
 
                 #TODO: check other db impl on timezone impl
                 self.do_update("SET timezone='%s'"%tz_name)
+
             elif self.vendor == "Sqlite":
 
                 db_dir = Config.get_value("database", "sqlite_db_dir")

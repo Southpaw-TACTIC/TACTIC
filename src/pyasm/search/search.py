@@ -698,6 +698,7 @@ class Search(Base):
                     # special case for NULL
                     if value == 'NULL':
                         quoted = False
+                        op = "is"
                     if op == 'is on':
                         self.add_day_filter(name, value)
                     else:
