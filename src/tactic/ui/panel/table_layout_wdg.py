@@ -1141,7 +1141,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         for widget in self.widgets:
-            #if self.kwargs.get('temp') != True:
             widget.handle_layout_behaviors(table)
             self.drawn_widgets[widget.__class__.__name__] = True
 
