@@ -127,12 +127,14 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
         # show a default title
         div = DivWdg()
+        div.add_class("card")
         div.add_style("padding: 10px 15px")
+        div.add_style("min-height: 200px")
 
         border_color = div.get_color("border")
-        div.add_style("border: solid 1px %s" % border_color)
-        div.add_style("border-radius: 5px")
-        div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
+        #div.add_style("border: solid 1px %s" % border_color)
+        #div.add_style("border-radius: 5px")
+        #div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
         div.add_style("margin: 20px")
 
 
@@ -304,27 +306,26 @@ class SObjectDetailWdg(BaseRefreshWdg):
         panel_wdg.add_class("spt_detail_panel")
 
 
-
-
         show_thumb = self.kwargs.get("show_thumb")
         if show_thumb not in ['false', False]:
 
             from tactic.ui.panel import ThumbWdg2
             thumb_div = DivWdg()
             panel_wdg.add(thumb_div)
+            thumb_div.add_class("card")
+            thumb_div.add_style("padding: 5px")
 
             thumb = ThumbWdg2(width="auto", height="100%")
             thumb_div.add(thumb)
             thumb_div.add_style("box-sizing: border-box")
-            thumb_div.add_style("height: 175px")
+            thumb_div.add_style("height: 200px")
+            thumb_div.add_style("width: 200px")
             thumb_div.add_style("margin-left: 20px")
             thumb_div.add_style("margin-top: 20px")
             thumb_div.add_style("display: inline-block")
             thumb_div.add_style("vertical-align: top")
             thumb_div.add_style("overflow-y: hidden")
-            border = thumb_div.get_color("border")
-            thumb_div.add_style("border: solid 1px %s" % border)
-            thumb_div.add_style("border-radius: 5px")
+            #thumb_div.add_style("border: solid 1px %s" % border)
             thumb_div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
             # use a larger version for clearer display
             #thumb.set_icon_type('web')
@@ -459,11 +460,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
  
         tab = TabWdg(**tab_kwargs)
-        tab.add_style("margin: 0px -1px -1px -1px")
 
 
         div.add(tab)
         div.add_class("spt_tab_container")
+        div.add_class("card")
+        div.add_style("padding: 10px")
+        div.add_style("margin: 0px 10px 15px 10px")
 
         tab_container_style = HtmlElement.style('''
 
@@ -1152,6 +1155,7 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
 
 
         top = self.top
+        top.add_color("background", "background2")
 
         if not self.sobject:
             top.add("No SObject defined for this widget")
@@ -1173,14 +1177,15 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
             self.pipeline_code = 'default'
 
 
-        table = Table()
+        table = DivWdg()
         top.add(table)
-        table.set_max_width()
+        table.add_style("display: flex")
 
-        table.add_row()
-
-        td = table.add_cell()
+        td = DivWdg()
+        table.add(td)
+        td.add_class("card")
         td.add_style("padding: 20px")
+        td.add_style("margin: 10px")
         td.add_style("width: 50%")
 
         #sobject_info_wdg = self.get_sobject_info_wdg()
@@ -1188,9 +1193,13 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
         #td.add(sobject_info_wdg)
 
 
+        edit_div = DivWdg()
+        #td.add(edit_div)
+        edit_div.add_style("float: right")
+
         edit_wdg = ActionButtonWdg(title="Edit")
         edit_wdg.add_class("spt_details_edit_button")
-        td.add(edit_wdg)
+        edit_div.add(edit_wdg)
         edit_wdg.add_behavior( {
             'type': 'click',
             'search_key': search_key,
@@ -1205,10 +1214,9 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
             '''
         } )
 
-        edit_wdg.add_style("float: right")
-
 
         title_wdg = DivWdg()
+        title_wdg.add(edit_div)
         td.add(title_wdg)
         title_wdg.add("Summary")
         title_wdg.add_style("font-size: 1.4em")
@@ -1231,25 +1239,17 @@ class SObjectDetailInfoWdg(SObjectDetailWdg):
             td.add_style("width: 50vw")
 
 
-        td = table.add_cell()
-        spacer_div = DivWdg()
-        td.add(spacer_div)
-        td.add_style("height: 1px")
-        td.add_style("padding: 20px 0px 20px 20px")
-        spacer_div.add_style("border-style: solid")
-        spacer_div.add_style("border-width: 0px 0px 0px 1px")
-        spacer_div.add_style("border-color: #DDD")
-        spacer_div.add(" ")
-        spacer_div.add_style("height: 100%")
-
-
 
         # right
-        td = table.add_cell()
+        td = DivWdg()
+        table.add(td)
+        td.add_class("card")
+        td.add_style("margin: 10px")
         td.add_style("text-align: left")
         td.add_style("vertical-align: top")
         td.add_class("spt_notes_wrapper")
         td.add_style("padding: 20px")
+        td.add_style("width: 100%")
 
         title_wdg = DivWdg()
         td.add(title_wdg)

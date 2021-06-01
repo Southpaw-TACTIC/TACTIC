@@ -4732,6 +4732,9 @@ spt.table.hide_selected = function() {
 
 
 spt.table.add_hidden_row = function(row, class_name, kwargs) {
+
+    // detect if the hidden row exists
+
     var clone = document.createElement("tr");
     clone.addClass("spt_hidden_row");
     var color = row.getAttribute("spt_hover_background");

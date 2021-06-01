@@ -1315,7 +1315,8 @@ class Schema(SObject):
 
     def get_by_project_code(cls, project_code):
 
-        schema = Schema.get_by_code(project_code)
+        #schema = Schema.get_by_code(project_code)
+        schema = Schema.get(project_code=project_code)
 
         # if the project schema does not exist, then create an empty one
         if not schema:
@@ -1363,7 +1364,7 @@ class Schema(SObject):
             project_code = Project.get_project_code()
 
         if not reset_cache:
-            schema = Container.get("Schema:%s"%project_code)
+            schema = Container.get("Schema:%s" % project_code)
             
             if schema:
                 return schema
@@ -1437,7 +1438,6 @@ class Schema(SObject):
             schema.set_value("code", project_code)
             schema.init()
             schema.add_dependencies()
-
 
 
         Container.put("Schema:%s"%project_code, schema)
