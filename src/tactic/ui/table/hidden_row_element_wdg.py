@@ -83,6 +83,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
 
         var swap_top = bvr.src_el.getElement(".spt_swap_top");
         var state = swap_top.getAttribute("spt_state");
+        var top = swap_top.getParent(".spt_hidden_row_activator");
 
         var row = bvr.src_el.getParent(".spt_table_row");
         var search_key = row.getAttribute("spt_search_key");
@@ -95,11 +96,25 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         kwargs['__hidden__'] = true;
         kwargs['src_el'] = bvr.src_el;
 
+        if (bvr.src_el.loading) {
+            return;
+        }
+            
         if (state == 'on') {
             spt.table.remove_hidden_row(row, bvr.col_name);
         }
         else {
+            top.setStyle("opacity", "0.3");
+            top.setStyle("pointer-events", "none");
+
             spt.table.add_hidden_row(row, class_name, kwargs);
+
+            bvr.src_el.loading = true;
+            setTimeout( () => {
+               bvr.src_el.loading = false 
+               top.setStyle("opacity", "1.0");
+               top.setStyle("pointer-events", "");
+            }, 1000 )
         }
 
         ''' % (jsondumps(kwargs))
@@ -115,6 +130,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         name = self.get_name()
 
         top = DivWdg()
+        top.add_class("spt_hidden_row_activator")
 
         if sobject.is_insert():
             top.add_style("opacity: 0.3")

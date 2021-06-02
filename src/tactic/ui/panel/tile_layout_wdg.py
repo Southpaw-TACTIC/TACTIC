@@ -604,7 +604,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                         tile.getElement(".spt_tile_collection_count").innerHTML = data.collection_count;
                     } else {
                         // Download button
-                        download_el = tile.getElement(".spt_tile_tool_top").getElement("a");
+                        download_el = tile.getElement(".spt_tile_tool_top").getElement(".spt_download");
                         download_el.setAttribute("href", data.main_path);
                         download_el.setAttribute("download", data.basename);
 
@@ -2071,14 +2071,64 @@ class TileLayoutWdg(ToolLayoutWdg):
         size_div.add_class("spt_tile_size")
 
         # Download button
-        href = HtmlElement.href()
-        href.add_attr("href", "")
-        tool_div.add(href)
-        href.add_attr("download", "")
+        direct_download = True
+        if direct_download:
+            href = HtmlElement.href()
+            href.add_class("spt_download")
+            href.add_attr("href", "")
+            tool_div.add(href)
+            href.add_attr("download", "")
 
-        icon = IconWdg(name="Download", icon="FA_DOWNLOAD")
-        icon.add_class("hand")
-        href.add(icon)
+            icon = IconWdg(name="Download", icon="FA_DOWNLOAD")
+            icon.add_class("hand")
+            href.add(icon)
+        else:
+            # get a presigned url or whatever from the repo for download
+            href = DivWdg()
+            href.add_class("spt_download")
+            tool_div.add(href)
+
+            icon = IconWdg(name="Download", icon="FA_DOWNLOAD")
+            icon.add_class("hand")
+            href.add(icon)
+
+            href.add_behavior( {
+                'type': 'click',
+                'cbjs_action': '''
+
+                var href = bvr.src_el.getAttribute("href");
+
+                var link = document.createElement("a");
+                link.download = "";
+                link.href = href;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                delete link;
+                return
+
+
+                let server = TACTIC.get();
+                let cmd = "tactic.ui.panel.GetPresignedDownloadURL";
+                let kwargs = {
+                    asset_code: "ASSET01",
+                };
+                server.p_execute_cmd(cmd, kwargs)
+                .then( ret => {
+                    let url = ret.info;
+                    // download url
+                    alert(url);
+                    
+                } )
+                .catch( e => {
+                    alert("ERROR: " + e);
+                } )
+                '''
+            } )
+
+
+
+
 
         # TODO: Dynamically preprocess bottom wdg
         if self.bottom:

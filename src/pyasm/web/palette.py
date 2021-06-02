@@ -218,7 +218,7 @@ class Palette(object):
             self._init_palette()
 
         if not self.colors:
-            self.colors = self.COLORS
+            self.colors = self.COLORS.copy()
 
 
         # make sure all of the colors are defined
@@ -280,7 +280,7 @@ class Palette(object):
                 return
         
 
-        value = self.COLORS
+        value = self.COLORS.copy()
         if value:
             self.set_palette(palette=None, colors=value)
             return
@@ -295,7 +295,7 @@ class Palette(object):
         try:
             if palette:
                 value = palette
-                self.colors = eval(value)
+                self.colors = eval(value).copy()
             elif colors:
                 self.colors = colors
 
@@ -312,11 +312,11 @@ class Palette(object):
             try:
                 value = value.upper()
                 value = value.replace(" ", "_")
-                self.colors = eval("self.%s" % value)
+                self.colors = eval("self.%s" % value).copy()
             except:
                 print("WARNING: palette [%s] does not exist.  Using default" % value)
                 self.colors = self.DEFAULT
-                self.colors = eval("self.%s" % value)
+                self.colors = eval("self.%s" % value).copy()
 
 
     def get_theme(self):
