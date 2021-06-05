@@ -1,6 +1,6 @@
 
 
-let upload_file = (kwargs) => {
+let upload_files = (kwargs) => {
 
     if (!kwargs) {
         kwargs = {};
@@ -24,12 +24,18 @@ let upload_file = (kwargs) => {
         return;
     }
 
-    let transaction_ticket = server.ticket;
+    let login_ticket = server.ticket;
+    if (!login_ticket) {
+        login_ticket = server.login_ticket;
+    }
+
     let site = server.site;
     let server_url = server.server_url;
+    if (!server_url) {
+        server_url = server.server_name;
+    }
 
-
-    if (!transaction_ticket) {
+    if (!login_ticket) {
         alert("No ticket for upload");
     }
     let upload_dir = kwargs.upload_dir;
@@ -37,19 +43,25 @@ let upload_file = (kwargs) => {
         upload_dir = "";
     }
 
-
     // build the form data structure
     let fd = new FormData();
     for (let i = 0; i < files.length; i++) {
         fd.append("file"+i, files[i]);
         var name = files[i].name;
-        var path = files[i].path;
         fd.append("file_name"+i, name);
-        fd.append("file_path"+i, path);
+
+        var path = files[i].path;
+        // if file[i].path is undefined in the files object,
+        // it's causing the upload server not to recognize the file names
+        // so we will add this only if path is defined.
+        if (path) {
+            fd.append("file_path"+i, path);
+        }
+
     }
     fd.append("num_files", files.length);
-    fd.append('login_ticket', transaction_ticket);
-    fd.append('upload_dir',upload_dir)
+    fd.append('login_ticket', login_ticket);
+    fd.append('upload_dir', upload_dir)
 
 
     /* event listeners */
@@ -78,6 +90,10 @@ let upload_file = (kwargs) => {
     //xhr.withCredentials = true;
     //alert("/tactic/"+site+"/default/UploadServer/");
     let full_url;
+    if (!server_url) {
+        server_url = "";
+    }
+
     if (site && site !== "default") {
         full_url = server_url+"/tactic/"+site+"/default/UploadServer/";
     }
@@ -90,6 +106,5 @@ let upload_file = (kwargs) => {
 
 }
 
-
-export { upload_file };
+//export { upload_files };
 

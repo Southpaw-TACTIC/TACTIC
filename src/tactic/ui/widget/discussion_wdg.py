@@ -183,13 +183,6 @@ class DiscussionElementWdg(BaseTableElementWdg):
            sk_input.value = note_top.getAttribute('note_search_key');
             '''
 
-        # disable the default activator
-        # self.menu.set_activator_over(layout, 'spt_note_header', js_action=js_action)
-
-        # add action triggle for context itself
-        #self.menu.set_activator_over(layout, 'spt_note', js_action=js_action)
-        #self.menu.set_activator_out(layout, 'spt_discussion_top')
-
 
         DiscussionWdg.add_layout_behaviors(layout, self.hidden, self.allow_email, self.show_task_process)
         
@@ -343,58 +336,13 @@ class DiscussionWdg(BaseRefreshWdg):
             }
 
             var top = discussion_top;
-           
+
             // refresh dialogs (if loaded) and note counts for all contexts
             var dialog_contents = top.getElements(".spt_discussion_content");
             var parent_key = top.getAttribute("spt_search_key");
 
             spt.panel.refresh_element(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
             return;
-
-            /*
-            var s = TacticServerStub.get();
-            //var num_processes = s.eval("@COUNT(@UNIQUE(@GET(sthpw/note.process)))", {search_keys: parent_key});
-            if (true || dialog_contents.length == num_processes) {
-                for (var i = 0; i < dialog_contents.length; i++) {
-                    var dialog_content = dialog_contents[i];
-                    var group_top = dialog_content.getParent(".spt_discussion_process_top");
-                    var process = group_top.getAttribute('self_context');
-
-                    // refresh the dialog and the note count for this context
-                    if (group_top && group_top.getAttribute("spt_is_loaded") == "true") {
-                        var parent_key = dialog_content.getAttribute('spt_parent_key');
-                        var class_name = 'tactic.ui.widget.NoteCollectionWdg';
-                        var kwargs = {
-                            parent_key: parent_key,
-                            context: process,
-                            default_num_notes: dialog_content.getAttribute('spt_default_num_notes'),
-                            note_expandable: dialog_content.getAttribute('spt_note_expandable'),
-                            note_format: dialog_content.getAttribute('spt_note_format')
-                        }
-
-                        // clear textarea and toggle add widget
-                        var text = top.getElement('textarea[@name=note]');
-                        if (text)
-                            text.value = '';
-                        var add_note = top.getElement(".spt_discussion_add_note");
-                        if (add_note)
-                            spt.toggle_show_hide(add_note);
-
-                        // update dialog
-                        spt.panel.load(dialog_content, class_name, kwargs, {}, {is_refresh: 'true'});
-                    }
-                    // update note count
-                    var note_count_div = group_top.getElement('.spt_note_count');
-                    if (note_count_div) {
-
-                        var note_count = s.eval("@COUNT(sthpw/note['process', '" + process + "'])", {search_keys: [parent_key]});
-                        note_count_div.innerHTML = '(' + note_count + ')';
-                    }
-                }
-            } else {
-                spt.panel.refresh(top, {default_contexts_open: default_contexts_open, is_refresh: 'true'});
-            }
-            */
         }
         '''
 
@@ -529,110 +477,6 @@ class DiscussionWdg(BaseRefreshWdg):
             '''
             } )
 
-        submit_class = cls.get_note_class(hidden, 'spt_discussion_submit') 
-        # for the Submit button
-        layout.add_relay_behavior( {
-        'type': 'mouseup',
-        'bvr_match_class': submit_class,
-        'refresh': refresh,
-        'cbjs_action': '''
-
-        var note_top = bvr.src_el.getParent(".spt_add_note_top");
-        var values = spt.api.get_input_values(note_top, null, false);
-        if (values.note == '') {
-            spt.alert("Please enter a note before saving");
-        }
-        else {
-            var top = bvr.src_el.getParent(".spt_discussion_add_note");
-            var attach_top = top.getElement(".spt_attachment_top");
-            var ticket_key = attach_top.getAttribute('ticket_key');
-            var files = attach_top.files;
-            var server = TacticServerStub.get();
-            if (!ticket_key)
-                server.start({title: 'New Note', transaction_ticket: ticket_key});
-
-            if (typeof(files) != 'undefined') {
-                values['files'] = files;
-                values['ticket'] = ticket_key;
-            }
-            else {
-                values['files'] = [];
-            }
-            // rename add_process and add_context for the Cmd
-            var process = values.add_process;
-            values['process'] = process;
-            var context = values.add_context;
-            values['context'] = context;
-            delete values.add_process;
-            delete values.add_context;
-
-            var cmd = 'tactic.ui.widget.DiscussionAddNoteCmd';
-            var success = false;
-            try{
-                server.execute_cmd(cmd, values);
-                server.finish();
-                success = true;
-            }
-            catch (e) {
-                spt.alert(spt.exception.handler(e));
-                server.abort();
-            }
-
-            attach_top.files = [];
-            var attach_list = spt.get_element(attach_top, ".spt_attachment_list");
-            attach_list.innerHTML = "";
-            if (bvr.refresh) {
-              spt.discussion.refresh(top);
-            }
-
-            spt.notify.show_message("Note added");
-
-            %s
-        }
-        ''' % (on_submit_js)
-        })
-
-
-
-        layout.add_relay_behavior( {
-            'type': 'click',
-            'width': "",
-            'align': "",
-            'bvr_match_class': 'spt_open_thumbnail',
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_discussion_top");
-            var tile_tops = top.getElements(".spt_open_thumbnail");
-
-
-            var search_keys = [];
-            for (var i = 0; i < tile_tops.length; i++) {
-                var tile_top = tile_tops[i];
-                var tile_top = tile_top.getFirst();
-                var search_key = tile_top.getAttribute("spt_search_key_v2");
-                var search_key = tile_top.getAttribute("id");
-                search_key = search_key.replace("thumb_", "");
-                search_keys.push(search_key);
-            }
-
-            var tile_top = bvr.src_el;
-            var tile_top = tile_top.getFirst();
-            var search_key = tile_top.getAttribute("spt_search_key_v2");
-            var search_key = tile_top.getAttribute("id");
-            search_key = search_key.replace("thumb_", "");
-
-            var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
-            var kwargs = {
-                search_keys: search_keys,
-                search_key: search_key,
-                align: bvr.align
-            };
-            if (bvr.width) 
-                kwargs['width'] = bvr.width;
-            var gallery_el = top.getElement(".spt_note_gallery");
-            spt.panel.load(gallery_el, class_name, kwargs);
-
-            '''
-        } )
 
 
 
@@ -1820,6 +1664,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 
         div = self.top
+        div.add_class("spt_discussion_top")
         
         context_count = 0
 
@@ -2430,6 +2275,249 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
 
 
+    def add_layout_behaviors(cls, layout, hidden=False, allow_email=True, show_task_process=False, refresh=True, on_submit_js=""):
+        '''hidden means it's a hidden row table'''
+
+        layout.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_note_attachment',
+            'cbjs_action': '''
+            var code_str = bvr.src_el.getAttribute("spt_note_attachment_codes");
+            var server = TacticServerStub.get();
+            var codes = code_str.split("|");
+            for (var i = 0; i < codes.length; i++) {
+                // get the files for this snapshot
+                var path = server.get_path_from_snapshot(codes[i], {mode:'web'});
+                window.open(path);
+            }
+            '''
+        } )
+
+
+
+        match_class = 'spt_discussion_add'
+        widget_kwargs={
+            'hidden': hidden,
+            'allow_email': allow_email,
+            'show_task_process': show_task_process,
+            'process': '__WIDGET_UNKNOWN__',
+            'context': '__WIDGET_UNKNOWN__',
+            'search_key': '__WIDGET_UNKNOWN__',
+            'display': True,
+        }
+        widget_key = layout.generate_widget_key('tactic.ui.widget.DiscussionAddNoteWdg', inputs=widget_kwargs)
+
+
+        layout.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': match_class,
+            'hidden': hidden,
+            'allow_email': allow_email,
+            'show_task_process': show_task_process,
+            'widget_key': widget_key,
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_dialog_top");
+            if (top == null) {
+                top = bvr.src_el.getParent(".spt_discussion_top");
+            }
+
+            var container = spt.get_element(top, ".spt_add_note_container");
+            var add_note = spt.get_element(container, ".spt_discussion_add_note");
+
+            if (! add_note) {
+                var kwargs = container.getAttribute("spt_kwargs");
+                kwargs = kwargs.replace(/'/g, '"');
+                kwargs = JSON.parse(kwargs);
+
+                if (spt.table) {
+                    var layout = spt.table.get_layout();
+                    var upload_id = layout.getAttribute('upload_id')
+                    kwargs.upload_id = upload_id; 
+                }
+
+                var widget_kwargs = {
+                        'hidden': bvr.hidden,
+                        'allow_email': bvr.allow_email,
+                        'show_task_process': bvr.show_task_process,
+                    }
+                var class_name = bvr.widget_key;
+                spt.panel.load(container, class_name, kwargs, widget_kwargs,  {fade: false, async: false});
+                //add_note = top.getElement(".spt_discussion_add_note");
+                add_note = spt.get_element(top, ".spt_discussion_add_note");
+                spt.toggle_show_hide(add_note);
+            }
+            
+            if (bvr.src_el.getAttribute('force_show') == 'true')
+                spt.show(add_note);
+            else
+                spt.toggle_show_hide(add_note);
+
+            // select the appropriate context or process
+            var select = add_note.getElement(".spt_add_note_process");
+            if (select) {
+                var process = bvr.src_el.getAttribute("spt_process");
+                var context = bvr.src_el.getAttribute("spt_context");
+
+                var match = process ? process : context;
+                for(var i = 0; i < select.options.length; i++) {
+                  
+                    if (select.options[i].value == match) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            '''
+            } )
+
+
+        # DEPRECATED?
+        # for expand note widget
+        layout.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_discussion_expand',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_discussion_top");
+            var float = top.getElement(".spt_float");
+            var clone = spt.behavior.clone(top);
+
+            expand = clone.getElement(".spt_discussion_expand");
+            spt.hide(expand);
+
+            var code = bvr.src_el.getAttribute('code')
+            var title = "Notes: " + code;
+            var element_name = bvr.src_el.getAttribute('search_key')
+
+            spt.tab.set_main_body_tab();
+            spt.tab.add_new(element_name, title);
+            spt.tab.load_node(element_name, clone);
+            spt.tab.select(element_name);
+
+
+            var notes = clone.getElements(".spt_note_content");
+            for ( var i = 0; i < notes.length; i++ ) {
+                spt.show( notes[i] );
+            }
+
+            '''
+            } )
+
+        submit_class = "spt_discussion_submit"
+        # for the Submit button
+        layout.add_relay_behavior( {
+        'type': 'mouseup',
+        'bvr_match_class': submit_class,
+        'refresh': refresh,
+        'cbjs_action': '''
+
+        var note_top = bvr.src_el.getParent(".spt_add_note_top");
+        var values = spt.api.get_input_values(note_top, null, false);
+        if (values.note == '') {
+            spt.alert("Please enter a note before saving");
+        }
+        else {
+            var top = bvr.src_el.getParent(".spt_discussion_add_note");
+            var attach_top = top.getElement(".spt_attachment_top");
+            var ticket_key = attach_top.getAttribute('ticket_key');
+            var files = attach_top.files;
+            var server = TacticServerStub.get();
+            if (!ticket_key)
+                server.start({title: 'New Note', transaction_ticket: ticket_key});
+
+            if (typeof(files) != 'undefined') {
+                values['files'] = files;
+                values['ticket'] = ticket_key;
+            }
+            else {
+                values['files'] = [];
+            }
+            // rename add_process and add_context for the Cmd
+            var process = values.add_process;
+            values['process'] = process;
+            var context = values.add_context;
+            values['context'] = context;
+            delete values.add_process;
+            delete values.add_context;
+
+            var cmd = 'tactic.ui.widget.DiscussionAddNoteCmd';
+            var success = false;
+            try{
+                server.execute_cmd(cmd, values);
+                server.finish();
+                success = true;
+            }
+            catch (e) {
+                spt.alert(spt.exception.handler(e));
+                server.abort();
+            }
+
+            attach_top.files = [];
+            var attach_list = spt.get_element(attach_top, ".spt_attachment_list");
+            attach_list.innerHTML = "";
+            if (bvr.refresh) {
+              spt.discussion.refresh(top);
+            }
+
+            spt.notify.show_message("Note added");
+
+            %s
+        }
+        ''' % (on_submit_js)
+        })
+
+
+
+        layout.add_relay_behavior( {
+            'type': 'click',
+            'width': "",
+            'align': "",
+            'bvr_match_class': 'spt_open_thumbnail',
+            'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_discussion_top");
+            var tile_tops = top.getElements(".spt_open_thumbnail");
+
+
+            var search_keys = [];
+            for (var i = 0; i < tile_tops.length; i++) {
+                var tile_top = tile_tops[i];
+                var tile_top = tile_top.getFirst();
+                var search_key = tile_top.getAttribute("spt_search_key_v2");
+                var search_key = tile_top.getAttribute("id");
+                search_key = search_key.replace("thumb_", "");
+                search_keys.push(search_key);
+            }
+
+            var tile_top = bvr.src_el;
+            var tile_top = tile_top.getFirst();
+            var search_key = tile_top.getAttribute("spt_search_key_v2");
+            var search_key = tile_top.getAttribute("id");
+            search_key = search_key.replace("thumb_", "");
+
+            var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
+            var kwargs = {
+                search_keys: search_keys,
+                search_key: search_key,
+                align: bvr.align
+            };
+            if (bvr.width) 
+                kwargs['width'] = bvr.width;
+            var gallery_el = top.getElement(".spt_note_gallery");
+            spt.panel.load(gallery_el, class_name, kwargs);
+
+            '''
+        } )
+
+
+
+    add_layout_behaviors = classmethod(add_layout_behaviors)
+
+
+
+
+
+
     def get_display(self):
 
         #TODO: find a better fix?
@@ -2463,15 +2551,21 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         ''')
 
       
-        content_div = self.top
+        content_div = DivWdg()
+        self.top.add(content_div)
         content_div.add_style("min-width: 300px")
         content_div.add(style)
 
+
+
         is_standalone = self.kwargs.get("is_standalone")
         on_submit_js = self.kwargs.get("on_submit_js") or ""
+
         if is_standalone in [True, 'true']:
             content_div.add_class("spt_discussion_top")
-            DiscussionWdg.add_layout_behaviors(self.top, allow_email=False, show_task_process=False, on_submit_js=on_submit_js)
+
+        DiscussionWdg.add_layout_behaviors(content_div, allow_email=False, show_task_process=False, on_submit_js=on_submit_js)
+        DiscussionAddNoteWdg.add_layout_behaviors(content_div, allow_email=False, show_task_process=False, on_submit_js=on_submit_js)
 
         self.set_as_panel(content_div)
         content_div.add_class("spt_discussion_add_note")
@@ -2834,7 +2928,10 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         tr, td = table.add_row_cell()
         td.add("<br/>")
 
-        return content_div
+        if self.kwargs.get("is_refresh"):
+            return content_div
+        else:
+            return self.top
 
 
 
