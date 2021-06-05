@@ -1069,18 +1069,16 @@ class Site(object):
 
 
 
+    def get_db_resource_by_search_type(cls, search_type):
+        return None
+    get_db_resource_by_search_type = classmethod(get_db_resource_by_search_type)
+
+
     def get_db_resource(cls, site, database):
         if not site:
             return None
         site_obj = cls.get()
 
-        """
-        if site != "default":
-            from pyasm.biz import Project
-            project_code = Project.get_project_code()
-        else:
-            project_code = None
-        """
 
         data = site_obj.get_connect_data(site)
         if data:

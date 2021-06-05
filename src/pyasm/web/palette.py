@@ -188,17 +188,7 @@ class Palette(object):
     }
 
 
-
-
-
-    #COLORS = DEFAULT
-    #COLORS = SILVER
-    #COLORS = ORIGAMI
     COLORS = AQUA
-    #COLORS = BRIGHT
-    #COLORS = BON_NOCHE
-    #COLORS = MMS
-    #COLORS = AVIATOR
 
 
     TABLE = {
@@ -218,7 +208,7 @@ class Palette(object):
             self._init_palette()
 
         if not self.colors:
-            self.colors = self.COLORS
+            self.colors = self.COLORS.copy()
 
 
         # make sure all of the colors are defined
@@ -232,23 +222,24 @@ class Palette(object):
 
 
     def _init_palette(self):
+        from pyasm.biz import ProjectSetting
         value = self.kwargs.get("palette")
         if value:
             self.set_palette(value)
-            if self.colors:
-                return
 
-        from pyasm.biz import ProjectSetting
-        value = ProjectSetting.get_value_by_key("palette")
-        if value:
-            self.set_palette(value)
-            if self.colors:
-                override = ProjectSetting.get_json_value_by_key("palette/colors")
-                if override:
-                    for n, v in override.items():
-                        self.colors[n] = v
+        if not self.colors:
+            value = ProjectSetting.get_value_by_key("palette")
+            if value:
+                self.set_palette(value)
 
-                return
+
+        if self.colors:
+            override = ProjectSetting.get_json_value_by_key("palette/colors")
+            if override:
+                for n, v in override.items():
+                    self.colors[n] = v
+
+            return
 
         value = ProjectSetting.get_json_value_by_key("palette/colors")
         if value:
@@ -280,7 +271,7 @@ class Palette(object):
                 return
         
 
-        value = self.COLORS
+        value = self.COLORS.copy()
         if value:
             self.set_palette(palette=None, colors=value)
             return
@@ -295,7 +286,7 @@ class Palette(object):
         try:
             if palette:
                 value = palette
-                self.colors = eval(value)
+                self.colors = eval(value).copy()
             elif colors:
                 self.colors = colors
 
@@ -312,11 +303,11 @@ class Palette(object):
             try:
                 value = value.upper()
                 value = value.replace(" ", "_")
-                self.colors = eval("self.%s" % value)
+                self.colors = eval("self.%s" % value).copy()
             except:
                 print("WARNING: palette [%s] does not exist.  Using default" % value)
                 self.colors = self.DEFAULT
-                self.colors = eval("self.%s" % value)
+                self.colors = eval("self.%s" % value).copy()
 
 
     def get_theme(self):

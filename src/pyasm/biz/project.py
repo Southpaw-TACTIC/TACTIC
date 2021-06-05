@@ -629,16 +629,25 @@ class Project(SObject):
 
 
     def get_db_resource_by_search_type(cls, search_type):
+        from pyasm.security import Site
+
+        # allow the site to completely override how it gets the dbresource
+        site_obj = Site.get()
+        if site_obj:
+            db_resource = site_obj.get_db_resource_by_search_type(search_type)
+            if db_resource:
+                return db_resource
+
         if search_type.startswith('sthpw/'):
             # get the local db_resource
-            from pyasm.security import Site
-            site = Site.get_site()
             db_resource = None
+            site = Site.get_site()
             if site:
                 db_resource = Site.get_db_resource(site, "sthpw")
             if not db_resource:
                 db_resource = DbResource.get_default("sthpw")
             return db_resource
+
 
 
         project_code = cls.get_database_by_search_type(search_type)
