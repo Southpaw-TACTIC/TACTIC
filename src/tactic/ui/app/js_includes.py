@@ -65,8 +65,6 @@ class JSIncludes(object):
         "behavior.js",
         "panel.js",
 
-
-        #"ctx_menu.js",
         #"smart_menu.js",
         #"side_bar.js",
         #"action_bar.js", # DEPRECATED
@@ -91,9 +89,10 @@ class JSIncludes(object):
 
         "upload.js",
 
-
-
     ]
+
+
+
 
 
 

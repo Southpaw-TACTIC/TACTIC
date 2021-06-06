@@ -73,7 +73,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         kwargs = jsondumps(self.kwargs)
 
         name = self.get_name()
-        
+
         self.layout.add_relay_behavior( {
         'type': 'click',
         'col_name': name,
@@ -95,6 +95,11 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         kwargs['search_key'] = search_key;
         kwargs['__hidden__'] = true;
         kwargs['src_el'] = bvr.src_el;
+
+        let hidden_row_id = top.getAttribute("spt_hidden_row_id");
+        if (hidden_row_id) {
+            kwargs['hidden_row_id'] = hidden_row_id;
+        }
 
         if (bvr.src_el.loading) {
             return;
@@ -131,6 +136,9 @@ class HiddenRowElementWdg(BaseTableElementWdg):
 
         top = DivWdg()
         top.add_class("spt_hidden_row_activator")
+
+        hidden_row_id = Common.generate_random_key()
+        top.add_attr("spt_hidden_row_id", hidden_row_id)
 
         if sobject.is_insert():
             top.add_style("opacity: 0.3")

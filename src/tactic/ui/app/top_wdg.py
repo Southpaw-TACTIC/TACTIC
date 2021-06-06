@@ -1125,16 +1125,6 @@ class TopWdg(Widget):
 <script src="/context/spt_js/jquery/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         ''')
  
-
-        # add form io
-        """
-        widget.add('''
-<!-- Form builder -->
-<link rel='stylesheet' href='https://unpkg.com/formiojs@latest/dist/formio.full.min.css'>
-<script src='https://unpkg.com/formiojs@latest/dist/formio.full.min.js'></script>
-        ''')
-        """
-
         use_formio = True
         if use_formio:
             widget.add('''
@@ -1213,6 +1203,16 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/spt_js/font-awesome-5.12.0/css/all.css?ver=%s" % (context_url, version))
 
 
+
+        # Test react
+        include_react = True
+        if include_react:
+            widget.add('''
+              <!-- Load React. -->
+              <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+              <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+              <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+            ''')
 
         # add the color wheel css (DEPRECATED)
         #Container.append_seq("Page:css", "%s/spt_js/mooRainbow/Assets/mooRainbow.css" % context_url)

@@ -465,13 +465,13 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div.add(tab)
         div.add_class("spt_tab_container")
         div.add_class("card")
-        div.add_style("padding: 10px")
-        div.add_style("margin: 0px 10px 15px 10px")
 
         tab_container_style = HtmlElement.style('''
 
             .spt_tab_container {
-                padding-top: 10px;
+                margin: 5px 10px 15px 10px;
+                padding: 10px;
+                height: auto;
             }
             
             ''')

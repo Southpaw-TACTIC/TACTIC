@@ -662,17 +662,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         if window_resize_offset:
             div.add_class("spt_window_resize")
             div.add_attr("spt_window_resize_offset", window_resize_offset)
-        # div.add_style("margin: 15px 0px")
 
-        """
-        title_div = DivWdg("Collections") 
-        div.add(title_div)
-        div.add_class("spt_collection_left")
-        title_div.add_style("font-size: 1.2em")
-        title_div.add_style("font-weight: bold")
-        """
-
-        div.add("<hr/>")
 
         # Shelf
         show_shelf = self.kwargs.get("show_collection_shelf")
