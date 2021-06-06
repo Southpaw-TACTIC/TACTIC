@@ -13,7 +13,7 @@
 
 __all__ = ['Palette']
 
-from pyasm.common import Container, Config, Common
+from pyasm.common import Container, Config, Common, jsonloads
 from pyasm.search import Search
 
 import colorsys, types
@@ -232,13 +232,7 @@ class Palette(object):
             if value:
                 self.set_palette(value)
 
-
         if self.colors:
-            override = ProjectSetting.get_json_value_by_key("palette/colors")
-            if override:
-                for n, v in override.items():
-                    self.colors[n] = v
-
             return
 
         value = ProjectSetting.get_json_value_by_key("palette/colors")
@@ -306,8 +300,22 @@ class Palette(object):
                 self.colors = eval("self.%s" % value).copy()
             except:
                 print("WARNING: palette [%s] does not exist.  Using default" % value)
-                self.colors = self.DEFAULT
                 self.colors = eval("self.%s" % value).copy()
+
+
+        from pyasm.biz import ProjectSetting
+        override = ProjectSetting.get_json_value_by_key("palette/colors")
+        if override:
+            try:
+                if isinstance(override, str):
+                    override = jsonloads(override)
+                for n, v in override.items():
+                    self.colors[n] = v
+            except Exception as e:
+                print("WARNING: ", e)
+
+
+
 
 
     def get_theme(self):
