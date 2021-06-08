@@ -3313,7 +3313,6 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
     def get_display(self):
-        print("A"*50)
 
         aspect_ratio = self.kwargs.get("aspect_ratio")
 
