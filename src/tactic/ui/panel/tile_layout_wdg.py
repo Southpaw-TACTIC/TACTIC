@@ -448,7 +448,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             
             self.process_groups()
             
-            
             if js_load:
                 content_wdg = self.get_js_content_wdg()
                 inner.add(content_wdg)
@@ -3428,12 +3427,13 @@ class ThumbWdg2(BaseRefreshWdg):
 
 
                 path = Common.pathname2url(path)
-                #img = HtmlElement.img(src=path)
-                #img = HtmlElement.img()
-                img = DivWdg()
-                img.add_style("background-image", '''url(%s)''' % path)
-                img.add_style("background-size", "cover")
-                img.add_style("background-position", "center")
+                if path.startswith("/context/icons/mime-type"):
+                    img = HtmlElement.img(src=path)
+                else:
+                    img = DivWdg()
+                    img.add_style("background-image", '''url(%s)''' % path)
+                    img.add_style("background-size", "cover")
+                    img.add_style("background-position", "center")
 
                 div.add_attr("spt_main_path", self.get_main_path())
 
