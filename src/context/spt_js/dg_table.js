@@ -2085,6 +2085,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var new_search = bvr.new_search == true;
 
     var panel = bvr.panel;
+    var title = panel.getAttribute("spt_title") || "";
     // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an
     // embedded table
     if( panel ) {
@@ -2364,7 +2365,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var column_widths = [];
     var search_keys = [];
     var custom_views = target.getAttribute("spt_custom_views") || "{}";
-    
+
     if (version == "2") {
         if (bvr.element_names) {
             element_names = bvr.element_names;
@@ -2455,7 +2456,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'window_resize_offset': window_resize_offset,
         'custom_views': custom_views,
         'resize_cbjs': resize_cbjs,
-        'reorder_cbjs': reorder_cbjs
+        'reorder_cbjs': reorder_cbjs,
+        'title': title,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;
