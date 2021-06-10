@@ -54,19 +54,12 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add_style("z-index: 2000")
 
 
-        width = self.kwargs.get("width")
         height = self.kwargs.get("height")
 
         # default to top.
         align = self.kwargs.get("align")
         if not align:
             align = "top"
-
-
-        if not width:
-            width = 1300
-        else:
-            width = int(width)
 
 
         paths = self.get_paths(file_type='main')
@@ -85,11 +78,8 @@ class GalleryWdg(BaseRefreshWdg):
                     description = ""
                 descriptions.append(description)
 
-        total_width = width * len(paths)
         inner.add_behavior( {
         'type': 'load',
-        'width': width,
-        'total_width': total_width,
         'descriptions': descriptions,
         'cbjs_action': '''
         spt.gallery = {};
@@ -113,7 +103,6 @@ class GalleryWdg(BaseRefreshWdg):
 
         }, 50)
 
-        spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
         spt.gallery.last_index = 0;
@@ -184,7 +173,7 @@ class GalleryWdg(BaseRefreshWdg):
 
 
             // can't tween percentage with this library???
-            var width = spt.gallery.width;
+            var width = window.innerWidth;
             var margin = - width * index;
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
@@ -223,7 +212,7 @@ class GalleryWdg(BaseRefreshWdg):
 
             let offset = (index * 110) + 55;
             //offset = "calc(50% - "+offset+"px)";
-            offset = screen.width/2 - offset;
+            offset = width/2 - offset;
             new Fx.Tween(shelf_top,{duration: 250}).start("margin-left", offset);
 
             spt.gallery.last_index = index;
@@ -272,7 +261,6 @@ class GalleryWdg(BaseRefreshWdg):
         scroll = DivWdg(css='spt_gallery_scroll')
         inner.add(scroll)
         scroll.set_box_shadow()
-        scroll.add_style("width: %s" % width)
         if height:
             scroll.add_style("height: %s" % height)
         scroll.add_style("overflow-x: hidden")
@@ -293,16 +281,16 @@ class GalleryWdg(BaseRefreshWdg):
         scroll.add(content)
         content.add_class("spt_gallery_content")
 
-        # make the items vertically align to bottom (flex-emd)
+        # make the items vertically align to bottom (flex-end)
         # on a regular monitor, align to top (flex-start) is better
         if align == 'bottom':
             align_items = 'flex-end'
         else:
             align_items = 'flex-start'
-        content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s; justify-content: center;"%align_items)
+        content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s;"%align_items)
 
-        content.add_style("width: %s" % total_width)
-        content.add_style("height: calc(100% - 100px)")
+        content.add_style("height: calc(100% - 80px)")
+        content.add_style("width: max-content")
 
         top.add_behavior( {
             'type': 'load',
@@ -366,10 +354,7 @@ class GalleryWdg(BaseRefreshWdg):
                 print("Cannot find the thumb_path [%s] "%i )
                 thumb_path = ''
 
-            #path_div.add_style("width: %s" % width)
-            #if height:
-            #    path_div.add_style("height: %s" % height)
-            path_div.add_style("width: 100%")
+            path_div.add_style("width: 100vw")
             path_div.add_style("height: 100%")
             path_div.add_style("overflow-x: hidden")
             path_div.add_style("overflow-y: hidden")
@@ -512,15 +497,14 @@ class GalleryWdg(BaseRefreshWdg):
 
         desc_div = DivWdg()
         desc_div.add_class("spt_gallery_description")
-        desc_div.add_style("height: 30px")
-        desc_div.add_style("width: %s" % width)
+        desc_div.add_style("height: 20px")
+        desc_div.add_style("width: 100vw")
         desc_div.add_style("text-align: center")
         desc_div.add_style("background: rgba(0,0,0,1)")
         desc_div.add_style("color: #bbb")
         desc_div.add_style("font-weight: bold")
         desc_div.add_style("font-size: 16px")
-        desc_div.add_style("padding-top: 10px")
-        desc_div.add_style("margin-left: -%s" % (width/2))
+        desc_div.add_style("margin-left: -50vw")
         desc_div.add_style("z-index: 1000")
         desc_div.add("")
 
