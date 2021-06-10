@@ -97,9 +97,8 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
         add_div.add(icon)
         add_div.add("<span>Create new Collection<span>")
         add_div.add_style("text-align: center")
-        add_div.add_style("background-color: #EEEEEE")
+        add_div.add_style("background-color: var(--spt_palette_background2)")
         add_div.add_style("padding: 5px")
-        add_div.add_style("height: 20px")
         add_div.add_class("hand")
 
 
@@ -244,10 +243,11 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             collection_div.add_class("spt_collection_div")
             content_div.add(collection_div)
             collection_div.add_style("margin: 3px 5px 0px 5px")
+            collection_div.add_style("display: flex")
 
-            go_wdg = DivWdg()
-            collection_div.add(go_wdg)
-            go_wdg.add_style("float: right")
+            #go_wdg = DivWdg()
+            #collection_div.add(go_wdg)
+            #go_wdg.add_style("float: right")
         
             #TODO: add some interaction with this arrow
             # icon = IconWdg(name="View Collection", icon="FA_CHEVRON_RIGHT")
@@ -273,9 +273,8 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             check = CheckboxWdg("collection_key")
             check.add_class("spt_collection_checkbox")
             check_div.add(check)
-            check_div.add_style("float: left")
             check_div.add_style("margin-right: 5px")
-            check_div.add_style("margin-top: -3px")
+            check_div.add_style("margin-top: 3px")
 
             check.add_attr("collection_key", collection.get_search_key() )
             
@@ -296,8 +295,7 @@ class CollectionAddDialogWdg(BaseRefreshWdg):
             add_button.add_style("display: none")
         add_button.add("Add Items to Selected")
         add_button.add_style("margin: 0px 10px 10px 10px")
-        add_button.add_style("width: 100px")
-        add_button.add_style("height: 20px")
+        add_button.add_style("width: 100%")
         add_button.add_class("btn btn-default")
         dialog.add(add_button)
 
@@ -601,6 +599,19 @@ class CollectionLayoutWdg(ToolLayoutWdg):
     get_kwargs_keys = classmethod(get_kwargs_keys)
 
 
+    def get_styles(self):
+
+        styles = HtmlElement.style('''
+
+            .spt_collection_top .spt_group_td_inner {
+                align-items: center;
+            }
+
+            ''')
+
+        return styles
+
+
 
     def get_content_wdg(self):
         self.search_type = self.kwargs.get("search_type")
@@ -628,6 +639,8 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         top.add(table)
         table.add_row()
         table.add_style("width: 100%")
+
+        table.add( self.get_styles() )
 
         #tr, header = table.add_row_cell()
         #header.add_style("height: 40px")
@@ -783,10 +796,10 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         folder_icon = IconWdg(icon="FAR_FOLDER_OPEN", width='30px')
 
         asset_lib_div.add(folder_icon)
-        asset_lib_div.add_style("margin: 5px 0px 5px 0px")
-        asset_lib_div.add_style("height: 20px")
+        asset_lib_div.add_style("margin: 5px 0px 10px 0px")
         asset_lib_div.add_style("padding-top: 5px")
-        asset_lib_div.add_style("padding-bottom: 10px")
+        asset_lib_div.add_style("padding-bottom: 5px")
+        asset_lib_div.add_style("padding-left: 5px")
         asset_lib_div.add_style("font-weight: bold")
 
         asset_lib_div.add(library_title)
@@ -854,6 +867,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 class CollectionFolderWdg(BaseRefreshWdg):
     '''This is the collections folder structure in CollectionLayoutWdg's left panel. '''
 
+
     def get_display(self):
 
         self.search_type = self.kwargs.get("search_type")
@@ -893,6 +907,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
 
         collections = search.get_sobjects()
+
         collections_div = DivWdg()
 
         is_refresh = self.kwargs.get("is_refresh")
@@ -914,7 +929,6 @@ class CollectionFolderWdg(BaseRefreshWdg):
         div.add(collections_div)
 
         collections_div.add_class("spt_collection_list")
-        collections_div.add_style("margin: 5px 0px 5px -5px")
 
         no_results_div = DivWdg()
         collections_div.add(no_results_div)
@@ -927,7 +941,6 @@ class CollectionFolderWdg(BaseRefreshWdg):
         no_results_div.add_class("spt_no_results")
 
         from tactic.ui.panel import ThumbWdg2
-
 
 
         collections_div.add_relay_behavior( {
@@ -947,7 +960,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
                 items[i].setStyle("background", "");
                 items[i].setStyle("box-shadow", "");
             }
-            bvr.src_el.setStyle("background", "#EEE");
+            bvr.src_el.setStyle("background", "var(--spt_palette_background2)");
             var collection_key = bvr.src_el.getAttribute("spt_collection_key");
             var collection_code = bvr.src_el.getAttribute("spt_collection_code");
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
@@ -1078,6 +1091,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
         if not collection:
+            # top level search
             search_type = self.kwargs.get("search_type")
 
             parts = self.kwargs.get("search_type").split("/")
@@ -1094,12 +1108,18 @@ class CollectionContentWdg(BaseRefreshWdg):
                 search = Search(search_type)
 
 
+            search.add_op("begin")
+            search.add_filter("_is_collection", "false")
+            search.add_filter("_is_collection", "NULL", quoted=False)
+            search.add_op("or")
+
             search2 = Search(collection_type)
             search2.add_column("search_code")
             search.add_search_filter("code", search2, op="not in")
             sobjects = None
         else:
             sobjects = self.kwargs.get("sobjects")
+            search = None
 
 
         # always go by id desc
@@ -1128,7 +1148,11 @@ class CollectionContentWdg(BaseRefreshWdg):
             tile = TileLayoutWdg(
                 **self.kwargs
             )
-        if sobjects:
+
+        if search:
+            tile.set_search(search)
+
+        elif sobjects:
             # put the collectiosn at the end
             x = []
             collections = []
@@ -1157,7 +1181,7 @@ class CollectionContentWdg(BaseRefreshWdg):
             asset_lib_span_div = SpanWdg()
             title_div.add(asset_lib_span_div)
 
-	    # Asset Library folder access
+            # Asset Library folder access
             library_title = "Asset Library"
             icon = IconWdg(name=library_title, icon="FAR_FOLDER_OPEN")
 
@@ -1546,8 +1570,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_attr("spt_search_code", collection.get_code())
         collection_div.add_attr("spt_name", name)
 
-        collection_div.add_style("height: 24px")
-        collection_div.add_style("padding-top: 10px")
+        collection_div.add_style("padding: 3px 0px")
 
         collection_div.add_style("display: flex")
         collection_div.add_style("align-items: center")
@@ -1559,6 +1582,7 @@ class CollectionItemWdg(BaseRefreshWdg):
             icon_div.add(icon)
             icon.add_style("float: right")
             icon.add_style("margin-top: -20px")
+            icon.add_style("margin-right: 3px")
             collection_top.add(icon_div)
             icon_div.add_class("spt_collection_open")
             icon_div.add_attr("spt_collection_key", collection.get_search_key())
@@ -1586,7 +1610,8 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("height: 15px")
             count_div.add_style("font-size: 0.8em")
             count_div.add_style("border-radius: 10px")
-            count_div.add_style("background: #DDD")
+            count_div.add_style("background: var(--spt_palette_background3)")
+            count_div.add_style("color: var(--spt_palette_color3)")
             count_div.add_style("position: absolute")
             count_div.add_style("text-align: center")
             count_div.add_style("margin-left: 23px")

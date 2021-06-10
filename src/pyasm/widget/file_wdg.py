@@ -612,7 +612,8 @@ class ThumbWdg(BaseTableElementWdg):
         if missing:
             img = HtmlElement.img(ThumbWdg.get_missing_image())
         elif sobject.get_value("_is_collection", no_exception=True):
-            img = HtmlElement.img("/context/icons/mime-types/folder2.jpg")
+            #img = HtmlElement.img("/context/icons/mime-types/folder2.jpg")
+            img = HtmlElement.img("/context/icons/mime-types/app-menu-icon-9.jpg")
         else:
             img = HtmlElement.img(ThumbWdg.get_no_image())
 
@@ -1353,17 +1354,14 @@ class ThumbWdg(BaseTableElementWdg):
         ext = ext.lower()
 
         if ext in ["xls", "xlsx"]:
-            #icon = "gnome-application-vnd.ms-excel.png"
             icon = "microsoft/Excel-2013.png"
         elif ext in ["ppt", "pptx"]:
-            #icon = "gnome-application-vnd.ms-excel.png"
             icon = "microsoft/Powerpoint-2013.png"
         elif ext in ["doc", "docx", "rtf"]:
             icon = "microsoft/Word-2013.png"
         elif ext == "mp3" or ext == "wav":
             icon = "mp3_and_wav.jpg"
         elif ext == "aif" or ext == 'aiff':
-            #icon = "gnome-audio-x-aiff.png"
             icon = "mp3_and_wav.jpg"
         elif ext == "mpg":
             icon = "gnome-video-mpeg.png"

@@ -1687,7 +1687,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                     
             paths = {}
             if sobject.get("_is_collection", no_exception=True):
-                web_path = "/context/icons/mime-types/folder2.jpg"
+                #web_path = "/context/icons/mime-types/folder2.jpg"
+                web_path = "/context/icons/mime-types/app-menu-icon-8.jpg"
                 paths['web'] = web_path
             else:
                 snapshot = snapshots_by_sobject.get(search_key)
@@ -3513,7 +3514,8 @@ class ThumbWdg2(BaseRefreshWdg):
         if sobject.get_value("_is_collection", no_exception=True):
             from pyasm.common import Environment
             install_dir = Environment.get().get_install_dir()
-            path = "/context/icons/mime-types/folder2.jpg"
+            #path = "/context/icons/mime-types/folder2.jpg"
+            path = "/context/icons/mime-types/app-menu-icon-9.jpg"
 
             self.lib_path = "%s/src%s" % (install_dir, path)
             self.icon_path = "%s/src%s" % (install_dir, path)
