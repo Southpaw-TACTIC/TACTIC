@@ -448,7 +448,6 @@ class TileLayoutWdg(ToolLayoutWdg):
 
             self.process_groups()
 
-
             if js_load:
                 content_wdg = self.get_js_content_wdg()
                 inner.add(content_wdg)
