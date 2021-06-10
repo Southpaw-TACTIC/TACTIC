@@ -1073,7 +1073,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         self.kwargs["scale"] = 75
         self.kwargs["show_scale"] = False
-        self.kwargs["expand_mode"] = "plain"
+        #self.kwargs["expand_mode"] = "plain"
         self.kwargs["show_search_limit"] = False
 
         top.add_style("overflow-y", "auto")

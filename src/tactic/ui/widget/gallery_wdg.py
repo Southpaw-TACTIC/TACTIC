@@ -46,7 +46,6 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add_style("top: 0px")
         inner.add_style("left: 0px")
         inner.add_style("width: 100%")
-        #inner.add_style("height: 100%")
         inner.add_style("bottom: 0px")
         inner.add_style("padding-bottom: 40px")
 
@@ -55,19 +54,12 @@ class GalleryWdg(BaseRefreshWdg):
         inner.add_style("z-index: 2000")
 
 
-        width = self.kwargs.get("width")
         height = self.kwargs.get("height")
 
         # default to top.
         align = self.kwargs.get("align")
         if not align:
             align = "top"
-
-
-        if not width:
-            width = 1300
-        else:
-            width = int(width)
 
 
         paths = self.get_paths(file_type='main')
@@ -86,11 +78,8 @@ class GalleryWdg(BaseRefreshWdg):
                     description = ""
                 descriptions.append(description)
 
-        total_width = width * len(paths)
         inner.add_behavior( {
         'type': 'load',
-        'width': width,
-        'total_width': total_width,
         'descriptions': descriptions,
         'cbjs_action': '''
         spt.gallery = {};
@@ -101,6 +90,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         spt.gallery.top = bvr.src_el;
         spt.gallery.content = spt.gallery.top.getElement(".spt_gallery_content");
+        spt.gallery.shelf = spt.gallery.top.getElement(".spt_gallery_shelf");
         spt.gallery.content.setStyle('opacity','0.1')
         spt.gallery.desc_el = spt.gallery.top.getElement(".spt_gallery_description");
 
@@ -111,29 +101,11 @@ class GalleryWdg(BaseRefreshWdg):
 		// fade in
         spt.gallery.content.set('tween', {duration: 250}).fade('in');
 
-        /*
-		for (var k=0; k < items.length; k++) {
-		    var sizes = items[k].getSize();
-		    var item_h = sizes.y;
-		    var item_w = sizes.x;
-		    if (item_h >= item_w){
-			    //items[k].setStyle('width', 'auto');
-			    //items[k].setStyle('height', '100%');
-		    }
-		    else {
-			    //items[k].setStyle('width','auto');
-			    //items[k].setStyle('height','100%');
-		    }
-
-		}
-        */
-
-
         }, 50)
 
-        spt.gallery.width = bvr.width;
         spt.gallery.descriptions = bvr.descriptions;
         spt.gallery.index = 0;
+        spt.gallery.last_index = 0;
         spt.gallery.total = bvr.descriptions.length;
         spt.gallery.left_arrow = bvr.src_el.getElement('.spt_left_arrow');
         spt.gallery.right_arrow = bvr.src_el.getElement('.spt_right_arrow');
@@ -183,6 +155,7 @@ class GalleryWdg(BaseRefreshWdg):
 
         spt.gallery.show_index = function(index) {
 
+            let last_index = spt.gallery.last_index;
 
             // stop all videos
             var videos = spt.gallery.top.getElements(".video-js");
@@ -200,12 +173,11 @@ class GalleryWdg(BaseRefreshWdg):
 
 
             // can't tween percentage with this library???
-            var width = spt.gallery.width;
+            var width = window.innerWidth;
             var margin = - width * index;
             var content = spt.gallery.content;
             //content.setStyle("margin-left", margin + "px");
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
-
 
 
             spt.gallery.index = index;
@@ -226,6 +198,26 @@ class GalleryWdg(BaseRefreshWdg):
             }
 
 
+            // move the shelf
+            let shelf_top = spt.gallery.shelf;
+            let items = shelf_top.getElements(".spt_gallery_shelf_item");
+            let last_item = items[last_index];
+            last_item.setStyle("border", "solid 3px transparent");
+            last_item.setStyle("opacity", 0.5)
+
+
+            let item = items[index];
+            item.setStyle("border", "solid 3px red");
+            item.setStyle("opacity", 1.0);
+
+            let offset = (index * 110) + 55;
+            //offset = "calc(50% - "+offset+"px)";
+            offset = width/2 - offset;
+            new Fx.Tween(shelf_top,{duration: 250}).start("margin-left", offset);
+
+            spt.gallery.last_index = index;
+
+ 
 
             var description = spt.gallery.descriptions[index];
             if (!description) {
@@ -269,7 +261,6 @@ class GalleryWdg(BaseRefreshWdg):
         scroll = DivWdg(css='spt_gallery_scroll')
         inner.add(scroll)
         scroll.set_box_shadow()
-        scroll.add_style("width: %s" % width)
         if height:
             scroll.add_style("height: %s" % height)
         scroll.add_style("overflow-x: hidden")
@@ -290,16 +281,16 @@ class GalleryWdg(BaseRefreshWdg):
         scroll.add(content)
         content.add_class("spt_gallery_content")
 
-        # make the items vertically align to bottom (flex-emd)
+        # make the items vertically align to bottom (flex-end)
         # on a regular monitor, align to top (flex-start) is better
         if align == 'bottom':
             align_items = 'flex-end'
         else:
             align_items = 'flex-start'
-        content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s; justify-content: center;"%align_items)
+        content.add_styles("display: flex; flex-flow: row nowrap; align-items: %s;"%align_items)
 
-        content.add_style("width: %s" % total_width)
-        content.add_style("height: 100%")
+        content.add_style("height: calc(100% - 80px)")
+        content.add_style("width: max-content")
 
         top.add_behavior( {
             'type': 'load',
@@ -322,12 +313,6 @@ class GalleryWdg(BaseRefreshWdg):
         } )
 
 
-        """
-        input = TextWdg("keydown")
-        content.add(input)
-        input.add_style("position: absolute")
-        input.add_style("left: -5000px")
-        """
         top.add_behavior( {
             'type': 'keydown',
             'cbjs_action': '''
@@ -369,10 +354,7 @@ class GalleryWdg(BaseRefreshWdg):
                 print("Cannot find the thumb_path [%s] "%i )
                 thumb_path = ''
 
-            #path_div.add_style("width: %s" % width)
-            #if height:
-            #    path_div.add_style("height: %s" % height)
-            path_div.add_style("width: 100%")
+            path_div.add_style("width: 100vw")
             path_div.add_style("height: 100%")
             path_div.add_style("overflow-x: hidden")
             path_div.add_style("overflow-y: hidden")
@@ -395,7 +377,66 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-        #icon = IconWdg(title="Close", icon="/plugins/remington/pos/icons/close.png")
+        shelf = DivWdg()
+        inner.add(shelf)
+        shelf.add_style("width: 100%")
+        shelf.add_style("height: 100px")
+        shelf.add_style("overflow: hidden")
+        shelf.add_style("padding-top: 3px")
+
+        inner_shelf = DivWdg()
+        shelf.add(inner_shelf)
+        inner_shelf.add_class("spt_gallery_shelf")
+        inner_shelf.add_style("display: flex")
+        inner_shelf.add_style("height: 100%")
+        for i, path in enumerate(paths):
+            thumb = DivWdg()
+            inner_shelf.add(thumb)
+            thumb.add_class("spt_gallery_shelf_item")
+            thumb.add_style('''background-image: url("%s")''' % path)
+            thumb.add_style("background-size", "cover")
+            thumb.add_style("background-position", "center")
+            thumb.add_style("height: 94px")
+            thumb.add_style("width: 100px")
+            thumb.add_style("min-width: 100px")
+            thumb.add_style("margin: 0px 5px")
+            thumb.add_style("border: solid 3px transparent")
+            thumb.add_style("box-sizing: border-box")
+            thumb.add_style("opacity: 0.5")
+            thumb.add_attr("spt_index", i)
+
+        shelf.add_relay_behavior( {
+            'type': 'click',
+            'bvr_match_class': "spt_gallery_shelf_item",
+            'cbjs_action': '''
+
+
+            let index = parseInt(bvr.src_el.getAttribute("spt_index"));
+            spt.gallery.show_index(index);
+
+            /*
+            let shelf_top = bvr.src_el.getParent(".spt_gallery_shelf");
+            let items = shelf_top.getElements(".spt_gallery_shelf_item");
+            items.forEach( (item) => {
+                item.setStyle("border", "solid 3px transparent");
+                item.setStyle("opacity", "0.7")
+            } );
+
+            let index = parseInt(bvr.src_el.getAttribute("spt_index"));
+            bvr.src_el.setStyle("border", "solid 3px #DDD");
+            bvr.src_el.setStyle("opacity", 1.0);
+
+            let offset = (index * 110) + 220;
+            //offset = "calc(50% - "+offset+"px)";
+            offset = screen.width/2 - offset;
+            new Fx.Tween(shelf_top,{duration: 250}).start("margin-left", offset);
+            spt.gallery.show_index(index);
+            */
+            '''
+        } )
+
+
+
         icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
         inner.add(icon)
         icon.add_style("position: absolute")
@@ -413,14 +454,14 @@ class GalleryWdg(BaseRefreshWdg):
         icon.add_style("border-radius", "5px")
 
 
-        icon = IconWdg(title="Previous", icon="/context/icons/glyphs/chevron_left.png")
+        icon = IconWdg(title="Previous", icon="FAS_CHEVRON_LEFT", size="3rem")
         inner.add(icon)
         icon.add_class('spt_left_arrow')
         icon.add_style("cursor: pointer")
         icon.add_style("position: absolute")
         icon.add_style("top: 40%")
-        icon.add_style("left: 0px")
-        icon.add_style("opacity: 0.5")
+        icon.add_style("left: 20px")
+        #icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''
@@ -433,13 +474,14 @@ class GalleryWdg(BaseRefreshWdg):
 
 
         icon = IconWdg(title="Next", icon="/context/icons/glyphs/chevron_right.png")
+        icon = IconWdg(title="Previous", icon="FAS_CHEVRON_RIGHT", size="3rem")
         inner.add(icon)
         icon.add_class('spt_right_arrow')
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
         icon.add_style("top: 40%")
-        icon.add_style("right: 0px")
-        icon.add_style("opacity: 0.5")
+        icon.add_style("right: 20px")
+        #icon.add_style("opacity: 0.5")
         icon.add_behavior( {
             'type': 'click_up',
             'cbjs_action': '''
@@ -455,15 +497,14 @@ class GalleryWdg(BaseRefreshWdg):
 
         desc_div = DivWdg()
         desc_div.add_class("spt_gallery_description")
-        desc_div.add_style("height: 30px")
-        desc_div.add_style("width: %s" % width)
+        desc_div.add_style("height: 20px")
+        desc_div.add_style("width: 100vw")
         desc_div.add_style("text-align: center")
         desc_div.add_style("background: rgba(0,0,0,1)")
         desc_div.add_style("color: #bbb")
         desc_div.add_style("font-weight: bold")
         desc_div.add_style("font-size: 16px")
-        desc_div.add_style("padding-top: 10px")
-        desc_div.add_style("margin-left: -%s" % (width/2))
+        desc_div.add_style("margin-left: -50vw")
         desc_div.add_style("z-index: 1000")
         desc_div.add("")
 
