@@ -1418,11 +1418,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # go low level
         from pyasm.security import Site
         site = Site.get_site()
-        if site:
-            db_resource = Site.get_db_resource(site, "sthpw")
-
+        db_resource = Site.get_db_resource(site, "sthpw")
         if not db_resource:
             db_resource = "sthpw"
+
         sql = Sql(db_resource)
         sql.connect()
         impl = sql.get_database_impl()
