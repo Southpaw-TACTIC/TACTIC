@@ -271,7 +271,7 @@ class JobTask(SchedulerTask):
         if not self.job:
             return
 
-		
+
         # set the process key
         process_key = self.get_process_key()
         self.job.set_value("host", process_key)
@@ -368,7 +368,7 @@ class JobTask(SchedulerTask):
             retry_interval = 5
             Container.put(Transaction.KEY, None)
             while 1:
-		    
+
                 try:
                     cmd = Common.create_from_class_path(command, kwargs=kwargs)
                     
