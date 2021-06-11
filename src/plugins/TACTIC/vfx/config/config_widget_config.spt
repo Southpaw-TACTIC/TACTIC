@@ -2274,9 +2274,9 @@ insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00121""")
 insert.set_value('config', """<config>
   <definition>
-    <element name="play_rv" title="Play RV" edit="false" color="false">
+    <element name="play_video" title="Play" edit="false" color="false">
       <display widget="button">
-        <path>rv/play</path>
+        <path>webplayer/play</path>
         <icon>MOVIE_VIEW</icon>
       </display>
     </element>
@@ -2321,7 +2321,7 @@ insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00122""")
 insert.set_value('config', """<config>
   <color>
-    <element name="play_rv">
+    <element name="play_video">
 </element>
     <element name="submit">
 </element>
@@ -2349,7 +2349,7 @@ insert.set_value('config', """<config>
     <element name="files" width="87.0333px"/>
     <element name="submit" width="55.95px"/>
     <element name="checkout" width="53.8833px"/>
-    <element name="play_rv" width="55.95px"/>
+    <element name="play_video" width="55.95px"/>
     <element name="login" width="84.9667px"/>
     <element name="timestamp" width="246.583px"/>
 
@@ -2498,9 +2498,9 @@ insert.set_value('config', """<config>
         <type>text</type>
       </display>
     </element>
-    <element name="play_rv" title="Play RV" edit="false" color="false">
+    <element name="play_video" title="Play" edit="false" color="false">
       <display widget="button">
-        <path>rv/play</path>
+        <path>webplayer/play</path>
         <icon>MOVIE_VIEW</icon>
       </display>
     </element>
@@ -2533,7 +2533,7 @@ insert.set_value('config', """<config>
 </element>
     <element name="parent_code">
 </element>
-    <element name="play_rv">
+    <element name="play_video">
 </element>
     <element name="timestamp">
 </element>
@@ -4129,7 +4129,7 @@ insert.set_value('config', """<config>
     <element name="files" width="87.0333px"/>
     <element name="submit" width="55.95px"/>
     <element name="checkout" width="53.8833px"/>
-    <element name="play_rv" width="55.95px"/>
+    <element name="play_video" width="55.95px"/>
     <element name="login" width="84.9667px"/>
     <element name="timestamp" width="246.583px"/>
 
