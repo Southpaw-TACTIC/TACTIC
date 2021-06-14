@@ -5,10 +5,13 @@
     <description>Configuration views for TACTIC VFX Open Source</description>
   </data>
   <!-- <python path="sql_upgrade.py" undo_path_VOID="sql_upgrade_undo.py"/> -->
-  <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
+  <!--
+          <sobject expression="@SOBJECT(sthpw/project['code',$PROJECT].sthpw/project_type)" search_type="sthpw/project_type" unique="true"/>
+      -->
   <sobject expression="@SOBJECT(sthpw/schema['code',$PROJECT])" search_type="sthpw/schema" unique="true"/>
   <sobject search_type="config/custom_script" seq_max="14"/>
-  <sobject search_type="config/widget_config" expression="@SOBJECT(config/widget_config['category','!=','SideBarWdg']['category','is','NULL']['or'])"/>
+  <sobject search_type="config/widget_config" path="config_view" expression="@SOBJECT(config/widget_config['category','=','CustomLayoutWdg'])" relative_dir_column="view"/>
+  <sobject search_type="config/widget_config" path="config_widget.spt" expression="@SOBJECT(config/widget_config['category','not in','CustomLayoutWdg|SideBarWdg']['category','is','NULL']['or'])"/>
   <sobject search_type="config/widget_config" path="config_sidebar.spt" expression="@SOBJECT(config/widget_config['category','SideBarWdg'])" unique="true"/>
   <sobject search_type="config/naming" seq_max="2"/>
   <sobject search_type="config/client_trigger" seq_max="1"/>

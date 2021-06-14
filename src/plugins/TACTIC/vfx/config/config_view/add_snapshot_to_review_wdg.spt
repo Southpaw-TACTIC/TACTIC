@@ -1,0 +1,120 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """VFX00124""")
+insert.set_value('config', """<config>
+<add_snapshot_to_review_wdg>
+<html>
+<body>
+  <div class="spt_top" style="height:100px; width:400px">
+    <div class="spt_label_div"> </div>
+    <br/>
+    <div>
+      <form name="spt_bin_form">
+        <select name="spt_bin_select" class="spt_bin_select">
+              </select>
+      </form>
+    </div>
+    <div>
+      <input type="button" value="Submit" class="spt_submit_button"/>
+    </div>
+    <br/>
+    <br/>
+    <div class="spt_file_info"> </div>
+  </div>
+</body>
+</html>
+<behavior class="spt_top"><![CDATA[
+
+          var server = TacticServerStub.get();
+          var applet = spt.Applet.get();
+          var top_el = bvr.src_el;
+
+          var search_key = bvr.kwargs.search_key;
+          top_el.search_key = search_key;
+
+          // Get the input snapshot info
+          var snapshot = server.get_by_search_key(search_key);
+          top_el.snapshot = snapshot;
+        
+          // Get the parent info
+          var parent_sobject = server.get_parent(snapshot.__search_key__);
+          top_el.parent_sobject = parent_sobject;
+
+          // Get the file info
+          var files = server.get_path_from_snapshot(snapshot.code);
+          var file_info_el = top_el.getElement(".spt_file_info");
+          //file_info_el.innerHTML = files;
+
+          // Set the Label
+         var label_text = "Choose the bin for submission of: <b>" + parent_sobject.code + " ["+ snapshot.context +"- v" +snapshot.version + "]</b>"   
+         label_div_el = top_el.getElement(".spt_label_div")
+         label_div_el.innerHTML = label_text;
+
+          // Set the context select dropdown values
+          var bin_list = server.eval("@SOBJECT(vfx/review)");
+          var bin_dates = server.eval("@FORMAT(@GET(vfx/review.date), 1999-12-31)");
+
+
+          for (i=0; i<bin_list.length; i++) {
+                var option_value = bin_list[i].code;
+                var bin_date = bin_dates[i];
+                var bin_type = bin_list[i].type;
+                var bin_desc = bin_list[i].description;
+
+                var option_label = bin_date + " [" + bin_type + "] " + bin_desc;
+                var new_option = new Option(option_label, option_value);
+                document.spt_bin_form.spt_bin_select.options[i] = new_option
+          }
+
+
+
+]]></behavior>
+
+
+<behavior class="spt_submit_button"><![CDATA[
+
+          // Setup
+          var server = TacticServerStub.get();
+          var top_el = bvr.src_el.getParent(".spt_top")
+          var search_key = top_el.search_key
+          var snapshot = top_el.snapshot;
+          var snapshot_code = snapshot.code;
+          var parent_sobject = top_el.parent_sobject;
+          var parent_code = parent_sobject.code;
+          var artist = spt.Environment.get().get_user(); 
+
+         // Get the value from the spt_bin_select 
+         var review_code =  document.spt_bin_form.spt_bin_select.value;
+
+
+          // Create the Submission
+          var submission_data = {
+              'review_code': review_code,
+              'parent_code': parent_code,
+              'snapshot_code': snapshot_code,
+              'artist': artist,
+              'search_type': snapshot.search_type,
+              'context': snapshot.context,
+              'version': snapshot.version
+          };
+          var submission = server.insert("vfx/submission", submission_data)
+
+          // Create the submission snapshot and add a dependendy to this snapshot
+          //var submission_snapshot = server.create_snapshot(submission.__search_key__, "publish");
+          //server.add_dependency_by_code(submission_snapshot.code, snapshot.code)
+
+          alert("Successfully Added " + parent_sobject.code + "- " + snapshot.context + " [" + snapshot.version + "]");
+          var popup = spt.popup.get_popup( bvr.src_el ) 
+          spt.popup.close(popup); 
+
+
+
+]]></behavior>
+</add_snapshot_to_review_wdg>
+</config>""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2011-10-26 05:32:53""")
+insert.set_value('view', """add_snapshot_to_review_wdg""")
+#-- End Entry --#
+
