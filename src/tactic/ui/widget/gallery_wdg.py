@@ -377,6 +377,36 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
+        # Add a top shelf
+        top_shelf = DivWdg()
+        #inner.add(top_shelf)
+        top_shelf.add_style("position: fixed")
+        top_shelf.add_style("height: 30px")
+        top_shelf.add_style("width: 100vw")
+        top_shelf.add_style("top: 0px")
+        top_shelf.add_style("left: 0px")
+        top_shelf.add_style("background: rgba(0,0,0,0.3)")
+        top_shelf.add_style("display: flex")
+        top_shelf.add_style("color: #DDD")
+
+        from pyasm.widget import CheckboxWdg
+        checkbox = CheckboxWdg()
+        top_shelf.add(checkbox)
+        checkbox.add_style("width: 20px")
+        checkbox.add_style("height: 20px")
+        checkbox.add_style("margin: 7px 10px")
+
+        select_icon = IconWdg("Select Asset", icon="FA_REMOVE", size="2rem")
+        top_shelf.add(select_icon)
+        select_icon.add_style("margin-left: auto")
+        select_icon.add_style("margin-right: 10px")
+
+
+
+
+
+
+
         shelf = DivWdg()
         inner.add(shelf)
         shelf.add_style("width: 100%")
@@ -437,13 +467,13 @@ class GalleryWdg(BaseRefreshWdg):
 
 
 
-        icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
+        #icon = IconWdg(title="Close", icon="/context/icons/glyphs/close.png", width="40px")
+        icon = IconWdg(title="Close", icon="FA_REMOVE", size="3rem")
         inner.add(icon)
         icon.add_style("position: absolute")
         icon.add_style("cursor: pointer")
-        icon.add_style("top: 30px")
-        icon.add_style("right: 38px")
-        icon.add_style("opacity: 0.5")
+        icon.add_style("top: 20px")
+        icon.add_style("right: 15px")
         icon.add_behavior( {
             'type': 'click_up' ,
             'cbjs_action': '''

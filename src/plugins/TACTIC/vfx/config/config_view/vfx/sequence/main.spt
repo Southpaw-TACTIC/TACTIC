@@ -1,0 +1,32 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00996""")
+insert.set_value('config', """<config>
+<vfx.sequence.main>
+<html>
+<div class="card vfx_sequence_list_top">
+  <element>
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <title>Sequences</title>
+      <search_type>vfx/sequence</search_type>
+      <view>sequence</view>
+      <use_last_search>false</use_last_search>
+      <simple_search_view>custom_filter</simple_search_view>
+      <search_view>link_search:sequence</search_view>
+    </display>
+  </element>
+</div>
+<style type="text/css">
+.vfx_sequence_list_top {
+    margin: 20px;
+}
+</style>
+</html>
+
+</vfx.sequence.main>
+</config>""")
+insert.set_value('timestamp', """2021-06-12 15:59:38.398789""")
+insert.set_value('view', """vfx.sequence.main""")
+#-- End Entry --#
+
