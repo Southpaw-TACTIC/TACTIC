@@ -225,7 +225,7 @@ class ContentBoxWdg(BaseRefreshWdg):
 
         icon_div = DivWdg()
         title_div.add(icon_div)
-        icon = IconButtonWdg(icon="G_UP", width=16)
+        icon = IconButtonWdg(icon="FA_CHEVRON_UP", width=16)
         icon_div.add(icon)
         icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px;''')
         icon_div.add_behavior( {
@@ -252,7 +252,7 @@ class ContentBoxWdg(BaseRefreshWdg):
 
         icon_div = DivWdg()
         title_div.add(icon_div)
-        icon = IconButtonWdg(icon="G_MAXIMIZE", width=16)
+        icon = IconButtonWdg(icon="FA_CHEVRON_UP", width=16)
         icon_div.add(icon)
         icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 0px;''')
 
