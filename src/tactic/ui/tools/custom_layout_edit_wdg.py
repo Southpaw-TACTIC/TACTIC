@@ -1015,7 +1015,10 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                 mako = xml.get_value("config/%s/mako" % view)
                 kwargs = xml.get_value("config/%s/kwargs" % view)
 
-                behavior_nodes = xml.get_nodes("config/%s/behavior" % view)
+                behavior_nodes = xml.get_nodes("config/%s/jsx" % view)
+                if not behavior_nodes:
+                    behavior_nodes = xml.get_nodes("config/%s/behavior" % view)
+
                 callback_nodes = xml.get_nodes("config/%s/callback" % view)
 
                 html_nodes = xml.get_nodes("config/%s/html/*" % view)
@@ -3336,16 +3339,25 @@ class CustomLayoutEditSaveCmd(Command):
 
         layout.append("</html>")
 
-        # FIXME: this is very tenuous
         if behavior:
             if behavior.find('<![CDATA[') != -1:
                 raise TacticException("CDATA is automatically added when it is saved. Do not include any CDATA tag in behavior.")
             behavior = behavior.strip()
-            #behavior = behavior.replace("\\", "\\\\")
+
+
 
             p = re.compile("(<behavior.*?>)")
             behavior = p.sub("\\1<![CDATA[", behavior)
             behavior = behavior.replace("</behavior>", "]]></behavior>")
+
+
+            # TEST JSX transpiling
+            from pyasm.biz import ProjectSetting
+            process_jsx = ProjectSetting.get_value_by_key("feature/process_jsx")
+            if process_jsx == "true":
+                from .jsx_processor import JSXTranspile
+                (behavior, jsxs) = JSXTranspile.process_jsx(behavior)
+                layout.append(jsxs)
 
             layout.append(behavior)
 
@@ -3368,23 +3380,12 @@ class CustomLayoutEditSaveCmd(Command):
         layout.append("</%s>" % view)
         layout.append("</config>")
 
-
-
-
         config_xml = "\n".join(layout)
-
-
-        #f = open("/tmp/tt.xml", 'w')
-        #f.write(config_xml)
-        #f.close()
-
-        #f = open("/tmp/tt.xml")
-        #config_xml = f.read()
-        #f.close()
 
         return config_xml
 
     build_xml = classmethod(build_xml)
+
 
 
 

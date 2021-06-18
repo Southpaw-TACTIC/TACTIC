@@ -360,7 +360,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         style = HtmlElement.style('''
             .spt_tile_title {
                 top: 0;
-                height: 20px;
+                height: 30px;
                 width: 100%;
                 position: absolute;
                 left: 0;
@@ -1932,7 +1932,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
             .spt_tile_title {
                 top: 0;
-                height: 20px;
+                height: 30px;
                 padding: 3px;
                 width: 100%;
                 position: absolute;
@@ -1972,6 +1972,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 color: #FFF;
+                margin-top: -3px;
             }
 
         """
@@ -2224,6 +2225,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         title_div.add_style("max-width: 70%")
         title_div.add_style("overflow: hidden")
         title_div.add_style("text-overflow: ellipsis")
+        title_div.add_style("margin-top: -3px")
 
         header_div.add(title_div)
 
@@ -2467,7 +2469,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         thumb_drag_div.add_class("spt_tile_drag")
         thumb_drag_div.add_style("width: auto")
         thumb_drag_div.add_style("height: auto")
-        thumb_drag_div.add_style("margin-top: 20px")
+        thumb_drag_div.add_style("margin-top: 30px")
         thumb_drag_div.add_behavior( {
             "type": "drag",
             "drag_el": '@',

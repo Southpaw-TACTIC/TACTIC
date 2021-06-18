@@ -798,6 +798,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
                 behavior_str = Xml.get_node_value(behavior_node)
                 behavior_str = behavior_str.strip()
 
+
                 # if the event is specified in the xml, then use that
                 event = Xml.get_attribute(behavior_node, 'event')
 
