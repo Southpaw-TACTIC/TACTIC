@@ -12,7 +12,7 @@ insert.set_value('config', """<config>
       <search_type>vfx/sequence</search_type>
       <view>sequence</view>
       <use_last_search>false</use_last_search>
-      <simple_search_view>custom_filter</simple_search_view>
+      <simple_search_view>sequence_custom_filter</simple_search_view>
       <search_view>link_search:sequence</search_view>
     </display>
   </element>
@@ -26,7 +26,7 @@ insert.set_value('config', """<config>
 
 </vfx.sequence.main>
 </config>""")
-insert.set_value('timestamp', """2021-06-12 15:59:38.398789""")
+insert.set_value('timestamp', """2021-06-12 15:59:38""")
 insert.set_value('view', """vfx.sequence.main""")
 #-- End Entry --#
 
