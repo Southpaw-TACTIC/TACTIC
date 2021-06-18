@@ -40,7 +40,7 @@ insert.set_value('category', """SideBarWdg""")
 insert.set_value('code', """VFX00006""")
 insert.set_value('config', """<config>
   <definition>
-    <element name="dashboard">
+    <element name="dashboard" title="Dashboard" icon="FAS_ROCKET" state="">
       <display class="LinkWdg">
         <class_name>tactic.ui.panel.CustomLayoutWdg</class_name>
         <view>vfx.dashboard.main</view>
@@ -52,7 +52,7 @@ insert.set_value('config', """<config>
         <view>vfx.sequence.main</view>>
       </display>
     </element>
-    <element name="shot" icon="FAS_VIDEO" title="Shots" state="">
+    <element name="shot" title="Shots" icon="FAS_VIDEO" state="">
       <display class="LinkWdg">
         <widget_key>custom_layout</widget_key>
         <view>vfx.shot.main</view>>
@@ -294,10 +294,8 @@ insert.set_value('config', """<config>
     </element>
     <element name="asset" title="Assets" icon="FAS_CUBE">
       <display class="LinkWdg">
-        <search_type>vfx/asset</search_type>
-        <view>asset</view>
-        <search_view>link_search:asset</search_view>
-        <simple_search_view>custom_filter</simple_search_view>
+        <widget_key>custom_layout</widget_key>
+        <view>vfx.asset.main</view>>
       </display>
     </element>
     <element name="layer" title="Layers">

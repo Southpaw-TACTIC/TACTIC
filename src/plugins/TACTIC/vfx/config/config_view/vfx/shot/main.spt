@@ -8,11 +8,12 @@ insert.set_value('config', """<config>
 <div class="card vfx_shot_list_top">
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
-      <title>SHOTS</title>
+      <title>Shots</title>
       <search_type>vfx/shot</search_type>
-      <simple_search_view>shot_custom_filter</simple_search_view>
       <view>shot</view>
       <use_last_search>false</use_last_search>
+      <simple_search_view>shot_custom_filter</simple_search_view>
+      <search_view>link_search:shot</search_view>
     </display>
   </element>
 </div>
@@ -20,7 +21,7 @@ insert.set_value('config', """<config>
 
 </vfx.shot.main>
 </config>""")
-insert.set_value('timestamp', """2021-06-12 16:19:15.942985""")
+insert.set_value('timestamp', """2021-06-12 16:19:15""")
 insert.set_value('view', """vfx.shot.main""")
 #-- End Entry --#
 
