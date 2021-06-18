@@ -1,0 +1,100 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG06168""")
+insert.set_value('config', """<config>
+<vfx.home.main>
+<mako>
+<![CDATA[
+from pyasm.search import Search
+
+from pyasm.web import DivWdg
+div = DivWdg()
+shadow_color = div.get_color("shadow")
+
+num_shots = Search.eval("@COUNT(vfx/shot)")
+num_assets = Search.eval("@COUNT(vfx/asset)")
+
+num_checkins = Search.eval("@COUNT(sthpw/snapshot['project_code','$PROJECT'])")
+storage_space = "5GB"
+num_tasks = Search.eval("@COUNT(sthpw/task['project_code','$PROJECT']['status','not in','Complete'])")
+
+
+num_members_invited = 5
+max_members = 10
+]]>
+</mako>
+<html>
+<div style="width: 1000px; margin: 20px;">
+  <h1>TACTIC VFXZ</h1>
+</div>
+<hr/>
+<div class="spt_dashboard_top">
+  <div class="spt_db_summary">
+    <div class="spt_db_stats tactic_new_tab hand" style="background: #040" title="Shot List" value="start" view="vfx.shot.main">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-film"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_shots}</div>
+          <div class="spt_text">Shots</div>
+        </div>
+      </div>
+      <div class="spt_stats_text">
+          Click to view Shot List
+      </div>
+    </div>
+    <div class="spt_db_stats tactic_load hand" style="background: #400" value="Asset List" target="spt_header_top.spt_home_content" view="user.site.members">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-cube"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_assets}</div>
+          <div class="spt_text">Assets</div>
+        </div>
+      </div>
+      <div class="spt_stats_text">
+          Click to view Asset List
+      </div>
+    </div>
+    <div class="spt_db_stats tactic_load hand" style="background: #004" value="storage" target="spt_header_top.spt_home_content" view="user.site.storage">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-upload"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_checkins}</div>
+          <div class="spt_text">Number of Check-ins</div>
+        </div>
+      </div>
+      <div class="spt_stats_text">
+          Click to see latest check-ins.
+      </div>
+    </div>
+    <div class="spt_db_stats" style="background: #960">
+      <div class="d-flex" style="height: 100px">
+        <i class="fas fa-calendar-times"> </i>
+        <div class="spt_stats_block">
+          <div class="spt_num">${num_tasks}</div>
+          <div class="spt_text">Tasks In Progress</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br/>
+  <h3>Shots In Progress</h3>
+  <div style="box-sizing: border-box; margin: 20px">
+    <element>
+      <display class="tactic.ui.panel.ViewPanelWdg">
+        <search_type>vfx/shot</search_type>
+        <expression>@SEARCH(vfx/shot['status','not in','Complete']['status','is not','NULL']['or'])</expression>
+        <show_border>horizontal</show_border>
+        <show_shelf>false</show_shelf>
+      </display>
+    </element>
+  </div>
+</div>
+</html>
+
+</vfx.home.main>
+</config>""")
+insert.set_value('timestamp', """2020-05-31 17:58:06""")
+insert.set_value('view', """vfx.home.main""")
+#-- End Entry --#
+

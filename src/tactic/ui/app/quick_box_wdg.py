@@ -237,7 +237,7 @@ class QuickBoxWdg(BaseRefreshWdg):
         content_wdg.add(section)
 
 
-	#image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
+        #image = "<img width='32' src='/context/icons/64x64/layout_64.png'/>"
         image = IconWdg("Users", "FA_ADDRESS_CARD", size=32)
         behavior = {
             'type': 'click_up',
@@ -300,7 +300,8 @@ class QuickBoxWdg(BaseRefreshWdg):
 
 
 
-        image = '''<img style="width: 32px; opacity: 0.6" src="/context/icons/glyphs/workflow-filled.png"/>'''
+        # image = '''<img style="width: 32px; opacity: 0.6" src="/context/icons/glyphs/workflow-filled.png"/>'''
+        image = IconWdg("Users", "FA_PROJECT_DIAGRAM", size=32)
         behavior = {
             'type': 'click_up',
             'cbjs_action': '''

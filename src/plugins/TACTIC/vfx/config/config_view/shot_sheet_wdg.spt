@@ -1,0 +1,75 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """VFX00135""")
+insert.set_value('config', """<config>
+<shot_sheet_wdg>
+<html>
+<body>
+  <div class="spt_top" style="height:900px; width:800"><div class="spt_print">PRINT</div>
+<![CDATA[
+<%
+
+    snapshot = server.get_snapshot(sobject, context="icon")
+    path = server.get_path_from_snapshot(snapshot.get("code"), mode="web")
+    image = "<img src='%s' width='300px'/>" %path
+
+
+%>]]>
+
+
+
+
+        <div class="sheet_panel"><table width="100%"><tr><td><h4>[expr]{$PROJECT}[/expr]</h4></td><td align="right"><h4>Southpaw Technology</h4></td></tr><tr><td>Shot Sheet</td><td align="right">[expr]{$TODAY}[/expr]</td></tr></table></div>
+        <div class="sheet_panel"><table width="100%"><tr><td width="300px">${image}</td><td valign="top"><table width="100%"><tr><td width=""><h4>[expr]@GET(.code)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.frame_in)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.frame_out)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.tc_frame_start)[/expr]</h4></td><td width="40px"><h4>[expr]@GET(.tc_frame_end)[/expr]</h4></td></tr><tr><td> </td><td>In</td><td>Out</td><td>Start</td><td>End</td></tr><tr><td>[expr]@GET(.description)[/expr]</td><td colspan="4">Resolution</td></tr></table></td></tr></table></div>
+
+          <h4>Plates</h4>
+          <element name="plates"/>
+          <br/><br/>
+
+          <h4>Tasks</h4>
+          <element name="tasks"/>
+        </div>
+</body>
+<style type="text/css">
+div.sheet_panel {
+              border: 1px solid #FFF;
+              margin-bottom: 10px;
+              padding: 5px;
+          }
+          .spt_print {
+              font-size:16px;
+              font-weight:bold;
+          }
+
+          .spt_print:hover {
+              font-size:16px;
+              font-weight:bold;
+              cursor:hand;
+          }
+</style>
+</html>
+<behavior class="spt_print"><![CDATA[
+
+          // Get the top elements
+          var top_el = bvr.src_el.getParent(".spt_top");
+          //var view_el = top_el.getElement(".spt_view");
+          var view_html  = top_el.innerHTML
+          var window_options = "width=1200,height=600,top=10,left=10,toolbars=no,scrollbars=yes,status=no,resizable=no"
+
+          var print_window = window.open('Report View', "Report View", window_options);
+          print_window.document.writeln(view_html);
+          print_window.document.close();
+          print_window.focus();
+          print_window.print();
+          print_window.close();
+
+
+]]></behavior>
+</shot_sheet_wdg>
+</config>""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2011-10-31 16:50:32""")
+insert.set_value('view', """shot_sheet_wdg""")
+#-- End Entry --#
+

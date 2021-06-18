@@ -1,67 +1,13 @@
 #-- Start Entry --#
 insert = SearchType.create('config/custom_script')
-insert.set_value('code', """1VFX""")
-insert.set_value('folder', """rv""")
-insert.set_value('script', """var server = TacticServerStub.get();
-
-var applet = spt.Applet.get();
-
-
-var path = "c:/sthpw/test/frames/TEST_00009.jpg"
-
-var cmd = "rv " + path;
-
-applet.exec_shell(cmd);""")
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-insert.set_value('title', """test_command_line""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/custom_script')
-insert.set_value('code', """2VFX""")
-insert.set_value('folder', """rv""")
-insert.set_value('script', """var server = TacticServerStub.get();
-
-var applet = spt.Applet.get();
-
-
-var path = "c:/sthpw/test/frames/TEST_#.jpg"
-var fps = "24"
-
-var cmd = "rv -fps " + fps + " " + path;
-
-applet.exec_shell(cmd, "false");""")
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-insert.set_value('title', """test_with_fps""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/custom_script')
 insert.set_value('code', """3VFX""")
-insert.set_value('folder', """rv""")
-insert.set_value('script', """// Setup the options
-var mode = "RV"
-
-var modes = {
-  'RV': 'rv',
-  'FC': 'framecycycler',
-  'QT': 'Quicktime'
-}
-
-
-// Setup the classes
+insert.set_value('folder', """webplayer""")
+insert.set_value('script', """// Setup the classes
 var server = TacticServerStub.get();
-var applet = spt.Applet.get();
 
 
-
-// Setup the command string
-var cmd = []
-cmd.push(modes[mode])
-//cmd.push("-flags ModeManagerPreload=webview")
-
-
-
+// Setup the sources list
+var sources = []
 
 // Get the selected items or the one that was clicked on
 var table = bvr.src_el.getParent(".spt_table");
@@ -88,47 +34,28 @@ for (i=0; i<search_keys.length; i++) {
     // Get the path for the incoming snapshot
     var snapshot = server.get_by_search_key(snapshot_sk)
     var snapshot_code = snapshot.code;
-    var path = server.get_path_from_snapshot(snapshot_code, {'mode': 'sandbox'})
+    var path = server.get_path_from_snapshot(snapshot_code, {'mode': 'web'})
 
     // If not path is returned, check for a dependant snapshot
     if (path.length > 0) {
-        var msg = snapshot.context + " - v" + snapshot.version;
-        spt.app_busy.show("Downloading", msg)
-        var path_split = path.split("/")
-        path_split.pop();
-        var sandbox = path_split.join("/")
-        server.checkout_snapshot(snapshot.code, sandbox, {'mode': 'web'})
-        cmd.push(path);
+        sources.push(path);
     }
 
     else {
         var dep = server.get_all_dependencies(snapshot_code)
-        var path = server.get_path_from_snapshot(dep[0].code, {'mode': 'sandbox'})
-        var path_split = path.split("/")
-        path_split.pop();
-        var sandbox = path_split.join("/")
-        server.checkout_snapshot(dep[0].code, sandbox, {'mode': 'web'})
-
-        var msg= dep[0].context + " - v" + dep[0].version;
-        spt.app_busy.show("Downloading", msg)
-        cmd.push(path)
+        var path = server.get_path_from_snapshot(dep[0].code, {'mode': 'web'})
+        sources.push(path)
     }
 
 }
 
+// Setup VideoWdg
+var values = {};
+values.sources = sources.join("|")
+values.width = 500;
 
-var msg = search_keys.length + " Checkins"
-spt.app_busy.show("Loading Tweak RV", "...")
-
-// Setup the command 
-cmd = cmd.join(" ")
-//spt.info(cmd)
-
-// Execute the command
-applet.exec_shell(cmd, false);
-
-spt.app_busy.hide();
-""")
+// Open player popup
+var popup = spt.panel.load_popup("Video player", "tactic.ui.widget.VideoWdg", values);""")
 insert.set_value('timestamp', """2020-04-27 21:59:25""")
 insert.set_value('title', """play""")
 #-- End Entry --#
@@ -187,32 +114,6 @@ for shot in shots:
             server.update(shot_task, {'status': SHOT_STATUS})""")
 insert.set_value('timestamp', """2020-04-27 21:59:25""")
 insert.set_value('title', """update_shot_assets_status""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/custom_script')
-insert.set_value('code', """8VFX""")
-insert.set_value('folder', """rv""")
-insert.set_value('script', """var server = TacticServerStub.get();
-
-var applet = spt.Applet.get();
-
-
-var path = "C:/sthpw/sandbox/vfx/shot/S001/render/SC06_comp__render_v002.0001.jpg"
-
-var url = "http://www.southpawtech.com"
-
-var cmd = []
-cmd.push("rv")
-cmd.push("-flags ModeManagerPreload=webview")
-cmd.push("webviewUrlRight=" + url)
-cmd.push(path)
-
-cmd = cmd.join(" ")
-alert(cmd)
-applet.exec_shell(cmd, false);""")
-insert.set_value('timestamp', """2020-04-27 21:59:25""")
-insert.set_value('title', """test_webview""")
 #-- End Entry --#
 
 #-- Start Entry --#

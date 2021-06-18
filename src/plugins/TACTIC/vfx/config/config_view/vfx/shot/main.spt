@@ -1,0 +1,26 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG00997""")
+insert.set_value('config', """<config>
+<vfx.shot.main>
+<html>
+<div class="card vfx_shot_list_top">
+  <element>
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <title>SHOTS</title>
+      <search_type>vfx/shot</search_type>
+      <simple_search_view>shot_custom_filter</simple_search_view>
+      <view>shot</view>
+      <use_last_search>false</use_last_search>
+    </display>
+  </element>
+</div>
+</html>
+
+</vfx.shot.main>
+</config>""")
+insert.set_value('timestamp', """2021-06-12 16:19:15.942985""")
+insert.set_value('view', """vfx.shot.main""")
+#-- End Entry --#
+
