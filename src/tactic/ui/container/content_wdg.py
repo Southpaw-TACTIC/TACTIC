@@ -216,7 +216,7 @@ class ContentBoxWdg(BaseRefreshWdg):
         if show_gear in [True, 'true']:
             icon_div = DivWdg()
             title_div.add(icon_div)
-            icon = IconWdg(icon="G_SETTINGS", width=16)
+            icon = IconWdg(icon="FA_COG", width=16)
             icon_div.add(icon)
             icon_div.add_styles('''float: right; height: 25px; margin-top: 0px; padding: 0px 8px 0px 5px;''')
 
