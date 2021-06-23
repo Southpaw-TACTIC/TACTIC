@@ -25,4 +25,5 @@ from .custom_layout_edit_wdg import *
 from .ingest_wdg import *
 from .checkout_wdg import *
 from .file_detail_wdg import *
+from .jsx_processor import *
 
