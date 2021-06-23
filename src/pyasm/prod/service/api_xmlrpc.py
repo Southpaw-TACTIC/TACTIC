@@ -1201,8 +1201,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             XmlRpcLogin(login_name, password)
 
             # initialize the web environment object and register it
-            adapter = self.get_adapter()
-            WebContainer.set_web(adapter)
+            if not self.get_protocol() == 'local':
+                adapter = self.get_adapter()
+                WebContainer.set_web(adapter)
 
             security = WebContainer.get_security()
 
