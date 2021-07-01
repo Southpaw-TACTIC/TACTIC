@@ -478,15 +478,6 @@ class PipelineTaskCreateTrigger(Trigger):
         if not process_names:
             return
 
-        # only create new task if another of the same
-        # process does not already exist
-        search = Search("sthpw/task")
-        search.add_filters("process", process_names)
-        search.add_parent_filter(parent)
-        search.add_project_filter()
-        tasks = search.get_sobjects()
-        existing_processes = [x.get_value("process") for x in tasks]
-        
         Task.add_initial_tasks(parent, parent.get_value('pipeline_code'), processes=process_names,
                                contexts=process_names, skip_duplicate=True, mode='standard', start_offset=0)
 
