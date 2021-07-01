@@ -1156,7 +1156,7 @@ TacticServerStub = function() {
         }
         var mode_options = ['upload','uploaded', 'copy', 'move', 'inplace','local'];
         var mode = kwargs['mode'];
-        if (mode == undefined) mode = "upload";
+        if (mode == undefined) mode = "uploaded";
         if (typeof(file_path) != 'string') {
             spt.alert("file_path should be a string instead of an array.");
             return;
