@@ -198,19 +198,23 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         icon = attributes.get("sb_icon")
         if icon:
             s_link_div.add('<i class="%s"></i>' % icon)
-        
-        
+
+
         s_content_div = HtmlElement.ul()
         s_content_div.add_class("list-unstyled collapse")
         content_id = s_content_div.set_unique_id()
         s_link_div.set_attr("href", "#%s" % content_id)
+
+        if is_open:
+            s_link_div.add_class("spt_open")
+            s_content_div.add_class("show")
 
         # add an icon if applicable
         icon = attributes.get("icon")
         if icon:
             icon = icon.upper()
             try:
-                icon_wdg =  IconWdg(title, icon)
+                icon_wdg = IconWdg(title, icon)
                 s_link_div.add(icon_wdg)
             except:
                 pass
@@ -239,7 +243,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
                 sub_config = self.get_config( self.config_search_type, options_view_name, default=self.default, personal=personal)
 
             info['level'] += 1
-            self.generate_section( sub_config, s_content_div, info, base_path=current_path, personal=personal, use_same_config=use_same_config )
+            self.generate_section(sub_config, s_content_div, info, base_path=current_path, personal=personal, use_same_config=use_same_config)
             info['level'] -= 1
 
 
@@ -880,7 +884,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         if sidebar_title_color == "#000000":
             src = "/context/logo/tactic_logo_black.svg"
         else:
-            src=  "/context/logo/tactic_logo_white.svg"
+            src = "/context/logo/tactic_logo_white.svg"
         brand_div.add("""<a><img src="%s"/></a>""" % src)
 
         style = HtmlElement.style(""" 
