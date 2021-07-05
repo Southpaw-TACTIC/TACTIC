@@ -2794,7 +2794,6 @@ class SObject(object):
             prefix = prefix.strip("}")
             prefix = Search.eval(prefix, self, single=True)
 
-
         return prefix
 
 
@@ -4513,7 +4512,6 @@ class SObject(object):
 
     def generate_code(self, id=None):
         search_type = self.get_base_search_type()
-
 
         # Generate more readable key
         parts = []

@@ -3273,7 +3273,6 @@ class CustomLayoutEditSaveCmd(Command):
         html = re.sub(r'(<\w+>)(</\w+>)',r'\1 \2', html, re.MULTILINE)
 
 
-
         if style:
             style = style.strip()
             style = style.replace("<%", "<![CDATA[\n<%")
