@@ -2103,14 +2103,20 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-        # make it into a table
-        table = Table()
-        if self.layout in ['panel']:
-            table.add_style("color", "color")
+        div.add_style("display: flex")
+        if self.layout == "panel":
+            div.add_style("flex-direction: column")
         else:
-            table.add_style("color: #000")
-        div.add(table)
-        table.add_row()
+            div.add_style("flex-direction: row")
+
+
+
+        if self.layout in ['panel']:
+            div.add_style("color", "color")
+        else:
+            div.add_style("color: #000")
+
+
 
         if self.show_border != 'none' :
             if self.show_border == 'one-sided' and not last_one:
@@ -2165,12 +2171,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         
         if self.show_labels != 'false':
             context_div = DivWdg()
-            if self.layout in ['horizontal',  'vertical']:
-                #context_div.add_style("float: left")
-                #context_div.add_style("width: 75px")
-                table.add_cell(context_div)
-            else:
-                div.add(context_div)
+            div.add(context_div)
 
             context_div.add_style("font-size: %spx" % self.font_size)
             proc = task.get_value("process")
@@ -2206,12 +2207,14 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 # if the process is too long, it will cut off cleanly and
                 # not bleed
                 process_div.add_style("margin-right: 5px")
-                td = table.add_cell(process_div)
+                div.add(process_div)
+
+
                 if self.layout == 'vertical':
-                    td.add_style("width: %spx"%self.LAYOUT_WIDTH)
+                    process_div.add_style("width: %spx"%self.LAYOUT_WIDTH)
                     process_div.add_style("max-width: %spx"%self.LAYOUT_WIDTH)
                 else:
-                    td.add_style("width: 75px")
+                    process_div.add_style("width: 75px")
                     process_div.add_style("max-width: 75px")
             else:
                 div.add(process_div)
@@ -2226,13 +2229,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         if self.show_context != 'false':
             context_div = DivWdg()
+            div.add(context_div)
+
             if self.layout in ['horizontal', 'vertical']:
-                #context_div.add_style("float: left")
                 context_div.add_style("width: 75px")
                 context_div.add_style("margin-left: 5px")
-                table.add_cell(context_div)
-            else:
-                div.add(context_div)
+
+
 
             #context_div.add_style("font-weight: bold")
             context_div.add_style("font-size: %spx" % self.font_size)
@@ -2245,21 +2248,24 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             context_div.add(context)
 
 
+        #
+        # Dates
+        #
         if self.show_dates != 'false':
             date_div = DivWdg()
+            div.add(date_div)
+
             date_div.add_style("opacity: 0.5")
             date_div.add_style("margin: 2px")
 
             if self.layout in ['horizontal', 'vertical']:
-                #date_div.add_style("float: left")
-                td = table.add_cell(date_div)
                 
                 if self.layout == 'vertical':
-                    td.add_style("width: %spx"%self.LAYOUT_WIDTH)
+                    date_div.add_style("width: %spx"%self.LAYOUT_WIDTH)
                 else:
-                    td.add_style("width: 75px")
-            else:
-                div.add(date_div)
+                    date_div.add_style("width: 75px")
+
+
 
             date_div.add_style("font-size: %spx" % (self.font_size-2))
             start_date = task.get_value("bid_start_date")
@@ -2280,17 +2286,21 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 date_div.add("%s - %s" % (start_date, end_date) )
 
+
+        
+        #
+        # Status
+        #
+
         # follow the proper access rules defined for task
         if self.show_status != 'false':
             if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
                 status_div = DivWdg()
+                div.add(status_div)
+
                 if self.layout in ['horizontal', 'vertical']:
-                    #status_div.add_style("float: left")
-                    td = table.add_cell(status_div)
-                    td.add_style("width: 75px")
-                else:
-                    # don't need to set width here so it covers the whole status
-                    div.add(status_div)
+                    status_div.add_style("width: 75px")
+
 
                 if not status:
                     status = "N/A"
@@ -2372,6 +2382,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 } )
 
 
+                div.add(select)
 
                 select.add_class("spt_task_status_select")
                 if bgColor:
@@ -2379,20 +2390,17 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
                 if self.layout in ['horizontal', 'vertical']:
-                    #select.add_style("float: left")
                     select.add_style("width: %spx" %self.LAYOUT_WIDTH)
                     select.add_style("margin: 2px 0px 2px 0px")
-                    td = table.add_cell(select)
                     if self.layout == 'vertical':
                         select.add_style("width: %spx" %self.LAYOUT_WIDTH)
                     else:
                         select.add_style("width: 75px")
 
-                    #td.add_style("width: 75px")
 
                 else:
                     select.add_style("width", self.width)
-                    div.add(select)
+
                 if status and status not in filtered_statuses:
                     filtered_statuses.append(status)
                 select.set_option("values", filtered_statuses)
@@ -2444,15 +2452,17 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         '''
                 select.add_update(update)
 
-      
+ 
+
+        #
+        # Assigned
+        #
+
         assigned_div = None
         if self.show_assigned != 'false' and self.permission['assigned']['is_viewable'] :
 
             assigned_div = DivWdg()
-            if self.layout in ['horizontal', 'vertical']:
-                table.add_cell(assigned_div)
-            else:
-                div.add(assigned_div)
+            div.add(assigned_div)
 
 
             for subtask in tasks:
@@ -2606,47 +2616,53 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-        div.add_behavior( {
-            'type': 'mouseenter',
-            'cbjs_action': '''
-            var els = bvr.src_el.getElements(".spt_process_buttons");
-            for (var i = 0; i < els.length; i++) {
-                els.setStyle("display", "");
-            }
-            '''
-        } )
-
-        div.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-            var els = bvr.src_el.getElements(".spt_process_buttons");
-            for (var i = 0; i < els.length; i++) {
-                els.setStyle("display", "none");
-            }
-            '''
-        } )
 
 
 
-        button_div = DivWdg()
-        button_div.add_style("display: none")
-        button_div.add_class("spt_process_buttons")
-        #button_div.add_border()
-        button_table = Table()
-        button_div.add(button_table)
-        button_table.add_row()
+        #
+        # Extra buttons that do stuff (like popup the edit widget for a task
+        #
+
+        if self.show_task_edit != 'false' or self.show_track =="true":
+            fdsdgfsdfg
+
+            div.add_behavior( {
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                var els = bvr.src_el.getElements(".spt_process_buttons");
+                for (var i = 0; i < els.length; i++) {
+                    els.setStyle("display", "");
+                }
+                '''
+            } )
+
+            div.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                var els = bvr.src_el.getElements(".spt_process_buttons");
+                for (var i = 0; i < els.length; i++) {
+                    els.setStyle("display", "none");
+                }
+                '''
+            } )
+
+
+            button_div = DivWdg()
+            div.add(button_div)
+
+            button_div.add_style("display: none")
+            button_div.add_class("spt_process_buttons")
+            #button_div.add_border()
+            button_table = Table()
+            button_div.add(button_table)
+            button_table.add_row()
 
 
 
-        #button_table.add_style("float: right")
         if self.show_task_edit != 'false' or self.show_track == 'true':
-            #div.add(button_div)
 
             if self.layout in ['horizontal', 'vertical']:
-                td = table.add_cell(button_div)
-                td.add_style("width: 70px")
-            else:
-                div.add(button_div)
+                button_div.add_style("width: 70px")
 
 
             button_div.add_style("padding: 5px 0px")
@@ -2775,12 +2791,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         show_bid = self.kwargs.get("show_bid")
         if show_bid in [True, 'true']:
             bid_div = DivWdg()
+            div.add(bid_div)
+
             bid_div.add_style("font-size: %spx" % (self.font_size-1))
             bid_div.add_color('color','color')
-            if self.layout in ['horizontal', 'vertical']:
-                table.add_cell(bid_div)
-            else:
-                div.add(bid_div)
+
 
 
             for subtask in tasks:
@@ -2840,6 +2855,14 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         return div
+
+
+
+
+
+
+
+
 
 
 
