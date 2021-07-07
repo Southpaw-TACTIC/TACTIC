@@ -943,6 +943,55 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
+        # handle the status selector
+        layout.add_relay_behavior( {
+            'type': 'change',
+            'bvr_match_class': 'spt_status_select',
+            'colors': self.status_colors,
+            'cbjs_action': '''
+
+            let task_pipeline_code = bvr.src_el.getAttribute("spt_task_pipeline_code");
+            let status_colors = bvr.colors[task_pipeline_code];
+            if (!status_colors) {
+                status_colors = bvr.colors["task"];
+            }
+
+
+            //let status_colors = bvr.color;
+
+
+            let value = bvr.src_el.value;
+            bvr.src_el.style.background = status_colors[value];
+            let context = bvr.src_el.getAttribute("spt_context");
+            let layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            let rows = spt.table.get_selected_rows();
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let elements = row.getElements(".spt_task_status_select");
+                for (let j = 0; j < elements.length; j++) {
+                    let el = elements[j];
+                    if (el == bvr.src_el) {
+                        continue;
+                    }
+
+                    let el_context = el.getAttribute("spt_context");
+                    if (el_context == context) {
+                        el.value = value;
+                        el.style.background = status_colors[value];
+                        spt.task_element.status_change_cbk(evt, {src_el: el});
+                    }
+                }
+            }
+
+            '''
+        } )
+
+
+
+
+
+
     def get_pipeline_code(self):
         pipeline_code = self.kwargs.get("pipeline_code")
 
@@ -2136,6 +2185,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         task_pipeline_code = 'task'
         if task.get_value('pipeline_code'):
             task_pipeline_code = task.get_value('pipeline_code')
+
+
         status_colors = self.status_colors.get(task_pipeline_code)
         bgColor = ''
         if not status_colors:
@@ -2282,6 +2333,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         #
         # Status
         #
+
+
+
 
         # follow the proper access rules defined for task
         if self.show_status != 'false':
@@ -2545,9 +2599,13 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         status = task.get("status")
 
+
         status_div = DivWdg()
 
+
         if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
+
+            # if not permitted to edit
 
             if self.layout in ['horizontal', 'vertical']:
                 status_div.add_style("width: 75px")
@@ -2564,6 +2622,9 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             status_div.add(status)
          
         elif self.permission['status']['is_editable']:
+
+
+
             task_pipeline_code = task.get_value("pipeline_code")
             if not pipeline_code:
                 task_pipeline_code = 'task'
@@ -2585,7 +2646,17 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 name = 'status|EDIT|%s' % task.get_id()
 
             select = SelectWdg(name)
-            #select = SelectWdg('status_%s'%task_id)
+            select.add_class("spt_status_select")
+
+            task_pipeline_code = 'task'
+            if task.get_value('pipeline_code'):
+                task_pipeline_code = task.get_value('pipeline_code')
+            select.add_attr("spt_task_pipeline_code", task_pipeline_code)
+
+
+
+
+
             select.add_empty_option('-- Status --')
             select.add_attr("spt_context", context)
             select.add_style("height: 18px")
@@ -2598,39 +2669,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
             if node_type in ['auto', 'condition']:
                 select.add_attr("readonly","true")
-
-            # TODO: while convenient, this is extremely heavy
-            select.add_behavior( {
-                'type': 'change',
-                'color': status_colors,
-                'cbjs_action': '''
-                var status_colors = bvr.color;
-                var value = bvr.src_el.value;
-                bvr.src_el.style.background = status_colors[value];
-                var context = bvr.src_el.getAttribute("spt_context");
-                var layout = bvr.src_el.getParent(".spt_layout");
-                spt.table.set_layout(layout);
-                var rows = spt.table.get_selected_rows();
-                for (var i = 0; i < rows.length; i++) {
-                    var row = rows[i];
-                    var elements = row.getElements(".spt_task_status_select");
-                    for (var j = 0; j < elements.length; j++) {
-                        var el = elements[j];
-                        if (el == bvr.src_el) {
-                            continue;
-                        }
-
-                        var el_context = el.getAttribute("spt_context");
-                        if (el_context == context) {
-                            el.value = value;
-                            el.style.background = status_colors[value];
-                            spt.task_element.status_change_cbk(evt, {src_el: el});
-                        }
-                    }
-                }
-
-                '''
-            } )
 
 
             status_div.add(select)
@@ -2825,37 +2863,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                         '''
                 select.add_update(update)
 
-                # TODO: while convenient, this is extremely heavy
-                select.add_behavior( {
-                    'type': 'change',
-                    'color': status_colors,
-                    'cbjs_action': '''
-                    var status_colors = bvr.color;
-                    var value = bvr.src_el.value;
-                    bvr.src_el.style.background = status_colors[value];
-                    var context = bvr.src_el.getAttribute("spt_context");
-                    var layout = bvr.src_el.getParent(".spt_layout");
-                    spt.table.set_layout(layout);
-                    var rows = spt.table.get_selected_rows();
-                    for (var i = 0; i < rows.length; i++) {
-                        var row = rows[i];
-                        var elements = row.getElements(".spt_task_assigned_select");
-                        for (var j = 0; j < elements.length; j++) {
-                            var el = elements[j];
-                            if (el == bvr.src_el) {
-                                continue;
-                            }
-
-                            var el_context = el.getAttribute("spt_context");
-                            if (el_context == context) {
-                                el.value = value;
-                                spt.task_element.status_change_cbk(evt, {src_el: el});
-                            }
-                        }
-                    }
-
-                    '''
-                } )
 
             else:
                 
