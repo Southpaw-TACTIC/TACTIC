@@ -3685,7 +3685,7 @@ insert.set_value('config', """<config>
     <element name="files" width="87.0333px"/>
     <element name="submit" width="55.95px"/>
     <element name="checkout" width="53.8833px"/>
-    <element name="play_vide" width="55.95px"/>
+    <element name="play_video" width="55.95px"/>
     <element name="login" width="84.9667px"/>
     <element name="timestamp" width="246.583px"/>
 
