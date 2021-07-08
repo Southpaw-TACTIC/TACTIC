@@ -3,7 +3,7 @@
 __all__ = ["JSXTranspile"]
 
 import tacticenv
-from pyasm.common import Xml, Config
+from pyasm.common import Xml, Config, GlobalContainer
 
 from subprocess import Popen, PIPE
 
@@ -14,6 +14,8 @@ class JSXTranspile():
 
 
     def process_jsx(cls, behavior):
+        '''This method is used in the custom LayoutEditor which
+        will take jsx in a behavior xml and produce the appropariate js'''
 
         jsxs = []
         behaviors = []
@@ -62,6 +64,7 @@ class JSXTranspile():
 
 
     def transpile(cls, jsx):
+        '''Method to transpile jsx to js'''
 
         executable = __file__
         python = Config.get_value("services", "python") or "python"
@@ -89,8 +92,79 @@ class JSXTranspile():
 
 
 
+    def cache_jsx(cls, path, jsx, top=None):
+        '''Onload JSX with caching'''
+
+        tactic_mode = os.environ['TACTIC_MODE']
+        is_dev_mode = False
+        if tactic_mode == "development":
+            is_dev_mode = True
+
+
+
+        cache_key = "KanbanWdg:jsx"
+
+
+        # store this somewhere
+        basename, ext = os.path.splitext(path)
+        js_path = "%s.js" % basename
+
+
+        js = GlobalContainer.get(cache_key)
+        if js == None and not is_dev_mode:
+            # production mode always reads from file first time as there
+            # likely is no jsx processor
+            f = open(js_path, "r")
+            js = f.read()
+            f.close()
+
+            GlobalContainer.put(cache_key, js)
+
+        if js == None:
+            #jsx = self.get_onload_jsx()
+
+            from tactic.ui.tools import JSXTranspile
+
+            # transpile the jsx into js
+            if is_dev_mode:
+                try:
+                    js = JSXTranspile.transpile(jsx)
+                except Exception as e:
+                    # if transpile fails, then try to read the js file
+                    # (for those who do not have a JSX processor
+                    print("WARNING: ", e)
+                    f = open(js_path, "r")
+                    js = f.read()
+                    f.close()
+                else:
+                    print("Compiled JSX." )
+                    f = open(js_path, "w")
+                    f.write(js)
+                    f.close()
+
+            else:
+                raise Exception("No corresponding js file found for jsx")
+
+            GlobalContainer.put("KanbanWdg:jsx", js)
+
+        if top:
+            top.add_behavior( {
+                'type': 'load',
+                'cbjs_action': js
+            } )
+
+        return js
+
+    cache_jsx = classmethod(cache_jsx)
+
+
+
+
+
+
 
     def main(cls, text):
+        '''method that is run from the command line in Popen above'''
 
 
         # Need this to get the environment right.

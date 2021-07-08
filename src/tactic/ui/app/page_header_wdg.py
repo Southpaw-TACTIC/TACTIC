@@ -965,7 +965,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
 
-        copy_div.add("<b>Copy From Template: &nbsp;&nbsp;</b>")
+        copy_div.add("<b>Copy From Template:</b>")
 
 
 

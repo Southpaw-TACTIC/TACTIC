@@ -1139,7 +1139,7 @@ class SelectWdg(BaseInputWdg):
             self.add_class("form-control")
 
         self.add_color("color", "var(--spt_palette_color)")
-        self.add_color("background", "var(--spt_palette_background)")
+        #self.add_color("background", "var(--spt_palette_background)")
         self.add_style("padding", "0px 5px")
 
 
@@ -1479,6 +1479,11 @@ class SelectWdg(BaseInputWdg):
         class_name = self.kwargs.get('class')
         if class_name:
             self.add_class(class_name)
+
+
+        if self.get_option("align") == "center":
+            self.add_style("text-align-last: center")
+
 
         if self.is_read_only():
             # don't disable it, just have to look disabled

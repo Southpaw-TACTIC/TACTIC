@@ -988,6 +988,44 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         } )
 
 
+        jsx = '''
+
+spt.task_element = {}
+
+class StatusWdg extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.task = props.task;
+  };
+
+  render() {
+    return (
+    <div style={{display: "flex"}}>
+    <select className="form-control" style={{textAlignLast: "center", background: "transparent"}}>
+      <option value={this.task.status}>{this.task.status}</option>
+      <option value="cow">Cow</option>
+      <option value="pig">Pig</option>
+      <option value="horse">Horse</option>
+    </select>
+    </div>
+    )
+  }
+}
+
+spt.task_element.StatusWdg = StatusWdg;
+
+        '''
+
+
+        from tactic.ui.tools import JSXTranspile
+        js = JSXTranspile.cache_jsx(__file__, jsx)
+        layout.add_behavior( {
+            'type': 'load',
+            'cbjs_action': js
+        } )
+
 
 
 
@@ -2265,7 +2303,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             process_div.add_style("font-size: %spx" % self.font_size)
             if process_color:
                 process_div.add_style("background-color: %s" %process_color)
-            process_div.add(process)
+
+
+            process_div.add(process.upper())
+            process_div.add_style("background-color: rgba(0,0,0,0.3)")
      
 
 
@@ -2595,12 +2636,45 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
+
+    def get_react_status_wdg(self, task):
+        '''TEST'''
+
+        status_div = DivWdg()
+
+        status_div.add_behavior( {
+            'type': 'load',
+            'props': {
+                "task": task.get_sobject_dict()
+            },
+            'cbjs_action': '''
+
+            function react(top, class_ref, props) {
+                let el = React.createElement(class_ref, props);
+                let react = ReactDOM.render(el, top);
+                top.react = react;
+                top.addClass("spt_react");
+                return el;
+            }
+            react(bvr.src_el, spt.task_element.StatusWdg, bvr.props);
+            '''
+ 
+        } )
+
+        return status_div
+
+
+
+
     def get_status_wdg(self, task, node_type, pipeline_code, status_colors, bgColor):
 
         status = task.get("status")
 
 
         status_div = DivWdg()
+        #status_div.add( self.get_react_status_wdg(task) )
+
+
 
 
         if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
@@ -2645,7 +2719,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 name = 'status|EDIT|%s' % task.get_id()
 
-            select = SelectWdg(name)
+            select = SelectWdg(name, align="center")
             select.add_class("spt_status_select")
 
             task_pipeline_code = 'task'
@@ -2773,7 +2847,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                     name = 'assigned|NEW|%s' % process
                 else:
                     name = 'assigned|EDIT|%s' % task.get_id()
-                select = SelectWdg(name)
+                select = SelectWdg(name, align="center")
                 select.add_class("spt_task_assigned_select")
                 select_div.add(select)
                 # just use the same class name as the status select for simplicity
@@ -4100,3 +4174,6 @@ class WorkElementWdg(ButtonElementWdg):
  
 
         return super(WorkElementWdg, self).get_display()
+
+
+
