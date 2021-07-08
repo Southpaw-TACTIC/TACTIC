@@ -1,0 +1,42 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """VFX00187""")
+insert.set_value('config', """<config>
+<shot_planner_wdg>
+<html>
+<table>
+  <tr>
+    <td valign="top" width="50%">
+      <element name="asset_tracking" title="Asset Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/asset</search_type>
+          <search_view>link_search:planner_asset</search_view>
+          <width>100%</width>
+          <element_names>preview,asset_category,code,name</element_names>
+          <simple_search_view>custom_filter</simple_search_view>
+        </display>
+      </element>
+    </td>
+    <td valign="top" width="50%">
+      <element name="shot_tracking" title="Shot Tracking">
+        <display class="tactic.ui.panel.ViewPanelWdg">
+          <search_type>vfx/shot</search_type>
+          <search_view>link_search:planner_shot</search_view>
+          <element_names>asset_drop,preview,sequence_code,code,asset_in_shot</element_names>
+          <width>100%</width>
+          <simple_search_view>custom_filter</simple_search_view>
+        </display>
+      </element>
+    </td>
+  </tr>
+</table>
+</html>
+
+</shot_planner_wdg>
+</config>""")
+insert.set_value('search_type', """CustomLayoutWdg""")
+insert.set_value('timestamp', """2011-11-10 19:59:11""")
+insert.set_value('view', """shot_planner_wdg""")
+#-- End Entry --#
+

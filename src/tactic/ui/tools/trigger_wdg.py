@@ -1791,7 +1791,7 @@ class TriggerCreateCbk(BaseTriggerEditCbk):
     def execute(self):
 
         outputs = self.kwargs.get("output")
-        if isinstance(outputs, basestring) and outputs:
+        if isinstance(outputs, str) and outputs:
             outputs = [outputs]
         elif isinstance(outputs, list):
             outputs = [p for p in outputs if p]

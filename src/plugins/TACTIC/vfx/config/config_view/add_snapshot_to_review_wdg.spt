@@ -5,15 +5,14 @@ insert.set_value('code', """VFX00124""")
 insert.set_value('config', """<config>
 <add_snapshot_to_review_wdg>
 <html>
-<body>
-  <div class="spt_top" style="height:100px; width:400px">
+<div class="add_snapshot_to_review">
+  <div class="spt_top" style="height:150px; width:400px">
     <div class="spt_label_div"> </div>
     <br/>
     <div>
-      <form name="spt_bin_form">
-        <select name="spt_bin_select" class="spt_bin_select">
-              </select>
-      </form>
+        <form name="spt_bin_form">
+            <select name="spt_bin_select" class="spt_bin_select"> </select>
+        </form>
     </div>
     <div>
       <input type="button" value="Submit" class="spt_submit_button"/>
@@ -22,9 +21,14 @@ insert.set_value('config', """<config>
     <br/>
     <div class="spt_file_info"> </div>
   </div>
-</body>
+</div>
+<style type="text/css">
+.add_snapshot_to_review {
+    margin: 10px;
+}
+</style>
 </html>
-<behavior class="spt_top"><![CDATA[
+<behavior class="spt_top" event="load"><![CDATA[
 
           var server = TacticServerStub.get();
           var applet = spt.Applet.get();
@@ -72,7 +76,7 @@ insert.set_value('config', """<config>
 ]]></behavior>
 
 
-<behavior class="spt_submit_button"><![CDATA[
+<behavior class="spt_submit_button" event="click"><![CDATA[
 
           // Setup
           var server = TacticServerStub.get();
