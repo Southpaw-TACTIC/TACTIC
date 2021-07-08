@@ -1638,10 +1638,7 @@ spt.task_element.StatusWdg = StatusWdg;
             table = Table(css='minimal')
             table.add_style("border-width: 2px")
             table.add_style('border-collapse: collapse')
-            if self.layout in ['panel']:
-                table.add_style("color", "color")
-            else:
-                table.add_style("color: #000")
+            table.add_style("color", "color")
             table.add_row()
 
             project_code = Project.get_project_code()
@@ -2189,12 +2186,7 @@ spt.task_element.StatusWdg = StatusWdg;
         else:
             div.add_style("flex-direction: row")
 
-
-
-        if self.layout in ['panel']:
-            div.add_style("color", "color")
-        else:
-            div.add_style("color: #000")
+        div.add_style("color", "color")
 
 
 
@@ -2283,7 +2275,6 @@ spt.task_element.StatusWdg = StatusWdg;
             process_div.add_style("box-sizing: border-box")
 
             if self.layout in ['horizontal', 'vertical']:
-                #process_div.add_style("float: left")
                 # if the process is too long, it will cut off cleanly and
                 # not bleed
                 process_div.add_style("margin-right: 5px")
@@ -2293,6 +2284,8 @@ spt.task_element.StatusWdg = StatusWdg;
                 if self.layout == 'vertical':
                     process_div.add_style("width: %spx"%self.LAYOUT_WIDTH)
                     process_div.add_style("max-width: %spx"%self.LAYOUT_WIDTH)
+                    process_div.add_style("padding: 5px 0px 0px 5px")
+                    process_div.add_style("margin-left: -5px")
                 else:
                     process_div.add_style("width: 75px")
                     process_div.add_style("max-width: 75px")
