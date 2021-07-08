@@ -2694,51 +2694,6 @@ insert.set_value('view', """link_search:plate_list""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00143""")
-insert.set_value('config', """<config>
-  <sequence_planner_wdg>
-    <html>
-<table>
-  <tr>
-    <td valign="top" width="50%">
-
-      <element name="asset_tracking" title="Asset Tracking">
-        <display class="tactic.ui.panel.ViewPanelWdg">
-          <search_type>vfx/asset</search_type>
-          <search_view>link_search:planner_asset</search_view>
-          <width>100%</width>
-          <view>planner_asset</view>
-          <simple_search_view>custom_filter</simple_search_view>
-        </display>
-      </element>
-
-    </td>
-    <td valign="top" width="50%">
-
-      <element name="sequence_tracking" title="Sequence Tracking">
-        <display class="tactic.ui.panel.ViewPanelWdg">
-          <search_type>vfx/sequence</search_type>
-          <search_view>link_search:planner_sequence</search_view>
-          <simple_search_view>custom_filter</simple_search_view>
-          <view>planner_sequence</view>
-          <width>100%</width>
-        </display>
-      </element>
-
-    </td>
-  </tr>
-</table> 
-
-    </html>
-  </sequence_planner_wdg>
-</config>""")
-insert.set_value('search_type', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2011-11-10 19:59:11""")
-insert.set_value('view', """sequence_planner_wdg""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00148""")
 insert.set_value('config', """<config>
   <filter>
@@ -2833,24 +2788,6 @@ insert.set_value('view', """link_search:sequence""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00156""")
-insert.set_value('config', """<config>
-  <sequence layout="TableLayoutWdg" >
-    <element name="code" width="167px"/>
-    <element name="shots" width="68.5167px"/>
-    <element name="description" width="123.017px"/>
-    <element name="shot_task_schedule" width="850.15px"/>
-    <element name="completion" width="121.317px"/>
-  </sequence>
-</config>
-""")
-insert.set_value('search_type', """vfx/sequence""")
-insert.set_value('timestamp', """2011-11-21 20:58:38""")
-insert.set_value('view', """sequence""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00157""")
 insert.set_value('config', """<config>
   <filter>
@@ -2861,29 +2798,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/shot""")
 insert.set_value('timestamp', """2011-11-21 20:58:51""")
 insert.set_value('view', """link_search:shot""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00158""")
-insert.set_value('config', """<config>
-  <shot layout="TableLayoutWdg" >
-    <element name="preview" width="63px"/>
-    <element name="code" width="36px"/>
-    <element name="frames" width="49px"/>
-    <element name="plate" width="35px"/>
-    <element name="layers" width="41px"/>
-    <element name="task_edit" width="40px"/>
-    <element name="history" width="46px"/>
-    <element name="general_checkin" width="27px"/>
-    <element name="task_status_edit" width="851px"/>
-    <element name="notes" width="397px"/>
-  </shot>
-</config>
-""")
-insert.set_value('search_type', """vfx/shot""")
-insert.set_value('timestamp', """2011-11-21 20:58:52""")
-insert.set_value('view', """shot""")
 #-- End Entry --#
 
 #-- Start Entry --#
@@ -2899,28 +2813,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/asset""")
 insert.set_value('timestamp', """2011-11-21 20:59:03""")
 insert.set_value('view', """link_search:asset""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00160""")
-insert.set_value('config', """<config>
-  <asset layout="TableLayoutWdg" >
-    <element name="preview" hidden="false" width="45px"/>
-    <element name="asset_category" hidden="false" width="45px"/>
-    <element name="code" hidden="false" width="98.2667px"/>
-    <element name="description" hidden="false" width="222.017px"/>
-    <element name="history" hidden="false" width="45px"/>
-    <element name="task_edit" hidden="false" width="46.7167px"/>
-    <element name="task_status_edit" hidden="false" width="439px"/>
-    <element name="notes" hidden="false" width="293px"/>
-    <element name="completion" hidden="false" width="414px"/>
-  </asset>
-</config>
-""")
-insert.set_value('search_type', """vfx/asset""")
-insert.set_value('timestamp', """2011-11-21 20:59:03""")
-insert.set_value('view', """asset""")
 #-- End Entry --#
 
 #-- Start Entry --#
@@ -3213,50 +3105,6 @@ insert.set_value('view', """color""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00180""")
-insert.set_value('config', """<config>
-  <single_shot_planner_wdg>
-    <html>
-<table>
-  <tr>
-    <td valign="top" width="50%">
-
-      <element name="asset_tracking" title="Asset Tracking">
-        <display class="tactic.ui.panel.ViewPanelWdg">
-          <search_type>vfx/asset</search_type>
-          <search_view>link_search:shot_planner_assets</search_view>
-          <width>100%</width>
-          <view>shot_planner_assets</view>
-        </display>
-      </element>
-
-    </td>
-    <td valign="top" width="50%">
-
-      <element name="shot_tracking" title="Shot Tracking">
-        <display class="tactic.ui.panel.ViewPanelWdg">
-          <search_type>vfx/shot</search_type>
-          <search_view>link_search:shot_planner_shots</search_view>
-          <view>shot_planner_shots</view>
-          <width>100%</width>
-          <search_key>{@GET(state.search_key)}</search_key>
-        </display>
-      </element>
-
-    </td>
-  </tr>
-</table> 
-
-    </html>
-  </single_shot_planner_wdg>
-</config>""")
-insert.set_value('search_type', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2011-12-12 20:58:19""")
-insert.set_value('view', """single_shot_planner_wdg""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00182""")
 insert.set_value('config', """<config>
   <table>
@@ -3357,51 +3205,6 @@ insert.set_value('view', """color""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00187""")
-insert.set_value('config', """<config>
-  <shot_planner_wdg>
-    <html>
-<table>
-  <tr>
-    <td valign="top" width="50%">
-
-      <element name="asset_tracking" title="Asset Tracking">
-        <display class="tactic.ui.panel.ViewPanelWdg">
-          <search_type>vfx/asset</search_type>
-          <search_view>link_search:planner_asset</search_view>
-          <width>100%</width>
-          <view>planner_asset</view>
-          <simple_search_view>custom_filter</simple_search_view>
-        </display>
-      </element>
-
-    </td>
-    <td valign="top" width="50%">
-
-      <element name="shot_tracking" title="Shot Tracking">
-        <display class="tactic.ui.panel.ViewPanelWdg">
-          <search_type>vfx/shot</search_type>
-          <search_view>link_search:planner_shot</search_view>
-          <view>planner_shot</view>
-          <width>100%</width>
-          <simple_search_view>custom_filter</simple_search_view>
-        </display>
-      </element>
-
-    </td>
-  </tr>
-</table> 
-
-    </html>
-  </shot_planner_wdg>
-</config>""")
-insert.set_value('search_type', """CustomLayoutWdg""")
-insert.set_value('timestamp', """2011-11-10 19:59:11""")
-insert.set_value('view', """shot_planner_wdg""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00188""")
 insert.set_value('config', """<config>
   <filter>
@@ -3412,24 +3215,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/shot""")
 insert.set_value('timestamp', """2011-12-20 22:11:49""")
 insert.set_value('view', """link_search:planner_shot""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00189""")
-insert.set_value('config', """<config>
-  <planner_shot layout="TableLayoutWdg" >
-    <element name="asset_drop" width="333px"/>
-    <element name="preview" width="80px"/>
-    <element name="sequence_code" width="419.517px"/>
-    <element name="code" width="60px"/>
-    <element name="asset_in_shot" width="434.483px"/>
-  </planner_shot>
-</config>
-""")
-insert.set_value('search_type', """vfx/shot""")
-insert.set_value('timestamp', """2011-12-20 22:11:49""")
-insert.set_value('view', """planner_shot""")
 #-- End Entry --#
 
 #-- Start Entry --#
@@ -3448,23 +3233,6 @@ insert.set_value('view', """link_search:planner_asset""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00191""")
-insert.set_value('config', """<config>
-  <planner_asset layout="TableLayoutWdg" >
-    <element name="preview" width="80px"/>
-    <element name="asset_category" width="270px"/>
-    <element name="code" width="270px"/>
-    <element name="name" width="270px"/>
-  </planner_asset>
-</config>
-""")
-insert.set_value('search_type', """vfx/asset""")
-insert.set_value('timestamp', """2011-12-20 22:12:07""")
-insert.set_value('view', """planner_asset""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00192""")
 insert.set_value('config', """<config>
   <filter>
@@ -3475,23 +3243,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/sequence""")
 insert.set_value('timestamp', """2011-12-20 22:12:49""")
 insert.set_value('view', """link_search:planner_sequence""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00193""")
-insert.set_value('config', """<config>
-  <planner_sequence layout="TableLayoutWdg" >
-    <element name="asset_drop" width="333px"/>
-    <element name="code" width="485.45px"/>
-    <element name="shots" width="502.8px"/>
-    <element name="description" width="346.75px"/>
-  </planner_sequence>
-</config>
-""")
-insert.set_value('search_type', """vfx/sequence""")
-insert.set_value('timestamp', """2011-12-20 22:12:49""")
-insert.set_value('view', """planner_sequence""")
 #-- End Entry --#
 
 #-- Start Entry --#

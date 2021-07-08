@@ -27,7 +27,7 @@ max_members = 10
 <html>
 <div class="spt_dashboard_top">
   <div class="spt_db_summary">
-    <div class="card spt_db_stats tactic_new_tab hand" style="background: #040" title="Shot List" value="start" view="vfx.shot.main">
+    <div class="card spt_db_stats tactic_new_tab hand" style="background: #040" title="Shots" value="start" view="vfx.shot.main">
       <div class="d-flex" style="height: 100px">
         <i class="fas fa-film"> </i>
         <div class="spt_stats_block">
@@ -39,7 +39,7 @@ max_members = 10
           Click to view Shot List
       </div>
     </div>
-    <div class="card spt_db_stats tactic_new_tab hand" style="background: #400" title="Asset List" value="start" view="vfx.asset.main">
+    <div class="card spt_db_stats tactic_new_tab hand" style="background: #400" title="Assets" value="start" view="vfx.asset.main">
       <div class="d-flex" style="height: 100px">
         <i class="fas fa-cube"> </i>
         <div class="spt_stats_block">
