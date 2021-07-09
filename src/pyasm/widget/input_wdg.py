@@ -1139,7 +1139,7 @@ class SelectWdg(BaseInputWdg):
             self.add_class("form-control")
 
         self.add_color("color", "var(--spt_palette_color)")
-        self.add_color("background", "var(--spt_palette_background)")
+        #self.add_color("background", "var(--spt_palette_background)")
         self.add_style("padding", "0px 5px")
 
 
@@ -1480,6 +1480,11 @@ class SelectWdg(BaseInputWdg):
         if class_name:
             self.add_class(class_name)
 
+
+        if self.get_option("align") == "center":
+            self.add_style("text-align-last: center")
+
+
         if self.is_read_only():
             # don't disable it, just have to look disabled
             self.set_attr('disabled', 'disabled')
@@ -1542,6 +1547,9 @@ class SelectWdg(BaseInputWdg):
             value = self.values[i]
             label = self.labels[i]
             option = HtmlElement("option")
+
+            option.add_color("color", "color2")
+            option.add_color("background", "background2")
 
             # always compare string values.  Not sure if this is a good
             # idea, but it should work for most cases

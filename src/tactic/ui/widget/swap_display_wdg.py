@@ -212,14 +212,16 @@ class SwapDisplayWdg(BaseRefreshWdg):
             show_border = self.kwargs.get("show_border")
             if show_border in [True, 'true']:
 
-                on_div.add_style("border: solid 1px %s" % on_div.get_color("border") )
+                on_div.add_style("border: solid 1px %s" % on_div.get_color("border", -10) )
                 on_div.add_style("border-radius: 20px")
-                on_div.add_style("padding: 5px 3px")
+                on_div.add_style("padding: 5px 8px")
+                on_div.add_class("btn bmd-icon-btn")
 
 
-                off_div.add_style("border: solid 1px %s" % off_div.get_color("border") )
+                off_div.add_style("border: solid 1px %s" % off_div.get_color("border", -10) )
                 off_div.add_style("border-radius: 20px")
-                off_div.add_style("padding: 5px 3px")
+                off_div.add_style("padding: 5px 8px")
+                off_div.add_class("btn bmd-icon-btn")
 
 
 

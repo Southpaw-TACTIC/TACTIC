@@ -942,8 +942,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         else:
             sticky_header = True
 
-        #inner.add_style("width: 100%")
-
         if sticky_header:
 
             h_scroll = DivWdg()
@@ -1029,29 +1027,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             scroll.add_style("position: relative")
 
             # Moo scrollbar
-            """
-            scroll.add_style("overflow-y: hidden")
-            scroll.add_behavior( {
-                'type': 'load',
-                'cbjs_action': '''
-                new Scrollable(bvr.src_el, null);
-                '''
-            } )
-            """
-
-
-
-            """
-            if not height and self.kwargs.get("__hidden__") not in [True, 'True', 'true']:
-                # set to browser height
-                scroll.add_behavior( {
-                    'type': 'load',
-                    'cbjs_action': '''
-                    var y = window.getSize().y;
-                    bvr.src_el.setStyle('height', y);
-                    '''
-                    } )
-            """
 
 
             table = self.table
@@ -1096,9 +1071,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         # TEST TEST TEST
-        from .mobile_wdg import MobileTableWdg
-        mobile_wdg = MobileTableWdg(table_id=self.table_id)
-        inner.add(mobile_wdg)
+        #from .mobile_wdg import MobileTableWdg
+        #mobile_wdg = MobileTableWdg(table_id=self.table_id)
+        #inner.add(mobile_wdg)
 
 
         # generate dictionary of subscribed search_keys to affect context menu

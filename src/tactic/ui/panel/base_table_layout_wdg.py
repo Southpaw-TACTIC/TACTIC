@@ -240,8 +240,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
+                sudo = Sudo()
                 try:
-                    sudo = Sudo()
                     self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 finally:
                     sudo.exit()
