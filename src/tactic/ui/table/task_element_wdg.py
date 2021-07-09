@@ -1019,12 +1019,12 @@ spt.task_element.StatusWdg = StatusWdg;
         '''
 
 
-        #from tactic.ui.tools import JSXTranspile
-        #js = JSXTranspile.cache_jsx(__file__, jsx)
-        #layout.add_behavior( {
-        #    'type': 'load',
-        #    'cbjs_action': js
-        #} )
+        from tactic.ui.tools import JSXTranspile
+        js = JSXTranspile.cache_jsx(__file__, jsx)
+        layout.add_behavior( {
+            'type': 'load',
+            'cbjs_action': js
+        } )
 
 
 
