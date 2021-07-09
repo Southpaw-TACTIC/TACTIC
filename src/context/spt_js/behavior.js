@@ -679,13 +679,7 @@ spt.behavior.replace_inner_html = function( el, new_inner_html, mode )
     spt.behavior.deactivate_children( el );
 
     if (mode == 'parent') {
-
-        //console.log("----------------------------------")
-        //console.log(new_inner_html);
         el.innerHTML = new_inner_html;
-        //console.log("???????????????????????????????????")
-        //console.log(el.innerHTML);
-        //console.log("----------------------------------")
     }
     else {
         // this gets run if we are replacing a TBODY element in a table ...
