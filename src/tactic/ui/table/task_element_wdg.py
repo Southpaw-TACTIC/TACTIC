@@ -1526,7 +1526,11 @@ spt.task_element.StatusWdg = StatusWdg;
         self.tasks = self.get_tasks(sobject)
 
         div = DivWdg()
-        div.add_style("margin: -4px auto")
+        if self.layout in ['vertical']:
+            div.add_style("margin: -4px 0px 4px 0px")
+        else:
+            div.add_style("margin: -4px auto")
+        #div.add_style("width: inherit")
 
         # initialize tool tips only if show track is true
         if self.show_track == 'true' and not self._startup_tips:
