@@ -51,16 +51,13 @@ max_members = 10
           Click to view Asset List
       </div>
     </div>
-    <div class="card spt_db_stats tactic_load hand" style="background: #004" value="storage" target="spt_header_top.spt_home_content" view="user.site.storage">
+    <div class="card spt_db_stats" style="background: #004" value="storage" target="spt_header_top.spt_home_content" view="user.site.storage">
       <div class="d-flex" style="height: 100px">
         <i class="fas fa-upload"> </i>
         <div class="spt_stats_block">
           <div class="spt_num">${num_checkins}</div>
           <div class="spt_text">Number of Check-ins</div>
         </div>
-      </div>
-      <div class="spt_stats_text">
-          Click to see latest check-ins.
       </div>
     </div>
     <div class="card spt_db_stats" style="background: #960">
@@ -76,17 +73,14 @@ max_members = 10
   <br/>
   <div style="display: flex">
     <div class="card" style="width: 100%; margin: 10px; padding: 15px; background: var(--spt_palette_background2)">
-      <h3>Sequences In Progress</h3>
+      <h3>Notes</h3>
       <div style="box-sizing: border-box; margin: 20px">
         <element>
-          <display class="tactic.ui.panel.ViewPanelWdg">
-            <search_type>vfx/sequence</search_type>
-            <expression>@SEARCH(vfx/sequence['status','not in','Complete']['status','is not','NULL']['or'])</expression>
-            <element_names>preview,code,name,status</element_names>
-            <show_border>horizontal</show_border>
-            <show_shelf>false</show_shelf>
-            <show_select>false</show_select>
-            <width>auto</width>
+          <display class="tactic.ui.widget.NoteCollectionWdg">
+            <note_format>full</note_format>
+            <notes_limit>50</notes_limit>
+            <show_parent_link>true</show_parent_link>
+            <parent_link_display_expression>@GET(.code)</parent_link_display_expression>
           </display>
         </element>
       </div>
@@ -97,7 +91,7 @@ max_members = 10
         <element>
           <display class="tactic.ui.panel.ViewPanelWdg">
             <search_type>vfx/shot</search_type>
-            <expression>@SEARCH(vfx/shot['status','not in','Complete']['status','is not','NULL']['or'])</expression>
+            <expression>@SEARCH(sthpw/task['status','not in','Complete|Approved']['status','is not','NULL']['or'].vfx/shot)</expression>
             <element_names>preview,code,name,status</element_names>
             <show_border>horizontal</show_border>
             <show_shelf>false</show_shelf>
