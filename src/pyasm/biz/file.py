@@ -573,7 +573,6 @@ class IconCreator(object):
 
             except Exception as e:
                 print("Error extracting from pdf [%s]" % e)
-                dsfadsf
                 return
 
         # check that it actually got created
