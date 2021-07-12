@@ -1576,6 +1576,24 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 class NoteCollectionWdg(BaseRefreshWdg):
+    '''Widget which displays a collection of notes'''
+
+    ARGS_KEYS = {
+        "note_keys": "A list of notes search_keys to be listed",
+        "parent_key": "search_key of en SObject whose notes will be listed",
+        "context": "List notes for a specific context only",
+        "process": "List notes for a specific process only",
+        "default_num_notes": "Notes after num will be copressed",
+        "note_expandable": "Note are expandable",
+        "show_note_status": "Show notes status",
+        "attachments": "Show notes attachments",
+        "notes_limit": "Maximum number of notes to be listed (default: 50)",
+        "note_format": "Note format (full|compact)",
+        "show_parent_link": "Show a link to a detail view for the note's parent",
+        "parent_link_display_expression": "Expression for the parent link text (default: @GET(.code))",
+        "parent_link_script_path": "Path to an alternative JS script run when link is clicked (default: None)",
+        "parent_link_detail_class_name": "path to an alternative datail view class when link is clicked (default: tactic.ui.tools.SObjectDetailWdg)",
+    }
 
     def get_display(self):
         notes = self.kwargs.get("notes")
@@ -1758,6 +1776,15 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 class NoteWdg(BaseRefreshWdg):
     """Display of a single note.  Used by NoteCollectionWdg."""
+
+    ARGS_KEYS = {
+        "note_key": "search_keys for the note to be displayed",
+        "note_hidden": "",
+        "note_expandable": "Note is expandable",
+        "show_note_status": "Show note status",
+        "attachments": "Show note attachments",
+        "note_format": "Note format (full|compact)",
+    }
 
     def get_display(self):
         note = self.kwargs.get("note")
