@@ -1026,8 +1026,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             scroll.add_style("overflow-x: auto")
             scroll.add_style("position: relative")
 
-            # Moo scrollbar
-
 
             table = self.table
             table.add_class("spt_table_table")
