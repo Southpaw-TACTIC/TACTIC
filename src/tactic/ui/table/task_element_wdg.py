@@ -2667,11 +2667,10 @@ spt.task_element.StatusWdg = StatusWdg;
 
         status = task.get("status")
 
-
         status_div = DivWdg()
+
+        # TEST React
         #status_div.add( self.get_react_status_wdg(task) )
-
-
 
 
         if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:

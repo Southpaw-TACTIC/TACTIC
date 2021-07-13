@@ -102,7 +102,7 @@ class JSXTranspile():
 
 
 
-        cache_key = "KanbanWdg:jsx"
+        cache_key = "jsx:%s" % path
 
 
         # store this somewhere
@@ -145,7 +145,7 @@ class JSXTranspile():
             else:
                 raise Exception("No corresponding js file found for jsx")
 
-            GlobalContainer.put("KanbanWdg:jsx", js)
+            GlobalContainer.put(cache_key, js)
 
         if top:
             top.add_behavior( {
