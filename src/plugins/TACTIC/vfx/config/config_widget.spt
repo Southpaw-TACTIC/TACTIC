@@ -3,7 +3,7 @@ insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00002""")
 insert.set_value('config', """<config>
   <definition>
-    <element name="code" width="60px" edit="true">
+    <element name="code" edit="true">
       <display widget="format">
         <type>text</type>
       </display>
@@ -105,7 +105,7 @@ insert.set_value('config', """<config>
         <icon>PLUGIN_ADD</icon>
       </display>
     </element>
-    <element name="frames" width="80px" edit="false">
+    <element name="frames" edit="false">
       <display class="pyasm.prod.web.FrameRangeWdg"/>
     </element>
     <element name="layers" title="Layers" width="41px" edit="true" color="false">
@@ -158,7 +158,7 @@ insert.set_value('config', """<config>
             <empty>true</empty>
             <query>vfx/sequence|code|code</query>
         </display>
-    </element>
+  </element>
 
   <element name="code"/>
   <element name="description"/>
@@ -215,9 +215,9 @@ insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00005""")
 insert.set_value('config', """<config>
   <edit>
-    <element name="sequence_code"/>
     <element name="code"/>
     <element name="description"/>
+    <element name="sequence_code"/>
     <element name="status"/>
     <element name="scan_status"/>
     <element name="frames"/>
@@ -661,6 +661,14 @@ insert.set_value('config', """<config>
     <element name="code"/>
     <element name="description"/>
     <element name="sort_order"/>
+    <element name="sequences" title="Sequences" edit="true" color="false">
+      <display widget="hidden_row">
+        <search_type>vfx/sequence</search_type>
+        <icon_tip>Display sequences in this episode</icon_tip>
+        <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
+        <view>sequence</view>
+      </display>
+    </element>
     <element name="submit">
       <display class="SubmissionLinkTableElement"/>
     </element>
@@ -1538,6 +1546,7 @@ insert.set_value('config', """<config>
   <edit>
     <element name="code"/>
     <element name="description"/>
+    <element name="episode_code"/>
     <element name="sort_order"/>
   </edit>
 </config>
@@ -2708,24 +2717,6 @@ insert.set_value('view', """link_search:config_shot_planner""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00149""")
-insert.set_value('config', """<config>
-  <config_shot_planner layout="TableLayoutWdg" >
-    <element name="category" width="28px"/>
-    <element name="search_type" width="155.383px"/>
-    <element name="view" width="267.35px"/>
-    <element name="config" width="848.267px"/>
-    <element name="login" width="28px"/>
-  </config_shot_planner>
-</config>
-""")
-insert.set_value('search_type', """config/widget_config""")
-insert.set_value('timestamp', """2011-11-10 20:10:33""")
-insert.set_value('view', """config_shot_planner""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00152""")
 insert.set_value('config', """<config>
   <color>
@@ -2924,24 +2915,6 @@ insert.set_value('view', """link_search:art_reference""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00168""")
-insert.set_value('config', """<config>
-  <art_reference layout="TableLayoutWdg" >
-    <element name="preview" width="30px"/>
-    <element name="name" width="144.767px"/>
-    <element name="category" width="208.083px"/>
-    <element name="description" width="376.95px"/>
-    <element name="keywords" width="229.2px"/>
-  </art_reference>
-</config>
-""")
-insert.set_value('search_type', """vfx/art_reference""")
-insert.set_value('timestamp', """2011-11-21 21:19:32""")
-insert.set_value('view', """art_reference""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00169""")
 insert.set_value('config', """<config>
   <filter>
@@ -2952,25 +2925,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/script""")
 insert.set_value('timestamp', """2011-11-21 21:20:00""")
 insert.set_value('view', """link_search:script""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00170""")
-insert.set_value('config', """<config>
-  <script layout="TableLayoutWdg" >
-    <element name="preview" width="55px"/>
-    <element name="history" width="49px"/>
-    <element name="general_checkin" width="308.85px"/>
-    <element name="title" width="169.75px"/>
-    <element name="author" width="243.033px"/>
-    <element name="description" width="384.367px"/>
-  </script>
-</config>
-""")
-insert.set_value('search_type', """vfx/script""")
-insert.set_value('timestamp', """2011-11-21 21:20:00""")
-insert.set_value('view', """script""")
 #-- End Entry --#
 
 #-- Start Entry --#
@@ -2989,24 +2943,6 @@ insert.set_value('view', """link_search:storyboard""")
 
 #-- Start Entry --#
 insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00172""")
-insert.set_value('config', """<config>
-  <storyboard layout="TableLayoutWdg" >
-    <element name="files" width="30px"/>
-    <element name="history" width="57px"/>
-    <element name="general_checkin" width="146px"/>
-    <element name="code" width="195.333px"/>
-    <element name="description" width="383.217px"/>
-  </storyboard>
-</config>
-""")
-insert.set_value('search_type', """vfx/storyboard""")
-insert.set_value('timestamp', """2011-11-21 21:20:19""")
-insert.set_value('view', """storyboard""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00173""")
 insert.set_value('config', """<config>
   <filter>
@@ -3017,24 +2953,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """vfx/leica""")
 insert.set_value('timestamp', """2011-11-21 21:20:50""")
 insert.set_value('view', """link_search:leica""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00174""")
-insert.set_value('config', """<config>
-  <leica layout="TableLayoutWdg" >
-    <element name="files" width="72px"/>
-    <element name="general_checkin" width="92.0833px"/>
-    <element name="history" width="143.25px"/>
-    <element name="description" width="593.45px"/>
-    <element name="shot_code" width="68.2167px"/>
-  </leica>
-</config>
-""")
-insert.set_value('search_type', """vfx/leica""")
-insert.set_value('timestamp', """2011-11-21 21:20:50""")
-insert.set_value('view', """leica""")
 #-- End Entry --#
 
 #-- Start Entry --#
@@ -3257,24 +3175,6 @@ insert.set_value('config', """<config>
 insert.set_value('search_type', """config/widget_config""")
 insert.set_value('timestamp', """2011-12-20 22:15:38""")
 insert.set_value('view', """link_search:config_sequence_planner""")
-#-- End Entry --#
-
-#-- Start Entry --#
-insert = SearchType.create('config/widget_config')
-insert.set_value('code', """VFX00195""")
-insert.set_value('config', """<config>
-  <config_sequence_planner layout="TableLayoutWdg" >
-    <element name="category" width="28px"/>
-    <element name="search_type" width="155.383px"/>
-    <element name="view" width="267.35px"/>
-    <element name="config" width="848.267px"/>
-    <element name="login" width="28px"/>
-  </config_sequence_planner>
-</config>
-""")
-insert.set_value('search_type', """config/widget_config""")
-insert.set_value('timestamp', """2011-12-20 22:15:39""")
-insert.set_value('view', """config_sequence_planner""")
 #-- End Entry --#
 
 #-- Start Entry --#
@@ -3685,7 +3585,7 @@ insert.set_value('config', """<config>
     <element name="files" width="87.0333px"/>
     <element name="submit" width="55.95px"/>
     <element name="checkout" width="53.8833px"/>
-    <element name="play_video" width="55.95px"/>
+    <element name="play_vide" width="55.95px"/>
     <element name="login" width="84.9667px"/>
     <element name="timestamp" width="246.583px"/>
 

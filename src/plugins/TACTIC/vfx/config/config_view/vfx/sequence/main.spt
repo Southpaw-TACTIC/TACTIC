@@ -10,7 +10,7 @@ insert.set_value('config', """<config>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Sequences</title>
       <search_type>vfx/sequence</search_type>
-      <element_names>preview,code,shots,description,shot_task_schedule,completion</element_names>
+      <element_names>preview,code,shots,description,notes,shot_task_schedule,completion,notes</element_names>
       <use_last_search>false</use_last_search>
       <simple_search_view>sequence_custom_filter</simple_search_view>
       <search_view>link_search:sequence</search_view>
