@@ -1576,6 +1576,24 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
 class NoteCollectionWdg(BaseRefreshWdg):
+    '''Widget which displays a collection of notes'''
+
+    ARGS_KEYS = {
+        "note_keys": "A list of notes search_keys to be listed",
+        "parent_key": "search_key of en SObject whose notes will be listed",
+        "context": "List notes for a specific context only",
+        "process": "List notes for a specific process only",
+        "default_num_notes": "Notes after num will be copressed",
+        "note_expandable": "Note are expandable",
+        "show_note_status": "Show notes status",
+        "attachments": "Show notes attachments",
+        "notes_limit": "Maximum number of notes to be listed (default: 50)",
+        "note_format": "Note format (full|compact)",
+        "show_parent_link": "Show a link to a detail view for the note's parent",
+        "parent_link_display_expression": "Expression for the parent link text (default: @GET(.code))",
+        "parent_link_script_path": "Path to an alternative JS script run when link is clicked (default: None)",
+        "parent_link_detail_class_name": "path to an alternative datail view class when link is clicked (default: tactic.ui.tools.SObjectDetailWdg)",
+    }
 
     def get_display(self):
         notes = self.kwargs.get("notes")
@@ -1583,6 +1601,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         parent_key = self.kwargs.get("parent_key")
         context = self.kwargs.get("context")
         process = self.kwargs.get("process")
+        notes_limit = self.kwargs.get("notes_limit") or 50
 
         if note_keys:
             notes = Search.get_by_search_keys(note_keys, keep_order=True)
@@ -1591,22 +1610,36 @@ class NoteCollectionWdg(BaseRefreshWdg):
             # during dynamic update, parent_key and context are used
             parent = Search.get_by_search_key(parent_key)
             if context:
-                search = Search.eval("@SEARCH(sthpw/note['context','%s'])"%context, sobjects=[parent])
+                search = Search.eval("@SEARCH(sthpw/note['context','%s'])" % context, sobjects=[parent])
             elif process:
-                search = Search.eval("@SEARCH(sthpw/note['process','%s'])"%process, sobjects=[parent])
+                search = Search.eval("@SEARCH(sthpw/note['process','%s'])" % process, sobjects=[parent])
             else:
-                search = Search.eval("@SEARCH(sthpw/note['context','%s'])"%context, sobjects=[parent])
+                search = Search.eval("@SEARCH(sthpw/note['context','%s'])" % context, sobjects=[parent])
 
             search.add_order_by("context")
             search.add_order_by("timestamp desc")
             notes = search.get_sobjects()
+        else:
+            search = Search("sthpw/note")
+            project_code = Project.get_project_code()
+            search.add_filter("project_code", project_code)
 
+            if context:
+                search.add_filter("context", context)
+            elif process:
+                search.add_filter("context", process)
+
+            search.add_limit(notes_limit)
+            search.add_order_by("timestamp desc")
+            notes = search.get_sobjects()
+            parent = None
 
             
         if not notes:
             return self.top
 
         self.default_num_notes = self.kwargs.get("default_num_notes") or 0
+        self.default_num_notes = int(self.default_num_notes)
         self.note_expandable = self.kwargs.get("note_expandable")
         self.show_note_status = self.kwargs.get("show_note_status")
 
@@ -1728,6 +1761,10 @@ class NoteCollectionWdg(BaseRefreshWdg):
             show_note_status=self.show_note_status,
             note_format=self.note_format,
             attachments=self.attachments,
+            show_parent_link=self.kwargs.get("show_parent_link"),
+            parent_link_display_expression=self.kwargs.get("parent_link_display_expression"),
+            parent_link_script_path=self.kwargs.get("parent_link_script_path"),
+            parent_link_detail_class_name=self.kwargs.get("parent_link_detail_class_name"),
 
         )
 
@@ -1739,6 +1776,15 @@ class NoteCollectionWdg(BaseRefreshWdg):
 
 class NoteWdg(BaseRefreshWdg):
     """Display of a single note.  Used by NoteCollectionWdg."""
+
+    ARGS_KEYS = {
+        "note_key": "search_keys for the note to be displayed",
+        "note_hidden": "",
+        "note_expandable": "Note is expandable",
+        "show_note_status": "Show note status",
+        "attachments": "Show note attachments",
+        "note_format": "Note format (full|compact)",
+    }
 
     def get_display(self):
         note = self.kwargs.get("note")
@@ -2017,8 +2063,8 @@ class NoteWdg(BaseRefreshWdg):
 
 
             menus = [self.get_note_menu()]
-            SmartMenu.add_smart_menu_set( icon, { 'NOTE_EDIT_CTX': menus } )
-            SmartMenu.assign_as_local_activator( icon, "NOTE_EDIT_CTX", True )
+            SmartMenu.add_smart_menu_set(icon, {'NOTE_EDIT_CTX': menus})
+            SmartMenu.assign_as_local_activator(icon, "NOTE_EDIT_CTX", True)
 
 
 
@@ -2062,6 +2108,71 @@ class NoteWdg(BaseRefreshWdg):
             title.add("<div style='float: left'> %s - %s</div>" % (display_name, short_note) )
         else:
             title.add("<b style='float: left; font-size: 1.1em'>%s</b>" % (display_name) )
+
+        if self.kwargs.get("show_parent_link"):
+            parent_search_type = note.get_value("search_type")
+            parent_search_code = note.get_value("search_code")
+            parent_search_key = SearchKey.build_search_key(parent_search_type, parent_search_code)
+            parent_sobject = Search.get_by_search_key(parent_search_key)
+            parent_link_div = DivWdg()
+            parent_link_div.add_styles('float: left; margin-bottom: 0px; margin-left: 10px; margin-right: 10px;')
+
+            if self.kwargs.get("parent_link_display_expression"):
+                try:
+                    display_value = Search.eval(self.kwargs.get("parent_link_display_expression"), parent_sobject, single=True,
+                                                vars={'VALUE': "pippo"})
+                except Exception as e:
+                    print("WARNING in parent_link_display_expression [%s] using sobject code: " % self.kwargs.get("parent_link_display_expression"), e)
+                    display_value = "ERROR: %s" % e
+            else:
+                display_value = parent_sobject.get_value('code')
+
+            parent_link_div.add("Created for: %s " % display_value)
+            parent_link_icon = IconWdg(title="Open parent", icon="FAS_LINK", size="0.8em")
+            parent_link_div.add(parent_link_icon)
+            parent_link_div.add_class("hand")
+            parent_link_div.add_class("spt_parent_link")
+
+            script_path = self.kwargs.get("parent_link_script_path")
+            class_name = self.kwargs.get("parent_link_detail_class_name")
+            if script_path:
+                parent_link_div.add_behavior({
+                    'type': 'click',
+                    'bvr_match_class': 'spt_parent_link',
+                    'parent_search_key': parent_search_key,
+                    'script_path': script_path,
+                    'cbjs_action': '''
+                        var search_key = bvr.parent_search_key;
+                        spt.CustomProject.run_script_by_path(bvr.script_path, {search_key: search_key});
+                    '''
+                })
+            else:
+                parent_link_div.add_behavior({
+                    'type': 'click',
+                    'bvr_match_class': 'spt_parent_link',
+                    'class_name': class_name,
+                    'parent_search_key': parent_search_key,
+                    'parent_search_code': parent_search_code,
+                    'cbjs_action': '''
+                        spt.tab.set_main_body_tab();
+                        var class_name = bvr.class_name;
+                        if ( ! class_name ) {
+                            class_name = 'tactic.ui.tools.SObjectDetailWdg';
+                        }
+                        
+                        var search_key = bvr.parent_search_key;
+                        var code = bvr.parent_search_code;
+            
+                        var kwargs = {
+                            search_key: search_key
+                        };
+                        var element_name = "detail_"+code;
+                        var title = "Detail ["+code+"]";
+                        spt.tab.add_new(element_name, title, class_name, kwargs);
+                    '''
+                })
+
+            title.add(parent_link_div)
 
         note_status = note.get('status')
         if note_status:
