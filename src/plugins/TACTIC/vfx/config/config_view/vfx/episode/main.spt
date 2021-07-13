@@ -1,0 +1,27 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG01240""")
+insert.set_value('config', """<config>
+<vfx.episode.main>
+<html>
+<div class="card vfx_sequence_list_top">
+  <element>
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <title>Episodes</title>
+      <search_type>vfx/episode</search_type>
+      <element_names>preview,code,description,notes,sequences,shot_task_schedule,completion</element_names>
+      <use_last_search>false</use_last_search>
+      <simple_search_view>episode_custom_filter</simple_search_view>
+      <search_view>link_search:episode</search_view>
+    </display>
+  </element>
+</div>
+</html>
+
+</vfx.episode.main>
+</config>""")
+insert.set_value('timestamp', """2021-07-09 08:30:38.499247""")
+insert.set_value('view', """vfx.episode.main""")
+#-- End Entry --#
+
