@@ -5459,6 +5459,28 @@ spt.table.show_edit = function(cell) {
         offset: {x: 1, y: 1}
     } );
 
+    // Slightly hack way to lock to the bottom
+    /*
+    let position = edit_wdg.getPosition();
+    let s = edit_wdg.getSize();
+    edit_wdg.setStyle("bottom", "0px")
+    edit_wdg.setStyle("top", "")
+    let position2 = edit_wdg.getPosition();
+    console.log(position);
+    console.log(position2);
+    if (position.y < position2.y - s.y) {
+        edit_wdg.setStyle("top", "")
+        edit_wdg.setStyle("bottom", "")
+        edit_wdg.position( {
+            position: {x: 0, y:0},
+            relativeTo: cell,
+            position: "upperLeft",
+            offset: {x: 1, y: 1}
+        } );
+    }
+    */
+
+
     edit_wdg.setStyle("margin", "-1px");
     edit_wdg.setStyle("z-index", 500);
 
@@ -5822,6 +5844,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.setStyle("height", "auto");
+        input.setStyle("max-height", "200px");
         input.setStyle("min-width", "150px");
         input.setStyle("width", "auto");
         input.setStyle("overflow", "auto");
