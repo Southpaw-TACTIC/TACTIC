@@ -191,7 +191,7 @@ class ReviewTaskElementWdg(BaseTableElementWdg):
                             After submitting a revised file, update your task status, then \
                             review again.");
                 } else { 
-                    var class_name = 'spt.tools.review.ReviewWdg';
+                    var class_name = 'tactic.ui.tools.ReviewWdg';
                     var title = "Review ["+bvr.review_process+"]";
                     kwargs = {
                         'search_key': bvr.search_key,
@@ -575,11 +575,11 @@ spt.review.load = function(evt, bvr, mouse_411) {
     }
     
     // Refresh the Media Wdg
-    var class_name = 'spt.tools.review.ReviewMediaWdg';
+    var class_name = 'tactic.ui.tools.ReviewMediaWdg';
     spt.panel.load(media_el, class_name, kwargs, {}, {show_loading: false});
 
     // Refresh the Action Wdg
-    var class_name = 'spt.tools.review.ReviewActionWdg';
+    var class_name = 'tactic.ui.tools.ReviewActionWdg';
     spt.panel.load(action_el, class_name, action_kwargs, {}, {show_loading: false});
 }
 
@@ -1010,7 +1010,7 @@ spt.review.upload = function(search_key, status, data_url, current_time) {
         var process = values.process;
         var snapshot_key = values.snapshot_key;
 
-        var cmd = "spt.tools.review.ReviewCmd";
+        var cmd = "tactic.ui.tools.ReviewCmd";
         var args = {
             search_key: search_key,
             snapshot_key: snapshot_key,
