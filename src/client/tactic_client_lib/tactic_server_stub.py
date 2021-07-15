@@ -1980,7 +1980,7 @@ class TacticServerStub(object):
     def simple_checkin(self, search_key, context, file_path,
             snapshot_type="file", description="No description",
             use_handoff_dir=False, file_type="main", is_current=True,
-            level_key=None, breadcrumb=False, metadata={}, mode='upload',
+            level_key=None, breadcrumb=False, metadata={}, mode=None,
             is_revision=False, info={} ,
             keep_file_name=False, create_icon=True, 
             checkin_cls='pyasm.checkin.FileCheckin',
