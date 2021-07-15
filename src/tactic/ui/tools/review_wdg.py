@@ -35,7 +35,8 @@ import dateutil
 from dateutil import parser
 from datetime import datetime, timedelta
 
-import os, six
+import os
+import six
 
 
 class ReviewTaskElementWdg(BaseTableElementWdg):
@@ -417,8 +418,8 @@ class ReviewWdg(BaseRefreshWdg):
             search_key = None
 
         custom_status = self.kwargs.get("custom_status")
-        div.add( ReviewActionWdg(search_key=search_key, task_data=self.task_data, ui_settings=self.ui_settings,
-            custom_status=custom_status))
+        div.add(ReviewActionWdg(search_key=search_key, task_data=self.task_data, ui_settings=self.ui_settings,
+                                custom_status=custom_status))
         return div
 
 
@@ -1283,7 +1284,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
                 pass
 
         if is_video or is_image:
-            embed.add_behavior( {
+            embed.add_behavior({
                 'type': 'load',
                 'background_src': src,
                 'width': width,
@@ -1331,7 +1332,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
                     set_canvas_sizes();
                 }                
                 '''
-            });
+            })
 
             embed_div.add_style("pointer-events: none")
             
@@ -1619,7 +1620,6 @@ class ReviewMediaWdg(BaseRefreshWdg):
                 
                 '''
             } )
-        
 
         div.add("<br/><br/>")
         
@@ -1631,8 +1631,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         pencil_div.add_style("margin: 15px")
         pencil_div.add_style("padding: 3px")
 
-        #icon = IconWdg(icon="FA_EDIT", opacity=1.0, size=16,\
-        #        name="Select a pencil size")
+        #icon = IconWdg(icon="FA_EDIT", opacity=1.0, size=16,
+        #               name="Select a pencil size")
         #pencil_div.add(icon)
 
         brush_selected = self.kwargs.get("brush_selected") or "4"
@@ -1655,8 +1655,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
             brush_div.add_style("margin-right", "auto")
 
             
-            icon = IconWdg(icon="FA_PAINT_BRUSH", opacity=1.0, size=size,\
-                name="Brush Size")
+            icon = IconWdg(icon="FA_PAINT_BRUSH", opacity=1.0, size=size,
+                           name="Brush Size")
             brush_div.add(icon)
             brush_div.add_style("color", "#000")
             brush_div.add_style("display: flex")
@@ -1704,8 +1704,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         #undo_div.add_style("-webkit-transform", "scale(-1, 1)")
         undo_div.add_class("hand")
 
-        icon = IconWdg(icon="FA_UNDO", opacity=1.0, size=16,\
-                name="Undo your last brush stroke")
+        icon = IconWdg(icon="FA_UNDO", opacity=1.0, size=16,
+                       name="Undo your last brush stroke")
         icon.add_class("spt_undo_button")
         undo_div.add(icon)
 
@@ -1726,8 +1726,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         clear_div.add_style("padding: 3px")
         clear_div.add_class("hand")
 
-        icon = IconWdg(icon="FA_TRASH", opacity=1.0, size=16,\
-                name="Clear your canvas")
+        icon = IconWdg(icon="FA_TRASH", opacity=1.0, size=16,
+                       name="Clear your canvas")
         clear_div.add(icon)
 
         clear_div.add_behavior( {
@@ -1747,8 +1747,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         info_div.add_style("margin: 15px")
         info_div.add_style("padding: 3px")
         info_div.add_class("hand")
-        icon = IconWdg(icon="FA_INFO", opacity=1.0, size=16, \
-            name="Display image info")
+        icon = IconWdg(icon="FA_INFO", opacity=1.0, size=16,
+                       name="Display image info")
         info_div.add(icon)
 
         info_div.add_behavior( {
@@ -2529,7 +2529,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
         preview = ThumbWdg()
         preview.set_sobject(parent)
         top.add(preview)
-        preview.add_style("position" ,"relative")
+        preview.add_style("position", "relative")
         preview.add_style("left", "-3px")
         top.add("<br/>")
  
@@ -2715,7 +2715,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
             approval_button_tip = "Any associated tasks will have a status updated to Approved."
             button = ActionButtonWdg(title="Approve", color="primary", tip=approval_button_tip)
             td.add(button)
-            button.add_behavior( {
+            button.add_behavior({
                 'type': 'click_up',
                 'search_key': search_key,
                 'snapshot_key': snapshot_key,
@@ -2723,7 +2723,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
                     spt.review.set_top( bvr.src_el.getParent(".spt_review_top") );
                     spt.review.save(bvr.search_key, "Approved");
                 '''
-            } )
+            })
 
 
         custom_status = self.kwargs.get("custom_status")
@@ -2765,7 +2765,6 @@ class ReviewCmd(Command):
     creates a note. '''
 
     def execute(self):
-
         '''
         search_key - snapshot, submission or task search_key used in review session.
         note - input from ReviewWdg note form
@@ -2782,8 +2781,6 @@ class ReviewCmd(Command):
         '''
 
         search_key = self.kwargs.get("search_key")
-
-
         snapshot_key = self.kwargs.get("snapshot_key")
         note = self.kwargs.get("note")
         status = self.kwargs.get("status")
@@ -2870,7 +2867,6 @@ class ReviewCmd(Command):
                 #note_sobj = Note.create(job, note, process=note_process, context=note_context)
                 note_sobj = Note.create(sobject, note, process=note_process, context=note_context)
 
-
             else:
                 if review_note_process:
                     note_context = "%s/%s" % (review_note_process, review_process)
@@ -2880,7 +2876,7 @@ class ReviewCmd(Command):
                     note_process = review_process
 
                 from pyasm.biz import Note
-                if (not status and sobject.get_search_type() != "workflow/job"):
+                if not status and sobject.get_search_type() != "workflow/job":
                     job = sobject.get_parent()
                     note_sobj = Note.create(job, note, process=note_process, context=note_context)
                 else:
@@ -2905,8 +2901,8 @@ class ReviewCmd(Command):
         if status in ['Revise', 'Reject']:
             # checkin the revision file
             if process != "publish":
-                review_context =  "review/%s" % review_process
-                review_process =  "%s/review" % review_process
+                review_context = "review/%s" % review_process
+                review_process = "%s/review" % review_process
             else:
                 review_context = "review/publish"
                 review_process = "publish/review"
@@ -2922,15 +2918,13 @@ class ReviewCmd(Command):
 
         elif status == 'Client':
             review_context = "upload/%s" % filename 
-            review_process =  "upload"
-
+            review_process = "upload"
 
         elif status == 'Feedback':
             node_process = sobject.get_value("process")
 
             review_context = "review/%s" % node_process
             review_process = "%s/review" % node_process
-
 
         if status == "Attach":
             file_paths = [upload_path]
@@ -2954,15 +2948,14 @@ class ReviewCmd(Command):
             snapshot_process = "%s/attachment" % (node_process)
 
             checkin = FileCheckin(sobject=note_sobj, file_paths=file_paths, file_types=file_types,
-                source_paths=source_paths, process=snapshot_process, 
-                context=snapshot_context, checkin_type='strict', description=note)
+                                  source_paths=source_paths, process=snapshot_process,
+                                  context=snapshot_context, checkin_type='strict', description=note)
             checkin.execute()
-
 
             if note_sobj2:
                 checkin = FileCheckin(sobject=note_sobj2, file_paths=file_paths, file_types=file_types,
-                source_paths=source_paths, process=snapshot_process, 
-                context=snapshot_context, checkin_type='strict', description=note,mode="move")
+                                      source_paths=source_paths, process=snapshot_process,
+                                      context=snapshot_context, checkin_type='strict', description=note, mode="move")
                 checkin.execute()
  
             return
@@ -2991,9 +2984,3 @@ class ReviewCmd(Command):
 
             review_snapshot.set_parent(job_asset)
             review_snapshot.commit()
-        
-
-
-
-
-
