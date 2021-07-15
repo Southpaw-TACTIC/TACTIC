@@ -657,13 +657,13 @@ spt.review.last_pos = null;
 spt.review.drag_motion = function(evt, bvr, mouse_411) {
 
     var canvas = spt.behavior.get_bvr_src( bvr );
-    var context = canvas.getContext("2d");
+    var ctx = canvas.getContext("2d");
     var data = spt.review.get_brush_data();
 
-    context.lineWidth = 1;
-    //context.globalCompositeOperation = 'source-overt';
-    context.stokeStyle = data.brush_color;
-    context.fillStyle = data.brush_color;
+    ctx.lineWidth = 1;
+    //ctx.globalCompositeOperation = 'source-overt';
+    ctx.stokeStyle = data.brush_color;
+    ctx.fillStyle = data.brush_color;
 
     var parent = canvas.getParent();
     //parent_pos = parent.getPosition();
@@ -699,16 +699,16 @@ spt.review.drag_motion = function(evt, bvr, mouse_411) {
             var slope = dy/dx;
         }
 
-        context.beginPath();
+        ctx.beginPath();
         for (var i = 0; i <= Math.abs(dx); i=i+2) {
 
             var x = last_pos.x + i;
             var y = last_pos.y + i*slope;
 
-            context.arc(x, y, size, 0, 2*Math.PI, true);
+            ctx.arc(x, y, size, 0, 2*Math.PI, true);
             spt.review.expand_bbox(x,y,size);
         }
-        context.fill();
+        ctx.fill();
     }
     else {
         if (dy == 0) {
@@ -718,23 +718,23 @@ spt.review.drag_motion = function(evt, bvr, mouse_411) {
             var slope = dx/dy;
         }
 
-        context.beginPath();
+        ctx.beginPath();
         for (var i = 0; i <= Math.abs(dy); i=i+2) {
 
             var x = last_pos.x + i*slope;
             var y = last_pos.y + i;
 
-            context.arc(x, y, size, 0, 2*Math.PI, true);
+            ctx.arc(x, y, size, 0, 2*Math.PI, true);
             spt.review.expand_bbox(x,y,size);
         }
-        context.fill();
+        ctx.fill();
     
     }
 
 
-    context.beginPath();
-    context.arc(posx, posy, size, 0, 2*Math.PI, true);
-    context.fill();
+    ctx.beginPath();
+    ctx.arc(posx, posy, size, 0, 2*Math.PI, true);
+    ctx.fill();
 
     spt.review.last_pos = {x: posx, y: posy};
 }
