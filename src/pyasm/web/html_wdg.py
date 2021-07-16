@@ -11,8 +11,8 @@
 #
 
 
-__all__ = ['HtmlException', 'HtmlElement', 'DivWdg', 'FloatDivWdg', 
-        'SpanWdg', 'ButtonWdg', 'StyleWdg', 'Tbody', 'Table', 'Canvas', 'Video']
+__all__ = ['HtmlException', 'HtmlElement', 'DivWdg', 'FloatDivWdg', 'SpanWdg',
+        'ButtonWdg', 'StyleWdg', 'Tbody', 'Table', 'DivTable', 'Canvas', 'Video']
 
 import os
 import re
@@ -1647,8 +1647,12 @@ class StyleWdg(HtmlElement):
 
 class Table(HtmlElement):
 
-    def __init__(self, name=None, css=None):
-        super(Table,self).__init__("table")
+    def __init__(self, name=None, css=None, mode=None):
+        self.mode = mode or "table"
+        if self.mode == "div":
+            super(Table,self).__init__("div")
+        else:
+            super(Table,self).__init__("table")
         self.add_style("border-collapse","collapse")
         self.name = name
         if css:
@@ -1659,7 +1663,7 @@ class Table(HtmlElement):
         self.current_row = None
         self.current_cell = None
         self.hidden_row_wdgs = []
-       
+
         # keep track of the number of columns
         self.num_cols = 0
         self.max_cols = 0
@@ -1682,14 +1686,23 @@ class Table(HtmlElement):
         return self.current_cell
 
     def add_col(self, css=None):
-        col = HtmlElement.col()
+        if self.mode == "div":
+            col = HtmlElement.div()
+            col.add_style("display: flex")
+        else:
+            col = HtmlElement.col()
+
         if css:
             col.set_class(css)
         self.add(col)
         return col
 
     def add_tbody(self):
-        tbody = HtmlElement.tbody()
+        if self.mode == "div":
+            tbody = HtmlElement.div()
+            tbody.add_style("display: flex")
+        else:
+            tbody = HtmlElement.tbody()
         #tbody.add_style('display','table-row-group')
         # each tbody can have a list of rows
         tbody.rows = []
@@ -1713,7 +1726,11 @@ class Table(HtmlElement):
         
         self.num_cols = 0
         if not tr:
-            tr = HtmlElement.tr()
+            if self.mode == "div":
+                tr = HtmlElement.div()
+                tr.add_style("display: flex")
+            else:
+                tr = HtmlElement.tr()
 
         if css:
             tr.set_class(css)
@@ -1757,7 +1774,13 @@ class Table(HtmlElement):
         self.num_cols += 1
         if self.num_cols > self.max_cols: self.max_cols = self.num_cols
 
-        th = HtmlElement.th(data)
+
+        if self.mode == "div":
+            th = HtmlElement.div()
+            th.add_style("display: flex")
+        else:
+            th = HtmlElement.th(data)
+
         if css:
             th.set_class(css)
 
@@ -1767,7 +1790,11 @@ class Table(HtmlElement):
             current_row = self.current_row
 
         if self.is_dynamic_flag and len(current_row.widgets) == 0:
-            th_sep = HtmlElement.th('&nbsp;')
+            if self.mode == "div":
+                th_sep = HtmlElement.div('&nbsp;')
+                th_sep.add_style("display: flex")
+            else:
+                th_sep = HtmlElement.th('&nbsp;')
             current_row.add(th_sep)
             if css:
                 th_sep.set_class(css)
@@ -1777,7 +1804,11 @@ class Table(HtmlElement):
         current_row.add(th)
 
         if self.is_dynamic_flag:
-            th_sep = HtmlElement.th('&nbsp;')
+            if self.mode == "div":
+                th_sep = HtmlElement.div('&nbsp;')
+                th_sep.add_style("display: flex")
+            else:
+                th_sep = HtmlElement.th('&nbsp;')
             current_row.add(th_sep)
             if css:
                 th_sep.set_class(css)
@@ -1792,7 +1823,11 @@ class Table(HtmlElement):
         self.num_cols += 1
         if self.num_cols > self.max_cols: self.max_cols = self.num_cols
 
-        td = HtmlElement.td(data)
+        if self.mode == "div":
+            td = HtmlElement.div(data)
+            #td.add_style("display: flex")
+        else:
+            td = HtmlElement.td(data)
         if css:
             td.set_class(css)
         self.current_cell = td
@@ -1808,7 +1843,11 @@ class Table(HtmlElement):
 
         if self.is_dynamic_flag and self.num_cols == 1:
             # add a separator
-            td_sep = HtmlElement.td("&nbsp;")
+            if self.mode == "div":
+                td_sep = HtmlElement.div("&nbsp;")
+                #td_sep.add_style("display: flex")
+            else:
+                td_sep = HtmlElement.td("&nbsp;")
             row.add(td_sep)
             if css:
                 td_sep.set_class(css)
@@ -1821,7 +1860,11 @@ class Table(HtmlElement):
 
         if self.is_dynamic_flag:
             # add a separator
-            td_sep = HtmlElement.td("&nbsp;")
+            if self.mode == "div":
+                td_sep = HtmlElement.div("&nbsp;")
+                #td_sep.add_style("display: flex")
+            else:
+                td_sep = HtmlElement.td("&nbsp;")
             row.add(td_sep)
             if css:
                 td_sep.set_class(css)
@@ -1912,7 +1955,11 @@ class Table(HtmlElement):
             img = HtmlElement.img("/context/icons/common/table/square_grey.png")
             div.add(img)
 
-            th_sep = HtmlElement.th(div)
+            if self.mode == "div":
+                th_sep = HtmlElement.div(div)
+                th_sep.add_style("display: flex")
+            else:
+                th_sep = HtmlElement.th(div)
             current_row.add(th_sep)
             if css:
                 th_sep.set_class(css)
@@ -1923,7 +1970,11 @@ class Table(HtmlElement):
         img.add_style("height: 10px")
         data = DivWdg(img)
 
-        th = HtmlElement.th(data)
+        if self.mode == "div":
+            th = HtmlElement.div(div)
+            th.add_style("display: flex")
+        else:
+            th = HtmlElement.th(data)
 
         current_row.add(th)
 
@@ -1933,7 +1984,11 @@ class Table(HtmlElement):
             img = HtmlElement.img("/context/icons/common/table/square_grey.png")
             div.add(img)
 
-            th_sep = HtmlElement.th(div)
+            if self.mode == "div":
+                th_sep = HtmlElement.div(div)
+                th_sep.add_style("display: flex")
+            else:
+                th_sep = HtmlElement.th(div)
             current_row.add(th_sep)
             if css:
                 th_sep.set_class(css)
@@ -1955,6 +2010,16 @@ class Table(HtmlElement):
                 row.widgets[0].set_attr("colspan", self.max_cols)
         return super(Table,self).get_display()
 
+
+
+class DivTable(Table):
+
+    def __init__(self, name=None, css=None):
+        super(DivTable,self).__init__(name, css, mode="div")
+
+
+
+
 class Tbody(Table):
     ''' a collection of tr's without the parent <tbody>'''
     def __init__(self, name=None, css=None):
@@ -1963,6 +2028,8 @@ class Tbody(Table):
         self.current_row = None
         self.current_cell = None
         self.hidden_row_wdgs = []
+
+        dsfasdfs
        
         # keep track of the number of columns
         self.num_cols = 0

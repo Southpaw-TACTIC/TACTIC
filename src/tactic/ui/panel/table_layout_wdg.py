@@ -671,13 +671,55 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # add some basic styles
         style_div = HtmlElement("style")
-        top.add(style_div)
+        inner.add(style_div)
         style_div.add('''
+            .spt_layout .spt_table_header {
+                margin: -1px -1px 0px 0px;
+                font-weight: 500;
+                
+            }
+
+            .spt_layout .spt_table_select {
+                display: flex;
+                align-items: center;
+                margin: -1px -1px 0px 0px;
+            }
+
+            .spt_layout .spt_table_select .spt_table_checkbox {
+                margin-left: 3px;
+                margin-top: -8px;
+            }
+            .spt_layout .spt_table_header_select .spt_table_checkbox {
+                margin-left: 3px;
+                margin-top: -8px;
+            }
+
+
+            .spt_layout .spt_table_header_select {
+                width: 30px;
+                min-width: 30px;
+                max-width: 30px;
+                text-align: center;
+
+                display: flex;
+                align-items: center;
+
+                margin: -1px -1px 0px 0px;
+            }
+
+ 
             .spt_layout .spt_cell_edit {
 
                 padding: 3px 8px;
                 vertical-align: middle;
                 overflow: hidden;
+
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+
+                margin: -1px -1px 0px 0px;
+
 
                 background-repeat: no-repeat;
                 background-position: bottom right;
@@ -971,7 +1013,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-            self.header_table = Table()
+            self.header_table = Table(mode="div")
             scroll.add(self.header_table)
 
 
@@ -2127,7 +2169,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         '''Fake a table for inserting'''
         #self.group_columns = []
         self.edit_wdgs = {}
-        table = Table()
+        table = Table(mode="div")
         table.add_style("display: none")
         table.add_class("spt_table_insert_table")
 
@@ -2158,7 +2200,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_group_insert_wdg(self):
         '''Fake a table for inserting'''
         self.edit_wdgs = {}
-        table = Table()
+        table = Table(mode="div")
         table.add_style("margin-top: 20px")
         table.add_style("display: none")
         table.add_class("spt_table_group_insert_table")
@@ -2311,7 +2353,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner_div = DivWdg()
             th.add(inner_div)
             inner_div.add_style("position: relative")
-            inner_div.add_style("width: auto")
+            inner_div.add_style("width: 100%")
             inner_div.add_class("spt_table_header_inner")
             #inner_div.add_style("overflow: hidden")
 
@@ -3220,7 +3262,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         tr.add_style("min-height: %spx" % min_height)
-        tr.add_style("height: %spx" % min_height)
+        # mode = div
+        #tr.add_style("height: %spx" % min_height)
 
         tr.add_attr("spt_group_level", level)
 
@@ -3275,6 +3318,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+
 
             if sobject.is_insert():
                 onload_js = widget.get_onload_js()
@@ -3781,10 +3825,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #th.add_looks( 'dg_row_select_box' )
         th.add_class('look_dg_row_select_box')
         th.add_class( 'spt_table_header_select' )
-        th.add_style('width: 30px')
-        th.add_style('min-width: 30px')
-        th.add_style('max-width: 30px')
-        th.add_style('text-align', 'center')
 
         th.add(self.get_select_wdg())
         th.add_behavior( {
@@ -3820,7 +3860,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_select_wdg(self):
         checkbox_container = DivWdg()
         checkbox_container.add_style("position", "relative")
-        checkbox_container.add_style("top", "-4px")
 
         checkbox = DivWdg(css="checkbox spt_table_checkbox")
         checkbox_container.add(checkbox)
@@ -3828,7 +3867,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         label.add_behavior({
             'type': 'load',
             'cbjs_action': '''
-            
             bvr.src_el.addEventListener("click", function(e) {
                 e.preventDefault();
             })
@@ -3872,8 +3910,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         td.add_class("spt_table_select")
         td.add_class('look_dg_row_select_box')
         td.add_class( 'SPT_DTS' )
-        
-        td.add_style("text-align", "center")
         
         td.add(self.get_select_wdg())
         
@@ -7809,7 +7845,7 @@ spt.table.get_parent_groups = function(src_el, level) {
 
 // setting width of columns
 
-spt.table.set_column_width = function(element_name, width) {
+spt.table.set_column_width = function(element_name, width, cells) {
     var table = spt.table.get_table();
     var header_table = spt.table.get_header_table();
 
@@ -7883,8 +7919,30 @@ spt.table.set_column_width = function(element_name, width) {
 
     curr_header.setStyle("width", width);
     curr_header.setAttribute("last_width", width);
-    cell.setStyle("width", width);
-    cell.setAttribute("last_width", width);
+
+    let mode = "div";
+    if (mode == "div") {
+        if (cells && cells.length != 0) {
+            cells.forEach( cell => {
+                cell.setStyle("width", width);
+                cell.setAttribute("last_width", width);
+            } )
+        }
+        else {
+            let rows = spt.table.get_all_rows();
+            rows.forEach( row => {
+                let cell = spt.table.get_cell(element_name, row);
+                cell.setStyle("width", width);
+                cell.setAttribute("last_width", width);
+            } )
+        }
+
+
+    }
+    else {
+        cell.setStyle("width", width);
+        cell.setAttribute("last_width", width);
+    }
 
 
 
@@ -7997,7 +8055,8 @@ spt.table.expand_table = function(mode) {
             var total_width = 0;
 
             // remove the widths of all the cells
-            var cells = header_table.getElements("th");
+            //var cells = header_table.getElements("th");
+            var cells = header_table.getElement(".spt_table_header_row").getChildren();
             cells.forEach( function(cell) {
 
                 var last_width = cell.getAttribute("last_width");
@@ -8076,18 +8135,27 @@ spt.table.expand_table = function(mode) {
         }
     }
     else {
-
         if (header_table) {
             header_table.setStyle("width", "100%");
 
             // remove the widths of all the cells
-            var cells = header_table.getElements("th");
+            //var cells = header_table.getElements("th");
+            var cells = header_table.getElement(".spt_table_header_row").getChildren();
+
             cells.forEach( function(cell) {
                 var last_width = cell.getAttribute("last_width");
                 if (!last_width) {
-                    cell.setStyle("width", "");
+                    //cell.setStyle("width", "");
                 }
-           })
+
+                if (cell == cells[cells.length-1]) {
+                    cell.setStyle("flex-grow", "1");
+                }
+                else {
+                    cell.setStyle("flex-grow", "");
+                }
+            })
+
 
         }
         if (table) {
@@ -8095,7 +8163,7 @@ spt.table.expand_table = function(mode) {
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
-                var cells = row.getElements("spt_cell_edit");
+                var cells = row.getElements(".spt_cell_edit");
                 cells.forEach( function(cell) {
 
                     if (cell.hasClass("spt_table_select") ) {
@@ -8106,6 +8174,15 @@ spt.table.expand_table = function(mode) {
                     if (!last_width) {
                       cell.setStyle("width", "");
                     }
+
+                    if (cell == cells[cells.length-1]) {
+                        cell.setStyle("flex-grow", "1");
+                    }
+                    else {
+                        cell.setStyle("flex-grow", "");
+                    }
+     
+
                 })
             })
 
@@ -8188,6 +8265,8 @@ spt.table.drag_init = function()
 }
 spt.table.drag_init();
 
+spt.table.drag_cells = null;
+
 
 spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
 {
@@ -8216,6 +8295,16 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     spt.table.last_mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
 
 
+
+    let element_name = spt.table.last_header.getAttribute("spt_element_name");
+    let rows = spt.table.get_all_rows();
+    let cells = [];
+    rows.forEach( row => {
+        let cell = spt.table.get_cell(element_name, row);
+        cells.push(cell);
+    } )
+    spt.table.drag_cells = cells;
+
     return;
 
 
@@ -8230,13 +8319,16 @@ spt.table.drag_resize_header_motion = function(evt, bvr, mouse_411)
     var x = spt.table.last_size.x + dx;
 
     var element_name = spt.table.last_header.getAttribute("spt_element_name");
-    spt.table.set_column_width(element_name, x);
+    spt.table.set_column_width(element_name, x, spt.table.drag_cells);
 
 
     return;
 }
 
 spt.table.drag_resize_header_action = function(evt, bvr, mouse_411) {
+
+    spt.table.drag_cells = null;
+
     spt.table.smallest_size = -1;
     spt.table.resize_div = null;
 
