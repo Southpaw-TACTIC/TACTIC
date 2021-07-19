@@ -3117,16 +3117,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         # build the inner flex layout
         td_inner = DivWdg()
         td_inner.add_style("width: 100%")
+        td_inner.add_style("height: 100%")
         td_inner.add_style("box-sizing: border-box")
         td.add(td_inner)
         td_inner.add_style("display: flex")
+        td_inner.add_style("align-items: center")
         td_inner.add_class("spt_group_td_inner")
 
         td_inner.add(swap)
         td_inner.add(title_div)
 
 
-
+        td.add_style("display: flex")
+        td.add_style("align-items: center")
+        td.add_style("width: 100%")
         td.add_style("height: %spx" % height)
         td.add_style("padding-left: %spx" % (i*padding+3))
 
@@ -7587,7 +7591,6 @@ spt.table.collapse_group = function(group_row) {
 
     var show = false;
 
-
     // get the rows after the group
     var last_row = group_row;
     var idx = last_row.getAttribute('idx')
@@ -7618,8 +7621,6 @@ spt.table.collapse_group = function(group_row) {
     while(1) {
         var row = last_row.getNext();
 
-
-
         if (row == null) {
             break;
         }
@@ -7628,10 +7629,8 @@ spt.table.collapse_group = function(group_row) {
 
        if (row_level) {
           row_level = parseInt(row_level);
-
        }
        else {
-
            row_level = 0;
        }
 
@@ -7640,55 +7639,38 @@ spt.table.collapse_group = function(group_row) {
 
 
         if (row_level <= group_level) {
-
            break;
-
         }
 
         reg_row = true;
 
         if (show) {
-
            if (row.getAttribute('spt_table_state') == 'closed') {
-
-              spt.show(row);
+              spt.show(row, "flex");
               previous_state = 'closed';
-
            }
 
            else if (row.getAttribute('spt_table_state') == 'open') {
-
                  previous_state = 'open';
-
-                 spt.show(row);
-
+                 spt.show(row, "flex");
            }
-
            else {
-
                 if (previous_state == 'closed') {
                    spt.hide(row);
-
                 }
-
                 else {
-                   spt.show(row);
+                   spt.show(row, "flex");
                 }
-
-
            }
-
-
         }
         else  {
             spt.hide(row);
         }
 
-
         last_row = row;
     }
 
-    // FIXME: is this even needed
+    // NOTE: is this even needed?
     group_row.setAttribute("is_collapse", "true");
 
 
