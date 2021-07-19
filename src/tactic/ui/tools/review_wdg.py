@@ -1935,12 +1935,12 @@ class ReviewVideoControlWdg(BaseRefreshWdg):
 
 
 
-        top.add_behavior( {
+        top.add_behavior({
         'type': 'load',
         'cbjs_action': self.get_onload_js()
-        } )
+        })
 
-        top.add_behavior( {
+        top.add_behavior({
         'type': 'load',
         'cbjs_action': '''
 
@@ -1979,37 +1979,39 @@ class ReviewVideoControlWdg(BaseRefreshWdg):
         })
 
         '''
-        } )
+        })
 
 
-        icon = IconWdg(name="icon", icon="BS_PLAY")
+        icon = IconWdg(name="icon", icon="FAS_PLAY")
         icon.add_class("spt_review_control_item")
         icon.add_style("cursor", "pointer")
+        icon.add_style("margin-right: 10px")
         top.add(icon)
-        icon.add_behavior( {
+        icon.add_behavior({
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_review_player_top");
             var player = spt.video.get_player(top);
             player.play();
             '''
-        } )
+        })
 
 
 
 
-        icon = IconWdg(name="icon", icon="BS_STOP")
+        icon = IconWdg(name="icon", icon="FAS_PAUSE")
         icon.add_class("spt_review_control_item")
         icon.add_style("cursor", "pointer")
+        icon.add_style("margin-right: 10px")
         top.add(icon)
-        icon.add_behavior( {
+        icon.add_behavior({
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_review_player_top");
             var player = spt.video.get_player(top);
             player.pause();
             '''
-        } )
+        })
 
         timecode_div = DivWdg()
         top.add(timecode_div)
