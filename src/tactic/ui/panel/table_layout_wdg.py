@@ -7192,17 +7192,21 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var header_row = header_table.getElement(".spt_table_header_row");
             var headers = header_row.getElements(".spt_table_header");
 
-            var row = spt.table.get_first_row();
+            //var row = spt.table.get_first_row();
+            //let rowsX = spt.table.get_all_rows();
 
-            if (row) {
+            new_rows.forEach( row => {
+
                 var cells = row.getElements(".spt_cell_edit");
 
                 // set the row widths to that of the header
                 for (var i = 0; i < cells.length; i++) {
                     var width = headers[i].getStyle("width");
-                    cells[i].setStyle("width", width);
+                    var size = headers[i].getSize();
+                    cells[i].setStyle("width", size.x);
                 }
-            }
+
+            } )
 
 
 
