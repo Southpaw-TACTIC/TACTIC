@@ -4755,22 +4755,25 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     }
 
 
-    var clone = document.createElement("tr");
+    var clone = document.createElement("div");
     if (clone_id) {
         clone.setAttribute("id", clone_id);
     }
     clone.addClass("spt_hidden_row");
     var color = row.getAttribute("spt_hover_background");
+
     clone.setStyle("background", color);
+
+
 
     var children = row.getChildren();
     var num_children = children.length;
     var html = '<img src="/context/icons/common/indicator_snake.gif" border="0"/>';
-    clone.innerHTML = "<td class='spt_hidden_row_cell' colspan='"+num_children+"'> "+html+" Loading ...</td>";
+    clone.innerHTML = "<div class='spt_hidden_row_cell' colspan='"+num_children+"'> "+html+" Loading ...</div>";
     clone.inject(row, "after");
 
     var hidden_row = clone.getElement(".spt_hidden_row_cell");
-    hidden_row.setStyle("height", "50px");
+    hidden_row.setStyle("height", "fit-content");
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
     hidden_row.setStyle("padding-bottom", "10px");
@@ -4802,7 +4805,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "var(--spt_palette_table_border)";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; border-radius: 5px; filter: drop-shadow(0px 0px 10px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; filter: drop-shadow(0px 0px 10px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -4912,8 +4915,8 @@ spt.table.add_rows = function(row, search_type, level, expression, kwargs) {
     // find the number of tds in the row
     td_count = row.getChildren().length;
 
-    var load_tr = document.createElement("tr");
-    var load_td = document.createElement("td");
+    var load_tr = document.createElement("div");
+    var load_td = document.createElement("div");
     load_td.setAttribute("colspan", td_count);
     load_tr.appendChild(load_td);
 
