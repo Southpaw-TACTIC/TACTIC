@@ -8136,7 +8136,10 @@ spt.table.expand_table = function(mode) {
     }
     else {
         if (header_table) {
-            header_table.setStyle("width", "100%");
+            //header_table.setStyle("width", "100%");
+            header_table.setStyle("width", "calc(100% - 2px)");
+            header_table.setStyle("min-width", "calc(100% - 2px)");
+            header_table.setStyle("box-sizing", "border-box");
 
             // remove the widths of all the cells
             //var cells = header_table.getElements("th");
@@ -8159,7 +8162,10 @@ spt.table.expand_table = function(mode) {
 
         }
         if (table) {
-            table.setStyle("width", "100%");
+            //table.setStyle("width", "100%");
+            table.setStyle("width", "calc(100% - 2px)");
+            table.setStyle("min-width", "calc(100% - 2px)");
+            table.setStyle("box-sizing", "border-box");
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
