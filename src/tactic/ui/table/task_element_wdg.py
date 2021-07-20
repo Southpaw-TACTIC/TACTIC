@@ -820,7 +820,13 @@ class TaskElementWdg(BaseTableElementWdg):
         layout.add_behavior( {
         "type": "load",
         "cbjs_action": '''
-spt.task_element = {}
+
+if (!spt.task_element) {
+    spt.task_element = {};
+}
+spt.Environment.get().add_library("spt_task_element");
+
+
 
 bvr.src_el.addEvent('change:relay(.spt_task_status_select)',
     function(evt, src_el) {
@@ -998,8 +1004,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         jsx = '''
-
-spt.task_element = {}
 
 class StatusWdg extends React.Component {
 

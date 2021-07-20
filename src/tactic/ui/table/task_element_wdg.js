@@ -1,7 +1,5 @@
 "use strict";
 
-spt.task_element = {};
-
 class StatusWdg extends React.Component {
   constructor(props) {
     super(props);
