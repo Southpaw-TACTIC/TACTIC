@@ -35,7 +35,8 @@ import dateutil
 from dateutil import parser
 from datetime import datetime, timedelta
 
-import os, six
+import os
+import six
 
 
 class ReviewTaskElementWdg(BaseTableElementWdg):
@@ -60,19 +61,19 @@ class ReviewTaskElementWdg(BaseTableElementWdg):
         }
     }
 
-    def init(my):
-        my.snapshot_dict = {}
+    def init(self):
+        self.snapshot_dict = {}
     
-    def get_width(my):
+    def get_width(self):
         return 50
   
-    def _get_pipeline_dict(my):
+    def _get_pipeline_dict(self):
         '''build a dictionary of pyasm.biz.Pipeline objects
         by task search key.'''
         
         task_pipeline_dict = {}
         
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         
         pipeline_dict = {}
         for task in sobjects:    
@@ -96,17 +97,17 @@ class ReviewTaskElementWdg(BaseTableElementWdg):
         
         return task_pipeline_dict
 
-    def preprocess(my):
+    def preprocess(self):
         '''build a dictionary by task search key which
         stores the latest snapshots checked into parent
         sObject under task review process, and the 
         review and original processes.'''
 
 
-        task_pipeline_dict = my._get_pipeline_dict()
+        task_pipeline_dict = self._get_pipeline_dict()
         snapshot_dict = {}
         
-        sobjects = my.sobjects
+        sobjects = self.sobjects
         
         # Get snapshot information for each task
         for task in sobjects:    
@@ -152,22 +153,22 @@ class ReviewTaskElementWdg(BaseTableElementWdg):
             
             snapshot_dict[search_key] = snapshot_data
         
-        my.snapshot_dict = snapshot_dict
+        self.snapshot_dict = snapshot_dict
 
-    def get_display(my):
-        show_content_box = my.get_option('show_content_box')
-        review_note_process = my.get_option('review_note_process')
+    def get_display(self):
+        show_content_box = self.get_option('show_content_box')
+        review_note_process = self.get_option('review_note_process')
         if not review_note_process:
             review_note_process = "false"
         div = DivWdg()
         div.add_class("hand")
 
-        sobject = my.get_current_sobject()
+        sobject = self.get_current_sobject()
         search_key = sobject.get_search_key()
          
-        snapshot_data = my.snapshot_dict.get(search_key)
+        snapshot_data = self.snapshot_dict.get(search_key)
         if not snapshot_data:
-            return my.top
+            return self.top
         
         snapshots = snapshot_data.get('snapshots')
         review_process = snapshot_data.get('review_process')
@@ -191,7 +192,7 @@ class ReviewTaskElementWdg(BaseTableElementWdg):
                             After submitting a revised file, update your task status, then \
                             review again.");
                 } else { 
-                    var class_name = 'spt.tools.review.ReviewWdg';
+                    var class_name = 'tactic.ui.tools.ReviewWdg';
                     var title = "Review ["+bvr.review_process+"]";
                     kwargs = {
                         'search_key': bvr.search_key,
@@ -218,24 +219,24 @@ class ReviewWdg(BaseRefreshWdg):
     are then checked into the parent sObject under a revision context.
     Snapshots are retrieved from sthpw/task, vfx/submission or sthpw/snapshot.'''
 
-    def init(my):
-        my.task_data = None
+    def init(self):
+        self.task_data = None
 
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         
         inner = DivWdg()
         top.add(inner)
         inner.add_style("background", "#111")
         inner.add_style("color", "#FFF")
         inner.add_class("spt_review_top")
-        custom_status = my.kwargs.get("custom_status")
+        custom_status = self.kwargs.get("custom_status")
         inner.add_attr("spt_custom_status", custom_status)
         
         inner.add_behavior( {
             'type': 'load',
-            'cbjs_action': my.get_onload_js()
+            'cbjs_action': self.get_onload_js()
         } )
         
         '''
@@ -248,9 +249,9 @@ class ReviewWdg(BaseRefreshWdg):
         *sthpw/task for review must be accompanied by task_data kwarg.
         '''
 
-        expression = my.kwargs.get("expression")
-        search_keys = my.kwargs.get("search_keys")
-        search_key = my.kwargs.get("search_key")
+        expression = self.kwargs.get("expression")
+        search_keys = self.kwargs.get("search_keys")
+        search_key = self.kwargs.get("search_key")
 
         if search_key:
             search_keys = [search_key]
@@ -261,26 +262,26 @@ class ReviewWdg(BaseRefreshWdg):
                 except ValueError:
                     search_keys = search_keys.split(",")
             try:
-                my.sobjects = Search.get_by_search_keys(search_keys)
+                self.sobjects = Search.get_by_search_keys(search_keys)
             except:
                 print("Error with finding [%s]" % search_keys)
-                my.sobjects = []
+                self.sobjects = []
         elif expression:
-            my.sobjects = Search.eval(expression)
+            self.sobjects = Search.eval(expression)
         else:
-            my.sobjects = []
+            self.sobjects = []
  
         # Get snapshots for review session
-        my.snapshots = []
-        for sobject in my.sobjects:
+        self.snapshots = []
+        for sobject in self.sobjects:
             if sobject.get_base_search_type() == "sthpw/task":
                 # Task data from ReviewTaskElementWdg
-                snapshot_sks = my.kwargs.get("snapshot_search_keys")
-                original_process = my.kwargs.get("original_process")
-                review_process = my.kwargs.get("review_process")
-                review_note_process = my.kwargs.get("review_note_process")
+                snapshot_sks = self.kwargs.get("snapshot_search_keys")
+                original_process = self.kwargs.get("original_process")
+                review_process = self.kwargs.get("review_process")
+                review_note_process = self.kwargs.get("review_note_process")
                 
-                # Add snapshots to my.snapshots
+                # Add snapshots to self.snapshots
                 snapshots = None
                 first_snapshot = None
                 if snapshot_sks:
@@ -288,13 +289,13 @@ class ReviewWdg(BaseRefreshWdg):
                     first_snapshot = snapshot_sks[0]
                 
                 if snapshots:
-                    my.snapshots.extend(snapshots)
+                    self.snapshots.extend(snapshots)
                 
                 # Store task data for child widgets
-                my.task_data = {
+                self.task_data = {
                     'snapshot': first_snapshot, 
-                    'original_process': my.kwargs.get("original_process"),   
-                    'review_process': my.kwargs.get("review_process")            
+                    'original_process': self.kwargs.get("original_process"),
+                    'review_process': self.kwargs.get("review_process")
                 }
                 
                 # Store task data in DOM for js
@@ -302,29 +303,29 @@ class ReviewWdg(BaseRefreshWdg):
                 inner.add_attr("spt_review_process", review_process)
                 inner.add_attr("spt_review_note_process", review_note_process)
             elif sobject.get_base_search_type() == "sthpw/snapshot":
-                my.snapshots.append(sobject)
+                self.snapshots.append(sobject)
             elif sobject.get_base_search_type() == "vfx/submission":
                 snapshot_code = sobject.get("snapshot_code")
                 snapshot = Snapshot.get_by_code(snapshot_code)
-                my.snapshots.append(snapshot)
+                self.snapshots.append(snapshot)
             else:
                 snapshots = Snapshot.get_latest_by_sobject(sobject, process="publish")
                 if snapshots:
                     if isinstance(snapshots, list):
-                        my.snapshots.extend(snapshots)
+                        self.snapshots.extend(snapshots)
                     else:
-                        my.snapshots.append(snapshots)
+                        self.snapshots.append(snapshots)
 
 
         snapshots = []
-        for snapshot in my.snapshots:
+        for snapshot in self.snapshots:
             context = snapshot.get_value("context")
             process = snapshot.get_value("process")
             if not context.startswith("%s/" % process) and context.startswith("review/"):
                 continue
 
             snapshots.append(snapshot)
-        my.snapshots = snapshots
+        self.snapshots = snapshots
 
          
         #mode = "test"
@@ -336,14 +337,14 @@ class ReviewWdg(BaseRefreshWdg):
             search = Search("test/asset")
             #sobject = search.get_sobject()
             search.add_limit(15)
-            my.sobjects = search.get_sobjects()
+            self.sobjects = search.get_sobjects()
         
 
 
 
-        my.ui_settings = my.kwargs.get("ui_settings")
-        if my.ui_settings:
-            top.add_attr("ui_settings", jsondumps(my.ui_settings))
+        self.ui_settings = self.kwargs.get("ui_settings")
+        if self.ui_settings:
+            top.add_attr("ui_settings", jsondumps(self.ui_settings))
 
         table = Table()
         inner.add(table)
@@ -353,10 +354,10 @@ class ReviewWdg(BaseRefreshWdg):
 
         table.add_row()
         
-        show_media_wdg = my.kwargs.get("show_media_wdg")
+        show_media_wdg = self.kwargs.get("show_media_wdg")
         if show_media_wdg not in ['false', False, 'False']:
             td = table.add_cell()
-            td.add( my.get_media_wdg() )
+            td.add(self.get_media_wdg() )
             td.add_style("vertical-align: top")
             td.add_style("border: solid 1px #333")
             td.add_style("background", "#000")
@@ -365,18 +366,18 @@ class ReviewWdg(BaseRefreshWdg):
         td.add_style("border: solid 1px #333")
         td.add_style("vertical-align: top")
         td.add_style("width: 300px")
-        td.add( my.get_action_wdg() )
+        td.add(self.get_action_wdg() )
 
-        if len(my.snapshots) > 1:
+        if len(self.snapshots) > 1:
             tr, td = table.add_row_cell()
             td.add_style("border: solid 1px #333")
             td.add_style("vertical-align: top")
-            td.add( my.get_sobjects_wdg() )
+            td.add(self.get_sobjects_wdg() )
 
-        if my.kwargs.get("is_refresh"):
+        if self.kwargs.get("is_refresh"):
             return inner
         else:
-            show_content_box = my.kwargs.get("show_content_box")
+            show_content_box = self.kwargs.get("show_content_box")
             if show_content_box in ["true", "True", True]:
                 content_box = ContentBoxWdg(icon="G_CALENDAR", title="Review session")
                 content_box.widgets = [top]
@@ -385,19 +386,19 @@ class ReviewWdg(BaseRefreshWdg):
                 return top
 
 
-    def get_media_wdg(my):
+    def get_media_wdg(self):
         div = DivWdg()
         div.add_style("min-width: 800px")
         div.add_style("min-height: 400px")
         div.add_class("spt_review_media")
 
         # Choose the first one
-        if my.sobjects:
-            sobject = my.sobjects[0]
+        if self.sobjects:
+            sobject = self.sobjects[0]
         else:
             sobject = None
      
-        media_wdg = ReviewMediaWdg(sobject=sobject, task_data=my.task_data)
+        media_wdg = ReviewMediaWdg(sobject=sobject, task_data=self.task_data)
         div.add(media_wdg)
 
         return div
@@ -405,24 +406,24 @@ class ReviewWdg(BaseRefreshWdg):
 
 
 
-    def get_action_wdg(my):
+    def get_action_wdg(self):
         div = DivWdg()
         div.add_class("spt_review_action")
         
-        if my.sobjects:
-            sobject = my.sobjects[0]
+        if self.sobjects:
+            sobject = self.sobjects[0]
             search_key = sobject.get_search_key()
         else:
             sobject = None
             search_key = None
 
-        custom_status = my.kwargs.get("custom_status")
-        div.add( ReviewActionWdg(search_key=search_key, task_data=my.task_data, ui_settings=my.ui_settings,
-            custom_status=custom_status))
+        custom_status = self.kwargs.get("custom_status")
+        div.add(ReviewActionWdg(search_key=search_key, task_data=self.task_data, ui_settings=self.ui_settings,
+                                custom_status=custom_status))
         return div
 
 
-    def get_sobjects_wdg(my):
+    def get_sobjects_wdg(self):
         div = DivWdg()
         div.add_class("spt_review_tiles_top")
 
@@ -443,19 +444,19 @@ class ReviewWdg(BaseRefreshWdg):
 
         )
 
-        layout.set_sobjects(my.snapshots)
+        layout.set_sobjects(self.snapshots)
         div.add(layout)
 
         mapping = {}
         
-        for i, snapshot in enumerate(my.snapshots):
+        for i, snapshot in enumerate(self.snapshots):
             # For the review of task, single snapshot or single
             # submission, there will be 1 sobject
             # for all snapshots.
-            if len(my.sobjects) == 1:
-                sobject = my.sobjects[0]
+            if len(self.sobjects) == 1:
+                sobject = self.sobjects[0]
             else:
-                sobject = my.sobjects[i]
+                sobject = self.sobjects[i]
             mapping[snapshot.get_search_key(use_id=True)] = sobject.get_search_key()
 
         div.add_behavior( {
@@ -473,9 +474,9 @@ class ReviewWdg(BaseRefreshWdg):
 
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
-        on_upload_script = my.kwargs.get("on_upload_script") or ""
+        on_upload_script = self.kwargs.get("on_upload_script") or ""
 
         return r'''
 spt.review = {}
@@ -575,11 +576,11 @@ spt.review.load = function(evt, bvr, mouse_411) {
     }
     
     // Refresh the Media Wdg
-    var class_name = 'spt.tools.review.ReviewMediaWdg';
+    var class_name = 'tactic.ui.tools.ReviewMediaWdg';
     spt.panel.load(media_el, class_name, kwargs, {}, {show_loading: false});
 
     // Refresh the Action Wdg
-    var class_name = 'spt.tools.review.ReviewActionWdg';
+    var class_name = 'tactic.ui.tools.ReviewActionWdg';
     spt.panel.load(action_el, class_name, action_kwargs, {}, {show_loading: false});
 }
 
@@ -657,13 +658,13 @@ spt.review.last_pos = null;
 spt.review.drag_motion = function(evt, bvr, mouse_411) {
 
     var canvas = spt.behavior.get_bvr_src( bvr );
-    var context = canvas.getContext("2d");
+    var ctx = canvas.getContext("2d");
     var data = spt.review.get_brush_data();
 
-    context.lineWidth = 1;
-    //context.globalCompositeOperation = 'source-overt';
-    context.stokeStyle = data.brush_color;
-    context.fillStyle = data.brush_color;
+    ctx.lineWidth = 1;
+    //ctx.globalCompositeOperation = 'source-overt';
+    ctx.stokeStyle = data.brush_color;
+    ctx.fillStyle = data.brush_color;
 
     var parent = canvas.getParent();
     //parent_pos = parent.getPosition();
@@ -699,16 +700,16 @@ spt.review.drag_motion = function(evt, bvr, mouse_411) {
             var slope = dy/dx;
         }
 
-        context.beginPath();
+        ctx.beginPath();
         for (var i = 0; i <= Math.abs(dx); i=i+2) {
 
             var x = last_pos.x + i;
             var y = last_pos.y + i*slope;
 
-            context.arc(x, y, size, 0, 2*Math.PI, true);
+            ctx.arc(x, y, size, 0, 2*Math.PI, true);
             spt.review.expand_bbox(x,y,size);
         }
-        context.fill();
+        ctx.fill();
     }
     else {
         if (dy == 0) {
@@ -718,23 +719,23 @@ spt.review.drag_motion = function(evt, bvr, mouse_411) {
             var slope = dx/dy;
         }
 
-        context.beginPath();
+        ctx.beginPath();
         for (var i = 0; i <= Math.abs(dy); i=i+2) {
 
             var x = last_pos.x + i*slope;
             var y = last_pos.y + i;
 
-            context.arc(x, y, size, 0, 2*Math.PI, true);
+            ctx.arc(x, y, size, 0, 2*Math.PI, true);
             spt.review.expand_bbox(x,y,size);
         }
-        context.fill();
+        ctx.fill();
     
     }
 
 
-    context.beginPath();
-    context.arc(posx, posy, size, 0, 2*Math.PI, true);
-    context.fill();
+    ctx.beginPath();
+    ctx.arc(posx, posy, size, 0, 2*Math.PI, true);
+    ctx.fill();
 
     spt.review.last_pos = {x: posx, y: posy};
 }
@@ -1010,7 +1011,7 @@ spt.review.upload = function(search_key, status, data_url, current_time) {
         var process = values.process;
         var snapshot_key = values.snapshot_key;
 
-        var cmd = "spt.tools.review.ReviewCmd";
+        var cmd = "tactic.ui.tools.ReviewCmd";
         var args = {
             search_key: search_key,
             snapshot_key: snapshot_key,
@@ -1137,8 +1138,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
     '''displays image or video from snapshot under review. Includes
     annotation tools.''' 
     
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_style("position: relative")
         top.add_class("SPT_DTS")
         top.add_class("spt_review_player_top")
@@ -1152,11 +1153,11 @@ class ReviewMediaWdg(BaseRefreshWdg):
 
 
         sobject = None
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
         else:
-            sobject = my.kwargs.get("sobject")
+            sobject = self.kwargs.get("sobject")
 
 
         src = None
@@ -1164,7 +1165,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
             if sobject.get_base_search_type() == "sthpw/snapshot":
                 snapshot = sobject
             elif sobject.get_base_search_type() == "sthpw/task":
-                task_data = my.kwargs.get('task_data')
+                task_data = self.kwargs.get('task_data')
                 snapshot_sk = task_data.get('snapshot')
                 snapshot = Search.get_by_search_key(snapshot_sk)
             elif sobject.get_base_search_type() == "vfx/submission":
@@ -1283,7 +1284,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
                 pass
 
         if is_video or is_image:
-            embed.add_behavior( {
+            embed.add_behavior({
                 'type': 'load',
                 'background_src': src,
                 'width': width,
@@ -1331,7 +1332,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
                     set_canvas_sizes();
                 }                
                 '''
-            });
+            })
 
             embed_div.add_style("pointer-events: none")
             
@@ -1440,7 +1441,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
             } )
 
 
-            div.add( my.get_canvas_tool_wdg() )
+            div.add( self.get_canvas_tool_wdg() )
 
         # HUD: Display aspect ratio, display repo name and source file name.
         aspect_ratio = None
@@ -1485,7 +1486,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
         return top
 
 
-    def get_canvas_tool_wdg(my):
+    def get_canvas_tool_wdg(self):
         
         
         div = DivWdg()
@@ -1571,7 +1572,7 @@ class ReviewMediaWdg(BaseRefreshWdg):
         }
 
         ''')
-        color_selected = my.kwargs.get("color_selected") or 'red'
+        color_selected = self.kwargs.get("color_selected") or 'red'
         
         for i, color in enumerate(['red', 'green', 'blue', 'orange', 'magenta', 'cyan',  '#000', '#FFF']):
             outer_div = DivWdg()
@@ -1619,7 +1620,6 @@ class ReviewMediaWdg(BaseRefreshWdg):
                 
                 '''
             } )
-        
 
         div.add("<br/><br/>")
         
@@ -1631,11 +1631,11 @@ class ReviewMediaWdg(BaseRefreshWdg):
         pencil_div.add_style("margin: 15px")
         pencil_div.add_style("padding: 3px")
 
-        #icon = IconWdg(icon="FA_EDIT", opacity=1.0, size=16,\
-        #        name="Select a pencil size")
+        #icon = IconWdg(icon="FA_EDIT", opacity=1.0, size=16,
+        #               name="Select a pencil size")
         #pencil_div.add(icon)
 
-        brush_selected = my.kwargs.get("brush_selected") or "4"
+        brush_selected = self.kwargs.get("brush_selected") or "4"
         brush_selected = int(brush_selected)
 
          
@@ -1655,8 +1655,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
             brush_div.add_style("margin-right", "auto")
 
             
-            icon = IconWdg(icon="FA_PAINT_BRUSH", opacity=1.0, size=size,\
-                name="Brush Size")
+            icon = IconWdg(icon="FA_PAINT_BRUSH", opacity=1.0, size=size,
+                           name="Brush Size")
             brush_div.add(icon)
             brush_div.add_style("color", "#000")
             brush_div.add_style("display: flex")
@@ -1704,8 +1704,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         #undo_div.add_style("-webkit-transform", "scale(-1, 1)")
         undo_div.add_class("hand")
 
-        icon = IconWdg(icon="FA_UNDO", opacity=1.0, size=16,\
-                name="Undo your last brush stroke")
+        icon = IconWdg(icon="FA_UNDO", opacity=1.0, size=16,
+                       name="Undo your last brush stroke")
         icon.add_class("spt_undo_button")
         undo_div.add(icon)
 
@@ -1726,8 +1726,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         clear_div.add_style("padding: 3px")
         clear_div.add_class("hand")
 
-        icon = IconWdg(icon="FA_TRASH", opacity=1.0, size=16,\
-                name="Clear your canvas")
+        icon = IconWdg(icon="FA_TRASH", opacity=1.0, size=16,
+                       name="Clear your canvas")
         clear_div.add(icon)
 
         clear_div.add_behavior( {
@@ -1747,8 +1747,8 @@ class ReviewMediaWdg(BaseRefreshWdg):
         info_div.add_style("margin: 15px")
         info_div.add_style("padding: 3px")
         info_div.add_class("hand")
-        icon = IconWdg(icon="FA_INFO", opacity=1.0, size=16, \
-            name="Display image info")
+        icon = IconWdg(icon="FA_INFO", opacity=1.0, size=16,
+                       name="Display image info")
         info_div.add(icon)
 
         info_div.add_behavior( {
@@ -1771,17 +1771,17 @@ class ReviewVideoControlWdg(BaseRefreshWdg):
     '''allow user to select specific frames in 
     review sessions to make annotations.'''
    
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_class("spt_review_control")
         top.add_style("padding: 20px")
 
 
 
 
-        lib_dir = my.kwargs.get("lib_dir")
-        web_dir = my.kwargs.get("web_dir")
+        lib_dir = self.kwargs.get("lib_dir")
+        web_dir = self.kwargs.get("web_dir")
 
         # make sure all of the frames are there
         dirname = os.path.dirname(lib_dir)
@@ -1935,12 +1935,12 @@ class ReviewVideoControlWdg(BaseRefreshWdg):
 
 
 
-        top.add_behavior( {
+        top.add_behavior({
         'type': 'load',
-        'cbjs_action': my.get_onload_js()
-        } )
+        'cbjs_action': self.get_onload_js()
+        })
 
-        top.add_behavior( {
+        top.add_behavior({
         'type': 'load',
         'cbjs_action': '''
 
@@ -1979,37 +1979,39 @@ class ReviewVideoControlWdg(BaseRefreshWdg):
         })
 
         '''
-        } )
+        })
 
 
-        icon = IconWdg(name="icon", icon="BS_PLAY")
+        icon = IconWdg(name="icon", icon="FAS_PLAY")
         icon.add_class("spt_review_control_item")
         icon.add_style("cursor", "pointer")
+        icon.add_style("margin-right: 10px")
         top.add(icon)
-        icon.add_behavior( {
+        icon.add_behavior({
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_review_player_top");
             var player = spt.video.get_player(top);
             player.play();
             '''
-        } )
+        })
 
 
 
 
-        icon = IconWdg(name="icon", icon="BS_STOP")
+        icon = IconWdg(name="icon", icon="FAS_PAUSE")
         icon.add_class("spt_review_control_item")
         icon.add_style("cursor", "pointer")
+        icon.add_style("margin-right: 10px")
         top.add(icon)
-        icon.add_behavior( {
+        icon.add_behavior({
             'type': 'click_up',
             'cbjs_action': '''
             var top = bvr.src_el.getParent(".spt_review_player_top");
             var player = spt.video.get_player(top);
             player.pause();
             '''
-        } )
+        })
 
         timecode_div = DivWdg()
         top.add(timecode_div)
@@ -2190,7 +2192,7 @@ class ReviewVideoControlWdg(BaseRefreshWdg):
         return top
 
 
-    def get_onload_js(my):
+    def get_onload_js(self):
 
         return '''
 
@@ -2363,19 +2365,19 @@ class ReviewActionWdg(BaseRefreshWdg):
     parent sObject, the review approve and reject/revise buttons,
     input for accompanying note and the notes history widget.'''
 
-    def get_display(my):
+    def get_display(self):
         
-        top = my.top
+        top = self.top
      
-        task_data = my.kwargs.get("task_data")
+        task_data = self.kwargs.get("task_data")
 
         # Get search key for task, submission or snapshot
         sobject = None
-        search_key = my.kwargs.get("search_key")
+        search_key = self.kwargs.get("search_key")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
         else:
-            sobject = my.kwargs.get("sobject")
+            sobject = self.kwargs.get("sobject")
             if sobject:
                 search_key = sobject.get_search_key()
             else:
@@ -2384,8 +2386,8 @@ class ReviewActionWdg(BaseRefreshWdg):
         if not search_key:
             return top
 
-        custom_status = my.kwargs.get("custom_status")
-        ui_settings = my.kwargs.get("ui_settings")
+        custom_status = self.kwargs.get("custom_status")
+        ui_settings = self.kwargs.get("ui_settings")
         # Get parent sObject
         parent_search_key = None
         if sobject.get_base_search_type() == "vfx/submission":
@@ -2442,15 +2444,15 @@ class ReviewNotesHistoryWdg(BaseRefreshWdg):
     '''display notes for display sObject within review process 
     context.'''
 
-    def get_display(my):
-        top = my.top
+    def get_display(self):
+        top = self.top
         top.add_style("margin: 20px 10px")
         top.add_color("background", "background")
 
         # Get parent sObject related to task, submission
         # or snapshot
-        search_key = my.kwargs.get("search_key")
-        sobject = my.kwargs.get("sobject")
+        search_key = self.kwargs.get("search_key")
+        sobject = self.kwargs.get("sobject")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
         elif sobject:
@@ -2460,7 +2462,7 @@ class ReviewNotesHistoryWdg(BaseRefreshWdg):
             return top
 
         """
-        process = my.kwargs.get("process")
+        process = self.kwargs.get("process")
         from tactic.ui.widget import DiscussionWdg
         notes_wdg = DiscussionWdg(note_format="full", search_key=search_key, \
              process=process)
@@ -2476,19 +2478,19 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
     '''Contains revise/reject and approval buttons,
     and accompanying note input.'''
      
-    def get_display(my):
+    def get_display(self):
 
-        top = my.top
+        top = self.top
         top.add_style("margin: 20px 10px")
         top.add_style("width: auto")
         top.add_class("spt_review_note_top")
  
         # Get task data
-        task_data = my.kwargs.get("task_data")
+        task_data = self.kwargs.get("task_data")
 
         # Get inputted task, submission or snapshot
-        search_key = my.kwargs.get("search_key")
-        sobject = my.kwargs.get("sobject")
+        search_key = self.kwargs.get("search_key")
+        sobject = self.kwargs.get("sobject")
         if search_key:
             sobject = Search.get_by_search_key(search_key)
         elif sobject:
@@ -2500,7 +2502,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
         related_task = None
         review_processes = None  
         original_processes = None
-        parent_search_key = my.kwargs.get("parent_search_key")
+        parent_search_key = self.kwargs.get("parent_search_key")
         
         # Get review and original processes
         if sobject.get_base_search_type() == "vfx/submission":
@@ -2529,7 +2531,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
         preview = ThumbWdg()
         preview.set_sobject(parent)
         top.add(preview)
-        preview.add_style("position" ,"relative")
+        preview.add_style("position", "relative")
         preview.add_style("left", "-3px")
         top.add("<br/>")
  
@@ -2667,7 +2669,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
         table.add_row()
         td = table.add_cell()
 
-        ui_settings = my.kwargs.get("ui_settings") or {}
+        ui_settings = self.kwargs.get("ui_settings") or {}
         hide_review_btn = ui_settings.get("hide_review_btn")
         hide_approval_btn = ui_settings.get("hide_approval_btn")
         show_add_btn = ui_settings.get("show_add_btn")
@@ -2715,7 +2717,7 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
             approval_button_tip = "Any associated tasks will have a status updated to Approved."
             button = ActionButtonWdg(title="Approve", color="primary", tip=approval_button_tip)
             td.add(button)
-            button.add_behavior( {
+            button.add_behavior({
                 'type': 'click_up',
                 'search_key': search_key,
                 'snapshot_key': snapshot_key,
@@ -2723,10 +2725,10 @@ class ReviewAddNoteWdg(BaseRefreshWdg):
                     spt.review.set_top( bvr.src_el.getParent(".spt_review_top") );
                     spt.review.save(bvr.search_key, "Approved");
                 '''
-            } )
+            })
 
 
-        custom_status = my.kwargs.get("custom_status")
+        custom_status = self.kwargs.get("custom_status")
         if show_add_btn:
             td = table.add_cell()
             td.add_style("padding-left", "77px")
@@ -2764,8 +2766,7 @@ class ReviewCmd(Command):
     '''Check in an annotated file from the ReviewWdg and 
     creates a note. '''
 
-    def execute(my):
-
+    def execute(self):
         '''
         search_key - snapshot, submission or task search_key used in review session.
         note - input from ReviewWdg note form
@@ -2781,21 +2782,19 @@ class ReviewCmd(Command):
            defaults to <review_process>.
         '''
 
-        search_key = my.kwargs.get("search_key")
-
-
-        snapshot_key = my.kwargs.get("snapshot_key")
-        note = my.kwargs.get("note")
-        status = my.kwargs.get("status")
-        filename = my.kwargs.get("filename")
-        review_process = my.kwargs.get("process")
-        ticket = my.kwargs.get("ticket")
+        search_key = self.kwargs.get("search_key")
+        snapshot_key = self.kwargs.get("snapshot_key")
+        note = self.kwargs.get("note")
+        status = self.kwargs.get("status")
+        filename = self.kwargs.get("filename")
+        review_process = self.kwargs.get("process")
+        ticket = self.kwargs.get("ticket")
        
-        update_tasks = my.kwargs.get("update_tasks")
+        update_tasks = self.kwargs.get("update_tasks")
         if update_tasks not in ["False", 'false', False]: 
             update_tasks = True
 
-        review_note_process = my.kwargs.get("review_note_process")
+        review_note_process = self.kwargs.get("review_note_process")
         if review_note_process == "false":
             review_note_process = None
 
@@ -2870,7 +2869,6 @@ class ReviewCmd(Command):
                 #note_sobj = Note.create(job, note, process=note_process, context=note_context)
                 note_sobj = Note.create(sobject, note, process=note_process, context=note_context)
 
-
             else:
                 if review_note_process:
                     note_context = "%s/%s" % (review_note_process, review_process)
@@ -2880,7 +2878,7 @@ class ReviewCmd(Command):
                     note_process = review_process
 
                 from pyasm.biz import Note
-                if (not status and sobject.get_search_type() != "workflow/job"):
+                if not status and sobject.get_search_type() != "workflow/job":
                     job = sobject.get_parent()
                     note_sobj = Note.create(job, note, process=note_process, context=note_context)
                 else:
@@ -2905,8 +2903,8 @@ class ReviewCmd(Command):
         if status in ['Revise', 'Reject']:
             # checkin the revision file
             if process != "publish":
-                review_context =  "review/%s" % review_process
-                review_process =  "%s/review" % review_process
+                review_context = "review/%s" % review_process
+                review_process = "%s/review" % review_process
             else:
                 review_context = "review/publish"
                 review_process = "publish/review"
@@ -2922,15 +2920,13 @@ class ReviewCmd(Command):
 
         elif status == 'Client':
             review_context = "upload/%s" % filename 
-            review_process =  "upload"
-
+            review_process = "upload"
 
         elif status == 'Feedback':
             node_process = sobject.get_value("process")
 
             review_context = "review/%s" % node_process
             review_process = "%s/review" % node_process
-
 
         if status == "Attach":
             file_paths = [upload_path]
@@ -2954,15 +2950,14 @@ class ReviewCmd(Command):
             snapshot_process = "%s/attachment" % (node_process)
 
             checkin = FileCheckin(sobject=note_sobj, file_paths=file_paths, file_types=file_types,
-                source_paths=source_paths, process=snapshot_process, 
-                context=snapshot_context, checkin_type='strict', description=note)
+                                  source_paths=source_paths, process=snapshot_process,
+                                  context=snapshot_context, checkin_type='strict', description=note)
             checkin.execute()
-
 
             if note_sobj2:
                 checkin = FileCheckin(sobject=note_sobj2, file_paths=file_paths, file_types=file_types,
-                source_paths=source_paths, process=snapshot_process, 
-                context=snapshot_context, checkin_type='strict', description=note,mode="move")
+                                      source_paths=source_paths, process=snapshot_process,
+                                      context=snapshot_context, checkin_type='strict', description=note, mode="move")
                 checkin.execute()
  
             return
@@ -2978,7 +2973,7 @@ class ReviewCmd(Command):
             snapshot = Search.get_by_search_key(snapshot_key)
             review_snapshot.connect(snapshot, context="review")
 
-        my.add_description('ReviewCmd %s [%s]' % (process, sobject.get_search_key())) 
+        self.add_description('ReviewCmd %s [%s]' % (process, sobject.get_search_key()))
 
         if status == 'Feedback':
             node_process = sobject.get_value("process")
@@ -2991,9 +2986,3 @@ class ReviewCmd(Command):
 
             review_snapshot.set_parent(job_asset)
             review_snapshot.commit()
-        
-
-
-
-
-
