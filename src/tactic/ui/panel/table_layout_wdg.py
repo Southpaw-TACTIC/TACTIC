@@ -2108,7 +2108,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 spt.table.set_table(bvr.src_el);
                 var cell = bvr.src_el;
                 // no action for the bottom row
-                if (!cell.getParent('tr.spt_table_bottom_row'))
+                if (!cell.getParent('spt_table_bottom_row.spt_table_bottom_row'))
                     spt.table.show_edit(cell);
                 return;
                 '''
@@ -8124,6 +8124,8 @@ spt.table.expand_table = function(mode) {
         }
     }
     else {
+
+        let widths = [];
         if (header_table) {
             //header_table.setStyle("width", "100%");
             header_table.setStyle("width", "calc(100% - 2px)");
@@ -8146,6 +8148,10 @@ spt.table.expand_table = function(mode) {
                 else {
                     cell.setStyle("flex-grow", "");
                 }
+
+
+                let width = cell.getSize().x;
+                widths.push(width);
             })
 
 
@@ -8157,8 +8163,11 @@ spt.table.expand_table = function(mode) {
             table.setStyle("box-sizing", "border-box");
 
             var rows = spt.table.get_all_rows();
+
             rows.forEach( function(row) {
                 var cells = row.getElements(".spt_cell_edit");
+
+                let count = 0;
                 cells.forEach( function(cell) {
 
                     if (cell.hasClass("spt_table_select") ) {
@@ -8167,8 +8176,9 @@ spt.table.expand_table = function(mode) {
 
                     var last_width = cell.getAttribute("last_width");
                     if (!last_width) {
-                      cell.setStyle("width", "");
+                        cell.setStyle("width", "");
                     }
+
 
                     if (cell == cells[cells.length-1]) {
                         cell.setStyle("flex-grow", "1");
@@ -8180,6 +8190,20 @@ spt.table.expand_table = function(mode) {
 
                 })
             })
+
+
+            var bot_row = spt.table.get_bottom_row();
+            if (bot_row) {
+                var cells = bot_row.getElements(".spt_cell_edit");
+                let count = 0;
+                cells.forEach( function(cell) {
+                    cell.setStyle("width", widths[count]);
+                    count += 1;
+                } )
+            }
+
+
+
 
         }
 
