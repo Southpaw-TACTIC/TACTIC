@@ -679,6 +679,14 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 
             }
 
+            .spt_layout .spt_table_header_content {
+                width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+
             .spt_layout .spt_table_select {
                 display: flex;
                 align-items: center;
@@ -2400,12 +2408,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             header_div = DivWdg()
             inner_div.add(header_div)
-            header_div.add_style("padding: 1px 3px 1px 3px")
             header_div.add_class("spt_table_header_content")
-
-            if self.kwargs.get("wrap_headers") not in ["true", True]:
-                header_div.add_style("width: 10000%")
-                #header_div.add_style("white-space: nowrap")
 
 
             reorder_cbjs = self.kwargs.get("reorder_cbjs") or ""

@@ -133,7 +133,7 @@ display class, it will adopt the one defined here-->
 
     <element name="history" title="History" edit="false">
         <display class="tactic.ui.table.HiddenRowElementWdg">
-            <icon>HISTORY</icon>
+            <icon>FAS_HISTORY</icon>
             <dynamic_class>tactic.ui.widget.SObjectCheckinHistoryWdg</dynamic_class>
         </display>
     </element>
