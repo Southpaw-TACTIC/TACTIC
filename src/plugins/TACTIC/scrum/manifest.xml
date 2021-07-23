@@ -1,0 +1,12 @@
+<manifest>
+  <data>
+    <code>TACTIC/scrum</code>
+    <title>Scrum</title>
+    <description>TACTIC Scrum Open Source</description>
+    <version>1</version>
+  </data>
+  <!-- Plugins -->
+  <plugin code="stypes"/>
+  <plugin code="config"/>
+</manifest>
+

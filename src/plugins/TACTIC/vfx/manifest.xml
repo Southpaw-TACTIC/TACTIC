@@ -1,0 +1,12 @@
+<manifest>
+  <data>
+    <code>TACTIC/vfx</code>
+    <title>VFX</title>
+    <description>TACTIC Open Source VFX Template</description>
+    <version>1</version>
+  </data>
+  <!-- Plugins -->
+  <plugin code="stypes"/>
+  <plugin code="config"/>
+</manifest>
+

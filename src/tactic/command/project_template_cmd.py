@@ -237,7 +237,15 @@ class ProjectTemplateInstallerCmd(Command):
         if self.new_project and project:
             raise TacticException("Project [%s] already exists in this installation. Exiting..." % self.project_code)
 
-        if self.path:
+
+        # handle plugins with manifest
+        if self.path and os.path.isdir(self.path):
+            manifest_path = "%s/manifest.xml" % self.path
+            if not os.path.exists(manifest_path):
+                raise Exception("Manifest does not exist: ", manifest_path)
+
+
+        elif self.path:
             self.handle_path(self.path)
 
 
@@ -316,7 +324,6 @@ class ProjectTemplateInstallerCmd(Command):
                     raise TacticException("No template found for [%s] version [%s]. %s" % (self.template_code, version, hint))
                 else:
                     raise TacticException("No template found for [%s]. %s" % (self.template_code, hint))
-                    
 
 
 
@@ -384,7 +391,8 @@ class ProjectTemplateInstallerCmd(Command):
                 raise Exception("No manifest file found")
 
             kwargs = {
-                'plugin_dir': template_dir
+                'plugin_dir': template_dir,
+                'register': True
             }
 
         kwargs['filter_line_handler'] = self.filter_line_handler
@@ -422,7 +430,6 @@ class ProjectTemplateInstallerCmd(Command):
 
         # unzip the file
         from pyasm.common import ZipUtil
-        # this is fixed for windows if zipping doesn't use compression
         paths = ZipUtil.extract(target_path)
 
         # veryify that the paths extracted are the expected ones
