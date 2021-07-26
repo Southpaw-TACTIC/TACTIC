@@ -43,6 +43,7 @@ insert.set_value('config', """<config>
         <show_insert>true</show_insert>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
         <view>task_list</view>
+        <icon>FAS_CALENDAR</icon>
       </display>
     </element>
     <element name="task_status"/>
