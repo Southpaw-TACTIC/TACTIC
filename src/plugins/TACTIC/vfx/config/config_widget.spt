@@ -1143,7 +1143,7 @@ insert.set_value('config', """<config>
         <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
         <mode>insert</mode>
         <view>inline_add_item</view>
-        <icon>DATE_GO</icon>
+        <icon>FAS_CALENDAR</icon>
       </display>
     </element>
     <element name="task_status"/>
