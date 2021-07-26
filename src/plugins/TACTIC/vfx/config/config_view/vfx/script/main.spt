@@ -5,7 +5,7 @@ insert.set_value('code', """WIDGET_CONFIG01242""")
 insert.set_value('config', """<config>
 <vfx.script.main>
 <html>
-<div class="card vfx_asset_list_top">
+<div>
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Scripts</title>
@@ -21,7 +21,7 @@ insert.set_value('config', """<config>
 
 </vfx.script.main>
 </config>""")
-insert.set_value('timestamp', """2021-07-09 10:30:52.210312""")
+insert.set_value('timestamp', """2021-07-09 10:30:52""")
 insert.set_value('view', """vfx.script.main""")
 #-- End Entry --#
 

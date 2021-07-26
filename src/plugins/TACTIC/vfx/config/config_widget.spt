@@ -43,6 +43,7 @@ insert.set_value('config', """<config>
         <show_insert>true</show_insert>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
         <view>task_list</view>
+        <icon>FAS_CALENDAR</icon>
       </display>
     </element>
     <element name="task_status"/>
@@ -85,7 +86,7 @@ insert.set_value('config', """<config>
       <display widget="hidden_row">
         <search_type>vfx/plate</search_type>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
-        <icon>CAMERA</icon>
+        <icon>FAS_CAMERA</icon>
         <view>table</view>
       </display>
     </element>
@@ -112,7 +113,7 @@ insert.set_value('config', """<config>
       <display widget="hidden_row">
         <search_type>vfx/layer</search_type>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
-        <icon>PHOTOS</icon>
+        <icon>FAS_LAYER-GROUP</icon>
         <view>layer</view>
       </display>
     </element>
@@ -1143,7 +1144,7 @@ insert.set_value('config', """<config>
         <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
         <mode>insert</mode>
         <view>inline_add_item</view>
-        <icon>DATE_GO</icon>
+        <icon>FAS_CALENDAR</icon>
       </display>
     </element>
     <element name="task_status"/>
