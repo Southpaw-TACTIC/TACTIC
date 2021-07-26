@@ -85,7 +85,7 @@ insert.set_value('config', """<config>
       <display widget="hidden_row">
         <search_type>vfx/plate</search_type>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
-        <icon>CAMERA</icon>
+        <icon>FAS_CAMERA</icon>
         <view>table</view>
       </display>
     </element>
@@ -112,7 +112,7 @@ insert.set_value('config', """<config>
       <display widget="hidden_row">
         <search_type>vfx/layer</search_type>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
-        <icon>PHOTOS</icon>
+        <icon>FAS_LAYER-GROUP</icon>
         <view>layer</view>
       </display>
     </element>
