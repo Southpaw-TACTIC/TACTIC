@@ -21,7 +21,7 @@ insert.set_value('config', """<config>
 
 </vfx.art_reference.main>
 </config>""")
-insert.set_value('timestamp', """2021-07-09 10:26:12.579511""")
+insert.set_value('timestamp', """2021-07-09 10:26:12""")
 insert.set_value('view', """vfx.art_reference.main""")
 #-- End Entry --#
 

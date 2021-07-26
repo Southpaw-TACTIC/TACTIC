@@ -5,7 +5,7 @@ insert.set_value('code', """WIDGET_CONFIG00996""")
 insert.set_value('config', """<config>
 <vfx.sequence.main>
 <html>
-<div class="card vfx_sequence_list_top">
+<div>
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Sequences</title>
@@ -17,11 +17,6 @@ insert.set_value('config', """<config>
     </display>
   </element>
 </div>
-<style type="text/css">
-.vfx_sequence_list_top {
-    margin: 20px;
-}
-</style>
 </html>
 
 </vfx.sequence.main>
