@@ -1806,12 +1806,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # all for collapsing of columns
         """
-        table.add_behavior( {
+        table.add_relay_behavior( {
             #'type': 'double_click',
-            'type': 'smart_click_up',
-            'modkeys': 'SHIFT',
+            'type': 'mouseover',
+            #'modkeys': 'SHIFT',
             'bvr_match_class': 'spt_table_header',
             'cbjs_action': '''
+            alert("here");
             spt.table.set_table(bvr.src_el);
             var element_name = bvr.src_el.getAttribute("spt_element_name");
             spt.table.toggle_collapse_column(element_name);
@@ -2344,6 +2345,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add_class("spt_table_header")
             th.add_class("spt_table_header_%s" %self.table_id)
             th.add_attr("spt_element_name", name)
+
+
+            th.add_behavior( {
+                'type': 'double_click',
+                #'modkeys': 'SHIFT',
+                'bvr_match_class': 'spt_table_header',
+                'cbjs_action': '''
+                spt.table.set_table(bvr.src_el);
+                var element_name = bvr.src_el.getAttribute("spt_element_name");
+                spt.table.toggle_collapse_column(element_name);
+                '''
+            } )
+     
 
 
             show_border = self.kwargs.get("show_border")
@@ -7549,6 +7563,21 @@ spt.table.toggle_collapse_column = function(element_name) {
     }
 
 
+    let width = header.getSize().x;
+
+    let collapse_size = 60;
+
+    if (width <= collapse_size) {
+        let last_width = header.last_width || 400;
+        spt.table.set_column_width(element_name, last_width);
+    }
+    else {
+        header.last_width = width;
+        spt.table.set_column_width(element_name, collapse_size);
+    }
+    return;
+
+    /*
     var is_collapsed = header.is_collapsed;
 
     if (is_collapsed == true) {
@@ -7587,6 +7616,7 @@ spt.table.toggle_collapse_column = function(element_name) {
 
     var table = spt.table.get_table();
     table.setStyle("width", "");
+    */
 
 }
 
@@ -8013,6 +8043,7 @@ spt.table.expand_table = function(mode) {
         mode = "full";
     }
 
+
     var layout = spt.table.get_layout();
     var version = layout.getAttribute("spt_version");
     var headers;
@@ -8042,6 +8073,7 @@ spt.table.expand_table = function(mode) {
     // don't set the width of each column, this is simpler
     if ( mode == "free") {
 
+        let widths = [];
         if (header_table) {
 
             var total_width = 0;
@@ -8073,8 +8105,10 @@ spt.table.expand_table = function(mode) {
 
                 var size = cell.getSize();
                 total_width += size.x;
+
+                widths.push(size.x);
+
             })
-            //header_table.setStyle("width", "0px");
             header_table.setStyle("width", "max-content");
 
 
@@ -8085,16 +8119,27 @@ spt.table.expand_table = function(mode) {
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
+                let count = 0;
+
                 var cells = row.getElements(".spt_cell_edit");
                 cells.forEach( function(cell){
 
                     var last_width = cell.getAttribute("last_width");
 
                     if (cell.hasClass("spt_table_select") ) {
+                        count += 1;
                         return;
                     }
 
+                    if (widths.length > 0) {
+                        cell.setStyle("width", widths[count+1]);
+                    }
+                    count += 1;
+                    return;
 
+
+
+                    /*
                     // if this is the last cell
                     if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
                         cell.setStyle("width", layout_width-total_width)
@@ -8114,6 +8159,7 @@ spt.table.expand_table = function(mode) {
 
                     var size = cell.getSize();
                     total_width += size.x;
+                    */
 
                 })
             })
@@ -8155,10 +8201,12 @@ spt.table.expand_table = function(mode) {
 
                 let width = cell.getSize().x;
                 widths.push(width);
+                cell.setStyle("width", width);
             })
 
 
         }
+
         if (table) {
             //table.setStyle("width", "100%");
             table.setStyle("width", "calc(100% - 2px)");
@@ -8172,14 +8220,20 @@ spt.table.expand_table = function(mode) {
 
                 let count = 0;
                 cells.forEach( function(cell) {
-
+                    
                     if (cell.hasClass("spt_table_select") ) {
+                        count += 1;
                         return;
                     }
 
+                    if (widths.length > 0) {
+                        cell.setStyle("width", widths[count+1]);
+                    }
+                    count += 1;
+
                     var last_width = cell.getAttribute("last_width");
                     if (!last_width) {
-                        cell.setStyle("width", "");
+                        //cell.setStyle("width", "");
                     }
 
 
@@ -8189,6 +8243,7 @@ spt.table.expand_table = function(mode) {
                     else {
                         cell.setStyle("flex-grow", "");
                     }
+
      
 
                 })
