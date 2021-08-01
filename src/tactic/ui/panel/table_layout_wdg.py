@@ -5804,19 +5804,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         var is_calendar = false;
         if (spt.has_class(input, 'spt_calendar_input')){
             is_calendar = true;
-            if (input.getAttribute("type") == "date") {
-                var parts = value.split(" ");
-                value = parts[0];
-            }
-            else {
-                var parts = value.split(".");
-                value = parts[0];
-            }
-
         };
 
         if (is_calendar) {
-
             input.setStyle("height", "");
             if (size.x > 300) {
                 size.x = 300;
@@ -5833,14 +5823,18 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        //input.value = value;
         input.setAttribute("value", value);
+
         // for calendar input
         if (is_calendar) {
-            accept_event = 'change';
-            input.setStyle( "width", size.x+125 + 'px');
+            accept_event = 'input';
+
+
+            //input.setStyle( "width", size.x+125 + 'px');
+            input.setStyle( "width", size.x + 'px');
 
             // set the calendar to the current value
+            /*
             if (value) {
                 var parts = value.split(" ");
                 var date_values = parts[0].split('-');
@@ -5850,9 +5844,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 var date_values = [""];
                 var time_values = [""];
             }
-            spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
-            spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
 
+            //spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
+            //spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
 
             setTimeout( function() {
                 var cal_top = input.getParent('.spt_calendar_input_top');
@@ -5861,6 +5855,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                     spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
                 }
             }, 0);
+            */
 
         }
         else if (input.type == "color") {
