@@ -732,6 +732,24 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 background-repeat: no-repeat;
                 background-position: bottom right;
             }
+
+            .spt_layout
+                input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                input[type="datetime"]::-webkit-calendar-picker-indicator,
+                input[type="date"]::-webkit-calendar-picker-indicator  
+            {
+                background: transparent;
+                bottom: 0;
+                color: transparent;
+                cursor: pointer;
+                height: auto;
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+                width: auto;
+            }
+
         ''')
 
 
@@ -5795,10 +5813,10 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 value = parts[0];
             }
 
-        }
-
+        };
 
         if (is_calendar) {
+
             input.setStyle("height", "");
             if (size.x > 300) {
                 size.x = 300;
@@ -8083,32 +8101,18 @@ spt.table.expand_table = function(mode) {
             var cells = header_table.getElement(".spt_table_header_row").getChildren();
             cells.forEach( function(cell) {
 
-                var last_width = cell.getAttribute("last_width");
-
-                // if this is the last cell
-                if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                    cell.setStyle("width", layout_width-total_width)
-                }
-
-                else if (last_width && last_width != "-1") {
-                    cell.setStyle("width", last_width);
-                }
-                else {
-                    var size = cell.getSize();
-                    if (size.x) {
-                        cell.setStyle("width", size.x);
-                    }
-                    else {
-                        cell.setStyle("width", "100px");
-                    }
-                }
-
                 var size = cell.getSize();
                 total_width += size.x;
 
+
                 widths.push(size.x);
+                cell.setStyle("width", size)
 
             })
+
+
+            //console.log("total: " + total_width);
+
             header_table.setStyle("width", "max-content");
 
 
@@ -8137,35 +8141,10 @@ spt.table.expand_table = function(mode) {
                     count += 1;
                     return;
 
-
-
-                    /*
-                    // if this is the last cell
-                    if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                        cell.setStyle("width", layout_width-total_width)
-                    }
-                    else if (last_width && last_width != "-1") {
-                        cell.setStyle("width", last_width);
-                    }
-                    else {
-                        var size = cell.getSize();
-                        if (size.x) {
-                            cell.setStyle("width", size.x);
-                        }
-                        else {
-                            cell.setStyle("width", "100px");
-                        }
-                    }
-
-                    var size = cell.getSize();
-                    total_width += size.x;
-                    */
-
                 })
             })
 
 
-            //table.setStyle("width", "0px");
             table.setStyle("width", "max-content");
 
 
@@ -8186,6 +8165,7 @@ spt.table.expand_table = function(mode) {
             var cells = header_table.getElement(".spt_table_header_row").getChildren();
 
             cells.forEach( function(cell) {
+
                 var last_width = cell.getAttribute("last_width");
                 if (!last_width) {
                     //cell.setStyle("width", "");
@@ -8200,6 +8180,7 @@ spt.table.expand_table = function(mode) {
 
 
                 let width = cell.getSize().x;
+                if (width == 0) width = 100;
                 widths.push(width);
                 cell.setStyle("width", width);
             })

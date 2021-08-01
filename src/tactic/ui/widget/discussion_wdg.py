@@ -1568,6 +1568,7 @@ class DiscussionWdg(BaseRefreshWdg):
         count_div.add_style("font-size: 1.0em")
         count_div.add_style("font-style: italic")
         count_div.add_style("margin-left: 3px")
+        count_div.add_style("opacity: 0.7")
 
 
         return div
