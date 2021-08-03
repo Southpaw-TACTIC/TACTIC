@@ -8103,7 +8103,6 @@ spt.table.expand_table = function(mode) {
                 var size = cell.getSize();
                 total_width += size.x;
 
-
                 widths.push(size.x);
                 cell.setStyle("width", size)
 
@@ -8546,7 +8545,7 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
 
     spt.table.drag_init();
 
-    spt.table.expand_table("free");
+    //spt.table.expand_table("free");
 
     var reorder_cbjs = bvr.reorder_cbjs || "";
     Function("evt", "bvr", "mouse_411", "'use strict';" + reorder_cbjs)(evt, bvr, mouse_411);
