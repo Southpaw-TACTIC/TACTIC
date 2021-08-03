@@ -3840,6 +3840,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add_style("min-width: %spx" % spacing)
             th.add_style("width: %spx" % spacing)
             th.add_style("max-width: %spx" % spacing)
+            th.add_class("spt_table_header_spacing")
 
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border", "solid 1px %s" % border_color)
@@ -3936,6 +3937,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             spacing = len(self.group_columns) * 20
             if spacing:
                 td = table.add_cell("&nbsp;")
+                td.add_class("spt_table_group_spacing")
                 td.add_style("min-width: %spx" % spacing)
                 td.add_style("width: %spx" % spacing)
                 td.add_style("max-width: %spx" % spacing)
@@ -8086,6 +8088,8 @@ spt.table.expand_table = function(mode) {
     // don't set the width of each column, this is simpler
     if ( mode == "free") {
 
+        let offset = 1;
+
         let widths = [];
         if (header_table) {
 
@@ -8093,7 +8097,7 @@ spt.table.expand_table = function(mode) {
 
             // remove the widths of all the cells
             //var cells = header_table.getElements("th");
-            var cells = header_table.getElement(".spt_table_header_row").getChildren();
+            var cells = header_table.getElement(".spt_table_header_row").getElements(".spt_table_header");
             cells.forEach( function(cell) {
 
                 var size = cell.getSize();
@@ -8131,7 +8135,7 @@ spt.table.expand_table = function(mode) {
                     }
 
                     if (widths.length > 0) {
-                        cell.setStyle("width", widths[count+1]);
+                        cell.setStyle("width", widths[count+offset]);
                     }
                     count += 1;
                     return;
@@ -8148,6 +8152,8 @@ spt.table.expand_table = function(mode) {
     }
     else {
 
+        let offset = 1;
+
         let widths = [];
         if (header_table) {
             //header_table.setStyle("width", "100%");
@@ -8157,7 +8163,7 @@ spt.table.expand_table = function(mode) {
 
             // remove the widths of all the cells
             //var cells = header_table.getElements("th");
-            var cells = header_table.getElement(".spt_table_header_row").getChildren();
+            var cells = header_table.getElement(".spt_table_header_row").getElements(".spt_table_header");
 
             cells.forEach( function(cell) {
 
@@ -8192,7 +8198,7 @@ spt.table.expand_table = function(mode) {
             var rows = spt.table.get_all_rows();
 
             rows.forEach( function(row) {
-                var cells = row.getElements(".spt_cell_edit");
+                let cells = row.getElements(".spt_cell_edit");
 
                 let count = 0;
                 cells.forEach( function(cell) {
@@ -8203,7 +8209,7 @@ spt.table.expand_table = function(mode) {
                     }
 
                     if (widths.length > 0) {
-                        cell.setStyle("width", widths[count+1]);
+                        cell.setStyle("width", widths[count+offset]);
                     }
                     count += 1;
 
