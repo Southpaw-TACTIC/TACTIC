@@ -8088,7 +8088,7 @@ spt.table.expand_table = function(mode) {
     // don't set the width of each column, this is simpler
     if ( mode == "free") {
 
-        let offset = 1;
+        let offset = 0;
 
         let widths = [];
         if (header_table) {
@@ -8151,7 +8151,7 @@ spt.table.expand_table = function(mode) {
     }
     else {
 
-        let offset = 1;
+        let offset = 0;
 
         let widths = [];
         if (header_table) {
