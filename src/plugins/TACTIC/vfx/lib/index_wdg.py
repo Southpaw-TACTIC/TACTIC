@@ -26,6 +26,10 @@ class VFXIndexWdg(BootstrapIndexWdg):
     def _get_tab_save_state(self):
         return "vfx_main_body_tab_state"
 
+
+    def get_start_link(self):
+        return "/dashboard"
+
     def _get_top_nav_xml(self):
 
         class_name = 'TACTIC.vfx.VFXTopNavWdg'

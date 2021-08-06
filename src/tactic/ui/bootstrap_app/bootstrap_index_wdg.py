@@ -1522,19 +1522,32 @@ class BootstrapIndexWdg(PageNavContainerWdg):
            </display>
          </element> """
 
+
+
+    def get_start_link(self):
+        return
+
+
     def _get_startup_xml(self):
         security = Environment.get_security()
+
         # Use start_link from group security or from kwargs
         start_link = security.get_start_link() or self.kwargs.get('start_link')
+        if not start_link:
+            start_link = self.get_start_link()
+
         if start_link:
+            title = start_link.strip("/")
+            parts = title.split("/")
+            title = parts[-1].capitalize()
+
             return """
-                <element name="main_body" title="Startup">
+                <element name="main_body" title="%s">
                     <display class="tactic.ui.panel.HashPanelWdg">
                         <hash>%s</hash>
                     </display>
                 </element>
-            """ % start_link
-        
+            """ % (title, start_link)
 
 
         # start_view = "vfx.home.main"

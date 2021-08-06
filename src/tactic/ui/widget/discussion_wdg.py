@@ -2110,10 +2110,11 @@ class NoteWdg(BaseRefreshWdg):
         else:
             title.add("<b style='float: left; font-size: 1.1em'>%s</b>" % (display_name) )
 
-        if self.kwargs.get("show_parent_link"):
+        if self.kwargs.get("show_parent_link") and note.get("search_code"):
             parent_search_type = note.get_value("search_type")
             parent_search_code = note.get_value("search_code")
             parent_search_key = SearchKey.build_search_key(parent_search_type, parent_search_code)
+
             parent_sobject = Search.get_by_search_key(parent_search_key)
             parent_link_div = DivWdg()
             parent_link_div.add_styles('float: left; margin-bottom: 0px; margin-left: 10px; margin-right: 10px;')
