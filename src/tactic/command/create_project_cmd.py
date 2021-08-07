@@ -11,7 +11,6 @@
 # Description: Actions executed when an element of an EditWdg is called to
 # update an sobject.  
 
-#__all__ = ['CreateProjectCmd', 'CopyProjectCmd']
 __all__ = ['CreateProjectCmd']
 
 
@@ -487,97 +486,5 @@ class CopyProjectFromTemplateCmd(Command):
 
 
 
-#
-# DEPRECATED
-#
-"""
-class CopyProjectCmd(Command):
-    '''Command to copy configuration entries to project specific databases'''
 
-    def get_args_keys(self):
-        return {
-        'project_code': 'code of the new project',
-        'project_title': 'title of the new project',
-        'project_type': 'determines the type of project which specifies the initial schema and the naming conventions',
-        'copy_project': 'project to copy from'
-        }
-
-    def check(self):
-        project_code = self.kwargs.get('project_code')
-        regexs = '^\d|\W'
-        m = re.search(r'%s' % regexs, project_code) 
-        if m:
-            raise TacticException('<project_code> [%s] cannot contain special characters or start with a number.' %project_code)
-
-        # check to see if this project already exists
-        test_project = Project.get_by_code(project_code)
-        if test_project:
-            if test_project.get_value('s_status') == 'retired':
-                raise TacticException('Project with code [%s] already exists but is retired.' %project_code)
-            else:
-                raise TacticException('Project with code [%s] already exists.' %project_code)
-
-        return True
-
-
-    def execute(self):
-
-        project_code = self.kwargs.get("project_code")
-        project_title = self.kwargs.get("project_title")
-        src_project_code = self.kwargs.get("src_project")
-        assert(project_code)
-        assert(src_project_code)
-
-        src_project = Project.get_by_code(src_project_code)
-        assert(src_project)
-
-        project_type = self.kwargs.get("project_type")
-        if not project_type:
-            project_type = src_project.get_value("type")
-
-        project = Project.get()
-        # look to see if there are any project specific search types
-        has_project_stypes = False
-        if project_code != project_type:
-            search = Search("sthpw/search_object")
-            search.add_filter("namespace", project_code)
-            if search.get_count():
-                has_project_stypes = True
-
-
-
-
-
-        # copy from another project
-        install_dir = Environment.get_install_dir()
-        copy_script = "%s/src/bin/util/create_project_from_template.py" % install_dir
-        if not os.path.exists(copy_script):
-            raise TacticException("Copy script does not exist in [%s]" % copy_script)
-        python_exec = Config.get_value("services", "python") 
-
-        # do not do a search and replace if there are no project specific
-        # stypes
-        if has_project_stypes:
-            cmd = '''%s %s -c -w -s %s -n %s -t''' % (python_exec, copy_script, src_project_code, project_code)
-        else:
-            cmd = '''%s %s -s %s -n %s -t''' % (python_exec, copy_script, src_project_code, project_code)
-
-        #os.system(cmd)
-        cmd_list = cmd.split(' ')
-        cmd_list.append(project_title)
-
-        print(' '.join(cmd_list))
-        program = subprocess.Popen(cmd_list, shell=False, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        program.wait()
-        value = program.communicate()
-        err = None
-        if value:
-            err = value[1]
-       
-        if err:
-            raise TacticException("Error found in project creation: %s" %err)
-
-        return
-
-"""
 

@@ -13,13 +13,16 @@ insert.set_value('schema', """public""")
 
 #-- Start Entry --#
 table = CreateTable('vfx/art_reference')
+table.add('_is_collection',           'boolean' )
+table.add('id',                       'serial', primary_key=True)
+table.add('code',                     'varchar', length=256 )
 table.add('category',                 'varchar', length=256 )
 table.add('description',              'text' )
-table.add('id',                       'serial', primary_key=True)
 table.add('keywords',                 'text' )
 table.add('name',                     'text' )
 table.add('s_status',                 'varchar', length=30 )
 table.add('snapshot',                 'text' )
 table.add('timestamp',                'timestamp' )
+table.add_constraint(["code"], mode="UNIQUE")
 #-- End Entry --#
 

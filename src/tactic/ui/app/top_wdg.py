@@ -1122,7 +1122,7 @@ class TopWdg(Widget):
         widget.add('''
 <script src="/context/spt_js/jquery/jquery-3.4.1.min.js"></script>
 <script src="/context/spt_js/jquery/jquery-ui.min.js"></script>
-<script src="/context/spt_js/jquery/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="/context/spt_js/jquery/popper.min.js"></script>
         ''')
  
         use_formio = True
@@ -1150,7 +1150,7 @@ class TopWdg(Widget):
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
 
 <!-- Material Design for Bootstrap JS -->
-<script src="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+<script src="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.js"></script>
 
 
 
@@ -1191,7 +1191,7 @@ class TopWdg(Widget):
                 widget.add('''<link rel="stylesheet" href="%s"/>''' % bootstrap_material_css)
             else:
                 widget.add('''
-                <link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+                <link rel="stylesheet" href="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.min.css"/>
                 ''')
 
 

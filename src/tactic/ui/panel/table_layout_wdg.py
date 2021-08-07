@@ -671,17 +671,85 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # add some basic styles
         style_div = HtmlElement("style")
-        top.add(style_div)
+        inner.add(style_div)
         style_div.add('''
+            .spt_layout .spt_table_header {
+                margin: -1px -1px 0px 0px;
+                font-weight: 500;
+                
+            }
+
+            .spt_layout .spt_table_header_content {
+                width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+
+            .spt_layout .spt_table_select {
+                display: flex;
+                align-items: center;
+                margin: -1px -1px 0px 0px;
+            }
+
+            .spt_layout .spt_table_select .spt_table_checkbox {
+                margin-left: 3px;
+                margin-top: -8px;
+            }
+            .spt_layout .spt_table_header_select .spt_table_checkbox {
+                margin-left: 3px;
+                margin-top: -8px;
+            }
+
+
+            .spt_layout .spt_table_header_select {
+                width: 30px;
+                min-width: 30px;
+                max-width: 30px;
+                text-align: center;
+
+                display: flex;
+                align-items: center;
+
+                margin: -1px -1px 0px 0px;
+            }
+
+ 
             .spt_layout .spt_cell_edit {
 
                 padding: 3px 8px;
                 vertical-align: middle;
                 overflow: hidden;
 
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+
+                margin: -1px -1px 0px 0px;
+
+
                 background-repeat: no-repeat;
                 background-position: bottom right;
             }
+
+            .spt_layout
+                input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                input[type="datetime"]::-webkit-calendar-picker-indicator,
+                input[type="date"]::-webkit-calendar-picker-indicator  
+            {
+                background: transparent;
+                bottom: 0;
+                color: transparent;
+                cursor: pointer;
+                height: auto;
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+                width: auto;
+            }
+
         ''')
 
 
@@ -971,7 +1039,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
-            self.header_table = Table()
+            self.header_table = Table(mode="div")
             scroll.add(self.header_table)
 
 
@@ -1756,12 +1824,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         # all for collapsing of columns
         """
-        table.add_behavior( {
+        table.add_relay_behavior( {
             #'type': 'double_click',
-            'type': 'smart_click_up',
-            'modkeys': 'SHIFT',
+            'type': 'mouseover',
+            #'modkeys': 'SHIFT',
             'bvr_match_class': 'spt_table_header',
             'cbjs_action': '''
+            alert("here");
             spt.table.set_table(bvr.src_el);
             var element_name = bvr.src_el.getAttribute("spt_element_name");
             spt.table.toggle_collapse_column(element_name);
@@ -2066,7 +2135,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 spt.table.set_table(bvr.src_el);
                 var cell = bvr.src_el;
                 // no action for the bottom row
-                if (!cell.getParent('tr.spt_table_bottom_row'))
+                if (!cell.getParent('spt_table_bottom_row.spt_table_bottom_row'))
                     spt.table.show_edit(cell);
                 return;
                 '''
@@ -2127,7 +2196,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         '''Fake a table for inserting'''
         #self.group_columns = []
         self.edit_wdgs = {}
-        table = Table()
+        table = Table(mode="div")
         table.add_style("display: none")
         table.add_class("spt_table_insert_table")
 
@@ -2158,7 +2227,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_group_insert_wdg(self):
         '''Fake a table for inserting'''
         self.edit_wdgs = {}
-        table = Table()
+        table = Table(mode="div")
         table.add_style("margin-top: 20px")
         table.add_style("display: none")
         table.add_class("spt_table_group_insert_table")
@@ -2296,6 +2365,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add_attr("spt_element_name", name)
 
 
+            th.add_behavior( {
+                'type': 'double_click',
+                #'modkeys': 'SHIFT',
+                'bvr_match_class': 'spt_table_header',
+                'cbjs_action': '''
+                spt.table.set_table(bvr.src_el);
+                var element_name = bvr.src_el.getAttribute("spt_element_name");
+                spt.table.toggle_collapse_column(element_name);
+                '''
+            } )
+     
+
+
             show_border = self.kwargs.get("show_border")
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border: solid 1px %s" % border_color)
@@ -2311,7 +2393,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             inner_div = DivWdg()
             th.add(inner_div)
             inner_div.add_style("position: relative")
-            inner_div.add_style("width: auto")
+            inner_div.add_style("width: 100%")
             inner_div.add_class("spt_table_header_inner")
             #inner_div.add_style("overflow: hidden")
 
@@ -2358,12 +2440,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             header_div = DivWdg()
             inner_div.add(header_div)
-            header_div.add_style("padding: 1px 3px 1px 3px")
             header_div.add_class("spt_table_header_content")
-
-            if self.kwargs.get("wrap_headers") not in ["true", True]:
-                header_div.add_style("width: 10000%")
-                #header_div.add_style("white-space: nowrap")
 
 
             reorder_cbjs = self.kwargs.get("reorder_cbjs") or ""
@@ -3075,16 +3152,20 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         # build the inner flex layout
         td_inner = DivWdg()
         td_inner.add_style("width: 100%")
+        td_inner.add_style("height: 100%")
         td_inner.add_style("box-sizing: border-box")
         td.add(td_inner)
         td_inner.add_style("display: flex")
+        td_inner.add_style("align-items: center")
         td_inner.add_class("spt_group_td_inner")
 
         td_inner.add(swap)
         td_inner.add(title_div)
 
 
-
+        td.add_style("display: flex")
+        td.add_style("align-items: center")
+        td.add_style("width: 100%")
         td.add_style("height: %spx" % height)
         td.add_style("padding-left: %spx" % (i*padding+3))
 
@@ -3220,7 +3301,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
         tr.add_style("min-height: %spx" % min_height)
-        tr.add_style("height: %spx" % min_height)
+        # mode = div
+        #tr.add_style("height: %spx" % min_height)
 
         tr.add_attr("spt_group_level", level)
 
@@ -3275,6 +3357,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+
 
             if sobject.is_insert():
                 onload_js = widget.get_onload_js()
@@ -3757,6 +3840,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add_style("min-width: %spx" % spacing)
             th.add_style("width: %spx" % spacing)
             th.add_style("max-width: %spx" % spacing)
+            th.add_class("spt_table_header_spacing")
 
             if show_border not in [False, "false", 'horizontal']:
                 th.add_style("border", "solid 1px %s" % border_color)
@@ -3781,10 +3865,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #th.add_looks( 'dg_row_select_box' )
         th.add_class('look_dg_row_select_box')
         th.add_class( 'spt_table_header_select' )
-        th.add_style('width: 30px')
-        th.add_style('min-width: 30px')
-        th.add_style('max-width: 30px')
-        th.add_style('text-align', 'center')
 
         th.add(self.get_select_wdg())
         th.add_behavior( {
@@ -3820,7 +3900,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     def get_select_wdg(self):
         checkbox_container = DivWdg()
         checkbox_container.add_style("position", "relative")
-        checkbox_container.add_style("top", "-4px")
 
         checkbox = DivWdg(css="checkbox spt_table_checkbox")
         checkbox_container.add(checkbox)
@@ -3828,7 +3907,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         label.add_behavior({
             'type': 'load',
             'cbjs_action': '''
-            
             bvr.src_el.addEventListener("click", function(e) {
                 e.preventDefault();
             })
@@ -3859,6 +3937,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             spacing = len(self.group_columns) * 20
             if spacing:
                 td = table.add_cell("&nbsp;")
+                td.add_class("spt_table_group_spacing")
                 td.add_style("min-width: %spx" % spacing)
                 td.add_style("width: %spx" % spacing)
                 td.add_style("max-width: %spx" % spacing)
@@ -3872,8 +3951,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         td.add_class("spt_table_select")
         td.add_class('look_dg_row_select_box')
         td.add_class( 'SPT_DTS' )
-        
-        td.add_style("text-align", "center")
         
         td.add(self.get_select_wdg())
         
@@ -4715,22 +4792,25 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     }
 
 
-    var clone = document.createElement("tr");
+    var clone = document.createElement("div");
     if (clone_id) {
         clone.setAttribute("id", clone_id);
     }
     clone.addClass("spt_hidden_row");
     var color = row.getAttribute("spt_hover_background");
+
     clone.setStyle("background", color);
+
+
 
     var children = row.getChildren();
     var num_children = children.length;
     var html = '<img src="/context/icons/common/indicator_snake.gif" border="0"/>';
-    clone.innerHTML = "<td class='spt_hidden_row_cell' colspan='"+num_children+"'> "+html+" Loading ...</td>";
+    clone.innerHTML = "<div class='spt_hidden_row_cell' colspan='"+num_children+"'> "+html+" Loading ...</div>";
     clone.inject(row, "after");
 
     var hidden_row = clone.getElement(".spt_hidden_row_cell");
-    hidden_row.setStyle("height", "50px");
+    hidden_row.setStyle("height", "fit-content");
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
     hidden_row.setStyle("padding-bottom", "10px");
@@ -4762,7 +4842,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "var(--spt_palette_table_border)";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; border-radius: 5px; filter: drop-shadow(0px 0px 10px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; filter: drop-shadow(0px 0px 10px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
@@ -4872,8 +4952,8 @@ spt.table.add_rows = function(row, search_type, level, expression, kwargs) {
     // find the number of tds in the row
     td_count = row.getChildren().length;
 
-    var load_tr = document.createElement("tr");
-    var load_td = document.createElement("td");
+    var load_tr = document.createElement("div");
+    var load_td = document.createElement("div");
     load_td.setAttribute("colspan", td_count);
     load_tr.appendChild(load_td);
 
@@ -5459,6 +5539,28 @@ spt.table.show_edit = function(cell) {
         offset: {x: 1, y: 1}
     } );
 
+    // Slightly hack way to lock to the bottom
+    /*
+    let position = edit_wdg.getPosition();
+    let s = edit_wdg.getSize();
+    edit_wdg.setStyle("bottom", "0px")
+    edit_wdg.setStyle("top", "")
+    let position2 = edit_wdg.getPosition();
+    console.log(position);
+    console.log(position2);
+    if (position.y < position2.y - s.y) {
+        edit_wdg.setStyle("top", "")
+        edit_wdg.setStyle("bottom", "")
+        edit_wdg.position( {
+            position: {x: 0, y:0},
+            relativeTo: cell,
+            position: "upperLeft",
+            offset: {x: 1, y: 1}
+        } );
+    }
+    */
+
+
     edit_wdg.setStyle("margin", "-1px");
     edit_wdg.setStyle("z-index", 500);
 
@@ -5704,17 +5806,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         var is_calendar = false;
         if (spt.has_class(input, 'spt_calendar_input')){
             is_calendar = true;
-            if (input.getAttribute("type") == "date") {
-                var parts = value.split(" ");
-                value = parts[0];
-            }
-            else {
-                var parts = value.split(".");
-                value = parts[0];
-            }
-
-        }
-
+        };
 
         if (is_calendar) {
             input.setStyle("height", "");
@@ -5733,14 +5825,18 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
 
-        //input.value = value;
         input.setAttribute("value", value);
+
         // for calendar input
         if (is_calendar) {
-            accept_event = 'change';
-            input.setStyle( "width", size.x+125 + 'px');
+            accept_event = 'input';
+
+
+            //input.setStyle( "width", size.x+125 + 'px');
+            input.setStyle( "width", size.x + 'px');
 
             // set the calendar to the current value
+            /*
             if (value) {
                 var parts = value.split(" ");
                 var date_values = parts[0].split('-');
@@ -5750,9 +5846,9 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                 var date_values = [""];
                 var time_values = [""];
             }
-            spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
-            spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
 
+            //spt.api.Utility.set_input_values(edit_wdg, time_values[0], '.spt_time_hour');
+            //spt.api.Utility.set_input_values(edit_wdg, time_values[1], '.spt_time_minute');
 
             setTimeout( function() {
                 var cal_top = input.getParent('.spt_calendar_input_top');
@@ -5761,6 +5857,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
                     spt.panel.refresh(cal, {year: date_values[0], month: date_values[1]});
                 }
             }, 0);
+            */
 
         }
         else if (input.type == "color") {
@@ -5822,6 +5919,7 @@ spt.table.alter_edit_wdg = function(edit_cell, edit_wdg, size) {
         }
 
         input.setStyle("height", "auto");
+        input.setStyle("max-height", "200px");
         input.setStyle("min-width", "150px");
         input.setStyle("width", "auto");
         input.setStyle("overflow", "auto");
@@ -7133,17 +7231,21 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             var header_row = header_table.getElement(".spt_table_header_row");
             var headers = header_row.getElements(".spt_table_header");
 
-            var row = spt.table.get_first_row();
+            //var row = spt.table.get_first_row();
+            //let rowsX = spt.table.get_all_rows();
 
-            if (row) {
+            new_rows.forEach( row => {
+
                 var cells = row.getElements(".spt_cell_edit");
 
                 // set the row widths to that of the header
                 for (var i = 0; i < cells.length; i++) {
                     var width = headers[i].getStyle("width");
-                    cells[i].setStyle("width", width);
+                    var size = headers[i].getSize();
+                    cells[i].setStyle("width", size.x);
                 }
-            }
+
+            } )
 
 
 
@@ -7476,6 +7578,21 @@ spt.table.toggle_collapse_column = function(element_name) {
     }
 
 
+    let width = header.getSize().x;
+
+    let collapse_size = 60;
+
+    if (width <= collapse_size) {
+        let last_width = header.last_width || 400;
+        spt.table.set_column_width(element_name, last_width);
+    }
+    else {
+        header.last_width = width;
+        spt.table.set_column_width(element_name, collapse_size);
+    }
+    return;
+
+    /*
     var is_collapsed = header.is_collapsed;
 
     if (is_collapsed == true) {
@@ -7514,6 +7631,7 @@ spt.table.toggle_collapse_column = function(element_name) {
 
     var table = spt.table.get_table();
     table.setStyle("width", "");
+    */
 
 }
 
@@ -7523,7 +7641,6 @@ spt.table.toggle_collapse_column = function(element_name) {
 spt.table.collapse_group = function(group_row) {
 
     var show = false;
-
 
     // get the rows after the group
     var last_row = group_row;
@@ -7555,8 +7672,6 @@ spt.table.collapse_group = function(group_row) {
     while(1) {
         var row = last_row.getNext();
 
-
-
         if (row == null) {
             break;
         }
@@ -7565,10 +7680,8 @@ spt.table.collapse_group = function(group_row) {
 
        if (row_level) {
           row_level = parseInt(row_level);
-
        }
        else {
-
            row_level = 0;
        }
 
@@ -7577,55 +7690,38 @@ spt.table.collapse_group = function(group_row) {
 
 
         if (row_level <= group_level) {
-
            break;
-
         }
 
         reg_row = true;
 
         if (show) {
-
            if (row.getAttribute('spt_table_state') == 'closed') {
-
-              spt.show(row);
+              spt.show(row, "flex");
               previous_state = 'closed';
-
            }
 
            else if (row.getAttribute('spt_table_state') == 'open') {
-
                  previous_state = 'open';
-
-                 spt.show(row);
-
+                 spt.show(row, "flex");
            }
-
            else {
-
                 if (previous_state == 'closed') {
                    spt.hide(row);
-
                 }
-
                 else {
-                   spt.show(row);
+                   spt.show(row, "flex");
                 }
-
-
            }
-
-
         }
         else  {
             spt.hide(row);
         }
 
-
         last_row = row;
     }
 
-    // FIXME: is this even needed
+    // NOTE: is this even needed?
     group_row.setAttribute("is_collapse", "true");
 
 
@@ -7786,7 +7882,7 @@ spt.table.get_parent_groups = function(src_el, level) {
 
 // setting width of columns
 
-spt.table.set_column_width = function(element_name, width) {
+spt.table.set_column_width = function(element_name, width, cells) {
     var table = spt.table.get_table();
     var header_table = spt.table.get_header_table();
 
@@ -7860,8 +7956,30 @@ spt.table.set_column_width = function(element_name, width) {
 
     curr_header.setStyle("width", width);
     curr_header.setAttribute("last_width", width);
-    cell.setStyle("width", width);
-    cell.setAttribute("last_width", width);
+
+    let mode = "div";
+    if (mode == "div") {
+        if (cells && cells.length != 0) {
+            cells.forEach( cell => {
+                cell.setStyle("width", width);
+                cell.setAttribute("last_width", width);
+            } )
+        }
+        else {
+            let rows = spt.table.get_all_rows();
+            rows.forEach( row => {
+                let cell = spt.table.get_cell(element_name, row);
+                cell.setStyle("width", width);
+                cell.setAttribute("last_width", width);
+            } )
+        }
+
+
+    }
+    else {
+        cell.setStyle("width", width);
+        cell.setAttribute("last_width", width);
+    }
 
 
 
@@ -7940,6 +8058,7 @@ spt.table.expand_table = function(mode) {
         mode = "full";
     }
 
+
     var layout = spt.table.get_layout();
     var version = layout.getAttribute("spt_version");
     var headers;
@@ -7969,38 +8088,29 @@ spt.table.expand_table = function(mode) {
     // don't set the width of each column, this is simpler
     if ( mode == "free") {
 
+        let offset = 0;
+
+        let widths = [];
         if (header_table) {
 
             var total_width = 0;
 
             // remove the widths of all the cells
-            var cells = header_table.getElements("th");
+            //var cells = header_table.getElements("th");
+            var cells = header_table.getElement(".spt_table_header_row").getElements(".spt_table_header");
             cells.forEach( function(cell) {
-
-                var last_width = cell.getAttribute("last_width");
-
-                // if this is the last cell
-                if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                    cell.setStyle("width", layout_width-total_width)
-                }
-
-                else if (last_width && last_width != "-1") {
-                    cell.setStyle("width", last_width);
-                }
-                else {
-                    var size = cell.getSize();
-                    if (size.x) {
-                        cell.setStyle("width", size.x);
-                    }
-                    else {
-                        cell.setStyle("width", "100px");
-                    }
-                }
 
                 var size = cell.getSize();
                 total_width += size.x;
+
+                widths.push(size.x);
+                cell.setStyle("width", size)
+
             })
-            //header_table.setStyle("width", "0px");
+
+
+            //console.log("total: " + total_width);
+
             header_table.setStyle("width", "max-content");
 
 
@@ -8011,41 +8121,28 @@ spt.table.expand_table = function(mode) {
 
             var rows = spt.table.get_all_rows();
             rows.forEach( function(row) {
+                let count = 0;
+
                 var cells = row.getElements(".spt_cell_edit");
                 cells.forEach( function(cell){
 
                     var last_width = cell.getAttribute("last_width");
 
                     if (cell.hasClass("spt_table_select") ) {
+                        count += 1;
                         return;
                     }
 
-
-                    // if this is the last cell
-                    if (expand_last_column && cell == cells[cells.length-1] && total_width < layout_width - 120) {
-                        cell.setStyle("width", layout_width-total_width)
+                    if (widths.length > 0) {
+                        cell.setStyle("width", widths[count+offset]);
                     }
-                    else if (last_width && last_width != "-1") {
-                        cell.setStyle("width", last_width);
-                    }
-                    else {
-                        var size = cell.getSize();
-                        if (size.x) {
-                            cell.setStyle("width", size.x);
-                        }
-                        else {
-                            cell.setStyle("width", "100px");
-                        }
-                    }
-
-                    var size = cell.getSize();
-                    total_width += size.x;
+                    count += 1;
+                    return;
 
                 })
             })
 
 
-            //table.setStyle("width", "0px");
             table.setStyle("width", "max-content");
 
 
@@ -8054,37 +8151,98 @@ spt.table.expand_table = function(mode) {
     }
     else {
 
+        let offset = 0;
+
+        let widths = [];
         if (header_table) {
-            header_table.setStyle("width", "100%");
+            //header_table.setStyle("width", "100%");
+            header_table.setStyle("width", "calc(100% - 2px)");
+            header_table.setStyle("min-width", "calc(100% - 2px)");
+            header_table.setStyle("box-sizing", "border-box");
 
             // remove the widths of all the cells
-            var cells = header_table.getElements("th");
+            //var cells = header_table.getElements("th");
+            var cells = header_table.getElement(".spt_table_header_row").getElements(".spt_table_header");
+
             cells.forEach( function(cell) {
+
                 var last_width = cell.getAttribute("last_width");
                 if (!last_width) {
-                    cell.setStyle("width", "");
+                    //cell.setStyle("width", "");
                 }
-           })
+
+                if (cell == cells[cells.length-1]) {
+                    cell.setStyle("flex-grow", "1");
+                }
+                else {
+                    cell.setStyle("flex-grow", "");
+                }
+
+
+                let width = cell.getSize().x;
+                if (width == 0) width = 100;
+                widths.push(width);
+                cell.setStyle("width", width);
+            })
+
 
         }
+
         if (table) {
-            table.setStyle("width", "100%");
+            //table.setStyle("width", "100%");
+            table.setStyle("width", "calc(100% - 2px)");
+            table.setStyle("min-width", "calc(100% - 2px)");
+            table.setStyle("box-sizing", "border-box");
 
             var rows = spt.table.get_all_rows();
-            rows.forEach( function(row) {
-                var cells = row.getElements("spt_cell_edit");
-                cells.forEach( function(cell) {
 
+            rows.forEach( function(row) {
+                let cells = row.getElements(".spt_cell_edit");
+
+                let count = 0;
+                cells.forEach( function(cell) {
+                    
                     if (cell.hasClass("spt_table_select") ) {
+                        count += 1;
                         return;
                     }
 
+                    if (widths.length > 0) {
+                        cell.setStyle("width", widths[count+offset]);
+                    }
+                    count += 1;
+
                     var last_width = cell.getAttribute("last_width");
                     if (!last_width) {
-                      cell.setStyle("width", "");
+                        //cell.setStyle("width", "");
                     }
+
+
+                    if (cell == cells[cells.length-1]) {
+                        cell.setStyle("flex-grow", "1");
+                    }
+                    else {
+                        cell.setStyle("flex-grow", "");
+                    }
+
+     
+
                 })
             })
+
+
+            var bot_row = spt.table.get_bottom_row();
+            if (bot_row) {
+                var cells = bot_row.getElements(".spt_cell_edit");
+                let count = 0;
+                cells.forEach( function(cell) {
+                    cell.setStyle("width", widths[count]);
+                    count += 1;
+                } )
+            }
+
+
+
 
         }
 
@@ -8165,6 +8323,8 @@ spt.table.drag_init = function()
 }
 spt.table.drag_init();
 
+spt.table.drag_cells = null;
+
 
 spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
 {
@@ -8193,6 +8353,16 @@ spt.table.drag_resize_header_setup = function(evt, bvr, mouse_411)
     spt.table.last_mouse_pos = {x: mouse_411.curr_x, y: mouse_411.curr_y};
 
 
+
+    let element_name = spt.table.last_header.getAttribute("spt_element_name");
+    let rows = spt.table.get_all_rows();
+    let cells = [];
+    rows.forEach( row => {
+        let cell = spt.table.get_cell(element_name, row);
+        cells.push(cell);
+    } )
+    spt.table.drag_cells = cells;
+
     return;
 
 
@@ -8207,13 +8377,16 @@ spt.table.drag_resize_header_motion = function(evt, bvr, mouse_411)
     var x = spt.table.last_size.x + dx;
 
     var element_name = spt.table.last_header.getAttribute("spt_element_name");
-    spt.table.set_column_width(element_name, x);
+    spt.table.set_column_width(element_name, x, spt.table.drag_cells);
 
 
     return;
 }
 
 spt.table.drag_resize_header_action = function(evt, bvr, mouse_411) {
+
+    spt.table.drag_cells = null;
+
     spt.table.smallest_size = -1;
     spt.table.resize_div = null;
 
@@ -8372,7 +8545,7 @@ spt.table.drag_reorder_header_action = function(evt, bvr, mouse_411)
 
     spt.table.drag_init();
 
-    spt.table.expand_table("free");
+    //spt.table.expand_table("free");
 
     var reorder_cbjs = bvr.reorder_cbjs || "";
     Function("evt", "bvr", "mouse_411", "'use strict';" + reorder_cbjs)(evt, bvr, mouse_411);

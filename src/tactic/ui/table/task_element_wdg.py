@@ -803,6 +803,15 @@ class TaskElementWdg(BaseTableElementWdg):
         }
 
 
+        .spt_layout .spt_all_tasks_top .spt_status_select {
+            height: 18px;
+            margin: 2px 0px 2px 5px;
+
+            border: none;
+            box-shadow: none;
+            background: transparent;
+        }
+
         ''')
 
 
@@ -811,7 +820,13 @@ class TaskElementWdg(BaseTableElementWdg):
         layout.add_behavior( {
         "type": "load",
         "cbjs_action": '''
-spt.task_element = {}
+
+if (!spt.task_element) {
+    spt.task_element = {};
+}
+spt.Environment.get().add_library("spt_task_element");
+
+
 
 bvr.src_el.addEvent('change:relay(.spt_task_status_select)',
     function(evt, src_el) {
@@ -990,8 +1005,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
         jsx = '''
 
-spt.task_element = {}
-
 class StatusWdg extends React.Component {
 
   constructor(props) {
@@ -1025,6 +1038,15 @@ spt.task_element.StatusWdg = StatusWdg;
             'type': 'load',
             'cbjs_action': js
         } )
+
+
+
+        # add some basic styles
+        style_div = HtmlElement("style")
+        layout.add(style_div)
+        style_div.add('''
+
+        ''')
 
 
 
@@ -1528,9 +1550,6 @@ spt.task_element.StatusWdg = StatusWdg;
         div = DivWdg()
         if self.layout in ['vertical']:
             div.add_style("margin: -4px 0px 4px 0px")
-        else:
-            div.add_style("margin: -4px auto")
-        #div.add_style("width: inherit")
 
         # initialize tool tips only if show track is true
         if self.show_track == 'true' and not self._startup_tips:
@@ -1639,10 +1658,8 @@ spt.task_element.StatusWdg = StatusWdg;
                 last_process_context = process_context
 
 
+            #table = Table(css='minimal', mode="div")
             table = Table(css='minimal')
-            table.add_style("border-width: 2px")
-            table.add_style('border-collapse: collapse')
-            table.add_style("color", "color")
             table.add_row()
 
             project_code = Project.get_project_code()
@@ -2667,11 +2684,10 @@ spt.task_element.StatusWdg = StatusWdg;
 
         status = task.get("status")
 
-
         status_div = DivWdg()
+
+        # TEST React
         #status_div.add( self.get_react_status_wdg(task) )
-
-
 
 
         if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
@@ -2693,8 +2709,6 @@ spt.task_element.StatusWdg = StatusWdg;
             status_div.add(status)
          
         elif self.permission['status']['is_editable']:
-
-
 
             task_pipeline_code = task.get_value("pipeline_code")
             if not pipeline_code:
@@ -2725,17 +2739,13 @@ spt.task_element.StatusWdg = StatusWdg;
             select.add_attr("spt_task_pipeline_code", task_pipeline_code)
 
 
-
-
-
             select.add_empty_option('-- Status --')
             select.add_attr("spt_context", context)
-            select.add_style("height: 18px")
-            select.add_style("margin: 2px 0px 2px 5px")
-
-            select.add_style("border: none")
-            select.add_style("box-shadow: none")
-            select.add_style("background: transparent")
+            #select.add_style("height: 18px")
+            #select.add_style("margin: 2px 0px 2px 5px")
+            #select.add_style("border: none")
+            #select.add_style("box-shadow: none")
+            #select.add_style("background: transparent")
 
 
             if node_type in ['auto', 'condition']:
@@ -2757,9 +2767,9 @@ spt.task_element.StatusWdg = StatusWdg;
                 else:
                     select.add_style("width: 75px")
 
-
             else:
                 select.add_style("width", self.width)
+
 
             if status and status not in filtered_statuses:
                 filtered_statuses.append(status)

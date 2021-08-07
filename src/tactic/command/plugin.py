@@ -414,6 +414,9 @@ class PluginCreator(PluginBase):
                 self.handle_include(node)
             elif name == 'python':
                 self.handle_python(node)
+            elif name == 'plugin':
+                self.handle_plugin(node)
+
 
 
         # make sure there is a data node and handle it
@@ -582,8 +585,24 @@ class PluginCreator(PluginBase):
                     self.xml.append_child(node, value_node)
                 else:
                     self.xml.replace_child(node, old_node, value_node)
-            
+
+
+    def handle_plugin(self, node):
  
+        code = self.xml.get_attribute(node, "code")
+        print("WARNING: Cannot export plugin [%s] through tag <plugin>" % code)
+        return
+
+        # read the manifest
+        manifest_path = "%s/%s" % (self.plugin_dir, code)
+        if not os.path.exists(manifest_path):
+            pass
+        kwargs = {
+        }
+        creator = PluginCreator(**kwargs)
+
+
+
 
 
     def zip_dir(self, zip, base_dir, plugin, rel_dir=''):
@@ -952,7 +971,17 @@ class PluginInstaller(PluginBase):
         for node in nodes:
 
             node_name = self.xml.get_node_name(node)
-            if node_name == 'search_type':
+            if node_name == "plugin":
+                plugin_code = self.xml.get_attribute(node, 'code')
+                plugin_dir = "%s/%s" % (self.plugin_dir, plugin_code)
+
+                print("Installing plugin: ", plugin_dir)
+                installer = PluginInstaller(plugin_dir=plugin_dir, verbose=False, register=True)
+                installer.execute()
+
+
+
+            elif node_name == 'search_type':
                 search_type = self.xml.get_attribute(node, 'code')
 
                 # implicitly add the entry to the schema table.
@@ -1181,6 +1210,8 @@ class PluginUninstaller(PluginBase):
                 self.handle_include(node)
             elif node_name == 'python':
                 self.handle_python(node)
+            elif node_name == 'plugin':
+                self.handle_plugin(node)
 
 
         # remove plugin contents
@@ -1197,6 +1228,16 @@ class PluginUninstaller(PluginBase):
         if plugin:
             plugin.delete()
 
+
+
+    def handle_plugin(self, node):
+
+        plugin_code = self.xml.get_attribute(node, 'code')
+        print("Uninstalling plugin [%s]: " % plugin_code)
+        plugin_dir = "%s/%s" % (self.plugin_dir, plugin_code)
+
+        uninstaller = PluginUninstaller(plugin_dir=plugin_dir, verbose=False)
+        uninstaller.execute()
 
 
 

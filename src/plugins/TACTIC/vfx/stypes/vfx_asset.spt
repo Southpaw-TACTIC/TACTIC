@@ -28,5 +28,6 @@ table.add('short_code',               'varchar', length=256 )
 table.add('snapshot',                 'text' )
 table.add('status',                   'text' )
 table.add('timestamp',                'timestamp' )
+table.add_constraint(["code"], mode="UNIQUE")
 #-- End Entry --#
 

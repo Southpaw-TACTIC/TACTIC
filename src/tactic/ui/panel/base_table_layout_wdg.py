@@ -294,7 +294,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         self.connect_key = self.kwargs.get("connect_key")
     
 
-        self.table = Table()
+        self.table = Table(mode="div")
         self.table.set_id(self.table_id)
 
 
@@ -3388,6 +3388,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if no_results_mode == 'compact':
 
             tr, td = table.add_row_cell()
+            td.add_style("width: 100%")
             tr.add_class("spt_table_no_items")
             msg = DivWdg("<i style='font-weight: bold; font-size: 14px'>- No items found -</i>")
             msg.add_style("text-align: center")
@@ -3410,6 +3411,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         td.add_color("background", "background", -3)
         td.add_style("min-height: 250px")
         td.add_style("overflow: hidden")
+        td.add_style("width: 100%")
 
         self.add_no_results_style(td)
 

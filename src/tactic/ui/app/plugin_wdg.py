@@ -583,7 +583,7 @@ class PluginWdg(BaseRefreshWdg):
 
 
             if os.path.exists("%s/manifest.xml" % root):
-                del dirnames[:]
+                #del dirnames[:]
                 reldir = root.replace(base_dir+"/", "")
               
                 if reldir.startswith('TACTIC/internal/'):
@@ -591,6 +591,8 @@ class PluginWdg(BaseRefreshWdg):
                 plugin_dirnames.append( reldir )
 
         plugin_dirnames.sort()
+        from pprint import pprint
+        pprint(plugin_dirnames)
         return plugin_dirnames 
 
 

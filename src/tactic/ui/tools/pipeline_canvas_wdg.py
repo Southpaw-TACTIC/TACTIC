@@ -2795,7 +2795,7 @@ if (!spt.pipeline) {
     spt.pipeline = {};
 }
 
-//spt.Environment.get().add_library("spt_pipeline");
+spt.Environment.get().add_library("spt_pipeline");
 
 
 spt.pipeline.top = null;
