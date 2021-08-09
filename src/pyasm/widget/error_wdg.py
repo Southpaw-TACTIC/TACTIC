@@ -93,10 +93,10 @@ class Error404Wdg(ErrorWdg):
 
         div.add('''
 <!-- Material Design for Bootstrap JS -->
-<script src="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+<script src="/context/spt_js/bootstrap_material_design/bootstrap-material-design-4.1.1.js"></script>
 
 
-<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"/>
         ''')
 
 

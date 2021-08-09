@@ -573,7 +573,6 @@ class IconCreator(object):
 
             except Exception as e:
                 print("Error extracting from pdf [%s]" % e)
-                dsfadsf
                 return
 
         # check that it actually got created
@@ -604,12 +603,29 @@ class IconCreator(object):
 
         return thumb_size
 
+    def get_icon_file_size(self):
+        from pyasm.prod.biz import ProdSetting
+        web_file_size = ProdSetting.get_value_by_key('icon_file_size')
+        thumb_size = (120, 100)
+        if web_file_size:
+            parts = re.split('[\Wx]+', web_file_size)
+            if len(parts) == 1:
+                parts.append(-1)
+
+            if len(parts) == 2:
+                try:
+                    thumb_size = (int(parts[0]), int(parts[1]))
+                except ValueError:
+                    thumb_size = (120, 100)
+
+        return thumb_size
+
     def _process_video(self, file_name):
         if not HAS_FFMPEG:
             return
 
         thumb_web_size = self.get_web_file_size()
-        thumb_icon_size = (120, 100)
+        thumb_icon_size = self.get_icon_file_size()
 
         exts = File.get_extensions(file_name)
 

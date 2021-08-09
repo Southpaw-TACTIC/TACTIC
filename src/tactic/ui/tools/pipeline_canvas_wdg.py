@@ -1677,7 +1677,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
                 pipeline_code: pipeline_code,
                 node_name: node_name
             }
-            var ret_val = server.exeucte_cmd(class_name, kwargs);
+            var ret_val = server.execute_cmd(class_name, kwargs);
             var pipeline = ret_val.info.pipeline;
             var process = ret_val.info.process;
             alert("cow")
@@ -2795,7 +2795,7 @@ if (!spt.pipeline) {
     spt.pipeline = {};
 }
 
-//spt.Environment.get().add_library("spt_pipeline");
+spt.Environment.get().add_library("spt_pipeline");
 
 
 spt.pipeline.top = null;

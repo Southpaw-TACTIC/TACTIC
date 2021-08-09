@@ -1,0 +1,27 @@
+#-- Start Entry --#
+insert = SearchType.create('config/widget_config')
+insert.set_value('category', """CustomLayoutWdg""")
+insert.set_value('code', """WIDGET_CONFIG01242""")
+insert.set_value('config', """<config>
+<vfx.script.main>
+<html>
+<div>
+  <element>
+    <display class="tactic.ui.panel.ViewPanelWdg">
+      <title>Scripts</title>
+      <search_type>vfx/script</search_type>
+      <element_names>preview,history,general_checkin,title,author,description</element_names>
+      <use_last_search>false</use_last_search>
+      <simple_search_view>script_custom_filter</simple_search_view>
+      <search_view>link_search:script</search_view>
+    </display>
+  </element>
+</div>
+</html>
+
+</vfx.script.main>
+</config>""")
+insert.set_value('timestamp', """2021-07-09 10:30:52""")
+insert.set_value('view', """vfx.script.main""")
+#-- End Entry --#
+

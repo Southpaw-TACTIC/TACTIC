@@ -46,11 +46,11 @@ MAXINT = 2**31-1
 class ApiClientCmd(Command):
     def get_title(self):
         return "Client API"
-    
+
 
 
 class ApiException(Exception):
-    
+
     def __init__(self, message):
 
         super(ApiException, self).__init__(message)
@@ -65,13 +65,13 @@ class RemoteApiException(Exception):
         self.class_name = error.get('type')
         self.message = error.get('message')
         self.args = error.get('args')
-        
+
         from pyasm.search import ExceptionLog
         ExceptionLog.log(self)
 
 
 # methods that only query.  These do not need the overhead of a transaction
-# so run outside of transaction, increasing performance. 
+# so run outside of transaction, increasing performance.
 
 REQUEST_COUNT = 1
 LAST_RSS = System().memory_usage().get('rss')
@@ -83,9 +83,9 @@ def get_simple_cmd(self, meth, ticket, args):
 
         def __init__(self2, **kwargs):
             super(ApiClientCmd, self2).__init__(**kwargs)
-            
+
             self2.print_info = False
-           
+
             if meth.__name__ == 'get_widget':
                 first_arg = args[0]
                 if first_arg and isinstance(first_arg, basestring) and first_arg.find("tactic.ui.app.message_wdg.Subscription") == -1:
@@ -96,8 +96,8 @@ def get_simple_cmd(self, meth, ticket, args):
                     self2.print_info = True
             else:
                 self2.print_info = True
-            
-            
+
+
         def get_title(self):
             return "Client API"
 
@@ -109,16 +109,16 @@ def get_simple_cmd(self, meth, ticket, args):
             self2.start_time = time.time()
             global REQUEST_COUNT, LAST_RSS
             request_id = "%s - #%0.7d" % (thread.get_ident(), REQUEST_COUNT)
-           
+
             if self.get_protocol() != "local":
-                
+
                 def print_primary_info(self2, args):
                     print("request_id: %s" % request_id)
-                    
+
                     from pyasm.security import Site
                     if Site.get_site():
                         print("site: %s" % Site.get_site())
-                    
+
                     now = datetime.datetime.now()
                     print("timestamp: %s" % now.strftime("%Y-%m-%d %H:%M:%S"))
                     print("user: %s" % Environment.get_user_name())
@@ -127,7 +127,7 @@ def get_simple_cmd(self, meth, ticket, args):
                         print("ticket: %s ... (%s)" % (ticket[:100], len(ticket)))
                     else:
                         print("ticket: %s" % ticket)
-                   
+
                     Container.put("CHECK", self2.check)
                     Container.put("NUM_SOBJECTS", 1)
                     Common.pretty_print(args)
@@ -152,11 +152,11 @@ def get_simple_cmd(self, meth, ticket, args):
                             Common.pretty_print(data)
 
                     print()
- 
+
 
                 if self2.print_info:
                     print_primary_info(self2, args)
-                
+
             try:
 
                 # Do a security check
@@ -167,24 +167,24 @@ def get_simple_cmd(self, meth, ticket, args):
                     access = security.check_access("api_method", meth.__name__, "allow", default="allow")
                     if not access:
                        raise ApiException("Access denied")
-                
+
                 # actually execute the method
                 self2.results = exec_meth(self, ticket, meth, args)
             finally:
                 if self.get_protocol() != "local":
-                    
+
                     def print_secondary_info(duration, request_id, rss, increment):
                         print("Duration: %0.3f seconds (request_id: %s)" % (duration, request_id))
                         print("Memory: %s KB" % rss)
                         print("Increment: %s KB" % increment)
-                        
+
                     duration = time.time() - self2.start_time
-                    
+
                     REQUEST_COUNT += 1
                     rss = System().memory_usage().get("rss")
                     increment = rss - LAST_RSS
                     LAST_RSS = rss
-                    
+
                     if self2.print_info:
                         print_secondary_info(duration, request_id, rss, increment)
 
@@ -252,7 +252,7 @@ def get_full_cmd(self, meth, ticket, args):
                     first_arg = args[1]
                     if isinstance(first_arg, basestring):
                         first_arg = jsonloads(first_arg)
-                        
+
                     _debug = first_arg.get("_debug")
                     if _debug == False:
                         debug = False
@@ -273,9 +273,9 @@ def get_full_cmd(self, meth, ticket, args):
                     print("ticket: ", ticket)
                 if debug_args:
                     Common.pretty_print(args)
-            
+
             #self2.results = meth(self, ticket, *args)
-            
+
             # Do a security check
             if Config.get_value("security", "api_method_restricted") == "true":
                 security = Environment.get_security()
@@ -319,7 +319,7 @@ def exec_meth(self, ticket, meth, args):
             results = meth(self, ticket, *new_args, **kwargs)
     else:
         results = meth(self, ticket, *args)
-    
+
     return results
 
 
@@ -392,7 +392,7 @@ API_MODE = {
         "get_widget_setting",
         "set_widget_setting"
     }
-} 
+}
 
 
 def decode_security_key(key, security_method="api"):
@@ -402,7 +402,7 @@ def decode_security_key(key, security_method="api"):
     if not os.path.exists(path):
         print("ERROR: %s path [%s] not found" % (security_method, path))
         raise Exception("%s key not valid" % security_method)
-    
+
     f = open(path, 'r')
     data = f.read()
     f.close()
@@ -444,8 +444,8 @@ def xmlrpc_decorator(meth):
         if isinstance(ticket, dict):
             state  = Container.get(init_data_key)
             if state:
-                Container.put(data_key, state) 
-    
+                Container.put(data_key, state)
+
     def decode_api_key(key):
         key = key.lstrip("$")
         tmp_dir = Environment.get_tmp_dir(include_ticket=True)
@@ -453,7 +453,7 @@ def xmlrpc_decorator(meth):
         if not os.path.exists(path):
             print("ERROR: API path [%s] not found" % path)
             raise ApiException("API key not valid")
-        
+
         f = open(path, 'r')
         data = f.read()
         f.close()
@@ -470,8 +470,8 @@ def xmlrpc_decorator(meth):
                 raise ApiException("Permission Denied: wrong user")
         else:
             return api_method, inputs, ticket
-        
-    
+
+
 
 
     def new(self, original_ticket, *args, **kwargs):
@@ -493,7 +493,7 @@ def xmlrpc_decorator(meth):
 
                 security = Environment.get_security()
                 user_name = security.get_user_name()
-                
+
                 if user_name == "admin":
                     allowed = True
 
@@ -518,12 +518,12 @@ def xmlrpc_decorator(meth):
                                         for i in range(len(api_inputs)):
                                             if api_inputs[i] == "__API_UNKNOWN__":
                                                 api_inputs[i] = args[i]
-                                            
+
                                             if isinstance(api_inputs[i], dict):
                                                 for k, v in api_inputs[i].items():
                                                     if v == "__API_UNKNOWN__":
                                                         api_inputs[i][k] = args[i][k]
-                                            
+
                                             if api_inputs[i] == args[i]:
                                                 allowed = True
                                             else:
@@ -544,19 +544,19 @@ def xmlrpc_decorator(meth):
                     cmd = get_simple_cmd(self, meth, ticket, args)
                 elif meth.__name__ in TRANS_OPTIONAL_METHODS:
                     cmd = None
-                    
+
                     # If multi-site is enabled, redirect commands flagged as update.
                     if multi_site and meth.__name__ == "execute_cmd" and args[0]:
-                        if args[0] != "tactic.ui.app.DynamicUpdateCmd": 
+                        if args[0] != "tactic.ui.app.DynamicUpdateCmd":
                             cmd_class = Common.create_from_class_path(args[0], {}, {})
                             if cmd_class.is_update() == True:
-                                #FIXME: Extra dict is appended to args list 
+                                #FIXME: Extra dict is appended to args list
                                 result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
                                 return self.browser_res(meth, result)
-                         
+
                         cmd = get_simple_cmd(self, meth, ticket, args)
-                        
-                    else:            
+
+                    else:
                         idx =  TRANS_OPTIONAL_METHODS[meth.__name__]
                         if len(args) - 1 == idx and args[idx].get('use_transaction') == False:
                             cmd = get_simple_cmd(self, meth, ticket, args)
@@ -567,7 +567,7 @@ def xmlrpc_decorator(meth):
                     if multi_site:
                         result = self.redirect_to_server(ticket, meth.__name__, args[:-1])
                         return self.browser_res(meth, result)
-                    else: 
+                    else:
                         cmd = get_full_cmd(self, meth, ticket, args)
 
                 profile_flag = False
@@ -625,7 +625,7 @@ def xmlrpc_decorator(meth):
                     message = e.message
                 except:
                     message = str(e)
-           
+
                 if not message:
                     message = e.__str__()
 
@@ -645,7 +645,7 @@ def xmlrpc_decorator(meth):
         finally:
             if not self.get_protocol() == "local":
                 DbContainer.release_thread_sql()
-            
+
 
         # reformat the data to JSON if going to the browser
         try:
@@ -675,7 +675,7 @@ def profile_execute():
 
 def trace_decorator(meth):
     def new(self, *args):
-        
+
         print("method: ", meth.__name__, args)
 
         try:
@@ -700,8 +700,8 @@ def trace_decorator(meth):
             return results
         except Exception as e:
 
-            # make sure all sqls are aborted. 
-            DbContainer.abort_thread_sql(force=True) 
+            # make sure all sqls are aborted.
+            DbContainer.abort_thread_sql(force=True)
 
             print("Exception: ", e.__str__())
             import traceback
@@ -711,11 +711,11 @@ def trace_decorator(meth):
             print("-"*50)
             print(stacktrace_str)
             print(str(e))
-            
+
             print("-"*50)
             raise
     new.exposed = True
-    
+
     return new
 
 
@@ -748,7 +748,7 @@ class BaseApiXMLRPC(XmlrpcServer):
     '''
 
 
-   
+
     #
     # Thread safe data storage using Container
     #
@@ -815,14 +815,14 @@ class BaseApiXMLRPC(XmlrpcServer):
 
     def set_transaction_state(self, flag):
         self.set_value("is_in_transaction", flag)
-   
 
-   
+
+
     def is_in_transaction(self):
         return self.get_value("is_in_transaction")
 
 
- 
+
 
     # gets called if there is a method missing
     def missing_method(self, func, args):
@@ -861,7 +861,7 @@ class BaseApiXMLRPC(XmlrpcServer):
     def init(self, ticket, reuse_container=True):
 
         assert ticket
-      
+
         # if the project code is in the ticket, then set the project
         if isinstance(ticket, dict):
             site = ticket.get("site")
@@ -924,7 +924,7 @@ class BaseApiXMLRPC(XmlrpcServer):
     def _get_sobjects(self, search_keys, no_exception=False):
         '''for a give input search key, return the sobjects.  Note that search
         key and can an array or a string'''
-       
+
         # make sure search_keys is value
         if not search_keys:
             raise ApiException("Search key [%s] is None" % search_keys)
@@ -979,7 +979,7 @@ class BaseApiXMLRPC(XmlrpcServer):
 
 
         #########################
-        """ 
+        """
         if not sobject:
             return {}
 
@@ -1041,7 +1041,7 @@ class BaseApiXMLRPC(XmlrpcServer):
         language = self.get_language()
 
         info = {}
-        
+
         results = []
 
         search_keys = SearchKey.get_by_sobjects(sobjects,use_id=False)
@@ -1110,7 +1110,7 @@ class BaseApiXMLRPC(XmlrpcServer):
 
                         except Exception as e:
                             print("WARNING: Value [%s] can't be encoded in utf-8" % value)
-                            raise 
+                            raise
                     elif isinstance(value, datetime.datetime):
                         try:
                             value2 = str(value)
@@ -1201,8 +1201,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
             XmlRpcLogin(login_name, password)
 
             # initialize the web environment object and register it
-            adapter = self.get_adapter()
-            WebContainer.set_web(adapter)
+            if not self.get_protocol() == 'local':
+                adapter = self.get_adapter()
+                WebContainer.set_web(adapter)
 
             security = WebContainer.get_security()
 
@@ -1302,27 +1303,27 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''Uses REST call to redirect API call to remote server.'''
 
         project_code = Config.get_value("master", "project_code")
-        url = Config.get_value("master", "url") 
+        url = Config.get_value("master", "url")
         rest_url = url + "/" + project_code + "/REST/"
-       
- 
+
+
         args = jsondumps(args)
         data = {
             'login_ticket': ticket,
             'method': meth,
             'args' : args
         }
-       
+
         r = requests.post(rest_url, data=data)
         ret_val = r.json()
-       
-        error = None 
+
+        error = None
         if isinstance(ret_val, dict):
             error = ret_val.get("error")
-        
+
         if error:
             raise RemoteApiException(error)
-        else: 
+        else:
             return ret_val
 
 
@@ -1429,14 +1430,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         project_code = Project.get_project_code()
 
-       
+
         if impl_type == 'Sqlite':
             message_obj = Search.eval("@SOBJECT(sthpw/message['code','%s'])"%key, single=True)
             if not message_obj:
                 message_obj = SearchType.create("sthpw/message")
                 message_obj.set_value("code", key)
                 message_obj.set_value("project_code", project_code)
-        
+
             message_obj.set_value("category", category)
             if message != None:
                 message_obj.set_value("message", message)
@@ -1462,7 +1463,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 message_log_obj.set_value("timestamp", "NOW")
 
 
-            return 
+            return
 
         from pyasm.search import Update, Select, Insert
         select = Select()
@@ -1470,11 +1471,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
         select.set_database(sql)
         select.add_filter("code", key)
         statement = select.get_statement()
-        
+
         last_message = sql.do_query(statement)
 
-     
-    
+
+
         if not last_message:
             update = Insert()
             update.set_database(sql)
@@ -1500,7 +1501,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         statement = update.get_statement()
 
         sql.do_update(statement)
-      
+
         # repeat with update the message log
         if log_history:
             update = Insert()
@@ -1654,7 +1655,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
 
 
- 
+
 
     #
     # Undo/Redo functionality
@@ -1783,7 +1784,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # This breaks for Python3 because of longint issues and is not used
         # anyways
         #import threading
-        #data['thread'] = threading.get_ident() 
+        #data['thread'] = threading.get_ident()
 
         web = WebContainer.get_web()
         keys = web.get_env_keys()
@@ -1924,7 +1925,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             ('code', ('jack', 'jill'))         -> code in ('jack','jill')
             ('code', 'like', 'rv_%')           -> code like 'rv_%'
             ('code', '~', 'rv')                -> code ~ 'rv'
-            "(code ='jill' or code = 'jack')"  -> full where clause 
+            "(code ='jill' or code = 'jack')"  -> full where clause
 
         '''
         results = []
@@ -1933,7 +1934,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         if filters:
             self._add_filters(search, filters)
-        
+
         if distinct:
             search.add_column(distinct, distinct=True)
 
@@ -1971,7 +1972,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # NOT NEEDED as it assumes all columns by default
         #if not columns:
         #    columns = search.get_columns()
-            
+
         # convert
         search_keys = SearchKey.get_by_sobjects(sobjects,use_id=False)
 
@@ -2027,7 +2028,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         self.set_language(language)
 
         return self._query(search_type=search_type, filters=filters, limit=limit)
- 
+
     fast_query.exposed = True
 
 
@@ -2102,7 +2103,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 sobject.set_parent(parent)
 
             sobject.commit(triggers=triggers)
-            
+
 
             # get the dictionary back
             sobject_dict = self._get_sobject_dict(sobject, use_id=use_id)
@@ -2116,7 +2117,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         else:
             return results[0]
 
- 
+
     @xmlrpc_decorator
     def update_multiple(self, ticket, data, triggers=True):
         '''Update for several sobjects in one function call.  The
@@ -2145,7 +2146,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @return:
         a list of all the update sobjects
- 
+
         '''
 
         if isinstance(data, basestring):
@@ -2206,15 +2207,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
             the sobject defined by the search_key
             Note: this can also be an array.  Each data dictionary element in
             the array will be applied to the corresponding search key
-       
+
         @keyparam:
-       
+
         triggers - boolean to fire trigger on insert
         use_id - boolean to control if id is used in the search_key in returning sobject dict
 
         @return:
         a list of all the update sobjects
- 
+
         '''
 
         if isinstance(data, basestring):
@@ -2242,7 +2243,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         for idx,  data_item in enumerate(data):
             if metadata:
                 metadata_item = metadata[idx]
-                
+
             result = self._insert(search_type, data_item, metadata=metadata_item, parent_key=parent_key, use_id=use_id, triggers=triggers)
             results.append(result)
 
@@ -2264,7 +2265,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @keyparam:
         parent_key - set the parent key for this sobject
         info - info dictionary passed to the ApiClientCmd
-        
+
         use_id - use id in the returned search key
         triggers - boolean to fire trigger on insert
 
@@ -2272,7 +2273,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @return:
         a single dictionary representing the sobject with it's current data
-        ''' 
+        '''
 
         # set the values
         sobject = SearchType.create(search_type)
@@ -2375,7 +2376,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             sobject_dict = sobject
         else: # for the queried sobject
             sobject_dict = self._get_sobject_dict(sobject, use_id=False)
-        
+
         return sobject_dict
 
 
@@ -2496,7 +2497,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         sobject1.remove_instance(sobject2)
 
 
- 
+
     #
     # Expression methods
     #
@@ -2517,7 +2518,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return:
         results of the expression.  The results depend on the exact nature
         of the expression.
-        
+
         '''
 
 
@@ -2528,7 +2529,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 user_name = security.get_user_name()
                 if user_name != "admin":
                     raise ApiException("Access denied")
-        
+
         if "@PYTHON" in expression:
             if Config.get_value("security", "api_cmd_restricted") == "true":
                 security = Environment.get_security()
@@ -2536,8 +2537,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 class_name = "tactic.command.PythonCmd"
                 access = security.check_access("api_cmd", class_name, "allow", default="allow")
                 if not access:
-                   raise ApiException("Access denied") 
-        
+                   raise ApiException("Access denied")
+
         if search_keys:
             sobjects = self._get_sobjects(search_keys)
         else:
@@ -2627,7 +2628,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def add_column_to_search_type(self, ticket, search_type, column_name, column_type):
         '''Adds a new column to the search type
-        
+
         @params
         ticket - authentication ticket
         search_type - the search type that the new column will be added to
@@ -2658,7 +2659,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             statement = 'ALTER TABLE "%s" ADD COLUMN "%s" %s' % \
                 (table, column_name, column_type)
         sql.do_update(statement)
-    
+
         return True
 
 
@@ -2723,7 +2724,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @params
         ticket - authentication ticket
-        search_key - the key identifying 
+        search_key - the key identifying
                       the search_type table.
         include_dependencies - true/false
 
@@ -2910,7 +2911,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         columns - columns of sobject
 
         @return
-        sobjects - a list of child sobjects 
+        sobjects - a list of child sobjects
         '''
         sobject = SearchKey.get_by_search_key(search_key)
         if not sobject:
@@ -2920,7 +2921,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         search = sobject.get_all_children_search(child_type)
         self._add_filters(search, filters)
         children = search.get_sobjects()
-        
+
 
         # go through get_value which handles security filters
         results = []
@@ -3101,7 +3102,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         - lib_paths: all the paths to the repository relative to the server
         - sandbox_paths: all of the paths mapped to the sandbox
         - web: all of the paths relative to the http server
-    
+
         '''
 
         sobjects = self._get_sobjects(search_key)
@@ -3208,25 +3209,25 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_base_dirs(self, ticket):
         '''get all of the base directories defined on the server.'''
-        
+
         data = Config.get_section_values("checkin")
         for key, value in data.items():
             if value.strip().startswith('{'):
-                
+
                 try:
                     sub_value = eval(value.strip())
                     value = sub_value
                     data[key] = value
                 except:
                     pass
-        
+
         from pyasm.security import Site
         site = Site.get_site()
         if site and site != "default":
             site_obj = Site.get()
             data['asset_base_dir'] = site_obj.get_asset_dir(alias="default")
             data['web_base_dir'] = site_obj.get_web_dir(alias="default")
-       
+
         return data
 
 
@@ -3234,14 +3235,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_handoff_dir(self, ticket):
         '''simple methods that returns a temporary path that files can be
         copied to
-       
+
         @params
         ticket - authentication ticket
 
         @return
         the directory to copy a file to handoff to Tactic without having to
         go through http protocol
-        
+
         '''
         #web = WebContainer.get_web()
         #return web.get_client_handoff_dir(ticket)
@@ -3306,7 +3307,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_client_dir(self, ticket, snapshot_code, file_type='main', mode='client_repo'):
         '''method that returns the directory segment of a snapshot for a particular
            file type and mode
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of a snapshot
@@ -3361,7 +3362,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_path_from_snapshot(self, ticket, snapshot_code, file_type='main', mode='client_repo'):
         '''method that returns the checked in path of a file
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code or search_key of a snapshot
@@ -3414,7 +3415,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             dir = snapshot.get_web_dir(file_type=file_type)
         elif mode == 'relative':
             dir = snapshot.get_relative_dir(file_type=file_type)
-       
+
         filename = snapshot.get_file_name_by_type(file_type)
         if filename:
             path = "%s/%s" % (dir, filename)
@@ -3425,9 +3426,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def get_expanded_paths_from_snapshot(self, ticket, snapshot_code, file_type='main'):
-        '''method that returns the expanded path of a snapshot (used for 
+        '''method that returns the expanded path of a snapshot (used for
         ranges of files
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of a snapshot
@@ -3438,7 +3439,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         the directory to copy a file to handoff to Tactic without having to
         go through http protocol
-        
+
         '''
 
         if isinstance(snapshot_code, dict):
@@ -3454,7 +3455,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         paths = []
         for file_name in file_names:
             path = "%s/%s" % (client_lib_dir, file_name)
-            paths.append(path) 
+            paths.append(path)
 
         return paths
 
@@ -3463,15 +3464,15 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_all_paths_from_snapshot(self, ticket, snapshot_code, mode='client_repo', expand_paths=False, filename_mode='',file_types=[]):
         '''method that returns all the files in a snapshot
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of a snapshot
-        
+
         @return
         the directory to copy a file to handoff to Tactic without having to
         go through http protocol
-        
+
         '''
 
         if isinstance(snapshot_code, dict):
@@ -3502,7 +3503,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_dependencies(self, ticket, snapshot_code, mode='explicit', tag='main', include_paths=False, include_paths_dict=False, include_files=False, repo_mode='client_repo', show_retired=False):
         '''method that returns of the dependent snapshots of a certain tag
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of a snapshot
@@ -3523,7 +3524,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @return
         a list of snapshots
-        
+
         '''
 
         if isinstance(snapshot_code, dict):
@@ -3571,7 +3572,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_all_dependencies(self, ticket, snapshot_code, mode='explicit', type='ref', include_paths=False, include_paths_dict=False, include_files=False, repo_mode='client_repo', show_retired=False):
         '''method that returns of the dependent snapshots for a given
         snapshot
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of a snapshot
@@ -3591,7 +3592,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @return
         a list of snapshots
-        
+
         '''
 
         if isinstance(snapshot_code, dict):
@@ -3601,7 +3602,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             snapshot = Snapshot.get_by_code(snapshot_code)
         else:
             snapshot = Search.get_by_search_key(snapshot_code)
-        
+
         if not snapshot:
             raise ApiException( "Snapshot with code [%s] does not exist" % \
                 snapshot_code)
@@ -3631,7 +3632,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             all_files = Snapshot.get_files_dict_by_snapshots(results)
             for idx, result in enumerate(results):
                 snapshot = snapshots[idx]
-                
+
                 snapshot_code = result.get_code()
                 file_list = all_files.get(snapshot_code)
                 file_dict_list = []
@@ -3687,7 +3688,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         path = snapshot.get_preallocated_path(file_type, file_name, mkdirs, protocol, ext, parent, checkin_type)
         return path
 
-                    
+
 
 
 
@@ -3695,7 +3696,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_virtual_snapshot_path(self, ticket, search_key, context, snapshot_type="file", level_key=None, file_type='main', file_name='', mkdirs=False, protocol='client_repo', ext='', checkin_type=''):
         '''creates a virtual snapshot and returns a path that this snapshot
         would generate through the naming conventions''
-        
+
         @params
         snapshot creation:
         -----------------
@@ -3812,7 +3813,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             description="No description", is_current=True, level_key=None,
             is_revision=False, triggers=True):
         '''creates an empty snapshot
-        
+
         @params:
         ticket - authentication ticket
         search_key - a unique identifier key representing an sobject
@@ -3853,7 +3854,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def simple_checkin(self, ticket, search_key, context, file_path, snapshot_type="file", description="No description",use_handoff_dir=False, file_type='main',is_current=True, level_key=None, metadata={}, mode=None, is_revision=False, info={}, keep_file_name=False, create_icon=True, checkin_cls='pyasm.checkin.FileCheckin', context_index_padding=None, checkin_type="strict", source_path=None, version=None, process=None):
 
         '''simple methods that checks in a previously uploaded file
-       
+
         @params
         ticket - authentication ticket
         search_key - a unique identifier key representing an sobject
@@ -3881,6 +3882,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         dictionary representation of the snapshot created for this checkin
         '''
+
+        if isinstance(search_key, dict):
+            search_key = search_key.get('__search_key__')
+
         sobject = SearchKey.get_by_search_key(search_key)
         if not sobject:
             raise ApiException("SObject for [%s] does not exist" % search_key)
@@ -3932,12 +3937,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if os.path.isfile(upload_path) and create_icon:
             icon_creator = IconCreator(upload_path)
             icon_creator.execute()
- 
+
             web_path = icon_creator.get_web_path()
             icon_path = icon_creator.get_icon_path()
-           
+
             # If this is pure icon context, then don't check in icon
-            # as the main file. 
+            # as the main file.
             if context == 'icon':
                 if web_path:
                     shutil.copy(web_path, upload_path)
@@ -3949,17 +3954,17 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 base, ext = os.path.splitext(upload_path)
                 web_path = "%s_web.%s" % (base, ext)
                 shutil.copy(upload_path, web_path)
-                     
+
             if web_path:
                 file_paths.append(web_path)
                 file_types.append('web')
                 source_paths.append(web_path)
-            
+
             if icon_path:
                 file_paths.append(icon_path)
                 file_types.append('icon')
                 source_paths.append(icon_path)
- 
+
 
         # get the level object
         if level_key:
@@ -3990,7 +3995,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         checkin.execute()
 
-        
+
 
         # get values from snapshot
         snapshot = checkin.get_snapshot()
@@ -4006,7 +4011,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if metadata:
             snapshot.add_metadata(metadata, replace=True)
             snapshot.commit()
-        
+
         self.set_sobject(sobject)
 
         info['snapshot'] = snapshot
@@ -4105,7 +4110,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             file_range, context=context, snapshot_type=snapshot_type, \
             description=description, is_revision=is_revision, mode=mode, \
             version=version, process=process)
-        
+
         checkin.execute()
 
         # cleanup
@@ -4117,7 +4122,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # get values from snapshot
         snapshot = checkin.get_snapshot()
 
-        
+
         # add metadata to the snapshot
         if metadata:
             snapshot.add_metadata(metadata)
@@ -4144,7 +4149,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def add_dependency(self, ticket, snapshot_code, file_path, type='ref', tag='main'):
         '''method to append a dependency reference to an existing checkin.
         The snapshot that this is attached will be auto-discovered
-       
+
         @params
         ticket - authentication ticket
         snapshot_code - the unique code identifier of a snapshot
@@ -4182,7 +4187,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def add_dependency_by_code(self, ticket, to_snapshot_code, from_snapshot_code, type='ref', tag='main'):
         '''method to append a dependency reference to an existing checkin
         The snapshot that this is attached will be auto-discovered
-       
+
         @params
         ticket - authentication ticket
         to_snapshot_code: the snapshot code which the dependency will be
@@ -4252,14 +4257,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
         else:
             is_array = True
             file_paths = file_path
-        
+
         if not isinstance(file_path, list):
             file_types = [file_type]
         else:
             file_types = file_type
 
         assert len(file_paths) == len(file_types)
-            
+
         snapshot_dicts = []
 
         for i, file_path in enumerate(file_paths):
@@ -4281,7 +4286,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 file_object.set_value("file_name", filename)
 
                 lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
-                upload_path = "%s/%s" % (lib_dir, filename) 
+                upload_path = "%s/%s" % (lib_dir, filename)
 
             elif mode == 'inplace':
                 upload_path = file_path
@@ -4298,7 +4303,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     dir = env.get_upload_dir()
 
                 upload_path = "%s/%s" % (dir, filename)
-            
+
                 if filename != old_filename:
                     shutil.move('%s/%s' %(dir, old_filename), upload_path)
 
@@ -4407,13 +4412,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             file_object.set_value("range", file_range)
 
             #lib_dir = snapshot.get_lib_dir(file_type=file_type, file_object=file_object)
-            #upload_path = "%s/%s" % (lib_dir, filename) 
+            #upload_path = "%s/%s" % (lib_dir, filename)
             upload_path = file_path
 
         elif mode == 'inplace':
             upload_path = os.path.dirname(file_path) + '/' + filename
             keep_file_name = True
-        
+
         else:
             keep_file_name = False
 
@@ -4425,7 +4430,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             upload_path = "%s/%s" % (dir, filename)
 
-            
+
 
         checkin = FileGroupAppendCheckin(snapshot_code, [upload_path], [file_type], file_range, \
                 keep_file_name=keep_file_name, mode=mode)
@@ -4451,7 +4456,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             was checked into
 
         @return
-        a list of paths 
+        a list of paths
         '''
 
         #paths = self.get_paths(self, ticket, search_key, context="publish", version=-1, file_type='main', level_key=None):
@@ -4727,7 +4732,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             sobject_dict = self._get_sobject_dict(sobject)
             sobject_dicts.append(sobject_dict)
         return sobject_dicts
- 
+
 
 
 
@@ -4736,7 +4741,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def get_snapshot(self, ticket, search_key, context="publish", version='-1', revision=None, level_key=None, include_paths=False, include_full_xml=False, include_paths_dict=False, include_files=False, include_web_paths_dict=False, versionless=False, process=None):
         '''method to retrieve snapshots
-        
+
         @params
         ticket - authentication ticket
         search_key - unique identifier of sobject whose snapshot we are
@@ -4770,7 +4775,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if sobject.get_base_search_type() == "sthpw/snapshot":
             sobject = sobject.get_parent()
 
-        search_type = sobject.get_search_type() 
+        search_type = sobject.get_search_type()
         search_id = sobject.get_id()
         search_code = sobject.get_value("code", no_exception=True)
         search_combo = search_code
@@ -4853,7 +4858,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_full_snapshot_xml(self, ticket, snapshot_code):
         '''method to retrieve a full snapshot xml.  This snapshot definition
         contains all the information about a snapshot in xml
-        
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of snapshot
@@ -4877,7 +4882,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def set_current_snapshot(self, ticket, snapshot_code):
         '''sets this snapshot as a "current" snapshot
-        
+
         @params
         ticket - authentication ticket
         snapshot_code - unique code of snapshot
@@ -4920,7 +4925,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         assigned - the user assigned to this task
         @return
         task that was created
-        ''' 
+        '''
 
 
         if isinstance(search_key, dict):
@@ -4982,10 +4987,10 @@ class ApiXMLRPC(BaseApiXMLRPC):
         processes - create tasks for the given list of processes
         skip_duplicate - boolean to skip duplicated task
         offset - a number to offset the start date from today's date
-       
+
         @return:
         list of tasks created
-        
+
         '''
         if isinstance(search_key, dict):
             search_key = search_key.get('__search_key__')
@@ -5013,7 +5018,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         ticket - authentication ticket
         search_key - the key identifying an sobject as registered in
                     the search_type table.
- 
+
         @return:
         list of tasks
         '''
@@ -5041,7 +5046,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''Get all the colors for a task status
 
         ticket - authentication ticket
- 
+
         @return:
         dictionary of colors
         '''
@@ -5061,7 +5066,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         ticket - authentication ticket
         search_key - the key identifying an sobject as registered in
                     the search_type table.
- 
+
         @return:
         list of input_tasks
         '''
@@ -5095,7 +5100,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         ticket - authentication ticket
         search_key - the key identifying an sobject as registered in
                     the search_type table.
- 
+
         @return:
         list of output
         '''
@@ -5142,7 +5147,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         @return
         note that was created
-        ''' 
+        '''
 
 
         if isinstance(search_key, dict):
@@ -5182,7 +5187,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''DEPRECATED: use get_pipeline_xml_info()
         method to retrieve the pipeline of a specific sobject.  The pipeline
         returned is an xml document.
-       
+
         @params:
         ticket - authentication ticket
         search_key - a unique identifier key representing an sobject
@@ -5203,7 +5208,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             return "<pipeline/>"
 
         return pipeline.get_xml_value("pipeline").to_string()
-       
+
 
 
     @xmlrpc_decorator
@@ -5211,14 +5216,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''DEPRECATED: use get_pipeline_processes_info()
         method to retrieve the pipeline of a specific sobject.  The pipeline
         returned is a dictionary
-       
+
         @params:
         ticket - authentication ticket
         search_key - a unique identifier key representing an sobject
 
         @keyparams:
         recurse - boolean to control whether to display sub pipeline processes
-        
+
         @return:
         process names of the pipeline or a dictionary if related_process is specified
         '''
@@ -5239,7 +5244,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_pipeline_xml_info(self, ticket, search_key, include_hierarchy=False):
         '''method to retrieve the pipeline of a specific sobject.  The pipeline
         returned is an xml document.
-       
+
         @params:
         ticket - authentication ticket
         search_key - a unique identifier key representing an sobject
@@ -5283,8 +5288,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 info.append(data)
             main_data['hierarchy'] = info
 
-    
-        
+
+
         return main_data
 
 
@@ -5292,7 +5297,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def get_pipeline_processes_info(self, ticket, search_key, recurse=False, related_process=None):
         '''method to retrieve the pipeline of a specific sobject.  The pipeline
         returned is a dictionary
-       
+
         @params:
         ticket - authentication ticket
         search_key - a unique identifier key representing an sobject
@@ -5300,7 +5305,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @keyparams:
         recurse - boolean to control whether to display sub pipeline processes
         related_process- given a process, it shows the input and output processes and contexts
-        
+
         @return:
         dictionary - just the plain processes or more input and output info if related_process is specified
         '''
@@ -5323,7 +5328,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             output_processes = pipeline.get_output_processes(related_process)
             output_processes = [x.get_name() for x in output_processes]
             data['output_processes'] = output_processes
-            
+
             input_contexts = pipeline.get_input_contexts(related_process)
             data['input_contexts'] = input_contexts
             output_contexts = pipeline.get_output_contexts(related_process)
@@ -5343,7 +5348,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def call_trigger(self, ticket, search_key, event, input={}, process=None):
         '''Calls a trigger with input package
-        
+
         @params
         ticket - authentication ticket
         search_key - the sobject that contains the trigger
@@ -5443,7 +5448,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         # create a second xml and transform it to the old style
         nodes = xml.get_nodes("session/ref")
         for node in nodes:
-            
+
             search_key = xml.get_attribute(node, "search_key")
             tactic_node = xml.get_attribute(node, "tactic_node")
 
@@ -5521,7 +5526,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         if self.get_protocol() == "xmlrpc" and not Project.get():
             state = TransactionState.get_by_ticket(ticket)
             state.restore_state()
- 
+
 
     @xmlrpc_decorator
     def get_widget(self, ticket, class_name, args={}, values={}, libraries={}, interaction={}):
@@ -5571,7 +5576,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                                     raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
                         else:
                             raise Exception("WARNING: Trying to pass in unexpected inputs: %s, %s" % (k, v))
-            
+
             elif Config.get_value("security", "api_widget_restricted") == "true":
                 key = "widget/%s" % (class_name)
                 access_key = {
@@ -5581,7 +5586,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 if not security.check_access("builtin", access_key, "allow"):
                     raise Exception("Trying to access widgets that are not allowed, please use widget key")
 
-            
+
 
             try:
                 Ticket.update_session_expiry()
@@ -5655,7 +5660,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     return widget.get_buffer_display()
 
 
-                
+
                 except Exception as e:
                     # make sure all sqls are aborted
                     DbContainer.abort_thread_sql(force=True)
@@ -5672,11 +5677,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 Container.delete()
 
 
-        
+
     @xmlrpc_decorator
     def class_exists(self, ticket, class_path):
         '''determines if a class exists on the server
-       
+
         @params
         ticket - authentication ticket
         class_path - fully qualified python class path
@@ -5716,7 +5721,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @params
         ticket - authentication ticket
         script_path - script path in Script Editor, e.g. test/eval_sobj
-      
+
         @return
         dictionary - returned data structure
 
@@ -5727,7 +5732,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             security = Environment.get_security()
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
-               raise ApiException("Access denied") 
+               raise ApiException("Access denied")
 
 
         ret_val = {}
@@ -5735,7 +5740,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             from tactic.command import PythonCmd
             cmd = PythonCmd(script_path=script_path, **kwargs)
             Command.execute_cmd(cmd)
-        
+
         except Exception as e:
             raise
         else:
@@ -5747,7 +5752,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return ret_val
 
-   
+
 
     @xmlrpc_decorator
     def execute_js_script(self, ticket, script_path, kwargs={}):
@@ -5756,7 +5761,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @params
         ticket - authentication ticket
         script_path - script path in Script Editor, e.g. test/eval_sobj
-      
+
         @return
         dictionary - returned data structure
 
@@ -5766,7 +5771,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             from tactic.command import JsCmd
             cmd = JsCmd(script_path=script_path, **kwargs)
             Command.execute_cmd(cmd)
-        
+
         except Exception as e:
             raise
         else:
@@ -5779,7 +5784,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return ret_val
 
 
-        
+
     @xmlrpc_decorator
     def execute_cmd(self, ticket, class_name, args={}, values={}, use_transaction=True):
         '''execute a command
@@ -5801,13 +5806,13 @@ class ApiXMLRPC(BaseApiXMLRPC):
             #kwarg default = 'allow' enables user group with unspecified access rules to have access to api_cmds
             access = security.check_access("api_cmd", class_name, "allow", default="allow")
             if not access:
-               raise ApiException("Access denied") 
-        
+               raise ApiException("Access denied")
+
         try:
             Ticket.update_session_expiry()
         except:
             pass
-        
+
         ret_val = {}
 
         try:
@@ -5885,7 +5890,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             print(stacktrace_str)
             print(str(e))
             print("-"*50)
-            
+
             ret_val['status'] = 'ERROR'
             ret_val['stack'] = stacktrace_str
             ret_val['message'] = str(e)
@@ -5931,7 +5936,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         '''Run a tactic transaction a defined by the instructions in the
         given transaction xml.  The format of the xml is identical to
         the format of how transactions are stored internally
-        
+
         @params
         ticket - authentication ticket
         transaction_xml - transaction instructions
@@ -5942,7 +5947,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @usage
         transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
          <transaction>
-           <sobject search_type="project/asset?project=gbs" 
+           <sobject search_type="project/asset?project=gbs"
                 search_code="shot01" action="update">
              <column name="description" from="" to="Big Money Shot"/>
            </sobject>
@@ -5993,14 +5998,14 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
         return info
 
-        
+
 
     @trace_decorator
     def execute_transactions(self, ticket, transactions, file_mode=None):
         '''Run a list of tactic transaction a defined by the instructions in
         the given transaction xml.  The format of the xml is identical to
         the format of how transactions are stored internally
-        
+
         @params
         ticket - authentication ticket
         transaction_xml - transaction instructions
@@ -6011,7 +6016,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @usage
         transaction_xml = """<?xml version='1.0' encoding='UTF-8'?>
          <transaction>
-           <sobject search_type="project/asset?project=gbs" 
+           <sobject search_type="project/asset?project=gbs"
                 search_code="shot01" action="update">
              <column name="description" from="" to="Big Money Shot"/>
            </sobject>
@@ -6082,7 +6087,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
     @xmlrpc_decorator
     def check_access(self, ticket, access_group, key, access, value=None, is_match=False, default="edit"):
-        '''check the access for a specified access_group name like search_type, sobject, project, 
+        '''check the access for a specified access_group name like search_type, sobject, project,
             or custom-defined '''
         security = Environment.get_security()
         return security.check_access(access_group, key, access, value, is_match, default = default)
@@ -6102,7 +6107,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         @return
         list: html widgets
         '''
-        try: 
+        try:
             self._init_web(ticket)
             args_array = []
             view = "table"
@@ -6132,7 +6137,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     sobjects = SearchKey.get_by_search_keys(search_keys)
                     num_sobjects = len(sobjects)
                     assert num_search_keys == num_sobjects
-            
+
             # simulate a table drawing with only one column
             from tactic.ui.panel import TableLayoutWdg
             table = TableLayoutWdg(search_type=search_type, view=view, config=config)
@@ -6168,7 +6173,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     def set_config_definition(self, ticket, search_type, element_name, config_xml="", login=None):
         '''set the definition of the particular element.  This definition
         is stored in the database.
-        
+
         @params
         ticket - authentication ticket
         search_type - search type that this config relates to
@@ -6243,7 +6248,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         return True
 
 
- 
+
 
 
 
@@ -6290,7 +6295,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
     @xmlrpc_decorator
     def update_config(self, ticket, search_type, view, element_names, login=None, deleted_element_names=[]):
         '''update a widget config for a view
-        
+
         @params:
         search_type: the search type that this config belongs to
         view: the specific view of the search type
@@ -6324,7 +6329,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         #root.appendChild(view_node)
         xml.append_child(root, view_node)
 
-        
+
         # build a new config
         for element_name in element_names:
             deleted_element_names = Common.get_unique_list(deleted_element_names)
@@ -6339,7 +6344,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 # else create a new one
                 element = xml.create_element("element")
                 xml.set_attribute(element, "name", element_name)
-            
+
             #view_node.appendChild(element)
             xml.append_child(view_node, element)
 
@@ -6362,7 +6367,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 if element is not None:
                     # check if it is a folder and delete its view entry also
                     display_handler = def_config.get_display_handler(name)
-                    
+
                     if display_handler == 'SideBarSectionLinkWdg':
                         options = def_config.get_display_options(name)
                         folder_view = options.get('view')
@@ -6375,18 +6380,18 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     #node = element.parentNode.removeChild(element)
                     parent_node = def_xml.get_parent(element)
                     def_xml.remove_child(parent_node, element)
-                    
+
 
             def_config.commit_config()
         return xml.to_string()
 
-    
+
     @xmlrpc_decorator
-    def add_config_element(self, ticket, search_type, view, name, class_name=None, 
+    def add_config_element(self, ticket, search_type, view, name, class_name=None,
            display_options={}, action_class_name=None, action_options={}, element_attrs={},
            login=None, unique=True, auto_unique_name=False, auto_unique_view=False, view_as_attr=False):
         '''Add an element into a config
-        
+
         @params:
         search_type - the search type that this config belongs to
         view - the specific view of the search type
@@ -6402,7 +6407,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         unique - a unique display view name is expected
         view_as_attr - view should be read or created as a name attribute
         '''
-        
+
         assert view
         config_search_type = "config/widget_config"
 
@@ -6416,7 +6421,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
         configs = []
         from tactic.ui.panel import SideBarBookmarkMenuWdg
         SideBarBookmarkMenuWdg.add_internal_config(configs, ['definition'])
-        
+
         internal_names = ['search','publish','edit','insert','edit_definition','definition']
         existing_names = []
         for internal_config in configs:
@@ -6430,27 +6435,27 @@ class ApiXMLRPC(BaseApiXMLRPC):
         pat = re.compile('^\d+.*')
         if pat.search(name):
             raise UserException('The name [%s] should not start with a number.'%name)
-        
+
         if not view_as_attr and view.find('@') != -1:
             view_as_attr = True
-        
+
         # error out on all special chars from name except .
         pat = re.compile('[\$\s,#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
         if pat.search(name):
             raise UserException('The name [%s] contains special characters or spaces.'%name)
-        
-        if unique: 
+
+        if unique:
             if name in existing_names:
                 raise UserException('This view name [%s] has been taken.'%name)
             if name in internal_names:
                 raise UserException('This view name [%s] is reserved for internal use.'%name)
 
-        
+
         if config and auto_unique_name:
             # remove all special chars from name except .
             pat = re.compile('[\$\s,@#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!]')
             name = pat.sub('', name)
-            
+
             suffix = Common.randint(0, 100)
             existing_names = config.get_element_names()
             if name in existing_names:
@@ -6469,7 +6474,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     display_options['view'] = name
         # find a default for any views but definition
         if not config and view !='definition':
-            view_node = WidgetConfigView.get_default_view_node(view) 
+            view_node = WidgetConfigView.get_default_view_node(view)
             if view_node:
                 config = SearchType.create(config_search_type)
                 config.set_value("search_type", search_type )
@@ -6482,8 +6487,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 if login:
                     config.set_value("login", login)
                 config._init()
-        
-        
+
+
 
         if not config:
             config = SearchType.create(config_search_type)
@@ -6494,8 +6499,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 config.set_value("login", login)
             config._init()
             root = xml.get_root_node()
-    
-   
+
+
             # build a new config
             if view_as_attr:
                 # personal view uses the new view attr-based xml syntax
@@ -6505,7 +6510,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             #root.appendChild(view_node)
             xml.append_child(root, view_node)
 
-        
+
             # view has been set from above otherwise
         '''
         xml = config.get_xml_value("config")
@@ -6519,9 +6524,9 @@ class ApiXMLRPC(BaseApiXMLRPC):
         config.commit_config()
         # this name could be regenerated. so we return it to client
         dict = {'element_name': name}
-        
+
         return dict
-    
+
 
 
 
@@ -6598,12 +6603,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     info[path] = {'md5': md5}
             return info
 
-        
+
         main_info = {}
         from pyasm.prod.biz import ShotTexture, Texture
         assert texture_cls in ['ShotTexture', 'Texture']
         Project.set_project(project_code)
-        project_code = Project.get_project_code() 
+        project_code = Project.get_project_code()
         file_info_dict = _get_file_info_dict(new_paths, md5_list)
 
         # some path may relate to more than 1 potential texture code which may or may not be used
@@ -6611,20 +6616,20 @@ class ApiXMLRPC(BaseApiXMLRPC):
         texture_sobjs = eval("%s.get(texture_code, parent_code, project_code, is_multi=True)"%texture_cls)
         snapshots = Snapshot.get_by_sobjects(texture_sobjs)
         snapshot_codes = SObject.get_values(snapshots, 'code')
-        
+
         file_codes = []
         for snapshot in snapshots:
             file_code = snapshot.get_file_code_by_type("main")
             file_codes.append(file_code)
 
         files = Search.get_by_code('sthpw/file', file_codes)
-        
+
         for new_path in new_paths:
-            
+
             new_md5 = file_info_dict.get(new_path).get('md5')
             # Cross-checking texture_nodes using the same texture file
             info = {}
-            
+
 
             # always check for file_group first so it will get reused especially
             # in cases where original file name is kept
@@ -6638,12 +6643,12 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 info['is_match'] = False
                 main_info[new_path] = info
                 continue
-            
-            # essentially file_name mode 
+
+            # essentially file_name mode
             if not new_md5 and file_group_dict.get(new_path):
                 tactic_group_path, file_range = file_group_dict.get(new_path)
                 info['is_file_group'] = True
-                
+
                 # this is needed otherwise os.path.basename doesn't work
                 tactic_group_path = tactic_group_path.replace("\\", "/")
                 filename = os.path.basename(tactic_group_path)
@@ -6659,11 +6664,11 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 else:
                     info['is_match'] = False
 
-                
+
                 main_info[new_path] = info
                 continue
-                
-             
+
+
             if mode == 'file_name':
                 col_name = 'file_name'
                 path  = new_path.replace('\\','/')
@@ -6671,7 +6676,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             else:
                 col_name = 'md5'
                 compared_value = new_md5
-          
+
             for file in files:
                 cur_value = file.get_value(col_name)
                 if cur_value == compared_value:
@@ -6680,23 +6685,23 @@ class ApiXMLRPC(BaseApiXMLRPC):
                     info['repo_file_code'] = file.get_code()
                     break
                 else:
-                    info['is_match'] = False 
+                    info['is_match'] = False
             main_info[new_path] = info
         return main_info
 
-             
-        
-        
 
 
-        
+
+
+
+
 
     @trace_decorator
     def set_application_state(self, ticket, key, panel_name, widget_class, options, values={}):
         '''Set the application state.  This is used to set the last viewed
         state.  When a user goes back to the Tactic, this info will be used
         to show the interface.
-        
+
         @params
         key: unique key indentifying a particular layout name
         panel_name: name of a panel that is located within a layout
@@ -6766,7 +6771,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             security = Environment.get_security()
             transaction_ticket = security.get_ticket_key()
-            
+
             original_ticket = ticket.get("ticket")
             if original_ticket != transaction_ticket:
                 import os
@@ -6805,7 +6810,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             if not project and project_code != 'unittest':
                 raise ApiException('Invalid project code [%s]'%project_code)
             Project.set_project(project_code)
-            
+
             # create a transaction ticket
             user = Environment.get_user_name()
 
@@ -6826,7 +6831,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             state.reset_state()
 
             # create a log outside of a transaction
-            cmd_cls = "pyasm.prod.service.api_xmlrpc.ApiClientCmd" 
+            cmd_cls = "pyasm.prod.service.api_xmlrpc.ApiClientCmd"
             log = TransactionLog.create(cmd_cls, "<transaction/>", description, title)
             log_id = log.get_id()
             state.set_state("transaction", log_id)

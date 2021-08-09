@@ -212,6 +212,39 @@ class FrameRangeWdg(BaseTableElementWdg):
             frame_out = 0
         return frame_in, frame_out
 
+
+
+    def handle_layout_behaviors(self, layout):
+
+        # add a style for this layout
+        styles = HtmlElement.style()
+        layout.add(styles)
+        border_color = layout.get_color("border")
+        duration_color = '#969353'
+        duration_color2 = '#b8b365'
+        styles.add('''
+        .spt_layout .spt_frame_range_bar {
+            border: 1px dotted %s;
+            background: %s;
+            margin-top: 8px;
+            margin-left: 3px;
+            margin-right: 5px;
+            line-height: 3px;
+        }
+
+        .spt_layout .spt_frame_in_bar {
+            border: 1px solid %s;
+            background: %s;
+            margin-top: 8px;
+            margin-left: 3px;
+            margin-right: 5px;
+            line-height: 3px;
+        }
+ 
+        ''' % (border_color, duration_color, border_color, duration_color2) )
+        
+
+
     def get_text_value(self):
         sobject = self.get_current_sobject()
         if isinstance(sobject, Shot):
@@ -254,10 +287,11 @@ class FrameRangeWdg(BaseTableElementWdg):
         
         frame_notes = WikiUtil().convert(frame_notes)    
         if frame_range.frame_end == frame_range.frame_start == 0:
-            return 'n/a'
+            return '<span style="opacity: 0.5; font-size: 0.8rem">N/A</span>'
 
-        widget = SpanWdg()
-        widget.set_attr("nowrap", "1")
+        widget = DivWdg()
+        widget.add_style("display: flex")
+        widget.add_style("align-items: center")
 
         offset = 2
         label_width = 16
@@ -285,12 +319,7 @@ class FrameRangeWdg(BaseTableElementWdg):
         start_div = FloatDivWdg(start_frame, width=label_width+spacer_width )
         start_div.add_class('right_content')
         duration = FloatDivWdg( width=duration_width )
-        duration.add_style("border: 1px dotted %s" % duration_color)
-        duration.add_style("margin-top: 3px")
-        duration.add_style("margin-left: 5px")
-        duration.add_style("margin-right: 5px")
-        duration.add_style("height: 3px")
-        duration.add_style("line-height: 3px")
+        duration.add_class("spt_frame_range_bar")
         div.add(start_div)
         div.add(duration)
         div.add(end_div)
@@ -325,23 +354,11 @@ class FrameRangeWdg(BaseTableElementWdg):
                 factor = 1
             duration_width = (duration_width + offset) * factor - offset
             duration = FloatDivWdg( width=duration_width )
-            duration.add_style("border: 1px solid %s" % duration_color)
-            duration.add_style("background", duration_color)
-            duration.add_style("margin-top: 5px")
-            duration.add_style("margin-left: 5px")
-            duration.add_style("margin-right: 5px")
-            duration.add_style("line-height: 1px")
+            duration.add_class("spt_frame_in_bar")
             duration.add('&nbsp;')
             
-            # IE needs that to draw a 1px wide div
-            bar = FloatDivWdg('<!-- -->', width=1)
-            bar.add_style("margin-top: 1px")
-            bar.add_style("line-height: 10px")
-            bar.add_style("background", duration_color)
             div.add(in_div)
-            div.add(bar)
             div.add(duration)
-            div.add(bar)
             div.add(out_div)
             
 

@@ -981,12 +981,15 @@ spt.disable_text_selection_by_id = function( el_id )
 //  convenience functions for showing / hiding any HTML element
 // -------------------------------------------------------------------------
 
-spt.show = function( element )
+spt.show = function( element, display )
 {
     // element can be element ID or element itself ...
     var el = document.id(element);
     if( el ) {
-        el.setStyle("display","");
+        if (!display) {
+            display = "";
+        }
+        el.setStyle("display", display);
         if (el.getStyle("opacity") == "0")
             el.setStyle("opacity", "1");
 

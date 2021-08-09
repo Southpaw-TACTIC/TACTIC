@@ -409,7 +409,6 @@ SCHEMA_XML['config'] = '''<?xml version='1.0' encoding='UTF-8'?>
    <search_type name='config/client_trigger'/>
    <search_type name='config/process'/>
    <search_type name='config/process_state'/>
-   <search_type name='prod/custom_property'/>
    <search_type name='sthpw/pref_setting'/>
    <search_type name='config/url'/>
    <search_type name='config/ingest_session'/>
@@ -1277,7 +1276,7 @@ class Schema(SObject):
 
     def get_predefined_schema(cls, code):
         assert(code)
-        schema = Container.get("Schema:%s" % code)
+        schema = Container.get("Schema:definition:%s" % code)
         if not schema:
 
             schema_xml = SCHEMA_XML.get(code)
@@ -1288,7 +1287,6 @@ class Schema(SObject):
             schema.set_value("schema", schema_xml)
             schema.set_value("code", code)
             schema.init()
-            Container.put("Schema:%s" % code, schema)
 
         return schema
     get_predefined_schema = classmethod(get_predefined_schema)
@@ -1339,13 +1337,13 @@ class Schema(SObject):
         search_type = sobject.get_search_type()
         if search_type.startswith("sthpw/"):
 
-            schema = Container.get("Schema:admin")
+            schema = Container.get("Schema:definition:admin")
             if not schema:
                 schema = Schema("sthpw/schema", dependencies=False)
                 schema.set_value("code", "admin")
                 schema.set_xml(SCHEMA_XML['admin'])
 
-                Container.put("Schema:admin", schema)
+                Container.put("Schema:definition:admin", schema)
 
             return schema
 
@@ -1358,13 +1356,13 @@ class Schema(SObject):
 
  
     def get(cls, reset_cache=False, project_code=None):
-        
+
         if not project_code:
             from .project import Project
             project_code = Project.get_project_code()
 
         if not reset_cache:
-            schema = Container.get("Schema:%s" % project_code)
+            schema = Container.get("Schema:definition:%s" % project_code)
             
             if schema:
                 return schema
@@ -1430,7 +1428,6 @@ class Schema(SObject):
         else:
             schema = None
 
-
         # if the project schema does not exist, then create an empty one
         if not schema:
             schema = Schema("sthpw/schema", dependencies=False)
@@ -1440,7 +1437,7 @@ class Schema(SObject):
             schema.add_dependencies()
 
 
-        Container.put("Schema:%s"%project_code, schema)
+        Container.put("Schema:definition:%s"%project_code, schema)
      
         return schema
     get = classmethod(get)
