@@ -252,6 +252,7 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
+    //console.log(cbjs_str);
    
     // basically disable js_logger for this because we loose the origin
     // of the error and chrome handles it really well now

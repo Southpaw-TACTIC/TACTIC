@@ -18,8 +18,8 @@ spt.panel = {}
 //
 spt.panel.refresh_element = function(element, data, kwargs) {
 
-    var panel = spt.has_class(element, "spt_panel") ? element : document.id(element).getParent(".spt_panel");
-    var fade = kwargs ? kwargs.fade : false;
+    let panel = spt.has_class(element, "spt_panel") ? element : document.id(element).getParent(".spt_panel");
+    let fade = kwargs ? kwargs.fade : false;
 
     if (data) {
         if (!kwargs) {
@@ -36,7 +36,7 @@ spt.panel.refresh_element = function(element, data, kwargs) {
 // Callback to refresh a panel widget
 //
 spt.panel.refresh = function(panel_id, values, kwargs) {
-    var panel = document.id(panel_id);
+    let panel = document.id(panel_id);
     if (panel == null) {
         spt.js_log.warning("panel[" + panel_id + "] cannot be found ");
         return;
@@ -75,46 +75,46 @@ spt.panel.async_load = function(panel_id, class_name, options, values) {
 
 
 spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
-    var fade = kwargs ? kwargs.fade : true;
-    var async = kwargs ? kwargs.async : true;
-    var show_loading = kwargs ? kwargs.show_loading : true;
+    let fade = kwargs ? kwargs.fade : true;
+    let async = kwargs ? kwargs.async : true;
+    let show_loading = kwargs ? kwargs.show_loading : true;
     if (async == null) { async = true; }
     if (show_loading == null) { show_loading = true; }
 
-    var callback = kwargs ? kwargs.callback : null;
+    let callback = kwargs ? kwargs.callback : null;
     if (callback) {
         async = true;
     }
-    var panel = document.id(panel_id);
+    let panel = document.id(panel_id);
     if (!panel)
     {
         spt.js_log.critical('WARNING: Panel with id [' + panel_id + '] does not exist yet');
         return;
     }
     
-    var tween = null;
+    let tween = null;
     if (!spt.browser.is_IE() && fade == true) {
         // define the tween instance 
         tween = new Fx.Tween(panel,  {property: 'opacity', duration: 300 });
     }
     
-    var draw_content = function() {
-        var server = TacticServerStub.get();
-        var wdg_kwargs = {'args': options, 'values': values};
+    let draw_content = function() {
+        let server = TacticServerStub.get();
+        let wdg_kwargs = {'args': options, 'values': values};
 
         if (async) {
 
-            var size = document.id(panel).getSize();
+            let size = document.id(panel).getSize();
 
-            var env = spt.Environment.get();
-            var colors = env.get_colors();
-            var fade_color = "#FFF";
-            var border = "#999";
-            var bgcolor = "#333";
-            var shadow = "#333";
-            var color = "#FFF";
+            let env = spt.Environment.get();
+            let colors = env.get_colors();
+            let fade_color = "#FFF";
+            let border = "#999";
+            let bgcolor = "#333";
+            let shadow = "#333";
+            let color = "#FFF";
             if (colors) {
-                var theme = colors.theme;
+                let theme = colors.theme;
                 if (theme == "dark") {
                     fade_color = "#000"
                 }
@@ -132,7 +132,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
             }
 
 
-            var element = document.id(document.createElement("div"));
+            let element = document.id(document.createElement("div"));
             element.innerHTML = '<div class="spt_spin" style="border: solid 1px '+border+';background: '+bgcolor+'; color: '+color+'; margin: 20px auto; width: 150px; text-align: center; padding: 5px 10px;"><img src="/context/icons/common/indicator_snake.gif" border="0"/> <b>Loading ...</b></div>';
             element.setStyle("z-index", "100");
             //element.setStyle("margin-top", -size.y);
@@ -141,7 +141,7 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
             element.setStyle("left", size.x/2-75);
 
 
-            var xelement = document.id(document.createElement("div"));
+            let xelement = document.id(document.createElement("div"));
             xelement.setStyle("opacity", "0.4");
             xelement.innerHTML = '<div style="background: '+fade_color+'; width: '+size.x+'; height: '+size.y+'"></div>';
             xelement.setStyle("margin-top", -size.y);
@@ -174,14 +174,13 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
                 spt.alert(error);
             }
 
-
-            var widget_html = server.async_get_widget(class_name, wdg_kwargs);
+            server.async_get_widget(class_name, wdg_kwargs);
 
 
 
         }
         else {
-            var widget_html = server.get_widget(class_name, wdg_kwargs);
+            let widget_html = server.get_widget(class_name, wdg_kwargs);
             spt.behavior.replace_inner_html( panel, widget_html );
         }
     }
@@ -196,10 +195,10 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     }
 
     // remove the old information of what is in the panel
-    var attrs = panel.attributes;
-    for (var i = 0; i < attrs.length; i++) {
-        var attr = attrs[i];
-        var node_name = attr.nodeName
+    let attrs = panel.attributes;
+    for (let i = 0; i < attrs.length; i++) {
+        let attr = attrs[i];
+        let node_name = attr.nodeName
         if (node_name.substring(0, 4) == 'spt_' ) {
             panel.removeAttribute(node_name);
         }
@@ -216,8 +215,8 @@ spt.panel.load = function(panel_id, class_name, options, values, kwargs) {
     delete new_options['path'];
  
     // store more complex object as JSON string
-    for (var name in options) {
-        var value = new_options[name];
+    for (let name in options) {
+        let value = new_options[name];
         if (value && typeof(value) == 'object')
             new_options[name] = JSON.stringify(value);
         panel.setAttribute("spt_"+name, new_options[name]);
@@ -386,7 +385,7 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
 
     var widget_class = element.getAttribute("spt_class_name");
     if (!widget_class) {
-        var widget_class = element.getAttribute("SPT_WIDGET_KEY");
+        widget_class = element.getAttribute("SPT_WIDGET_KEY");
     }
     if( ! widget_class || widget_class == 'undefined' ) {
         spt.alert("Cannot refresh ["+element_id+"].  No spt_class_name attribute found");
@@ -410,8 +409,8 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
         }
     }
 
-    var server = TacticServerStub.get();
-    var wdg_kwargs = {'args': options, 'values': values};
+    let server = TacticServerStub.get();
+    let wdg_kwargs = {'args': options, 'values': values};
 
     if (async) {
 
@@ -428,7 +427,7 @@ spt.panel._refresh_widget = function(element_id, values, kwargs) {
         server.async_get_widget(widget_class, wdg_kwargs);
     }
     else {
-        var widget_html = server.get_widget(widget_class, wdg_kwargs);
+        let widget_html = server.get_widget(widget_class, wdg_kwargs);
         // replace the former element with the new element
         spt.behavior.replace_inner_html( element, widget_html );
    
