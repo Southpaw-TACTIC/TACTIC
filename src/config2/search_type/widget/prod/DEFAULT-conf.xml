@@ -432,7 +432,7 @@ display class, it will adopt the one defined here-->
     </element>
 
 
-    <element name="task_schedule">
+    <element name="task_schedule" width="50%">
       <display class="tactic.ui.table.GanttElementWdg">
         <options>[
         {

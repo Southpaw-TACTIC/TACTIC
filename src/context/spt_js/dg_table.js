@@ -1059,7 +1059,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     }
     else {
         // find the header row with the appropriate element name
-         row = null;
+        row = null;
         for( var c=0; c < table.rows.length; c++ ) {
             var name = table.rows[c].cells[0].getAttribute("spt_element_name");
             if (name != null) {
@@ -1096,16 +1096,18 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     // go through each header cell and get the element name
     // skip the first selection 
     var table_elements = [];
-    for( var c=first_idx; c < row.cells.length; c++ ) {
-        var cell = row.cells[c];
-        var name = cell.getAttribute("spt_element_name");
+    let cells = row.getElements(".spt_table_header");
+    for( var c=first_idx; c < cells.length; c++ ) {
+        let cell = cells[c];
+        let name = cell.getAttribute("spt_element_name");
         if (name == null) {
             continue;
         }
-        var width = spt.get_element_width(cell);
+        let width = spt.get_element_width(cell);
         config += '    <element name="'+ name +'" hidden="false" width="'+ width +'"/>\n';
         table_elements.push(name);
     }
+
 
     // if saving definitions, add elements not present in table from view, setting them as hidden
     var server = TacticServerStub.get()
