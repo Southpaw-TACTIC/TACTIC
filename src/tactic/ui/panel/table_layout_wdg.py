@@ -2028,6 +2028,22 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+            # collapse groups
+            from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
+            SwapDisplayWdg.handle_top(table)
+
+            table.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_group_row_collapse',
+                'cbjs_action': '''
+                spt.table.set_table(bvr.src_el);
+                var row = bvr.src_el.getParent(".spt_group_row");
+                spt.table.collapse_group(row);
+                '''
+            } )
+
+
+
 
 
         # indicator that a cell is editable
@@ -2077,6 +2093,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 } )
             '''
             } )
+
+
+
+
 
 
         # set styles at the table level to be relayed down
@@ -2148,23 +2168,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #    "background-position": "top center"
             #} )
 
-
-
-
-
-        # collapse groups
-        from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        SwapDisplayWdg.handle_top(table)
-
-        table.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_group_row_collapse',
-            'cbjs_action': '''
-            spt.table.set_table(bvr.src_el);
-            var row = bvr.src_el.getParent(".spt_group_row");
-            spt.table.collapse_group(row);
-            '''
-        } )
 
 
         if self.kwargs.get("show_group_highlight") not in [False, 'false']:
@@ -7635,11 +7638,12 @@ spt.table.collapse_group = function(group_row) {
         show = false;
     }
 
-   var sub_row = last_row.getNext();
 
-   var group_level = last_row.getAttribute("spt_group_level")
+    var sub_row = last_row.getNext();
 
-   if (group_level) {
+    var group_level = last_row.getAttribute("spt_group_level")
+
+    if (group_level) {
         group_level = parseInt(group_level);
 
     }
