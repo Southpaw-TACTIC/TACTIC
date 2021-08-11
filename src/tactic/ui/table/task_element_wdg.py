@@ -784,7 +784,6 @@ class TaskElementWdg(BaseTableElementWdg):
 
     def handle_layout_behaviors(self, layout):
 
-
         # add a style for this layout
         styles = HtmlElement.style()
         layout.add(styles)
@@ -942,12 +941,30 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         "type": "change",
         'bvr_match_class': "spt_task_element_assigned",
         "cbjs_action": '''
-        var all_top_el = bvr.src_el.getParent(".spt_all_task_top");
-        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_element_assigned', false);
-        var value_wdg = all_top_el.getElement(".spt_data");
-        value_wdg.value = JSON.stringify(values);
-        spt.dg_table.edit.widget = all_top_el;
-        spt.dg_table.inline_edit_cell_cbk( value_wdg, {} );
+
+        let value = bvr.src_el.value;
+        //bvr.src_el.style.background = status_colors[value];
+        let context = bvr.src_el.getAttribute("spt_context");
+        let layout = bvr.src_el.getParent(".spt_layout");
+        spt.table.set_layout(layout);
+        let rows = spt.table.get_selected_rows();
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            let elements = row.getElements(".spt_task_assigned_select");
+            for (let j = 0; j < elements.length; j++) {
+                let el = elements[j];
+                if (el == bvr.src_el) {
+                    continue;
+                }
+
+                let el_context = el.getAttribute("spt_context");
+                if (el_context == context) {
+                    el.value = value;
+                    spt.task_element.status_change_cbk(evt, {src_el: el});
+                }
+            }
+        }
+
         '''
         } )
 
@@ -970,10 +987,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             if (!status_colors) {
                 status_colors = bvr.colors["task"];
             }
-
-
-            //let status_colors = bvr.color;
-
 
             let value = bvr.src_el.value;
             bvr.src_el.style.background = status_colors[value];
