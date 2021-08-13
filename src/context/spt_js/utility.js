@@ -1362,8 +1362,13 @@ spt._init_dialog = function(on_complete) {
 
 
 spt.alert = function(msg, options){
-    err = new Error();
-    console.log(err.stack);
+
+    let stack = options.stack;
+    if (!stack) {
+        let err = new Error();
+        stack = err.stack;
+    }
+    console.log(stack);
     
     var env = spt.Environment.get();
     if (env) {

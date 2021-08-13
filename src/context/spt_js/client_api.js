@@ -1885,14 +1885,6 @@ TacticServerStub = function() {
 
 
         var err_callback = function(e) {
-            // try handling the ERROMETHOD error
-            /*
-            if (e.contains("XERRORMETHOD")) {
-                //alert("ERRORMETHOD!!!!!");
-                //api.async_get_widget(class_name, api_kwargs, on_complete, on_error);
-                return;
-            }
-            */
             if (e == 0) {
                 e = 'Received an error (Error 0)';
                 var error = new Error();
@@ -1913,7 +1905,8 @@ TacticServerStub = function() {
                 on_error(e);
             }
             else {
-                spt.alert("async_get_widget: " + e);
+                console.log(e);
+                spt.alert("async_get_widget: " + e, { stack: e.stack });
             }
         };
         passed_args = [class_name, kwargs];

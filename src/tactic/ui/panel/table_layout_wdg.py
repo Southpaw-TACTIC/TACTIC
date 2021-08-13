@@ -1383,18 +1383,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             'expand_on_load': self.expand_on_load,
             'unique_id': self.get_table_id(),
             'cbjs_action': '''
-            var layout = bvr.src_el.getParent(".spt_layout");
+            let layout = bvr.src_el.getParent(".spt_layout");
             spt.table.set_layout(layout);
-            var rows = layout.getElements(".spt_loading");
+            let rows = layout.getElements(".spt_loading");
 
-            var loaded_event = "loading|" + bvr.unique_id;
-            var loading_event = "loading_pending|" + bvr.unique_id;
+            let loaded_event = "loading|" + bvr.unique_id;
+            let loading_event = "loading_pending|" + bvr.unique_id;
 
-            var jobs = [];
-            var count = 0;
-            var chunk = bvr.chunk;
+            let jobs = [];
+            let count = 0;
+            let chunk = bvr.chunk;
             while (true) {
-                var job_item = rows.slice(count, count+chunk);
+                let job_item = rows.slice(count, count+chunk);
                 if (job_item.length == 0) {
                     break;
                 }
@@ -1402,18 +1402,19 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 count += chunk;
             }
 
-            var count = -1;
+            count = -1;
 
-            var view_panel = layout.getParent('.spt_view_panel');
+            let view_panel = layout.getParent('.spt_view_panel');
+            let search_dict = null;
             if (view_panel) {
-                var search_top = view_panel.getElement('.spt_search');
-                var search_dict = spt.table.get_search_values(search_top);
+                let search_top = view_panel.getElement('.spt_search');
+                search_dict = spt.table.get_search_values(search_top);
             }
 
-            var func = function() {
+            let func = function() {
                 spt.named_events.fire_event(loading_event, {});
                 count += 1;
-                var rows = jobs[count];
+                let rows = jobs[count];
                 if (! rows || rows.length == 0) {
                     spt.named_events.fire_event(loaded_event, {});
                     // run at the end of last load
@@ -1424,7 +1425,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     return;
                 }
                 spt.table.apply_undo_queue();
-                
+
                 spt.table.refresh_rows(rows, null, null, {on_complete: func, json: search_dict, refresh_bottom: false});
                 if (bvr.expand_on_load) {
                     spt.table.expand_table("full");
@@ -2027,6 +2028,22 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
 
+            # collapse groups
+            from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
+            SwapDisplayWdg.handle_top(table)
+
+            table.add_relay_behavior( {
+                'type': 'click',
+                'bvr_match_class': 'spt_group_row_collapse',
+                'cbjs_action': '''
+                spt.table.set_table(bvr.src_el);
+                var row = bvr.src_el.getParent(".spt_group_row");
+                spt.table.collapse_group(row);
+                '''
+            } )
+
+
+
 
 
         # indicator that a cell is editable
@@ -2076,6 +2093,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 } )
             '''
             } )
+
+
+
+
 
 
         # set styles at the table level to be relayed down
@@ -2147,23 +2168,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #    "background-position": "top center"
             #} )
 
-
-
-
-
-        # collapse groups
-        from tactic.ui.widget.swap_display_wdg import SwapDisplayWdg
-        SwapDisplayWdg.handle_top(table)
-
-        table.add_relay_behavior( {
-            'type': 'click',
-            'bvr_match_class': 'spt_group_row_collapse',
-            'cbjs_action': '''
-            spt.table.set_table(bvr.src_el);
-            var row = bvr.src_el.getParent(".spt_group_row");
-            spt.table.collapse_group(row);
-            '''
-        } )
 
 
         if self.kwargs.get("show_group_highlight") not in [False, 'false']:
@@ -4881,7 +4885,6 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
             }
         }
     }
-    //}
 
     //server.async_get_widget(class_name, kwargs);
     var class_name = kwargs.dynamic_class;
@@ -7081,8 +7084,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
     if (typeof(search_keys) == 'undefined' || search_keys == null) {
         search_keys = [];
-        for (var i = 0; i < rows.length; i++) {
-            var search_key = rows[i].getAttribute("spt_search_key");
+        for (let i = 0; i < rows.length; i++) {
+            let search_key = rows[i].getAttribute("spt_search_key");
             search_keys.push(search_key);
         }
     }
@@ -7094,63 +7097,61 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     // default to update bottom row color
     if (kw['refresh_bottom'] == null) kw.refresh_bottom = true;
 
-    var expand_on_load = kw.expand_on_load;
+    let expand_on_load = kw.expand_on_load;
     if (expand_on_load == null) expand_on_load = true;
 
-    //var layout = spt.table.get_layout();
-    // this is more reliable when multi table are drawn in the same page while
-    // refresh is happening
-
-    var layout_el = rows[0].getParent(".spt_layout");
+    let layout_el = rows[0].getParent(".spt_layout");
     spt.table.set_layout(layout_el);
 
-    var class_name = layout_el.getAttribute("spt_class_name");
-    var element_names = spt.table.get_element_names();
+    let class_name = layout_el.getAttribute("spt_class_name");
+    let element_names = spt.table.get_element_names();
     element_names = element_names.join(",");
 
+    let view = layout_el.getAttribute("spt_view");
+    let search_type = layout_el.getAttribute("spt_search_type");
+    let config_xml = layout_el.getAttribute("spt_config_xml");
 
-    var view = layout_el.getAttribute("spt_view");
-    var search_type = layout_el.getAttribute("spt_search_type");
-    var config_xml = layout_el.getAttribute("spt_config_xml");
+    let layout = layout_el.getAttribute("spt_layout");
 
-    var layout = layout_el.getAttribute("spt_layout");
-
-    //var extra_data = layout_el.getAttribute("spt_extra_data");
-    var inner = layout_el.getElement(".spt_layout_inner");
+    //let extra_data = layout_el.getAttribute("spt_extra_data");
+    let inner = layout_el.getElement(".spt_layout_inner");
+    let extra_data;
     if (inner) {
-        var extra_data = inner.getAttribute("spt_extra_data");
+        extra_data = inner.getAttribute("spt_extra_data");
     }
     else {
-        var extra_data = layout_el.getAttribute("spt_extra_data");
+        extra_data = layout_el.getAttribute("spt_extra_data");
     }
 
 
-    var table_top = layout_el.getParent('.spt_table_top');
+    let table_top = layout_el.getParent('.spt_table_top');
     //note: sometimes table_top is null
+    let show_select;
+    let document_mode;
     if (table_top) {
         if (!config_xml) config_xml = table_top.getAttribute("spt_config_xml");
-        var show_select = table_top.getAttribute("spt_show_select");
-        var document_mode = table_top.getAttribute("spt_document_mode");
+        show_select = table_top.getAttribute("spt_show_select");
+        document_mode = table_top.getAttribute("spt_document_mode");
     }
     else {
-        var show_select = null;
-        var document_mode = false;
+        show_select = null;
+        document_mode = false;
     }
 
-    //var show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
+    //show_select = table_top ? table_top.getAttribute("spt_show_select") : true;
 
     let server = spt.table.get_server();
 
-    var group_elements = spt.table.get_group_elements();
+    let group_elements = spt.table.get_group_elements();
 
     if (!class_name) {
         class_name = 'tactic.ui.panel.TableLayoutWdg';
     }
 
-    var current_table = spt.table.get_table();
+    let current_table = spt.table.get_table();
     // must pass the current table id so that the row bears the class with the table id
     // there is no need to pass in variables that affects the drawing of the shelf here.
-    var kwargs = {
+    let kwargs = {
         temp: true,
         icon_generate_refresh: kw.icon_generate_refresh,
         table_id : current_table.getAttribute('id'),
@@ -7190,7 +7191,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
           'cbjs_action': function(widget_html) {
             //spt.behavior.replace_inner_html(hidden_row, widget_html);
 
-            var dummy = document.createElement("div");
+            let dummy = document.createElement("div");
             // behaviors are only process when in the actual dom
             //spt.behavior.replace_inner_html(dummy, widget_html);
             dummy.innerHTML = widget_html;
@@ -7204,9 +7205,9 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
 
-            var new_rows = dummy.getElements(".spt_table_row");
+            let new_rows = dummy.getElements(".spt_table_row");
             // the insert row is not included here any more
-            for (var i = 0; i < new_rows.length; i++) {
+            for (let i = 0; i < new_rows.length; i++) {
                 // remove the hidden row, if there is one
                 if (!rows[i]) continue;
 
@@ -7217,7 +7218,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
                 // now create new behaviors for new innerHTML under "el" element ...
-                var bvr_el_list = new_rows[i].getElements( ".SPT_BVR" );
+                let bvr_el_list = new_rows[i].getElements( ".SPT_BVR" );
                 spt.behavior._construct_behaviors( bvr_el_list );
 
                 // destroy the old row
@@ -7226,33 +7227,13 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
             }
 
-
-            var header_table = spt.table.get_header_table();
-            var header_row = header_table.getElement(".spt_table_header_row");
-            var headers = header_row.getElements(".spt_table_header");
-
-            //var row = spt.table.get_first_row();
-            //let rowsX = spt.table.get_all_rows();
-
-            new_rows.forEach( row => {
-
-                var cells = row.getElements(".spt_cell_edit");
-
-                // set the row widths to that of the header
-                for (var i = 0; i < cells.length; i++) {
-                    var width = headers[i].getStyle("width");
-                    var size = headers[i].getSize();
-                    cells[i].setStyle("width", size.x);
-                }
-
-            } )
-
+            //spt.table.expand_table();
 
 
             // for efficiency, we do not redraw the whole table to calculate the
             // bottom so just change the bg color
             if (kw['refresh_bottom']) {
-                var bottom_row = spt.table.get_bottom_row();
+                let bottom_row = spt.table.get_bottom_row();
                 if (bottom_row) {
                     // This color doesn't really fit color palette
                     //bottom_row.setStyle('background', '#E6CB81');
@@ -7261,7 +7242,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
 
             if (kw['on_complete']) {
-                var on_complete = kw['on_complete'];
+                let on_complete = kw['on_complete'];
                 on_complete();
             }
 
@@ -7657,11 +7638,12 @@ spt.table.collapse_group = function(group_row) {
         show = false;
     }
 
-   var sub_row = last_row.getNext();
 
-   var group_level = last_row.getAttribute("spt_group_level")
+    var sub_row = last_row.getNext();
 
-   if (group_level) {
+    var group_level = last_row.getAttribute("spt_group_level")
+
+    if (group_level) {
         group_level = parseInt(group_level);
 
     }
