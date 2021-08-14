@@ -731,14 +731,14 @@ class ProjectCreateWdg(BaseRefreshWdg):
         #text = TextInputWdg(title="project_title")
         info_page.add(text)
         text.add_style("width: 100%")
-        info_page.add(HtmlElement.br(3))
+        info_page.add(HtmlElement.br())
         span = DivWdg()
         info_page.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
         span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
         span.add_color("background", "background3")
         span.add(" The project title can be descriptive and contain spaces and special characters.")
-        info_page.add("<br/><br/><br/>")
+        info_page.add(HtmlElement.br(3))
         text.add_behavior( {
         'type': 'change',
         'cbjs_action': '''
@@ -791,8 +791,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         info_page.add(text)
         text.add_style("width: 100%")
         text.add_class("spt_project_code")
-        info_page.add(HtmlElement.br(4))
-
+        info_page.add(HtmlElement.br())
         span = DivWdg()
         info_page.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
@@ -803,7 +802,7 @@ class ProjectCreateWdg(BaseRefreshWdg):
         span.add("* Note: the project code must contain only alphanumeric characters [A-Z]/[0-9] and only an '_' as a separator")
         info_page.add(span)
 
-        info_page.add("<br/>"*2)
+        info_page.add(HtmlElement.br(3))
 
 
         projects = Project.get_all_projects()
@@ -965,10 +964,11 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
 
-        copy_div.add("<b>Copy From Template: &nbsp;&nbsp;</b>")
+        copy_div.add("<b>Copy From Template:</b>")
 
 
 
+        # look for template projects in the database
         search = Search("sthpw/project")
         search.add_filter("is_template", True)
         template_projects = search.get_sobjects()
@@ -983,8 +983,6 @@ class ProjectCreateWdg(BaseRefreshWdg):
             paths = []
         else:
             paths = os.listdir(template_dir);
-
-
             file_values = []
             file_labels = []
             for path in paths:
@@ -994,7 +992,6 @@ class ProjectCreateWdg(BaseRefreshWdg):
                     parts = path.split("-")
                     plugin_code = parts[0]
 
-                    # skip if there is a matching project in the database
                     #match_project = plugin_code.replace("_template", "")
                     
                     match_project = plugin_code
@@ -1017,8 +1014,27 @@ class ProjectCreateWdg(BaseRefreshWdg):
                 labels.extend(file_labels)
 
 
+        # default templates
+        default_dir = "%s/src/plugins/TACTIC" % Environment.get_install_dir()
+        paths = os.listdir(default_dir);
+
+        template_list = ['vfx', 'scrum']
+        for item in template_list:
+            value = '%s|%s'%( item, "%s/%s" % (default_dir, item))
+            values.append(value)
+            label = "%s <i>(built in)</i>" % item.title()
+            labels.append(label)
+
+        print("paths: ", paths)
+
+
+
+
+
         values.insert(0, "_empty")
         labels.insert(0, "- Empty Project -")
+
+        print("values: ", values)
 
         select = SelectWdg("project_source")
         copy_div.add(select)
@@ -1054,14 +1070,15 @@ class ProjectCreateWdg(BaseRefreshWdg):
 
 
 
-        copy_div.add(HtmlElement.br(3))
+        copy_div.add(HtmlElement.br())
         span = DivWdg()
         copy_div.add(span)
         span.add_style("padding: 20px 20px 20px 20px")
         span.add(IconWdg("INFO", "FAR_LIGHTBULB"))
         span.add_color("background", "background3")
-        span.add(" This will use the selected project template as a basis and copy all of the configuration elements.  Only template projects should be copied.")
-
+        span.add(" This will use the selected project template as a basis and copy all of the configuration elements.")
+        copy_div.add(HtmlElement.br())
+        copy_div.add(HtmlElement.br())
         #copy_div.add(HtmlElement.br(2))
         #span = DivWdg("This will create an empty project with no predefined configuration.")
         #copy_div.add(span)

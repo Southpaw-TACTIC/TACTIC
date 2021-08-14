@@ -748,9 +748,9 @@ spt.z_index.bring_forward = function( target )
     }
     if( ! target ) { return; }
 
-    var z_el = target;
-    var z_start_str = "" + z_el.getProperty("spt_z_start");
-    var z_start_num = parseInt( z_start_str );
+    let z_el = target;
+    let z_start_str = "" + z_el.getProperty("spt_z_start");
+    let z_start_num = parseInt( z_start_str );
 
     z_el.setStyle("z-index", z_start_num+99);
 
@@ -770,7 +770,7 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
         return null;
     }
 
-    var popup = null;
+    let popup = null;
 
     if( spt.get_typeof( popup_el_or_id ) == 'string' ) {
         popup = document.id(popup_el_or_id);
@@ -798,7 +798,7 @@ spt.popup._get_popup_from_popup_el_or_id = function( popup_el_or_id, fn_name, su
 spt.popup.open = function( popup_el_or_id, use_safe_position )
 {
 
-    var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
+    let popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     if( ! popup ) { return; }
     $(popup_el_or_id).modal("show");
 
@@ -829,7 +829,7 @@ spt.popup.close = function( popup_el_or_id , fade, close_fn)
 {
     
     
-    var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
+    let popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     popup = popup ? popup : spt.popup.get_popup(popup_el_or_id);
 
     if (!popup) return;
@@ -858,10 +858,10 @@ spt.popup.close = function( popup_el_or_id , fade, close_fn)
 
 spt.popup.toggle_display = function( popup_el_or_id, use_safe_position )
 {
-    var popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
+    let popup = spt.popup._get_popup_from_popup_el_or_id( popup_el_or_id );
     if( ! popup ) { return; }
 
-    var display_style = popup.getStyle("display");
+    let display_style = popup.getStyle("display");
     if( display_style == "none" ) {
         spt.popup.open( popup, use_safe_position );
     } else {
@@ -887,10 +887,10 @@ spt.popup.hide_all_aux_divs = function( popup_el_or_id, fade )
 
 spt.popup._position = function( popup, use_safe_position )
 {
-    var popup_drag = spt.z_index.get_z_el(popup);
+    let popup_drag = spt.z_index.get_z_el(popup);
 
-    var check_left = popup.getProperty('spt_last_scroll_left');
-    var check_top  = popup.getProperty('spt_last_scroll_top');
+    let check_left = popup.getProperty('spt_last_scroll_left');
+    let check_top  = popup.getProperty('spt_last_scroll_top');
 
     if( ! check_left ) {
         popup.setProperty('spt_last_scroll_left','0');
@@ -899,19 +899,19 @@ spt.popup._position = function( popup, use_safe_position )
         popup.setProperty('spt_last_scroll_top','0');
     }
 
-    var last_scroll_left = parseInt( popup.getProperty('spt_last_scroll_left') );
-    var last_scroll_top  = parseInt( popup.getProperty('spt_last_scroll_top') );
+    let last_scroll_left = parseInt( popup.getProperty('spt_last_scroll_left') );
+    let last_scroll_top  = parseInt( popup.getProperty('spt_last_scroll_top') );
 
-    var body = document.body;
+    let body = document.body;
 
-    var scroll_left = body.scrollLeft;
-    var scroll_top = body.scrollTop;
+    let scroll_left = body.scrollLeft;
+    let scroll_top = body.scrollTop;
 
-    var curr_left = parseInt( popup_drag.getStyle("left") );
-    var curr_top = parseInt( popup_drag.getStyle("top") );
+    let curr_left = parseInt( popup_drag.getStyle("left") );
+    let curr_top = parseInt( popup_drag.getStyle("top") );
 
-    var pos_left = 0;
-    var pos_top = 0;
+    let pos_left = 0;
+    let pos_top = 0;
 
     if( use_safe_position ) {
         pos_left = scroll_left + 50;
@@ -930,13 +930,6 @@ spt.popup._position = function( popup, use_safe_position )
         }
     }
 
-    /*
-    spt.js_log.debug( "curr_left = " + curr_left );
-    spt.js_log.debug( "curr_top = " + curr_top );
-
-    spt.js_log.debug( "pos_left = " + pos_left );
-    spt.js_log.debug( "pos_top = "  + pos_top );
-    */
 
     popup_drag.setStyle("left", pos_left);
     popup_drag.setStyle("top",  pos_top);
@@ -983,14 +976,39 @@ spt.popup.get_widget = function( evt, bvr )
     if (typeof(bvr.options) == "undefined" || bvr.options == null) {
         bvr.options = {};
     }
-    var options = bvr.options;
+    let options = bvr.options;
 
 
-    var title = "-No Title-";
+    let popup = null;
+
+
+    let title = "-No Title-";
     if( bvr.options.hasOwnProperty("title") ) {
         title = bvr.options.title;
     }
-    var class_name = null;
+
+
+    // replace the title
+    let popup_id = bvr.options.popup_id;
+    let display_title;
+    if (!title) {
+        display_title = "";
+        title = "__COMMON__";
+        if (!popup_id) {
+            popup_id = "__COMMON__";
+        }
+    }
+    else {
+        display_title = title;
+    }
+
+    // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
+    if (popup_id) {
+        popup = document.id(popup_id);
+    }
+
+
+    let class_name = null;
     if( bvr.options.hasOwnProperty("class_name") ) {
         class_name = bvr.options.class_name;
     } else {
@@ -1000,24 +1018,16 @@ spt.popup.get_widget = function( evt, bvr )
         return;
     }
 
-    var args = bvr.args;
-    var kwargs = bvr.kwargs;
+    let args = bvr.args;
+    let kwargs = bvr.kwargs;
 
-    // get the title
-    var width = options["width"];
-    var height = options["height"];
-    var resize = options["resize"];
-    var on_close = options["on_close"];
-    var allow_close = options["allow_close"];
-    var top_class = options["top_class"];
+    let width = options["width"];
+    let height = options["height"];
+    let resize = options["resize"];
+    let on_close = options["on_close"];
+    let allow_close = options["allow_close"];
+    let top_class = options["top_class"];
 
-    // If bvr has 'popup_id' then check if it already exists and use it (instead of cloning)
-    var popup = null;
-    var popup_id = null;
-    if( bvr.options.hasOwnProperty("popup_id") ) {
-        popup_id = bvr.options.popup_id;
-        popup = document.id(popup_id);
-    }
 
     // if load_once is true, just show the existing one
     if (popup && kwargs && kwargs['load_once']) {
@@ -1025,11 +1035,11 @@ spt.popup.get_widget = function( evt, bvr )
         return;
     }
     // Otherwise, we create a clone of the popup template ...
-    var popup_template = null;
+    let popup_template = null;
     if( ! popup ) {
         // get the common popup, clone it and fill it in
-        var popup_template = document.id("popup_template");
-        var popup = spt.behavior.clone(popup_template);
+        let popup_template = document.id("popup_template");
+        popup = spt.behavior.clone(popup_template);
 
         if( popup_id ) {
             popup.set("id", popup_id);
@@ -1039,7 +1049,7 @@ spt.popup.get_widget = function( evt, bvr )
 
         // If bvr has 'popup_parent_el' then put the popup as child to that ... otherwise, just add it to the
         // existing default popup container available to the page
-        var popup_parent = null;
+        let popup_parent = null;
         if( bvr.options.hasOwnProperty("popup_parent_id") ) {
             popup_parent = document.id(bvr.options.popup_parent_id);
         }
@@ -1054,8 +1064,8 @@ spt.popup.get_widget = function( evt, bvr )
 
     if (top_class) popup.addClass(top_class);
 
-    var close_wdg = popup.getElement('.spt_popup_close');
-    var min_wdg = popup.getElement('.spt_popup_min');
+    let close_wdg = popup.getElement('.spt_popup_close');
+    let min_wdg = popup.getElement('.spt_popup_min');
     if ([false, 'false'].contains(allow_close)) {
         spt.hide(close_wdg);
         spt.hide(min_wdg);
@@ -1067,7 +1077,7 @@ spt.popup.get_widget = function( evt, bvr )
     // display the popup clone, and bring it forward on top of other popups ...
     // but put it off screen first
     popup.setStyle("left", "-10000px");
-    var cbjs_action;
+    let cbjs_action;
     if (typeof on_close == "function") {
         cbjs_action = String(on_close) + "; on_close();";
     }
@@ -1078,16 +1088,16 @@ spt.popup.get_widget = function( evt, bvr )
     spt.popup.open( popup );
 
     // add the place holder
-    var content_wdg = popup.getElement(".spt_popup_content");
+    let content_wdg = popup.getElement(".spt_popup_content");
     spt.behavior.replace_inner_html( content_wdg, '<div style="font-size: 1.2em; margin: 20px; text-align: center">' +
                                 '<img src="/context/icons/common/indicator_snake.gif" border="0"> Loading ...</div>' );
 
 
     // get the content container
-    var width_wdg = popup.getElement(".spt_popup_width");
+    let width_wdg = popup.getElement(".spt_popup_width");
     if (width != null) {
         //width_wdg.setStyle("width", width);
-        var content = popup.getElement(".spt_popup_content");
+        let content = popup.getElement(".spt_popup_content");
         content.setStyle("width", width);
     }
     if (height != null) {
@@ -1096,26 +1106,22 @@ spt.popup.get_widget = function( evt, bvr )
     }
    
     // If specified, turn off ability to resize
-    var resize_icon = popup.getElement(".spt_popup_resize");
+    let resize_icon = popup.getElement(".spt_popup_resize");
     if (resize == "false" || resize == false) {
         resize_icon.setStyle("display", "none");
     }
-
-    // replace the title
-    if (title != null) {
-        var title_wdg = popup.getElement(".spt_popup_title");
-        spt.behavior.replace_inner_html( title_wdg, title );
-    }
+    let title_wdg = popup.getElement(".spt_popup_title");
+    spt.behavior.replace_inner_html( title_wdg, display_title );
 
 
     // change position of popup to an offset from mouse position if offset options are provided in the bvr
-    var pos = spt.mouse.get_abs_cusor_position(evt);
+    let pos = spt.mouse.get_abs_cusor_position(evt);
     if( bvr.options.hasOwnProperty("offset_x") ) {
-        var offset_x = bvr.options.offset_x;
+        let offset_x = bvr.options.offset_x;
         popup.setStyle('left', pos.x + offset_x);
     }
     if( bvr.options.hasOwnProperty("offset_y") ) {
-        var offset_y = bvr.options.offset_y;
+        let offset_y = bvr.options.offset_y;
         popup.setStyle('top', pos.y + offset_y);
     }
 
@@ -1125,15 +1131,15 @@ spt.popup.get_widget = function( evt, bvr )
     content_wdg.setAttribute("spt_kwargs", JSON.stringify(options));
 
 
-     var callback = function() {
+    var callback = function() {
 
         // place in the middle of the screen
-        var size = popup.getSize();
-        var body = document.body;
-        var win_size = document.id(window).getSize();
-        var offset = document.id(window);
-        var xpos = win_size.x / 2 - size.x / 2 + 0*body.scrollLeft;
-        var ypos = win_size.y / 2 - size.y / 2 + 0*body.scrollTop;
+        let size = popup.getSize();
+        let body = document.body;
+        let win_size = document.id(window).getSize();
+        let offset = document.id(window);
+        let xpos = win_size.x / 2 - size.x / 2 + 0*body.scrollLeft;
+        let ypos = win_size.y / 2 - size.y / 2 + 0*body.scrollTop;
         if (xpos < 0) {
             xpos = 0;
         }
@@ -1148,16 +1154,16 @@ spt.popup.get_widget = function( evt, bvr )
         spt.z_index.bring_forward( spt.z_index.get_z_el(popup) )
 
 
-        var content_size = content_wdg.getSize();
-        var window_size = document.id(window).getSize();
-        var max_height = window_size.y - 100;
+        let content_size = content_wdg.getSize();
+        let window_size = document.id(window).getSize();
+        let max_height = window_size.y - 100;
         content_wdg.setStyle("max-height", max_height);
         if (content_size.y > max_height) {
             content_wdg.setStyle("height", max_height);
         }
         content_wdg.setStyle("max-height", max_height);
 
-        var popup_body = content_wdg.getElement(".spt_popup_body");
+        let popup_body = content_wdg.getElement(".spt_popup_body");
         if (!popup_body) {
             content_wdg.setStyle("overflow-y", "auto");
         }
@@ -1167,7 +1173,7 @@ spt.popup.get_widget = function( evt, bvr )
 
     };
 
-    var widget_html = options.html;
+    let widget_html = options.html;
     if ( widget_html != null) {
         spt.behavior.replace_inner_html( content_wdg, widget_html );
         popup.setStyle("margin-left", 0);
@@ -1176,16 +1182,16 @@ spt.popup.get_widget = function( evt, bvr )
     }
 
     // load the content
-    var server = TacticServerStub.get();
-    var values = {};
+    let server = TacticServerStub.get();
+    let values = {};
     if (bvr.values) {
         values = bvr.values;
     }
-    var kwargs = {'args': args, 'values': values};
+    let content_kwargs = {'args': args, 'values': values};
 
 
     //the following code deals with a specified header/footer + body
-    var widget_html = server.get_widget(class_name, kwargs);
+    widget_html = server.get_widget(class_name, content_kwargs);
 
     spt.behavior.replace_inner_html( content_wdg, widget_html );
 

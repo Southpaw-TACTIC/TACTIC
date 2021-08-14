@@ -498,10 +498,13 @@ class Sql(Base):
         # pgdb connection code
         auth = None
         try:
-            import tzlocal_olson
-            #tz_name = datetime.datetime.now(tzlocal()).tzname()
-            # get olson timezone name as opposed to abv. tz name
-            tz_name = tzlocal_olson.get_localzone().zone
+            try:
+                import tzlocal_olson
+                #tz_name = datetime.datetime.now(tzlocal()).tzname()
+                # get olson timezone name as opposed to abv. tz name
+                tz_name = tzlocal_olson.get_localzone().zone
+            except:
+                tz_name = None
 
             if self.vendor == "PostgreSQL":
                 # psycopg connection code
@@ -516,8 +519,9 @@ class Sql(Base):
                     (self.host, self.port, self.database_name, self.sslmode, self.user, password_str)
                 self.conn = self.pgdb.connect(auth)
 
-                #TODO: check other db impl on timezone impl
-                self.do_update("SET timezone='%s'"%tz_name)
+                # set the timezone
+                if tz_name:
+                    self.do_update("SET timezone='%s'"%tz_name)
 
             elif self.vendor == "Sqlite":
 
@@ -3473,6 +3477,7 @@ class CreateTable(Base):
         if search_type:
             from .search import SearchType
             search_type_sobj = SearchType.get(search_type)
+
 
             project = Project.get_by_search_type(search_type)
             self.db_resource = project.get_project_db_resource()

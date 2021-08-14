@@ -967,6 +967,14 @@ TacticServerStub = function() {
         var handoff_dir;
 
         if (mode in {'copy':'', 'move':''}) {
+            /* This is an attempt to move the files to the handoff
+             * folder, however, it never worked as it was just copied
+             * from add_file.
+             * Keeping this around in case the applet is ever useful
+             * again.
+             */
+            throw("Mode 'copy' and 'move' not supported in add_group");
+            /*
             var applet = spt.Applet.get();
 
             handoff_dir = this.get_handoff_dir()
@@ -977,15 +985,16 @@ TacticServerStub = function() {
 
             // copy or move the file
             var basename = spt.path.get_basename(file);
-             
             if (mode == 'move') {
                 applet.move(file, handoff_dir + "/" + basename);
             }
             else if (mode == 'copy') {
                 applet.copy_file(file, handoff_dir + "/" + basename);
             }
+
             use_handoff_dir = true;
             mode = 'create';
+            */
         }
         else if (mode in {'manual':''}) {
             // files are already in handoff
@@ -1006,92 +1015,6 @@ TacticServerStub = function() {
         return this._delegate("add_group", arguments, kwargs )
     }
 
-
-
-
-
-    // DEPRECATED: use checkout_snapshot
-    /*
-    this.checkout = function(search_key, context, kwargs) {
-    
-        // get the files for this search_key, defaults to latest version and checkout to current directory
-        if (!kwargs) {
-            kwargs = {version: -1, file_type: 'main', to_dir: null, to_sandbox_dir: true, mode: 'download', __empty__:true};
-        }
-        else if (!kwargs.to_dir && kwargs.to_sandbox_dir==null) {
-            kwargs.to_sandbox_dir = true;
-        }
-
-     
-        if (kwargs.mode in {'download':'', 'copy':''} == false) {
-            throw("Mode '" + kwargs.mode + "' must be in [download, copy]");
-        }
-        // get the server paths and the client paths to copy
-        //var paths = this.get_all_paths_from_snapshot(search_key, {'mode': kwargs.mode});
-        //var sand_paths = this.get_all_paths_from_snapshot(search_key, {'mode':'sandbox', filename_mode:'source'});
-        var mode = kwargs.mode;
-        var to_sandbox_dir = kwargs.to_sandbox_dir;
-        var to_dir = kwargs.to_dir;
-
-        delete kwargs.mode;
-        delete kwargs.to_sandbox_dir;
-        delete kwargs.to_dir;
-        paths = this._delegate("checkout", arguments, kwargs); 
-
-        var client_lib_paths = paths['client_lib_paths'];
-        var sandbox_paths = paths['sandbox_paths'];
-        var web_paths = paths['web_paths'];
-        var to_paths = [];
-
-        var applet = spt.Applet.get();
-        var env = spt.Environment.get();
-        try {
-            for (var i=0; i < client_lib_paths.length; i++){
-                var client_lib_path = client_lib_paths[i];
-                if (to_sandbox_dir){
-                    var to_path = sandbox_paths[i];
-                    var filename = spt.path.get_basename(to_path);
-                }
-                else {
-                    var filename = spt.path.get_basename(client_lib_path);
-                    if (!to_dir)
-                        throw("If to_sandbox_dir is set to false, you have to provide a directory for to_dir");
-
-                    var to_path = to_dir + '/' + filename;
-                }
-                to_paths.push(to_path);
-
-                // copy the file from the repo
-                var to_dir = spt.path.get_dirname(to_path);
-                if (applet.exists(to_dir) == false)
-                    applet.makedirs(to_dir);
-
-                if (mode == 'copy') {
-                    if (applet.exists(client_lib_path)) {
-                        if (applet.is_dir(client_lib_path))
-                            applet.copytree(client_lib_path, to_path);
-                        else
-                            applet.copy_file(client_lib_path, to_path);
-                    }
-                    else {
-                        throw("Path [" + client_lib_path + "] does not exist");  
-                    }
-                }
-                else if (mode == 'download'){
-                    web_path = web_paths[i];
-                    applet.download_file(web_path, to_path);
-                }
-
-
-            }
-        }
-        catch(e) {
-           alert(spt.exception.handler(e));
-        }
-        return to_paths
-   
-    }
-    */
 
 
 
@@ -1962,14 +1885,6 @@ TacticServerStub = function() {
 
 
         var err_callback = function(e) {
-            // try handling the ERROMETHOD error
-            /*
-            if (e.contains("XERRORMETHOD")) {
-                //alert("ERRORMETHOD!!!!!");
-                //api.async_get_widget(class_name, api_kwargs, on_complete, on_error);
-                return;
-            }
-            */
             if (e == 0) {
                 e = 'Received an error (Error 0)';
                 var error = new Error();
@@ -1990,7 +1905,8 @@ TacticServerStub = function() {
                 on_error(e);
             }
             else {
-                spt.alert("async_get_widget: " + e);
+                console.log(e);
+                spt.alert("async_get_widget: " + e, { stack: e.stack });
             }
         };
         passed_args = [class_name, kwargs];

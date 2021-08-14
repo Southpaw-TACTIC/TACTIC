@@ -5,12 +5,12 @@ insert.set_value('code', """WIDGET_CONFIG00997""")
 insert.set_value('config', """<config>
 <vfx.shot.main>
 <html>
-<div class="card vfx_shot_list_top">
+<div>
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Shots</title>
       <search_type>vfx/shot</search_type>
-      <view>shot</view>
+      <element_names>preview,code,frames,plate,layers,task_edit,history,general_checkin,task_status_edit,notes</element_names>
       <use_last_search>false</use_last_search>
       <simple_search_view>shot_custom_filter</simple_search_view>
       <search_view>link_search:shot</search_view>

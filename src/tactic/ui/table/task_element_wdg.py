@@ -784,7 +784,6 @@ class TaskElementWdg(BaseTableElementWdg):
 
     def handle_layout_behaviors(self, layout):
 
-
         # add a style for this layout
         styles = HtmlElement.style()
         layout.add(styles)
@@ -803,6 +802,15 @@ class TaskElementWdg(BaseTableElementWdg):
         }
 
 
+        .spt_layout .spt_all_tasks_top .spt_status_select {
+            height: 18px;
+            margin: 2px 0px 2px 5px;
+
+            border: none;
+            box-shadow: none;
+            background: transparent;
+        }
+
         ''')
 
 
@@ -811,7 +819,13 @@ class TaskElementWdg(BaseTableElementWdg):
         layout.add_behavior( {
         "type": "load",
         "cbjs_action": '''
-spt.task_element = {}
+
+if (!spt.task_element) {
+    spt.task_element = {};
+}
+spt.Environment.get().add_library("spt_task_element");
+
+
 
 bvr.src_el.addEvent('change:relay(.spt_task_status_select)',
     function(evt, src_el) {
@@ -927,12 +941,30 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         "type": "change",
         'bvr_match_class': "spt_task_element_assigned",
         "cbjs_action": '''
-        var all_top_el = bvr.src_el.getParent(".spt_all_task_top");
-        var values = spt.api.Utility.get_input_values(all_top_el,'.spt_task_element_assigned', false);
-        var value_wdg = all_top_el.getElement(".spt_data");
-        value_wdg.value = JSON.stringify(values);
-        spt.dg_table.edit.widget = all_top_el;
-        spt.dg_table.inline_edit_cell_cbk( value_wdg, {} );
+
+        let value = bvr.src_el.value;
+        //bvr.src_el.style.background = status_colors[value];
+        let context = bvr.src_el.getAttribute("spt_context");
+        let layout = bvr.src_el.getParent(".spt_layout");
+        spt.table.set_layout(layout);
+        let rows = spt.table.get_selected_rows();
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            let elements = row.getElements(".spt_task_assigned_select");
+            for (let j = 0; j < elements.length; j++) {
+                let el = elements[j];
+                if (el == bvr.src_el) {
+                    continue;
+                }
+
+                let el_context = el.getAttribute("spt_context");
+                if (el_context == context) {
+                    el.value = value;
+                    spt.task_element.status_change_cbk(evt, {src_el: el});
+                }
+            }
+        }
+
         '''
         } )
 
@@ -940,6 +972,96 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             self.menu.set_activator_over(layout, "spt_task_element_assigned")
             #self.menu.set_activator_out(layout, "spt_all_task_top")
             self.menu.set_activator_out(layout, "spt_task_element_assigned")
+
+
+
+        # handle the status selector
+        layout.add_relay_behavior( {
+            'type': 'change',
+            'bvr_match_class': 'spt_status_select',
+            'colors': self.status_colors,
+            'cbjs_action': '''
+
+            let task_pipeline_code = bvr.src_el.getAttribute("spt_task_pipeline_code");
+            let status_colors = bvr.colors[task_pipeline_code];
+            if (!status_colors) {
+                status_colors = bvr.colors["task"];
+            }
+
+            let value = bvr.src_el.value;
+            bvr.src_el.style.background = status_colors[value];
+            let context = bvr.src_el.getAttribute("spt_context");
+            let layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+            let rows = spt.table.get_selected_rows();
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let elements = row.getElements(".spt_task_status_select");
+                for (let j = 0; j < elements.length; j++) {
+                    let el = elements[j];
+                    if (el == bvr.src_el) {
+                        continue;
+                    }
+
+                    let el_context = el.getAttribute("spt_context");
+                    if (el_context == context) {
+                        el.value = value;
+                        el.style.background = status_colors[value];
+                        spt.task_element.status_change_cbk(evt, {src_el: el});
+                    }
+                }
+            }
+
+            '''
+        } )
+
+
+        jsx = '''
+
+class StatusWdg extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.task = props.task;
+  };
+
+  render() {
+    return (
+    <div style={{display: "flex"}}>
+    <select className="form-control" style={{textAlignLast: "center", background: "transparent"}}>
+      <option value={this.task.status}>{this.task.status}</option>
+      <option value="cow">Cow</option>
+      <option value="pig">Pig</option>
+      <option value="horse">Horse</option>
+    </select>
+    </div>
+    )
+  }
+}
+
+spt.task_element.StatusWdg = StatusWdg;
+
+        '''
+
+
+        from tactic.ui.tools import JSXTranspile
+        js = JSXTranspile.cache_jsx(__file__, jsx)
+        layout.add_behavior( {
+            'type': 'load',
+            'cbjs_action': js
+        } )
+
+
+
+        # add some basic styles
+        style_div = HtmlElement("style")
+        layout.add(style_div)
+        style_div.add('''
+
+        ''')
+
+
 
 
 
@@ -1439,7 +1561,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         self.tasks = self.get_tasks(sobject)
 
         div = DivWdg()
-        div.add_style("margin: -4px auto")
+        if self.layout in ['vertical']:
+            div.add_style("margin: -4px 0px 4px 0px")
 
         # initialize tool tips only if show track is true
         if self.show_track == 'true' and not self._startup_tips:
@@ -1548,13 +1671,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
                 last_process_context = process_context
 
 
+            #table = Table(css='minimal', mode="div")
             table = Table(css='minimal')
-            table.add_style("border-width: 2px")
-            table.add_style('border-collapse: collapse')
-            if self.layout in ['panel']:
-                table.add_style("color", "color")
-            else:
-                table.add_style("color: #000")
             table.add_row()
 
             project_code = Project.get_project_code()
@@ -1854,8 +1972,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         panel_width = int(width) + 15
         div.add_style('width', '%spx'%panel_width)
         div.add_class("spt_task_top")
-        #div.add_style("float: left")
-        #div.add_style("white-space: nowrap")
 
 
 
@@ -2031,7 +2147,6 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             progress_div.add_style("width: 70px")
             progress_div.add_style("text-align: center")
 
-            #progress_div.add("<div style='margin-top: -10px'>%s</div>" % display_status)
 
 
             return div
@@ -2050,14 +2165,10 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             search.add_filter("process", process)
             process_sobj = search.get_sobject()
             subpipeline_code = process_sobj.get("subpipeline_code")
-            #subpipeline = Pipeline.get_by_code(subpipeline_code)
-            #processes = subpipeline.get_process_names()
-            #num_processes = len(processes)
 
             from tactic.ui.widget import SwapDisplayWdg
             SwapDisplayWdg.handle_top(hierarchy_div)
 
-            #title = "<b>%s (%s)</b>" % (process, num_processes)
             title = "<b>%s</b>" % (process)
             swap = SwapDisplayWdg(title=title)
             hierarchy_div.add(swap)
@@ -2103,14 +2214,15 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
 
-        # make it into a table
-        table = Table()
-        if self.layout in ['panel']:
-            table.add_style("color", "color")
+        div.add_style("display: flex")
+        if self.layout == "panel":
+            div.add_style("flex-direction: column")
         else:
-            table.add_style("color: #000")
-        div.add(table)
-        table.add_row()
+            div.add_style("flex-direction: row")
+
+        div.add_style("color", "color")
+
+
 
         if self.show_border != 'none' :
             if self.show_border == 'one-sided' and not last_one:
@@ -2137,6 +2249,8 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         task_pipeline_code = 'task'
         if task.get_value('pipeline_code'):
             task_pipeline_code = task.get_value('pipeline_code')
+
+
         status_colors = self.status_colors.get(task_pipeline_code)
         bgColor = ''
         if not status_colors:
@@ -2158,19 +2272,12 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         elif self.bg_color_mode == 'process':
             div.add_style("background-color: %s" % process_color)
 
-        #div.add_style("opacity: 0.75")
-
 
 
         
         if self.show_labels != 'false':
             context_div = DivWdg()
-            if self.layout in ['horizontal',  'vertical']:
-                #context_div.add_style("float: left")
-                #context_div.add_style("width: 75px")
-                table.add_cell(context_div)
-            else:
-                div.add(context_div)
+            div.add(context_div)
 
             context_div.add_style("font-size: %spx" % self.font_size)
             proc = task.get_value("process")
@@ -2202,16 +2309,19 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             process_div.add_style("box-sizing: border-box")
 
             if self.layout in ['horizontal', 'vertical']:
-                #process_div.add_style("float: left")
                 # if the process is too long, it will cut off cleanly and
                 # not bleed
                 process_div.add_style("margin-right: 5px")
-                td = table.add_cell(process_div)
+                div.add(process_div)
+
+
                 if self.layout == 'vertical':
-                    td.add_style("width: %spx"%self.LAYOUT_WIDTH)
+                    process_div.add_style("width: %spx"%self.LAYOUT_WIDTH)
                     process_div.add_style("max-width: %spx"%self.LAYOUT_WIDTH)
+                    process_div.add_style("padding: 5px 0px 0px 5px")
+                    process_div.add_style("margin-left: -5px")
                 else:
-                    td.add_style("width: 75px")
+                    process_div.add_style("width: 75px")
                     process_div.add_style("max-width: 75px")
             else:
                 div.add(process_div)
@@ -2220,19 +2330,22 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             process_div.add_style("font-size: %spx" % self.font_size)
             if process_color:
                 process_div.add_style("background-color: %s" %process_color)
-            process_div.add(process)
+
+
+            process_div.add(process.upper())
+            process_div.add_style("background-color: rgba(0,0,0,0.3)")
      
 
 
         if self.show_context != 'false':
             context_div = DivWdg()
+            div.add(context_div)
+
             if self.layout in ['horizontal', 'vertical']:
-                #context_div.add_style("float: left")
                 context_div.add_style("width: 75px")
                 context_div.add_style("margin-left: 5px")
-                table.add_cell(context_div)
-            else:
-                div.add(context_div)
+
+
 
             #context_div.add_style("font-weight: bold")
             context_div.add_style("font-size: %spx" % self.font_size)
@@ -2245,21 +2358,24 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             context_div.add(context)
 
 
+        #
+        # Dates
+        #
         if self.show_dates != 'false':
             date_div = DivWdg()
+            div.add(date_div)
+
             date_div.add_style("opacity: 0.5")
             date_div.add_style("margin: 2px")
 
             if self.layout in ['horizontal', 'vertical']:
-                #date_div.add_style("float: left")
-                td = table.add_cell(date_div)
                 
                 if self.layout == 'vertical':
-                    td.add_style("width: %spx"%self.LAYOUT_WIDTH)
+                    date_div.add_style("width: %spx"%self.LAYOUT_WIDTH)
                 else:
-                    td.add_style("width: 75px")
-            else:
-                div.add(date_div)
+                    date_div.add_style("width: 75px")
+
+
 
             date_div.add_style("font-size: %spx" % (self.font_size-2))
             start_date = task.get_value("bid_start_date")
@@ -2280,373 +2396,77 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
             else:
                 date_div.add("%s - %s" % (start_date, end_date) )
 
+
+        
+        #
+        # Status
+        #
+
+
+
+
         # follow the proper access rules defined for task
         if self.show_status != 'false':
-            if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
-                status_div = DivWdg()
-                if self.layout in ['horizontal', 'vertical']:
-                    #status_div.add_style("float: left")
-                    td = table.add_cell(status_div)
-                    td.add_style("width: 75px")
-                else:
-                    # don't need to set width here so it covers the whole status
-                    div.add(status_div)
 
-                if not status:
-                    status = "N/A"
-
-                status_div.add_style("font-size: %spx" % (self.font_size))
-                status_div.add_style("font-weight: bold")
-                
-                if bgColor:
-                    status_div.add_style("background-color: %s" %bgColor)
-                status_div.add(status)
-             
-            elif self.permission['status']['is_editable']:
-                task_pipeline_code = task.get_value("pipeline_code")
-                if not pipeline_code:
-                    task_pipeline_code = 'task'
-                task_pipeline = Pipeline.get_by_code(task_pipeline_code)
-                if not task_pipeline:
-                    task_pipeline = Pipeline.get_by_code("task")
-                task_statuses = task_pipeline.get_process_names()
-               
-                filtered_statuses = [x for x in task_statuses if x in self.allowed_statuses]
-
-                context = task.get_value("context")
-                search_key = task.get_search_key()
-                task_id = task.get_id()
-
-                if task.is_insert():
-                    process = task.get_value("process")
-                    name = 'status|NEW|%s' % process
-                else:
-                    name = 'status|EDIT|%s' % task.get_id()
-
-                select = SelectWdg(name)
-                #select = SelectWdg('status_%s'%task_id)
-                select.add_empty_option('-- Status --')
-                select.add_attr("spt_context", context)
-                select.add_style("height: 18px")
-                select.add_style("margin: 2px 0px 2px 5px")
-
-                select.add_style("border: none")
-                select.add_style("box-shadow: none")
-                select.add_style("background: transparent")
+            status_div = self.get_status_wdg(task, node_type, pipeline_code, status_colors, bgColor )
+            div.add(status_div)
 
 
-                if node_type in ['auto', 'condition']:
-                    select.add_attr("readonly","true")
+        #
+        # Assigned
+        #
 
-                # TODO: while convenient, this is extremely heavy
-                select.add_behavior( {
-                    'type': 'change',
-                    'color': status_colors,
-                    'cbjs_action': '''
-                    var status_colors = bvr.color;
-                    var value = bvr.src_el.value;
-                    bvr.src_el.style.background = status_colors[value];
-                    var context = bvr.src_el.getAttribute("spt_context");
-                    var layout = bvr.src_el.getParent(".spt_layout");
-                    spt.table.set_layout(layout);
-                    var rows = spt.table.get_selected_rows();
-                    for (var i = 0; i < rows.length; i++) {
-                        var row = rows[i];
-                        var elements = row.getElements(".spt_task_status_select");
-                        for (var j = 0; j < elements.length; j++) {
-                            var el = elements[j];
-                            if (el == bvr.src_el) {
-                                continue;
-                            }
-
-                            var el_context = el.getAttribute("spt_context");
-                            if (el_context == context) {
-                                el.value = value;
-                                el.style.background = status_colors[value];
-                                spt.task_element.status_change_cbk(evt, {src_el: el});
-                            }
-                        }
-                    }
-
-                    '''
-                } )
-
-
-
-                select.add_class("spt_task_status_select")
-                if bgColor:
-                    select.add_style("background: %s" %bgColor)
-
-
-                if self.layout in ['horizontal', 'vertical']:
-                    #select.add_style("float: left")
-                    select.add_style("width: %spx" %self.LAYOUT_WIDTH)
-                    select.add_style("margin: 2px 0px 2px 0px")
-                    td = table.add_cell(select)
-                    if self.layout == 'vertical':
-                        select.add_style("width: %spx" %self.LAYOUT_WIDTH)
-                    else:
-                        select.add_style("width: 75px")
-
-                    #td.add_style("width: 75px")
-
-                else:
-                    select.add_style("width", self.width)
-                    div.add(select)
-                if status and status not in filtered_statuses:
-                    filtered_statuses.append(status)
-                select.set_option("values", filtered_statuses)
-                select.set_value(status)
-
-                if task.is_insert():
-                    parent_sk =  task.get_parent_search_key()
-                    stype = SearchKey.extract_search_type(parent_sk)
-                    update = {
-                        "search_key": parent_sk,
-                        "expression": "@GET(sthpw/task['process','%s'].id)" % process,
-                        "cbjs_action": ''' var el = bvr.src_el;
-                                            var id = bvr.value;
-                                            var s = TacticServerStub.get();
-                                            var status = s.eval("@GET(sthpw/task['id','" + id + "'].status)", {single:true});                                                                              el.value = status;
-                                            var cur_name = el.getAttribute('name');
-                                            // update the select name
-                                            if (/NEW/.test(cur_name)) {
-                                                var parts = cur_name.split('|');
-                                                var new_name = parts[0] + '|EDIT|' + id;
-                                                el.setAttribute('name', new_name);
-                                            }
-
-                                        '''
-                                            
-
-                    }
-                else:
-                    update = {
-                        "search_key": task.get_search_key(),
-                        "column": "status",
-                    }
-
-                update['interval'] = '2'
-                update['cbjs_postaction'] = '''
-                        var element = bvr.src_el;
-                        if ("createEvent" in document) {
-                            var evt = document.createEvent("HTMLEvents");
-                            evt.initEvent("change", false, true);
-                            element.dispatchEvent(evt);
-                        }
-                        else {
-                            element.fireEvent("onchange");
-                        }
-                        var top = element.getParent(".spt_task_top");
-
-                        top.getParent().setStyle("opacity", 1.0);
-
-                        '''
-                select.add_update(update)
-
-      
-        assigned_div = None
         if self.show_assigned != 'false' and self.permission['assigned']['is_viewable'] :
 
-            assigned_div = DivWdg()
-            if self.layout in ['horizontal', 'vertical']:
-                table.add_cell(assigned_div)
-            else:
-                div.add(assigned_div)
-
-
-            for subtask in tasks:
-                assigned = subtask.get_value("assigned")
-                if node_type == "auto":
-                    assigned_div.add("Automated")
-                    assigned_div.add_style("padding: 8px")
-
-
-                if node_type != "auto" and self.edit_assigned == 'true' and self.permission['assigned']['is_editable']:
-                    select_div = DivWdg()
-                    assigned_div.add(select_div)
-
-                    if task.is_insert():
-                        name = 'assigned|NEW|%s' % process
-                    else:
-                        name = 'assigned|EDIT|%s' % task.get_id()
-                    select = SelectWdg(name)
-                    select.add_class("spt_task_assigned_select")
-                    select_div.add(select)
-                    # just use the same class name as the status select for simplicity
-                    select.add_style("height: 18px")
-                    select.add_style("padding: 0px")
-                    select.add_style("margin: 2px 0px 2px 5px")
-                    select.add_style("background: transparent")
-
-
-                    select.add_style("border: none")
-                    select.add_style("box-shadow: none")
+            assigned_div = self.get_assigned_wdg(task, tasks, node_type, pipeline_code, status_colors)
+            div.add(assigned_div)
 
 
 
-                    key = "%s|%s" % (pipeline_code, process)
-                    if self.assigned_login_groups.get(key):
-                        assignee = self.assigned_login_groups.get(key)
-                        assignee_labels = []
-                        for a in assignee:
-                            label = self.assigned_login_groups_labels.get(a) or a
-                            assignee_labels.append(label)
+        #
+        # Extra buttons that do stuff (like popup the edit widget for a task
+        #
 
-                        if assigned and assigned not in assignee:
-                            assignee.append(assigned)
-                            label = self.assigned_login_groups_labels.get(assigned) or assigned
-                            assignee_labels.append(label)
+        if self.show_task_edit != 'false' or self.show_track =="true":
+            fdsdgfsdfg
 
-                    else:
-                        assignee = self.assignee
-                        assignee_labels = self.assignee_labels
+            div.add_behavior( {
+                'type': 'mouseenter',
+                'cbjs_action': '''
+                var els = bvr.src_el.getElements(".spt_process_buttons");
+                for (var i = 0; i < els.length; i++) {
+                    els.setStyle("display", "");
+                }
+                '''
+            } )
 
-                    select.add_class('spt_task_assigned_select')
-                    select.add_attr("spt_context", context)
-                    select.add_empty_option('-- Select a User --')
-                    select.set_option('values', assignee) 
-                    select.set_option('labels', assignee_labels) 
-                    select.set_value(assigned)
-                    select.add_class("spt_task_element_assigned")
-                    if self.layout == 'vertical':
-                        select.add_style("width", '%spx'%self.LAYOUT_WIDTH)
-                    else:
-                        select.add_style("width", self.width)
+            div.add_behavior( {
+                'type': 'mouseleave',
+                'cbjs_action': '''
+                var els = bvr.src_el.getElements(".spt_process_buttons");
+                for (var i = 0; i < els.length; i++) {
+                    els.setStyle("display", "none");
+                }
+                '''
+            } )
 
-                    if task.is_insert():
-                        parent_sk =  task.get_parent_search_key()
-                        stype = SearchKey.extract_search_type(parent_sk)
-                        update = {
-                            "search_key": parent_sk,
-                            "expression": "@GET(sthpw/task['process','%s'].id)" % process,
-                            "cbjs_action": ''' var el = bvr.src_el;
-                                            var id = bvr.value;
-                                            var s = TacticServerStub.get();
-                                            var assigned = s.eval("@GET(sthpw/task['id','" + id + "'].assigned)", {single:true}); 
-                                            el.value = assigned;
-                                            var cur_name = el.getAttribute('name');
-                                            // update the select name
-                                            if (/NEW/.test(cur_name)) {
-                                                var parts = cur_name.split('|');
-                                                var new_name = parts[0] + '|EDIT|' + id;
-                                                el.setAttribute('name', new_name);
-                                            }
 
-                                           '''
+            button_div = DivWdg()
+            div.add(button_div)
 
-                                                                    
-                        }
-                    else:
-                        update = {
-                            "search_key": task.get_search_key(),
-                            "column": "assigned",
-                        }
-                    update['interval'] = '2'
-
-                    update['cbjs_postaction'] = '''
-                            var element = bvr.src_el;
-                            if ("createEvent" in document) {
-                                var evt = document.createEvent("HTMLEvents");
-                                evt.initEvent("change", false, true);
-                                element.dispatchEvent(evt);
-                            }
-                            else {
-                                element.fireEvent("onchange");
-                            }
-                            var top = bvr.src_el.getParent(".spt_task_top");
-                            top.getParent().setStyle("opacity", 1.0);
-
-                            '''
-                    select.add_update(update)
-
-                    # TODO: while convenient, this is extremely heavy
-                    select.add_behavior( {
-                        'type': 'change',
-                        'color': status_colors,
-                        'cbjs_action': '''
-                        var status_colors = bvr.color;
-                        var value = bvr.src_el.value;
-                        bvr.src_el.style.background = status_colors[value];
-                        var context = bvr.src_el.getAttribute("spt_context");
-                        var layout = bvr.src_el.getParent(".spt_layout");
-                        spt.table.set_layout(layout);
-                        var rows = spt.table.get_selected_rows();
-                        for (var i = 0; i < rows.length; i++) {
-                            var row = rows[i];
-                            var elements = row.getElements(".spt_task_assigned_select");
-                            for (var j = 0; j < elements.length; j++) {
-                                var el = elements[j];
-                                if (el == bvr.src_el) {
-                                    continue;
-                                }
-
-                                var el_context = el.getAttribute("spt_context");
-                                if (el_context == context) {
-                                    el.value = value;
-                                    spt.task_element.status_change_cbk(evt, {src_el: el});
-                                }
-                            }
-                        }
-    
-                        '''
-                    } )
-
-                else:
-                    
-                    assigned_label = assigned
-                    if self.assigned_label:
-                        assigned_label = self.assignee_dict.get(assigned)
-                    if not assigned:
-                        assigned = HtmlElement.i("Unassigned")
-                        assigned.add_style("opacity: 0.5")
-                        assigned_label = assigned
-                    assigned_div.add(assigned_label)
-                    assigned_div.add("<br/>")
+            button_div.add_style("display: none")
+            button_div.add_class("spt_process_buttons")
+            #button_div.add_border()
+            button_table = Table()
+            button_div.add(button_table)
+            button_table.add_row()
 
 
 
-        div.add_behavior( {
-            'type': 'mouseenter',
-            'cbjs_action': '''
-            var els = bvr.src_el.getElements(".spt_process_buttons");
-            for (var i = 0; i < els.length; i++) {
-                els.setStyle("display", "");
-            }
-            '''
-        } )
-
-        div.add_behavior( {
-            'type': 'mouseleave',
-            'cbjs_action': '''
-            var els = bvr.src_el.getElements(".spt_process_buttons");
-            for (var i = 0; i < els.length; i++) {
-                els.setStyle("display", "none");
-            }
-            '''
-        } )
-
-
-
-        button_div = DivWdg()
-        button_div.add_style("display: none")
-        button_div.add_class("spt_process_buttons")
-        #button_div.add_border()
-        button_table = Table()
-        button_div.add(button_table)
-        button_table.add_row()
-
-
-
-        #button_table.add_style("float: right")
         if self.show_task_edit != 'false' or self.show_track == 'true':
-            #div.add(button_div)
 
             if self.layout in ['horizontal', 'vertical']:
-                td = table.add_cell(button_div)
-                td.add_style("width: 70px")
-            else:
-                div.add(button_div)
+                button_div.add_style("width: 70px")
 
 
             button_div.add_style("padding: 5px 0px")
@@ -2775,12 +2595,11 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         show_bid = self.kwargs.get("show_bid")
         if show_bid in [True, 'true']:
             bid_div = DivWdg()
+            div.add(bid_div)
+
             bid_div.add_style("font-size: %spx" % (self.font_size-1))
             bid_div.add_color('color','color')
-            if self.layout in ['horizontal', 'vertical']:
-                table.add_cell(bid_div)
-            else:
-                div.add(bid_div)
+
 
 
             for subtask in tasks:
@@ -2840,6 +2659,324 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
 
 
         return div
+
+
+
+
+
+    def get_react_status_wdg(self, task):
+        '''TEST'''
+
+        status_div = DivWdg()
+
+        status_div.add_behavior( {
+            'type': 'load',
+            'props': {
+                "task": task.get_sobject_dict()
+            },
+            'cbjs_action': '''
+
+            function react(top, class_ref, props) {
+                let el = React.createElement(class_ref, props);
+                let react = ReactDOM.render(el, top);
+                top.react = react;
+                top.addClass("spt_react");
+                return el;
+            }
+            react(bvr.src_el, spt.task_element.StatusWdg, bvr.props);
+            '''
+ 
+        } )
+
+        return status_div
+
+
+
+
+    def get_status_wdg(self, task, node_type, pipeline_code, status_colors, bgColor):
+
+        status = task.get("status")
+
+        status_div = DivWdg()
+
+        # TEST React
+        #status_div.add( self.get_react_status_wdg(task) )
+
+
+        if (not self.edit_status or not self.permission['status']['is_editable'] ) and self.permission['status']['is_viewable']:
+
+            # if not permitted to edit
+
+            if self.layout in ['horizontal', 'vertical']:
+                status_div.add_style("width: 75px")
+
+
+            if not status:
+                status = "N/A"
+
+            status_div.add_style("font-size: %spx" % (self.font_size))
+            status_div.add_style("font-weight: bold")
+            
+            if bgColor:
+                status_div.add_style("background-color: %s" %bgColor)
+            status_div.add(status)
+         
+        elif self.permission['status']['is_editable']:
+
+            task_pipeline_code = task.get_value("pipeline_code")
+            if not pipeline_code:
+                task_pipeline_code = 'task'
+            task_pipeline = Pipeline.get_by_code(task_pipeline_code)
+            if not task_pipeline:
+                task_pipeline = Pipeline.get_by_code("task")
+            task_statuses = task_pipeline.get_process_names()
+           
+            filtered_statuses = [x for x in task_statuses if x in self.allowed_statuses]
+
+            context = task.get_value("context")
+            search_key = task.get_search_key()
+            task_id = task.get_id()
+
+            if task.is_insert():
+                process = task.get_value("process")
+                name = 'status|NEW|%s' % process
+            else:
+                name = 'status|EDIT|%s' % task.get_id()
+
+            select = SelectWdg(name, align="center")
+            select.add_class("spt_status_select")
+
+            task_pipeline_code = 'task'
+            if task.get_value('pipeline_code'):
+                task_pipeline_code = task.get_value('pipeline_code')
+            select.add_attr("spt_task_pipeline_code", task_pipeline_code)
+
+
+            select.add_empty_option('-- Status --')
+            select.add_attr("spt_context", context)
+            #select.add_style("height: 18px")
+            #select.add_style("margin: 2px 0px 2px 5px")
+            #select.add_style("border: none")
+            #select.add_style("box-shadow: none")
+            #select.add_style("background: transparent")
+
+
+            if node_type in ['auto', 'condition']:
+                select.add_attr("readonly","true")
+
+
+            status_div.add(select)
+
+            select.add_class("spt_task_status_select")
+            if bgColor:
+                select.add_style("background: %s" %bgColor)
+
+
+            if self.layout in ['horizontal', 'vertical']:
+                select.add_style("width: %spx" %self.LAYOUT_WIDTH)
+                select.add_style("margin: 2px 0px 2px 0px")
+                if self.layout == 'vertical':
+                    select.add_style("width: %spx" %self.LAYOUT_WIDTH)
+                else:
+                    select.add_style("width: 75px")
+
+            else:
+                select.add_style("width", self.width)
+
+
+            if status and status not in filtered_statuses:
+                filtered_statuses.append(status)
+            select.set_option("values", filtered_statuses)
+            select.set_value(status)
+
+            if task.is_insert():
+                parent_sk =  task.get_parent_search_key()
+                stype = SearchKey.extract_search_type(parent_sk)
+                update = {
+                    "search_key": parent_sk,
+                    "expression": "@GET(sthpw/task['process','%s'].id)" % process,
+                    "cbjs_action": ''' var el = bvr.src_el;
+                                        var id = bvr.value;
+                                        var s = TacticServerStub.get();
+                                        var status = s.eval("@GET(sthpw/task['id','" + id + "'].status)", {single:true});                                                                              el.value = status;
+                                        var cur_name = el.getAttribute('name');
+                                        // update the select name
+                                        if (/NEW/.test(cur_name)) {
+                                            var parts = cur_name.split('|');
+                                            var new_name = parts[0] + '|EDIT|' + id;
+                                            el.setAttribute('name', new_name);
+                                        }
+
+                                    '''
+                                        
+
+                }
+            else:
+                update = {
+                    "search_key": task.get_search_key(),
+                    "column": "status",
+                }
+
+            update['interval'] = '2'
+            update['cbjs_postaction'] = '''
+                    var element = bvr.src_el;
+                    if ("createEvent" in document) {
+                        var evt = document.createEvent("HTMLEvents");
+                        evt.initEvent("change", false, true);
+                        element.dispatchEvent(evt);
+                    }
+                    else {
+                        element.fireEvent("onchange");
+                    }
+                    var top = element.getParent(".spt_task_top");
+
+                    top.getParent().setStyle("opacity", 1.0);
+
+                    '''
+            select.add_update(update)
+
+
+        return status_div
+
+
+
+    def get_assigned_wdg(self, task, tasks, node_type, pipeline_code, status_colors):
+
+        #
+        # Assigned
+        #
+
+        assigned_div = DivWdg()
+
+        context = task.get("context")
+        process = task.get("process")
+
+
+        for subtask in tasks:
+            assigned = subtask.get_value("assigned")
+            if node_type == "auto":
+                assigned_div.add("Automated")
+                assigned_div.add_style("padding: 8px")
+
+
+            if node_type != "auto" and self.edit_assigned == 'true' and self.permission['assigned']['is_editable']:
+                select_div = DivWdg()
+                assigned_div.add(select_div)
+
+                if task.is_insert():
+                    name = 'assigned|NEW|%s' % process
+                else:
+                    name = 'assigned|EDIT|%s' % task.get_id()
+                select = SelectWdg(name, align="center")
+                select.add_class("spt_task_assigned_select")
+                select_div.add(select)
+                # just use the same class name as the status select for simplicity
+                select.add_style("height: 18px")
+                select.add_style("padding: 0px")
+                select.add_style("margin: 2px 0px 2px 5px")
+                select.add_style("background: transparent")
+
+
+                select.add_style("border: none")
+                select.add_style("box-shadow: none")
+
+
+
+                key = "%s|%s" % (pipeline_code, process)
+                if self.assigned_login_groups.get(key):
+                    assignee = self.assigned_login_groups.get(key)
+                    assignee_labels = []
+                    for a in assignee:
+                        label = self.assigned_login_groups_labels.get(a) or a
+                        assignee_labels.append(label)
+
+                    if assigned and assigned not in assignee:
+                        assignee.append(assigned)
+                        label = self.assigned_login_groups_labels.get(assigned) or assigned
+                        assignee_labels.append(label)
+
+                else:
+                    assignee = self.assignee
+                    assignee_labels = self.assignee_labels
+
+                select.add_class('spt_task_assigned_select')
+                select.add_attr("spt_context", context)
+                select.add_empty_option('-- Select a User --')
+                select.set_option('values', assignee) 
+                select.set_option('labels', assignee_labels) 
+                select.set_value(assigned)
+                select.add_class("spt_task_element_assigned")
+                if self.layout == 'vertical':
+                    select.add_style("width", '%spx'%self.LAYOUT_WIDTH)
+                else:
+                    select.add_style("width", self.width)
+
+                if task.is_insert():
+                    parent_sk =  task.get_parent_search_key()
+                    stype = SearchKey.extract_search_type(parent_sk)
+                    update = {
+                        "search_key": parent_sk,
+                        "expression": "@GET(sthpw/task['process','%s'].id)" % process,
+                        "cbjs_action": '''
+                            var el = bvr.src_el;
+                            var id = bvr.value;
+                            var s = TacticServerStub.get();
+                            var assigned = s.eval("@GET(sthpw/task['id','" + id + "'].assigned)", {single:true}); 
+                            el.value = assigned;
+                            var cur_name = el.getAttribute('name');
+                            // update the select name
+                            if (/NEW/.test(cur_name)) {
+                                var parts = cur_name.split('|');
+                                var new_name = parts[0] + '|EDIT|' + id;
+                                el.setAttribute('name', new_name);
+                            }
+                       '''
+
+                                                                
+                    }
+                else:
+                    update = {
+                        "search_key": task.get_search_key(),
+                        "column": "assigned",
+                    }
+                update['interval'] = '2'
+
+                update['cbjs_postaction'] = '''
+                        var element = bvr.src_el;
+                        if ("createEvent" in document) {
+                            var evt = document.createEvent("HTMLEvents");
+                            evt.initEvent("change", false, true);
+                            element.dispatchEvent(evt);
+                        }
+                        else {
+                            element.fireEvent("onchange");
+                        }
+                        var top = bvr.src_el.getParent(".spt_task_top");
+                        top.getParent().setStyle("opacity", 1.0);
+
+                        '''
+                select.add_update(update)
+
+
+            else:
+                
+                assigned_label = assigned
+                if self.assigned_label:
+                    assigned_label = self.assignee_dict.get(assigned)
+                if not assigned:
+                    assigned = HtmlElement.i("Unassigned")
+                    assigned.add_style("opacity: 0.5")
+                    assigned_label = assigned
+                assigned_div.add(assigned_label)
+                assigned_div.add("<br/>")
+
+
+
+
+        return assigned_div
+
+
+
 
 
 
@@ -4057,3 +4194,6 @@ class WorkElementWdg(ButtonElementWdg):
  
 
         return super(WorkElementWdg, self).get_display()
+
+
+

@@ -252,6 +252,7 @@ spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
     cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
 
     eval( cbjs_str );
+    //console.log(cbjs_str);
    
     // basically disable js_logger for this because we loose the origin
     // of the error and chrome handles it really well now
@@ -689,8 +690,10 @@ spt.behavior.replace_inner_html = function( el, new_inner_html, mode )
 
         // Then call special replace function to swap out old tbody for new tbody html ...
         el = spt.behavior.replace_table_child_element(el, new_inner_html);
+
         spt.behavior._construct_behaviors( [ el ] );
     }
+
 
 
     // first get all of the templates and find all of the behaviors below them

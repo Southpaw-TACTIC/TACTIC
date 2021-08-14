@@ -166,7 +166,7 @@ class WebEnvironment(Environment):
         # see if there is a protocol defined
         protocol = Config.get_value("security", "protocol")
         if not protocol:
-            protocol = "http"
+            protocol = "https"
 
         # FIXME: not sure about this.
         if host == "127.0.0.1":
