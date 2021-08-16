@@ -2397,6 +2397,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #inner_div.add_style("overflow: hidden")
 
             inner_div.add_style("min-width: 20px")
+            inner_div.add_style("text-align: center")
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
