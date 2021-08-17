@@ -7892,82 +7892,12 @@ spt.table.set_column_width = function(element_name, width, cells) {
         }
     }
 
-
-    var headers = spt.table.get_headers();
-    var cells = [];
-    if (row)
-        cells = row.getElements(".spt_cell_edit");
-    var total_width = 0;
-
-    // add up total_width
-    // Commented out: not necessary for basic table structure
-    for (var i = 0; i < headers.length; i++) {
-        var header = headers[i];
-
-        // ignore floating columns
-        if (header.getStyle("position", "absolute")) {
-            continue;
-        }
-
-        if (header.getAttribute("spt_element_name") == element_name) {
-            var new_width = width + "";
-            new_width = parseInt( new_width.replace("px", "") );
-            total_width += new_width;
-        }
-        else {
-            var size = header.getSize();
-            total_width += size.x;
-            new_width = size.x;
-        }
-
-
-    }
-
+    // set the header size
     var curr_header = spt.table.get_header_by_cell(cell);
-    if (total_width) {
-        /*
-        header_table.setStyle("width", total_width);
-        table.setStyle("width", total_width);
-        subtable = table.getElement(".spt_table_table");
-        if (subtable) {
-            subtable.setStyle("width", total_width);
-
-        }
-        */
-    }
-
     curr_header.setStyle("width", width);
     curr_header.setAttribute("last_width", width);
 
-    let mode = "div";
-    if (mode == "div") {
-        if (cells && cells.length != 0) {
-            cells.forEach( cell => {
-                cell.setStyle("width", width);
-                cell.setAttribute("last_width", width);
-            } )
-        }
-        else {
-            let rows = spt.table.get_all_rows();
-            rows.forEach( row => {
-                let cell = spt.table.get_cell(element_name, row);
-                cell.setStyle("width", width);
-                cell.setAttribute("last_width", width);
-            } )
-        }
-
-
-    }
-    else {
-        cell.setStyle("width", width);
-        cell.setAttribute("last_width", width);
-    }
-
-
-
-    var insert_cell = spt.table.get_insert_row_cell(element_name);
-    if (insert_cell)
-        insert_cell.setStyle("width", width);
+    spt.table.expand_table("free")
 
 }
 
@@ -8075,8 +8005,6 @@ spt.table.expand_table = function(mode) {
         let widths = [];
         if (header_table) {
 
-            var total_width = 0;
-
             // remove the widths of all the cells
             //var cells = header_table.getElements("th");
             var cells = header_table.getElement(".spt_table_header_row").getElements(".spt_table_header");
@@ -8089,9 +8017,6 @@ spt.table.expand_table = function(mode) {
                 cell.setStyle("width", size)
 
             })
-
-
-            //console.log("total: " + total_width);
 
             header_table.setStyle("width", "max-content");
 
@@ -8125,7 +8050,25 @@ spt.table.expand_table = function(mode) {
             })
 
 
+
+            var bot_row = spt.table.get_bottom_row();
+            if (bot_row && widths.length > 0) {
+                var cells = bot_row.getElements(".spt_cell_edit");
+                let count = 0;
+                cells.forEach( function(cell) {
+                    if (count == 0) {
+                        cell.setStyle("width", widths[count+offset]+30);
+                    }
+                    else {
+                        cell.setStyle("width", widths[count+offset]);
+                    }
+                    count += 1;
+                } )
+            }
+
+
             table.setStyle("width", "max-content");
+
 
 
 
@@ -8161,7 +8104,8 @@ spt.table.expand_table = function(mode) {
                 }
 
 
-                let width = cell.getSize().x;
+                //let width = cell.getSize().x;
+                let width = cell.getStyle("width");
                 if (width == 0) width = 100;
                 widths.push(width);
                 cell.setStyle("width", width);
@@ -8214,14 +8158,20 @@ spt.table.expand_table = function(mode) {
 
 
             var bot_row = spt.table.get_bottom_row();
-            if (bot_row) {
+            if (bot_row && widths.length > 0) {
                 var cells = bot_row.getElements(".spt_cell_edit");
                 let count = 0;
                 cells.forEach( function(cell) {
-                    cell.setStyle("width", widths[count]);
+                    if (count == 0) {
+                        cell.setStyle("width", widths[count+offset]+30);
+                    }
+                    else {
+                        cell.setStyle("width", widths[count+offset]);
+                    }
                     count += 1;
                 } )
             }
+
 
 
 
