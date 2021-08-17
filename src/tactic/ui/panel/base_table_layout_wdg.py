@@ -1513,12 +1513,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add(collapse_div)
         div.add(xx)
 
-        if self.kwargs.get("__hidden__"):
-            scale = 0.8
-        else:
-            scale = 1
-
-
         outer = DivWdg()
 
         # Different browsers seem to have a lot of trouble with this
@@ -1527,14 +1521,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         import os
         if browser == 'Qt' and os.name != 'nt':
             height = "38px"
-        elif scale != 1:
-            #xx.add_style("position: absolute")
-            xx.add_color("backgroud","background")
-            xx.set_scale(scale)
-            xx.add_style("float: left")
-            xx.add_style("margin-left: -25")
-            xx.add_style("margin-top: -5")
-
 
         outer.add(div)
         if self.show_search_limit:

@@ -2305,14 +2305,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
 
-
-        if self.kwargs.get("__hidden__") == True:
-            tr.add_color("background", "background", -8)
-            border_color = table.get_color("table_border", default="border")
-        else:
-            tr.add_color("background", "background", -2)
-            border_color = table.get_color("table_border", 0, default="border")
-            tr.add_color("color", "color", 8)
+        tr.add_color("background", "background", -2)
+        border_color = table.get_color("table_border", 0, default="border")
+        tr.add_color("color", "color", 8)
 
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
@@ -2402,6 +2397,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #inner_div.add_style("overflow: hidden")
 
             inner_div.add_style("min-width: 20px")
+            inner_div.add_style("text-align: center")
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
@@ -4817,7 +4813,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("height", "fit-content");
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
-    hidden_row.setStyle("padding-bottom", "10px");
+    hidden_row.setStyle("padding-bottom", "20px");
 
     // position the arrow
     var src_el = kwargs.src_el;
@@ -4846,13 +4842,13 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "var(--spt_palette_table_border)";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; filter: drop-shadow(0px 0px 10px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; filter: drop-shadow(0px 0px 16px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 20px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><i class='hand fa fa-remove'> </i></div>" +
-          "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 102'><i class='hand fa fa-remove'> </i></div>" +
+          "<div class='spt_hidden_content' style='padding-top: 0px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
         var cell = src_el.getParent('.spt_cell_no_edit');
