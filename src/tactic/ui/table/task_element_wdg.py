@@ -1609,41 +1609,46 @@ spt.task_element.StatusWdg = StatusWdg;
         elif not self.tasks and not has_misc_processes:
             
             show_current_pipeline_only = self.kwargs.get('show_current_pipeline_only') != 'false'
-            label = Table()
-            if self.layout in ['horizontal']:
-                label.add_style("color", "color")
-            else:
-                label.add_style("color: #000")
+            label = DivWdg()
+            label.add_style("display: flex")
+            label.add_class("btn btn-secondary")
+            #if self.layout in ['horizontal']:
+            #    label.add_style("color", "color")
+            #else:
+            #    label.add_style("color: #000")
      
 
             label.add_class("hand")
-            label.add_row()
-            label.add_styles("opacity: 0.5;font-size: 10px;margin-left: 5px")
+            label.add_styles("opacity: 0.5;font-size: 10px;text-align: center")
 
             if security.check_access("search_type", {"code":"sthpw/task"}, "insert", default="insert"):
                 label.add_style("color", "color")
                 label.add_class("spt_task_element_add_task")
                 label.add_attr("spt_search_key", sobject.get_search_key() )
-                icon = IconWdg("Add Tasks", icon="FA_PLUS")
-                label.add_cell(icon)
+                icon = IconWdg("Add Tasks", icon="FA_PLUS", size=12)
+                label.add(icon)
+                icon.add_style("margin-right: 5px")
+                icon.add_style("margin-top: 2px")
             
                 if show_current_pipeline_only:
-                    td = label.add_cell('<i>No tasks found. Click to Add</i>')
+                    td = label.add('<i>No tasks found. Click to Add</i>')
                 else:
-                    td = label.add_cell('<i>No tasks found. Click to Add</i>')
+                    td = label.add('<i>No tasks found. Click to Add</i>')
 
             else:
                 if show_current_pipeline_only:
-                    td = label.add_cell('<i>No tasks found. Need permission to add.</i>')
+                    td = label.add('<i>No tasks found. Need permission to add.</i>')
                 else:
-                    td = label.add_cell('<i>No tasks found. Click to Add</i>')
+                    td = label.add('<i>No tasks found. Click to Add</i>')
 
 
-            td.add_style("padding: 5px")
-            td.add_style("min-width: 150px")
+            label.add_style("padding: 5px")
+            label.add_style("margin: 0px auto")
+            label.add_style("width: fit-content")
 
             div.add(label)
             div.add_style("opacity: 0.8")
+            div.add_style("width: 100%")
         else:
             # reset to make these into lists
             # items is a list of lists of Task Objects

@@ -7199,9 +7199,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // HACK for tile layout 
             dummy = spt.behavior.clone(dummy);
 
+            /*
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
             }
+            */
 
 
 
@@ -7227,8 +7229,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
             }
 
-            //spt.table.expand_table();
-
 
             // for efficiency, we do not redraw the whole table to calculate the
             // bottom so just change the bg color
@@ -7246,7 +7246,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 on_complete();
             }
 
-
+            spt.table.expand_table();
 
           }
         }
