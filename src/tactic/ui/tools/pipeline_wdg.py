@@ -130,6 +130,7 @@ class PipelineToolWdg(BaseRefreshWdg):
                 transition: .25s;
                 border: 1px solid %(border)s;
                 border-width: 0px 1px 1px 1px;
+                background: var(--spt_palette_background2);
             }
 
             .spt_pipeline_tool_right {
