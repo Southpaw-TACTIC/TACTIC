@@ -2330,12 +2330,6 @@ spt.panel.load_popup('Review snapshot', class_name, kwargs);
         <icon>FA_EDIT</icon>
       </display>
     </element>
-    <element name="files" width="87.0333px" edit="false">
-      <display class="tactic.ui.table.HiddenRowElementWdg">
-        <dynamic_class>tactic.ui.table.HiddenRowElementWdg</dynamic_class>
-        <icon>FAR_FILE_IMAGE</icon>
-      </display>
-    </element>
   </definition>
 </config>
 """)

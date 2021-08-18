@@ -142,7 +142,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         hidden_row_id = Common.generate_random_key()
         top.add_attr("spt_hidden_row_id", hidden_row_id)
 
-        if sobject.is_insert():
+        if sobject and sobject.is_insert():
             top.add_style("opacity: 0.3")
         else:
             # this gives the swap it's behaviors, so will be disabled
