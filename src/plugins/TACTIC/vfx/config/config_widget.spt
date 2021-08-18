@@ -43,7 +43,6 @@ insert.set_value('config', """<config>
         <show_insert>true</show_insert>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
         <view>task_list</view>
-        <icon>FAS_CALENDAR</icon>
       </display>
     </element>
     <element name="task_status"/>
@@ -71,22 +70,23 @@ insert.set_value('config', """<config>
         <view>shot_planner_assets</view>
       </display>
     </element>
-    <element name="task_status_edit" title="Task Status" width="851px" edit="false">
+    <element name="task_status_edit" title="Task Status" width="600px" edit="false">
       <display class="tactic.ui.table.TaskElementWdg">
+        <bg_color>status</bg_color>
         <show_assigned>true</show_assigned>
-        <layout>vertical</layout>
+        <show_dates>true</show_dates>
+        <show_border>one-sided</show_border>
+        <task_edit_view>edit</task_edit_view>
+        <layout>panel</layout>
         <edit_status>true</edit_status>
         <edit_assigned>true</edit_assigned>
-        <bg_color>status</bg_color>
-        <show_border>one-sided</show_border>
-        <show_dates>true</show_dates>
       </display>
     </element>
     <element name="plate" width="35px" edit="true">
       <display widget="hidden_row">
         <search_type>vfx/plate</search_type>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
-        <icon>FAS_CAMERA</icon>
+        <icon>FAS_CAMERA_RETRO</icon>
         <view>table</view>
       </display>
     </element>
@@ -113,7 +113,7 @@ insert.set_value('config', """<config>
       <display widget="hidden_row">
         <search_type>vfx/layer</search_type>
         <dynamic_class>tactic.ui.panel.FastTableLayoutWdg</dynamic_class>
-        <icon>FAS_LAYER-GROUP</icon>
+        <icon>FAS_LAYER_GROUP</icon>
         <view>layer</view>
       </display>
     </element>
@@ -674,7 +674,7 @@ insert.set_value('config', """<config>
       <display class="SubmissionLinkTableElement"/>
     </element>
     <element edit="false" name="completion"/>
-    <element name="shot_task_schedule">
+    <element name="shot_task_schedule" width="50%">
       <display class="tactic.ui.table.GanttElementWdg">
         <options>[
       {
@@ -756,14 +756,16 @@ insert.set_value('config', """<config>
       </display>
     </element>
     <element name="description" edit="true"/>
-    <element name="keywords"/>
+    <element name="keywords" width="400" edit="true">
+      <display class="tactic.ui.common.SimpleTableElementWdg"/>
+    </element>
     <element name="timestamp"/>
     <element name="name" title="Name" edit="true" color="false">
       <display widget="format">
         <type>text</type>
       </display>
     </element>
-    <element name="preview" width="30px" edit="false">
+    <element name="preview" width="120px" edit="false">
       <display class="ThumbWdg">
         <icon_size>100%</icon_size>
         <detail>true</detail>
@@ -846,7 +848,7 @@ insert.set_value('code', """VFX00045""")
 insert.set_value('config', """<config>
   <definition>
     <element name="history"/>
-    <element name="files" width="30px" edit="false">
+    <element name="files" width="160px" edit="false">
       <display class="ThumbWdg">
         <icon_size>100%</icon_size>
         <detail>false</detail>
@@ -1050,40 +1052,32 @@ insert.set_value('code', """VFX00066""")
 insert.set_value('config', """<config>
   <edit_definition>
     <element name="code">
-        <display class="TextWdg"/>
+      <display class="TextWdg"/>
     </element>
-
     <element name="preview"/>
-
     <element name="asset_category">
-        <display class="SelectWdg">
-            <required>true</required>
-            <query>vfx/asset_category|code|code</query>
-            <empty>true</empty>
-        </display>
-     
+      <display class="SelectWdg">
+        <required>true</required>
+        <query>vfx/asset_category|code|code</query>
+        <empty>true</empty>
+      </display>
     </element>
-
     <element name="name">
-        <display class="TextWdg">
-            <required>true</required>
-        </display>
+      <display class="TextWdg">
+        <required>true</required>
+      </display>
     </element>
-
     <element name="description" type="string"/>
-
-
-  <element name="pipeline_code"/>
-
-  <element name="asset_type">
-    <display class="SelectWdg">
-        <query>vfx/asset_type|code|code</query>
-    </display>
-  </element>
-
-
+    <element name="pipeline_code"/>
+    <element name="asset_type">
+      <display class="SelectWdg">
+        <empty>-- Select --</empty>
+        <values_expr>@GET(vfx/asset_type.code)</values_expr>
+      </display>
+    </element>
   </edit_definition>
-</config>""")
+</config>
+""")
 insert.set_value('search_type', """vfx/asset""")
 insert.set_value('timestamp', """2011-10-26 01:00:07""")
 insert.set_value('view', """edit_definition""")
@@ -1115,6 +1109,7 @@ insert.set_value('code', """VFX00068""")
 insert.set_value('config', """<config>
   <definition>
     <element name="code"/>
+    <element name="asset_type"/>
     <element name="name"/>
     <element name="detail" edit="false">
       <display class="HiddenRowToggleWdg">
@@ -1144,7 +1139,7 @@ insert.set_value('config', """<config>
         <dynamic_class>tactic.ui.panel.TableLayoutWdg</dynamic_class>
         <mode>insert</mode>
         <view>inline_add_item</view>
-        <icon>FAS_CALENDAR</icon>
+        <icon>DATE_GO</icon>
       </display>
     </element>
     <element name="task_status"/>
@@ -1170,10 +1165,11 @@ insert.set_value('config', """<config>
     <element name="task_status_edit" width="439px" edit="false">
       <display class="tactic.ui.table.TaskElementWdg">
         <bg_color>status</bg_color>
-        <edit_status>true</edit_status>
         <show_assigned>true</show_assigned>
-        <layout>vertical</layout>
         <show_dates>true</show_dates>
+        <task_edit_view>edit</task_edit_view>
+        <layout>panel</layout>
+        <edit_status>true</edit_status>
       </display>
     </element>
     <element name="maya_playblast" title="Maya Playblast" edit="false" color="false">
@@ -2284,20 +2280,20 @@ insert = SearchType.create('config/widget_config')
 insert.set_value('code', """VFX00121""")
 insert.set_value('config', """<config>
   <definition>
-    <element name="play_video" title="Play Video" edit="false" color="false">
+    <element name="play_video" title="Play Video" width="55.95px" edit="false" color="false">
       <display widget="button">
+        <icon>FA_FILM</icon>
         <path>webplayer/play</path>
-        <icon>MOVIE_VIEW</icon>
       </display>
     </element>
-    <element name="submit" title="Submit" edit="false" color="false">
+    <element name="submit" title="Submit" width="55.95px" edit="false" color="false">
       <display widget="button">
+        <icon>FAR_SHARE_SQUARE</icon>
         <cbjs_action>      kwargs = {
         'view': 'add_snapshot_to_review_wdg',
         'search_key': bvr.search_key
       };
       spt.panel.load_popup('Add Snapshot to Review', 'tactic.ui.panel.CustomLayoutWdg', kwargs);</cbjs_action>
-        <icon>FILM_SUBMIT</icon>
       </display>
     </element>
     <element name="notes" width="300px" edit="false">
@@ -2316,6 +2312,28 @@ insert.set_value('config', """<config>
     <element name="parent" title="For" width="80px" edit="false">
       <display widget="expression">
         <expression>@GET(parent.code)</expression>
+      </display>
+    </element>
+    <element name="review" width="55px" edit="false">
+      <display widget="button">
+        <javascript>let search_keys = spt.table.get_selected_search_keys();
+if (search_keys.length == 0) {
+    search_keys = [bvr.search_key];
+}
+
+let class_name = "tactic.ui.tools.ReviewWdg";
+let kwargs = {
+      search_keys: search_keys,
+};
+spt.panel.load_popup('Review snapshot', class_name, kwargs);
+</javascript>
+        <icon>FA_EDIT</icon>
+      </display>
+    </element>
+    <element name="files" width="87.0333px" edit="false">
+      <display class="tactic.ui.table.HiddenRowElementWdg">
+        <dynamic_class>tactic.ui.table.HiddenRowElementWdg</dynamic_class>
+        <icon>FAR_FILE_IMAGE</icon>
       </display>
     </element>
   </definition>
@@ -2339,6 +2357,10 @@ insert.set_value('config', """<config>
 </element>
     <element name="parent">
 </element>
+    <element name="review">
+</element>
+    <element name="files">
+</element>
   </color>
 </config>
 """)
@@ -2360,10 +2382,10 @@ insert.set_value('config', """<config>
     <element name="submit" width="55.95px"/>
     <element name="checkout" width="53.8833px"/>
     <element name="play_video" width="55.95px"/>
+    <element name="review" width="55px"/>
     <element name="login" width="84.9667px"/>
     <element name="timestamp" width="246.583px"/>
 
-    <element name="is_current" width="51.8px"/>
     <element name="notes" width="300px"/>    
   </checkin_history>
 </config>""")
@@ -2990,6 +3012,8 @@ insert.set_value('code', """VFX00177""")
 insert.set_value('config', """<config>
   <color>
     <element name="name">
+</element>
+    <element name="keywords">
 </element>
     <element name="preview">
 </element>
