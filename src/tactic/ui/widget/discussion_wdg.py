@@ -1647,7 +1647,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         self.attachments = self.kwargs.get("attachments")
 
 
-        if self.attachments == None:
+        if self.attachments == None or self.attachments == "":
 
             from pyasm.biz import Snapshot
 
@@ -3136,8 +3136,6 @@ class DiscussionAddNoteCmd(Command):
             checkin_mode = "parent"
             if checkin_mode == "parent":
                 attachment_process = "%s/attachment" % process
-
-                # NOTE: we may want to use a random key rather than the
                 # basename to ensure that there is never a duplicate
                 # context
                 attachment_context = "attachment/%s/%s" % (process, basename)
