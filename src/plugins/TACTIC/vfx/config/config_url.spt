@@ -1,10 +1,22 @@
 #-- Start Entry --#
 insert = SearchType.create('config/url')
-insert.set_value('code', """SPT_URL00006""")
+insert.set_value('code', """VFX001""")
 insert.set_value('timestamp', """2020-06-01 04:16:07""")
 insert.set_value('url', """/index""")
 insert.set_value('widget', """<element name='index'>
   <display class='TACTIC.vfx.VFXIndexWdg'>
+  </display>
+</element>""")
+#-- End Entry --#
+
+#-- Start Entry --#
+insert = SearchType.create('config/url')
+insert.set_value('code', """VFX002""")
+insert.set_value('timestamp', """2021-08-06 16:07:09.369616""")
+insert.set_value('url', """/dashboard""")
+insert.set_value('widget', """<element>
+  <display class='tactic.ui.panel.CustomLayoutWdg'>
+    <view>vfx.dashboard.main</view>
   </display>
 </element>""")
 #-- End Entry --#

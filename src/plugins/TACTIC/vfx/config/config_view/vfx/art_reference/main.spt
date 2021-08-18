@@ -10,6 +10,7 @@ insert.set_value('config', """<config>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Art Reference</title>
       <search_type>vfx/art_reference</search_type>
+      <layout>tile</layout>
       <element_names>preview,name,category,description,keywords</element_names>
       <use_last_search>false</use_last_search>
       <simple_search_view>art_reference_custom_filter</simple_search_view>

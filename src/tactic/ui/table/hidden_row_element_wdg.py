@@ -113,12 +113,14 @@ class HiddenRowElementWdg(BaseTableElementWdg):
             top.setStyle("pointer-events", "none");
 
             spt.table.add_hidden_row(row, class_name, kwargs);
+           spt.table.expand_table("free");
 
             bvr.src_el.loading = true;
             setTimeout( () => {
                bvr.src_el.loading = false 
                top.setStyle("opacity", "1.0");
                top.setStyle("pointer-events", "");
+
             }, 1000 )
         }
 
