@@ -120,7 +120,7 @@ TACTIC has a built-in VFX module that has been used as a template for countless 
 
 ### Video Review
 <p align="center">
-  <img width="75%" src="doc/github/images/video-review.png"/>
+  <img width="75%" src="doc/github/images/video_review.png"/>
 </p>
 
 ### A Simple Shot Workflow
