@@ -112,6 +112,9 @@ There is also a collection of [YouTube videos](https://www.youtube.com/playlist?
 
 TACTIC has a built-in VFX module that has been used as a template for countless productions around the world.  Over the years, it's popularity has grown considerably and more and more people become familiar with TACTIC features.  Because TACTIC is Open Source, it can configured and connected seamleassly into any studio producing content.
 
+<p align="center">
+  <img width="75%" src="doc/github/images/tactic-vfx.png"/>
+</p>
 
 <p align="center">
   <img width="75%" src="doc/github/images/vfx_data_model.png"/>
