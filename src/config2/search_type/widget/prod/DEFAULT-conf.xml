@@ -290,6 +290,7 @@ display class, it will adopt the one defined here-->
        <display class='tactic.ui.table.TaskElementWdg'>
         <layout>panel</layout>
         <status_color>status</status_color>
+        <bg_color>status</bg_color>
         <show_assigned>true</show_assigned>
         <show_dates>true</show_dates>
         <edit>true</edit>

@@ -76,7 +76,9 @@ class Palette(object):
     'color':        '#000',         # main font color
     'color2':       '#333',         # secondary font color
     'color3':       '#333',         # tertiary font color
-    'background':   '#F5F5F6',      # main background color
+    #'background':   '#F5F5F6',      # main background color
+    'background':   '#FFFFFF',      # main background color
+    'background_table': '#FFFFFF',      # main background color
     'background2':  '#E1E2E1',      # secondary background color
     'background3':  '#D1D7E2',      # tertiary background color
     'border':       '#BBB',         # main border color
@@ -86,7 +88,7 @@ class Palette(object):
     #'tab_background': '#3C76C2',
     'table_border': '#E0E0E0',
     'theme':        'default',
-    'shadow':       'rgba(0,0,0,0.1)',
+    'shadow':       'rgba(0,0,0,0.3)',
     'md_primary_dark': '#c7c7c7', 
     'md_primary': '#fafafa',
     'md_primary_light': '#ffffff',

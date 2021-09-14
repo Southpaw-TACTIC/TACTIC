@@ -686,6 +686,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 text-overflow: ellipsis;
             }
 
+            .spt_layout .spt_table_row {
+                //border: solid 1px transparent;
+                box-sizing: border-box;
+            }
+
 
             .spt_layout .spt_table_select {
                 display: flex;
@@ -3207,7 +3212,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
         # remember the original background colors
-        bgcolor1 = table.get_color("background")
+        bgcolor1 = table.get_color("background_table")
+        if not bgcolor1:
+            bgcolor1 = table.get_color("background")
         #bgcolor2 = table.get_color("background", -1)
         bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
@@ -4692,6 +4699,8 @@ spt.table.select_row = function(row) {
         row.addClass("spt_table_selected");
     }
     spt.table.last_selected_row = row;
+
+    //row.setStyle("border-top", "solid 2px blue");
 }
 
 
