@@ -21,7 +21,8 @@ from pyasm.search import Search, SearchType
 from tactic.ui.common import BaseRefreshWdg
 
 import types
-
+from dateutil import parser, rrule
+from datetime import datetime, timedelta
 
 #from .chart_wdg import ChartWdg as ChartWdg
 from .chart_js_wdg import ChartJsWdg as ChartWdg
@@ -286,13 +287,19 @@ class SObjectChartWdg(BaseChartWdg):
         else:
             try:
                 chart_labels = [x.get_value(self.x_axis) for x in self.sobjects]
-            except:
+
+                if self.x_axis == "timestamp":
+                    chart_labels = [parser.parse(x).strftime("%H:%M:%S") for x in chart_labels]
+
+            except Exception as e:
+                print("ERROR: ", e)
                 # FIXME ... put in some special logic for users since it
                 # is used so often in charting
                 if self.search_type == 'sthpw/login':
                     chart_labels = [x.get_value("login") for x in self.sobjects]
                 else:
                     chart_labels = [x.get_code() for x in self.sobjects]
+
 
 
         top = DivWdg()
@@ -314,13 +321,13 @@ class SObjectChartWdg(BaseChartWdg):
 
         element_data = {}
 
-        chart_labels = []
+        #chart_labels = []
         element_values = []
 
         # get the labels and values for each sobject
         for sobject in self.sobjects:
 
-            chart_labels.append( sobject.get_code() )
+            #chart_labels.append( sobject.get_code() )
 
             values, labels = self.get_data(sobject)
             for value, label in zip(values, labels):
@@ -431,8 +438,6 @@ class SObjectChartWdg(BaseChartWdg):
 
 
 
-from dateutil import parser, rrule
-from datetime import datetime, timedelta
 
 
 class CalendarChartWdg(BaseChartWdg):
