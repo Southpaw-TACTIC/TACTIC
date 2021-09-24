@@ -1363,7 +1363,10 @@ spt._init_dialog = function(on_complete) {
 
 spt.alert = function(msg, options){
 
-    let stack = options.stack;
+    let stack;
+    if (options) {
+        stack = options.stack;
+    }
     if (!stack) {
         let err = new Error();
         stack = err.stack;

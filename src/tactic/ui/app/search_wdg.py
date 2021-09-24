@@ -868,6 +868,7 @@ class SearchWdg(BaseRefreshWdg):
         save_mode = "save_as" if self.filter else "save"
         search_wdg = AdvancedSearchSaveButtonsWdg(prefix=self.prefix, search_action=search_action, mode=save_mode, search_type=self.search_type, top_class=top_class, hide_save_buttons=hide_saved_searches)
         buttons_div.add(search_wdg)
+
         filter_div.add(buttons_div)
 
         # show_action = self.kwargs.get("show_action")

@@ -5,7 +5,7 @@ insert.set_value('code', """WIDGET_CONFIG00997""")
 insert.set_value('config', """<config>
 <vfx.shot.main>
 <html>
-<div class="card vfx_shot_list_top">
+<div class="vfx_shot_list_top">
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Shots</title>

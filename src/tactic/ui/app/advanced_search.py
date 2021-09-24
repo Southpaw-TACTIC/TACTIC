@@ -1712,27 +1712,6 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         buttons_container.add_class("spt_advanced_search_buttons")
         self.add_relay_behaviors(buttons_container)
 
-        if hide_save_buttons not in ["true", True]:
-            # Save buttons
-            save_buttons = DivWdg()
-            buttons_container.add(save_buttons)
-            save_buttons.add_class("save-buttons")
-
-            save_button = DivWdg("Save")
-            save_buttons.add(save_button)
-            save_button.add_class("spt_save_button spt_save save-button enabled hand btn btn-secondary")
-            save_button.add_style("margin-right: 5px;")
-
-            save_as_button = DivWdg("Save As")
-            save_buttons.add(save_as_button)
-            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand btn btn-secondary")
-            save_as_button.add_attr("spt_action", "save_as")
-
-            if mode == "save":
-                save_button.add_attr("spt_action", "save_as")
-                save_as_button.add_style("display: none")
-            else:
-                save_button.add_attr("spt_action", "save")
 
         # Search button
         search_button = DivWdg("SEARCH")
@@ -1764,6 +1743,32 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
                 #'panel_id':     prefix,
                 
             })
+
+
+
+        if hide_save_buttons not in ["true", True]:
+            # Save buttons
+            save_buttons = DivWdg()
+            buttons_container.add(save_buttons)
+            save_buttons.add_class("save-buttons")
+
+            save_button = DivWdg("Save")
+            save_button.add_style("width: 75px")
+            save_buttons.add(save_button)
+            save_button.add_class("spt_save_button spt_save save-button enabled hand btn btn-secondary")
+            save_button.add_style("margin-right: 5px;")
+
+            save_as_button = DivWdg("Save As")
+            save_buttons.add(save_as_button)
+            save_as_button.add_class("spt_save_button spt_save_as save-button enabled hand btn btn-secondary")
+            save_as_button.add_attr("spt_action", "save_as")
+
+            if mode == "save":
+                save_button.add_attr("spt_action", "save_as")
+                save_as_button.add_style("display: none")
+            else:
+                save_button.add_attr("spt_action", "save")
+
 
         buttons_container.add(self.get_styles())
 

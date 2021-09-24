@@ -225,11 +225,13 @@ class SmartMenuWdg(BaseRefreshWdg):
                     td.add_color("background", "background2")
                     td.add_color("color", "color2")
                     td.add_style("font-weight", "bold")
-                    td.add_style("padding", "3px")
+                    td.add_style("padding", "10px 3px")
             elif opt.get('type') == 'separator':
                 hr = HtmlElement("hr")
-                hr.add_looks( "smenu_separator" )
+                #hr.add_looks( "smenu_separator" )
                 td.add( hr )
+                #td.add_style("height: auto")
+                #td.add_style("padding: 0px 6px")
 
             td.add_class("SPT_ENABLED_LOOK")
 

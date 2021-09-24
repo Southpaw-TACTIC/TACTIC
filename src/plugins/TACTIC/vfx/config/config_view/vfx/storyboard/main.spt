@@ -5,7 +5,7 @@ insert.set_value('code', """WIDGET_CONFIG01243""")
 insert.set_value('config', """<config>
 <vfx.storyboard.main>
 <html>
-<div class="card vfx_asset_list_top">
+<div class="vfx_asset_list_top">
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Storyboards</title>

@@ -686,6 +686,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 text-overflow: ellipsis;
             }
 
+            .spt_layout .spt_table_row {
+                //border: solid 1px transparent;
+                box-sizing: border-box;
+            }
+
 
             .spt_layout .spt_table_select {
                 display: flex;
@@ -3207,7 +3212,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
         # remember the original background colors
-        bgcolor1 = table.get_color("background")
+        bgcolor1 = table.get_color("background_table")
+        if not bgcolor1:
+            bgcolor1 = table.get_color("background")
         #bgcolor2 = table.get_color("background", -1)
         bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
@@ -4692,6 +4699,8 @@ spt.table.select_row = function(row) {
         row.addClass("spt_table_selected");
     }
     spt.table.last_selected_row = row;
+
+    //row.setStyle("border-top", "solid 2px blue");
 }
 
 
@@ -7962,23 +7971,30 @@ spt.table.align_column_widths = function() {
 
 spt.table.expand_table = function(mode) {
 
-    if (!mode) {
-        mode = "full";
+
+    let layout = spt.table.get_layout();
+    let version = layout.getAttribute("spt_version");
+    let headers;
+    let table = null;
+    let subtable = null;
+    let header_table = null;
+
+
+    let last_mode = layout.last_expand_mode;
+    if (!last_mode) {
+        last_mode = "full";
     }
+    if (!mode) {
+        mode = last_mode;
+    }
+    layout.last_expand_mode = mode;
 
-
-    var layout = spt.table.get_layout();
-    var version = layout.getAttribute("spt_version");
-    var headers;
-    var table = null;
-    var subtable = null;
-    var header_table = null;
 
     spt.table.set_layout(layout);
     table = spt.table.get_table();
 
     // if there is a subtable, then use that instead
-    var subtable = table.getElement(".spt_table_table");
+    subtable = table.getElement(".spt_table_table");
 
     var expand_last_column = true;
     if (subtable) {

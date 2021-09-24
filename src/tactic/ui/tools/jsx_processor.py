@@ -170,7 +170,11 @@ class JSXTranspile():
         # Need this to get the environment right.
         # FIXME: hard coded
         # FIXME: there must be a better way to set the environment of node.js
-        dirname = "/home/tactic/npm/babel"
+
+        dirname = Config.get_value("jsx", "babel")
+        if not dirname:
+            dirname = "/home/tactic/npm/babel"
+
         os.chdir(dirname)
 
         if isinstance(text, str):

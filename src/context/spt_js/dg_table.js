@@ -2087,7 +2087,10 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var new_search = bvr.new_search == true;
 
     var panel = bvr.panel;
-    var title = panel.getAttribute("spt_title") || "";
+    var title = "";
+    if (panel) {
+        title = panel.getAttribute("spt_title") || "";
+    }
     // If there is an "spt_view_panel", VERIFY if it is for the given table or if we are in an
     // embedded table
     if( panel ) {
