@@ -381,6 +381,10 @@ options.plugins = {
     }
 }
 
+options.animation = {
+    duration: 0
+}
+
 
 var datasets = barChartData['datasets'][0];
 
