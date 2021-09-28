@@ -1056,20 +1056,17 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
             scroll = DivWdg()
             scroll.add_class("spt_table_scroll")
-            scroll.add_style("height: 100%")
             h_scroll.add(scroll)
             
-            """
             height = self.kwargs.get("height")
-            if height:
-                try:
-                    height = int(height)
-                    height = str(height) + "px"
-                except ValueError:
-                    pass
-                scroll.add_style("height: %s" % height)
+            #height = "calc(100vh - 300px)"
+            if not height:
+                height = "100%"
+            scroll.add_style("height: %s" % height)
           
 
+            # DEPRECATED: use calc
+            """
             window_resize_offset = self.kwargs.get("window_resize_offset")
             if window_resize_offset:
                 scroll.add_class("spt_window_resize")
@@ -1095,7 +1092,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             } )
             """
 
-            scroll.add_style("overflow-y: auto")
+            if height in ("100%", "auto"):
+                #scroll.add_style("overflow-y: hidden")
+                scroll.add_style("overflow-y: auto")
+            else:
+                scroll.add_style("overflow-y: auto")
+
             scroll.add_style("overflow-x: auto")
             scroll.add_style("position: relative")
 
@@ -1114,8 +1116,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             self.header_table.add_style("table-layout", "fixed")
             if self.kwargs.get("fixed_table") not in [False, 'false']:
                 self.table.add_style("table-layout", "fixed")
-
-            self.table.add_style("margin-top: -1px")
 
         else:
             table = self.table

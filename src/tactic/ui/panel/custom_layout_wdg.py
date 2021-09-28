@@ -116,6 +116,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         self.sequence_data = []
 
 
+
     def preprocess(self):
         code = self.kwargs.get('data')
         if not code:

@@ -1012,6 +1012,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         div.add_class("spt_table_action_wdg")
         div.add_class("SPT_DTS")
 
+
         if self._use_bootstrap():
             div.add(self.get_bootstrap_shelf_styles())
         else:
@@ -1103,6 +1104,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+        # add title
         title_wdg = self.get_title_wdg()
         if title_wdg:
             div.add(title_wdg)
@@ -1191,9 +1193,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             keyword_div = None
 
 
-        # -- Button Rows
-        button_row_wdg = self.get_button_row_wdg()
-
 
         # -- ITEM COUNT DISPLAY
         # add number found
@@ -1242,8 +1241,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+        button_row_wdg = self.get_button_row_wdg()
         search_button_row = self.get_search_button_row_wdg()
         save_button = self.get_save_button()
+        gear_button = self.get_gear_button()
+
+
         layout_wdg = None
         column_wdg = None
         
@@ -1255,78 +1258,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if show_layout_wdg:
             layout_wdg = self.get_layout_wdg()
 
-
-        show_expand = self.get_setting("expand")
-
-        if not self.can_expand():
-            show_expand = False
-        # DISABLE as it doesn't make any sense any more
-        show_expand = False
- 
-        expand_wdg = None
-        if show_expand:
-            button = ButtonNewWdg(title='Expand Table', icon='FA_ARROWS_H', show_menu=False, is_disabled=False)
-            
-            expand_behavior = self.get_expand_behavior()
-            if expand_behavior:
-                button.add_behavior( expand_behavior )
-            else:
-                button.add_behavior( {
-                'type': 'click_up',
-                'cbjs_action': '''
-                var layout = bvr.src_el.getParent(".spt_layout");
-
-                spt.table.set_layout(layout);
-                spt.table.expand_table();
-                return;
-
-                var version = layout.getAttribute("spt_version");
-                var headers;
-                var table = null;
-                var header_table = null;
-                if (version == '2') {
-                    spt.table.set_layout(layout);
-                    table = spt.table.get_table();
-                    headers = spt.table.get_headers();
-                    header_table = spt.table.get_header_table();
-
-                }
-                else {
-                    table = spt.get_cousin( bvr.src_el, '.spt_table_top', '.spt_table' );
-                    header_table = table;
-                    headers = layout.getElements(".spt_table_th");
-                }
-                var width = table.getStyle("width");
-               
-                // don't set the width of each column, this is simpler
-                if (width == '100%') {
-                    if (header_table) {
-                        var orig_width = header_table.getAttribute('orig_width');
-                        if (orig_width) {
-                            header_table.setStyle("width", orig_width);
-                            table.setStyle("width", orig_width);
-                            layout.setStyle("width", orig_width);
-
-                        } else {
-                            header_table.setStyle("width", "");
-                            table.setStyle("width", "");
-                        }
-                    } else 
-                        table.setStyle("width", "");
-                        
-                }
-                else {
-                    table.setStyle("width", "100%");
-                    if (header_table) {
-                        header_table.setAttribute("orig_width", header_table.getSize().x);
-                        header_table.setStyle("width", "100%");
-                    }
-                    layout.setStyle("width", "100%");
-                }
-               
-                '''
-                } )
-            expand_wdg = button
 
         show_help = self.kwargs.get("show_help")
         if show_help in ["", None]:
@@ -1400,8 +1331,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        if save_button:
-            wdg_list.append( {'wdg': save_button} )
+        #if save_button:
+        #    wdg_list.append( {'wdg': save_button} )
+
 
 
         show_collection_tool = self.kwargs.get("show_collection_tool")
@@ -1412,8 +1344,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             wdg_list.append( {'wdg': collection_div} )
         
 
-        if button_row_wdg.get_num_buttons() != 0:
-            wdg_list.append( { 'wdg': button_row_wdg } )
+        #if button_row_wdg.get_num_buttons() != 0:
+        #    wdg_list.append( { 'wdg': button_row_wdg } )
+
+        if gear_button:
+            wdg_list.append( { 'wdg': gear_button } )
             
         if self.show_search_limit:
             
@@ -1437,8 +1372,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if layout_wdg:
             wdg_list.append( { 'wdg': layout_wdg} )
 
-        if expand_wdg:
-            wdg_list.append( { 'wdg': expand_wdg } )
+        #if expand_wdg:
+        #    wdg_list.append( { 'wdg': expand_wdg } )
 
 
         show_quick_add = self.kwargs.get("show_quick_add")
@@ -1480,48 +1415,63 @@ class BaseTableLayoutWdg(BaseConfigWdg):
  
 
 
-
         
-        xx = DivWdg()
-        xx.add_class("navbar") 
-        xx.add_class("spt_base_table_action_wdg")
+        #xx = DivWdg()
+        div.add_class("navbar") 
+        div.add_class("spt_base_table_action_wdg")
 
-        xx.add_style("flex-wrap: nowrap")
-        xx.add_style("box-shadow: none")
-        xx.add_style("width: 100%")
-        xx.add_style("box-sizing: border-box")
-        xx.add_style("z-index: 101")
+        div.add_style("flex-wrap: nowrap")
+        div.add_style("box-shadow: none")
 
-        left_div = DivWdg()
-        left_div.add_class("d-flex")
+        div.add_style("box-sizing: border-box")
+        div.add_style("z-index: 101")
+
+        div.add_style("justify-content: flex-start")
+
+
+        # Edit
+        edit_div = DivWdg()
+        edit_div.add_style("display: flex")
+        edit_div.add_style("margin-right: 20px")
+        #edit_div.add_style("border-right: solid 2px #999")
+
+        if save_button:
+            edit_div.add(save_button)
+
+        if button_row_wdg.get_num_buttons() != 0:
+            edit_div.add(button_row_wdg)
+
+
+
+        #
+        # Buttons
+        #
+        action_div = DivWdg()
+        action_div.add_class("d-flex")
 
         from tactic.ui.widget import BootstrapButtonRowWdg
         collapse_div = BootstrapButtonRowWdg() 
 
-        last_widget = None
         for item in wdg_list:
             widget = item.get('wdg')
 
             if item.get("mobile_display") == True:
-                left_div.add(widget)
+                action_div.add(widget)
             else:
                 collapse_div.add(widget)
-            
-            last_widget = widget
-        
-        xx.add(left_div)
-        xx.add(collapse_div)
-        div.add(xx)
+
+
+
+        # add all of the components
+
+        div.add(edit_div)
+        div.add(action_div)
+        div.add(collapse_div)
+        collapse_div.add_style("margin-left: auto")
+
+
 
         outer = DivWdg()
-
-        # Different browsers seem to have a lot of trouble with this
-        web = WebContainer.get_web()
-        browser = web.get_browser()
-        import os
-        if browser == 'Qt' and os.name != 'nt':
-            height = "38px"
-
         outer.add(div)
         if self.show_search_limit:
             outer.add(dialog)
@@ -1594,7 +1544,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # Save button
         if mode == "icon":
-            save_button = ButtonNewWdg(title='Save', icon="FA_SAVE", show_menu=False, show_arrow=False)
+            save_button = ButtonNewWdg(title='Save', icon="FA_SAVE", show_menu=False, show_arrow=False, size=16)
         else:
             save_button = ActionButtonWdg(title='Save', show_menu=False, show_arrow=False)
             #save_button_top.add_class("btn-primary")
@@ -1603,9 +1553,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # it needs to be called save_button_top for the button to re-appear after its dissapeared
 
-        save_button.add_style("margin-left: 10px")
-
-        
         save_button.add_behavior({
         'type': 'click_up',
         'update_current_only': True,
@@ -1635,14 +1582,15 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-
     def get_button_row_wdg(self):
         '''draws the button row in the shelf'''
         from tactic.ui.widget.button_new_wdg import ButtonRowWdg
 
         button_row_wdg = ButtonRowWdg(show_title=True)
 
-        # add an item button
+        #
+        # Add New Item
+        #
         show_insert = self.get_show_insert()
         if show_insert:
             insert_view = self.kwargs.get("insert_view")
@@ -1651,6 +1599,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             search_type_obj = SearchType.get(self.search_type)
             search_type_title = search_type_obj.get_value("title")
+
 
             button = ButtonNewWdg(title='Add New Item', icon="FA_PLUS")
 
@@ -1809,7 +1758,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             menu.add(menu_item)
 
 
-            # collection
+            #
+            # Collection
+            #
             if SearchType.column_exists(self.search_type, "_is_collection"):
                 menu_item = MenuItem(type='action', label='Add New Collection')
                 menu_item.add_behavior( {
@@ -1839,74 +1790,34 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-            menu_item = MenuItem(type='action', label='Edit Multiple Items (NA)')
-            menu_item.add_behavior( {
-                'cbjs_action': '''
-                alert('Not implemented')
-                '''
-            } )
-            #menu.add(menu_item)
-            #menu_item = MenuItem(type='separator')
-            #menu.add(menu_item)
- 
-
 
             menus = [menu.get_data()]
             SmartMenu.add_smart_menu_set( button.get_arrow_wdg(), { 'DG_BUTTON_CTX': menus } )
             SmartMenu.assign_as_local_activator( button.get_arrow_wdg(), "DG_BUTTON_CTX", True )
 
-        # NOTE: Changed to a button 
-        #if show_save:
-        if False:
-
-            # Save button
-            #save_button = ButtonNewWdg(title='Save Current Table', icon=IconWdg.SAVE_GRAY, is_disabled=False)
-            save_button = ButtonNewWdg(title='Save Current Table', icon="FA_SAVE", is_disabled=False)
-            save_button_top = save_button.get_top()
-            save_button_top.add_style("display", "none")
-            save_button_top.add_class("spt_save_button")
-
-            
-            save_button.add_behavior({
-            'type': 'click_up',
-            'update_current_only': True,
-            'cbjs_action': '''
-            var top = bvr.src_el.getParent(".spt_layout");
-            var version = top.getAttribute("spt_version");
-            if (version == "2") {
-                var dummy = top.getElement('.spt_button_row');
-                if (dummy) dummy.focus();
-
-                spt.table.set_layout(top);
-                spt.table.save_changes();
-            }
-            else {
-                spt.dg_table.update_row(evt, bvr)
-            }
-            ''',
-            })
 
 
-            button_row_wdg.add(save_button)
+        return button_row_wdg
 
 
-        
-        
 
 
+    def get_gear_button(self):
 
         if self.can_use_gear() and self.get_setting("gear"):
             button = ButtonNewWdg(title='More Options', icon="FA_COG")
-            button_row_wdg.add(button)
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
             
             smenu_set = SmartMenu.add_smart_menu_set( button.get_collapsible_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_collapsible_wdg(), "BUTTON_MENU", True )
+
+        else:
+            button = None
       
 
-        return button_row_wdg
+        return button
 
 
 

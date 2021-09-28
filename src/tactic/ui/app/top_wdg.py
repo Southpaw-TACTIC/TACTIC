@@ -1223,6 +1223,9 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
 
+        widget.add('''
+        <script src="https://bernii.github.io/gauge.js/dist/gauge.min.js"> </script>
+        ''')
 
         # video js
         Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)

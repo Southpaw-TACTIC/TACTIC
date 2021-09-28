@@ -1777,6 +1777,15 @@ class PluginTools(PluginBase):
                                 old_code = sobject.get('pipeline_code')
                                 new_code = old_code.replace("$PROJECT",project_code,1)
                                 sobject.set_value('pipeline_code',new_code)
+
+                            else:
+                                old_pipeline_code = sobject.get("pipeline_code") 
+                                if old_pipeline_code.find("/") != -1:
+                                    parts = old_pipeline_code.split("/", 1)
+                                    new_pipeline_code = "%s/%s" % (project_code,parts[1]);
+                                    sobject.set_value('pipeline_code',new_pipeline_code)
+
+
                                 
                     if base_search_type.startswith("sthpw/"):
 
@@ -1810,6 +1819,7 @@ class PluginTools(PluginBase):
                         if base_search_type == "sthpw/pipeline":
                             
                             if "$PROJECT" in sobject.get('code'):
+                                # Not really used
                                 old_code = sobject.get('code')
                                 new_code = old_code.replace("$PROJECT",project_code,1)
                                 search = Search("sthpw/pipeline")
@@ -1818,6 +1828,21 @@ class PluginTools(PluginBase):
                                 if not exists:
                                     sobject.set_value('code',new_code)
                                     unique = True
+
+                            else:
+                                # This is probably easier to maintain
+                                old_code = sobject.get('code')
+                                if old_code.find("/") != -1:
+                                    parts = old_code.split("/", 1)
+                                    new_code =  "%s/%s" % (project.get_code(), parts[1])
+
+                                    search = Search("sthpw/pipeline")
+                                    search.add_filter("code", new_code)
+                                    exists = search.get_sobject()
+                                    if not exists:
+                                        sobject.set_value('code',new_code)
+                                        unique = True
+
             
                         if base_search_type == "sthpw/login_group":
                             if old_project_code:
