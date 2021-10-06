@@ -5,12 +5,12 @@ insert.set_value('code', """WIDGET_CONFIG00632""")
 insert.set_value('config', """<config>
 <vfx.asset.main>
 <html>
-<div>
+<div class="vfx_asset_list_top">
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Assets</title>
       <search_type>vfx/asset</search_type>
-      <element_names>preview,asset_category,code,description,history,task_edit,task_status_edit,notes,completion</element_names>
+      <element_names>preview,asset_category,code,description,history,task_edit,task_status_edit,task_status_edit,notes</element_names>
       <use_last_search>false</use_last_search>
       <simple_search_view>asset_custom_filter</simple_search_view>
       <search_view>link_search:asset</search_view>

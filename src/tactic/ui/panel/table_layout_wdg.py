@@ -686,6 +686,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 text-overflow: ellipsis;
             }
 
+            .spt_layout .spt_table_row {
+                //border: solid 1px transparent;
+                box-sizing: border-box;
+            }
+
 
             .spt_layout .spt_table_select {
                 display: flex;
@@ -2305,14 +2310,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
 
-
-        if self.kwargs.get("__hidden__") == True:
-            tr.add_color("background", "background", -8)
-            border_color = table.get_color("table_border", default="border")
-        else:
-            tr.add_color("background", "background", -2)
-            border_color = table.get_color("table_border", 0, default="border")
-            tr.add_color("color", "color", 8)
+        tr.add_color("background", "background", -2)
+        border_color = table.get_color("table_border", 0, default="border")
+        tr.add_color("color", "color", 8)
 
         #SmartMenu.assign_as_local_activator( tr, 'DG_HEADER_CTX' )
 
@@ -2402,6 +2402,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             #inner_div.add_style("overflow: hidden")
 
             inner_div.add_style("min-width: 20px")
+            inner_div.add_style("text-align: center")
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
@@ -3211,7 +3212,9 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             tr.add_style("display: none")
 
         # remember the original background colors
-        bgcolor1 = table.get_color("background")
+        bgcolor1 = table.get_color("background_table")
+        if not bgcolor1:
+            bgcolor1 = table.get_color("background")
         #bgcolor2 = table.get_color("background", -1)
         bgcolor2 = bgcolor1
         table.add_attr("spt_bgcolor1", bgcolor1)
@@ -4696,6 +4699,8 @@ spt.table.select_row = function(row) {
         row.addClass("spt_table_selected");
     }
     spt.table.last_selected_row = row;
+
+    //row.setStyle("border-top", "solid 2px blue");
 }
 
 
@@ -4817,7 +4822,7 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
     hidden_row.setStyle("height", "fit-content");
     hidden_row.setStyle("font-size", "14px");
     hidden_row.setStyle("font-weight", "bold");
-    hidden_row.setStyle("padding-bottom", "10px");
+    hidden_row.setStyle("padding-bottom", "20px");
 
     // position the arrow
     var src_el = kwargs.src_el;
@@ -4846,13 +4851,13 @@ spt.table.add_hidden_row = function(row, class_name, kwargs) {
         var border_color = "var(--spt_palette_table_border)";
 
         // test make the hidden row sit on top of the table
-        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; filter: drop-shadow(0px 0px 10px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 14px; overflow: hidden; min-width: 300px'>" +
+        widget_html = "<div class='spt_hidden_content_top' style='border: solid 1px "+border_color+"; position: relative; z-index:" + spt.table.last_table.hidden_zindex + "; filter: drop-shadow(0px 0px 16px "+shadow_color+"); background: "+color+"; margin-right: 20px; margin-top: 20px; overflow: hidden; min-width: 300px'>" +
 
           "<div class='spt_hidden_content_pointer' style='border-left: 13px solid transparent; border-right: 13px solid transparent; border-bottom: 14px solid "+color+";position: absolute; top: -14px; left: "+dx+"px'></div>" +
           "<div style='border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 13px solid "+color+";position: absolute; top: -13px; left: "+(dx+1)+"px'></div>" +
 
-          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 50'><i class='hand fa fa-remove'> </i></div>" +
-          "<div class='spt_hidden_content' style='padding-top: 3px'>" + widget_html + "</div></div>";
+          "<div class='spt_remove_hidden_row' style='position: absolute; right: 3px; top: 3px; z-index: 102'><i class='hand fa fa-remove'> </i></div>" +
+          "<div class='spt_hidden_content' style='padding-top: 0px'>" + widget_html + "</div></div>";
 
         hidden_row.setStyle("display", "none");
         var cell = src_el.getParent('.spt_cell_no_edit');
@@ -7199,9 +7204,11 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // HACK for tile layout 
             dummy = spt.behavior.clone(dummy);
 
+            /*
             if (['false', "False", false].indexOf(expand_on_load) > -1) {
                 spt.table.expand_table();
             }
+            */
 
 
 
@@ -7227,8 +7234,6 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
 
             }
 
-            //spt.table.expand_table();
-
 
             // for efficiency, we do not redraw the whole table to calculate the
             // bottom so just change the bg color
@@ -7246,7 +7251,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
                 on_complete();
             }
 
-
+            spt.table.expand_table();
 
           }
         }
@@ -7892,82 +7897,12 @@ spt.table.set_column_width = function(element_name, width, cells) {
         }
     }
 
-
-    var headers = spt.table.get_headers();
-    var cells = [];
-    if (row)
-        cells = row.getElements(".spt_cell_edit");
-    var total_width = 0;
-
-    // add up total_width
-    // Commented out: not necessary for basic table structure
-    for (var i = 0; i < headers.length; i++) {
-        var header = headers[i];
-
-        // ignore floating columns
-        if (header.getStyle("position", "absolute")) {
-            continue;
-        }
-
-        if (header.getAttribute("spt_element_name") == element_name) {
-            var new_width = width + "";
-            new_width = parseInt( new_width.replace("px", "") );
-            total_width += new_width;
-        }
-        else {
-            var size = header.getSize();
-            total_width += size.x;
-            new_width = size.x;
-        }
-
-
-    }
-
+    // set the header size
     var curr_header = spt.table.get_header_by_cell(cell);
-    if (total_width) {
-        /*
-        header_table.setStyle("width", total_width);
-        table.setStyle("width", total_width);
-        subtable = table.getElement(".spt_table_table");
-        if (subtable) {
-            subtable.setStyle("width", total_width);
-
-        }
-        */
-    }
-
     curr_header.setStyle("width", width);
     curr_header.setAttribute("last_width", width);
 
-    let mode = "div";
-    if (mode == "div") {
-        if (cells && cells.length != 0) {
-            cells.forEach( cell => {
-                cell.setStyle("width", width);
-                cell.setAttribute("last_width", width);
-            } )
-        }
-        else {
-            let rows = spt.table.get_all_rows();
-            rows.forEach( row => {
-                let cell = spt.table.get_cell(element_name, row);
-                cell.setStyle("width", width);
-                cell.setAttribute("last_width", width);
-            } )
-        }
-
-
-    }
-    else {
-        cell.setStyle("width", width);
-        cell.setAttribute("last_width", width);
-    }
-
-
-
-    var insert_cell = spt.table.get_insert_row_cell(element_name);
-    if (insert_cell)
-        insert_cell.setStyle("width", width);
+    spt.table.expand_table("free")
 
 }
 
@@ -8036,23 +7971,30 @@ spt.table.align_column_widths = function() {
 
 spt.table.expand_table = function(mode) {
 
-    if (!mode) {
-        mode = "full";
+
+    let layout = spt.table.get_layout();
+    let version = layout.getAttribute("spt_version");
+    let headers;
+    let table = null;
+    let subtable = null;
+    let header_table = null;
+
+
+    let last_mode = layout.last_expand_mode;
+    if (!last_mode) {
+        last_mode = "full";
     }
+    if (!mode) {
+        mode = last_mode;
+    }
+    layout.last_expand_mode = mode;
 
-
-    var layout = spt.table.get_layout();
-    var version = layout.getAttribute("spt_version");
-    var headers;
-    var table = null;
-    var subtable = null;
-    var header_table = null;
 
     spt.table.set_layout(layout);
     table = spt.table.get_table();
 
     // if there is a subtable, then use that instead
-    var subtable = table.getElement(".spt_table_table");
+    subtable = table.getElement(".spt_table_table");
 
     var expand_last_column = true;
     if (subtable) {
@@ -8075,8 +8017,6 @@ spt.table.expand_table = function(mode) {
         let widths = [];
         if (header_table) {
 
-            var total_width = 0;
-
             // remove the widths of all the cells
             //var cells = header_table.getElements("th");
             var cells = header_table.getElement(".spt_table_header_row").getElements(".spt_table_header");
@@ -8089,9 +8029,6 @@ spt.table.expand_table = function(mode) {
                 cell.setStyle("width", size)
 
             })
-
-
-            //console.log("total: " + total_width);
 
             header_table.setStyle("width", "max-content");
 
@@ -8125,7 +8062,25 @@ spt.table.expand_table = function(mode) {
             })
 
 
+
+            var bot_row = spt.table.get_bottom_row();
+            if (bot_row && widths.length > 0) {
+                var cells = bot_row.getElements(".spt_cell_edit");
+                let count = 0;
+                cells.forEach( function(cell) {
+                    if (count == 0) {
+                        cell.setStyle("width", widths[count+offset]+30);
+                    }
+                    else {
+                        cell.setStyle("width", widths[count+offset]);
+                    }
+                    count += 1;
+                } )
+            }
+
+
             table.setStyle("width", "max-content");
+
 
 
 
@@ -8161,7 +8116,8 @@ spt.table.expand_table = function(mode) {
                 }
 
 
-                let width = cell.getSize().x;
+                //let width = cell.getSize().x;
+                let width = cell.getStyle("width");
                 if (width == 0) width = 100;
                 widths.push(width);
                 cell.setStyle("width", width);
@@ -8214,14 +8170,20 @@ spt.table.expand_table = function(mode) {
 
 
             var bot_row = spt.table.get_bottom_row();
-            if (bot_row) {
+            if (bot_row && widths.length > 0) {
                 var cells = bot_row.getElements(".spt_cell_edit");
                 let count = 0;
                 cells.forEach( function(cell) {
-                    cell.setStyle("width", widths[count]);
+                    if (count == 0) {
+                        cell.setStyle("width", widths[count+offset]+30);
+                    }
+                    else {
+                        cell.setStyle("width", widths[count+offset]);
+                    }
                     count += 1;
                 } )
             }
+
 
 
 

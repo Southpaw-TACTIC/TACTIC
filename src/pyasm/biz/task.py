@@ -1111,18 +1111,6 @@ class Task(SObject):
             process_type = process_obj.get_type()
             attrs = process_obj.get_attributes()
 
-            duration = attrs.get("duration")
-            if duration:
-                duration = int(duration)
-            else:
-                duration = default_duration
-
-            bid_duration = attrs.get("bid_duration")
-            if not bid_duration:
-                bid_duration = default_bid_duration
-            else:
-                bid_duration = int(bid_duration)
-
             assigned_login_group = attrs.get("assigned_login_group") or None
 
             if not process_sobject:
@@ -1134,6 +1122,32 @@ class Task(SObject):
 
 
             properties = workflow.get("properties") or {}
+
+
+            # json property have higher priority over xmls
+            # This is for backward compatibility
+            
+            if properties.get("duration"):
+                duration = properties.get("duration")
+            else:
+                duration = attrs.get("duration")
+            
+            if duration:
+                duration = int(duration)
+            else:
+                duration = default_duration
+
+
+            if properties.get("bid_duration"):
+                bid_duration = properties.get("bid_duration")
+            else:
+                bid_duration = attrs.get("bid_duration")
+
+            if not bid_duration:
+                bid_duration = default_bid_duration
+            else:
+                bid_duration = int(bid_duration)
+
 
             if process_type in ['hierarchy']:
                 if version_2:

@@ -22,7 +22,7 @@
   </element>
   <element edit='false' name='completion'/>
 
-  <element name="shot_task_schedule">
+  <element name="shot_task_schedule" width="40%">
     <display class="tactic.ui.table.GanttElementWdg">
       <options>[
       {

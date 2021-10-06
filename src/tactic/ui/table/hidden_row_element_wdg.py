@@ -113,12 +113,14 @@ class HiddenRowElementWdg(BaseTableElementWdg):
             top.setStyle("pointer-events", "none");
 
             spt.table.add_hidden_row(row, class_name, kwargs);
+           spt.table.expand_table("free");
 
             bvr.src_el.loading = true;
             setTimeout( () => {
                bvr.src_el.loading = false 
                top.setStyle("opacity", "1.0");
                top.setStyle("pointer-events", "");
+
             }, 1000 )
         }
 
@@ -140,7 +142,7 @@ class HiddenRowElementWdg(BaseTableElementWdg):
         hidden_row_id = Common.generate_random_key()
         top.add_attr("spt_hidden_row_id", hidden_row_id)
 
-        if sobject.is_insert():
+        if sobject and sobject.is_insert():
             top.add_style("opacity: 0.3")
         else:
             # this gives the swap it's behaviors, so will be disabled

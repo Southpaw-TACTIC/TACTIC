@@ -255,6 +255,7 @@ class ReviewWdg(BaseRefreshWdg):
 
         if search_key:
             search_keys = [search_key]
+            self.sobjects = Search.get_by_search_keys(search_keys)
         elif search_keys: 
             if isinstance(search_keys, six.string_types):
                 try:
@@ -270,6 +271,7 @@ class ReviewWdg(BaseRefreshWdg):
             self.sobjects = Search.eval(expression)
         else:
             self.sobjects = []
+
  
         # Get snapshots for review session
         self.snapshots = []

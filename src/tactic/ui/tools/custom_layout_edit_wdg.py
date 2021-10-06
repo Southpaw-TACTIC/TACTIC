@@ -849,7 +849,7 @@ class CustomLayoutEditWdg(BaseRefreshWdg):
                     folder_header.add(title)
                     folder_header.add_style("margin-top: 3px")
                     folder_header.add_style("margin-bottom: 3px")
-                    folder_header.add_color("color", "color2")
+                    folder_header.add_color("color", "color")
                     if folder == "-- no folder --":
                         folder_header.add_style("opacity: 0.5")
                         folder_header.add_style("font-style: italic")

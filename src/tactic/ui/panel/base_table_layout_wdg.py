@@ -1513,12 +1513,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         xx.add(collapse_div)
         div.add(xx)
 
-        if self.kwargs.get("__hidden__"):
-            scale = 0.8
-        else:
-            scale = 1
-
-
         outer = DivWdg()
 
         # Different browsers seem to have a lot of trouble with this
@@ -1527,14 +1521,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         import os
         if browser == 'Qt' and os.name != 'nt':
             height = "38px"
-        elif scale != 1:
-            #xx.add_style("position: absolute")
-            xx.add_color("backgroud","background")
-            xx.set_scale(scale)
-            xx.add_style("float: left")
-            xx.add_style("margin-left: -25")
-            xx.add_style("margin-top: -5")
-
 
         outer.add(div)
         if self.show_search_limit:
@@ -1956,7 +1942,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
-            button = ButtonNewWdg(title=title, icon="FA_SEARCH", show_menu=False, show_arrow=False)
+            button = ButtonNewWdg(title=title, icon="FA_FILTER", show_menu=False, show_arrow=False)
             button.add_class("spt_table_search_button")
             div.add(button)
             
@@ -2459,9 +2445,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )    
       
-        menu_data.append( {
-            "type": "separator"
-        } )
+        #menu_data.append( {
+        #    "type": "separator"
+        #} )
 
 
         # NOTE: This assumes that the way to add an item is to use edit widget.
@@ -2553,6 +2539,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         search_type_obj = SearchType.get(self.search_type)
 
         security = Environment.get_security()
+
+
+      
+      
+
+        menu_data.append( {
+            "type": "title", "label": "Table Columns &amp; Contents"
+        } )
+        project_code = Project.get_project_code()
+
+        access_keys = self._get_access_keys("view_column_manager",  project_code)
+
         if security.check_access("builtin", "view_site_admin", "allow"):
             kwargs = {
                 'search_type': self.search_type,
@@ -2584,91 +2582,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 },
             } )
 
-            """
-            menu_data.append( {
-                "type": "action",
-                "label": "Show Help",
-                "bvr_cb": {
-                    'cbjs_action':
-                        '''
-                        var activator = spt.smenu.get_activator(bvr);
-                        spt.help.set_top()
-                        spt.help.load_alias("calendar-wdg");
-                        '''
-                } 
-            } )
-            """
 
 
-            menu_data.append( {
-                "type": "separator"
-             } )
-            """
-            menu_data.append( {
-                "type": "action",
-                "label": "Edit Column Definition",
-                "bvr_cb": {
-                    'args' : {'search_type': search_type_obj.get_base_key()},
-                    'options': {
-                        'class_name': 'tactic.ui.panel.EditColumnDefinitionWdg',
-                        
-                        'popup_id': 'edit_column_defn_wdg',
-                        'title': 'Edit Column Definition'
-                    },
-                    'cbjs_action':
-                        '''
-                        var activator = spt.smenu.get_activator(bvr);
-                        bvr.args.element_name = activator.getProperty("spt_element_name");
-                        bvr.args.view = spt.smenu.get_activator(bvr).getParent('.spt_table').getAttribute('spt_view');
-                        var popup = spt.popup.get_widget(evt,bvr);
-                        popup.activator = activator;
-                        '''
-                },
-                #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-                #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
-            } )
-            """
-
-        
-        # Remove Column menu item ...
-        menu_data.append( {
-            "type": "action",
-            "label": "Remove Column",
-            "bvr_cb": {
-                'options': {},  # need to have the options hash available, but it's key/values are added dynamically
-                'cbjs_action':
-                    '''
-                    var activator = spt.smenu.get_activator(bvr);
-
-                    var layout = activator.getParent(".spt_layout");
-                    var version = layout.getAttribute("spt_version");
-                    if (version == "2") {
-                        var element_name = activator.getProperty("spt_element_name");
-                        spt.table.set_layout(layout);
-                        spt.table.remove_column(element_name);
-                    }
-                    else {
-                        bvr.options.element_name = activator.getProperty("spt_element_name");
-                        bvr.options.element_idx = parseInt(activator.getProperty("col_idx")) / 2;
-                        spt.dg_table.remove_column_cbk(evt,bvr);
-                    }
 
 
-                    '''
-            },
-            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
-            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
-        } )
-        
-       
-      
-
-        menu_data.append( {
-            "type": "title", "label": "Table Columns &amp; Contents"
-        } )
-        project_code = Project.get_project_code()
-
-        access_keys = self._get_access_keys("view_column_manager",  project_code)
         # Column Manager menu item ...
         if security.check_access("builtin", access_keys, "allow"):
             menu_data.append( {
@@ -2731,9 +2648,49 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             } )
 
 
-            menu_data.append( {
-                "type": "separator"
-            } )
+
+
+        menu_data.append( {
+            "type": "separator"
+         } )
+
+        
+        # Remove Column menu item ...
+        menu_data.append( {
+            "type": "action",
+            "label": "Remove Column",
+            "bvr_cb": {
+                'options': {},  # need to have the options hash available, but it's key/values are added dynamically
+                'cbjs_action':
+                    '''
+                    var activator = spt.smenu.get_activator(bvr);
+
+                    var layout = activator.getParent(".spt_layout");
+                    var version = layout.getAttribute("spt_version");
+                    if (version == "2") {
+                        var element_name = activator.getProperty("spt_element_name");
+                        spt.table.set_layout(layout);
+                        spt.table.remove_column(element_name);
+                    }
+                    else {
+                        bvr.options.element_name = activator.getProperty("spt_element_name");
+                        bvr.options.element_idx = parseInt(activator.getProperty("col_idx")) / 2;
+                        spt.dg_table.remove_column_cbk(evt,bvr);
+                    }
+
+
+                    '''
+            },
+            #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
+            #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
+        } )
+        
+ 
+
+
+        menu_data.append( {
+            "type": "separator"
+        } )
 
         
 

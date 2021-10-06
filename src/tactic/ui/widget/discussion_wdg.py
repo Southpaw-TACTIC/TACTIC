@@ -1647,7 +1647,7 @@ class NoteCollectionWdg(BaseRefreshWdg):
         self.attachments = self.kwargs.get("attachments")
 
 
-        if self.attachments == None:
+        if self.attachments == None or self.attachments == "":
 
             from pyasm.biz import Snapshot
 
@@ -2026,7 +2026,8 @@ class NoteWdg(BaseRefreshWdg):
 
         else:
             #tr.add_color("background", "background", -10)
-            tr.add_style("border-bottom: solid 2px #DDD")
+            border_color = tr.get_color("border")
+            tr.add_style("border-bottom: solid 1px %s" % border_color)
 
         td = content.add_cell()
 
@@ -2651,20 +2652,22 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         # need the process to predict the notification to and cc
         self.process = self.kwargs.get('process')
 
+        content_div = DivWdg()
+        border_color = content_div.get_color("border")
+
         style = HtmlElement.style('''
             .spt_discussion_add_note textarea {
-                width: 100%;
+                width: 100%%;
                 height: 100px;
-                border: 2px solid #ccc;
+                border: 2px solid %s;
                 outline: none;
                 border-radius: 5px;
                 background-image: none !important;
                 padding: 5px;
             }
-        ''')
+        ''' % border_color)
 
       
-        content_div = DivWdg()
         self.top.add(content_div)
         content_div.add_style("min-width: 300px")
         content_div.add(style)
@@ -3133,8 +3136,6 @@ class DiscussionAddNoteCmd(Command):
             checkin_mode = "parent"
             if checkin_mode == "parent":
                 attachment_process = "%s/attachment" % process
-
-                # NOTE: we may want to use a random key rather than the
                 # basename to ensure that there is never a duplicate
                 # context
                 attachment_context = "attachment/%s/%s" % (process, basename)

@@ -294,18 +294,20 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         project_code = Project.get_project_code()
         security = Environment.get_security()
+
+        group_names = security.get_group_names()
         
         access_keys_dict = self.get_access_keys_dict()
         if security.check_access("builtin", "view_site_admin", "allow"):
+            self.is_admin = True
+        elif "admin" in group_names:
+            self.is_admin = True
+        elif security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
             self.is_admin = True
         else:
             self.is_admin = False
        
        
-        # see all menu items
-        #if security.check_access("gear_menu",[{'submenu': "*", 'label': '*','project': project_code}], "allow"):
-        #    self.is_admin = True
-
 
         if self.is_admin:
         

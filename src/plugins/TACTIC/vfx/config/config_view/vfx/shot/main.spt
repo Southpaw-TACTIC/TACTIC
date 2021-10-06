@@ -5,7 +5,7 @@ insert.set_value('code', """WIDGET_CONFIG00997""")
 insert.set_value('config', """<config>
 <vfx.shot.main>
 <html>
-<div>
+<div class="vfx_shot_list_top">
   <element>
     <display class="tactic.ui.panel.ViewPanelWdg">
       <title>Shots</title>
@@ -14,9 +14,15 @@ insert.set_value('config', """<config>
       <use_last_search>false</use_last_search>
       <simple_search_view>shot_custom_filter</simple_search_view>
       <search_view>link_search:shot</search_view>
+      <init_load_num>4</init_load_num>
     </display>
   </element>
 </div>
+<style type="text/css">
+.vfx_shot_list_top .spt_table_header_content {
+    //text-align: center;
+}
+</style>
 </html>
 
 </vfx.shot.main>
