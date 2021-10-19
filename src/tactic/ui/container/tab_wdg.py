@@ -2690,7 +2690,9 @@ spt.tab.view_definition = function(bvr) {
 
         header.add_behavior({
             'type': 'load',
-            'cbjs_action': '''$(bvr.src_el).bmdRipples();'''
+            'cbjs_action': '''
+                //bvr.src_el.bmdRipples();
+            '''
         })
 
         if self.use_default_style:

@@ -389,7 +389,7 @@
     </element>
     <element name="upn" title="User Principal Name">
         <display class="tactic.ui.input.TextInputWdg">
-            <hint_text>The email format version of a login. This can be changed after creation</hint_text>
+            <hint_text>An alternate format of a login. This can be changed after creation</hint_text>
         </display>
         <action class="DatabaseAction">
             <default_col>login</default_col>

@@ -972,8 +972,15 @@ class PluginInstaller(PluginBase):
 
             node_name = self.xml.get_node_name(node)
             if node_name == "plugin":
+
                 plugin_code = self.xml.get_attribute(node, 'code')
-                plugin_dir = "%s/%s" % (self.plugin_dir, plugin_code)
+                mode = self.xml.get_attribute(node, 'mode')
+
+                if mode == "absolute":
+                    plugin_base_dir = Environment.get_plugin_dir()
+                    plugin_dir = "%s/%s" % (plugin_base_dir, plugin_code)
+                else:
+                    plugin_dir = "%s/%s" % (self.plugin_dir, plugin_code)
 
                 print("Installing plugin: ", plugin_dir)
                 installer = PluginInstaller(plugin_dir=plugin_dir, verbose=False, register=True)

@@ -1157,9 +1157,8 @@ class TopWdg(Widget):
            ''')
 
 
-            self.body.add('''
-<script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
-            ''')
+            #self.body.add('''<script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+            #''')
 
             
         if css_library == "default":

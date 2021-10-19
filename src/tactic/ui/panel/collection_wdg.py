@@ -655,8 +655,27 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         right.add_style("vertical-align: top")
         right.add_style("width: auto")
         right.add_style("overflow-y: auto")
-        left.add(self.get_collection_wdg())
-        right.add(self.get_right_content_wdg())
+
+        left_content = DivWdg()
+        left.add(left_content)
+
+        right_content = DivWdg()
+        right.add(right_content)
+        window_resize_offset = self.kwargs.get("window_resize_offset")
+        if window_resize_offset:
+            offset = window_resize_offset
+            right_content.add_style("height", "calc(100vh - %spx)" % offset)
+            right_content.add_attr("spt_window_resize_offset", window_resize_offset)
+            right_content.add_class("spt_window_resize")
+            left_content.add_style("height", "calc(100vh - %spx)" % offset)
+            left_content.add_attr("spt_window_resize_offset", window_resize_offset)
+            left_content.add_class("spt_window_resize")
+
+
+
+
+        left_content.add(self.get_collection_wdg())
+        right_content.add(self.get_right_content_wdg())
 
         return top
 
@@ -671,10 +690,10 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         div.add_style("overflow: auto")
         div.add_class("spt_collection_wrap")
 
-        window_resize_offset = self.kwargs.get("window_resize_offset")
-        if window_resize_offset:
-            div.add_class("spt_window_resize")
-            div.add_attr("spt_window_resize_offset", window_resize_offset)
+        #window_resize_offset = self.kwargs.get("window_resize_offset")
+        #if window_resize_offset:
+        #    div.add_class("spt_window_resize")
+        #    div.add_attr("spt_window_resize_offset", window_resize_offset)
 
 
         # Shelf
@@ -1080,10 +1099,10 @@ class CollectionContentWdg(BaseRefreshWdg):
         top.add_style("overflow-x", "auto")
         top.add_style("height", "auto")
 
-        window_resize_offset = self.kwargs.get("window_resize_offset")
-        if window_resize_offset:
-            top.add_class("spt_window_resize")
-            top.add_attr("spt_window_resize_offset", window_resize_offset)
+        #window_resize_offset = self.kwargs.get("window_resize_offset")
+        #if window_resize_offset:
+        #    top.add_class("spt_window_resize")
+        #    top.add_attr("spt_window_resize_offset", window_resize_offset)
 
         window_resize_xoffset = self.kwargs.get("window_resize_xoffset")
         if window_resize_xoffset:
@@ -1550,7 +1569,7 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_top.add_class("spt_collection_div_top")
         collection_div = DivWdg()
         
-        name = collection.get_value("name")
+        name = collection.get_value("name") or "--Collection--"
         # Adding Collection title (without the number count) as an attribute
         collection_top.set_attr("collection_name", name)
 
@@ -1591,7 +1610,6 @@ class CollectionItemWdg(BaseRefreshWdg):
         from tactic.ui.panel import ThumbWdg2
         thumb_wdg = ThumbWdg2()
         thumb_wdg.set_sobject(collection)
-        #collection_div.add(thumb_wdg)
         thumb_wdg.add_style("width: 45px")
         thumb_wdg.add_style("float: left")
         thumb_wdg.add_style("margin-top: -10px")
@@ -1627,7 +1645,6 @@ class CollectionItemWdg(BaseRefreshWdg):
             } )
 
 
-        name = collection.get_value("name")
         collection_div.add("<div style='margin-left: 10px'>%s</div>" % name)
 
 

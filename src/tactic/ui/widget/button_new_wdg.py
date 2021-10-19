@@ -721,7 +721,7 @@ class ButtonNewWdg(ButtonWdg):
         self.hit_wdg.add_behavior ( {
             "type": "load",
             "cbjs_action": """
-                $(bvr.src_el).bmdRipples();
+                //bvr.src_el.bmdRipples();
             """
         } )
         
@@ -1067,7 +1067,7 @@ class BootstrapButtonWdg(BaseRefreshWdg):
         self.button_wdg.add_behavior ( {
             "type": "load",
             "cbjs_action": '''
-                $(bvr.src_el).bmdRipples();
+                //bvr.src_el.bmdRipples();
            '''
         } )
 
