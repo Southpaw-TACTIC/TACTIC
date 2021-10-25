@@ -138,6 +138,22 @@ class SnapshotBuilder(Base):
 
         snapshot_code = snapshot.get_code()
 
+        # add a forward reference
+        """
+        snapshot.add_ref(
+                self,
+                self.get_value("context"),
+                self.get_value("version"),
+                instance_name,
+                node_name,
+                snapshot_code=self.get_code(),
+                level=level,
+                tag=tag
+        )
+        """
+
+
+        # add a backward reference
         return self.add_ref( sobject, context, version, instance_name, parent, type, node_name, snapshot_code=snapshot_code, level=level, tag=tag )
 
 

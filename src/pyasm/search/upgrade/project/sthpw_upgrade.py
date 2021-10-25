@@ -40,7 +40,7 @@ class SthpwUpgrade(BaseUpgrade):
             snapshot_code varchar(256),
             data jsonb,
             login varchar(256),
-            CONSTRAINT "dependency_code_idx" UNIQUE (code),
+            CONSTRAINT "dependency_code_idx" UNIQUE (code)
         );
         ''')
 

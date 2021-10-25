@@ -1248,6 +1248,20 @@ class Snapshot(SObject):
             self.commit()
 
 
+        # use dependency table as well
+        parent_snapshot_code = self.get_code()
+        child_snapshot_code = snapshot.get_code()
+
+        search = Search("sthpw/dependency")
+        search.add_filter("parent_code", parent_snapshot_code)
+        search.add_filter("snapshot_code", child_snapshot_code)
+        if not search.get_sobject():
+            dependency = SearchType.create("sthpw/dependency")
+            dependency.set_value("parent_code", parent_snapshot_code)
+            dependency.set_value("snapshot_code", child_snapshot_code)
+            dependency.commit()
+
+
 
 
     ##################
