@@ -902,6 +902,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
         search.add_filter("_is_collection", True)
 
+
         # make sure the collections are order by name
         search.remove_order_bys()
         search.add_order_by("name")
@@ -920,12 +921,8 @@ class CollectionFolderWdg(BaseRefreshWdg):
             search2.add_column("search_code")
             search.add_search_filter("code", search2, op="not in")
 
-           
-
-        # where code not in (select search_code from asset_in_asset)
-
-
         collections = search.get_sobjects()
+ 
 
         collections_div = DivWdg()
 

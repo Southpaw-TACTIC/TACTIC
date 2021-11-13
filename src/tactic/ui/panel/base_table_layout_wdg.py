@@ -506,6 +506,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not self.order_element:
                 self.order_element = order_by
 
+
+        # provide a custom defined filter
+        filter_class = self.kwargs.get("filter_class")
+        if filter_class:
+            try:
+                #filter_class = "spt.modules.workflow.AssetSearchFilter"
+                search_filter = Common.create_from_class_path(filter_class)
+                search_filter.alter_search(self.search)
+            except:
+                pass
+
         # make sure the search limit is the last filter added so that the counts
         # are correct
         if self.search_limit:
@@ -544,6 +555,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # alter the search
             self.search_limit.set_search(search)
             self.search_limit.alter_search(search)
+
+
 
 
 

@@ -1839,7 +1839,7 @@ class Search(Base):
 
 
 
-    def do_search(self, redo=False, statement=None):
+    def do_search(self, redo=False, statement=None, do_custom_alter_search=True):
 
         if self.null_filter:
             return []
@@ -1862,13 +1862,18 @@ class Search(Base):
             self.add_where(extra_filter)
 
      
-        # DEPRECATED: not sure if this was ever used??
-        #
         # allow the sobject to alter search
         # A little convoluted, but it works
         class_path = self.search_type_obj.get_class()
+
+        if do_custom_alter_search:
+            if search_type == "workflow/asset":
+                class_path = "spt.modules.workflow.AssetSearchFilter"
+
+
         (module_name, class_name) = \
                 Common.breakup_class_path(class_path)
+
         try:
             try:
                 exec("%s.alter_search(self)" % class_name )
@@ -2163,8 +2168,41 @@ class Search(Base):
         #columns = Search.get_cached_columns(database, self.search_type_obj)
         columns = sql.get_columns(table)
 
+
+
+
+
+
+        search_type = self.get_base_search_type()
+        class_path = self.search_type_obj.get_class()
+
+        if search_type == "workflow/asset":
+            class_path = "spt.modules.workflow.AssetSearchFilter"
+
+
+        (module_name, class_name) = \
+                Common.breakup_class_path(class_path)
+
+        try:
+            try:
+                exec("%s.alter_search(self)" % class_name )
+            except NameError:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                exec("%s.alter_search(self)" % class_name )
+        except ImportError:
+            raise SearchException("Class_path [%s] does not exist" % class_path)
+
+
+
+
+
+
         self.skip_retired(columns)
         try:
+
+
+
+
             security = Environment.get_security()
             if not self.security_filter:
                 security.alter_search(self)
