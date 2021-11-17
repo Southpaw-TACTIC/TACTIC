@@ -1865,23 +1865,22 @@ class Search(Base):
         # allow the sobject to alter search
         # A little convoluted, but it works
         class_path = self.search_type_obj.get_class()
-
-        if do_custom_alter_search:
-            if search_type == "workflow/asset":
-                class_path = "spt.modules.workflow.AssetSearchFilter"
-
-
         (module_name, class_name) = \
                 Common.breakup_class_path(class_path)
 
-        try:
+        if do_custom_alter_search:
+            if search_type == "workflow/asset":
+                print("OMG")
+                print(self.search_type_obj.get_data() )
+                print(class_path)
             try:
-                exec("%s.alter_search(self)" % class_name )
-            except NameError:
-                exec("from %s import %s" % (module_name,class_name), gl, lc )
-                exec("%s.alter_search(self)" % class_name )
-        except ImportError:
-            raise SearchException("Class_path [%s] does not exist" % class_path)
+                try:
+                    exec("%s.alter_search(self)" % class_name )
+                except NameError:
+                    exec("from %s import %s" % (module_name,class_name), gl, lc )
+                    exec("%s.alter_search(self)" % class_name )
+            except ImportError:
+                raise SearchException("Class_path [%s] does not exist" % class_path)
 
         # allow security to alter the search if it hasn't been done in SearchLimitWdg
         if not self.security_filter:
@@ -2169,20 +2168,11 @@ class Search(Base):
         columns = sql.get_columns(table)
 
 
-
-
-
-
+        # allow custom search type classes to alter search for count
         search_type = self.get_base_search_type()
         class_path = self.search_type_obj.get_class()
-
-        if search_type == "workflow/asset":
-            class_path = "spt.modules.workflow.AssetSearchFilter"
-
-
         (module_name, class_name) = \
                 Common.breakup_class_path(class_path)
-
         try:
             try:
                 exec("%s.alter_search(self)" % class_name )
@@ -2193,16 +2183,8 @@ class Search(Base):
             raise SearchException("Class_path [%s] does not exist" % class_path)
 
 
-
-
-
-
         self.skip_retired(columns)
         try:
-
-
-
-
             security = Environment.get_security()
             if not self.security_filter:
                 security.alter_search(self)
