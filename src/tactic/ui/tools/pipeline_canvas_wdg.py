@@ -322,6 +322,13 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         if not self.background_color:
             self.background_color = self.top.get_color("background", 10)
 
+
+        self.connector_color = self.kwargs.get("connector_color")
+        if not self.connector_color:
+            self.connector_color = "#111"
+
+
+
         self.top.add_style("height", "100%")
         self.top.add_style("width", "100%")
 
@@ -1013,6 +1020,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.add_style("width: 600")
         canvas.add_style("height: 600")
         canvas.set_attr("spt_background_color", self.background_color)
+        canvas.set_attr("spt_connector_color", self.connector_color)
 
         if self.is_editable:
             is_editable = "true"
@@ -1360,6 +1368,7 @@ class PipelineCanvasWdg(BaseRefreshWdg):
         canvas.set_attr("width", "600")
         canvas.set_attr("height", "600")
         canvas.set_attr("spt_background_color", self.background_color)
+        canvas.set_attr("spt_connector_color", self.connector_color)
 
         canvas.add_style("z-index: 1")
 
@@ -2801,6 +2810,7 @@ spt.Environment.get().add_library("spt_pipeline");
 spt.pipeline.top = null;
 
 spt.pipeline.background_color = "#fff";
+spt.pipeline.connector_color = "#111";
 
 spt.pipeline.allow_cycle = true;
 
@@ -2852,6 +2862,7 @@ spt.pipeline._init = function() {
 
     if (canvas) {
         spt.pipeline.background_color = canvas.getAttribute("spt_background_color");
+        spt.pipeline.connector_color = canvas.getAttribute("spt_connector_color");
     }
 
     if (typeof(canvas.connectors) == 'undefined') {
@@ -3062,6 +3073,8 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         var connector = connectors[i];
         connector.draw();
 
+        let color = connector.color;
+
         var found = false;
         var imgd = ctx.getImageData(left, top, width, height);
         var pix = imgd.data;
@@ -3081,7 +3094,7 @@ spt.pipeline.hit_test = function(x1, y1, x2, y2) {
         }
 
         if (found == false) {
-            connector.set_color("#111");
+            connector.set_color(color);
         }
 
     }
@@ -5164,7 +5177,7 @@ spt.pipeline.set_line_mode = function(mode) {
 
 spt.pipeline.draw_connector = function(start, end, color) {
     if (typeof(color) == 'undefined') {
-        color = '#111';
+        color = spt.pipeline.connector_color;
     }
 
     var back = false;
@@ -5302,7 +5315,7 @@ spt.pipeline.draw_connector = function(start, end, color) {
 
 spt.pipeline.draw_curved_edge_line = function(start, end, color) {
     if (typeof(color) == 'undefined') {
-        color = '#111';
+        color = spt.pipeline.connector_color;
     }
 
     var back = false;
@@ -5426,7 +5439,7 @@ spt.pipeline.draw_text = function(text, x, y, color) {
 
 spt.pipeline.draw_line = function(start, end, color) {
     if (typeof(color) == 'undefined') {
-        color = '#111';
+        color = spt.pipeline.connector_color;
     }
     var ctx = spt.pipeline.get_ctx();
     ctx.strokeStyle = color;
@@ -6251,7 +6264,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
 
     this.from_node = from_node;
     this.to_node = to_node;
-    this.color = '#111';
+    this.color = spt.pipeline.connector_color;
     this.attrs = {};
     this.type = "connector";
     this.line_mode = null;

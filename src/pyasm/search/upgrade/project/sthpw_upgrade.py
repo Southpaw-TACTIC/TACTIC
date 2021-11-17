@@ -19,8 +19,46 @@ from pyasm.search.upgrade.project import *
 class SthpwUpgrade(BaseUpgrade):
 
     #
+    # 4.9.0
+    #
+
+    def upgrade_v4_9_0_a01_002(self):
+        self.run_sql('''
+
+        INSERT INTO search_object (code, search_type, "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/dependency','sthpw/dependency','sthpw','Dependency','sthpw','dependency','pyasm.search.SObject','Depenecny','public');
+
+        ''')
+
+
+
+    def upgrade_v4_9_0_a01_001(self):
+        self.run_sql('''
+        CREATE TABLE dependency (
+            id serial PRIMARY KEY,
+            code varchar(256),
+            parent_code varchar(256),
+            snapshot_code varchar(256),
+            data jsonb,
+            login varchar(256),
+            CONSTRAINT "dependency_code_idx" UNIQUE (code)
+        );
+        ''')
+
+        self.run_sql('''
+        CREATE INDEX "dependency_parent_code_idx" ON dependency (parent_code);
+        ''')
+        self.run_sql('''
+        CREATE INDEX "dependency_snapshot_code_idx" ON dependency (snapshot_code);
+        ''')
+
+
+
+    #
     # 4.8.0
     #
+
+
+
 
     def upgrade_v4_8_0_b01_005(self):
         if self.get_database_type() == 'PostgreSQL':

@@ -186,7 +186,8 @@ class Snapshot(SObject):
         else:
             version = Xml.get_attribute(node, "version")
 
-        snapshot = cls.get_by_version(search_type, search_code, context, version, level_type=level_type, level_id=level_id, show_retired=show_retired )
+
+        snapshot = cls.get_snapshot(search_type, search_code, context=context, version=version, level_type=level_type, level_id=level_id, show_retired=show_retired )
 
         return snapshot
 
@@ -199,7 +200,7 @@ class Snapshot(SObject):
         nodes = xml.get_nodes("snapshot//%s" % type)
         snapshots = []
         for node in nodes:
-            snapshot = self.get_ref_snapshot_by_node(node, mode=mode,  show_retired=show_retired)
+            snapshot = self.get_ref_snapshot_by_node(node, mode=mode, show_retired=show_retired)
             if snapshot:
                 snapshots.append(snapshot)
         return snapshots
@@ -1245,6 +1246,20 @@ class Snapshot(SObject):
         self.set_value("snapshot", builder.to_string() )
         if commit:
             self.commit()
+
+
+        # use dependency table as well
+        parent_snapshot_code = self.get_code()
+        child_snapshot_code = snapshot.get_code()
+
+        search = Search("sthpw/dependency")
+        search.add_filter("parent_code", parent_snapshot_code)
+        search.add_filter("snapshot_code", child_snapshot_code)
+        if not search.get_sobject():
+            dependency = SearchType.create("sthpw/dependency")
+            dependency.set_value("parent_code", parent_snapshot_code)
+            dependency.set_value("snapshot_code", child_snapshot_code)
+            dependency.commit()
 
 
 

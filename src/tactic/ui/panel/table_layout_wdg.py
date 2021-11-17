@@ -2398,11 +2398,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             th.add(inner_div)
             inner_div.add_style("position: relative")
             inner_div.add_style("width: 100%")
+
             inner_div.add_class("spt_table_header_inner")
             #inner_div.add_style("overflow: hidden")
 
             inner_div.add_style("min-width: 20px")
-            inner_div.add_style("text-align: center")
+            #header_align = self.kwargs.get("header_align") or "left"
+            #inner_div.add_style("text-align: %s" % header_align)
             inner_div.add_style("margin-top: 4px")
             inner_div.add_style("margin-bottom: 4px")
 
