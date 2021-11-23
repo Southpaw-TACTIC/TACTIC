@@ -962,6 +962,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             gallery_div.add_class("spt_tile_gallery")
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'search_type': self.search_type,
                 'width': gallery_width,
                 'align': self.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
@@ -978,6 +979,37 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 var tile_top = bvr.src_el.getParent(".spt_tile_top");
                 var search_key = tile_top.getAttribute("spt_search_key_v2");
+
+                if (tile_top.getAttribute("spt_is_collection") == "true") {
+
+                    let content = layout.getParent(".spt_collection_content");
+                    if (content) {
+                        let title_el = content.getElement(".spt_collection_title");
+                        let path;
+                        if (title_el) {
+                            path = title_el.getAttribute("spt_collection_path");
+                        }
+                        else {
+                            path = "/";
+                        }
+                        let name = tile_top.getAttribute("spt_name");
+
+                        let class_name2 = "tactic.ui.panel.CollectionContentWdg";
+                        let kwargs2 = {
+                            collection_key: search_key,
+                            search_type: bvr.search_type,
+                            show_shelf: false,
+                            path: path+"/"+name,
+                        }
+                        spt.panel.load(content, class_name2, kwargs2);
+                    }
+                    else {
+                        // TODO: do nothing for now
+                    }
+                    return;
+                }
+
+
 
                 var thumb_top = tile_top.getElement(".spt_thumb_top");
                 var main_path = thumb_top.getAttribute("spt_main_path");

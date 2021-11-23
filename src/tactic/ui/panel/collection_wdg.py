@@ -1071,6 +1071,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
             subcollection_wdg.add_class("spt_subcollection_wdg")
             subcollection_wdg.add_style("padding-left: 15px")
 
+
         return div
 
 
@@ -1196,6 +1197,8 @@ class CollectionContentWdg(BaseRefreshWdg):
 
             asset_lib_span_div = SpanWdg()
             title_div.add(asset_lib_span_div)
+            title_div.add_class("spt_collection_title")
+            title_div.add_attr("spt_collection_path", path)
 
             # Asset Library folder access
             library_title = "Asset Library"
@@ -1213,7 +1216,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 # the last spt_collection_link does not need a search_key
                 if has_parent and (idx is not len(parts) - 1):
                     search_key = parent_dict.get(part)
-                    title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
+                    title_div.add(" <a class='spt_collection_link' search_key='%s'><b>%s</b></a> " % (search_key, part))
                 else:
                     title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
                 title_div.add_style("margin-top: 10px")
@@ -1268,6 +1271,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
 
+                    alert("cow");
+
                     var top = bvr.src_el.getParent(".spt_collection_top");
                     var content = top.getElement(".spt_collection_content");
 
@@ -1276,7 +1281,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                         spt.notify.show_message("Already in the Collection.");
                     } 
                     else {
-                        var collection_code = collection_key.split("workflow/asset?project=workflow&code=")[1];
+                        var collection_code = collection_key.split("code=")[1];
                         var collection_path = bvr.src_el.innerText;
                         var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
 
@@ -1289,7 +1294,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                             show_search_limit: true,
                             expression: expr,
                             parent_key: bvr.parent_key,
-                            window_resize_offset=bvr.window_resize_offset
+                            window_resize_offset: bvr.window_resize_offset
                         }
                         spt.panel.load(content, cls, kwargs);
 
