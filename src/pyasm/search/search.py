@@ -261,9 +261,6 @@ class Search(Base):
         search_type = self.get_base_search_type()
         api_mode = Environment.get_api_mode()
 
-        if api_mode in ['open', '', None]:
-            return
-
         # Commented our for testing
         if user in ['admin']:
             return
@@ -285,6 +282,8 @@ class Search(Base):
         }:
             raise Exception("Search Permission Denied [%s]" % search_type)
 
+        if api_mode in ['open', '', None]:
+            return
 
 
 
