@@ -176,7 +176,6 @@ class GalleryWdg(BaseRefreshWdg):
             var width = window.innerWidth;
             var margin = - width * index;
             var content = spt.gallery.content;
-            //content.setStyle("margin-left", margin + "px");
             new Fx.Tween(content,{duration: 250}).start("margin-left", margin);
 
 
@@ -201,7 +200,15 @@ class GalleryWdg(BaseRefreshWdg):
             // move the shelf
             let shelf_top = spt.gallery.shelf;
             let items = shelf_top.getElements(".spt_gallery_shelf_item");
+            if (items.length == 0) {
+                spt.confirm( "No items to show in gallery", function() {
+                    spt.gallery.close();
+                } );
+                return;
+            }
+
             let last_item = items[last_index];
+
             last_item.setStyle("border", "solid 3px transparent");
             last_item.setStyle("opacity", 0.5)
 
@@ -227,6 +234,7 @@ class GalleryWdg(BaseRefreshWdg):
                 description = (index+1)+" of "+total+" - " + description;
             }
             spt.gallery.set_description(description);
+
         }
 
 
@@ -552,6 +560,13 @@ class GalleryWdg(BaseRefreshWdg):
 
 
     def get_paths(self, file_type='main'):
+
+        # show contents
+        #parent_key = self.kwargs.get("parent_key")
+        #if parent_key:
+        #    parent = Search.get_by_search_key(parent_key)
+
+
 
         # this is the selected one
         search_key = self.kwargs.get("search_key")
