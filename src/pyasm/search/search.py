@@ -487,7 +487,6 @@ class Search(Base):
         self.add_filter(name, "NULL", quoted=False, op="is")
         self.add_filter(name, "", op="=")
         self.add_op("or")
-        print("sss: ", self.get_statement())
 
 
     def add_search_filter(self, name, search, op='in', table=''):

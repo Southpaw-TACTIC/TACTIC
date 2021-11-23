@@ -1469,6 +1469,10 @@ class WebLoginWdg(Widget):
         table2.add_row()
         
         msg = web.get_form_value(self.LOGIN_MSG)
+        if msg.startswith("User [guest] is not allowed"):
+            msg = ""
+
+
         td = table2.add_cell(css='center_content')
 
         if bottom_link:
