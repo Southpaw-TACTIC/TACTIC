@@ -226,7 +226,7 @@ def get_full_cmd(self, meth, ticket, args):
             if not transaction_id:
                 return Command.get_transaction(self2)
 
-            print("WARNING: ClientAPI:get_full_cmd - Getting transaction")
+            #print("WARNING: ClientAPI:get_full_cmd - Getting transaction")
 
             # continue the transaction
             transaction_log = TransactionLog.get_by_id(transaction_id)

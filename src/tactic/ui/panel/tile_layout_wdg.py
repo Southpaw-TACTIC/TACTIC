@@ -241,9 +241,39 @@ class TileLayoutWdg(ToolLayoutWdg):
         if collection_key:
             collection = Search.get_by_search_key(collection_key)
             search2 = Search( collection.get_collection_type() )
-            search2.add_filter("parent_code", collection.get_code() )
             search2.add_column("search_code")
+            search2.add_filter("parent_code", collection.get_code() )
             search.add_search_filter("code", search2)
+
+            # see all assets recursively
+            """
+            search.add_filter("code", '''(
+            SELECT search_code FROM (
+                WITH RECURSIVE subordinates AS (
+                    SELECT
+                        search_code,
+                        parent_code
+                    FROM
+                        asset_in_asset
+                    WHERE
+                        parent_code = '%s'
+                    UNION
+                        SELECT
+                            e.search_code,
+                            e.parent_code
+                        FROM
+                            asset_in_asset e
+                        INNER JOIN subordinates s ON s.search_code = e.parent_code
+                ) SELECT
+                    *
+                FROM
+                    subordinates
+              ) AS A
+            )
+            ''' % collection.get_code(), op="in", quoted=False )
+            """
+
+
 
         return super(ToolLayoutWdg, self).alter_search(search)
 

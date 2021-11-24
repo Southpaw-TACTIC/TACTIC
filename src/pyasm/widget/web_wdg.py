@@ -1470,14 +1470,13 @@ class WebLoginWdg(Widget):
 
 
         table2.add_row()
-        
+
         msg = web.get_form_value(self.LOGIN_MSG)
         if msg.startswith("User [guest] is not allowed"):
             msg = ""
 
 
         td = table2.add_cell()
-
         if bottom_link:
             bottom_dict = jsonloads(bottom_link)
             for key, value in bottom_dict.items():
@@ -2016,6 +2015,7 @@ class WebLoginWdg2(BaseSignInWdg):
         login_div.add(hidden)
 
         msg = web.get_form_value(BaseSignInWdg.RESET_MSG_LABEL)
+
         if msg:
             err_msg_container = DivWdg()
             div.add(err_msg_container)
@@ -2163,6 +2163,11 @@ class WebLoginWdg2(BaseSignInWdg):
 
         web = WebContainer.get_web()
         msg = web.get_form_value(self.LOGIN_MSG_LABEL)
+
+        useless_msg = False
+        if msg.startswith("User [guest] is not allowed"):
+            useless_msg = True
+
 
         allow_change_admin = self.kwargs.get("allow_change_admin")
         if allow_change_admin in [False, 'false']:
@@ -2353,7 +2358,8 @@ class WebLoginWdg2(BaseSignInWdg):
             if msg == BaseSignInWdg.RESET_COMPLETE_MSG:
                 err_msg_container.add(IconWdg("INFO", IconWdg.INFO))
 
-            err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
+            if not useless_msg:
+                err_msg_container.add("<i class='fa fa-exclamation-circle'></i><span>%s</span>" % msg)
 
             forgot_password_container.add_class("forgot-password-container")
             hidden = HiddenWdg('reset_request')
@@ -2361,7 +2367,7 @@ class WebLoginWdg2(BaseSignInWdg):
 
             authenticate_class = Config.get_value("security", "authenticate_class")
             authenticate_class = ""
-            if msg != BaseSignInWdg.RESET_COMPLETE_MSG and not authenticate_class:
+            if useless_msg and msg != BaseSignInWdg.RESET_COMPLETE_MSG and not authenticate_class:
                 access_msg = "Forgot your password?"
                 login_value = web.get_form_value('login')
                 js = '''document.form.elements['reset_request'].value='true';document.form.elements['login'].value='%s'; document.form.submit()'''%login_value
