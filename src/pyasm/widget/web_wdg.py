@@ -1245,8 +1245,11 @@ class WebLoginWdg(Widget):
         if override_logo:
             div.add("<div class='spt_tactic_logo'></div>")
         else:
-            div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
-            div.add("<br/>"*2)
+            logo_div = DivWdg()
+            logo_div.add_class("spt_tactic_logo")
+            logo_div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
+            logo_div.add_style("margin-bottom: 10px")
+            div.add(logo_div)
 
         if not override_background:
 
@@ -1469,7 +1472,11 @@ class WebLoginWdg(Widget):
         table2.add_row()
         
         msg = web.get_form_value(self.LOGIN_MSG)
-        td = table2.add_cell(css='center_content')
+        if msg.startswith("User [guest] is not allowed"):
+            msg = ""
+
+
+        td = table2.add_cell()
 
         if bottom_link:
             bottom_dict = jsonloads(bottom_link)
@@ -1492,6 +1499,7 @@ class WebLoginWdg(Widget):
             td.add(HtmlElement.b(msg))
             td.add_style('line-height', '14px')
             td.add_style('padding-top', '10px')
+            td.add_style('text-align: center')
 
             tr = table2.add_row()
             tr.add_style('line-height: 70px')
@@ -1513,6 +1521,8 @@ class WebLoginWdg(Widget):
                 div.add_style("")
             else:
                 div.add_style("height: 250px")
+
+
 
         div.add(HtmlElement.br())
         div.add(table)
@@ -1609,13 +1619,6 @@ class BaseSignInWdg(Widget):
             color: #666;
         }
 
-        .sign-in-line {
-            position: absolute;
-            width: 100%;
-            height: 1px;
-            background: #ccc;
-            top: 120px;
-        }
 
         .sign-in-input {
             position: relative;
@@ -1709,7 +1712,7 @@ class BaseSignInWdg(Widget):
 
             display: flex;
             align-items: center;
-            padding: 5px;
+            padding: 3px;
             box-shadow: 0px 2px 4px 0px #ccc;
             border-radius: 15px;
             background: #ccc;
@@ -1740,7 +1743,7 @@ class BaseSignInWdg(Widget):
 
         .spt_tactic_background {
             margin: auto auto;
-            width: 400px;
+            max-width: 400px;
             text-align: center;
         }
 
@@ -1801,8 +1804,6 @@ class BaseSignInWdg(Widget):
         
         div.add( sthpw )
         div.add( HtmlElement.br() )
-
-        div.add("<div class='sign-in-line'></div>")
 
         title = self.kwargs.get("title")
         if title:
@@ -2359,6 +2360,7 @@ class WebLoginWdg2(BaseSignInWdg):
             forgot_password_container.add(hidden)
 
             authenticate_class = Config.get_value("security", "authenticate_class")
+            authenticate_class = ""
             if msg != BaseSignInWdg.RESET_COMPLETE_MSG and not authenticate_class:
                 access_msg = "Forgot your password?"
                 login_value = web.get_form_value('login')
@@ -2373,136 +2375,6 @@ class WebLoginWdg2(BaseSignInWdg):
         return div
 
 
-
-# DEPRECATED: moved lower to pyasm/web
-"""
-class WebLoginCmd(Command):
-
-    def check(self):
-        return True
-
-    def is_undoable(cls):
-        return False
-    is_undoable = classmethod(is_undoable)
-
-    def reenable_user(self, login_sobject, delay):
-        class EnableUserTask(SchedulerTask):
-            def execute(self):
-                Batch()
-                reset_attempts = 0
-                login_sobject = self.kwargs.get('sobject')
-                login_sobject.set_value("license_type", "user")
-                login_sobject.set_value("login_attempt", reset_attempts)
-                login_sobject.commit(triggers=False)
-
-        scheduler = Scheduler.get()
-        task = EnableUserTask(sobject=login_sobject, delay=delay)
-        scheduler.add_single_task(task, delay)
-        scheduler.start_thread()
-
-              
-    def execute(self):
-
-        web = WebContainer.get_web()
-
-        # If the tag <force_lowercase_login> is set to "true"
-        # in the TACTIC config file,
-        # then force the login string argument to be lowercase.
-        # This tag is false by default.
-        self.login = web.get_form_value("login")
-        if Config.get_value("security","force_lowercase_login") == "true":
-            self.login = self.login.lower()
-        self.password = web.get_form_value("password")
-        self.domain = web.get_form_value("domain")
-
-        if self.login == "" and self.password == "":
-            return False
-
-        
-        if self.login == "" or  self.password == "":
-            web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                "Empty username or password") 
-            return False
-        
-        security = WebContainer.get_security()
-
-        # handle windows domains
-        #if self.domain:
-        #    self.login = "%s\\%s" % (self.domain, self.login)
-
-
-        verify_password = web.get_form_value("verify_password")
-        if verify_password:
-            if verify_password != self.password:
-                web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                    "Passwords do not match.") 
-                return False
-
-            self.password = Login.get_default_password()
-
-        try:
-            security.login_user(self.login, self.password, domain=self.domain)
-        except SecurityException as e:
-            msg = str(e)
-            if not msg:
-                msg = "Incorrect username or password"
-            web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
-
-            login_code = "admin"
-
-            search = Search("sthpw/login")
-            search.add_filter('login',self.login)
-            login_sobject = search.get_sobject()
-            max_attempts=-1
-            try:
-                max_attempts = int(Config.get_value("security", "max_login_attempt"))
-            except:
-                pass
-            if max_attempts >0:
-                login_attempt = login_sobject.get_value('login_attempt')
-
-                login_attempt = login_attempt+1
-                login_sobject.set_value('login_attempt', login_attempt)
-
-                if login_attempt == max_attempts:
-                    #set license_Type to disabled and set off the thread to re-enable it
-                    login_sobject.set_value('license_type', 'disabled')
-                    disabled_time = Config.get_value("security", "account_lockout_duration")
-                    if not disabled_time:
-                        disabled_time = "30 minutes"
-
-
-                    delay,unit = disabled_time.split(" ",1)
-                    if "minute" in unit:
-                        delay = int(delay)*60
-                    
-                    elif "hour" in unit:
-                        delay =int(delay)*3600
-                    
-                    elif "second" in unit:
-                        delay = int(delay)
-                    else:
-                        #make delay default to 30 min
-                        delay = 30*60
-
-                    self.reenable_user(login_sobject, delay)
-
-                
-                login_sobject.commit(triggers=False)
-            
-        if security.is_logged_in():
-
-            # set the cookie in the browser
-            web = WebContainer.get_web()
-            ticket = security.get_ticket()
-            if ticket:
-                web.set_cookie("login_ticket", ticket.get_value("ticket"))
-
-
-            login = security.get_login()
-            if login.get_value("login") == "admin" and verify_password:
-                login.set_password(verify_password)
-"""
 
 
 

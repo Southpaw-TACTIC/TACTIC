@@ -487,7 +487,6 @@ class Search(Base):
         self.add_filter(name, "NULL", quoted=False, op="is")
         self.add_filter(name, "", op="=")
         self.add_op("or")
-        print("sss: ", self.get_statement())
 
 
     def add_search_filter(self, name, search, op='in', table=''):
@@ -1869,10 +1868,6 @@ class Search(Base):
                 Common.breakup_class_path(class_path)
 
         if do_custom_alter_search:
-            if search_type == "workflow/asset":
-                print("OMG")
-                print(self.search_type_obj.get_data() )
-                print(class_path)
             try:
                 try:
                     exec("%s.alter_search(self)" % class_name )
