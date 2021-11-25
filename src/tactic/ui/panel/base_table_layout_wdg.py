@@ -624,6 +624,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         #self.search_wdg = None
         if not self.search_wdg:
             self.search_wdg = self.kwargs.get("search_wdg")
+
+
         if not self.search_wdg:
             search = self.kwargs.get("search")
 

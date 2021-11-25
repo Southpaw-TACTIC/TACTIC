@@ -241,9 +241,39 @@ class TileLayoutWdg(ToolLayoutWdg):
         if collection_key:
             collection = Search.get_by_search_key(collection_key)
             search2 = Search( collection.get_collection_type() )
-            search2.add_filter("parent_code", collection.get_code() )
             search2.add_column("search_code")
+            search2.add_filter("parent_code", collection.get_code() )
             search.add_search_filter("code", search2)
+
+            # see all assets recursively
+            """
+            search.add_filter("code", '''(
+            SELECT search_code FROM (
+                WITH RECURSIVE subordinates AS (
+                    SELECT
+                        search_code,
+                        parent_code
+                    FROM
+                        asset_in_asset
+                    WHERE
+                        parent_code = '%s'
+                    UNION
+                        SELECT
+                            e.search_code,
+                            e.parent_code
+                        FROM
+                            asset_in_asset e
+                        INNER JOIN subordinates s ON s.search_code = e.parent_code
+                ) SELECT
+                    *
+                FROM
+                    subordinates
+              ) AS A
+            )
+            ''' % collection.get_code(), op="in", quoted=False )
+            """
+
+
 
         return super(ToolLayoutWdg, self).alter_search(search)
 
@@ -962,6 +992,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             gallery_div.add_class("spt_tile_gallery")
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
+                'search_type': self.search_type,
                 'width': gallery_width,
                 'align': self.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
@@ -978,6 +1009,37 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 var tile_top = bvr.src_el.getParent(".spt_tile_top");
                 var search_key = tile_top.getAttribute("spt_search_key_v2");
+
+                if (tile_top.getAttribute("spt_is_collection") == "true") {
+
+                    let content = layout.getParent(".spt_collection_content");
+                    if (content) {
+                        let title_el = content.getElement(".spt_collection_title");
+                        let path;
+                        if (title_el) {
+                            path = title_el.getAttribute("spt_collection_path");
+                        }
+                        else {
+                            path = "/";
+                        }
+                        let name = tile_top.getAttribute("spt_name");
+
+                        let class_name2 = "tactic.ui.panel.CollectionContentWdg";
+                        let kwargs2 = {
+                            collection_key: search_key,
+                            search_type: bvr.search_type,
+                            show_shelf: false,
+                            path: path+"/"+name,
+                        }
+                        spt.panel.load(content, class_name2, kwargs2);
+                    }
+                    else {
+                        // TODO: do nothing for now
+                    }
+                    return;
+                }
+
+
 
                 var thumb_top = tile_top.getElement(".spt_thumb_top");
                 var main_path = thumb_top.getAttribute("spt_main_path");

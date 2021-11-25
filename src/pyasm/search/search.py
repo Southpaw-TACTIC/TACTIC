@@ -1868,10 +1868,6 @@ class Search(Base):
                 Common.breakup_class_path(class_path)
 
         if do_custom_alter_search:
-            if search_type == "workflow/asset":
-                print("OMG")
-                print(self.search_type_obj.get_data() )
-                print(class_path)
             try:
                 try:
                     exec("%s.alter_search(self)" % class_name )
@@ -4306,13 +4302,15 @@ class SObject(object):
             sudo = Sudo()
             try:
                 search = Search(self.full_search_type)
+                search.set_show_retired_flag(True)
+                # trick the search to believe that security filter has been
+                # applied
+                search.set_security_filter()
+                search.add_id_filter(id)
+                sobject = search.get_sobject()
             finally:
                 sudo.exit()
-            search.set_show_retired_flag(True)
-            # trick the search to believe that security filter has been applied
-            search.set_security_filter()
-            search.add_id_filter(id)
-            sobject = search.get_sobject()
+
             if sobject == None:
                 raise SObjectException("Insert/Update of [%s] failed. The entry with id [%s] cannot be found.\n%s" % (self.get_search_type(), id, statement))
 

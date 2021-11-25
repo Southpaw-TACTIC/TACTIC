@@ -836,23 +836,28 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
 
-        # add a selction for collections
-        """
+        # add a selection for collections
         collection_div = DivWdg()
-        collection_div.add_style("margin-left: 20px")
+        collection_div.add_style("margin-left: 30px")
+        collection_div.add_class("spt_collection")
 
-        label = DivWdg("ADD TO COLECTION")
-        label.add_style("font-size", "0.9em")
+        label = DivWdg("ADD TO COLLECTION")
+        label.add_style("font-size", "0.8em")
         label.add_style("opacity: 0.5")
         collection_div.add(label)
 
+
         select = SelectWdg(name="collection")
+        select.add_style("margin-top: -5px")
+        select.add_style("margin-left: -5px")
+        select.add_style("height: 33px")
         collection_div.add(select)
-        select.set_option("values", "reference|final|approved")
         select.add_empty_option("-- Collection --")
         select.add_style("width: auto")
+        #select.set_option("values", "reference|final|approved")
+        select.set_option("values_expr", "@GET(%s['_is_collection','true'].code)" % self.search_type)
+        select.set_option("labels_expr", "@GET(%s['_is_collection','true'].name)" % self.search_type)
         buttons_div.add(collection_div)
-        """
 
 
 
@@ -1288,6 +1293,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         var top = bvr.src_el.getParent(".spt_ingest_top");
         var update_data_top = top.getElement(".spt_edit_top");
 
+
         var progress_el = top.getElement(".spt_upload_progress");
         progress_el.innerHTML = "100%";
         progress_el.setStyle("width", "100%");
@@ -1388,6 +1394,15 @@ class IngestUploadWdg(BaseRefreshWdg):
             process = null;
         }
 
+
+
+        let collection_el = top.getElement(".spt_collection").getElement("select");
+        let collection_code = "";
+        if (collection_el) {
+            collection_code = collection_el.value
+        }
+
+
         var return_array = false;
         // non-existent when self.show_settings is False
         var update_data = update_data_top ? spt.api.get_input_values(update_data_top, null, return_array): {};
@@ -1424,6 +1439,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             zip_mode: zip_mode,
             project_code: project_code,
             create_icon: create_icon,
+            collection_code: collection_code,
         }
 
         on_complete = function(rtn_data) {
@@ -2308,8 +2324,14 @@ class IngestUploadCmd(Command):
 
             # add to a collection if specified
             collection_key = self.kwargs.get("collection_key")
+            collection_code = self.kwargs.get("collection_code")
+            collection = None
             if collection_key:
                 collection = Search.get_by_search_key(collection)
+            elif collection_code:
+                collection = Search.get_by_code(search_type, collection_code)
+
+            if collection:
                 sobject.add_to_collection(collection)
 
 

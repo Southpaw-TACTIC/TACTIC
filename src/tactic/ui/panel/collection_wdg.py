@@ -859,21 +859,24 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         group_elements = self.kwargs.get("group_elements") or []
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
 
+        # FIXME: don't really need this as search is already defined with this
+        # expression
         expression = self.kwargs.get("expression")
 
         tile = CollectionContentWdg(
                 search_type=self.search_type,
                 show_shelf=False,
                 show_search_limit=False,
-                sobjects=self.sobjects,
                 detail_element_names=self.kwargs.get("detail_element_names"),
-                #do_search='false',
                 upload_mode=self.kwargs.get("upload_mode"),
                 group_elements=group_elements,
                 parent_key=parent_key,
                 collection_key=collection_key,
                 window_resize_offset=window_resize_offset,
+
                 expression=expression,
+                sobjects=self.sobjects,
+                search=self.search,
         )
         div.add(tile)
 
@@ -969,7 +972,8 @@ class CollectionFolderWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_collection_top");
             var content = top.getElement(".spt_collection_content");
 
-            
+
+
             var list = bvr.src_el.getParent(".spt_collection_list");
             var items = list.getElements(".spt_collection_item");
             for (var i = 0; i < items.length; i++) {
@@ -982,6 +986,17 @@ class CollectionFolderWdg(BaseRefreshWdg):
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+
+
+
+            /* TODO: integrate better in search
+            let layout = top.getParent(".spt_layout");
+            spt.table.set_layout(layout)
+            spt.table.do_search( { expression: expr });
+            return;
+            */
+
+
 
             var parent_dict = {};
             var parent_collection = bvr.src_el.getParent(".spt_subcollection_wdg");
@@ -998,6 +1013,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
                     
                 }
             }            
+
 
             var cls = "tactic.ui.panel.CollectionContentWdg";
             var kwargs = {
@@ -1071,6 +1087,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
             subcollection_wdg.add_class("spt_subcollection_wdg")
             subcollection_wdg.add_style("padding-left: 15px")
 
+
         return div
 
 
@@ -1113,8 +1130,12 @@ class CollectionContentWdg(BaseRefreshWdg):
             parts = self.kwargs.get("search_type").split("/")
             collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
+            search = self.kwargs.get("search")
             expression = self.kwargs.get("expression")
-            if expression:
+            if search:
+                # use this search
+                pass
+            elif expression:
                 search = Search.eval(expression)
                 if not isinstance(search, Search):
                     result = search
@@ -1129,18 +1150,30 @@ class CollectionContentWdg(BaseRefreshWdg):
             search.add_filter("_is_collection", "NULL", quoted=False)
             search.add_op("or")
 
-            search2 = Search(collection_type)
-            search2.add_column("search_code")
-            search.add_search_filter("code", search2, op="not in")
+            #search2 = Search(collection_type)
+            #search2.add_column("search_code")
+            #search.add_search_filter("code", search2, op="not in")
+
+            del(self.kwargs['collection_key'])
+            self.kwargs["search"] = search
+
             sobjects = None
         else:
             sobjects = self.kwargs.get("sobjects")
             search = None
 
+            # this will designate a search
+            """
+            search = Search(collection.get_base_search_type() )
+            sobjects = None
+            del(self.kwargs['collection_key'])
+            self.kwargs["search"] = search
+            """
+
+
 
         # always go by id desc
         self.kwargs['order_by'] = 'id desc'
-
 
 
         mode = "tile"
@@ -1166,6 +1199,7 @@ class CollectionContentWdg(BaseRefreshWdg):
             )
 
         if search:
+            # FIXME: this doesn't actually work
             tile.set_search(search)
 
         elif sobjects:
@@ -1196,6 +1230,8 @@ class CollectionContentWdg(BaseRefreshWdg):
 
             asset_lib_span_div = SpanWdg()
             title_div.add(asset_lib_span_div)
+            title_div.add_class("spt_collection_title")
+            title_div.add_attr("spt_collection_path", path)
 
             # Asset Library folder access
             library_title = "Asset Library"
@@ -1213,7 +1249,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 # the last spt_collection_link does not need a search_key
                 if has_parent and (idx is not len(parts) - 1):
                     search_key = parent_dict.get(part)
-                    title_div.add(" <a class='spt_collection_link' search_key=%s><b>%s</b></a> " % (search_key, part))
+                    title_div.add(" <a class='spt_collection_link' search_key='%s'><b>%s</b></a> " % (search_key, part))
                 else:
                     title_div.add(" <a class='spt_collection_link'><b>%s</b></a> " % part)
                 title_div.add_style("margin-top: 10px")
@@ -1268,6 +1304,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
 
+                    alert("cow");
+
                     var top = bvr.src_el.getParent(".spt_collection_top");
                     var content = top.getElement(".spt_collection_content");
 
@@ -1276,7 +1314,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                         spt.notify.show_message("Already in the Collection.");
                     } 
                     else {
-                        var collection_code = collection_key.split("workflow/asset?project=workflow&code=")[1];
+                        var collection_code = collection_key.split("code=")[1];
                         var collection_path = bvr.src_el.innerText;
                         var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
 
@@ -1289,7 +1327,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                             show_search_limit: true,
                             expression: expr,
                             parent_key: bvr.parent_key,
-                            window_resize_offset=bvr.window_resize_offset
+                            window_resize_offset: bvr.window_resize_offset
                         }
                         spt.panel.load(content, cls, kwargs);
 
@@ -1552,7 +1590,6 @@ class CollectionItemWdg(BaseRefreshWdg):
         codes = [x.get_value("search_code") for x in items]
 
         count = search.get_count()
-
 
         # find the children that are actually collections
         search = Search(search_type)

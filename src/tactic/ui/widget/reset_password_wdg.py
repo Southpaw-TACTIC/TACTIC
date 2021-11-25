@@ -16,7 +16,7 @@ import hashlib
 
 from pyasm.web import DivWdg, HtmlElement, SpanWdg, Table, Widget, WebContainer
 from pyasm.widget import HiddenWdg, TextWdg, IconWdg, PasswordWdg, BaseSignInWdg
-from tactic.ui.common import BaseRefreshWdg
+from tactic.ui.common import BaseRefreshWdg, Environment
 from tactic.ui.widget import ActionButtonWdg
 from pyasm.command import Command
 from pyasm.common import TacticException
@@ -140,9 +140,17 @@ class NewPasswordCmd(Command):
                 if data:
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
-                      encrypted = Login.encrypt_password(password)
-                      login.set_value('password', encrypted)
-                      login.commit()
+
+
+                        security = Environment.get_security()
+
+                        # delegate this to the security class
+                        encrypted = Login.encrypt_password(password)
+                        login.set_value('password', encrypted)
+                        login.commit()
+
+
+
         else:
             web.set_form_value("is_err", "true")
             web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'The entered passwords do not match.')
