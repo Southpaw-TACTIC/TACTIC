@@ -2501,7 +2501,10 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_attr("spt_search_key_v2", sobject.get_search_key())
         div.add_attr("spt_name", sobject.get_name())
         div.add_attr("spt_search_code", sobject.get_code())
-        div.add_attr("spt_is_collection", is_collection)
+        if is_collection:
+            div.add_attr("spt_is_collection", "true")
+        else:
+            div.add_attr("spt_is_collection", "false")
         display_value = sobject.get_display_value(long=True)
         div.add_attr("spt_display_value", display_value)
 
@@ -3026,7 +3029,7 @@ spt.tile_layout.image_drag_action = function(evt, bvr, mouse_411) {
                     has_inserted = insert_collection(collection_type, parent_key, search_keys);
                     if (has_inserted == null)
                         return;
-                    collection_selected = src_tile.getAttribute("spt_is_collection") == 'True';
+                    collection_selected = src_tile.getAttribute("spt_is_collection") == 'true';
                 }
 
             }
