@@ -22,6 +22,18 @@ class SthpwUpgrade(BaseUpgrade):
     # 4.9.0
     #
 
+    def upgrade_v4_9_0_a01_003(self):
+        if self.get_database_type() == 'PostgreSQL':
+            self.run_sql('''
+            ALTER TABLE "snapshot" ADD COLUMN data jsonb;
+            ''')
+        else:
+            self.run_sql('''
+            ALTER TABLE "snapshot" ADD COLUMN data json;
+            ''')
+
+
+
     def upgrade_v4_9_0_a01_002(self):
         self.run_sql('''
 
