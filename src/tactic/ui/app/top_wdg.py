@@ -1222,9 +1222,9 @@ class TopWdg(Widget):
         Container.append_seq("Page:css", "%s/style/layout.css" % context_url)
 
 
-        widget.add('''
-        <script src="https://bernii.github.io/gauge.js/dist/gauge.min.js"> </script>
-        ''')
+        #widget.add('''
+        #<script src="https://bernii.github.io/gauge.js/dist/gauge.min.js"> </script>
+        #''')
 
         # video js
         Container.append_seq("Page:css", "%s/spt_js/video/video-js.css" % context_url)
@@ -1341,9 +1341,10 @@ class JavascriptImportWdg(BaseRefreshWdg):
                 include = include.strip()
                 if include:
                     Container.append_seq("Page:js", include)
-        else:
-            # custom js files to include
-            includes = Config.get_value("install", "include_js")
+
+        # custom js files to include
+        includes = Config.get_value("install", "include_js")
+        if includes:
             includes = includes.split(",")
             for include in includes:
 
