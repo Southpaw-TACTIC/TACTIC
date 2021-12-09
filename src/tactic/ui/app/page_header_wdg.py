@@ -15,6 +15,7 @@ import re
 from pyasm.common import Environment, TacticException, Common, Config
 from pyasm.search import Search, SearchKey
 from pyasm.web import *
+from pyasm.security import Site
 from pyasm.biz import *   # Project is part of pyasm.biz
 from pyasm.widget import ThumbWdg, SelectWdg, ButtonWdg, TextWdg, CheckboxWdg, IconWdg, PasswordWdg, HiddenWdg, HintWdg, RadioWdg
 
@@ -287,22 +288,49 @@ class PageHeaderWdg(Widget):
 
         menu_data.append( { 'type': 'separator' } )
 
+
+        # if there is a custom login, then use that link
+        search = Search("config/url")
+        search.add_filter("url", "/login")
+        sobject = search.get_sobject()
+
+        url = ""
+        if sobject:
+            site = Site.get_site()
+            project_code = Project.get_project_code()
+            parts = [""]
+            if site:
+                parts.append(site)
+            parts.append(project_code)
+            parts.append("login")
+            url = "/".join(parts)
+
+
         menu_data.append( {
             "type": "action",
             "label": "Sign Out",
             "bvr_cb": {
                 'cbjs_action': '''
-                 var ok = function(){
-                 var server = TacticServerStub.get();
-                    var login = spt.Environment.get().get_user();
+                 let ok = function(){
+                 let server = TacticServerStub.get();
+                    let login = spt.Environment.get().get_user();
                     server.execute_cmd("SignOutCmd", {login: login} );
-                    //var href = document.location.href;
-                    //var parts = href.split("#");
-                    //window.location.href=parts[0];
-                    document.location = "/";
+
+                    let url = '%s';
+                    if (url) {
+                        document.location = url;
+                    }
+                    else {
+                        document.location = "/";
+                    }
+                    /*
+                    let href = document.location.href;
+                    let parts = href.split("#");
+                    window.location.href=parts[0];
+                    */
                     }
                  spt.confirm("Are you sure you wish to sign out?", ok )
-                ''' 
+                '''  % url
             } 
         } )
  
