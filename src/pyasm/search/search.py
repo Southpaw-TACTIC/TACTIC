@@ -5777,6 +5777,11 @@ class SObject(object):
         item.commit()
 
 
+    #
+    # Permission methods
+    #
+    def get_permission_level(self):
+        return 
 
 
 

@@ -595,7 +595,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
 
     def get_kwargs_keys(cls):
-        return ['group_elements', 'show_collection_shelf', 'library_title','collection_key']
+        return ['group_elements', 'show_collection_shelf', 'library_title','collection_key','path']
     get_kwargs_keys = classmethod(get_kwargs_keys)
 
 
@@ -610,6 +610,49 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             ''')
 
         return styles
+
+
+
+    def alter_search(self, search):
+        collection_key = self.kwargs.get("collection_key")
+
+
+        # filter assets only under this collection
+        if collection_key:
+            collection = Search.get_by_search_key(collection_key)
+            if collection:
+                collection_code = collection.get_code()
+                collection_type = "asset_in_asset"
+
+
+                search.add_filter("code",
+                '''( SELECT search_code FROM (
+                WITH RECURSIVE subordinates AS (
+                    SELECT
+                        search_code,
+                        parent_code
+                    FROM
+                        %s
+                    WHERE
+                        parent_code = '%s'
+                    UNION
+                        SELECT
+                            e.search_code,
+                            e.parent_code
+                        FROM
+                            %s e
+                        INNER JOIN subordinates s ON s.search_code = e.parent_code
+                ) SELECT
+                    *
+                FROM
+                    subordinates
+                ) AS Foo )''' % (collection_type, collection_code, collection_type),
+                op="in", quoted=False)
+
+
+
+
+
 
 
 
@@ -972,6 +1015,10 @@ class CollectionFolderWdg(BaseRefreshWdg):
             var top = bvr.src_el.getParent(".spt_collection_top");
             var content = top.getElement(".spt_collection_content");
 
+            var layout = bvr.src_el.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+
+
 
 
             var list = bvr.src_el.getParent(".spt_collection_list");
@@ -986,15 +1033,6 @@ class CollectionFolderWdg(BaseRefreshWdg):
             var collection_path = bvr.src_el.getAttribute("spt_collection_path");
 
             var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
-
-
-
-            /* TODO: integrate better in search
-            let layout = top.getParent(".spt_layout");
-            spt.table.set_layout(layout)
-            spt.table.do_search( { expression: expr });
-            return;
-            */
 
 
 
@@ -1015,18 +1053,35 @@ class CollectionFolderWdg(BaseRefreshWdg):
             }            
 
 
-            var cls = "tactic.ui.panel.CollectionContentWdg";
-            var kwargs = {
-                collection_key: collection_key,
-                path: collection_path,
-                search_type: bvr.search_type,
-                show_shelf: false,
-                show_search_limit: true,
-                //expression: expr,
-                parent_dict: parent_dict,
-                parent_key: bvr.parent_key
+
+            // put the collection key so the search will go through
+            var target = bvr.src_el.getParent(".spt_table_top");
+            if (collection_key) {
+                target.setAttribute("spt_collection_key", collection_key);
+                target.setAttribute("spt_path", collection_path);
             }
-            spt.panel.load(content, cls, kwargs);
+
+
+
+            let do_search = false;
+            if (do_search) {
+                spt.table.do_search();
+            }
+            else {
+
+                var cls = "tactic.ui.panel.CollectionContentWdg";
+                var kwargs = {
+                    collection_key: collection_key,
+                    path: collection_path,
+                    search_type: bvr.search_type,
+                    show_shelf: false,
+                    show_search_limit: true,
+                    //expression: expr,
+                    parent_dict: parent_dict,
+                    parent_key: bvr.parent_key
+                }
+                spt.panel.load(content, cls, kwargs);
+            }
 
             bvr.src_el.setStyle("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)");
 
@@ -1303,8 +1358,6 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'collection_type': collection_type,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
-
-                    alert("cow");
 
                     var top = bvr.src_el.getParent(".spt_collection_top");
                     var content = top.getElement(".spt_collection_content");

@@ -2479,7 +2479,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
 
 
-    // This is ow the method for adding extra args
+    // This is now the method for adding extra args
     var extra_keys = target.getAttribute("spt_extra_keys") || "";
     if (extra_keys) {
         args['extra_keys'] = extra_keys;

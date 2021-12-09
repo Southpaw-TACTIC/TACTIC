@@ -632,6 +632,11 @@ class TileLayoutWdg(ToolLayoutWdg):
                         tile.getElement(".spt_tile_detail").setStyle("display", "none");
                         tile.getElement(".spt_tile_collection_count").innerHTML = data.collection_count;
                     } else {
+
+                        if (data.spt_permission_level != "edit") {
+                            tile.getElement(".spt_tile_detail").setStyle("display", "none");
+                        }
+
                         // Download button
                         download_el = tile.getElement(".spt_tile_tool_top").getElement(".spt_download");
                         download_el.setAttribute("href", data.main_path);
@@ -1803,6 +1808,12 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         for sobject in sobjects:
 
+            # determine permission level for each sobject
+            permission_level = sobject.get_permission_level() or "edit"
+
+
+
+
             tile_data = {}
             tile_data["spt_search_key"] = sobject.get_search_key(use_id=True)
             tile_data["spt_search_key_v2"] = sobject.get_search_key()
@@ -1810,6 +1821,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_search_code"] = sobject.get_code()
             tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
+
+            tile_data["spt_permission_level"] = permission_level
 
 
             paths = paths_by_key.get(sobject.get_search_key()) or {}
@@ -2146,6 +2159,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             icon.add_class("hand")
             href.add(icon)
         else:
+
+            # TEST TEST TEST
+
             # get a presigned url or whatever from the repo for download
             href = DivWdg()
             href.add_class("spt_download")
