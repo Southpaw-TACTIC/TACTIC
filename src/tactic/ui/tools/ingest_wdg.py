@@ -720,6 +720,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         shelf_div = DivWdg()
         div.add(shelf_div)
         shelf_div.add_style("margin-bottom: 10px")
+        shelf_div.add_class("spt_shelf_top")
 
         if self.search_key:
             div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % self.search_key)
@@ -757,8 +758,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         button = ActionButtonWdg(title="Add Files", width=150, color="secondary")
-        #button.add_style("float: right")
         buttons_div.add(button)
+
 
         button.add_behavior( {
             'type': 'load',
@@ -772,7 +773,49 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
-            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+
+
+            let shelf = bvr.src_el.getParent(".spt_shelf_top");
+            let input = shelf.getElement("input");
+            input.removeAttribute("webkitdirectory");
+
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.ingest.select_files(top, files, bvr.normal_ext);
+            }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
+         '''
+         } )
+
+
+        xbutton = ActionButtonWdg(title="Add Folder", width=150, color="secondary")
+        xbutton.add_style("margin-left: 5px")
+        buttons_div.add(xbutton)
+        xbutton.add_behavior( {
+            'type': 'click',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+
+            let shelf = bvr.src_el.getParent(".spt_shelf_top");
+            let input = shelf.getElement("input")
+            input.setAttribute("webkitdirectory", "true");
+
 
             //clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
@@ -795,6 +838,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
          '''
          } )
+
 
 
 
@@ -884,13 +928,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 select.set_option("values", values)
                 select.set_option("labels", labels)
             else:
-                print("FIXME: HARD coded collection type")
-                print("FIXME: HARD coded collection type")
-                print("FIXME: HARD coded collection type")
-                print("FIXME: HARD coded collection type")
-                print("FIXME: HARD coded collection type")
-
-                collection_type = "workflow/asset_in_asset"
+                collection_type = SearchType.get_collection_type(self.search_type)
 
                 search = Search(collection_type)
                 search.add_column("search_code")
@@ -1025,6 +1063,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             if (typeof(delay) == 'undefined') {
                 delay = 0;
+            }
+
+            if (file.webkitRelativePath) {
+                file.path = file.webkitRelativePath;
             }
 
             // remember the file handle
@@ -1823,7 +1865,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.innerHTML = '';
             }
 
-            var upload_button = top.getElement(".spt_upload_files_top");
+            //var upload_button = top.getElement(".spt_upload_files_top");
 
             var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
@@ -1906,14 +1948,16 @@ spt.ingest.select_files = function(top, files, normal_ext) {
     var delay = 0;
     var skip = false;
     for (var i = 0; i < files.length; i++) {
-        var size = files[i].size;
-        var file_name = files[i].name;
+        let file = files[i];
+
+        var size = file.size;
+        var file_name = file.name;
         var is_normal = regex.test(file_name);
         if (size >= 10*1024*1024 || is_normal) {
-            spt.drag.show_file(files[i], files_el, 0, false);
+            spt.drag.show_file(file, files_el, 0, false);
         }
         else {
-            spt.drag.show_file(files[i], files_el, delay, true);
+            spt.drag.show_file(file, files_el, delay, true);
 
             if (size < 100*1024)       delay += 50;
             else if (size < 1024*1024) delay += 500;
@@ -2463,7 +2507,7 @@ class IngestUploadCmd(Command):
             last_collection = collection
             parts = filename.split("/")
             for collection_name in parts[:-1]:
-                collection_type = "workflow/asset_in_asset"
+                collection_type = SearchType.get_collection_type(search_type)
 
                 # find out if the subcollection already exits
                 search = Search(search_type)

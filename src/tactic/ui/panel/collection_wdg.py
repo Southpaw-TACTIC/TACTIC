@@ -632,8 +632,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
             collection = Search.get_by_search_key(collection_key)
             if collection:
                 collection_code = collection.get_code()
-                collection_type = "asset_in_asset"
-
+                collection_type = SearchType.get_collection_type(self.search_type)
 
                 search.add_filter("code",
                 '''( SELECT search_code FROM (
@@ -1579,7 +1578,7 @@ class CollectionDeleteCmd(Command):
         for item in items:
             item.delete()
 
-        # Also need to delete the asset_in_asset relationships in its parent collections
+        # Also need to delete the relationships in its parent collections
         parent_search = Search(collection_type)
         parent_search.add_filter("search_code", collection.get_code())
         parent_items = parent_search.get_sobjects()

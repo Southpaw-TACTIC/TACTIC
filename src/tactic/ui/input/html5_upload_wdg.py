@@ -54,6 +54,12 @@ class Html5UploadWdg(BaseRefreshWdg):
         input.set_attr("name", "file")
         input.add_class("spt_file")
         input.set_attr("type", "file")
+
+        directory = self.kwargs.get("directory")
+        if directory in [True, 'true']:
+            input.set_attr("webkitdirectory", "webkitdirectory")
+            input.set_attr("directory", "directory")
+
         input.add_style("position: absolute")
         input.add_style("margin-left: -5000px")
 
@@ -129,6 +135,8 @@ spt.html5upload.select_files = function(onchange) {
         return; 
     }
     var el = form.getElement(".spt_file") ;
+
+    //el.setAttribute("webkitdirectory", "true")
   
     /*
     if (replace) {
