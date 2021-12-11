@@ -5783,9 +5783,8 @@ class SObject(object):
     #
     # Permission methods
     #
-    def get_permission_level(self):
-        return 
-
+    def check_access(self, required_access, default="allow"):
+        return True
 
 
 

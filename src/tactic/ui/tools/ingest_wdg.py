@@ -920,8 +920,13 @@ class IngestUploadWdg(BaseRefreshWdg):
                 search2.add_order_by("name")
                 subcollections = search2.get_sobjects()
 
-                values = [x.get_code() for x in subcollections]
-                labels = ["&nbsp; &nbsp; %s" % x.get("name") for x in subcollections]
+                values = []
+                labels = []
+                for subcollection in subcollections:
+                    if subcollection.check_access("edit"):
+                        values.append( subcollection.get_code() )
+                        labels.append( "&nbsp; &nbsp; %s" % subcollection.get("name") )
+
 
                 values.insert(0, collection.get_code() )
                 labels.insert(0, collection.get("name") )
@@ -939,15 +944,15 @@ class IngestUploadWdg(BaseRefreshWdg):
                 search2.add_order_by("name")
                 subcollections = search2.get_sobjects()
 
-                values = [x.get_code() for x in subcollections]
-                labels = [x.get("name") for x in subcollections]
+                values = []
+                labels = []
+                for subcollection in subcollections:
+                    if subcollection.check_access("edit"):
+                        values.append( subcollection.get_code() )
+                        labels.append( subcollection.get("name") )
 
                 select.set_option("values", values)
                 select.set_option("labels", labels)
-
-
-                #select.set_option("values_expr", "@GET(%s['_is_collection','true'].code)" % self.search_type)
-                #select.set_option("labels_expr", "@GET(%s['_is_collection','true'].name)" % self.search_type)
 
 
             buttons_div.add(collection_div)
