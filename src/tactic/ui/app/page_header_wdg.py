@@ -302,7 +302,6 @@ class PageHeaderWdg(Widget):
             if site:
                 parts.append(site)
             parts.append(project_code)
-            parts.append("login")
             url = "/".join(parts)
 
 
