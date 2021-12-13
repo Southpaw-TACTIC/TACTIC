@@ -2280,17 +2280,7 @@ class Select(object):
                 'table': table
         } )
 
-        assert op in ['in', 'not in', '@@']
-
-
-        if op == "@@":
-            # full text search requires that the filters be added one by one
-            self.add_op("begin")
-            for value in values:
-                self.add_filter(column, value, table, op)
-            self.add_op("or")
-            return
-
+        assert op in ['in', 'not in', '@@', '@>']
 
 
         if op == "@@":
