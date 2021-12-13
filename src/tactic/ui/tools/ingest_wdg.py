@@ -889,24 +889,21 @@ class IngestUploadWdg(BaseRefreshWdg):
             label = DivWdg("ADD TO COLLECTION")
             label.add_style("font-size", "0.8em")
             label.add_style("opacity: 0.5")
-            collection_div.add(label)
 
             select = SelectWdg(name="collection")
             select.add_style("margin-top: -5px")
             select.add_style("margin-left: -5px")
             select.add_style("height: 33px")
-            collection_div.add(select)
             select.add_empty_option("-- Collection --")
             select.add_style("width: auto")
 
             collection_key = self.kwargs.get("collection_key")
             collection_code = None
             if collection_key:
+
                 collection = Search.get_by_search_key(collection_key)
                 if not collection:
                     raise Exception("Collection [%s] does not exist" % collection_key)
-
-                select.set_option("default", collection.get_code() )
 
                 collection_type = collection.get_collection_type()
                 collection_code = collection.get_code()
@@ -922,14 +919,18 @@ class IngestUploadWdg(BaseRefreshWdg):
 
                 values = []
                 labels = []
-                for subcollection in subcollections:
-                    if subcollection.check_access("edit"):
-                        values.append( subcollection.get_code() )
-                        labels.append( "&nbsp; &nbsp; %s" % subcollection.get("name") )
+                if collection.check_access("edit"):
+
+                    for subcollection in subcollections:
+                        if subcollection.check_access("edit"):
+                            values.append( subcollection.get_code() )
+                            labels.append( "&nbsp; &nbsp; %s" % subcollection.get("name") )
 
 
-                values.insert(0, collection.get_code() )
-                labels.insert(0, collection.get("name") )
+                    select.set_option("default", collection.get_code() )
+                    values.insert(0, collection.get_code() )
+                    labels.insert(0, collection.get("name") )
+
                 select.set_option("values", values)
                 select.set_option("labels", labels)
             else:
@@ -953,6 +954,10 @@ class IngestUploadWdg(BaseRefreshWdg):
 
                 select.set_option("values", values)
                 select.set_option("labels", labels)
+
+            if values:
+                collection_div.add(label)
+                collection_div.add(select)
 
 
             buttons_div.add(collection_div)
