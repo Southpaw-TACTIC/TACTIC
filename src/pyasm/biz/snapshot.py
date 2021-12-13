@@ -1953,7 +1953,7 @@ class Snapshot(SObject):
             snapshot_data=None, is_current=None, is_revision=False,
             level_type=None, level_id=None, commit=True, is_latest=True,
             is_synced=True, process=None, version=None, triggers=True,
-            set_booleans=True):
+            set_booleans=True, data={}):
 
         # Provide a default empty snapshot definition
         if snapshot_data == None:
@@ -2032,6 +2032,9 @@ class Snapshot(SObject):
         snapshot.set_value("snapshot_type", snapshot_type )
 
         snapshot.set_value("version", version)
+
+        if SearchType.column_exists("sthpw/snapshot", "data"):
+            snapshot.set_json_value("data", data)
 
         
         if is_revision:

@@ -5780,6 +5780,13 @@ class SObject(object):
 
 
 
+    #
+    # Permission methods
+    #
+    def check_access(self, required_access, default="allow"):
+        return True
+
+
 
     #
     # Caching methods
@@ -6852,6 +6859,16 @@ class SearchType(SObject):
         return related_types
 
     get_related_types = classmethod(get_related_types)
+
+
+    def get_collection_type(cls, search_type):
+        parts = search_type.split("/")
+        return "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+    get_collection_type = classmethod(get_collection_type)
+
+
+
+
 
 
 class SObjectFactory(Base):
