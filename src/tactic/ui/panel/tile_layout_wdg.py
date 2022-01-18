@@ -999,12 +999,18 @@ class TileLayoutWdg(ToolLayoutWdg):
             } )
 
         elif mode == "gallery":
+
+            # A list of extensions that will be opened  when clicked, instead of viewed in
+            # the gallery
+            excludes = [".pdf", ".docx", ".ppt", ".pttx", ".xls", ".xlsx", ".doc", ".docx"]
+
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )
             gallery_div.add_class("spt_tile_gallery")
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'search_type': self.search_type,
+                'excludes': excludes,
                 'width': gallery_width,
                 'align': self.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
@@ -1055,9 +1061,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 var thumb_top = tile_top.getElement(".spt_thumb_top");
                 var main_path = thumb_top.getAttribute("spt_main_path");
-                if (main_path.endsWith(".pdf")) {
-                    window.open(main_path, "_blank");
-                    return;
+
+                let excludes = bvr.excludes;
+                for (var i = 0; i < excludes.length; i++) {
+                    if (main_path.endsWith(excludes[i])) {
+                        window.open(main_path, "_blank");
+                        return;
+                    }
                 }
 
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';

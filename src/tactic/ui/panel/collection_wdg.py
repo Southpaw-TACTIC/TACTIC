@@ -1030,7 +1030,7 @@ class CollectionFolderWdg(BaseRefreshWdg):
 
 
 
-            var list = bvr.src_el.getParent(".spt_collection_list");
+            var list = bvr.src_el.getParent(".spt_collection_wrap");
             var items = list.getElements(".spt_collection_item");
             for (var i = 0; i < items.length; i++) {
                 items[i].setStyle("background", "");

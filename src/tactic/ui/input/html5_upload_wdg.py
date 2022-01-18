@@ -223,7 +223,9 @@ spt.html5upload.upload_file = function(kwargs) {
         files[i].name = JSON.stringify(files[i].name)
         fd.append("file_name"+i, files[i].name);
 
-        fd.append("file_path"+i, files[i].path);
+        if (files[i].path) {
+            fd.append("file_path"+i, files[i].path);
+        }
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);
