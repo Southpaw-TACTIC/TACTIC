@@ -3423,6 +3423,31 @@ class ViewPanelWdg(BaseRefreshWdg):
         # set up the extra keys (for all layouts)
         if not layout or layout == "table":
             layout_class_path = "tactic.ui.panel.TableLayoutWdg"
+        elif layout == "collection":
+            layout_class_path = "tactic.ui.panel.CollectionLayoutWdg"
+        elif layout == "tile":
+            layout_class_path = "tactic.ui.panel.TileLaoyoutWdg"
+        else:
+            layout_class_path = None
+
+        if layout_class_path:
+            (module_name, class_name) = Common.breakup_class_path(layout_class_path)
+            try:
+                exec("from %s import %s" % (module_name,class_name), gl, lc )
+                extra_keys = eval("%s.get_kwargs_keys()" % class_name )
+            except Exception as e:
+                extra_keys = []
+
+            for key in extra_keys:
+                kwargs[key] = self.kwargs.get(key)
+            kwargs['extra_keys'] = ",".join(extra_keys)
+
+
+        if layout == 'tile':
+            from .tile_layout_wdg import TileLayoutWdg
+            kwargs['top_view'] = self.kwargs.get("top_view")
+            kwargs['bottom_view'] = self.kwargs.get("bottom_view")
+
         else:
             layout_class_path = None
 

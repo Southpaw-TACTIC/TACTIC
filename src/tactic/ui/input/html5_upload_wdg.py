@@ -54,6 +54,12 @@ class Html5UploadWdg(BaseRefreshWdg):
         input.set_attr("name", "file")
         input.add_class("spt_file")
         input.set_attr("type", "file")
+
+        directory = self.kwargs.get("directory")
+        if directory in [True, 'true']:
+            input.set_attr("webkitdirectory", "webkitdirectory")
+            input.set_attr("directory", "directory")
+
         input.add_style("position: absolute")
         input.add_style("margin-left: -5000px")
 
@@ -129,6 +135,8 @@ spt.html5upload.select_files = function(onchange) {
         return; 
     }
     var el = form.getElement(".spt_file") ;
+
+    //el.setAttribute("webkitdirectory", "true")
   
     /*
     if (replace) {
@@ -214,6 +222,10 @@ spt.html5upload.upload_file = function(kwargs) {
         fd.append("file"+i, files[i]);
         files[i].name = JSON.stringify(files[i].name)
         fd.append("file_name"+i, files[i].name);
+
+        if (files[i].path) {
+            fd.append("file_path"+i, files[i].path);
+        }
     }
     fd.append("num_files", files.length);
     fd.append('transaction_ticket', transaction_ticket);

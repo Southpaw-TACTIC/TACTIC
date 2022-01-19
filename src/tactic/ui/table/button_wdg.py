@@ -54,8 +54,12 @@ class ButtonElementWdg(BaseTableElementWdg):
         'order': 3
     },
 
-
-
+   'color': {
+        'description': 'The color of the icon',
+        'type': 'TextWdg',
+        'category': "Options",
+        'order': 3
+    },
     'hint': {
         'description': 'Text to display as a tool-tip when mouse is hovering over button',
         'category': "Options",
@@ -326,6 +330,11 @@ class ButtonElementWdg(BaseTableElementWdg):
         display.add_style("position: relative")
         display.add_class("spt_button_top")
 
+        color = self.get_option("color")
+        if color:
+            result = ExpressionParser().eval(color, sobject)
+            display.add_style("color", result)
+
         display.add_style("padding: 4px")
 
         if self.get_option('align') == 'left':
@@ -335,7 +344,9 @@ class ButtonElementWdg(BaseTableElementWdg):
 
 
         icon = self.get_option("icon")
-        if not icon:
+        if icon:
+            icon = ExpressionParser().eval(icon, sobject)
+        else:
             icon = "create"
 
 
@@ -392,17 +403,16 @@ class ButtonElementWdg(BaseTableElementWdg):
         expression = self.kwargs.get('expression')
         if expression:
             value = Search.eval(expression, sobject, single=True)
-
             if value:
 
                 badge = DivWdg()
                 badge.add_style("position: absolute")
 
-                badge.add_style("right: -30px")
+                #badge.add_style("right: -30px")
                 badge.add_style("top: -2px")
                 badge.add_style("margin: 4px 3px 3px 6px")
                 badge.add_style("opacity: 0.5")
-                badge.add_style("font-size: 0.7em")
+                badge.add_style("font-size: 1.0em")
                 badge.add_class("badge")
                 badge.add(value)
 

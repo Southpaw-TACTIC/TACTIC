@@ -460,7 +460,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             js_load = ProjectSetting.get_value_by_key("tile_layout/js_load") in \
                     ['true', True]
 
-
             if js_load:
                 #import time
                 #start = time.time()
@@ -602,9 +601,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                         } else if (icon_path.startsWith("/context")) {
                             var inner = tile.getElement(".spt_context_icon");
                             inner.getElement("img").src = icon_path;
+
+                            //let img = inner.getElement(".spt_image");
+                            //img.setStyle("background-image", 'url("+icon_path+")');
+
+
                         } else {
                             var inner = tile.getElement(".spt_tile_icon");
-                            inner.getElement(".spt_image").src = icon_path;
+                            //inner.getElement(".spt_image").src = icon_path;
+
+                            let img = inner.getElement(".spt_real_image");
+                            img.setStyle("background-image", 'url("'+icon_path+'")');
                         }
                         inner.setStyle("display", "");
                     }
@@ -632,6 +639,12 @@ class TileLayoutWdg(ToolLayoutWdg):
                         tile.getElement(".spt_tile_detail").setStyle("display", "none");
                         tile.getElement(".spt_tile_collection_count").innerHTML = data.collection_count;
                     } else {
+
+                        if (data.spt_permission_level != "edit") {
+                            let el = tile.getElement(".spt_tile_detail");
+                            spt.behavior.destroy_element(el);
+                        }
+
                         // Download button
                         download_el = tile.getElement(".spt_tile_tool_top").getElement(".spt_download");
                         download_el.setAttribute("href", data.main_path);
@@ -736,7 +749,6 @@ class TileLayoutWdg(ToolLayoutWdg):
             self.aspect_ratio = (240, 200)
             #self.aspect_ratio = (240, 135)
             #self.aspect_ratio = (240, 240)
-
 
 
         self.show_name_hover = self.kwargs.get('show_name_hover')
@@ -987,12 +999,18 @@ class TileLayoutWdg(ToolLayoutWdg):
             } )
 
         elif mode == "gallery":
+
+            # A list of extensions that will be opened  when clicked, instead of viewed in
+            # the gallery
+            excludes = [".pdf", ".docx", ".ppt", ".pttx", ".xls", ".xlsx", ".doc", ".docx"]
+
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )
             gallery_div.add_class("spt_tile_gallery")
             layout_wdg.add_relay_behavior( {
                 'type': 'click',
                 'search_type': self.search_type,
+                'excludes': excludes,
                 'width': gallery_width,
                 'align': self.gallery_align,
                 'bvr_match_class': 'spt_tile_content',
@@ -1043,9 +1061,13 @@ class TileLayoutWdg(ToolLayoutWdg):
 
                 var thumb_top = tile_top.getElement(".spt_thumb_top");
                 var main_path = thumb_top.getAttribute("spt_main_path");
-                if (main_path.endsWith(".pdf")) {
-                    window.open(main_path, "_blank");
-                    return;
+
+                let excludes = bvr.excludes;
+                for (var i = 0; i < excludes.length; i++) {
+                    if (main_path.endsWith(excludes[i])) {
+                        window.open(main_path, "_blank");
+                        return;
+                    }
                 }
 
                 var class_name = 'tactic.ui.widget.gallery_wdg.GalleryWdg';
@@ -1803,6 +1825,15 @@ class TileLayoutWdg(ToolLayoutWdg):
 
         for sobject in sobjects:
 
+            # determine permission level for each sobject
+            if sobject.check_access("edit"):
+                permission_level = "edit"
+            else:
+                permission_level = "view"
+
+
+
+
             tile_data = {}
             tile_data["spt_search_key"] = sobject.get_search_key(use_id=True)
             tile_data["spt_search_key_v2"] = sobject.get_search_key()
@@ -1810,6 +1841,8 @@ class TileLayoutWdg(ToolLayoutWdg):
             tile_data["spt_search_code"] = sobject.get_code()
             tile_data["spt_is_collection"] = sobject.get_value('_is_collection', no_exception=True)
             tile_data["spt_display_value"] = sobject.get_display_value(long=True)
+
+            tile_data["spt_permission_level"] = permission_level
 
 
             paths = paths_by_key.get(sobject.get_search_key()) or {}
@@ -1999,8 +2032,8 @@ class TileLayoutWdg(ToolLayoutWdg):
                 width: 100%;
                 position: absolute;
                 left: 0;
-                background: #000;
-                opacity: 0.6;
+                background: #999;
+                opacity: 1.0;
                 z-index: 1;
                 display: flex;
                 justify-content: space-between;
@@ -2067,6 +2100,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         style.add(css)
         return style
 
+
+
     def get_template_tile_wdg(self):
 
         div = DivWdg()
@@ -2075,24 +2110,13 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)
 
-        div.add(" ")
+
 
         if self.kwargs.get("show_title") not in ['false', False]:
 
             title_wdg = self.get_template_title()
+            title_wdg.add_style("margin-top: -3px")
             div.add(title_wdg)
-
-            """
-            if self.title_wdg:
-                self.title_wdg.set_sobject(sobject)
-                title_wdg = self.title_wdg.get_display()
-            else:
-                title_wdg = self.get_title(sobject)
-            title_wdg.add_style("position: absolute")
-            title_wdg.add_style("top: 0")
-            title_wdg.add_style("left: 0")
-            title_wdg.add_style("width: 100%")
-            """
 
 
         SmartMenu.assign_as_local_activator( div, 'DG_DROW_SMENU_CTX' )
@@ -2146,6 +2170,9 @@ class TileLayoutWdg(ToolLayoutWdg):
             icon.add_class("hand")
             href.add(icon)
         else:
+
+            # TEST TEST TEST
+
             # get a presigned url or whatever from the repo for download
             href = DivWdg()
             href.add_class("spt_download")
@@ -2280,6 +2307,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         header_div.add(checkbox)
         checkbox.add_style("width: 18px")
         checkbox.add_style("height: 18px")
+        checkbox.add_style("margin-right: 5px")
 
 
         title_div = DivWdg()
@@ -2287,7 +2315,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         title_div.add_style("max-width: 70%")
         title_div.add_style("overflow: hidden")
         title_div.add_style("text-overflow: ellipsis")
-        title_div.add_style("margin-top: -3px")
+        title_div.add_style("margin-top: 3px")
 
         header_div.add(title_div)
 
@@ -2386,6 +2414,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         icon_div.add_class("spt_tile_icon")
         icon_div.add_style("display", "none")
 
+        icon_div.add_style("width: 100%")
+        icon_div.add_style("height: 100%")
         """
         # TODO: This should be moved to preprocessing
         if isinstance(path, unicode):
@@ -2413,18 +2443,17 @@ class TileLayoutWdg(ToolLayoutWdg):
                         path = thumb_cmd.get_path()
         """
 
-        img = HtmlElement.img()
-        img.add_class("spt_image")
+        img = DivWdg()
+        img.add_class("spt_real_image")
+        #img.add_style("background-image", '''url("%s")''' % path)
+        img.add_style("background-size", "cover")
+        img.add_style("background-position", "center")
+        img.add_style("width: 100%")
+        img.add_style("height: calc(100% - 20px)")
+        img.add_style("margin-top: 20px")
         icon_div.add(img)
-        img.add_style("width: %s" % width)
-        if height:
-            img.add_style("height: %s" % height)
-        else:
-            img.add_style("height: auto")
 
 
-        img.add_style('margin-left','auto')
-        img.add_style('margin-right','auto')
         div.add(icon_div)
         #############################################################
 
@@ -2810,6 +2839,8 @@ spt.tile_layout.set_scale = function(scale) {
 
     var size_x = bvr.aspect_ratio[0]*scale/100;
     var size_y = bvr.aspect_ratio[1]*scale/100;
+
+    //size_y = size_y + 25;
 
     //var top = bvr.src_el.getParent(".spt_tile_layout_top");
     var top = spt.tile_layout.layout;
@@ -3503,7 +3534,9 @@ class ThumbWdg2(BaseRefreshWdg):
                     img.add_style("background-size", "cover")
                     img.add_style("background-position", "center")
 
-                div.add_attr("spt_main_path", self.get_main_path())
+                main_path = self.get_main_path()
+                main_path = urllib.request.pathname2url(main_path)
+                div.add_attr("spt_main_path", main_path)
 
 
 

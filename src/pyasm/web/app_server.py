@@ -864,7 +864,7 @@ class BaseAppServer(Base):
                 login_cmd.execute()
 
                 ticket_key = security.get_ticket_key()
-                print("ticket: ", ticket_key)
+                #print("ticket: ", ticket_key)
               
                 if not ticket_key:
                     if site:

@@ -720,6 +720,7 @@ class IngestUploadWdg(BaseRefreshWdg):
         shelf_div = DivWdg()
         div.add(shelf_div)
         shelf_div.add_style("margin-bottom: 10px")
+        shelf_div.add_class("spt_shelf_top")
 
         if self.search_key:
             div.add("<input class='spt_input' type='hidden' name='search_key' value='%s'/>" % self.search_key)
@@ -757,8 +758,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         button = ActionButtonWdg(title="Add Files", width=150, color="secondary")
-        #button.add_style("float: right")
         buttons_div.add(button)
+
 
         button.add_behavior( {
             'type': 'load',
@@ -772,7 +773,49 @@ class IngestUploadWdg(BaseRefreshWdg):
 
             var top = bvr.src_el.getParent(".spt_ingest_top");
             var files_el = top.getElement(".spt_to_ingest_files");
-            var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
+
+
+            let shelf = bvr.src_el.getParent(".spt_shelf_top");
+            let input = shelf.getElement("input");
+            input.removeAttribute("webkitdirectory");
+
+            //clear upload progress
+            var upload_bar = top.getElement('.spt_upload_progress');
+            if (upload_bar) {
+                upload_bar.setStyle('width','0%');
+                upload_bar.innerHTML = '';
+            }
+
+            var upload_button = top.getElement(".spt_upload_files_top");
+
+            var onchange = function (evt) {
+                var files = spt.html5upload.get_files();
+                spt.ingest.select_files(top, files, bvr.normal_ext);
+            }
+
+            spt.html5upload.clear();
+            spt.html5upload.set_form( top );
+            spt.html5upload.select_file( onchange );
+
+         '''
+         } )
+
+
+        xbutton = ActionButtonWdg(title="Add Folder", width=150, color="secondary")
+        xbutton.add_style("margin-left: 5px")
+        buttons_div.add(xbutton)
+        xbutton.add_behavior( {
+            'type': 'click',
+            'normal_ext': File.NORMAL_EXT,
+            'cbjs_action': '''
+
+            var top = bvr.src_el.getParent(".spt_ingest_top");
+            var files_el = top.getElement(".spt_to_ingest_files");
+
+            let shelf = bvr.src_el.getParent(".spt_shelf_top");
+            let input = shelf.getElement("input")
+            input.setAttribute("webkitdirectory", "true");
+
 
             //clear upload progress
             var upload_bar = top.getElement('.spt_upload_progress');
@@ -795,6 +838,7 @@ class IngestUploadWdg(BaseRefreshWdg):
 
          '''
          } )
+
 
 
 
@@ -837,27 +881,86 @@ class IngestUploadWdg(BaseRefreshWdg):
 
 
         # add a selection for collections
-        collection_div = DivWdg()
-        collection_div.add_style("margin-left: 30px")
-        collection_div.add_class("spt_collection")
+        if SearchType.column_exists(self.search_type, "_is_collection"):
+            collection_div = DivWdg()
+            collection_div.add_style("margin-left: 30px")
+            collection_div.add_class("spt_collection")
 
-        label = DivWdg("ADD TO COLLECTION")
-        label.add_style("font-size", "0.8em")
-        label.add_style("opacity: 0.5")
-        collection_div.add(label)
+            label = DivWdg("ADD TO COLLECTION")
+            label.add_style("font-size", "0.8em")
+            label.add_style("opacity: 0.5")
+
+            select = SelectWdg(name="collection")
+            select.add_style("margin-top: -5px")
+            select.add_style("margin-left: -5px")
+            select.add_style("height: 33px")
+            select.add_empty_option("-- Collection --")
+            select.add_style("width: auto")
+
+            collection_key = self.kwargs.get("collection_key")
+            collection_code = None
+            if collection_key:
+
+                collection = Search.get_by_search_key(collection_key)
+                if not collection:
+                    raise Exception("Collection [%s] does not exist" % collection_key)
+
+                collection_type = collection.get_collection_type()
+                collection_code = collection.get_code()
+
+                search = Search(collection_type)
+                search.add_column("search_code")
+                search.add_filter("parent_code", collection.get_code() )
+                search2 = Search(collection.get_base_search_type() ) 
+                search2.add_search_filter("code", search)
+                search2.add_filter("_is_collection", True)
+                search2.add_order_by("name")
+                subcollections = search2.get_sobjects()
+
+                values = []
+                labels = []
+                if collection.check_access("edit"):
+
+                    for subcollection in subcollections:
+                        if subcollection.check_access("edit"):
+                            values.append( subcollection.get_code() )
+                            labels.append( "&nbsp; &nbsp; %s" % subcollection.get("name") )
 
 
-        select = SelectWdg(name="collection")
-        select.add_style("margin-top: -5px")
-        select.add_style("margin-left: -5px")
-        select.add_style("height: 33px")
-        collection_div.add(select)
-        select.add_empty_option("-- Collection --")
-        select.add_style("width: auto")
-        #select.set_option("values", "reference|final|approved")
-        select.set_option("values_expr", "@GET(%s['_is_collection','true'].code)" % self.search_type)
-        select.set_option("labels_expr", "@GET(%s['_is_collection','true'].name)" % self.search_type)
-        buttons_div.add(collection_div)
+                    select.set_option("default", collection.get_code() )
+                    values.insert(0, collection.get_code() )
+                    labels.insert(0, collection.get("name") )
+
+                select.set_option("values", values)
+                select.set_option("labels", labels)
+            else:
+                collection_type = SearchType.get_collection_type(self.search_type)
+
+                search = Search(collection_type)
+                search.add_column("search_code")
+
+                search2 = Search(self.search_type)
+                search2.add_filter("_is_collection", True)
+                search2.add_search_filter("code", search, op="not in")
+                search2.add_order_by("name")
+                subcollections = search2.get_sobjects()
+
+                values = []
+                labels = []
+                for subcollection in subcollections:
+                    if subcollection.check_access("edit"):
+                        values.append( subcollection.get_code() )
+                        labels.append( subcollection.get("name") )
+
+                select.set_option("values", values)
+                select.set_option("labels", labels)
+
+            if values:
+                collection_div.add(label)
+                collection_div.add(select)
+
+
+            buttons_div.add(collection_div)
 
 
 
@@ -972,6 +1075,10 @@ class IngestUploadWdg(BaseRefreshWdg):
                 delay = 0;
             }
 
+            if (file.webkitRelativePath) {
+                file.path = file.webkitRelativePath;
+            }
+
             // remember the file handle
             clone.file = file;
 
@@ -1045,7 +1152,12 @@ class IngestUploadWdg(BaseRefreshWdg):
             reader.readAsDataURL(file);
             */
 
-            clone.getElement(".spt_name").innerHTML = file.name;
+            if (file.path) {
+                clone.getElement(".spt_name").innerHTML = file.path;
+            }
+            else {
+                clone.getElement(".spt_name").innerHTML = file.name;
+            }
             clone.getElement(".spt_size").innerHTML = size + " KB";
             clone.inject(top);
         }
@@ -1056,34 +1168,89 @@ class IngestUploadWdg(BaseRefreshWdg):
             evt.stopPropagation();
             evt.preventDefault();
             evt.dataTransfer.dropEffect = 'copy';
-            var files = evt.dataTransfer.files;
 
+            var filenames = [];
             var delay = 0;
             var skip = false;
             var regex = new RegExp('(' + bvr.normal_ext.join('|') + ')$', 'i');
-            for (var i = 0; i < files.length; i++) {
-                var size = files[i].size;
-                var file_name = files[i].name;
-                var is_normal = regex.test(file_name);
-                if (size >= 10*1024*1024 || is_normal) {
-                    spt.drag.show_file(files[i], files_el, 0, false);
+
+            if (evt.dataTransfer.items) {
+
+                function traverseFileTree(item, path) {
+                  path = path || "";
+                  if (item.isFile) {
+                    item.file( function(file) {
+                        var size = file.size;
+                        var file_name = file.name;
+                        file.path = item.fullPath;
+                        filenames.push(file.path);
+
+                        var is_normal = regex.test(file_name);
+                        if (size >= 10*1024*1024 || is_normal) {
+                            spt.drag.show_file(file, files_el, 0, false);
+                        }
+                        else {
+                            spt.drag.show_file(file, files_el, delay, true);
+
+                            if (size < 100*1024)       delay += 50;
+                            else if (size < 1024*1024) delay += 500;
+                            else if (size < 10*1024*1024) delay += 1000;
+                        }
+
+
+
+                    });
+                  } else if (item.isDirectory) {
+                    // Get folder contents
+                    var dirReader = item.createReader();
+                    dirReader.readEntries(function(entries) {
+                      for (var i=0; i<entries.length; i++) {
+                        traverseFileTree(entries[i], path + item.name + "/");
+                      }
+                    });
+                  }
                 }
-                else {
-                    spt.drag.show_file(files[i], files_el, delay, true);
 
-                    if (size < 100*1024)       delay += 50;
-                    else if (size < 1024*1024) delay += 500;
-                    else if (size < 10*1024*1024) delay += 1000;
+
+                let items = evt.dataTransfer.items;
+                for (var i = 0; i < items.length; i++) {
+
+                    // webkitGetAsEntry is where the magic happens
+                    var item = items[i].webkitGetAsEntry();
+                    if (item) {
+                      traverseFileTree(item);
+                    }
                 }
 
-            }
 
-            // get all of the current filenames
-            var filenames = []
-            var items = top.getElements(".spt_upload_file");
-            for (var i = 0; i < items.length; i++) {
-                var file = items[i].file;
-                filenames.push(file.name);
+
+            } else {
+                // old style without folders
+                var files = evt.dataTransfer.files;
+
+                for (var i = 0; i < files.length; i++) {
+                    var size = files[i].size;
+                    var file_name = files[i].name;
+                    var is_normal = regex.test(file_name);
+                    if (size >= 10*1024*1024 || is_normal) {
+                        spt.drag.show_file(files[i], files_el, 0, false);
+                    }
+                    else {
+                        spt.drag.show_file(files[i], files_el, delay, true);
+
+                        if (size < 100*1024)       delay += 50;
+                        else if (size < 1024*1024) delay += 500;
+                        else if (size < 10*1024*1024) delay += 1000;
+                    }
+
+                }
+
+                // get all of the current filenames
+                var items = top.getElements(".spt_upload_file");
+                for (var i = 0; i < items.length; i++) {
+                    var file = items[i].file;
+                    filenames.push(file.name);
+                }
             }
 
 
@@ -1261,8 +1428,8 @@ class IngestUploadWdg(BaseRefreshWdg):
             ingest_btn_top = top.getElement(".spt_ingest_btn");
             ingest_btn_top.in_progress = false;
         }
-            
-         
+
+       
         '''
 
 
@@ -1349,7 +1516,11 @@ class IngestUploadWdg(BaseRefreshWdg):
 
         var filenames = [];
         for (var i = 0; i != files.length;i++) {
-            var name = files[i].name;
+            var name = files[i].path;
+            if (!name) {
+                name = files[i].name;
+            }
+
             if (name) {
                 filenames.push(name);
             }
@@ -1704,7 +1875,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 upload_bar.innerHTML = '';
             }
 
-            var upload_button = top.getElement(".spt_upload_files_top");
+            //var upload_button = top.getElement(".spt_upload_files_top");
 
             var onchange = function (evt) {
                 var files = spt.html5upload.get_files();
@@ -1787,14 +1958,16 @@ spt.ingest.select_files = function(top, files, normal_ext) {
     var delay = 0;
     var skip = false;
     for (var i = 0; i < files.length; i++) {
-        var size = files[i].size;
-        var file_name = files[i].name;
+        let file = files[i];
+
+        var size = file.size;
+        var file_name = file.name;
         var is_normal = regex.test(file_name);
         if (size >= 10*1024*1024 || is_normal) {
-            spt.drag.show_file(files[i], files_el, 0, false);
+            spt.drag.show_file(file, files_el, 0, false);
         }
         else {
-            spt.drag.show_file(files[i], files_el, delay, true);
+            spt.drag.show_file(file, files_el, delay, true);
 
             if (size < 100*1024)       delay += 50;
             else if (size < 1024*1024) delay += 500;
@@ -1909,6 +2082,7 @@ class IngestUploadCmd(Command):
         filenames = self.kwargs.get("filenames")
         relative_dir = self.kwargs.get("relative_dir")
 
+
         base_dir = self.kwargs.get("base_dir")
         if not base_dir:
             upload_dir = Environment.get_upload_dir()
@@ -1993,18 +2167,32 @@ class IngestUploadCmd(Command):
             relative_dir = "%s/001" % relative_dir
 
 
+        collection_key = self.kwargs.get("collection_key")
+        collection_code = self.kwargs.get("collection_code")
+        collection = None
+        if collection_key:
+            collection = Search.get_by_search_key(collection)
+        elif collection_code:
+            collection = Search.get_by_code(search_type, collection_code)
+
+
         snapshots = []
 
         for count, filename in enumerate(filenames):
-        # Check if files should be updated.
-        # If so, attempt to find one to update.
-        # If more than one is found, do not update.
+            # Check if files should be updated.
+            # If so, attempt to find one to update.
+            # If more than one is found, do not update.
 
 
 
             if filename.endswith("/"):
                 # this is a folder:
-                    continue
+                continue
+
+
+            # remove leading /
+            filename = filename.lstrip("/")
+
 
             new_keywords = keywords
 
@@ -2075,6 +2263,7 @@ class IngestUploadCmd(Command):
                 sobject = self.sobject
 
             elif update_mode in ["true", True, "update"]:
+
                 # first see if this sobjects still exists
                 search = Search(search_type)
                 # ingested files into search type applies filename without i.e. _v001 suffix
@@ -2120,7 +2309,6 @@ class IngestUploadCmd(Command):
                 if update_mode not in ['true', True, "update"]:
                     sobjects = []
 
-                #self.check_existing_file(search_type, new_filename, relative_dir, update_mode, sobjects)
 
                 sobject = SearchType.create(search_type)
 
@@ -2322,17 +2510,45 @@ class IngestUploadCmd(Command):
             search_key = sobject.get_search_key()
 
 
-            # add to a collection if specified
-            collection_key = self.kwargs.get("collection_key")
-            collection_code = self.kwargs.get("collection_code")
-            collection = None
-            if collection_key:
-                collection = Search.get_by_search_key(collection)
-            elif collection_code:
-                collection = Search.get_by_code(search_type, collection_code)
 
-            if collection:
-                sobject.add_to_collection(collection)
+
+
+            # add to a collection if specified
+            last_collection = collection
+            parts = filename.split("/")
+            for collection_name in parts[:-1]:
+                collection_type = SearchType.get_collection_type(search_type)
+
+                # find out if the subcollection already exits
+                search = Search(search_type)
+                search.add_filter("_is_collection", "true")
+                search.add_filter("name", collection_name)
+
+                if last_collection:
+                    subsearch = Search(collection_type)
+                    subsearch.add_column("search_code")
+                    subsearch.add_filter("parent_code", last_collection.get_code() )
+                    search.add_search_filter("code", subsearch)
+                
+                subcollection = search.get_sobject()
+
+                # if this subcollection does not exist, create it
+                if not subcollection:
+                    subcollection = SearchType.create(search_type)
+                    subcollection.set_value("_is_collection", "true")
+                    subcollection.set_value("name", collection_name)
+                    subcollection.set_value("status", "Verified")
+                    subcollection.commit()
+
+                    if last_collection:
+                        subcollection.add_to_collection(last_collection)
+
+                last_collection = subcollection
+
+            # finally add to the last collection
+            if last_collection:
+                sobject.add_to_collection(last_collection)
+
 
 
 
