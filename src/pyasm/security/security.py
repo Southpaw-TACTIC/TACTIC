@@ -1381,7 +1381,7 @@ class Ticket(SObject):
 
         from datetime import datetime
         from pyasm.search import SqlException
-	# it makes no sense for Sqlite sessions to expire
+        # it makes no sense for Sqlite sessions to expire
         # FIXME: this is a bit of a hack until we figure out how
         # timestamps work in sqlite (all are converted to GMT?!)
         if impl.get_database_type() in ['Sqlite', 'MySQL']:
@@ -1835,29 +1835,42 @@ class Security(Base):
 
 
 
-    def login_user_without_password(self, login_name, expiry=None):
+    def login_user_without_password(self, login_name, expiry=None, ticket_key=None):
         '''login a user without a password.  This should be used sparingly'''
 
-        search = Search("sthpw/login")
-        search.add_filter("login", login_name)
-        self._login = search.get_sobject()
+        sudo = Sudo()
+        try:
+            search = Search("sthpw/login")
+            search.add_filter("login", login_name)
+            self._login = search.get_sobject()
 
-        # user still has to exist
-        if not self._login:
-            raise SecurityException("Login [%s] does not exist" % login_name)
+            # user still has to exist
+            if not self._login:
+                raise SecurityException("Login [%s] does not exist" % login_name)
 
-        # Search for unexpired ticket
-        search = Search("sthpw/ticket")
-        search.add_filter("login", login_name)
-        now = search.get_database_impl().get_timestamp_now()
-        search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
-        ticket = search.get_sobject()
-        if ticket:
-            self._ticket = ticket
-        else:
-            self._ticket = self._generate_ticket(login_name, expiry)
+            # Search for unexpired ticket
+            search = Search("sthpw/ticket")
+            search.add_filter("login", login_name)
+            now = search.get_database_impl().get_timestamp_now()
+            search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
+            ticket = search.get_sobject()
+            if ticket and ticket.get("ticket"):
+                self._ticket = ticket
+            else:
+                self._ticket = self._generate_ticket(login_name, expiry, ticket_key=ticket_key)
+        finally:
+            sudo.exit()
+
+
+        # clear the login_in_group cache
+        LoginInGroup.clear_cache()
 
         self._do_login()
+
+        return self._ticket
+
+
+
 
 
 
@@ -2020,17 +2033,20 @@ class Security(Base):
 
 
 
-    def generate_ticket(self, login_name, expiry=None, category=None):
-        return self._generate_ticket(login_name, expiry, category)
+    def generate_ticket(self, login_name, expiry=None, category=None, ticket_key=None):
+        return self._generate_ticket(login_name, expiry, category, ticket_key)
 
 
-    def _generate_ticket(self, login_name, expiry=None, category=None):
+    def _generate_ticket(self, login_name, expiry=None, category=None, ticket_key=None):
 
         handler = None
 
         handler_class = Config.get_value("security", "authenticate_ticket_class")
-        handler = None
-        if handler_class:
+        #handler_class = None
+
+        if ticket_key:
+            pass
+        elif handler_class:
             handler = Common.create_from_class_path(handler_class)
             ticket_key = handler.generate_key(login_name, expiry, category)
         else:
@@ -2039,7 +2055,11 @@ class Security(Base):
             ticket_key = Site.get().build_ticket(ticket_key)
 
 
-        # make sure the ticket is always generated on the default site
+
+        assert(ticket_key)
+
+
+        # make sure the ticket is created according to the handler
         site = Site.get_site()
         if site:
             Site.set_site("default")
