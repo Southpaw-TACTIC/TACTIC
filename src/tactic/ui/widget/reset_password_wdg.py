@@ -20,7 +20,7 @@ from tactic.ui.common import BaseRefreshWdg
 from tactic.ui.widget import ActionButtonWdg
 from pyasm.command import Command
 from pyasm.common import TacticException, Config, Common
-from pyasm.security import Batch, Login, Site
+from pyasm.security import Batch, Login
 
 
 class NewPasswordWdg(BaseSignInWdg):
