@@ -75,6 +75,12 @@ class Authenticate(object):
         pass
 
 
+    def reset_password(self, login, password):
+        """reset the password
+        """
+        pass
+
+
 
 #
 # The default authentication class
