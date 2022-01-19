@@ -634,9 +634,13 @@ class UploadAction(DatabaseAction):
             if custom_ticket:
                 ticket = custom_ticket
 
+
+
             handoff_path = os.path.basename(handoff_path)
             handoff_path = Common.get_filesystem_name(handoff_path)
 
+            # make sure ticket is no longer than 100 characters
+            ticket = ticket[:100]
             handoff_path = "%s/upload/%s/%s" % (Environment.get_tmp_dir(), ticket, handoff_path)
 
 

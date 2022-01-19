@@ -113,6 +113,8 @@ class UploadServerWdg(Widget):
             security = Environment.get_security()
             ticket = security.get_ticket_key()
 
+        ticket = ticket[:100]
+
 
         tmpdir = Environment.get_tmp_dir()
         subdir = web.get_form_value("subdir")

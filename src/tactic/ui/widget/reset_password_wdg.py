@@ -19,7 +19,7 @@ from pyasm.widget import HiddenWdg, TextWdg, IconWdg, PasswordWdg, BaseSignInWdg
 from tactic.ui.common import BaseRefreshWdg, Environment
 from tactic.ui.widget import ActionButtonWdg
 from pyasm.command import Command
-from pyasm.common import TacticException
+from pyasm.common import TacticException, Config, Common
 from pyasm.security import Batch, Login
 
 
@@ -134,23 +134,36 @@ class NewPasswordCmd(Command):
 
         if password == confirm_password:
             code = web.get_form_value('code')
+            #print("code:", code) #markmark
 
             if login:
                 data = login.get_json_value('data')
+
+
+                # if admin, just raise an exception.
+                if login == 'admin':
+                    # admin can't reset passwd.
+                    raise SecurityException("Admin can't reset passwd.")
+
+                # need to get the authenticate class
+                auth_class = Config.get_value("security", "authenticate_class", no_exception=True)
+                if not auth_class:
+                    auth_class = "pyasm.security.TacticAuthenticate"
+                #print("auth_class:", auth_class)
+
+
                 if data:
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
 
-
-                        security = Environment.get_security()
-
-                        # delegate this to the security class
-                        encrypted = Login.encrypt_password(password)
-                        login.set_value('password', encrypted)
-                        login.commit()
-
-
-
+                        if auth_class and auth_class == 'spt.modules.portal.master_project.PortalAuthenticate':
+                            # call reset_password from the auth_class
+                            authenticate = Common.create_from_class_path(auth_class)
+                            authenticate.reset_password(self.login, password)
+                        else:
+                            encrypted = Login.encrypt_password(password)
+                            login.set_value('password', encrypted)
+                            login.commit()
         else:
             web.set_form_value("is_err", "true")
             web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'The entered passwords do not match.')

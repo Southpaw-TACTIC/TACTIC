@@ -3534,7 +3534,9 @@ class ThumbWdg2(BaseRefreshWdg):
                     img.add_style("background-size", "cover")
                     img.add_style("background-position", "center")
 
-                div.add_attr("spt_main_path", self.get_main_path())
+                main_path = self.get_main_path()
+                main_path = urllib.request.pathname2url(main_path)
+                div.add_attr("spt_main_path", main_path)
 
 
 

@@ -1759,6 +1759,9 @@ class CollectionAddAction(DatabaseAction):
     def postprocess(self):
 
         collection_key = self.get_value()
+        if not collection_key:
+            return
+
         collection = Search.get_by_search_key(collection_key)
         if not collection:
             raise Exception("Collection to add to does not exist")

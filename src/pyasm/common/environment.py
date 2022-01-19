@@ -608,7 +608,8 @@ class Environment(Base):
         # first assume localhost
         from pyasm.web import Url
         server = Config.get_value("install", "hostname")
-        return Url("http://%s" % server)
+        protocol = Config.get_value("security", "protocol") or "http"
+        return Url("%s://%s" % (protocol, server))
     get_base_url = classmethod(get_base_url)
 
 
