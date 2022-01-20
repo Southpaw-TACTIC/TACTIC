@@ -1732,7 +1732,7 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("margin-top: -6px")
             count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
             
-            expression = "@COUNT(%s['parent_code','%s'])" % (collection_type, collection.get_code())
+            expression = "@COUNT(%s['parent_code','%s'].%s)" % (collection_type, collection.get_code(), search_type)
             count_div.add(count)
             count_div.add_update( {
                 #'expr_key': collection.get_search_key(),

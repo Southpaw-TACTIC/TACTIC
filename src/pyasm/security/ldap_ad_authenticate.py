@@ -2,7 +2,10 @@
 import tacticenv
 
 import re
-import ldap
+try:
+    import ldap
+except:
+    pass
 
 from pyasm.common import SecurityException, Config, Common, jsonloads
 from pyasm.security import Login, LoginInGroup, Authenticate, Batch
