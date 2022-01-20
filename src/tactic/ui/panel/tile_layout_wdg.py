@@ -1002,7 +1002,7 @@ class TileLayoutWdg(ToolLayoutWdg):
 
             # A list of extensions that will be opened  when clicked, instead of viewed in
             # the gallery
-            excludes = [".pdf", ".docx", ".ppt", ".pttx", ".xls", ".xlsx", ".doc", ".docx"]
+            excludes = [".pdf", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".doc", ".docx"]
 
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )

@@ -1651,6 +1651,11 @@ class CollectionItemWdg(BaseRefreshWdg):
         items = search.get_sobjects()
         codes = [x.get_value("search_code") for x in items]
 
+        #count = search.get_count()
+
+        # find count of all the children (not include those that have been deleted)
+        search = Search(search_type)
+        search.add_filters("code", codes)
         count = search.get_count()
 
         # find the children that are actually collections
