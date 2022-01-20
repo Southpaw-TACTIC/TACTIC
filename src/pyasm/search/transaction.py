@@ -729,7 +729,7 @@ class FileUndo:
             # check the link file
 
             if os.path.exists(link_path):
-                link_file = open(link_path, "rb")
+                link_file = open(link_path, "r")
                 prev = link_file.readline()
                 link_file.close()
                 extra['prev'] = Common.relative_path(asset_dir, prev)
