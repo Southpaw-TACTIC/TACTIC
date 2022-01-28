@@ -886,43 +886,34 @@ class BaseAppServer(Base):
             # we need to set the site
             if site:
                 site_obj.set_site(site)
-            reset_password = web.get_form_value("reset_password") == 'true'
-            new_password = web.get_form_value("new_password") == 'true'
-            resend_code = web.get_form_value('resend_code') == 'true'
-            send_code = web.get_form_value("send_code") == 'true'
-            if reset_password:
-                # pop the site after
-                if site:
-                    site_obj.pop_site()
-            elif new_password:
-                from tactic.ui.widget import NewPasswordCmd
-                reset_cmd = NewPasswordCmd()
-                try:
-                    reset_cmd.execute()
-                except TacticException as e:
-                    print("Reset failed. %s" %e.__str__())
-                finally:
-                    # pop the site after
-                    if site:
-                        site_obj.pop_site()
-            elif send_code or resend_code:
-                from tactic.ui.widget import ResetOptionsCmd
-                reset_cmd = ResetOptionsCmd(reset=True)
-                try:
-                    reset_cmd.execute()
-                except TacticException as e:
-                    print("Reset failed. %s" %e.__str__())
-                finally:
-                    # pop the site after
-                    if site:
-                        site_obj.pop_site()
 
-            # let empty username or password thru to get feedback from WebLoginCmd
-            else:
-                login_cmd = WebLoginCmd()
-                login_cmd.execute()
-                ticket_key = security.get_ticket_key()
+            try:
+                reset_password = web.get_form_value("reset_password") == 'true'
+                new_password = web.get_form_value("new_password") == 'true'
+                resend_code = web.get_form_value('resend_code') == 'true'
+                send_code = web.get_form_value("send_code") == 'true'
+                if reset_password:
+                    pass
+                elif new_password:
+                    from tactic.ui.widget import NewPasswordCmd
+                    reset_cmd = NewPasswordCmd()
+                    reset_cmd.execute()
 
+                elif send_code or resend_code:
+                    from tactic.ui.widget import ResetOptionsCmd
+                    reset_cmd = ResetOptionsCmd(reset=True)
+                    reset_cmd.execute()
+
+                # let empty username or password thru to get feedback from WebLoginCmd
+                else:
+                    login_cmd = WebLoginCmd()
+                    login_cmd.execute()
+                    ticket_key = security.get_ticket_key()
+
+            except TacticException as e:
+                print("Reset failed. %s" % e.__str__())
+
+            finally:
                 # pop the site after
                 if site:
                     site_obj.pop_site()
