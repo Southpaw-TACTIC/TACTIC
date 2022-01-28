@@ -155,16 +155,9 @@ class NewPasswordCmd(Command):
                 if data:
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
-
-                        #markmark
-                        if auth_class and auth_class == 'spt.modules.portal.master_project.PortalAuthenticate':
-                            # call reset_password from the auth_class
-                            authenticate = Common.create_from_class_path(auth_class)
-                            authenticate.reset_password(self.login, password)
-                        else:
-                            encrypted = Login.encrypt_password(password)
-                            login.set_value('password', encrypted)
-                            login.commit()
+                        # call reset_password from the auth_class
+                        authenticate = Common.create_from_class_path(auth_class)
+                        authenticate.reset_password(login, password)
         else:
             web.set_form_value("is_err", "true")
             web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'The entered passwords do not match.')

@@ -57,7 +57,7 @@ class BaseAppServer(Base):
     '''The base application server class that handles the top level processing
     of a given page.  Different applications will derive off of this class
     to implement how the resulting html will go to the server'''
-    
+
 
     ONLOAD_EVENT = "body_onload"
 
@@ -248,7 +248,7 @@ class BaseAppServer(Base):
         web_wdg = None
         sudo = Sudo()
         try:
-            # get the project from the url because we are still 
+            # get the project from the url because we are still
             # in the admin project at this stage
             current_project = web.get_context_name()
             try:
@@ -289,7 +289,7 @@ class BaseAppServer(Base):
                 if not web_wdg:
                     # else get the default one
                     web_wdg = WebLoginWdg2(allow_change_admin=allow_change_admin, hide_back_btn=True)
-                
+
                 top.add(web_wdg)
 
         finally:
@@ -333,7 +333,7 @@ class BaseAppServer(Base):
         if self.hash and self.hash[0] == "REST":
             is_rest = True
 
-        
+
         # guest mode
         #
         allow_guest = Config.get_value("security", "allow_guest")
@@ -432,7 +432,6 @@ class BaseAppServer(Base):
             access = True
 
 
-
         if not access:
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
@@ -493,14 +492,14 @@ class BaseAppServer(Base):
             palette = Palette.push_palette("DARK")
             palette = Palette.get()
             keys = palette.get_keys()
-            
+
             css_vars = ""
             for key in keys:
                 value = palette.color(key)
                 css_vars += "--spt_palette_%s: %s;" % (key, value)
 
             style = ":root {%s}" % css_vars
-            
+
             body.add(HtmlElement.style(style))
 
 
@@ -526,7 +525,7 @@ class BaseAppServer(Base):
                         current_project = web.get_context_name()
 
             else:
-                # get the project from the url because we are still 
+                # get the project from the url because we are still
                 # in the admin project at this stage
                 current_project = web.get_context_name()
 
@@ -752,7 +751,7 @@ class BaseAppServer(Base):
         # see if there is an override
         web = WebContainer.get_web()
         is_from_login = web.get_form_value("is_from_login")
-        
+
         is_rest = False
         if self.hash and self.hash[0] == "REST":
             is_rest = True
@@ -865,14 +864,14 @@ class BaseAppServer(Base):
 
                 ticket_key = security.get_ticket_key()
                 print("ticket: ", ticket_key)
-              
+
                 if not ticket_key:
                     if site:
                         site_obj.pop_site()
                     return security
 
         elif ticket_key:
-          
+
             if site:
                 site_obj.set_site(site)
 
@@ -884,33 +883,41 @@ class BaseAppServer(Base):
                 return security
 
         if not security.is_logged_in():
-            reset_password = web.get_form_value("reset_password") == 'true'
-            new_password = web.get_form_value("new_password") == 'true'
-            resend_code = web.get_form_value('resend_code') == 'true'
-            send_code = web.get_form_value("send_code") == 'true'
-            if reset_password:
-                pass
-            elif new_password:
-                from tactic.ui.widget import NewPasswordCmd
-                reset_cmd = NewPasswordCmd()
-                try:
-                    reset_cmd.execute()
-                except TacticException as e:
-                    print("Reset failed. %s" %e.__str__())
-            elif send_code or resend_code:
-                from tactic.ui.widget import ResetOptionsCmd
-                reset_cmd = ResetOptionsCmd(reset=True)
-                try:
-                    reset_cmd.execute()
-                except TacticException as e:
-                    print("Reset failed. %s" %e.__str__())
+            # we need to set the site
+            if site:
+                site_obj.set_site(site)
 
-            # let empty username or password thru to get feedback from WebLoginCmd
-            else:
-                login_cmd = WebLoginCmd()
-                login_cmd.execute()
-                ticket_key = security.get_ticket_key()
-	
+            try:
+                reset_password = web.get_form_value("reset_password") == 'true'
+                new_password = web.get_form_value("new_password") == 'true'
+                resend_code = web.get_form_value('resend_code') == 'true'
+                send_code = web.get_form_value("send_code") == 'true'
+                if reset_password:
+                    pass
+                elif new_password:
+                    from tactic.ui.widget import NewPasswordCmd
+                    reset_cmd = NewPasswordCmd()
+                    reset_cmd.execute()
+
+                elif send_code or resend_code:
+                    from tactic.ui.widget import ResetOptionsCmd
+                    reset_cmd = ResetOptionsCmd(reset=True)
+                    reset_cmd.execute()
+
+                # let empty username or password thru to get feedback from WebLoginCmd
+                else:
+                    login_cmd = WebLoginCmd()
+                    login_cmd.execute()
+                    ticket_key = security.get_ticket_key()
+
+            except TacticException as e:
+                print("Reset failed. %s" % e.__str__())
+
+            finally:
+                # pop the site after
+                if site:
+                    site_obj.pop_site()
+
         # clear the password from the form data
         if web.has_form_key("password"):
             web.set_form_value('password','')
@@ -944,18 +951,18 @@ class BaseAppServer(Base):
 
 
     def handle_guest_security(self, security):
-       
+
         # skip storing current security since it failed
         Site.set_site("default", store_security=False)
         try:
 
             WebContainer.set_security(security)
-            
+
             security.login_as_guest()
-            
+
             ticket_key = security.get_ticket_key()
 
-            
+
             web = WebContainer.get_web()
             web.set_cookie("login_ticket", ticket_key)
 
@@ -969,7 +976,7 @@ class BaseAppServer(Base):
             access_manager.add_xml_rules(xml)
         finally:
             Site.pop_site(pop_security=False)
-           
+
 
 
     def init_web_container(self):
@@ -1074,7 +1081,7 @@ class BaseAppServer(Base):
 
         from pyasm.widget import BottomWdg
         from tactic.ui.app import TitleTopWdg
-        if minimal: 
+        if minimal:
             top = TitleTopWdg()
         else:
             top = self.get_top_wdg()
@@ -1102,8 +1109,8 @@ class BaseAppServer(Base):
         event = WebContainer.get_event_container()
         event.add_listener(BaseAppServer.ONLOAD_EVENT, script)
 
-    add_onload_script = staticmethod(add_onload_script)    
-        
+    add_onload_script = staticmethod(add_onload_script)
+
 
 
 

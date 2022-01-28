@@ -78,7 +78,7 @@ class Authenticate(object):
     def reset_password(self, login, password):
         """reset the password
         """
-        pass
+        raise SecurityException("Must override reset_password method")
 
 
 
@@ -137,6 +137,13 @@ class TacticAuthenticate(Authenticate):
         if encrypted != login.get_value("password"):
             raise SecurityException("Login/Password combination incorrect")
         return True
+
+    def reset_password(self, login, password):
+        """reset the password
+        """
+        encrypted = Login.encrypt_password(password)
+        login.set_value('password', encrypted)
+        login.commit()
 
 
 
