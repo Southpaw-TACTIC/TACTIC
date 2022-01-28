@@ -894,7 +894,6 @@ class BaseAppServer(Base):
                 # pop the site after
                 if site:
                     site_obj.pop_site()
-                pass
             elif new_password:
                 from tactic.ui.widget import NewPasswordCmd
                 reset_cmd = NewPasswordCmd()
