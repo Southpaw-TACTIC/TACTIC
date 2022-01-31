@@ -1916,7 +1916,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 parts = search_type.split("/")
                 collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
-                num_items = Search.eval("@COUNT(%s['parent_code','%s'])" % (collection_type, sobject.get("code")) )
+                num_items = Search.eval("@COUNT(%s['parent_code','%s'].%s)" % (collection_type, sobject.get("code"), search_type) )
                 tile_data['collection_count'] = num_items
 
 
