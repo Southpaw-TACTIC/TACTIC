@@ -2227,7 +2227,33 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             script = ''
 
 
-        self.add_script_wdg(div, script_path, is_admin, trigger_code, language)
+        # self.add_script_wdg(div, script_path, is_admin, trigger_code, language)
+
+        div.add("Script Path: <br/>")
+
+        script_path_text = TextWdg("script_path")
+        div.add(script_path_text)
+        if script_path:
+            script_path_text.set_value(script_path)
+        script_path_text.add_class("form-control")
+        script_path_text.add_styles("width: 70%; margin: 5px 5px 5px 0px;")
+        script_path_text.add_styles("display: inline-block; float: left;")
+
+        script_path_text.add_behavior( {
+            'type': 'blur',
+            'cbjs_action': '''
+            var script_path = bvr.src_el.value;
+            var top = bvr.src_el.getParent(".spt_python_script_trigger_top");
+            var el = top.getElement(".spt_python_script_text");
+            var script = spt.CustomProject.get_script_by_path(script_path);
+            if (el.value != '') {
+                return;
+            }
+            if (script) {
+                el.value = script
+            }
+            '''
+        } )
 
         edit_button = ActionButtonWdg(title="Script Editor", tip="Open Script Editor", color="secondary")
         edit_button.add_style("float: right")
@@ -2267,7 +2293,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
             title_div.add_style('margin-bottom: 6px')
 
             div.add(title_div)
-            hidden = HiddenWdg('language','server_js')
+            hidden = HiddenWdg('language', 'server_js')
             div.add(hidden)
 
 
@@ -2278,7 +2304,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
         <tab>
         ''')
 
-        expected_script_path = "%s/%s" %(TriggerToolWdg.FOLDER_PREFIX, trigger_code)
+        expected_script_path = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, trigger_code)
         config_xml.append('''
         <element name='script_path'>
           <display class='tactic.ui.tools.ScriptEditWdg'>
@@ -2288,8 +2314,8 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
               <show_language>false</show_language>
           </display>
         </element>
-        '''%(script_path,  str(is_admin).lower(), expected_script_path))
-        
+        ''' % (script_path, str(is_admin).lower(), expected_script_path))
+
         config_xml.append('''
         </tab>
         </config>
@@ -2298,6 +2324,7 @@ class PythonScriptTriggerEditWdg(BaseRefreshWdg):
 
         tab = TabWdg(config_xml=config_xml, width="400px", show_add=False)
         div.add(tab)
+
 
 class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
 
@@ -2322,45 +2349,55 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
                 trigger.commit()
                 trigger_code = trigger.get_value("code")
 
-        search_type = self.kwargs.get("search_type")
-
-        script = self.kwargs.get("script")
-        script_path = ''
-        # Get the script path or script
-        script_path_folder = self.kwargs.get("script_path_folder")
-        script_path_title = self.kwargs.get("script_path_title")
-        if script_path_folder and script_path_title:
-            script_path = '%s/%s'%(script_path_folder, script_path_title)
-        elif not script:
-            # saving from Create New
-            script = self.kwargs.get('script_new')
+        # search_type = self.kwargs.get("search_type")
+        #
+        # script = self.kwargs.get("script")
+        # script_path = ''
+        # # Get the script path or script
+        # script_path_folder = self.kwargs.get("script_path_folder")
+        # script_path_title = self.kwargs.get("script_path_title")
+        # if script_path_folder and script_path_title:
+        #     script_path = '%s/%s' % (script_path_folder, script_path_title)
+        # elif not script:
+        #     # saving from Create New
+        #     script = self.kwargs.get('script_new')
         
         
-        if not script:
-            raise TacticException("Your script is empty. Please save a valid script.")
+        # if not script:
+        #     raise TacticException("Your script is empty. Please save a valid script.")
 
-        if not script_path:
-            script_path = trigger.get_value("script_path")
+        # if not script_path:
+        #     script_path = trigger.get_value("script_path")
         
         # If script path is defined, then save script to script path.
         # Otherwise, create a new script path entry.
         # TODO: fix the auto-gen script path to be _triggers/<pipeline_code>/<process_code>
         # maybe, but certain triggers are not pipeline or process  related
-        if not script_path:
-            script_path = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, trigger.get_code())
+        # if not script_path:
+        #     script_path = "%s/%s" % (TriggerToolWdg.FOLDER_PREFIX, trigger.get_code())
 
         # Save or create a new custom script
-        script_sobj = CustomScript.get_by_path(script_path)
-        if not script_sobj:
-            script_sobj = SearchType.create("config/custom_script")
+        # script_sobj = CustomScript.get_by_path(script_path)
+        # if not script_sobj:
+        #     script_sobj = SearchType.create("config/custom_script")
+        #
+        # dirname = os.path.dirname(script_path)
+        # title = os.path.basename(script_path)
+        # script_sobj.set_value("folder", dirname)
+        # script_sobj.set_value("title", title)
+        # script_sobj.set_value("script", script)
+        # script_sobj.set_value("language", language)
+        # script_sobj.commit()
 
-        dirname = os.path.dirname(script_path)
-        title = os.path.basename(script_path)
-        script_sobj.set_value("folder", dirname)
-        script_sobj.set_value("title", title)
-        script_sobj.set_value("script", script) 
-        script_sobj.set_value("language", language) 
-        script_sobj.commit()
+        # dirname = os.path.dirname(script_path)
+        # title = os.path.basename(script_path)
+        # script_sobj.set_value("folder", dirname)
+        # script_sobj.set_value("title", title)
+        # script_sobj.set_value("script", script)
+        # script_sobj.set_value("language", language)
+        # script_sobj.commit()
+
+        script_path = self.kwargs.get("script_path")
 
         # Update the trigger
         trigger.set_value("code", trigger_code)
@@ -2374,13 +2411,14 @@ class PythonScriptTriggerEditCbk(BaseTriggerEditCbk):
                 'src_process': src_process
             }
             data = jsondumps(data)
-            trigger.set_value("script_path", script_path)
+            # trigger.set_value("script_path", script_path)
             trigger.set_value("data", data)
             trigger.set_value("class_name", "tactic.command.PipelineTaskStatusTrigger")
         else:
             trigger.set_value("class_name", "")
             trigger.set_value("data", "")
-            trigger.set_value("script_path", script_path)
+
+        trigger.set_value("script_path", script_path)
 
         trigger.commit()
         
