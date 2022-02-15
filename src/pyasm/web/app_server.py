@@ -436,10 +436,11 @@ class BaseAppServer(Base):
             if login_name == "guest":
                 from pyasm.widget import WebLoginWdg
 
-                msg = web.get_form_value(WebLoginWdg.LOGIN_MSG)
-                if not msg:
-                    msg = "User [%s] is not allowed to see this project [%s]" % (login_name, project)
-                    web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
+                # FIXME: this is a misleading error.
+                #msg = web.get_form_value(WebLoginWdg.LOGIN_MSG)
+                #if not msg:
+                #    msg = "User [%s] is not allowed to see this project [%s]" % (login_name, project)
+                #    web.set_form_value(WebLoginWdg.LOGIN_MSG, msg)
                 return self.handle_not_logged_in(allow_change_admin=False)
 
             else:

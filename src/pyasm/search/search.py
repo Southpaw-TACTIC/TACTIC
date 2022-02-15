@@ -269,6 +269,10 @@ class Search(Base):
             return
 
 
+        # explicity open mode should be allowed to access all tables
+        if api_mode in ['open']:
+            return
+
         if search_type in {
                 'sthpw/login',
                 'sthpw/login_in_group',
@@ -282,8 +286,6 @@ class Search(Base):
         }:
             raise Exception("Search Permission Denied [%s]" % search_type)
 
-        if api_mode in ['open', '', None]:
-            return
 
 
 
