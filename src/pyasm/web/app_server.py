@@ -797,7 +797,10 @@ class BaseAppServer(Base):
             if not login and body == None:
                 import cherrypy
                 body = cherrypy.request.body.read()
-                body = jsonloads( body.decode() )
+                if body:
+                    body = jsonloads( body.decode() )
+                else:
+                    body = ""
                 Container.put("REST:body", body)
             if body:
                 login = body.get('login')

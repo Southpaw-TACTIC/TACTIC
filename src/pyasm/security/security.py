@@ -1848,15 +1848,23 @@ class Security(Base):
             if not self._login:
                 raise SecurityException("Login [%s] does not exist" % login_name)
 
-            # Search for unexpired ticket
             search = Search("sthpw/ticket")
-            search.add_filter("login", login_name)
-            now = search.get_database_impl().get_timestamp_now()
-            search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
-            ticket = search.get_sobject()
+            if ticket_key:
+                print("ticket: ", ticket_key)
+                search.add_filter("ticket", ticket_key)
+                ticket = search.get_sobject()
+                ticket.set_value("expiry", "now() + '1 day'", quoted=False)
+                ticket.commit()
+            else:
+                # Search for unexpired ticket
+                search.add_filter("login", login_name)
+                now = search.get_database_impl().get_timestamp_now()
+                search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
+                ticket = search.get_sobject()
+
             if ticket and ticket.get("ticket"):
                 self._ticket = ticket
-            else:
+            elif ticket_key:
                 self._ticket = self._generate_ticket(login_name, expiry, ticket_key=ticket_key)
         finally:
             sudo.exit()
