@@ -1850,11 +1850,11 @@ class Security(Base):
 
             search = Search("sthpw/ticket")
             if ticket_key:
-                print("ticket: ", ticket_key)
                 search.add_filter("ticket", ticket_key)
                 ticket = search.get_sobject()
-                ticket.set_value("expiry", "now() + '1 day'", quoted=False)
-                ticket.commit()
+                if ticket:
+                    ticket.set_value("expiry", "now() + '1 day'", quoted=False)
+                    ticket.commit()
             else:
                 # Search for unexpired ticket
                 search.add_filter("login", login_name)
