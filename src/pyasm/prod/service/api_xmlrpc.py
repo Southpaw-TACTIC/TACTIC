@@ -5183,6 +5183,53 @@ class ApiXMLRPC(BaseApiXMLRPC):
     # Pipeline methods
     #
     @xmlrpc_decorator
+    def create_pipeline(self, ticket, name, search_type, processes=[], process_types=[], description="", connected=True, xml=None):
+        '''method to create a new pipeline.
+
+        @params
+        name - name of the pipeline
+        processes - list of processes in the pipeline
+        description - description of the pipeline
+
+        '''
+
+        if xml:
+            if isinstance(xml, basestring):
+                xml_string = xml
+                xml = Xml()
+                xml.read_string(xml_string)
+        else:
+            xml = []
+            xml.append('<?xml version="1.0" encoding="UTF-8"?>\n');
+            xml.append('''<pipeline>''')
+            print("process: ", processes)
+            for i, process in enumerate(processes):
+                process_type = "manual"
+                if process_types:
+                    process_type = process_types[i]
+                xml.append('''<process name="%s" type="%s"/>''' % (process, process_type))
+
+            for i, process in enumerate(processes):
+                if i == len(processes)-1:
+                    break
+
+                next_process = processes[i+1]
+                xml.append('''<connect from="%s" to="%s"/>''' % (process, next_process))
+
+            xml.append('''</pipeline>''')
+
+
+            xml_string = "\n".join(xml)
+            xml = Xml()
+            xml.read_string(xml_string)
+
+        pipeline = Pipeline.create(name, search_type, description, xml=xml)
+        return pipeline.get_sobject_dict()
+
+
+
+
+    @xmlrpc_decorator
     def get_pipeline_xml(self, ticket, search_key):
         '''DEPRECATED: use get_pipeline_xml_info()
         method to retrieve the pipeline of a specific sobject.  The pipeline

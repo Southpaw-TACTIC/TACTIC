@@ -2799,14 +2799,16 @@ class SObject(object):
         from pyasm.biz import ProjectSetting
         search_type = self.get_base_search_type()
         prefix = ProjectSetting.get_value_by_key('code_prefix', search_type)
+        if prefix.startswith("{") and prefix.endswith("}"):
+            prefix = prefix.strip("{")
+            prefix = prefix.strip("}")
+            prefix = Search.eval(prefix, self, single=True)
+
+
         if not prefix:
             prefix = self.get_table()
             prefix = prefix.upper()
 
-        elif prefix.startswith("{") and prefix.endswith("}"):
-            prefix = prefix.strip("{")
-            prefix = prefix.strip("}")
-            prefix = Search.eval(prefix, self, single=True)
 
         return prefix
 
@@ -4545,7 +4547,6 @@ class SObject(object):
         from pyasm.biz import ProjectSetting
         if id == None or ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
-            log_key = self.get_code_key()
             random_code = Common.generate_random_key(digits=10)
             parts.append( random_code )
 

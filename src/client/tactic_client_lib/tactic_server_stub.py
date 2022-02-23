@@ -3094,6 +3094,21 @@ class TacticServerStub(object):
     #
     # Pipeline methods
     #
+    def create_pipeline(self, name, search_type, processes=[], process_types=[], description="", connected=True, xml=None):
+        '''method to create a new pipeline.
+
+        @params
+        name - name of the pipeline
+        processes - list of processes in the pipeline
+        process_types = list of process types correspending to the processes
+        connected - boolean determining whether the nodes are connected
+        description - description of the pipeline
+        xml - use raw xml instead of specifying processes
+
+        '''
+        return self.server.create_pipeline(self.ticket, name, search_type, processes, process_types, description, xml)
+
+
     def get_pipeline_xml(self, search_key):
         '''API Function: get_pipeline_xml(search_key)
         DEPRECATED: use get_pipeline_xml_info()
