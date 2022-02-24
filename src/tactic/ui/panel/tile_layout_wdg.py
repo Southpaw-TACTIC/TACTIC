@@ -843,7 +843,32 @@ class TileLayoutWdg(ToolLayoutWdg):
         } )
 
 
+        layout_wdg.add_relay_behavior( {
+            'type': 'mouseup',
+            'bvr_match_class': 'spt_tile_collection',
+            'detail_element_names': detail_element_names,
+            'cbjs_action': '''
+            spt.tab.set_main_body_tab();
+            var top = bvr.src_el.getParent(".spt_tile_top");
+            var search_key = top.getAttribute("spt_search_key");
+            var name = top.getAttribute("spt_name");
+            var search_code = top.getAttribute("spt_search_code");
+            var class_name = 'tactic.ui.tools.SObjectDetailWdg';
+            var kwargs = {
+                search_key: search_key,
+                tab_element_names: bvr.detail_element_names
+            };
+
+            var element_name = search_code;
+            spt.tab.add_new(element_name, name, class_name, kwargs);
+            '''
+        } )
+
+
+
+
         # For collections
+        """
         parts = self.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
         layout_wdg.add_attr("spt_collection_type", collection_type)
@@ -878,6 +903,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             spt.tab.add_new(parent_code, name, class_name, kwargs);
             '''
         } )
+        """
 
 
         process = self.kwargs.get("process")
