@@ -616,11 +616,11 @@ class EmailTrigger2(EmailTrigger):
                 else:
                     continue
 
-            # DEPRECATED: likely the expression complete replaces this
-            # parse the rule
+            # parse the rules
             if group_type == "sobject":
                 if not self._process_sobject(main_sobject, rule_key, compare):
                     break
+                print("main_sobject: ", main_sobject.get_data() )
                 value = main_sobject.get_value(rule_key, no_exception=True )
             elif group_type == "parent":
                 if not parent or not self._process_sobject(parent, rule_key, compare):
@@ -635,6 +635,7 @@ class EmailTrigger2(EmailTrigger):
             if not value:
                 break
 
+
             if op == "=":
                 if value != rule_value:
                     break
@@ -642,12 +643,23 @@ class EmailTrigger2(EmailTrigger):
                 if value == rule_value:
                     break
             elif op == "in":
-                values = "|".split(rule_value)
+                values = rule_value.split("|")
                 if value not in rule_value:
                     break
             elif op == "not in":
-                values = "|".split(rule_value)
+                values = rule_value.split("|")
                 if value in rule_value:
+                    break
+            elif op == "?|":
+                rule_values = rule_value.split("|")
+                matches = False
+                keys = value.keys()
+                for v in rule_values:
+                    print("vvv: ", v, keys)
+                    if v in keys:
+                        matches = True
+                        break
+                if not matches:
                     break
 
             else:
