@@ -212,7 +212,7 @@ class EmailHandler(object):
                 env_sobjects['login_ticket'] = ticket
                 variables["TICKET"] = ticket.get("ticket")
 
-            notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=env_sobjects, mode='string', vars=variables)
+            notification_message  = parser.eval(notification_message, self.sobject, env_sobjects=env_sobjects, mode='string', vars=variables, keep_newlines=True)
             del sudo
             return notification_message
 

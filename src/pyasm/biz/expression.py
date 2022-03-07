@@ -72,7 +72,7 @@ class ExpressionParser(object):
     # unfortunately, this function redefines list so, make a global
     LIST = list
 
-    def eval(self, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None, use_cache=None ):
+    def eval(self, expression, sobjects=None, mode=None, single=False, list=False, dictionary=False, vars={}, env_sobjects={}, show_retired=False, state={}, extra_filters={}, search=None, use_cache=None, keep_newlines=False ):
 
         if not expression:
             return ''
@@ -160,10 +160,11 @@ class ExpressionParser(object):
 
 
         # preprocess multi-line expressions
-        if self.expression.find("\n") != -1:
-            parts = self.expression.split("\n")
-            parts = [x.strip() for x in parts]
-            self.expression = "".join(parts)
+        if not keep_newlines:
+            if self.expression.find("\n") != -1:
+                parts = self.expression.split("\n")
+                parts = [x.strip() for x in parts]
+                self.expression = "".join(parts)
 
 
 
