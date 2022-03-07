@@ -306,6 +306,13 @@ class EmailTrigger(Trigger):
             if default_admin_email:
                 from_user = default_admin_email
 
+            # this taks precedence over all of them
+            site_email_name = Config.get_value("services", "mail_name")
+            if site_email_name:
+                site_email = Config.get_value("services", "mail_user")
+                from_user = "%s <%s>" % (site_email_name, site_email)
+
+
         # set the reply_to_user to user_email.
         if not reply_to_user:
             reply_to_user = user_email
@@ -386,6 +393,7 @@ class EmailTrigger(Trigger):
             st = 'html'
         else:
             st = 'plain'
+
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
@@ -768,7 +776,7 @@ class EmailTrigger2(EmailTrigger):
         # send the email
         if send_email:
             self.send(to_users, cc_users, bcc_users, subject, message)
-            self.add_description('\nEmail sent to [%s]' %all_emails)
+            self.add_description('\nEmail sent to [%s]' % all_emails)
 
         self.add_notification(email_users, subject, message, project_code)
 
