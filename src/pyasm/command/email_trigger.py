@@ -164,12 +164,20 @@ class EmailTrigger(Trigger):
                     if value == rule_value:
                         break
                 elif op == "in":
-                    values = "|".split(rule_value)
                     if value not in rule_value:
                         break
                 elif op == "not in":
-                    values = "|".split(rule_value)
                     if value in rule_value:
+                        break
+                elif op == "?|":
+                    rule_values = rule_value.split("|")
+                    values = value.split("|")
+                    is_match = False
+                    for value in values:
+                        if value in rule_values:
+                            is_match = True
+                            break
+                    if is_match:
                         break
 
                 # default is match
@@ -293,13 +301,13 @@ class EmailTrigger(Trigger):
 
         else:
             user_email = Environment.get_login().get_full_email()
-            if not user_email:
-                print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
-                return
-            sender.add(user_email)
-
-            # we want from_user to be the current login.
-            from_user = user_email
+            #if not user_email:
+            #    print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+            #    return
+            if user_email:
+                sender.add(user_email)
+                # we want from_user to be the current login.
+                from_user = user_email
 
             # if there is a config setting for default admin email.
             default_admin_email = Config.get_value("services", "mail_default_admin_email")
@@ -311,6 +319,8 @@ class EmailTrigger(Trigger):
             if site_email_name:
                 site_email = Config.get_value("services", "mail_user")
                 from_user = "%s <%s>" % (site_email_name, site_email)
+
+                sender.add(from_user)
 
 
         # set the reply_to_user to user_email.
