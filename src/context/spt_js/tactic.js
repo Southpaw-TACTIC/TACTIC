@@ -1118,7 +1118,6 @@ TacticServerStub = function() {
     }
 
 
-
    
     this.create_snapshot = function(search_key, context, kwargs) {
         return this._delegate("create_snapshot", arguments, kwargs);
