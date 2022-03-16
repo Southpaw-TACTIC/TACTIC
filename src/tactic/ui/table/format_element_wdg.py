@@ -562,9 +562,9 @@ class FormatElementWdg(SimpleTableElementWdg):
                 if not setting:
                     #setting = "%Y-%m-%d (%I:%M %p)"
                     if value.hour == 0 and value.minute == 0 and value.second == 0:
-                        setting = "%b %m, %Y"
+                        setting = "%b %d, %Y"
                     else:
-                        setting = "%b %m, %Y (%I:%M %p)"
+                        setting = "%b %d, %Y (%I:%M %p)"
                 
                 value = value.strftime(setting)
                 
