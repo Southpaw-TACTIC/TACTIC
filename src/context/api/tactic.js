@@ -2227,6 +2227,11 @@ class TacticServerStub {
     /*
      * Pipeline methods
      */
+
+    create_pipeline = fucntion(name, search_type, kwargs) {
+        return this._delegate("create_pipeline", arguments, kwargs);
+    }
+
     get_pipeline_xml = function(search_key, kwargs) {
         return this._delegate("get_pipeline_xml", arguments, kwargs);
     }
