@@ -9367,7 +9367,7 @@ class PipelineDocumentWdg(BaseRefreshWdg):
             show_header=False,
             show_shelf=False,
             show_select=False,
-            show_context_menu=False,
+            show_context_menu=True,
             show_search_limit=False,
             #show_row_highlight=False,
             show_group_highlight=False,
@@ -10712,7 +10712,7 @@ class SessionalProcess:
             if (!top) return;
 
             let node = spt.pipeline.get_info_node();
-            
+
             top.update_data = function(replace) {
                 var kwargs = spt.pipeline.get_node_kwargs(node);
                 var version = kwargs.version;
@@ -10799,7 +10799,7 @@ class SessionalProcess:
                         var index = content.getAttribute("index");
                         spt.task_detail.update_data(content, index);
                     }
-                    
+
                 }
 
         '''})
@@ -10820,7 +10820,7 @@ class SessionalProcess:
                     var index = content.getAttribute("index");
                     spt.task_detail.update_data(content, index);
                 }
-                
+
             }
 
         '''})
