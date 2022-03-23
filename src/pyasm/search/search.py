@@ -5779,6 +5779,20 @@ class SObject(object):
         item.commit()
 
 
+        output = {}
+        output["mode"] = "add"
+        output["search_key"] = SearchKey.build_by_sobject(self)
+        output["id"] = self.get_id()
+        output["search_type"] = self.get_search_type()
+        output["collection"] = collection.get_sobject_dict()
+        output["sobject"] = self.get_sobject_dict()
+        project_code = Project.get_project_code()
+
+        from pyasm.command import Trigger
+        Trigger.call(self, "collection|%s" % self.get_base_search_type(), output, project_code=project_code)
+
+
+
 
 
 

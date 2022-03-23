@@ -5024,8 +5024,7 @@ class ApprovalInfoWdg(BaseInfoWdg):
         setting = ProjectSetting.get_value_by_key("feature/process/task_detail")
         if setting in ["true"]:
 
-            from spt.modules.workflow import TaskButtonDetailSettingWdg, TaskDetailSettingWdg
-            #detail_wdg = TaskDetailSettingWdg(
+            from spt.modules.workflow import TaskButtonDetailSettingWdg
             detail_wdg = TaskButtonDetailSettingWdg(
                     **self.kwargs
             )

@@ -567,7 +567,7 @@ class GanttLayoutWdg(ToolLayoutWdg):
                 spt.gantt.clear();
                 spt.gantt.draw_grid();
                 spt.gantt.draw_connects();
-            }, 100);
+            }, 500);
 
 
 
@@ -885,6 +885,9 @@ class GanttLayoutWdg(ToolLayoutWdg):
         right.add(widget_div)
         widget_div.add_class("spt_gantt_widgets_top")
 
+
+        background = "#19bbFF"
+
         month_highlight = DivWdg()
         month_highlight.add_class("spt_gantt_trans_layer")
         month_highlight.add_class("month_highlight")
@@ -892,7 +895,7 @@ class GanttLayoutWdg(ToolLayoutWdg):
         month_highlight.add_style("height: 100%")
         month_highlight.add_style("top: 0px")
         month_highlight.add_style("opacity: 0.3")
-        month_highlight.add_style("background: #19bbFF")
+        month_highlight.add_style("background: %s" % background)
         month_highlight.add_style("pointer-events: none")
 
         week_highlight = DivWdg()
@@ -902,7 +905,7 @@ class GanttLayoutWdg(ToolLayoutWdg):
         week_highlight.add_style("height: 100%")
         week_highlight.add_style("top: 0px")
         week_highlight.add_style("opacity: 0.3")
-        week_highlight.add_style("background: #19bbFF")
+        week_highlight.add_style("background: %s" % background)
         week_highlight.add_style("pointer-events: none")
 
         right.add(month_highlight)
@@ -1550,6 +1553,7 @@ class GanttHeaderWdg(BaseRefreshWdg):
         inner.add_smart_style("spt_gantt_header_center", "align-items", "center")
 
 
+        theme = inner.get_color("theme")
 
 
 
@@ -1606,10 +1610,16 @@ class GanttHeaderWdg(BaseRefreshWdg):
             year_div.add_border(size="0px 1px 1px 0px", color="table_border")
             year_div.add_style("height: 100%")
 
-            if i == 0 or i % 2 == 0:
-                year_div.add_style("background", "#FFF")
+            if theme == "dark":
+                if i == 0 or i % 2 == 0:
+                    year_div.add_style("background", "#000")
+                else:
+                    year_div.add_style("background", "#333")
             else:
-                year_div.add_style("background", "#FFF")
+                if i == 0 or i % 2 == 0:
+                    year_div.add_style("background", "#FFF")
+                else:
+                    year_div.add_style("background", "#FFF")
 
             t = DivWdg()
             year_div.add(t)
@@ -1678,10 +1688,20 @@ class GanttHeaderWdg(BaseRefreshWdg):
             month_div.add_border(size="0px 1px 1px 0px", color="table_border")
             month_div.add_style("height: 100%")
 
-            if i == 0 or i % 2 == 0:
-                month_div.add_style("background", "#FFF")
+
+
+            if theme == "dark":
+                if i == 0 or i % 2 == 0:
+                    month_div.add_style("background", "#000")
+                else:
+                    month_div.add_style("background", "#333")
             else:
-                month_div.add_style("background", "#EEE")
+                if i == 0 or i % 2 == 0:
+                    month_div.add_style("background", "#FFF")
+                else:
+                    month_div.add_style("background", "#EEE")
+
+
 
             t = DivWdg()
             month_div.add(t)
@@ -1752,7 +1772,10 @@ class GanttHeaderWdg(BaseRefreshWdg):
                 week_div.add_style("height: 100%")
 
                 if i == 0 or i % 2 == 0:
-                    week_div.add_style("background", "#FFF")
+                    if theme == "dark":
+                        week_div.add_style("background", "#111")
+                    else:
+                        week_div.add_style("background", "#FFF")
 
 
                 wday = date.strftime("%d")
@@ -3167,544 +3190,6 @@ class GanttWdg(BaseRefreshWdg):
 
         return group_div
 
-
-
-
-
-    """
-    def get_task_wdg(self, sobject, tasks, start_date, end_date, group_level=0):
-
-        search_key = sobject.get_search_key()
-
-
-        # this is the actual outside of the row
-        item_div = DivWdg()
-        item_div.add_class("spt_gantt_row_item")
-        item_div.add_attr("spt_search_key", search_key)
-        item_div.add_class("spt_range_top")
-
-        item_div.add_attr("SPT_ACCEPT_DROP", "spt_range_top")
-
-        item_div.add_style("height: 23px")
-        item_div.add_style("width: 100%")
-        item_div.add_style("position: relative")
-        item_div.add_style("z-index: %s" % (100-self.range_index))
-        self.range_index += 1
-
-        item_div.add_style("border-style", "solid")
-        item_div.add_style("border-width", "0px 1px 1px px")
-        item_div.add_color("border-color", "#EEE")
-
-        item_div.add_style("box-sizing", "border-box")
-
-
-
-
-
-        # draw all the items inside this "row"
-        for i, task in enumerate(tasks):
-
-            task_key = task.get_search_key()
-
-            assigned = task.get_value("assigned")
-            status = task.get_value("status")
-
-            # incorporate workflow dependency
-
-            task_pipeline_code = task.get_value("pipeline_code")
-            if not task_pipeline_code:
-                task_pipeline_code = "task"
-            task_pipeline = Pipeline.get_by_code(task_pipeline_code)
-
-
-            depend_keys = self.get_depend_keys(task)
-
-
-            process = task.get_value("process")
-
-
-            # set the color by status
-            status = task.get_value("status")
-            color = None
-            if task_pipeline:
-                status_obj = task_pipeline.get_process(status)
-                if status_obj:
-                    color = status_obj.get_color()
-            if not color:
-                color = "rgba(207,215,188,1.0)"
-
-
-            bid_start_date = task.get_datetime_value("bid_start_date")
-            bid_end_date = task.get_datetime_value("bid_end_date")
-            bid_duration = task.get_value("bid_duration")
-
-
-            top_margin = 4
-
-            if not bid_start_date:
-                today = datetime.today()
-                bid_start_date = datetime(today.year, today.month, today.day)
-
-            if not bid_end_date:
-                bid_end_date = bid_start_date + timedelta(days=1)
-                bid_end_date = datetime(bid_end_date.year, bid_end_date.month, bid_end_date.day)
-
-
-            # set the time for full days
-            snap_mode = "day"
-            if snap_mode == "day":
-                bid_start_date = SPTDate.strip_time(bid_start_date)
-                bid_end_date = SPTDate.strip_time(bid_end_date) + timedelta(days=1) - timedelta(seconds=1)
-
-
-
-            offset = self.get_percent(start_date, bid_start_date)
-            if offset < 0:
-                offset = 0
-
-            width = self.get_percent(bid_start_date, bid_end_date)
-
-
-            # deal with vacations
-            # TODO: move this outside this function
-            if assigned:
-                vacation_list = self.vacations.get(assigned) or []
-
-                for vacation in vacation_list:
-                    vacation_start_date = vacation.get("bid_start_date")
-                    vacation_end_date = vacation.get("bid_end_date")
-
-
-                    vacation_offset = self.get_percent(start_date, vacation_start_date)
-                    if vacation_offset < 0:
-                        vacation_offset = 0
-
-                    vacation_width = self.get_percent(vacation_start_date, vacation_end_date)
-
-
-                    vacation_div = DivWdg()
-                    item_div.add(vacation_div)
-                    vacation_div.add_class("spt_gantt_element")
-                    vacation_div.add_attr("spt_start_date", vacation_start_date)
-                    vacation_div.add_attr("spt_end_date", vacation_end_date)
-
-                    vacation_div.add_style("position: absolute")
-                    vacation_div.add_style("top: 0px")
-                    vacation_div.add_style("left: %s%%" % vacation_offset)
-                    vacation_div.add_style("width: %s%%" % vacation_width)
-                    vacation_div.add_style("height: 12px")
-                    vacation_div.add_style("background: #A66")
-                    vacation_div.add_style("color: #FFF")
-                    vacation_div.add_style("font-size: 0.8em")
-                    vacation_div.add_style("vertical_align: middle")
-                    vacation_div.add_style("text-align: center")
-                    vacation_div.add_style("overflow: hidden")
-
-                    vacation_process = vacation.get_value("process")
-
-                    vacation_div.add(vacation_process)
-
-
-
-
-
-            # draw the individual element
-            range_div = DivWdg()
-            item_div.add(range_div)
-            range_div.add_class("spt_range")
-            range_div.add_class("spt_gantt_element")
-            range_div.add_attr("spt_search_key", task_key)
-
-
-
-            range_div.add_update( {
-                'search_key': search_key,
-                'column': 'bid_start_date',
-                'return': 'sobject',
-                'cbjs_action': '''
-                // check to see if the range has been changed
-                if (bvr.src_el.hasClass("spt_changed")) {
-                    //bvr.src_el.setStyle("background-color", "#F00");
-                    //bvr.src_el.setStyle("color", "#FFF");
-                }
-                else {
-                    var sobject = bvr.value;
-                    spt.gantt.set_date(bvr.src_el, sobject.bid_start_date, sobject.bid_end_date);
-                }
-                '''
-
-            } )
-
-
-
-
-
-            if depend_keys:
-                range_div.add_attr("spt_depend_keys", ",".join(depend_keys) )
-
-
-            bid_start_date_str = bid_start_date.strftime("%Y-%m-%d %H:%M")
-            bid_end_date_str = bid_end_date.strftime("%Y-%m-%d %H:%M")
-            range_div.add_attr("spt_start_date", bid_start_date_str)
-            range_div.add_attr("spt_end_date", bid_end_date_str)
-            range_div.add_style("z-index: 10")
-
-
-
-            range_div.add_style("opacity: 0.8")
-            range_div.add_attr("spt_duration", bid_duration)
-
-            # position the range
-            range_div.add_style("position", "absolute")
-            range_div.add_style("left: %s%%" % offset)
-
-
-
-            # draw the range shape
-            border_color = range_div.get_color("border")
-
-
-            description = task.get_value("description")
-            if not description:
-                description = task.get_value("process")
-
-            #range_div.add_style("font-size: 0.8em")
-
-
-            task_type = task.get_value("task_type", no_exception=True)
-            if task_type in ["milestone", "delivery"]:
-
-                range_div.add_attr("spt_range_type", "milestone")
-
-                milestone_wdg = self.get_milestone_wdg(sobject, color)
-                range_div.add( milestone_wdg )
-                milestone_wdg.add_style("pointer-events: none")
-
-                range_div.add("<div style='font-weight: bold; height: 100%%; width: auto; max-width: 150px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; pointer-events: none; margin-top: -13px; margin-left: 25px;'>%s</div>" % description)
-                range_div.add_style("margin-top: %spx" % top_margin)
-                has_nobs = False
-
-            else:
-                range_div.add_attr("spt_range_type", "range")
-
-
-                range_div.add_class("hand")
-                range_div.add_style("margin-top: %spx" % top_margin)
-                range_div.add_style("height: 18px")
-
-
-                range_div.add_style("border-style: solid")
-                range_div.add_style("border-width: 1px")
-                range_div.add_style("border-color: %s" % border_color)
-
-                range_div.add_style("width: %s%%" % width)
-
-                range_div.add_style("background: %s" % color)
-
-                has_nobs = True
-
-
-
-
-
-
-                task_diff = bid_end_date - bid_start_date
-                task_duration = float(task_diff.days) + float(task_diff.seconds)/(24*3600)
-
-                task_breaks = [
-                        { 'offset': 1, 'duration': 2, 'color': '#FFF' },
-                        { 'offset': 5, 'duration': 2, 'color': '#FFF' } ,
-                        { 'offset': 2, 'duration': 0.5, 'color': '#0FF' }
-                ]
-                task_breaks = []
-
-                task_data = task.get_json_value("data") or {}
-                if task_data:
-                    task_breaks = task_data.get("break") or {}
-
-
-
-                #task_breaks = []
-
-                if task_breaks:
-
-                    # add some breaks
-                    days_div = DivWdg()
-                    range_div.add(days_div)
-                    days_div.add_style("position: absolute")
-                    days_div.add_style("z-index: 10")
-                    days_div.add_style("top: 0px")
-                    days_div.add_style("height: 100%")
-                    days_div.add_style("width: 100%")
-                    days_div.add_style("overflow: hidden")
-                    days_div.add_style("pointer-events: none")
-
-
-
-                    for task_break in task_breaks:
-
-                        day_div = DivWdg()
-                        days_div.add(day_div)
-
-                        break_offset = float(task_break.get("offset")) / task_duration * 100
-                        break_duration = float(task_break.get("duration")) / task_duration * 100
-                        break_color = task_break.get("color") or "#FFF"
-
-
-                        day_div.add_style("display: inline-block")
-                        day_div.add_style("position: absolute")
-                        day_div.add_style("box-sizing: border-box")
-                        day_div.add_style("height: 100%")
-                        day_div.add_style("width: %s%%" % break_duration)
-                        day_div.add_style("top: 0px")
-                        day_div.add_style("left: %s%%" % break_offset)
-                        day_div.add("&nbsp;")
-
-                        day_div.add_style("background: %s" % break_color)
-
-
-
-
-
-                show_description = True
-                if show_description:
-
-
-                    # add a description
-
-                    text_div = DivWdg()
-                    range_div.add(text_div)
-                    text_div.add_style("position: relative")
-                    text_div.add_style("height: 100%")
-                    text_div.add_style("z-index: 100")
-                    text_div.add_style("text-overflow: ellipsis")
-                    text_div.add_style("white-space: nowrap")
-                    text_div.add_style("overflow: hidden")
-                    text_div.add_style("pointer-events: none")
-                    text_div.add_style("margin: 0px 3px")
-                    text_div.add(description)
-
-
-            if process:
-                range_div.add_attr("spt_process", process)
-                #detail_span.add("Process: %s" % process)
-
-
-            #detail_span.add("<br clear='all'/>")
-            if description and description != process:
-                range_div.add_attr("spt_description", description)
-                #detail_span.add("Description: %s" % description)
-                #detail_span.add("<br clear='all'/>")
-
-            if assigned:
-                user = Search.get_by_code("sthpw/login", assigned)
-                name = assigned
-                if user:
-                    name = user.get_value("display_name")
-                    if not name:
-                        name = user.get_value("login")
-                range_div.add_attr("spt_assigned", name)
-                #detail_span.add("Assigned: %s" % name)
-                #detail_span.add("<br clear='all'/>")
-
-
-            if status:
-                range_div.add_attr("spt_status", status)
-                #detail_span.add("Status: %s" % status)
-                #detail_span.add("<br clear='all'/>")
-
-
-            days = (bid_end_date - bid_start_date).days + 1
-            range_div.add_attr("spt_length", days)
-            #detail_span.add("Length: %s days" % days)
-            #detail_span.add("<br clear='all'/>")
-
-
-
-            start_display = bid_start_date.strftime("%b %d")
-            end_display = bid_end_date.strftime("%b %d")
-
-            range_div.add_attr("spt_start_display", start_display)
-            range_div.add_attr("spt_end_display", end_display)
-
-            if self.nobs_mode != "none" and has_nobs:
-                range_div.add_attr("spt_has_nobs", True)
-            else:
-                range_div.add_attr("spt_has_nobs", False)
-
-        return item_div
-
-
-
-
-    def get_depend_keys(self, task):
-
-        process = task.get("process")
-
-        # TODO: this may be slow to do for every task.  Maybe better to do
-        # in bulk.  Also, this may be better done at initial task creation.
-        parent = task.get_parent()
-
-
-
-        # get the main pipeline
-        pipeline_code = parent.get_value("pipeline_code", no_exception=True)
-        if pipeline_code:
-            pipeline = Pipeline.get_by_code(pipeline_code)
-        else:
-            pipeline = None
-
-
-        if not pipeline:
-            return []
-
-
-        # remamp pipeline process and pipeline
-        parent_process = None
-        if process.find("/") != -1:
-            parts = process.split("/")
-            parent_process = parts[0]
-            process = parts[1]
-
-            s = Search("config/process")
-            s.add_filter("pipeline_code", pipeline_code)
-            s.add_filter("process", parent_process)
-            process_sobj = s.get_sobject()
-
-            pipeline_code = process_sobj.get("subpipeline_code")
-            if pipeline_code:
-                pipeline = Pipeline.get_by_code(pipeline_code)
-
-
-
-        process_obj = pipeline.get_process(process)
-
-
-        depend_keys = []
-
-
-        # need to build a dependency tree ...
-        output_processes = pipeline.get_output_processes(process)
-
-
-        # get the task key that this is dependent
-        from pyasm.biz import Task
-        for output_process in output_processes:
-            output_process_name = output_process.get_name()
-
-            output_process_type = output_process.get_type()
-
-            if output_process_type == "hierarchy":
-                s = Search("config/process")
-                s.add_filter("pipeline_code", pipeline_code)
-                s.add_filter("process", output_process_name)
-                output_process_sobj = s.get_sobject()
-
-                if output_process_sobj:
-                    subpipeline_code = output_process_sobj.get("subpipeline_code")
-                else:
-                    subpipeline_code = None
-
-
-                if subpipeline_code:
-                    subpipeline = Pipeline.get_by_code(subpipeline_code)
-                    subpipeline_process_names = subpipeline.get_process_names()
-                    if subpipeline_process_names:
-                        first = subpipeline_process_names[0]
-                        output_process_name = "%s/%s" % (output_process_name, first)
-
-
-            if parent_process:
-                output_process_name = "%s/%s" % (parent_process, output_process_name)
-
-
-            # FIXME: this is slow ... should get from a cache
-            output_tasks = Task.get_by_sobject(parent, process=output_process_name)
-            output_keys = [x.get_search_key() for x in output_tasks]
-            depend_keys.extend(output_keys)
-
-
-        return depend_keys
-    """
-
-
-
-    """
-    def get_milestone_wdg(self, sobject, color):
-
-        top = DivWdg()
-        top.add_class("spt_milestone")
-        border_color = top.get_color("border")
-
-        div1 = DivWdg()
-        top.add(div1)
-        unique_id = div1.set_unique_id()
-
-        size = 10
-
-        style = HtmlElement.style()
-        self.top.add(style)
-        style.add('''
-#%(unique_id)s {
-    width: 0;
-    height: 0;
-    border: %(size)spx solid transparent;
-    border-bottom-color: %(color)s;
-    position: relative;
-    top: -%(size)spx;
-}
-
-#%(unique_id)s:after {
-    content: '';
-    position: absolute;
-    left: -%(size)spx;
-    top: %(size)spx;
-    width: 0;
-    height: 0;
-    border: %(size)spx solid transparent;
-    border-top-color: %(color)s;
-}
-        ''' % {"unique_id": unique_id, "size": size, "color": border_color} )
-
-
-        size = 8
-
-        div2 = DivWdg()
-        top.add(div2)
-        unique_id = div2.set_unique_id()
-        div2.add_style("margin-top: -%spx" % (size*2+2))
-        div2.add_style("margin-left: 2px")
-
-
-        style = HtmlElement.style()
-        self.top.add(style)
-        style.add('''
-#%(unique_id)s {
-    width: 0;
-    height: 0;
-    border: %(size)spx solid transparent;
-    border-bottom-color: %(color)s;
-    position: relative;
-    top: -%(size)spx;
-}
-
-#%(unique_id)s:after {
-    content: '';
-    position: absolute;
-    left: -%(size)spx;
-    top: %(size)spx;
-    width: 0;
-    height: 0;
-    border: %(size)spx solid transparent;
-    border-top-color: %(color)s;
-}
-        ''' % {"unique_id": unique_id, "size": size, "color": color} )
-
-
-
-        return top
-
-    """
 
 
 
@@ -5272,6 +4757,12 @@ spt.gantt.draw_grid = function() {
 
     var unit = "day"
 
+    let grid_color = "#222222";
+    let grid_color2 = "#3333333";
+
+    //let grid_color2 = "#E9E9E9";
+    //let grid_color = "#F0F0F0";
+
     var percent_per_day = spt.gantt.percent_per_day;
 
 
@@ -5330,7 +4821,7 @@ spt.gantt.draw_grid = function() {
             var pos = diff / (3600 * 24) * percent_per_day * width / 100;
             context.lineWidth = 1;
             context.moveTo(pos, 0);
-            context.fillStyle = "#F0F0F0";
+            context.fillStyle = grid_color;
             context.fillRect(pos, 0, 1, canvas.height);
         }
 
@@ -5352,7 +4843,7 @@ spt.gantt.draw_grid = function() {
 
             context.lineWidth = 1;
             context.moveTo(start.x, start.y);
-            context.fillStyle = "#F0F0F0";
+            context.fillStyle = grid_color;
             context.fillRect(start.x,start.y,size.x, size.y);
         }
 
@@ -5372,7 +4863,7 @@ spt.gantt.draw_grid = function() {
 
             context.lineWidth = 1;
             context.moveTo(start.x, start.y);
-            context.fillStyle = "#F0F0F0";
+            context.fillStyle = grid_color;
             context.fillRect(start.x,start.y,1, size.y);
         }
 
@@ -5391,7 +4882,7 @@ spt.gantt.draw_grid = function() {
 
             context.lineWidth = 1;
             context.moveTo(start.x, start.y);
-            context.fillStyle = "#E9E9E9";
+            context.fillStyle = grid_color2;
             context.fillRect(start.x,start.y, 1, size.y);
         }
     }

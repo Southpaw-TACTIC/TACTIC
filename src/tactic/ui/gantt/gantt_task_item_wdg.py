@@ -92,7 +92,11 @@ class GanttTaskRowWdg(BaseGanttRowWdg):
 
         item_div.add_style("border-style", "solid")
         item_div.add_style("border-width", "0px 0px 1px 0px")
-        item_div.add_color("border-color", "#EEE")
+        theme = item_div.get_color("theme")
+        if theme == "dark":
+            item_div.add_color("border-color", "#000")
+        else:
+            item_div.add_color("border-color", "#EEE")
 
         item_div.add_style("box-sizing", "border-box")
 
@@ -593,7 +597,12 @@ class GanttTaskRangeWdg(BaseGanttRangeWdg):
         # TODO: this may be slow to do for every task.  Maybe better to do
         # in bulk.  Also, this may be better done at initial task creation.
         if mode != 'preview':
-            parent = task.get_parent()
+            try:
+                parent = task.get_parent()
+            except Exception as e:
+                print("WARNING: Error finding parent for task [%s]" % task.get_code(), task.get("search_code"))
+                parent = None
+ 
             if not parent:
                 return []
             pipeline_code = parent.get_value("pipeline_code", no_exception=True)

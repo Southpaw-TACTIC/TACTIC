@@ -1536,7 +1536,7 @@ TacticServerStub = function() {
      * Pipeline methods
      */
 
-    this.create_pipeline = fucntion(name, search_type, kwargs) {
+    this.create_pipeline = function(name, search_type, kwargs) {
         return this._delegate("create_pipeline", arguments, kwargs);
     }
 
