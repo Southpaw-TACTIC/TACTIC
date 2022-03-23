@@ -1416,7 +1416,38 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         if self.collection_key:
 
-            button = ButtonNewWdg(title='Remove Selected Items from Collection', icon="FA_MINUS")
+            from pyasm.common import Environment
+            security = Environment.get_security()
+            search_type = self.kwargs.get("search_type")
+            if security.check_access("search_type", search_type, "delete"):
+
+                button = DivWdg()
+                div.add(button)
+                button.add_class("btn btn-warning btn-sm")
+                button.add_style("font-size: 0.65rem")
+                button.add("Delete Selected")
+                button.add_style("margin-right: 10px")
+                button.add_attr("title", 'Delete Selected Assets')
+
+                button.add_behavior( {
+                    "type": "click",
+                    "cbjs_action": '''
+                    let layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+                    spt.table.delete_selected();
+                    '''
+                } )
+
+
+
+
+            #button = ButtonNewWdg(title='Remove Selected Items from Collection', icon="FA_MINUS")
+            button = DivWdg()
+            button.add_class("btn btn-secondary btn-sm")
+            button.add_style("font-size: 0.65rem")
+            button.add_attr("title", 'Remove Selected Items from Collection')
+            button.add("Remove Selected")
+
             div.add(button)
             button.add_style("display: inline-block")
             button.add_style("vertical-align: top")
@@ -1477,7 +1508,10 @@ class CollectionContentWdg(BaseRefreshWdg):
             } )
 
 
-
+            # This is too confusing for users.  They end up selecting the contents and pressing
+            # the trash button, which here delete that parent collection, not the selected
+            # contents
+            """
             button = ButtonNewWdg(title='Delete Collection', icon="FA_TRASH")
             div.add(button)
             button.add_style("display: inline-block")
@@ -1516,6 +1550,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 spt.confirm(msg, ok, cancel);
                 '''
             } )
+            """
 
 
 
