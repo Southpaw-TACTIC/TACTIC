@@ -1440,7 +1440,7 @@ class NoDatabaseSecurity(Base):
         return License()
     def login_with_ticket(self, key, add_access_rules=True, allow_guest=False):
         None
-    def login_user(self, login, password, expiry=None, domain=None):
+    def login_user(self, login, password, expiry=None, domain=None, two_factor_code=None):
         self.is_logged_in_flag = True
     def get_login(self):
         return None
@@ -1874,7 +1874,7 @@ class Security(Base):
 
 
 
-    def login_user(self, login_name, password, expiry=None, domain=None):
+    def login_user(self, login_name, password, expiry=None, domain=None, two_factor_code=None):
         '''login user with a name and password combination
 
         The login has the following modes:
@@ -1890,6 +1890,9 @@ class Security(Base):
             "security", "authenticate_version", no_exception=True)
         if authenticate_version == '1':
             return login_user_version_1(login_name, password, expiry)
+
+
+        #print("two_factor: ", two_factor_code)
 
 
         # admin always uses the standard authenticate class

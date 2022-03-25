@@ -1262,8 +1262,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                 **self.kwargs
             )
 
+
         if search:
-            # FIXME: this doesn't actually work
             tile.set_search(search)
 
         elif sobjects:

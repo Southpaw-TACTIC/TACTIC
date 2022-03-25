@@ -285,7 +285,7 @@ class CherryPyStartup(CherryPyStartup20):
                     return
                 elif request.method == 'POST':
                     body = request.body.read().decode()
-                    print("cherrypy_startup body: ", body)
+                    #print("cherrypy_startup body: ", body)
                     headers = {
                         "Authorization": headers.get("Authorization"),
                         "Accept": 'application/json'
@@ -301,6 +301,29 @@ class CherryPyStartup(CherryPyStartup20):
                     r = requests.post(url, headers=headers, data=request.params)
                     cherrypy.response.status = 200
                     return r.text
+
+
+            if request.params.get("is_from_login") == "yes":
+
+                login = request.params.get("login")
+                password = request.params.get("password")
+                two_factor_code = request.params.get("two_factor_code")
+
+                security = Environment.get_security()
+                ticket = security.login_user(login, password, two_factor_code=two_factor_code)
+                ticket_key = security.get_ticket_key()
+
+
+                return '''
+                <script>
+                document.cookie = "login_ticket=%s; path=/";
+                </script>
+                <meta http-equiv="refresh" content="0">
+                ''' % ticket_key
+
+
+
+
 
             """
             # if there is hash, then attempt to get it
