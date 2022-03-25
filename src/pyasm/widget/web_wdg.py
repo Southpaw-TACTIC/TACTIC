@@ -1458,7 +1458,7 @@ class WebLoginWdg(Widget):
 
         # 2FA
         #
-        two_factor = True
+        two_factor = False
         if two_factor:
             two_factor_wdg = TextWdg("two_factor_code")
             two_factor_wdg.set_option("type", "number")
