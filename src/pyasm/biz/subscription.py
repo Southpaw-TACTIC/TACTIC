@@ -12,7 +12,7 @@
 
 __all__ = ["Subscription"]
 
-
+from pyasm.common import Environment
 from pyasm.search import Search, SObject, SearchType
 
 class Subscription(SObject):
@@ -30,6 +30,52 @@ class Subscription(SObject):
 
         return sobjects
     get_by_search_type = staticmethod(get_by_search_type)
+
+
+
+    def get_by_message_code(message_code):
+        expr = "@SOBJECT(sthpw/subscription['login','%s']['message_code','%s'])" %(login, message_code)
+        sobject = Search.eval(expr, single=True)
+        return sobject
+    get_by_message_code = staticmethod(get_by_message_code)
+
+
+
+    def create(cls, message_code):
+
+        login = Environment.get_user_name()
+
+        # check to see if this subscription already exists
+        search = Search("sthpw/subscription")
+        search.add_filter("login", login)
+        search.add_filter("message_code", message_code)
+        subscription = search.get_sobject()
+        if not subscription:
+            subscription = SearchType.create("sthpw/subscription")
+            subscription.set_value("login", login)
+            subscription.set_value("message_code", message_code)
+            subscription.commit()
+
+        return subscription
+
+    create = classmethod(create)
+
+
+
+    def unsubscribe(cls, message_code):
+ 
+        login = Environment.get_user_name()
+
+        search = Search("sthpw/subscription")
+        search.add_filter("login", login)
+        search.add_filter.set_value("message_code", message_code)
+        subscription = search.get_sobject()
+
+        subscription.delete()
+
+    unsubscribe = classmethod(unsubscribe)
+  
+
 
 
 

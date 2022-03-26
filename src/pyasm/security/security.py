@@ -1309,7 +1309,11 @@ class Ticket(SObject):
                 handler_class = Config.get_value("security", "authenticate_ticket_class")
                 if handler_class:
                     handler = Common.create_from_class_path(handler_class)
-                    ticket = handler.validate_key(key)
+                    try:
+                        ticket = handler.validate_key(key)
+                    except Exception as e:
+                        print("WARNING: ", e)
+                        ticket = None
 
 
         finally:

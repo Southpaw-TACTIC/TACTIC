@@ -1269,7 +1269,6 @@ class Pipeline(SObject):
             sobject = None
 
         if sobject == None:
-            #sobject = Pipeline( Pipeline.SEARCH_TYPE )
             sobject = SearchType.create( Pipeline.SEARCH_TYPE )
         else:
             return sobject
