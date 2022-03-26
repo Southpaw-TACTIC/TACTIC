@@ -269,6 +269,10 @@ class Search(Base):
             return
 
 
+        # explicity open mode should be allowed to access all tables
+        if api_mode in ['open']:
+            return
+
         if search_type in {
                 'sthpw/login',
                 'sthpw/login_in_group',
@@ -282,8 +286,6 @@ class Search(Base):
         }:
             raise Exception("Search Permission Denied [%s]" % search_type)
 
-        if api_mode in ['open', '', None]:
-            return
 
 
 
@@ -2799,14 +2801,16 @@ class SObject(object):
         from pyasm.biz import ProjectSetting
         search_type = self.get_base_search_type()
         prefix = ProjectSetting.get_value_by_key('code_prefix', search_type)
+        if prefix.startswith("{") and prefix.endswith("}"):
+            prefix = prefix.strip("{")
+            prefix = prefix.strip("}")
+            prefix = Search.eval(prefix, self, single=True)
+
+
         if not prefix:
             prefix = self.get_table()
             prefix = prefix.upper()
 
-        elif prefix.startswith("{") and prefix.endswith("}"):
-            prefix = prefix.strip("{")
-            prefix = prefix.strip("}")
-            prefix = Search.eval(prefix, self, single=True)
 
         return prefix
 
@@ -4545,7 +4549,6 @@ class SObject(object):
         from pyasm.biz import ProjectSetting
         if id == None or ProjectSetting.get_value_by_key('code_format', search_type) == 'random':
             # generate the code
-            log_key = self.get_code_key()
             random_code = Common.generate_random_key(digits=10)
             parts.append( random_code )
 
@@ -5774,6 +5777,20 @@ class SObject(object):
         item.set_value("search_code", search_code)
         item.set_value("parent_code", parent_code)
         item.commit()
+
+
+        output = {}
+        output["mode"] = "add"
+        output["search_key"] = SearchKey.build_by_sobject(self)
+        output["id"] = self.get_id()
+        output["search_type"] = self.get_search_type()
+        output["collection"] = collection.get_sobject_dict()
+        output["sobject"] = self.get_sobject_dict()
+        project_code = Project.get_project_code()
+
+        from pyasm.command import Trigger
+        Trigger.call(self, "collection|%s" % self.get_base_search_type(), output, project_code=project_code)
+
 
 
 

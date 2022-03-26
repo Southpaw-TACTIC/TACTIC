@@ -1282,6 +1282,7 @@ class Pipeline(SObject):
             xml = Xml()
             xml.read_string(xml_string)
 
+
         sobject.set_value("pipeline", xml.get_xml())
         sobject.set_pipeline(xml.to_string())
 

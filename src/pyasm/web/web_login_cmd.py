@@ -86,8 +86,8 @@ class WebLoginCmd(Command):
                 "Username is empty") 
             return False
         if self.password == "":
-            web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                "Password is empty") 
+            #web.set_form_value(WebLoginWdg.LOGIN_MSG, \
+            #    "Password is empty") 
             return False
         
         security = WebContainer.get_security()

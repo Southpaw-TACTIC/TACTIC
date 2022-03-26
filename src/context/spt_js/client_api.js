@@ -1535,6 +1535,11 @@ TacticServerStub = function() {
     /*
      * Pipeline methods
      */
+
+    this.create_pipeline = function(name, search_type, kwargs) {
+        return this._delegate("create_pipeline", arguments, kwargs);
+    }
+
     this.get_pipeline_xml = function(search_key, kwargs) {
         return this._delegate("get_pipeline_xml", arguments, kwargs);
     }

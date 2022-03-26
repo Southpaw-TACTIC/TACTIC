@@ -164,12 +164,20 @@ class EmailTrigger(Trigger):
                     if value == rule_value:
                         break
                 elif op == "in":
-                    values = "|".split(rule_value)
                     if value not in rule_value:
                         break
                 elif op == "not in":
-                    values = "|".split(rule_value)
                     if value in rule_value:
+                        break
+                elif op == "?|":
+                    rule_values = rule_value.split("|")
+                    values = value.split("|")
+                    is_match = False
+                    for value in values:
+                        if value in rule_values:
+                            is_match = True
+                            break
+                    if is_match:
                         break
 
                 # default is match
@@ -293,18 +301,27 @@ class EmailTrigger(Trigger):
 
         else:
             user_email = Environment.get_login().get_full_email()
-            if not user_email:
-                print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
-                return
-            sender.add(user_email)
-
-            # we want from_user to be the current login.
-            from_user = user_email
+            #if not user_email:
+            #    print("Sender's email is empty. Please check the email attribute of [%s]." %Environment.get_user_name())
+            #    return
+            if user_email:
+                sender.add(user_email)
+                # we want from_user to be the current login.
+                from_user = user_email
 
             # if there is a config setting for default admin email.
             default_admin_email = Config.get_value("services", "mail_default_admin_email")
             if default_admin_email:
                 from_user = default_admin_email
+
+            # this taks precedence over all of them
+            site_email_name = Config.get_value("services", "mail_name")
+            if site_email_name:
+                site_email = Config.get_value("services", "mail_user")
+                from_user = "%s <%s>" % (site_email_name, site_email)
+
+                sender.add(from_user)
+
 
         # set the reply_to_user to user_email.
         if not reply_to_user:
@@ -386,6 +403,7 @@ class EmailTrigger(Trigger):
             st = 'html'
         else:
             st = 'plain'
+
 
         msg = MIMEText(message, _subtype=st, _charset=charset)
         msg.add_header('Subject', subject)
@@ -616,11 +634,11 @@ class EmailTrigger2(EmailTrigger):
                 else:
                     continue
 
-            # DEPRECATED: likely the expression complete replaces this
-            # parse the rule
+            # parse the rules
             if group_type == "sobject":
                 if not self._process_sobject(main_sobject, rule_key, compare):
                     break
+                print("main_sobject: ", main_sobject.get_data() )
                 value = main_sobject.get_value(rule_key, no_exception=True )
             elif group_type == "parent":
                 if not parent or not self._process_sobject(parent, rule_key, compare):
@@ -635,6 +653,7 @@ class EmailTrigger2(EmailTrigger):
             if not value:
                 break
 
+
             if op == "=":
                 if value != rule_value:
                     break
@@ -642,12 +661,23 @@ class EmailTrigger2(EmailTrigger):
                 if value == rule_value:
                     break
             elif op == "in":
-                values = "|".split(rule_value)
+                values = rule_value.split("|")
                 if value not in rule_value:
                     break
             elif op == "not in":
-                values = "|".split(rule_value)
+                values = rule_value.split("|")
                 if value in rule_value:
+                    break
+            elif op == "?|":
+                rule_values = rule_value.split("|")
+                matches = False
+                keys = value.keys()
+                for v in rule_values:
+                    print("vvv: ", v, keys)
+                    if v in keys:
+                        matches = True
+                        break
+                if not matches:
                     break
 
             else:
@@ -756,7 +786,7 @@ class EmailTrigger2(EmailTrigger):
         # send the email
         if send_email:
             self.send(to_users, cc_users, bcc_users, subject, message)
-            self.add_description('\nEmail sent to [%s]' %all_emails)
+            self.add_description('\nEmail sent to [%s]' % all_emails)
 
         self.add_notification(email_users, subject, message, project_code)
 
