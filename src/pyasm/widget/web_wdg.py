@@ -17,7 +17,7 @@ __all__ = [
 'BottomWdg', 'DynTopWdg', 'DynBottomWdg', 'EditLinkWdg', 'ProdSettingLinkWdg', 'SubmissionLinkWdg', 'RenderLinkWdg', 'FileAppendLinkWdg',
 'InsertLinkWdg', 'IframeInsertLinkWdg', 'DeleteLinkWdg', 'RetireLinkWdg',
 'ReactivateLinkWdg', 'SwapDisplayWdg', 'DebugWdg', 'WebLoginWdg', 'WebLoginWdg2', 'BaseSignInWdg',
-'WebLoginCmd', 'WebLicenseWdg', 'TacticLogoWdg',
+'WebLicenseWdg', 'TacticLogoWdg',
 'SignOutLinkWdg', 'UndoButtonWdg', 'RedoButtonWdg',
 'CmdReportWdg', 'WarningReportWdg', 'MessageWdg', 'HintWdg', 'HelpMenuWdg',
 'HelpItemWdg', 'WarningMenuWdg', 'FloatMenuWdg', 'ExtraInfoWdg', 'UserExtraInfoWdg',
@@ -1157,6 +1157,8 @@ class WebLoginWdg(Widget):
         super(WebLoginWdg,self).__init__("div")
 
 
+
+
     def get_display(self):
         name_label = self.kwargs.get('name_label')
         password_label = self.kwargs.get('password_label')
@@ -1292,12 +1294,8 @@ class WebLoginWdg(Widget):
         div.add( HiddenWdg("is_from_login", "yes") )
         div.add_style("font-size: 10px")
 
-        table = Table()
-        table.add_color("color", "color")
-        table.center()
-        table.set_attr("cellpadding", "3px")
-        table.add_row()
 
+        table = DivWdg()
 
 
         # look for defined domains
@@ -1323,9 +1321,15 @@ class WebLoginWdg(Widget):
         host = web.get_http_host()
         if host.find(':') != -1:
             host = host.split(':')[0]
+
+        # domains
+        #
         if domains:
-            
-            th = table.add_header( "<b>Domain: </b>")
+            domain_container = DivWdg()
+            table.add(domain_container)
+            domain_container.add_class("sign-in-input")
+            domain_container.add("<div class='label'>Domain</div>")
+                
             domain_wdg = SelectWdg("domain")
             domain_wdg.set_persist_on_submit()
             if len(domains) > 1:
@@ -1343,24 +1347,31 @@ class WebLoginWdg(Widget):
                 domain_wdg.add_style("")
             else:
                 domain_wdg.add_style("background-color: #EEE")
-                domain_wdg.add_style("height: 20px")
-            table.add_cell( domain_wdg )
-            table.add_row()
+            domain_container.add( DivWdg( domain_wdg ) )
 
         
 
-        th = table.add_header( "<b> %s: </b>"%name_label)
-        th.add_style("padding: 5px")
+        # user name
+        #
+        name_container = DivWdg()
+        table.add(name_container)
+        name_container.add_class("sign-in-input")
+        name_container.add("<div class='label'>User Name</div>")
 
         text_wdg = TextWdg("login")
+        name_container.add(text_wdg)
+
+
         if override_login:
-            text_wdg.add_class("spt_login_textbox")
-            text_wdg.add_class("form-control")
+            #text_wdg.add_class("spt_login_textbox")
+            text_wdg.add_class("sign-in-input")
+            #text_wdg.add_class("form-control")
 
         else:
             text_wdg.add_style("width: 130px")
             text_wdg.add_style("color: black")
             text_wdg.add_style("padding: 2px")
+
         if self.hidden:
             login_name = Environment.get_user_name()
             text_wdg.set_value(login_name)
@@ -1375,16 +1386,15 @@ class WebLoginWdg(Widget):
         if login_placeholder:
             text_wdg.add_attr("placeholder", login_placeholder)
 
-        #text_wdg.add_event("onLoad", "this.focus()")
-        table.add_cell( text_wdg )
 
         if change_admin:
             text_wdg.add_attr("readonly", "readonly")
             text_wdg.add_style("background: #CCC")
             text_wdg.set_value("admin")
 
-            tr = table.add_row()
-            td = table.add_cell("Please change the \"admin\" password")
+
+            td = DivWdg("Please change the \"admin\" password")
+            table.add(td)
             td.add_styles('height: 24px; padding-left: 6px')
         else:
             if override_password:
@@ -1393,11 +1403,20 @@ class WebLoginWdg(Widget):
                 text_wdg.add_style("background: #EEE")
 
 
-        table.add_row()
+
+        # password
+        #
+        password_container = DivWdg()
+        table.add(password_container)
+        password_container.add_class("sign-in-input")
+        password_container.add("<div class='label'>Password</div>")
+
         password_wdg = PasswordWdg("password")
+
         if override_password:
-            password_wdg.add_class("spt_login_textbox")
-            password_wdg.add_class("form-control")
+            #password_wdg.add_class("spt_login_textbox")
+            #password_wdg.add_class("form-control")
+            pass
         else:
             password_wdg.add_style("color: black")
             password_wdg.add_style("background: #EEE")
@@ -1408,28 +1427,63 @@ class WebLoginWdg(Widget):
         if password_placeholder:
             password_wdg.add_attr("placeholder", password_placeholder)
 
-        th = table.add_header( "<b> %s: </b>"%password_label )
-        th.add_style("padding: 5px")
-        table.add_cell( password_wdg )
+        td = DivWdg( password_wdg )
+        password_container.add(td)
 
 
+        # change password
+        #
         if change_admin:
-            table.add_row()
             password_wdg2 = PasswordWdg("verify_password")
             if override_password:
-                password_wdg2.add_class("spt_login_textbox")
-                password_wdg2.add_class("form-control")
+                #password_wdg2.add_class("spt_login_textbox")
+                #password_wdg2.add_class("form-control")
+                pass
             else:
                 password_wdg2.add_style("color: black")
                 password_wdg2.add_style("background: #EEE")
                 password_wdg2.add_style("padding: 2px")
                 password_wdg2.add_style("width: 130px")
-            th = table.add_header( "<b>Verify Password: </b>" )
-            th.add_style("padding: 5px")
-            table.add_cell( password_wdg2 )
+
+
+            password_container = DivWdg()
+            table.add(password_container)
+            password_container.add_class("sign-in-input")
+            password_container.add("<div class='label'>Verify Password</div>")
+
+            td = DivWdg( password_wdg2 )
+            password_container.add(td)
 
 
 
+        # 2FA
+        #
+        two_factor = False
+        if two_factor:
+            two_factor_wdg = TextWdg("two_factor_code")
+            two_factor_wdg.set_option("type", "number")
+            if override_password:
+                #two_factor_wdg.add_class("spt_login_textbox")
+                #two_factor_wdg.add_class("form-control")
+                pass
+            else:
+                two_factor_wdg.add_style("color: black")
+                two_factor_wdg.add_style("background: #EEE")
+                two_factor_wdg.add_style("padding: 2px")
+                two_factor_wdg.add_style("width: 130px")
+
+
+            two_factor_container = DivWdg()
+            table.add(two_factor_container)
+            two_factor_container.add_class("sign-in-input")
+            two_factor_container.add("<div class='label'>2 Factor Code</div>")
+
+            td = DivWdg( two_factor_wdg )
+            two_factor_container.add(td)
+
+
+
+ 
 
 
 
@@ -1558,14 +1612,55 @@ class WebLoginWdg(Widget):
     def get_styles(self):
 
         styles = HtmlElement.style()
-        styles.add(""" 
-            .spt_login_screen {
-                width: 100%;
-                height: 85%;
-            }
-        """)
+        styles.add('''
+        .spt_login_screen {
+            width: 100%;
+            height: 85%;
+        }
+
+        .sign-in-input {
+            position: relative;
+            width: 100%;
+        }
+
+
+        .sign-in-input .label {
+            position: absolute; 
+            top: -6;
+            left: 8;
+            
+            padding: 0 5px;
+            
+            background: white;
+            font-weight: normal;
+            color: #aaa;
+            font-size: 12px;
+            z-index: 1;
+        }
+
+        .sign-in-input input {
+            color: black;
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .sign-in-input select {
+            color: black;
+            width: 100%;
+            height: 52px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        ''')
 
         return styles
+
 
 
 class BaseSignInWdg(Widget):

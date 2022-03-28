@@ -76,6 +76,8 @@ class WebLoginCmd(Command):
 
         self.domain = web.get_form_value("domain")
 
+        self.two_factor_code = web.get_form_value("two_factor_code")
+
 
         if self.login == "" and self.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
@@ -138,7 +140,7 @@ class WebLoginCmd(Command):
             else:
                 login = self.login
 
-            security.login_user(login, self.password, domain=self.domain)
+            security.login_user(login, self.password, domain=self.domain, two_factor_code=self.two_factor_code)
 
         except SecurityException as e:
             msg = str(e)
