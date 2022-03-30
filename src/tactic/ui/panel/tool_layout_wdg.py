@@ -95,6 +95,10 @@ class ToolLayoutWdg(FastTableLayoutWdg):
         return True
 
 
+    def uses_tile(self):
+        return True
+
+
     def init(self):
         # set up the context menus
         self.show_context_menu = self.kwargs.get("show_context_menu")
@@ -129,8 +133,9 @@ class ToolLayoutWdg(FastTableLayoutWdg):
 
         #self.kwargs['show_gear'] = 'false'
 
-        from .tile_layout_wdg import TileLayoutWdg
-        self.tile_layout = TileLayoutWdg(search_type=self.search_type, expand_mode=self.expand_mode, process=self.process)
+        if self.uses_tile():
+            from .tile_layout_wdg import TileLayoutWdg
+            self.tile_layout = TileLayoutWdg(search_type=self.search_type, expand_mode=self.expand_mode, process=self.process)
 
 
         # set the sobjects to all the widgets then preprocess
