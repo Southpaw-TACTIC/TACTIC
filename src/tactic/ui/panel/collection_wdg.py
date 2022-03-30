@@ -603,6 +603,9 @@ class CollectionAddCmd(Command):
 
 class CollectionLayoutWdg(ToolLayoutWdg):
 
+    def uses_tile(self):
+        return False
+
 
     def get_kwargs_keys(cls):
         return ['group_elements', 'show_collection_shelf', 'library_title','collection_key','path']
@@ -624,8 +627,13 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
 
     def alter_search(self, search):
-        collection_key = self.kwargs.get("collection_key")
 
+        # have to put this here as it overrid
+        #self.search_limit.alter_search(search)
+        super(CollectionLayoutWdg, self).alter_search(search)
+
+
+        collection_key = self.kwargs.get("collection_key")
 
         # filter assets only under this collection
         if collection_key:
@@ -657,7 +665,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                     subordinates
                 ) AS Foo )''' % (collection_type, collection_code, collection_type),
                 op="in", quoted=False)
-
 
 
 
@@ -725,7 +732,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
 
 
-
+        
         left_content.add(self.get_collection_wdg())
         right_content.add(self.get_right_content_wdg())
 

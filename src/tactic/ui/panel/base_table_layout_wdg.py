@@ -64,6 +64,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def __init__(self, **kwargs):
 
+        print("self: ", self)
+
         # get the them from cgi
         self.handle_args(kwargs)
         self.kwargs = kwargs
@@ -325,6 +327,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         
         from tactic.ui.app import SearchLimitWdg
         self.search_limit = SearchLimitWdg()
+        print("ssss: ", self.search_limit)
 
         self.items_found = 0
 
