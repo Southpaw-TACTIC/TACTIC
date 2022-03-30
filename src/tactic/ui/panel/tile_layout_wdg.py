@@ -868,10 +868,10 @@ class TileLayoutWdg(ToolLayoutWdg):
 
 
         # For collections
-        """
         parts = self.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
         layout_wdg.add_attr("spt_collection_type", collection_type)
+        """
         layout_wdg.add_relay_behavior( {
             'type': 'mouseup',
             'collection_type': collection_type,
