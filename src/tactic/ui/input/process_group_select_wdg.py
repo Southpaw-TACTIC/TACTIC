@@ -348,6 +348,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
             # click up blocks any other behavior
             div.generate_api_key("eval", inputs=[link_expr, {"search_keys": self.sobject.get_search_key(), "single": True}])
+            div.generate_widget_key("tactic.ui.tools.SObjectDetailWdg", inputs={"search_key": self.sobject.get_search_key()})
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
