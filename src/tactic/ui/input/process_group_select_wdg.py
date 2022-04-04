@@ -321,8 +321,10 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         div.add(value)
 
-        # display a link if specified
 
+        # User detail view commented out.
+        # display a link if specified
+        """
         from pyasm.biz import ProjectSetting
         link_expr = ProjectSetting.get_value_by_key("task/assigned/link_expression")
         if not link_expr:
@@ -355,6 +357,7 @@ class LoginTableElementWdg(SimpleTableElementWdg):
                 spt.table.open_link(bvr);
                 '''
             } )
+        """
 
 
 
