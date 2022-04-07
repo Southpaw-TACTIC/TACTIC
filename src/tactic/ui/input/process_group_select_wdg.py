@@ -321,8 +321,10 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         div.add(value)
 
-        # display a link if specified
 
+        # User detail view commented out.
+        # display a link if specified
+        """
         from pyasm.biz import ProjectSetting
         link_expr = ProjectSetting.get_value_by_key("task/assigned/link_expression")
         if not link_expr:
@@ -348,12 +350,14 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
             # click up blocks any other behavior
             div.generate_api_key("eval", inputs=[link_expr, {"search_keys": self.sobject.get_search_key(), "single": True}])
+            div.generate_widget_key("tactic.ui.tools.SObjectDetailWdg", inputs={"search_key": self.sobject.get_search_key()})
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
                 spt.table.open_link(bvr);
                 '''
             } )
+        """
 
 
 
