@@ -1537,7 +1537,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 if view_item.startswith("my_view_"):
                     tt = "My Views"
                 else:
-                    tt = view_item.replace("_", " ");
+                    tt = view_item.replace("_", " ")
                 tt = tt.capitalize()
 
 

@@ -42,7 +42,7 @@ from tactic_client_lib import TacticServerStub
 
 
 class CustomLayoutWdg(BaseRefreshWdg):
-
+    print('in custom_layout_wdg.py CustomLayoutWdg')
     ARGS_KEYS = {
         'search_key': 'search key of the sobject to be displayed',
         # or
@@ -160,7 +160,9 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_display(self):
+        # print('in custom_layout_wdg.py get_display')
         self.sobject = self.get_current_sobject()
+        
         if not self.sobject:
             self.sobject = self.get_sobject_from_kwargs()
 
@@ -170,13 +172,15 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         if self.sobject:
+          #  print('in get_display self.sobject: ', self.sobject)
             self.search_key = SearchKey.get_by_sobject(self.sobject)
             self.kwargs['search_key'] = self.search_key
+           # print('in get_display self.kwargs: ', self.kwargs)
 
         else:
             self.search_key = self.kwargs.get('search_key')
 
-
+       # print('get_display self.search_key: ', self.search_key)
         html = self.kwargs.get('html')
         if not html:
             html = ""
@@ -374,6 +378,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
         # use relative expressions - [expr]xxx[/expr]
         p = re.compile('\[expr\](.*?)\[\/expr\]')
+        
         parser = ExpressionParser()
         matches = p.finditer(html)
         for m in matches:
@@ -464,7 +469,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def handle_is_test(self, content):
-
+        # print('in custom_layout_wdg.py handle_is_test')
         content.add_behavior( {
             'type': 'mouseover',
             'cbjs_action': '''
@@ -512,6 +517,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
         div.add_style("inherit: false")
         div.add_style("z-index: 1000")
         div.add_style("background-color: white")
+       
         div.add_class("hand")
 
 
@@ -539,7 +545,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_test_context_menu(self):
-
+        # print('in custom_layout_wdg.py get_test_context_menu')
         menu = Menu(width=180)
         menu.set_allow_icons(False)
 
@@ -595,6 +601,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             var top = activator.getParent(".spt_custom_top");
             var class_name = top.getAttribute("spt_class_name");
+    
             var kwargs = spt.panel.get_element_options(top);
             //kwargs['is_test'] = true;
 
@@ -607,7 +614,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
 
-
+        
         return menu
 
      
@@ -621,7 +628,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def process_mako(self, html):
-
+        # print('in custom_layout_wdg.py process_mako')
         from mako.template import Template
         from mako import exceptions
         html = '%s%s' % (CustomLayoutWdg.HEADER, html)
@@ -721,6 +728,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def add_kwargs(self, widget, xml):
+        # print('in custom_layout_wdg.py add_kwargs')
         """
         ARGS_KEYS = {
         'category': {
@@ -756,12 +764,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def add_behaviors(self, widget, xml):
-
+        # print('in custom_layout_wdg.py add_behaviors')
         behavior_nodes = xml.get_nodes("config/%s/behavior" % self.view)
 
         if behavior_nodes:
             hidden_div = DivWdg()
-            hidden_div.add_styles("display: none");
+            hidden_div.add_styles("display: none")
             hidden_div.add_class("spt_customlayoutwdg_handoffs")
             widget.add( hidden_div )
 
@@ -868,6 +876,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_config(self):
+       # print('in custom_layout_wdg.py get_config')
         config = None
         config_xml = self.kwargs.get('config_xml')
         if config_xml:
@@ -944,6 +953,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_def_config(self, def_xml=None):
+       # print('in custom_layout_wdg.py get_def_config')
         def_confg = None
 
         self.def_view = self.kwargs.get('definition')
@@ -971,7 +981,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
    
     def replace_elements(self, html_str):
-
+       # print('in custom_layout_wdg.py replace_elements')
         """
         # NOTE: this likely is a better way to extract elements, but still
         # need to find a way to inject html back into the xml
@@ -987,6 +997,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             try:
                 element_wdg = self.get_element_wdg(xml, self.def_config)
                 element_html = element_wdg.get_buffer_display()
+                
             except Exception as e:
                 from pyasm.widget import ExceptionWdg
                 element_html = ExceptionWdg(e).get_buffer_display()
@@ -1018,7 +1029,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
             index = line2.find('<element>')
             if index == -1:
                 index = line2.find('<element ')
-
+                
 
             if not parse_context and index == -1:
                 #line = Common.process_unicode_string(line)
@@ -1122,11 +1133,13 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_title(self):
+        # print('in custom_layout_wdg.py ******** get_title')
         '''Returns a widget containing the title to be displayed for this
         column'''
         if self.title:
             title = self.title
             return title
+          
 
         title = self.name
         if not title:
@@ -1141,10 +1154,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
         return None
 
     def get_text_value(self):
+        # print('in custom_layout_wdg.py get_text_value')
         '''for csv export'''
         sobject = self.get_current_sobject()
         text_expr = self.kwargs.get("text_value")
         text_expr = "@GET(.id)"
+        #  print("***********text_epr", text_expr)
         if not text_expr:
             return ''
         value = Search.eval(text_expr, sobject, single=True)
@@ -1178,7 +1193,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
  
 
     def get_sequence_wdg(self):
-
+         # print('in custom_layout_wdg.py get_sequence_wdg')
         funcs = []
 
         div = DivWdg()
@@ -1221,7 +1236,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_async_element_wdg(self, xml, element_name, load):
-
+        # print('in custom_layout_wdg.py get_async_element_wdg')
         tmp_config = WidgetConfig.get('tmp', xml=xml)
         display_handler = tmp_config.get_display_handler(element_name)
         display_options = tmp_config.get_display_options(element_name)
@@ -1286,7 +1301,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_element_wdg(self, xml, def_config):
-
+        # print('in custom_layout_wdg.py get_element_wdg function')
         element_node = xml.get_node("config/tmp/element")
         attrs = Xml.get_attributes(element_node)
         element_name = attrs.get("name")
@@ -1390,7 +1405,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
             config = WidgetConfigView('CustomLayoutWdg', 'tmp', configs, state=self.state)
 
-            # NOTE: this doesn't work too well when we go to an abasolute
+            # NOTE: this doesn't work too well when we go to an absolute
             # view.
             parent_view = self.kwargs.get("parent_view")
             if parent_view:
@@ -1535,7 +1550,7 @@ class CustomLayoutCbk(Command):
             key = callback.lstrip("$")
             tmp_dir = Environment.get_tmp_dir(include_ticket=True)
             path = "%s/key_%s.txt" % (tmp_dir,key)
-            print("path: ", path)
+            print("PATH: ", path)
             if not os.path.exists(path):
                 print("ERROR: Command path [%s] not found" % path)
                 raise Exception("Command key not valid")
@@ -1736,7 +1751,7 @@ class SObjectHeaderWdg(BaseRefreshWdg):
     def get_display(self):
 
         search_key = self.kwargs.get('parent_key')
-
+        print('in custom_layout_wdg.py get_display: ', search_key)
         div = DivWdg()
 
         if not search_key:

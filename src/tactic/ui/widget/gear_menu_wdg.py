@@ -1587,7 +1587,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
             }
             )
 
-        menu['opt_spec_list'] = opt_spec_list;
+        menu['opt_spec_list'] = opt_spec_list
 
         return menu
 
