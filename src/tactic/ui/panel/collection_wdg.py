@@ -724,9 +724,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         if window_resize_offset:
             offset = window_resize_offset
             right_content.add_style("height", "calc(100vh - %spx)" % offset)
+            right_content.add_style("overflow-y", "auto") #markmark
             right_content.add_attr("spt_window_resize_offset", window_resize_offset)
             right_content.add_class("spt_window_resize")
             left_content.add_style("height", "calc(100vh - %spx)" % offset)
+            left_content.add_style("overflow-y", "auto") #markmark
             left_content.add_attr("spt_window_resize_offset", window_resize_offset)
             left_content.add_class("spt_window_resize")
 
