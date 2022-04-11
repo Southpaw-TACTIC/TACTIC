@@ -2263,7 +2263,6 @@ class WebLoginWdg2(BaseSignInWdg):
         if msg.startswith("User [guest] is not allowed"):
             useless_msg = True
 
-
         allow_change_admin = self.kwargs.get("allow_change_admin")
         if allow_change_admin in [False, 'false']:
             allow_change_admin = False

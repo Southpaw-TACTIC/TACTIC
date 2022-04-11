@@ -812,6 +812,7 @@ class BaseAppServer(Base):
             login = web.get_form_value("login")
             password = web.get_form_value("password")
 
+
         """
         print("---")
         print("headers: ")
@@ -862,6 +863,24 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
+                two_factor_code = web.get_form_value("two_factor_code")
+
+                requires_2fa = True
+                if requires_2fa:
+
+                    if not two_factor_code:
+                        login_cmd = WebLoginCmd()
+                        login_cmd.execute()
+                        return security
+
+                    if requires_2fa and login and password and not two_factor_code:
+                        return security
+                        raise Exception("Two Factor Code not specified")
+
+                print("two_factor_code: ", two_factor_code)
+                print()
+
+
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
 

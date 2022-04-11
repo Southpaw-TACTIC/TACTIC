@@ -13,11 +13,13 @@
 
 __all__ = ['WebLoginCmd']
 
-from pyasm.common import Config, SecurityException
+from pyasm.common import Config, SecurityException, Common
 from pyasm.command import Command
-from pyasm.security import Security, Sudo
+from pyasm.security import Security, Sudo, Site
 from pyasm.web import WebContainer
 from pyasm.search import Search, SearchType
+
+from datetime import datetime, timedelta
 
 class WebLoginCmd(Command):
 
@@ -96,7 +98,7 @@ class WebLoginCmd(Command):
 
         # handle windows domains
         #if self.domain:
-        #    self.login = "%s\\%s" % (self.domain, self.login)
+        #    self.login = "%s\\%s" % (self.domain, self.logia)
 
 
         verify_password = web.get_form_value("verify_password")
@@ -140,9 +142,71 @@ class WebLoginCmd(Command):
             else:
                 login = self.login
 
+
+            print("TRYING") 
+
+            print("login: ", login)
+            print("password: ", self.password)
+            print("two_factor_code: ", self.two_factor_code)
+
+
+            if not self.two_factor_code:
+
+                if not login_sobject:
+                    raise SecurityException("User does not exist")
+
+                # first check that the password is correct
+                try:
+                    security.login_user(login, self.password, domain=self.domain, test=True)
+                except:
+                    # suppress the real error
+                    raise SecurityException("Need two factor code")
+
+
+
+
+                # email user code
+                generated_code = Common.randint(0, 999999)
+                generated_code = "%0.6d" % generated_code
+
+                # store code in user
+                Site.set_site("default")
+                sudo = Sudo()
+                try:
+                    sthpw_login_sobject = Search.get_by_code("sthpw/login", login)
+                    data = sthpw_login_sobject.get_json_value("data") or {}
+                    data["two_factor_code"] = generated_code
+                    expiry = datetime.now() + timedelta(minutes=2)
+                    data["two_factor_expiry"] = expiry
+                    sthpw_login_sobject.set_value("data", data)
+                    sthpw_login_sobject.commit()
+                finally:
+                    Site.pop_site()
+                    sudo.exit()
+
+                subject = "Two Factor Authentication"
+                message = f'''
+
+                Your code is {generated_code}
+    '''
+
+                print(message)
+
+                raise SecurityException("Need two factor code")
+
+
+
+
+
             security.login_user(login, self.password, domain=self.domain, two_factor_code=self.two_factor_code)
 
+
+
+
+
+
         except SecurityException as e:
+            print("FAILED")
             msg = str(e)
             if not msg:
                 msg = "Incorrect username or password"

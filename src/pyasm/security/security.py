@@ -14,6 +14,8 @@ __all__ = ["Login", "LoginInGroup", "LoginGroup", "Site", "TacticSite", "Ticket"
 
 import hashlib, os, sys, types, six
 #import tacticenv
+from datetime import datetime
+from dateutil import parser
 from pyasm.common import *
 from pyasm.search import *
 
@@ -1379,7 +1381,6 @@ class Ticket(SObject):
                 cur_ticket.delete()
         """
 
-        from datetime import datetime
         from pyasm.search import SqlException
         # it makes no sense for Sqlite sessions to expire
         # FIXME: this is a bit of a hack until we figure out how
@@ -1872,9 +1873,40 @@ class Security(Base):
 
 
 
+    def verify_two_factor(self, login, two_factor_code):
+        if not two_factor_code:
+            return False
+
+        Site.set_site("default")
+        sudo = Sudo()
+        try:
+            sthpw_login_sobject = Search.get_by_code("sthpw/login", login)
+            data = sthpw_login_sobject.get_json_value("data")
+        finally:
+            Site.pop_site()
+            sudo.exit()
 
 
-    def login_user(self, login_name, password, expiry=None, domain=None, two_factor_code=None):
+        two_factor_test = data.get("two_factor_code")
+        two_factor_expiry = data.get("two_factor_expiry")
+        if not two_factor_expiry:
+            return False
+
+
+        if two_factor_expiry != "__NONE___":
+            expiry = parser.parse(two_factor_expiry)
+            now = datetime.now()
+            if now > expiry:
+                return False
+
+
+        if two_factor_test == two_factor_code:
+            return True
+
+
+
+
+    def login_user(self, login_name, password, expiry=None, domain=None, two_factor_code=None, test=False):
         '''login user with a name and password combination
 
         The login has the following modes:
@@ -1891,8 +1923,6 @@ class Security(Base):
         if authenticate_version == '1':
             return login_user_version_1(login_name, password, expiry)
 
-
-        #print("two_factor: ", two_factor_code)
 
 
         # admin always uses the standard authenticate class
@@ -1944,6 +1974,22 @@ class Security(Base):
         if is_authenticated != True:
             print("ERROR: authentication.verify failed")
             raise SecurityException("Login/Password combination incorrect")
+
+
+
+
+        if two_factor_code or two_factor_code is not None:
+            two_factor_verified = self.verify_two_factor(auth_login_name, two_factor_code)
+            if not two_factor_verified:
+                raise SecurityException("2 Factor Code incorrect")
+
+        # If we are just testing, then return without loggin in
+        if test:
+            return
+            
+
+
+
 
         mode = authenticate.get_mode()
         if not mode:
