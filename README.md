@@ -23,7 +23,7 @@ TACTIC has a number of key components:
 * **Workflow Engine and Manager:**
 
 <p align="center">
-  <img width="400px" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
+  <img width="400px" src="http://community.southpawtech.com/docs/images/workflow_screen_web.png"/>
 </p>
 
 * **Data Management**
