@@ -42,7 +42,7 @@ from tactic_client_lib import TacticServerStub
 
 
 class CustomLayoutWdg(BaseRefreshWdg):
-    print('in custom_layout_wdg.py CustomLayoutWdg')
+    
     ARGS_KEYS = {
         'search_key': 'search key of the sobject to be displayed',
         # or
@@ -160,7 +160,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        # print('in custom_layout_wdg.py get_display')
+      
         self.sobject = self.get_current_sobject()
         
         if not self.sobject:
@@ -172,15 +172,14 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
         if self.sobject:
-          #  print('in get_display self.sobject: ', self.sobject)
+    
             self.search_key = SearchKey.get_by_sobject(self.sobject)
             self.kwargs['search_key'] = self.search_key
-           # print('in get_display self.kwargs: ', self.kwargs)
+      
 
         else:
             self.search_key = self.kwargs.get('search_key')
 
-       # print('get_display self.search_key: ', self.search_key)
         html = self.kwargs.get('html')
         if not html:
             html = ""
@@ -469,7 +468,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def handle_is_test(self, content):
-        # print('in custom_layout_wdg.py handle_is_test')
         content.add_behavior( {
             'type': 'mouseover',
             'cbjs_action': '''
@@ -545,7 +543,6 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_test_context_menu(self):
-        # print('in custom_layout_wdg.py get_test_context_menu')
         menu = Menu(width=180)
         menu.set_allow_icons(False)
 
