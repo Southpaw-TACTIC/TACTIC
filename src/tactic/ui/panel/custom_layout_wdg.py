@@ -628,7 +628,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def process_mako(self, html):
-        # print('in custom_layout_wdg.py process_mako')
+        
         from mako.template import Template
         from mako import exceptions
         html = '%s%s' % (CustomLayoutWdg.HEADER, html)
@@ -728,7 +728,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def add_kwargs(self, widget, xml):
-        # print('in custom_layout_wdg.py add_kwargs')
+       
         """
         ARGS_KEYS = {
         'category': {
@@ -764,7 +764,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def add_behaviors(self, widget, xml):
-        # print('in custom_layout_wdg.py add_behaviors')
+        
         behavior_nodes = xml.get_nodes("config/%s/behavior" % self.view)
 
         if behavior_nodes:
@@ -876,7 +876,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_config(self):
-       # print('in custom_layout_wdg.py get_config')
+      
         config = None
         config_xml = self.kwargs.get('config_xml')
         if config_xml:
@@ -953,7 +953,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_def_config(self, def_xml=None):
-       # print('in custom_layout_wdg.py get_def_config')
+       
         def_confg = None
 
         self.def_view = self.kwargs.get('definition')
@@ -981,7 +981,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
    
     def replace_elements(self, html_str):
-       # print('in custom_layout_wdg.py replace_elements')
+       
         """
         # NOTE: this likely is a better way to extract elements, but still
         # need to find a way to inject html back into the xml
@@ -1133,7 +1133,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_title(self):
-        # print('in custom_layout_wdg.py ******** get_title')
+      
         '''Returns a widget containing the title to be displayed for this
         column'''
         if self.title:
@@ -1154,12 +1154,12 @@ class CustomLayoutWdg(BaseRefreshWdg):
         return None
 
     def get_text_value(self):
-        # print('in custom_layout_wdg.py get_text_value')
+        
         '''for csv export'''
         sobject = self.get_current_sobject()
         text_expr = self.kwargs.get("text_value")
         text_expr = "@GET(.id)"
-        #  print("***********text_epr", text_expr)
+      
         if not text_expr:
             return ''
         value = Search.eval(text_expr, sobject, single=True)
@@ -1193,7 +1193,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
  
 
     def get_sequence_wdg(self):
-         # print('in custom_layout_wdg.py get_sequence_wdg')
+     
         funcs = []
 
         div = DivWdg()
@@ -1236,7 +1236,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_async_element_wdg(self, xml, element_name, load):
-        # print('in custom_layout_wdg.py get_async_element_wdg')
+      
         tmp_config = WidgetConfig.get('tmp', xml=xml)
         display_handler = tmp_config.get_display_handler(element_name)
         display_options = tmp_config.get_display_options(element_name)
@@ -1301,7 +1301,7 @@ class CustomLayoutWdg(BaseRefreshWdg):
 
 
     def get_element_wdg(self, xml, def_config):
-        # print('in custom_layout_wdg.py get_element_wdg function')
+   
         element_node = xml.get_node("config/tmp/element")
         attrs = Xml.get_attributes(element_node)
         element_name = attrs.get("name")
@@ -1751,7 +1751,7 @@ class SObjectHeaderWdg(BaseRefreshWdg):
     def get_display(self):
 
         search_key = self.kwargs.get('parent_key')
-        print('in custom_layout_wdg.py get_display: ', search_key)
+     
         div = DivWdg()
 
         if not search_key:
