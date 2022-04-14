@@ -26,7 +26,7 @@ class WorkspaceWdg(BaseRefreshWdg):
 
    
     def get_display(self):
-        print('WORKSPACE_WDG.PY########################')
+        
         top = self.top
         top.add_class("spt_workspace_content")
         self.set_as_panel(top)

@@ -26,7 +26,7 @@ class SandboxSelectWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        print('SANDBOX_SELECT_WDG.PY##############################')
+        
         top = self.top
         top.add_class("spt_sandbox_select_top")
 
