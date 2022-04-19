@@ -880,7 +880,7 @@ class TacticServerStub {
         var url = env.get_api_url(server);
 
 
-        console.log(str);
+        console.log("str: " + str);
         console.log("server: " + server);
         console.log("site: " + site);
         console.log("project: " + project);

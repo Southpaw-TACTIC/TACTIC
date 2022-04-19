@@ -24,9 +24,9 @@ from .scm_dir_list_wdg import get_onload_js as scm_get_onload_js
 
 class WorkspaceWdg(BaseRefreshWdg):
 
-
+   
     def get_display(self):
-
+        
         top = self.top
         top.add_class("spt_workspace_content")
         self.set_as_panel(top)

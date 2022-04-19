@@ -886,7 +886,7 @@ class AddPredefinedColumnWdg(BaseRefreshWdg):
 
 
 
-            help_alias = attrs.get("help");
+            help_alias = attrs.get("help")
             if help_alias:
                 menu_item.add_attr("spt_help", help_alias)
             else:

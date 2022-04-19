@@ -25,7 +25,7 @@ from mako import exceptions
 
 
 class LayoutSwitcherWdgOld(BaseRefreshWdg):
-
+   
     def init(self):
 
         self.outer_wdg = DivWdg()
