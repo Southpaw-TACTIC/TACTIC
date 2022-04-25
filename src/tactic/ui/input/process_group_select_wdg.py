@@ -206,12 +206,12 @@ Search.eval("@GET(sthpw/login_group['login_group',
 
             select = SelectWdg(self.get_name())
             values = ['']
-            select.add_empty_option('-- Select User from \"%s\" --' %group)#change change
+            select.add_empty_option('-- Select User from \"%s\" --' %group)
             for user in group_dict[group]:
                 values.append(user)
 
             select.add_behavior( { 'type': 'change',
-               'cbjs_action': 'bvr.src_el.blur();' } )#change change
+               'cbjs_action': 'bvr.src_el.blur();' } )
 
             select.set_option("values", values)
 
