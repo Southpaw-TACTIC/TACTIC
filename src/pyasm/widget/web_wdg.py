@@ -1800,9 +1800,9 @@ class BaseSignInWdg(Widget):
         }
 
         .floating-back-btn {
-            position: absolute;
-            top: 105;
-            left: 10;
+            //position: absolute;
+            //top: 105;
+            //left: 10;
 
             display: flex;
             align-items: center;
@@ -1811,14 +1811,14 @@ class BaseSignInWdg(Widget):
             border-radius: 15px;
             background: #ccc;
             overflow: hidden;
-            width: 20px;
             height: 20px;
 
             font-size: 14px;
             color: white;
             cursor: hand;
             
-            transition: width 0.25s;
+            //transition: width 0.25s;
+            //width: 20px;
         }
 
         .floating-back-btn:hover {
@@ -1831,8 +1831,8 @@ class BaseSignInWdg(Widget):
 
         .floating-back-btn span {
             width: 100px;
-            position: absolute;
-            left: 20;
+            //position: absolute;
+            //left: 20;
         }
 
         .spt_tactic_background {
@@ -1903,18 +1903,7 @@ class BaseSignInWdg(Widget):
         if title:
             div.add("<div class='sign-in-text'>%s</div>" % title)
 
-        div.add( HtmlElement.br() )
-
-        hide_back_btn = self.kwargs.get("hide_back_btn")
-        if not hide_back_btn:
-            back_btn = DivWdg("<i class='fa fa-chevron-left'></i>")
-            div.add(back_btn)
-            back_btn.add_class("floating-back-btn")
-            back_btn.add("<span>Back to login</span>")
-
-            hidden = HiddenWdg('back_to_login')
-            back_btn.add(hidden)
-            back_btn.add_event('onclick',"document.form.elements['back_to_login'].value='true'; document.form.submit()")
+        #div.add( HtmlElement.br() )
 
         ####### CONTENT #######
         content_container = DivWdg()
@@ -1942,6 +1931,24 @@ class BaseSignInWdg(Widget):
         td.add_style("background: transparent")
         td.add(box)
         widget.add(table)
+
+
+        hide_back_btn = self.kwargs.get("hide_back_btn")
+        if not hide_back_btn:
+            back_btn = DivWdg("<i class='fa fa-chevron-left'></i>")
+            div.add(back_btn)
+            back_btn.add_class("floating-back-btn")
+            back_btn.add("<span>Back to login</span>")
+
+            hidden = HiddenWdg('back_to_login')
+            back_btn.add(hidden)
+            #back_btn.add_event('onclick',"document.form.elements['login'] = 'cow'; document.form.elements['back_to_login'].value='true'; document.form.submit()")
+            back_btn.add_event('onclick',"url=document.location.href; document.location.href=url")
+
+            back_btn.add_style("margin-bottom: 20px")
+
+
+
 
         styles = self.get_styles()
         widget.add(styles)

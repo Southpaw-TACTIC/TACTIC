@@ -1977,11 +1977,11 @@ class Security(Base):
 
 
 
-
-        if two_factor_code or two_factor_code is not None:
+        use_two_factor = False
+        if use_two_factor and (two_factor_code or two_factor_code is not None):
             two_factor_verified = self.verify_two_factor(auth_login_name, two_factor_code)
             if not two_factor_verified:
-                raise SecurityException("2 Factor Code incorrect")
+                raise SecurityException("Two Factor Code incorrect")
 
         # If we are just testing, then return without loggin in
         if test:

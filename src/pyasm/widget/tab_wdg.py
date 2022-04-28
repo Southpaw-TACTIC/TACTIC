@@ -10,7 +10,8 @@
 #
 #
 
-__all__ = ['TabWdg', 'DynTabWdg','TabExtendWdg']
+#__all__ = ['TabWdg', 'DynTabWdg','TabExtendWdg']
+__all__ = []
 
 import types, sys, re
 
