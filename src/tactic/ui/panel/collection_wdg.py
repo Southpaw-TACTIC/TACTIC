@@ -1250,6 +1250,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
         mode = "tile"
+        #mode = "panel"
         #mode = "table"
         #self.kwargs['show_border'] = 'horizontal'
 
@@ -1265,6 +1266,12 @@ class CollectionContentWdg(BaseRefreshWdg):
             tile = TableLayoutWdg(
                 **self.kwargs
             )
+        elif mode == "panel":
+            from .panel_wdg import ViewPanel
+            tile = ViewPanelWdg(
+                **self.kwargs
+            )
+ 
         else:
             from .tile_layout_wdg import TileLayoutWdg
             tile = TileLayoutWdg(

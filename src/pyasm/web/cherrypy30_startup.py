@@ -14,6 +14,7 @@ __all__ = ['CherryPyStartup']
 
 import os, sys, glob, time
 import cherrypy
+import requests
 
 from pyasm.web.app_server import AppServer
 
@@ -269,7 +270,6 @@ class CherryPyStartup(CherryPyStartup20):
             # NOTE: cherrypy.request.path_info only gives us the URL without the query string.
             # So path.endswith('/REST') will work both for GET and POST.
             if path.find('/REST') != -1:
-                import requests
                 base_url = 'http://localhost'
 
                 # For CherryPy, the port could be other than 80
@@ -303,6 +303,9 @@ class CherryPyStartup(CherryPyStartup20):
                     return r.text
 
 
+
+
+            # for normal pages
             if request.params.get("is_from_login") == "yes":
 
                 login = request.params.get("login")
@@ -310,7 +313,17 @@ class CherryPyStartup(CherryPyStartup20):
                 two_factor_code = request.params.get("two_factor_code")
 
                 security = Environment.get_security()
-                ticket = security.login_user(login, password, two_factor_code=two_factor_code)
+
+                try:
+                    ticket = security.login_user(login, password, two_factor_code=two_factor_code)
+                except:
+                    return '''
+                    <script>
+                    location.reload();
+                    </script>
+                    '''
+
+
                 ticket_key = security.get_ticket_key()
 
 
