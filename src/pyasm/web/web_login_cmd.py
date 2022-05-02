@@ -143,12 +143,15 @@ class WebLoginCmd(Command):
                 login = self.login
 
 
-            print("login: ", login)
-            print("password: ", self.password)
-            print("two_factor_code: ", self.two_factor_code)
+            #print("login: ", login)
+            #print("password: ", self.password)
+            #print("two_factor_code: ", self.two_factor_code)
 
-            use_two_factor = False
-            if use_two_factor and not self.two_factor_code:
+            from pyasm.biz import ProjectSetting
+            requires_2fa = ProjectSetting.get_value_by_key("feature/enable_2fa")
+            requires_2fa = "true"
+            #use_two_factor = False
+            if requires_2fa == "true" and not self.two_factor_code:
 
                 if not login_sobject:
                     raise SecurityException("User does not exist")

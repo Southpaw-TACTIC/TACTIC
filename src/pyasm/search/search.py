@@ -5805,6 +5805,16 @@ class SObject(object):
             key = SObject._get_cached_key(search_type)
         else:
             key = SObject._get_cached_key(cls.SEARCH_TYPE)
+
+        try:
+            # scope by project
+            if not key.startswith("sthpw/"):
+                from pyasm.biz import Project
+                project_code = Project.get_project_code()
+                key = "%s::%s" % (project_code, key)
+        except:
+            pass
+
         dict = Container.get(key)
         # this is needed since cache_sobject() can happen before get_cached_obj()
         if dict == None:

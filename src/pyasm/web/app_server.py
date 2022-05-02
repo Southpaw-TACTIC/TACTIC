@@ -851,6 +851,9 @@ class BaseAppServer(Base):
             sudo = Sudo()
             try:
                 login_site = site_obj.get_by_login(login)
+                from pyasm.biz import ProjectSetting
+                requires_2fa = ProjectSetting.get_value_by_key("feature/enable_2fa")
+                requires_2fa = "true"
             finally:
                 sudo.exit()
 
@@ -863,22 +866,18 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
-                two_factor_code = web.get_form_value("two_factor_code")
-
-                requires_2fa = True
-                if requires_2fa:
+                if requires_2fa == "true":
+                    two_factor_code = web.get_form_value("two_factor_code")
 
                     if not two_factor_code:
                         login_cmd = WebLoginCmd()
                         login_cmd.execute()
                         return security
 
-                    if requires_2fa and login and password and not two_factor_code:
+                    if login and password and not two_factor_code:
+                        dsafadfs
                         return security
                         raise Exception("Two Factor Code not specified")
-
-                print("two_factor_code: ", two_factor_code)
-                print()
 
 
                 login_cmd = WebLoginCmd()

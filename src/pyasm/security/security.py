@@ -1977,8 +1977,11 @@ class Security(Base):
 
 
 
-        use_two_factor = False
-        if use_two_factor and (two_factor_code or two_factor_code is not None):
+        from pyasm.biz import ProjectSetting
+        requires_2fa = ProjectSetting.get_value_by_key("feature/enable_2fa")
+        requires_2fa = "true"
+
+        if requires_2fa == "true" and (two_factor_code or two_factor_code is not None):
             two_factor_verified = self.verify_two_factor(auth_login_name, two_factor_code)
             if not two_factor_verified:
                 raise SecurityException("Two Factor Code incorrect")
