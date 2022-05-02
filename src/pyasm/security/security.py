@@ -1578,6 +1578,35 @@ class Security(Base):
                 return start_link
 
 
+    def requires_2fa(cls):
+        from pyasm.biz import Project
+        current_project = Project.get_project_code()
+        Project.set_project("admin")
+        try:
+
+            # this overrides
+            requires_2fa = Config.get_value("security", "requires_2fa",
+                no_exception=True)
+            if requires_2fa == "true":
+                return True
+
+            # or you can set per site
+            from pyasm.biz import ProjectSetting
+            requires_2fa = ProjectSetting.get_value_by_key("feature/enable_2fa")
+
+
+            if requires_2fa == "true":
+                return True
+            else:
+                return False
+        except:
+            Project.set_project(current_project)
+
+
+    requires_2fa = classmethod(requires_2fa)
+
+
+
     def _do_login(self):
         '''function to actually log in the user'''
         # get from cache
@@ -1978,10 +2007,8 @@ class Security(Base):
 
 
         from pyasm.biz import ProjectSetting
-        requires_2fa = ProjectSetting.get_value_by_key("feature/enable_2fa")
-        requires_2fa = "true"
-
-        if requires_2fa == "true" and (two_factor_code or two_factor_code is not None):
+        requires_2fa = Security.requires_2fa()
+        if requires_2fa and (two_factor_code or two_factor_code is not None):
             two_factor_verified = self.verify_two_factor(auth_login_name, two_factor_code)
             if not two_factor_verified:
                 raise SecurityException("Two Factor Code incorrect")
