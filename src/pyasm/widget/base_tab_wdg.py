@@ -10,11 +10,12 @@
 #
 #
 
-__all__ = ["BaseTabWdg"]
+#__all__ = ["BaseTabWdg"]
+__all__ = []
 
 from pyasm.common import Container
 from pyasm.web import Widget
-from pyasm.widget import TabExtendWdg
+#from pyasm.widget import TabExtendWdg
 
 from .tab_wdg import TabWdg
 

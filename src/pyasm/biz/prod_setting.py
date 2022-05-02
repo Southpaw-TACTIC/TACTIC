@@ -42,8 +42,8 @@ class ProjectSetting(SObject):
         if value:
             return value
         '''
-        if Project.get_project_name() in ['sthpw', 'admin']:
-            return ''
+        #if Project.get_project_name() in ['sthpw', 'admin']:
+        #    return ''
 
         prod_setting = cls.get_by_key(key, search_type)
         value = '' 
@@ -83,8 +83,10 @@ class ProjectSetting(SObject):
         if search_type:
             search.add_filter("search_type", search_type)
 
-        if Project.get_project_name() in ['admin', 'sthpw']:
-            return None
+        project_code = Project.get_project_code()
+        #if project_code in ['admin', 'sthpw']:
+        #    return None
+
         prod_setting = ProjectSetting.get_by_search(search, dict_key)
 
         return prod_setting

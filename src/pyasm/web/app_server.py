@@ -815,6 +815,7 @@ class BaseAppServer(Base):
             login = web.get_form_value("login")
             password = web.get_form_value("password")
 
+
         """
         print("---")
         print("headers: ")
@@ -865,6 +866,27 @@ class BaseAppServer(Base):
             if login == "guest":
                 pass
             else:
+
+                sudo = Sudo()
+                try:
+                    requires_2fa = Security.requires_2fa()
+                finally:
+                    sudo.exit()
+
+                if requires_2fa:
+                    two_factor_code = web.get_form_value("two_factor_code")
+
+                    if not two_factor_code:
+                        login_cmd = WebLoginCmd()
+                        login_cmd.execute()
+                        return security
+
+                    if login and password and not two_factor_code:
+                        dsafadfs
+                        return security
+                        raise Exception("Two Factor Code not specified")
+
+
                 login_cmd = WebLoginCmd()
                 login_cmd.execute()
 
