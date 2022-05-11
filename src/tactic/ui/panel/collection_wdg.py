@@ -1189,7 +1189,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
         # find the path of the collection
         path = self.kwargs.get("path")
-        if not path:
+        if not path and collection:
             path = collection.get("name")
 
 
