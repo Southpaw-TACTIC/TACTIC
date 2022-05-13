@@ -186,7 +186,7 @@ class WebLoginCmd(Command):
 
                 subject = "Two Factor Authentication"
                 message = '''
-                Your code is %s
+                This is your 2FA login verification code: %s
                 ''' % (generated_code)
                 #print(message)
                 self.send_email(recipient, subject, message)
