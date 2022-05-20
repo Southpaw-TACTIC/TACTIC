@@ -176,8 +176,8 @@ class DeleteToolWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_delete_top");
         var values = spt.api.Utility.get_input_values(top);
-        var popup = bvr.src_el.getParent(".spt_popup");//change change
-        var activator = popup.activator;//change change
+        var popup = bvr.src_el.getParent(".spt_popup");
+        var activator = popup.activator;
 
         var class_name = bvr.class_name;
         var kwargs = {
@@ -217,8 +217,8 @@ class DeleteToolWdg(BaseRefreshWdg):
                    on_complete();
                 }
                 if (activator) {
-                var new_top = activator.getParent(".spt_detail_top");//change change
-                spt.panel.refresh_element(new_top);//change change
+                var new_top = activator.getParent(".spt_detail_top");
+                spt.panel.refresh_element(new_top);
                 }
                 spt.notify.show_message("Delete complete");
             },
@@ -634,7 +634,6 @@ class DeleteSearchTypeToolWdg(DeleteToolWdg):
         var class_name = "tactic.ui.tools.DeleteSearchTypeCmd";
         var ui_top = bvr.src_el.getParent(".spt_delete_stype_top");
         var values = spt.api.Utility.get_input_values(ui_top);
-        console.log("line 640: ");//change change
         var kwargs = {
             'search_type': bvr.search_type,
              'values': values
@@ -1053,7 +1052,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
             var top = bvr.src_el.getParent(".spt_delete_project_tool_top");
             var radios = top.getElements(".spt_mode_radio");
-            console.log("line 1059: ")//change change
             //if (!radios[0].checked && !radios[1].checked) {
             if (!radios[0].checked) {
                 spt.alert("Please confirm the delete by checking the radio button.");
