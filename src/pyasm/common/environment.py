@@ -293,6 +293,7 @@ class Environment(Base):
         security = Environment.get_security()
         if not ticket:
             ticket = security.get_ticket_key()
+        ticket = ticket[:100]
         upload_dir = "%s/upload/%s" % (tmpdir, ticket)
 
         # make the directory if it does not exist 
