@@ -474,7 +474,7 @@ class CalendarChartWdg(BaseChartWdg):
         'category': 'Display'
     },
     'end_date': {
-        'description': 'Expression for start date',
+        'description': 'Expression for end date',
         'type': 'TextWdg',
         'category': 'Display'
     },

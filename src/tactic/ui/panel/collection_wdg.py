@@ -615,11 +615,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
     def get_styles(self):
 
         styles = HtmlElement.style('''
-
             .spt_collection_top .spt_group_td_inner {
                 align-items: center;
             }
-
             ''')
 
         return styles
@@ -642,6 +640,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 collection_code = collection.get_code()
                 collection_type = SearchType.get_collection_type(self.search_type)
 
+                collection_type_obj = SearchType.get(collection_type)
+                collection_table = collection_type_obj.get_value("table_name")
+
                 search.add_filter("code",
                 '''( SELECT search_code FROM (
                 WITH RECURSIVE subordinates AS (
@@ -657,13 +658,13 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                             e.search_code,
                             e.parent_code
                         FROM
-                            %s e
+                            %s as e
                         INNER JOIN subordinates s ON s.search_code = e.parent_code
                 ) SELECT
                     *
                 FROM
                     subordinates
-                ) AS Foo )''' % (collection_type, collection_code, collection_type),
+                ) AS Foo )''' % (collection_table, collection_code, collection_table),
                 op="in", quoted=False)
 
 
@@ -724,9 +725,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         if window_resize_offset:
             offset = window_resize_offset
             right_content.add_style("height", "calc(100vh - %spx)" % offset)
+            right_content.add_style("overflow-y", "auto")
             right_content.add_attr("spt_window_resize_offset", window_resize_offset)
             right_content.add_class("spt_window_resize")
             left_content.add_style("height", "calc(100vh - %spx)" % offset)
+            left_content.add_style("overflow-y", "auto")
             left_content.add_attr("spt_window_resize_offset", window_resize_offset)
             left_content.add_class("spt_window_resize")
 
@@ -744,6 +747,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
     def get_collection_wdg(self):
 
         parent_key = self.parent_key
+        collection_key = self.kwargs.get("collection_key")
 
         div = DivWdg()
         div.add_style("overflow: auto")
@@ -896,7 +900,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
         expression = self.kwargs.get("expression")
-        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key, expression=expression)
+        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key, expression=expression, collection_key=collection_key)
         div.add(collections_div)
 
         return div
@@ -936,6 +940,7 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 expression=expression,
                 sobjects=self.sobjects,
                 search=self.search,
+
         )
         div.add(tile)
 
@@ -1147,9 +1152,14 @@ class CollectionFolderWdg(BaseRefreshWdg):
         } )
 
 
+        collection_key = self.kwargs.get("collection_key")
         for collection in collections:
+            if collection.get_search_key() == collection_key:
+                selected = True
+            else:
+                selected = False
 
-            collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"))
+            collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"), selected=selected)
             collections_div.add(collection_wdg)
             collection_wdg.add_class("spt_collection_div")
 
@@ -1157,6 +1167,11 @@ class CollectionFolderWdg(BaseRefreshWdg):
             collections_div.add(subcollection_wdg)
             subcollection_wdg.add_class("spt_subcollection_wdg")
             subcollection_wdg.add_style("padding-left: 15px")
+
+            # this will open up sub collections
+            #contents_div = CollectionListWdg(parent_key=collection.get_search_key())
+            #subcollection_wdg.add(contents_div)
+
 
 
         return div
@@ -1169,7 +1184,15 @@ class CollectionContentWdg(BaseRefreshWdg):
         self.parent_key = self.kwargs.get("parent_key")
         self.collection_key = self.kwargs.get("collection_key")
 
+
         collection = Search.get_by_search_key(self.collection_key)
+
+        # find the path of the collection
+        path = self.kwargs.get("path")
+        if not path and collection:
+            path = collection.get("name")
+
+
 
         top = self.top
         top.add_class("spt_collection_tile_wrap")
@@ -1248,6 +1271,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
         mode = "tile"
+        #mode = "panel"
         #mode = "table"
         #self.kwargs['show_border'] = 'horizontal'
 
@@ -1263,6 +1287,12 @@ class CollectionContentWdg(BaseRefreshWdg):
             tile = TableLayoutWdg(
                 **self.kwargs
             )
+        elif mode == "panel":
+            from .panel_wdg import ViewPanel
+            tile = ViewPanelWdg(
+                **self.kwargs
+            )
+ 
         else:
             from .tile_layout_wdg import TileLayoutWdg
             tile = TileLayoutWdg(
@@ -1292,7 +1322,6 @@ class CollectionContentWdg(BaseRefreshWdg):
         if parent_dict:
             has_parent = True
 
-        path = self.kwargs.get("path")
         if collection and path:
             title_div = DivWdg()
             top.add(title_div)
@@ -1682,6 +1711,7 @@ class CollectionItemWdg(BaseRefreshWdg):
 
         collection = self.kwargs.get("collection")
         path = self.kwargs.get("path")
+        selected = self.kwargs.get("selected")
 
         search_type = collection.get_base_search_type()
         parts = search_type.split("/")
@@ -1725,6 +1755,12 @@ class CollectionItemWdg(BaseRefreshWdg):
         collection_div.add_attr("spt_collection_key", collection.get_search_key())
         collection_div.add_attr("spt_collection_code", collection.get_code())
         collection_div.add_attr("spt_collection_path", path)
+
+        if selected:
+            collection_div.add_style("background-color: var(--spt_palette_background2)")
+            collection_div.add_style("box-shadow", "0px 0px 3px rgba(0,0,0,0.5)")
+
+
 
         # This is for Drag and Drop from a tile widget
         collection_div.add_class("spt_tile_top")

@@ -5757,6 +5757,22 @@ class SObject(object):
         parts = base_search_type.split("/")
         return "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
+
+    def get_collections(self):
+
+        collection_type = self.get_collection_type()
+        search_type = self.get_base_search_type()
+
+        search = Search(collection_type)
+        search.add_column("parent_code")
+        search.add_filter("search_code", self.get_code())
+
+        search2 = Search(search_type)
+        search2.add_search_filter("code", search)
+        collections = search2.get_sobjects()
+        return collections
+
+
     def add_to_collection(self, collection):
         if not collection.get_value("_is_collection", no_exception=True):
             raise Exception("SObject [%s] is not a collection" % collection.get_code() )
@@ -5821,6 +5837,16 @@ class SObject(object):
             key = SObject._get_cached_key(search_type)
         else:
             key = SObject._get_cached_key(cls.SEARCH_TYPE)
+
+        try:
+            # scope by project
+            if not key.startswith("sthpw/"):
+                from pyasm.biz import Project
+                project_code = Project.get_project_code()
+                key = "%s::%s" % (project_code, key)
+        except:
+            pass
+
         dict = Container.get(key)
         # this is needed since cache_sobject() can happen before get_cached_obj()
         if dict == None:

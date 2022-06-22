@@ -42,7 +42,6 @@ class DeleteToolWdg(BaseRefreshWdg):
         top.add_style("width: 400px")
         top.add_border()
 
-
         search_key = self.kwargs.get("search_key")
         search_keys = self.kwargs.get("search_keys")
         sudo = Sudo()
@@ -177,6 +176,8 @@ class DeleteToolWdg(BaseRefreshWdg):
         'cbjs_action': '''
         var top = bvr.src_el.getParent(".spt_delete_top");
         var values = spt.api.Utility.get_input_values(top);
+        var popup = bvr.src_el.getParent(".spt_popup");
+        var activator = popup.activator;
 
         var class_name = bvr.class_name;
         var kwargs = {
@@ -185,7 +186,6 @@ class DeleteToolWdg(BaseRefreshWdg):
         };
 
         var del_trigger = function() {
-
             // for fast table
             var tmps = spt.split_search_key(bvr.search_keys[0])
             var tmps2 = tmps[0].split('?');
@@ -207,11 +207,8 @@ class DeleteToolWdg(BaseRefreshWdg):
                 if (popup.spt_on_post_delete) {
                     popup.spt_on_post_delete();
                 }
-
                 del_trigger();
-
                 spt.popup.destroy(popup);
-
 
                 if (bvr.on_complete) {
                    on_complete = function() {
@@ -219,7 +216,10 @@ class DeleteToolWdg(BaseRefreshWdg):
                    }
                    on_complete();
                 }
-
+                if (activator) {
+                var new_top = activator.getParent(".spt_detail_top");
+                spt.panel.refresh_element(new_top);
+                }
                 spt.notify.show_message("Delete complete");
             },
             on_error: function(e) {
@@ -1052,7 +1052,6 @@ class DeleteProjectToolWdg(DeleteToolWdg):
 
             var top = bvr.src_el.getParent(".spt_delete_project_tool_top");
             var radios = top.getElements(".spt_mode_radio");
-
             //if (!radios[0].checked && !radios[1].checked) {
             if (!radios[0].checked) {
                 spt.alert("Please confirm the delete by checking the radio button.");

@@ -205,22 +205,15 @@ Search.eval("@GET(sthpw/login_group['login_group',
             div.add_attr("spt_input_key", group)
 
             select = SelectWdg(self.get_name())
-            select.add_empty_option("-- Select a User --")
             values = ['']
-            labels = ['<< %s >>'%group]
+            select.add_empty_option('-- Select User from \"%s\" --' %group)
             for user in group_dict[group]:
                 values.append(user)
-                label = labels_dict.get(user)
-                labels.append('  %s'%label)
-            select.add_behavior( { 'type': 'click',
-               'cbjs_action': 'spt.dg_table.select_wdg_clicked( evt, bvr.src_el );' } )
-            #behavior = {
-            #    'type': 'keyboard',
-            #    'kbd_handler_name': 'DgTableSelectWidgetKeyInput',
-            #}
-            #select.add_behavior( behavior )
+
+            select.add_behavior( { 'type': 'change',
+               'cbjs_action': 'bvr.src_el.blur();' } )
+
             select.set_option("values", values)
-            select.set_option("labels", labels)
 
             div.add(select)
             top.add(div)
@@ -321,8 +314,10 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
         div.add(value)
 
-        # display a link if specified
 
+        # User detail view commented out.
+        # display a link if specified
+        """
         from pyasm.biz import ProjectSetting
         link_expr = ProjectSetting.get_value_by_key("task/assigned/link_expression")
         if not link_expr:
@@ -348,12 +343,14 @@ class LoginTableElementWdg(SimpleTableElementWdg):
 
             # click up blocks any other behavior
             div.generate_api_key("eval", inputs=[link_expr, {"search_keys": self.sobject.get_search_key(), "single": True}])
+            div.generate_widget_key("tactic.ui.tools.SObjectDetailWdg", inputs={"search_key": self.sobject.get_search_key()})
             div.add_behavior( {
                 'type': 'click_up',
                 'cbjs_action': '''
                 spt.table.open_link(bvr);
                 '''
             } )
+        """
 
 
 

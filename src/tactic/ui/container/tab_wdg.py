@@ -2074,7 +2074,7 @@ spt.tab.view_definition = function(bvr) {
                 
                 header_def = header_defs[element_name]
                 display_class = header_def.get("display_class")
-                if not display_class:
+                if not display_class or display_class == "null":
                     widget = DivWdg()
                     widget.add_color("background", "background")
                     widget.add_style("height: 300px")

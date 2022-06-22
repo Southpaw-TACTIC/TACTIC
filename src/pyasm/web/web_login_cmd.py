@@ -13,11 +13,13 @@
 
 __all__ = ['WebLoginCmd']
 
-from pyasm.common import Config, SecurityException
+from pyasm.common import Config, SecurityException, Common
 from pyasm.command import Command
-from pyasm.security import Security, Sudo
+from pyasm.security import Security, Sudo, Site
 from pyasm.web import WebContainer
 from pyasm.search import Search, SearchType
+
+from datetime import datetime, timedelta
 
 class WebLoginCmd(Command):
 
@@ -56,7 +58,7 @@ class WebLoginCmd(Command):
         web = WebContainer.get_web()
         return web.get_form_value(WebLoginWdg.LOGIN_MSG)
 
-              
+
     def execute(self):
 
         from pyasm.widget import WebLoginWdg
@@ -81,22 +83,22 @@ class WebLoginCmd(Command):
 
         if self.login == "" and self.password == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                "Username and password are empty") 
+                "Username and password are empty")
             return False
         if self.login == "":
             web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                "Username is empty") 
+                "Username is empty")
             return False
         if self.password == "":
             #web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-            #    "Password is empty") 
+            #    "Password is empty")
             return False
-        
+
         security = WebContainer.get_security()
 
         # handle windows domains
         #if self.domain:
-        #    self.login = "%s\\%s" % (self.domain, self.login)
+        #    self.login = "%s\\%s" % (self.domain, self.logia)
 
 
         verify_password = web.get_form_value("verify_password")
@@ -104,7 +106,7 @@ class WebLoginCmd(Command):
         if verify_password:
             if verify_password != self.password:
                 web.set_form_value(WebLoginWdg.LOGIN_MSG, \
-                    "Passwords do not match.") 
+                    "Passwords do not match.")
                 return False
 
         # check to see if the login exists in the database
@@ -116,11 +118,11 @@ class WebLoginCmd(Command):
                 search.add_filter('upn',self.login)
                 login_sobject = search.get_sobject()
             if not login_sobject:
-                search2 = Search("sthpw/login")              
+                search2 = Search("sthpw/login")
                 search2.add_filter('login',self.login)
                 login_sobject = search2.get_sobject()
             if not login_sobject:
-                search2 = Search("sthpw/login")              
+                search2 = Search("sthpw/login")
                 search2.add_filter('email',self.login)
                 login_sobject = search2.get_sobject()
         finally:
@@ -140,9 +142,70 @@ class WebLoginCmd(Command):
             else:
                 login = self.login
 
+
+            requires_2fa = Security.requires_2fa()
+            if requires_2fa == True and not self.two_factor_code:
+                if not login_sobject:
+                    raise SecurityException("User does not exist")
+
+                # first check that the password is correct
+                try:
+                    security.login_user(login, self.password, domain=self.domain, test=True)
+                except:
+                    # suppress the real error
+                    raise SecurityException("Need two factor code")
+
+
+
+                # email recipients
+                recipient = []
+
+                # email user code
+                generated_code = Common.randint(0, 999999)
+                generated_code = "%0.6d" % generated_code
+
+                # store code in user
+                Site.set_site("default")
+                sudo = Sudo()
+                try:
+                    sthpw_login_sobject = Search.get_by_code("sthpw/login", login)
+                    #print("email:", sthpw_login_sobject.get("email"))
+                    email_address = sthpw_login_sobject.get("email")
+                    if email_address:
+                        recipient.append(email_address)
+
+                    data = sthpw_login_sobject.get_json_value("data") or {}
+                    data["two_factor_code"] = generated_code
+                    expiry = datetime.now() + timedelta(minutes=2)
+                    data["two_factor_expiry"] = expiry
+                    sthpw_login_sobject.set_value("data", data)
+                    sthpw_login_sobject.commit()
+                finally:
+                    Site.pop_site()
+                    sudo.exit()
+
+                subject = "Two Factor Authentication"
+                message = '''
+                This is your 2FA login verification code: %s
+                ''' % (generated_code)
+                #print(message)
+                self.send_email(recipient, subject, message)
+
+                raise SecurityException("Need two factor code")
+
+
+
+
+
             security.login_user(login, self.password, domain=self.domain, two_factor_code=self.two_factor_code)
 
+
+
+
+
+
         except SecurityException as e:
+            print("FAILED")
             msg = str(e)
             if not msg:
                 msg = "Incorrect username or password"
@@ -174,10 +237,10 @@ class WebLoginCmd(Command):
                     delay,unit = disabled_time.split(" ",1)
                     if "minute" in unit:
                         delay = int(delay)*60
-                    
+
                     elif "hour" in unit:
                         delay =int(delay)*3600
-                    
+
                     elif "second" in unit:
                         delay = int(delay)
                     else:
@@ -186,9 +249,9 @@ class WebLoginCmd(Command):
 
                     self.reenable_user(login_sobject, delay)
 
-                if login_sobject: 
+                if login_sobject:
                     login_sobject.commit(triggers=False)
-            
+
         if security.is_logged_in():
 
             # set the cookie in the browser
@@ -203,4 +266,38 @@ class WebLoginCmd(Command):
                 login.set_password(verify_password)
 
 
+
+    def send_email(self, emails, subject, message):
+
+        from pyasm.command import EmailHandler, SendEmail
+        from pyasm.common import TacticException
+
+        print('subject: ', subject)
+        print('message: ')
+        print(message)
+
+        try:
+            from pyasm.security import Login
+
+            admin = Login.get_by_login('admin')
+            sender_email = None
+            sender_name = None
+            if admin:
+                sender_email = admin.get_value('email')
+                sender_name = admin.get_value("display_name")
+
+            if not sender_email:
+                sender_email = 'support@southpawtech.com'
+                sender_name = "Client Portal"
+
+            recipient_emails = emails
+
+            email_cmd = SendEmail(sender_email=sender_email, recipient_emails=recipient_emails, msg=message, subject=subject, sender_name=sender_name)
+            email_cmd.execute()
+
+        except TacticException as e:
+            msg = 'Failed to send an email.'
+            print("ERROR:", e)
+            print(msg)
+            raise
 
