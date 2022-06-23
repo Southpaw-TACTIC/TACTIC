@@ -942,8 +942,8 @@ class IngestUploadWdg(BaseRefreshWdg):
                 search2 = Search(self.search_type)
                 search2.add_filter("_is_collection", True)
                 # there could be collections inside collections.
-                # so we are commenting this out.
-                #search2.add_search_filter("code", search, op="not in")
+                # currently we are not showing them.
+                search2.add_search_filter("code", search, op="not in")
                 search2.add_order_by("name")
                 subcollections = search2.get_sobjects()
 
