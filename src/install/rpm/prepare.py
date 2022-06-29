@@ -16,7 +16,7 @@ def main():
     install_dir = tacticenv.get_install_dir()
     base_dir = os.path.dirname(install_dir)
 
-    branch = "4.7"
+    branch = "4.9"
     basename = "tactic-%s.tar.gz" % branch
 
     # getting TACTIC source code
@@ -59,7 +59,7 @@ def main():
         shutil.rmtree(java_dir)
 
     # remove .pyc files
-    cmd = '''find "SOURCES/tactic" | grep ".pyc" | xargs rm'''
+    cmd = '''find "SOURCES/tactic" | grep "\.pyc" | xargs rm'''
     os.system(cmd)
 
     # remove __pycache__ directories
@@ -84,7 +84,8 @@ def main():
         "postgresql/pg_hba.conf",
         "template/config/tactic_linux-conf_python3.xml",
         "template/config/tactic-license.xml",
-        "service/tactic_python3"
+        "service/tactic",
+        "service/tactic.service"
     ]
 
     for path in install_files:
@@ -99,6 +100,7 @@ def main():
 
     # Set tacticenv paths
     tactic_paths = "%s/data/tactic_paths.py" % config_dir
+    print("tactic_paths:", tactic_paths)
     f = open(tactic_paths, "a")
     f.write("TACTIC_INSTALL_DIR='/opt/tactic/tactic'\n")
     f.write("TACTIC_SITE_DIR=''\n")

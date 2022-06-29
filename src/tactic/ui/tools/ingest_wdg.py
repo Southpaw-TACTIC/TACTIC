@@ -911,7 +911,7 @@ class IngestUploadWdg(BaseRefreshWdg):
                 search = Search(collection_type)
                 search.add_column("search_code")
                 search.add_filter("parent_code", collection.get_code() )
-                search2 = Search(collection.get_base_search_type() ) 
+                search2 = Search(collection.get_base_search_type() )
                 search2.add_search_filter("code", search)
                 search2.add_filter("_is_collection", True)
                 search2.add_order_by("name")
@@ -941,6 +941,8 @@ class IngestUploadWdg(BaseRefreshWdg):
 
                 search2 = Search(self.search_type)
                 search2.add_filter("_is_collection", True)
+                # there could be collections inside collections.
+                # currently we are not showing them.
                 search2.add_search_filter("code", search, op="not in")
                 search2.add_order_by("name")
                 subcollections = search2.get_sobjects()
@@ -1424,12 +1426,12 @@ class IngestUploadWdg(BaseRefreshWdg):
                 progress_top.setStyle("margin-top", "-30px");
             }, 0);
 
-        
+
             ingest_btn_top = top.getElement(".spt_ingest_btn");
             ingest_btn_top.in_progress = false;
         }
 
-       
+
         '''
 
 
@@ -2529,7 +2531,7 @@ class IngestUploadCmd(Command):
                     subsearch.add_column("search_code")
                     subsearch.add_filter("parent_code", last_collection.get_code() )
                     search.add_search_filter("code", subsearch)
-                
+
                 subcollection = search.get_sobject()
 
                 # if this subcollection does not exist, create it
