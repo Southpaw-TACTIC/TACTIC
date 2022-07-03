@@ -8,7 +8,7 @@
 # or disclosed in any way without written permission.
 #
 #
-# 
+#
 
 
 __all__ = ['PluginBase', 'PluginCreator', 'PluginUploader', 'PluginInstaller', 'PluginUninstaller', 'PluginReloader', 'PluginSObjectAdderCmd', 'PluginTools']
@@ -179,26 +179,26 @@ class PluginBase(Command):
             search = Search("config/plugin")
             search.add_filter("code", self.code)
             plugin = search.get_sobject()
-            # In case there is extra plugins folder which is the case when the user 
-            # is developing. 
+            # In case there is extra plugins folder which is the case when the user
+            # is developing.
             relative_dir = plugin.get_value("rel_dir")
             if not relative_dir:
                 relative_dir = plugin.get_value("code")
-             
+
             if self.code.startswith("TACTIC"):
                 plugin_base_dir = Environment.get_builtin_plugin_dir()
             else:
                 plugin_base_dir = Environment.get_plugin_dir()
 
             self.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
-            
+
             # TODO: fix the ZipUtil.zip_dir()
             manifest_path = "%s/manifest.xml" % self.plugin_dir
             if not os.path.exists(manifest_path):
                 plugin_base_dir = Environment.get_builtin_plugin_dir()
                 self.plugin_dir = "%s/%s" % (plugin_base_dir, relative_dir)
                 manifest_path = "%s/manifest.xml" % self.plugin_dir
-                
+
             if os.path.exists(manifest_path):
                 f = open(manifest_path, 'r')
                 self.manifest = f.read()
@@ -206,8 +206,8 @@ class PluginBase(Command):
             else:
                 # this condition happens likely for a versioned installed plugin from a zip file
                 # where it starts with an extra folder "plugins" and the rel_dir has not been recorded properly
-                self.manifest = plugin.get_value("manifest") 
-            
+                self.manifest = plugin.get_value("manifest")
+
             self.code = plugin.get_code()
             self.version = plugin.get_value("version")
 
@@ -252,7 +252,7 @@ class PluginBase(Command):
 
 
     def get_sobjects_by_node(self, node):
-        # get the sobjects        
+        # get the sobjects
         search_type = self.xml.get_attribute(node, "search_type")
         expr = self.xml.get_attribute(node, "expression")
         code = self.xml.get_attribute(node, "code")
@@ -322,7 +322,7 @@ class PluginBase(Command):
                         search.add_filter("url", url, op="like")
                     else:
                         search.add_filter("url", url)
- 
+
 
 
             search.add_order_by("id")
@@ -351,7 +351,7 @@ class PluginBase(Command):
 
 
 
- 
+
 
 class PluginCreator(PluginBase):
     '''Class to create a plugin from an existing project'''
@@ -374,8 +374,8 @@ class PluginCreator(PluginBase):
                     shutil.rmtree(self.plugin_dir)
                 else:
                     raise Exception("Plugin is already located at [%s]" % self.plugin_dir)
-       
-        
+
+
         if not os.path.exists(self.plugin_dir):
             os.makedirs(self.plugin_dir)
 
@@ -431,8 +431,8 @@ class PluginCreator(PluginBase):
                 self.xml.insert_before(data_node, child)
 
         self.handle_data(data_node)
-            
- 
+
+
 
 
 
@@ -503,7 +503,7 @@ class PluginCreator(PluginBase):
             # create a new one
             plugin = SearchType.create("config/plugin")
             plugin.set_value("code", self.code)
-           
+
             # update the information
             if version:
                 plugin.set_value("version", version)
@@ -520,7 +520,7 @@ class PluginCreator(PluginBase):
 
             # record all of the sobject exported
             if plugin.get_value("type", no_exception=True) == "config":
-                for sobject in sobjects:                    
+                for sobject in sobjects:
                     plugin_content = SearchType.create("config/plugin_content")
                     plugin_content.set_value("search_type", sobject.get_search_type())
                     plugin_content.set_value("search_code", sobject.get_code())
@@ -588,7 +588,7 @@ class PluginCreator(PluginBase):
 
 
     def handle_plugin(self, node):
- 
+
         code = self.xml.get_attribute(node, "code")
         print("WARNING: Cannot export plugin [%s] through tag <plugin>" % code)
         return
@@ -613,7 +613,7 @@ class PluginCreator(PluginBase):
             dir = '%s/%s' % (base_dir, rel_dir)
         else:
             dir = base_dir
-        
+
         filenames = os.listdir(dir)
 
         for filename in filenames:
@@ -637,14 +637,14 @@ class PluginCreator(PluginBase):
                 zip.write(path, str("%s/%s" % (plugin,filename)))
 
 
-    
+
 
 
     def dump_sobject(self, node):
         '''dump sobject entries in plugin creation'''
         project = Project.get()
         project_code = project.get_value("code")
-        
+
         search_type = self.xml.get_attribute(node, "search_type")
         replace_variable = self.xml.get_attribute(node, "replace_variable")
         include_id = self.xml.get_attribute(node, "include_id")
@@ -660,13 +660,13 @@ class PluginCreator(PluginBase):
             ignore_columns = [x.strip() for x in ignore_columns]
         else:
             ignore_columns = []
-        
+
         self._validate_ignore_columns(node, search_type, ignore_columns)
 
         # FIXME:
         # it is possible that the manifest defines sobjects on search types
         # that don't exist.  This is because it uses the manifest of
-        # the new pipeline and not the original ... 
+        # the new pipeline and not the original ...
         sobjects = self.get_sobjects_by_node(node)
         if not sobjects:
             #print("Skipping as no sobjects found for [%s]" %search_type)
@@ -678,7 +678,7 @@ class PluginCreator(PluginBase):
         # no path can be extracted.
 
         path = self.get_path_from_node(node)
-        
+
         #print("Writing: ", path)
         fmode = 'w'
         if os.path.exists(path):
@@ -700,12 +700,12 @@ class PluginCreator(PluginBase):
 
         if replace_variable =="true":
             if search_type == "sthpw/pipeline":
-                #regex is looking for a word bfore "/" 
+                #regex is looking for a word bfore "/"
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "code", regex)
             elif search_type == "config/process":
                 regex = r'^\w+\/'
-                dumper.set_replace_token("$PROJECT/", "pipeline_code", regex) 
+                dumper.set_replace_token("$PROJECT/", "pipeline_code", regex)
 
 
         relative_dir_column = Xml.get_attribute(node, "relative_dir_column")
@@ -740,7 +740,7 @@ class PluginCreator(PluginBase):
             path = "%s.spt" % search_type.replace("/", "_")
 
         path = "%s/%s" % (self.plugin_dir, path)
-        
+
         if os.path.exists(path):
             os.unlink(path)
 
@@ -929,9 +929,10 @@ class PluginInstaller(PluginBase):
             else:
                 # create a new one
                 plugin = SearchType.create("config/plugin")
-                plugin.set_value("code", code)
+                if code:
+                    plugin.set_value("code", code)
 
-           
+
             # update the information
             if version:
                 plugin.set_value("version", version)
@@ -1050,7 +1051,7 @@ class PluginInstaller(PluginBase):
                     if e.__str__().find('not registered') != -1:
                         search_type_obj.commit()
 
-                # check if table exists 
+                # check if table exists
                 has_table = False
                 if has_table:
                     if self.verbose:
@@ -1096,7 +1097,7 @@ class PluginInstaller(PluginBase):
                 else:
                     unique = False
 
-                if self.verbose: 
+                if self.verbose:
                     print("Reading: ", path)
 
 
@@ -1113,7 +1114,7 @@ class PluginInstaller(PluginBase):
 
                 # reset it in case it needs to execute a PYTHON tag right after
                 Schema.get(reset_cache=True)
-                # compare sequence 
+                # compare sequence
                 st_obj = SearchType.get(search_type)
                 SearchType.sequence_nextval(search_type)
                 cur_seq_id = SearchType.sequence_currval(search_type)
@@ -1136,7 +1137,7 @@ class PluginInstaller(PluginBase):
                             SearchType.sequence_setval(search_type, cur_seq_id)
 
 
-                
+
                 paths_read.append(path)
 
 
@@ -1185,11 +1186,11 @@ class PluginReloader(PluginBase):
     	print("Uninstalling plugin: ", self.plugin_dir)
     	uninstaller = PluginUninstaller(plugin_dir=self.plugin_dir, verbose=False)
     	uninstaller.execute()
-    	
+
     	print("Installing plugin: ", self.plugin_dir)
     	installer = PluginInstaller(plugin_dir=self.plugin_dir, verbose=False, register=True)
     	installer.execute()
-        
+
 
 class PluginUninstaller(PluginBase):
 
@@ -1200,9 +1201,9 @@ class PluginUninstaller(PluginBase):
         nodes.reverse()
 
         self.handle_nodes(nodes)
-        
+
         self.add_description('Remove plugin [%s]' %self.code)
-        
+
     def handle_nodes(self, nodes):
         tools = PluginTools(plugin_dir=self.plugin_dir, verbose=self.verbose)
 
@@ -1289,7 +1290,7 @@ class PluginUninstaller(PluginBase):
     def handle_python(self, node):
         '''during uninstall, handle the python undo_path'''
         path = self.xml.get_attribute(node, "undo_path")
-        
+
         # if no path, then nothing to undo
         if not path:
             print("No undo_path defined for this python node")
@@ -1305,13 +1306,13 @@ class PluginUninstaller(PluginBase):
             from tactic.command import PythonCmd
             cmd = PythonCmd(file_path=path)
             cmd.execute()
-        
 
 
 
 
 
-        
+
+
 
 
 class PluginTools(PluginBase):
@@ -1392,7 +1393,7 @@ class PluginTools(PluginBase):
         # FIXME:
         # it is possible that the manifest defines sobjects on search types
         # that don't exist.  This is because it uses the manifest of
-        # the new pipeline and not the original ... 
+        # the new pipeline and not the original ...
         sobjects = self.get_sobjects_by_node(node)
         if not sobjects:
             #print("Skipping as no sobjects found for [%s]" %search_type)
@@ -1404,7 +1405,7 @@ class PluginTools(PluginBase):
         # no path can be extracted.
 
         path = self.get_path_from_node(node)
-        
+
         #print("Writing: ", path)
         fmode = 'w'
         if os.path.exists(path):
@@ -1427,13 +1428,13 @@ class PluginTools(PluginBase):
 
         if replace_variable =="true":
             if search_type == "sthpw/pipeline":
-                #regex is looking for a word bfore "/" 
+                #regex is looking for a word bfore "/"
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "code", regex)
             elif search_type == "config/process":
                 regex = r'^\w+\/'
                 dumper.set_replace_token("$PROJECT/", "pipeline_code", regex)
-        
+
         dumper.dump_tactic_inserts(path, mode='sobject')
 
         print("\t....dumped [%s] entries" % (len(sobjects)))
@@ -1454,7 +1455,7 @@ class PluginTools(PluginBase):
             path = "%s.spt" % search_type.replace("/", "_")
 
         path = "%s/%s" % (self.plugin_dir, path)
-        
+
         if os.path.exists(path):
             os.unlink(path)
 
@@ -1594,14 +1595,14 @@ class PluginTools(PluginBase):
         else:
             unique = False
 
-        if self.verbose: 
+        if self.verbose:
             print("Reading: ", path)
         # jobs doesn't matter for sobject node
         jobs = tools.import_data(path, unique=unique, ignore_columns=ignore_columns)
 
         # reset it in case it needs to execute a PYTHON tag right after
         Schema.get(reset_cache=True)
-        # compare sequence 
+        # compare sequence
         st_obj = SearchType.get(search_type)
         SearchType.sequence_nextval(search_type)
         cur_seq_id = SearchType.sequence_currval(search_type)
@@ -1624,7 +1625,7 @@ class PluginTools(PluginBase):
                     SearchType.sequence_setval(search_type, cur_seq_id)
 
 
-        paths_read.append(path) 
+        paths_read.append(path)
         return path
 
 
@@ -1639,7 +1640,7 @@ class PluginTools(PluginBase):
         for col in cols:
             value = sobject.get_value(col)
             if value:
-                search.add_filter(col, value)  
+                search.add_filter(col, value)
                 has_filter = True
             else:
                 search.add_filter(col, None)
@@ -1769,13 +1770,13 @@ class PluginTools(PluginBase):
 
                     if filter_sobject_handler:
                         sobject = filter_sobject_handler(sobject)
-                    
-                    
+
+
 
                     # if the search type is in sthpw namespace, then change
                     # the project code to the current project
                     base_search_type = sobject.get_base_search_type()
-                        
+
                     if base_search_type.startswith("config/"):
                         project = Project.get()
                         project_code = project.get_value("code")
@@ -1786,14 +1787,14 @@ class PluginTools(PluginBase):
                                 sobject.set_value('pipeline_code',new_code)
 
                             else:
-                                old_pipeline_code = sobject.get("pipeline_code") 
+                                old_pipeline_code = sobject.get("pipeline_code")
                                 if old_pipeline_code.find("/") != -1:
                                     parts = old_pipeline_code.split("/", 1)
                                     new_pipeline_code = "%s/%s" % (project_code,parts[1]);
                                     sobject.set_value('pipeline_code',new_pipeline_code)
 
 
-                                
+
                     if base_search_type.startswith("sthpw/"):
 
                         project = Project.get()
@@ -1824,7 +1825,7 @@ class PluginTools(PluginBase):
 
 
                         if base_search_type == "sthpw/pipeline":
-                            
+
                             if "$PROJECT" in sobject.get('code'):
                                 # Not really used
                                 old_code = sobject.get('code')
@@ -1850,7 +1851,7 @@ class PluginTools(PluginBase):
                                         sobject.set_value('code',new_code)
                                         unique = True
 
-            
+
                         if base_search_type == "sthpw/login_group":
                             if old_project_code:
                                 login_group = sobject.get_value("login_group")
@@ -1945,16 +1946,16 @@ class PluginTools(PluginBase):
             print("\t... added [%s] entries" % count)
         return jobs
 
-  
 
 
 
-   
-   
 
 
 
-   
+
+
+
+
 
 
 def main(mode):
