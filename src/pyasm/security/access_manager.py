@@ -30,6 +30,8 @@ class AccessException(Exception):
 class Sudo(object):
 
     def __init__(self):
+        self.already_exited = False
+
         count = Container.increment("Sudo::is_sudo")
         if count <= 0:
             raise Exception("count of sudo: ", count)
@@ -50,7 +52,6 @@ class Sudo(object):
      
         self.access_manager.set_admin(True)
 
-        self.already_exited = False
 
 
 
