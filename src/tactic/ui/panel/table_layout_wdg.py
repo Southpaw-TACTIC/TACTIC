@@ -41,7 +41,7 @@ basestring = six.string_types
 
 
 class TableLayoutWdg(BaseTableLayoutWdg):
-    SCROLLBAR_WIDTH = 8 
+    SCROLLBAR_WIDTH = 8
 
     #CATEGORY_KEYS = {
     #    '_order': ['Required', 'Misc']
@@ -676,7 +676,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             .spt_layout .spt_table_header {
                 margin: -1px -1px 0px 0px;
                 font-weight: 500;
-                
+
             }
 
             .spt_layout .spt_table_header_content {
@@ -720,7 +720,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 margin: -1px -1px 0px 0px;
             }
 
- 
+
             .spt_layout .spt_cell_edit {
 
                 padding: 3px 8px;
@@ -741,7 +741,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             .spt_layout
                 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
                 input[type="datetime"]::-webkit-calendar-picker-indicator,
-                input[type="date"]::-webkit-calendar-picker-indicator  
+                input[type="date"]::-webkit-calendar-picker-indicator
             {
                 background: transparent;
                 bottom: 0;
@@ -1025,7 +1025,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add_style("overflow-y: auto")
             h_scroll.add_style("height: 100%")
             h_scroll.add_style("flex-direction: column")
- 
+
             scroll = DivWdg()
             h_scroll.add(scroll)
 
@@ -1057,13 +1057,13 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             scroll = DivWdg()
             scroll.add_class("spt_table_scroll")
             h_scroll.add(scroll)
-            
+
             height = self.kwargs.get("height")
             #height = "calc(100vh - 300px)"
             if not height:
                 height = "100%"
             scroll.add_style("height: %s" % height)
-          
+
 
             # DEPRECATED: use calc
             """
@@ -1521,12 +1521,12 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
     def get_bootstrap_styles(self):
         styles = HtmlElement.style("""
-                
+
         .spt_layout_inner {
             display: flex;
             flex-direction: column;
             position: relative;
-            border-style: solid; 
+            border-style: solid;
             border-width: 0px;
         }
 
@@ -1980,7 +1980,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 }
 
 
-                
+
             '''
             } )
 
@@ -2379,7 +2379,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 spt.table.toggle_collapse_column(element_name);
                 '''
             } )
-     
+
 
 
             show_border = self.kwargs.get("show_border")
@@ -3472,7 +3472,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
                             if (!layout.isVisible()) return;
                             spt.table.set_layout(layout);
-                            
+
                             var rows = spt.table.get_all_rows();
                             for (var i = 0; i < rows.length; i++) {
 
@@ -3886,7 +3886,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             cell.addClass("look_dg_row_select_box_selected");
             cell.removeClass("look_dg_row_select_box");
             spt.table.select_all_rows();
-         
+
             //BMD
             checkbox = cell.getElement("input");
             if (checkbox) checkbox.checked = true;
@@ -3895,7 +3895,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             cell.removeClass("look_dg_row_select_box_selected");
             cell.addClass("look_dg_row_select_box");
             spt.table.unselect_all_rows();
-            
+
             //BMD
             checkbox = cell.getElement("input");
             if (checkbox) checkbox.checked = false;
@@ -3933,7 +3933,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         return checkbox_container
 
-        
+
 
     def handle_select(self, table, sobject):
         # FIXME: this confilicts with another "is_grouped"
@@ -3960,10 +3960,10 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         td.add_class("spt_table_select")
         td.add_class('look_dg_row_select_box')
         td.add_class( 'SPT_DTS' )
-        
+
         td.add(self.get_select_wdg())
-        
-        
+
+
         if self.subscribed_search_keys.get(sobject.get_search_key()):
             td.add_border(direction="right", color="#ecbf7f", size="2px")
 
@@ -4678,12 +4678,12 @@ spt.table.select_row = function(row) {
     if (cell) {
         cell.removeClass("look_dg_row_select_box");
         cell.addClass("look_dg_row_select_box_selected");
-        
+
         //BMD
         checkbox = cell.getElement("input");
         if (checkbox) checkbox.checked=true;
     }
-    
+
     var current_color = row.getAttribute("spt_last_background");
     if (!current_color){
         current_color = row.getAttribute("spt_hover_background");
@@ -4691,7 +4691,7 @@ spt.table.select_row = function(row) {
             current_color = row.getStyle("background-color");
         }
     }
-    
+
     if (!spt.has_class(row,'spt_table_selected')) {
 
         row.setAttribute("spt_last_background", current_color);
@@ -4711,7 +4711,7 @@ spt.table.unselect_row = function(row) {
     if (cell) {
         cell.removeClass("look_dg_row_select_box_selected");
         cell.addClass("look_dg_row_select_box");
-        
+
         //BMD
         checkbox = cell.getElement("input");
         if(checkbox) checkbox.checked=false;
@@ -7202,8 +7202,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
             // behaviors are only process when in the actual dom
             //spt.behavior.replace_inner_html(dummy, widget_html);
             dummy.innerHTML = widget_html;
-            
-            // HACK for tile layout 
+
+            // HACK for tile layout
             dummy = spt.behavior.clone(dummy);
 
             /*
@@ -8141,7 +8141,7 @@ spt.table.expand_table = function(mode) {
 
                 let count = 0;
                 cells.forEach( function(cell) {
-                    
+
                     if (cell.hasClass("spt_table_select") ) {
                         count += 1;
                         return;
@@ -8165,7 +8165,7 @@ spt.table.expand_table = function(mode) {
                         cell.setStyle("flex-grow", "");
                     }
 
-     
+
 
                 })
             })
@@ -8852,12 +8852,12 @@ spt.table.load_search = function(search_view, kwargs) {
 
 // Callback that gets executed when "Save My/Project View As" is selected
 spt.table.save_view_cbk = function(table_id, login) {
-   
+
     var table = document.id(table_id);
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
     if (!top) top = table.getParent(".spt_table_top");
-    
+
     //var search_wdg = top.getElement(".spt_search");
 
     // TODO: Will this break on embedded tables now?????  Maybe not
@@ -8880,7 +8880,7 @@ spt.table.save_view_cbk = function(table_id, login) {
     var new_title = values["save_view_title"];
     var same_as_title = values["same_as_title"] == 'on';
     //var save_a_link = values["save_a_link"] == 'on';
-  
+
     var save_mode = values['save_mode'];
     if (!save_mode) {
         var save_project_views = values['save_project_views'] == 'on';
@@ -8902,14 +8902,14 @@ spt.table.save_view_cbk = function(table_id, login) {
     }
 
     if (spt.input.has_special_chars(new_view)) {
-        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        spt.alert("The name contains special characters. Do not use empty spaces.");
         return;
     }
     if (new_view == "") {
         spt.alert("Empty view name not permitted");
         return;
     }
-    
+
     if ((/^(saved_search|link_search)/i).test(new_view)) {
         spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
         return;
@@ -8924,11 +8924,11 @@ spt.table.save_view_cbk = function(table_id, login) {
     var last_element = top.getAttribute("spt_element_name");
 
 
-    var kwargs = {'login' : login, 'new_title' : new_title, 
+    var kwargs = {'login' : login, 'new_title' : new_title,
         'element_name': new_view,
         'last_element_name': last_element,
         'save_mode': save_mode,
-    } 
+    }
 
     spt.app_busy.show( 'Saving View', new_title );
     var rtn = spt.table.save_view(table_id, table_view, kwargs);
@@ -8936,7 +8936,7 @@ spt.table.save_view_cbk = function(table_id, login) {
 
     if (!rtn)
         return;
-    
+
     return true;
 }
 
@@ -8950,12 +8950,12 @@ spt.table.is_embedded = function(table){
     var table_view = table.getAttribute('spt_view');
     var panel_search_type = top.getAttribute("spt_search_type");
     var table_search_type = table.getAttribute("spt_search_type");
-     
+
     var is_embedded = false;
     if (panel_table_view != table_view || panel_search_type != table_search_type) {
         //spt.alert('Embedded table view saving not supported yet');
         is_embedded = true;
-       
+
     }
     return is_embedded;
 }
@@ -9007,14 +9007,14 @@ spt.table.save_view = function(table, new_view, kwargs) {
         var search_wdg = top ? top.getElement(".spt_search"): null;
 
         var save_mode = kwargs['save_mode'];
- 
+
         if (spt.table.is_embedded(table)) {
             //spt.alert('Embedded table view saving not supported yet');
             var login = kwargs.login;
             spt.dg_table.get_size_info(table, new_view, login);
             return false;
         }
-        
+
         var table_search_type = table.getAttribute("spt_search_type");
 
 
@@ -9034,7 +9034,7 @@ spt.table.save_view = function(table, new_view, kwargs) {
         var server = TacticServerStub.get();
         var title = side_bar_view + " updated from: " + new_view;
         server.start({"title": "Saving View", "description": "Saving View: " +  title});
-      
+
         var element_name = new_view;
         var unique = kwargs.unique;
 
@@ -9068,13 +9068,13 @@ spt.table.save_view = function(table, new_view, kwargs) {
         // add to the project views
         var search_type = "SideBarWdg";
         var class_name = "LinkWdg";
-       
+
         var simple_search_view = top ? top.getAttribute('spt_simple_search_view'): null;
         var insert_view = top ? top.getAttribute('spt_insert_view'): null;
         var edit_view = top ? top.getAttribute('spt_edit_view'): null;
         var layout = top ? top.getAttribute('spt_layout'): null;
-      
-      
+
+
         dis_options['search_type'] = table_search_type;
         dis_options['view'] = element_name;
         dis_options['search_view'] = search_view;
@@ -9088,15 +9088,15 @@ spt.table.save_view = function(table, new_view, kwargs) {
             dis_options['edit_view'] = edit_view;
         if (layout)
             dis_options['layout'] = layout;
-        
+
         // redefine kwargs
         var kwargs = {};
         kwargs['login'] = null;
-        if (save_as_personal) 
+        if (save_as_personal)
             kwargs['login'] = login;
-        kwargs['class_name'] = class_name; 
+        kwargs['class_name'] = class_name;
         kwargs['display_options'] = dis_options;
-        
+
         kwargs['unique'] = unique;
 
 
@@ -9134,12 +9134,12 @@ spt.table.save_view = function(table, new_view, kwargs) {
 
 
         if (new_title)
-            kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
+            kwargs['element_attrs'] = {'title': new_title, 'icon': icon};
 
         // add the definiton to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
-        
+
         //raw and static_table layout has no checkbox in the first row
         var first_idx = 1;
         if (['raw_table','static_table'].contains(layout))
@@ -9147,11 +9147,11 @@ spt.table.save_view = function(table, new_view, kwargs) {
 
         // create the view for this table
         spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
-         
+
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
             var kwargs2 = save_as_personal ? {'login': login } : {};
-           
+
             server.add_config_element(search_type, side_bar_view, unique_el_name, kwargs2);
         }
         server.finish();
@@ -9159,12 +9159,12 @@ spt.table.save_view = function(table, new_view, kwargs) {
         spt.panel.refresh("side_bar");
     } catch(e) {
         if (server) server.abort();
-        
+
         spt.alert(spt.exception.handler(e));
         return false;
     }
     return true;
-    
+
 }
 
 
@@ -9887,6 +9887,57 @@ spt.table.export_document = function(kwargs) {
             self._collate_levels(related_sobject, sobject_list, levels_sobjects, level+1)
 
 
+
+    def alter_search(self, search):
+        # TODO: this should be applied to ViewPanelWdg level
+        process = self.kwargs.get("process")
+        if process and search.column_exists('process'):
+            search.add_filter("process", process)
+
+        context = self.kwargs.get("context")
+        if context:
+            search.add_filter("context", context)
+
+
+        collection_key = self.kwargs.get("collection_key")
+        if collection_key:
+            collection = Search.get_by_search_key(collection_key)
+            search2 = Search( collection.get_collection_type() )
+            search2.add_column("search_code")
+            search2.add_filter("parent_code", collection.get_code() )
+            search.add_search_filter("code", search2)
+
+            # see all assets recursively
+            """
+            search.add_filter("code", '''(
+            SELECT search_code FROM (
+                WITH RECURSIVE subordinates AS (
+                    SELECT
+                        search_code,
+                        parent_code
+                    FROM
+                        asset_in_asset
+                    WHERE
+                        parent_code = '%s'
+                    UNION
+                        SELECT
+                            e.search_code,
+                            e.parent_code
+                        FROM
+                            asset_in_asset e
+                        INNER JOIN subordinates s ON s.search_code = e.parent_code
+                ) SELECT
+                    *
+                FROM
+                    subordinates
+              ) AS A
+            )
+            ''' % collection.get_code(), op="in", quoted=False )
+            """
+
+
+
+        return super(BaseTableLayoutWdg, self).alter_search(search)
 
 
 # DEPRECATED: Old name
