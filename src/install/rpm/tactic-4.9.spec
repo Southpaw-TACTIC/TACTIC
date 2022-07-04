@@ -31,7 +31,7 @@ Requires: python3-lxml
 Requires: python3-requests
 Requires: python3-pytz
 Requires: httpd
-Requires: chkconfig
+#Requires: chkconfig
 
 %description
 Workflow automation development environment TACTIC
