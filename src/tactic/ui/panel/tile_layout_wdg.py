@@ -2187,6 +2187,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         # Download button
         direct_download = True
         if direct_download:
+
             href = HtmlElement.href()
             href.add_class("spt_download")
             href.add_attr("href", "")
@@ -2673,10 +2674,10 @@ class TileLayoutWdg(ToolLayoutWdg):
                 href.add_attr("href", path)
                 tool_div.add(href)
 
-
                 basename = os.path.basename(path)
-                href.add_attr("download", basename)
-
+                #remove version number (exp - _v001) from file name
+                versionNum_removed_basename = re.sub('(_v)\d*','',basename)
+                href.add_attr("download", versionNum_removed_basename)
 
                 icon = IconWdg(name="Download", icon="FA_DOWNLOAD")
                 icon.add_class("hand")
