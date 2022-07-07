@@ -1184,7 +1184,6 @@ class CollectionContentWdg(BaseRefreshWdg):
         self.parent_key = self.kwargs.get("parent_key")
         self.collection_key = self.kwargs.get("collection_key")
 
-
         collection = Search.get_by_search_key(self.collection_key)
 
         # find the path of the collection
