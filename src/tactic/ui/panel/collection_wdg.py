@@ -15,6 +15,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 
 
+from TACTIC.src.tactic.ui.panel.panel_wdg import ViewPanelWdg
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
 from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement, Widget
@@ -1108,8 +1109,8 @@ class CollectionFolderWdg(BaseRefreshWdg):
             else {
 
                 var cls = "tactic.ui.panel.CollectionContentWdg";
-                var element_names = [ "asset_view", "code", "name", "modified_date"];
-                //var element_names = bvr.src_el.getParent(".spt_element_names");
+                //var element_names = [ "asset_view", "code", "name", "modified_date"];
+                var element_names = bvr.src_el.getParent(".spt_element_names");
                 var mode = "%s";
 
                 var kwargs = {
