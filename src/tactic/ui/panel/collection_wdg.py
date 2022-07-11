@@ -15,7 +15,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 
 
-from TACTIC.src.tactic.ui.panel.panel_wdg import ViewPanelWdg
+
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
 from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement, Widget
