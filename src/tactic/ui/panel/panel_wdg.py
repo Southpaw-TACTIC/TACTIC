@@ -52,9 +52,9 @@ class SideBarPanelWdg(BaseRefreshWdg):
             my_view = "my_view_%s" % Environment.get_user_name()
             my_view = my_view.replace("\\", "_")
             views.append(my_view)
-                
 
-        
+
+
 
         if security.get_version() == 1:
             if security.check_access("side_bar", "admin_views", "allow", default='allow'):
@@ -64,7 +64,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
                     views.append('_my_admin')
             else:
                 views.append('_my_admin')
-                
+
         else:
             if security.check_access("link", "admin_views", "allow", default="deny"):
                 if security.check_access("builtin", "view_site_admin", "allow"):
@@ -72,7 +72,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
                 else:
                     views.append('_my_admin')
             else:
-                views.append('_my_admin')  
+                views.append('_my_admin')
 
         return views
 
@@ -92,7 +92,7 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
         div.add_class("spt_window_resize")
         div.add_attr("spt_window_resize_offset", "35")
-        
+
         # remove the default round corners by making this div the same color
         div.add_color("background", "background3")
 
@@ -310,7 +310,7 @@ spt.side_bar._load_for_display_link_change = function(target_id, title, options,
 // Command that occurs when a user clicks on a link
 //
 spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_popup) {
-    
+
     this.target_id = target_id;
     this.title = title;
     this.options = options;
@@ -320,7 +320,7 @@ spt.side_bar.DisplayLinkCmd = function(target_id, title, options, values, is_pop
     this.prev_options = {};
 
     this.get_description = function () { return "DisplayLinkCmd"};
-    this.execute = function() { 
+    this.execute = function() {
 
         // get the target element
         var target_element = document.id(this.target_id);
@@ -584,7 +584,7 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
     // get the value of the element
     var value = element.value;
     if (value == "save") {
-        // it could be saving other sub-views involved as well like reordering 
+        // it could be saving other sub-views involved as well like reordering
         // within the predefined views
         if (confirm("Save ordering of this view [" + view + "] ?") ) {
             var server = TacticServerStub.get();
@@ -615,9 +615,9 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
         //var new_title = values['new_name'].toLowerCase().replace(/ /g,"_");;
         var new_title = values['new_title'];
         var new_name = values['new_name']
-     
+
         if (spt.input.has_special_chars(new_name)) {
-            alert("The view name cannot contain special characters.  Please try again.");  
+            alert("The view name cannot contain special characters.  Please try again.");
             return;
         }
         if (spt.input.start_with_num(new_name)) {
@@ -631,9 +631,9 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
             alert('This view name [' + new_name + '] is reserved');
             return;
         }
-        
-        
-        // don't assign login for "project_view", but personal and project view 
+
+
+        // don't assign login for "project_view", but personal and project view
         // share the same definition
         var kwargs = {};
         var kwargs2 = {};
@@ -642,11 +642,11 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
             kwargs['login'] = user;
             kwargs2['login'] = user;
             new_name = user + '.' +  new_name;
-        } 
-      
+        }
+
         // save this user-defined view
         var server = TacticServerStub.get();
-        server.start({"title": "Adding folder", 
+        server.start({"title": "Adding folder",
             "description": "Adding folder [" + new_title + "]"});
         kwargs['class_name'] ='SideBarSectionLinkWdg';
         kwargs['element_attrs'] = {'title': new_title};
@@ -654,8 +654,8 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
         kwargs['auto_unique_name'] = false;
         kwargs['auto_unique_view'] = false;
         kwargs['unique'] = true;
-        
-        try{       
+
+        try{
             // add it to the project_view
             search_type = 'SideBarWdg';
 
@@ -665,11 +665,11 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
             var unique_el_name = info['element_name'];
             // now add to project_view or my_view_...
             server.add_config_element(search_type, view, unique_el_name, kwargs2);
-            
+
             // only extract elements inside the folder view "new_folder"
             var folder_elements = spt.side_bar.get_elements('new_folder', popup_id);
             var folder_element_names = [];
-            folder_elements.each( function(x) 
+            folder_elements.each( function(x)
                     {folder_element_names.push(x.getAttribute("spt_element_name"))});
             if (folder_element_names.length > 0)
                 server.update_config(search_type, unique_el_name, folder_element_names, kwargs2);
@@ -682,7 +682,7 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
             server.abort();
             return;
         }
-        //refresh 
+        //refresh
         spt.popup.destroy(popup_id);
         spt.panel.refresh("ManageSideBarBookmark_" + view);
         spt.panel.refresh("side_bar");
@@ -692,28 +692,28 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
         var values = spt.api.Utility.get_input_values(popup_id , null, false);
         // Convert the user input link title all in lower case and replace all spaces with underscores.
         var link_name = values['new_link_title'].toLowerCase().replace(/ /g,"_");
-        var include_search_view = values["include_search_view"] == 'on'; 
+        var include_search_view = values["include_search_view"] == 'on';
 
         if (spt.input.has_special_chars(link_name)) {
-            alert("The view name cannot contain special characters.  Please try again.");  
+            alert("The view name cannot contain special characters.  Please try again.");
             return;
         }
-      
+
         // link name cannot be one of the predefined views
         var predefined_views = ['_my_tactic', '_preproduction','_asset_pipeline', '_shot_pipeline', '_site_admin', '_project_admin', '_overview', '_application', '_editorial', '_template', 'definition', 'search', 'publish','edit','insert','edit_definition'];
         if (predefined_views.contains(link_name)) {
             alert('This view name [' + link_name + '] is reserved');
             return;
         }
-            
+
         var new_title = link_name;
         var search_type = values['new_search_type'];
         if (!link_name || !search_type) {
             alert('A title and a search type are required.');
             return;
         }
-     
-        
+
+
         var kwargs = {};
         var kwargs2 = {};
         var new_view = values['new_link_view'];
@@ -731,10 +731,10 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
                 server.start({"title": "Adding link",
                     "description": "Adding link [" + new_title + "]"});
                 //hard-code table view for now
-                
+
                 kwargs['class_name'] = 'LinkWdg';
                 kwargs['element_attrs'] = {'title': new_title};
-                
+
                 var display_options =  {'search_type': search_type, 'view': new_view};
                 if (include_search_view) {
                     display_options['search_view'] = 'link_search:' + new_view;
@@ -746,19 +746,19 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
                     display_options['class_name'] = 'tactic.ui.panel.CustomLayoutWdg';
                 }
                 kwargs['display_options'] = display_options;
-                
+
                 //kwargs['auto_unique_name'] = true;
                 kwargs['unique'] = true;
-                
+
                 // add it to the view, if view is self personal view, add login
                 search_type = 'SideBarWdg';
                 var info = server.add_config_element(search_type, 'definition', link_name, kwargs);
                 var unique_el_name = info['element_name'];
-                
+
                 // now add to project_view
                 server.add_config_element(search_type, view, unique_el_name, kwargs2);
                 server.finish();
-                //refresh 
+                //refresh
                 spt.popup.destroy(popup_id);
                 spt.panel.refresh("ManageSideBarBookmark_" + view);
                 spt.panel.refresh("side_bar");
@@ -766,19 +766,19 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
             catch(e) {
                 alert(spt.exception.handler(e));
             }
-            
+
         }
     }
     else if (value == "save_separator") {
         var popup_id = "New Item Panel";
         var name = 'separator';
-        
+
         var server = TacticServerStub.get();
         var kwargs = {'class_name' : 'SeparatorWdg',
                       'element_attrs' : {'title': 'Separator'},
                       'unique': false,
                       'auto_unique_name': true,
-                       'auto_unique_view': true}; 
+                       'auto_unique_view': true};
         // add it to the project_view
         search_type = 'SideBarWdg';
         var kwargs2 = {};
@@ -793,14 +793,14 @@ spt.side_bar.manage_section_action_cbk = function(element, view, is_personal) {
 
         var info = server.add_config_element(search_type, 'definition', name, kwargs);
         var unique_el_name = info['element_name'];
-        
+
         // now add to project_view
         server.add_config_element(search_type, view, unique_el_name, kwargs2);
-        //refresh 
+        //refresh
         spt.popup.destroy(popup_id);
         spt.panel.refresh("ManageSideBarBookmark_" + view);
         spt.panel.refresh("side_bar");
-        
+
     }
     else {
         alert("Unimplemented option: " + value);
@@ -847,7 +847,7 @@ spt.side_bar.save_view = function(search_type, view, is_personal, list_top) {
     }
     //add the trashed items
     kwargs['deleted_element_names'] = spt.side_bar.trashed_items;
-    
+
     server.update_config(search_type, view, element_names, kwargs);
     spt.side_bar.trashed_items = [];
 }
@@ -916,7 +916,7 @@ spt.side_bar.changed_views = {};
 spt.side_bar.trashed_items = [];
 spt.side_bar.active_elems = {};
 spt.side_bar.pp_setup = function(evt, bvr, mouse_411)
-{   
+{
     var clonable = bvr.src_el;
     if (! clonable.hasClass("spt_side_bar_element")) {
         clonable = bvr.src_el.getParent('.spt_side_bar_element');
@@ -998,7 +998,7 @@ spt.side_bar.pp_find_drop_elem = function(evt, bvr)
         return drop_on_el;
     else
         return null;
-    
+
 }
 
 spt.side_bar.pp_is_trash = function(drop_on_el)
@@ -1066,7 +1066,7 @@ spt.side_bar.pp_action = function(evt, bvr)
 
 
     var view;
-  
+
     // Record that the old view has changed if not in copy mode
     var old_view = contents.getAttribute("spt_view")
     if (mode != 'copy') {
@@ -1087,7 +1087,7 @@ spt.side_bar.pp_action = function(evt, bvr)
         return;
     }
     // if dropped on a section or a section link
-    
+
     else if( drop_on_el.hasClass("spt_side_bar_section") ) {
         var children = drop_on_el.getElements(".spt_side_bar_element");
         if (children[0] != null && !children[0].hasClass("spt_side_bar_dummy")) {
@@ -1217,15 +1217,15 @@ spt.side_bar.context_menu_cbk = function(action, view, is_personal) {
     else if (action == "new_separator") {
        element_name = "new_separator";
     }
-    
+
     if (element_name) {
         var clone = spt.side_bar.add_new_item(view, element_name);
         //clone.setStyle('background', '#6CB87B');
         if (element_name =='new_separator') {
-            
+
             spt.side_bar.manage_section_action_cbk({'value':'save_separator'},view, is_personal);
         }
-       
+
     }
 }
 
@@ -1246,7 +1246,7 @@ spt.side_bar.add_new_item = function(view, element_name, template_top) {
         template_top = document.id("menu_item_template");
     }
     var menu_item = template_top.getElement("div[spt_element_name=" + element_name +"]");
-  
+
     if (!menu_item)
         return;
 
@@ -1265,11 +1265,11 @@ spt.side_bar.add_new_item = function(view, element_name, template_top) {
     clone.setAttribute("spt_view", view);
     // get the current name of the cloned element
     var clone_name = clone.getAttribute("spt_element_name");
-    
+
     bvr = {};
     bvr.src_el = clone;
-  
-    
+
+
     return clone;
 
 }
@@ -1333,7 +1333,7 @@ spt.side_bar.display_element_info_cbk = function(evt, bvr)
     var values = {};
     spt.panel.load(detail_panel, class_name, options, values, fade);
 
- 
+
 }
 
 
@@ -1348,7 +1348,7 @@ spt.side_bar.save_definition_cbk = function( bvr )
     }
 
     var panel = view_manager_top.getElement(".spt_view_manager_detail");
-    
+
     var values = spt.api.Utility.get_input_values( panel );
 
     if (values.config_element_name == "") {
@@ -1393,7 +1393,7 @@ spt.side_bar.toggle = function() {
 
 
 class SideBarBookmarkMenuWdg(BaseRefreshWdg):
-   
+
     ERR_MSG = 'SideBar_Error'
     def get_args_keys(cls):
         '''external settings which populate the widget'''
@@ -1558,19 +1558,19 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 title.add_style("display: none")
 
             error_list = Container.get_seq(self.ERR_MSG)
-            if error_list: 
+            if error_list:
                 span = SpanWdg()
                 span.add_style('background', 'red')
                 span.add('<br/>'.join(error_list))
                 content_div.add(span)
                 Container.clear_seq(self.ERR_MSG)
-            self.add_dummy(config, content_div) 
+            self.add_dummy(config, content_div)
 
 
 
 
         # display the schema links on the bottom of the the admin views
-        if view_item == "admin_views":        
+        if view_item == "admin_views":
             config_xml = self.get_schema_xml()
             config = WidgetConfig.get(xml=config_xml, view='schema')
             self.generate_section( config, content_div, info, personal=False, use_same_config=True )
@@ -1583,7 +1583,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
     def get_schema_xml(self):
 
         config_xml = []
-       
+
         config_xml.append( '''
         <config>
         <schema>
@@ -1795,7 +1795,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 }
                 else {
                     view = section.getAttribute("spt_element_name");
-                }    
+                }
                 server.update_config(search_type, view, [], {deleted_element_names:[element_name]});
                 spt.panel.refresh("side_bar");
                 spt.app_busy.hide();
@@ -1842,7 +1842,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 if os.path.exists(file_path):
                     for view in views:
                         config = WidgetConfig.get(file_path=file_path, view=view)
-                    
+
                         view_node = config.get_view_node()
                         if view_node is not None:
                             configs.append(config)
@@ -1851,11 +1851,11 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             tmp_path = __file__
             dir_name = os.path.dirname(tmp_path)
             file_path="%s/../config/%s-conf.xml" % (dir_name, "DEFAULT")
-                
+
             if os.path.exists(file_path):
                 for view in views:
                     config = WidgetConfig.get(file_path=file_path, view=view)
-                 
+
                     view_node = config.get_view_node()
 
                     if view_node is not None:
@@ -1864,7 +1864,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         except XmlException as e:
             msg = "Error with view [%s]"% ' '.join(views)
             print("Error: ", str(e))
-            
+
             error_list = Container.get_seq(SideBarBookmarkMenuWdg.ERR_MSG)
             if msg not in error_list:
                 Container.append_seq(SideBarBookmarkMenuWdg.ERR_MSG, msg)
@@ -1873,7 +1873,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
     add_internal_config = staticmethod(add_internal_config)
 
-   
+
 
     def get_config(cls, config_search_type, view, default=False, personal=False):
 
@@ -1894,7 +1894,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         if default:
             views = [defined_view, 'definition']
             SideBarBookmarkMenuWdg.add_internal_config(configs, views)
-            
+
         # special condition for children
         elif view in ['children']:
             tmp_path = __file__
@@ -1903,7 +1903,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             config = WidgetConfig.get(file_path=file_path, view=defined_view)
             configs.append(config)
 
-          
+
         elif view == "definition":
             # look for a definition in the database
             search = Search("config/widget_config")
@@ -1912,7 +1912,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             # lower the chance of getting some other definition files
             if personal:
                 login = Environment.get_user_name()
-            
+
             search.add_filter("login", login)
 
             config = search.get_sobject()
@@ -1922,8 +1922,8 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             # so it is fine to add internal config for definition
             # then look for a definition in the definition file
             SideBarBookmarkMenuWdg.add_internal_config(configs, ['definition'])
-        
-       
+
+
 
         else:
             # first look in the database
@@ -1938,7 +1938,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
             # then look for a file
             SideBarBookmarkMenuWdg.add_internal_config(configs, [defined_view])
-            
+
             logins = []
             if personal:
                 logins.append(Environment.get_user_name())
@@ -1951,7 +1951,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
                 search.add_filter("view", "definition")
                 # lower the chance of getting some other definition files
                 search.add_filter("login", login)
-                
+
                 key = '%s|definition|%s'%(config_search_type, login)
                 config = WidgetDbConfig.get_by_search(search, key)
                 #config = search.get_sobject()
@@ -2004,7 +2004,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         if not element_names:
             return "empty"
-        
+
         # if there are no elements, then just add a drop widget
         if not element_names:
             if self.mode == 'view':
@@ -2173,7 +2173,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
             #if not widget_key.isalnum():
             #    widget_key = "code"
-            
+
             class_name = WidgetClassHandler().get_display_handler(widget_key)
             options['class_name'] = class_name
 
@@ -2221,7 +2221,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
         link_wdg.add_class("spt_side_bar_element")
         link_wdg.add_class("spt_side_bar_link")
-       
+
 
         # add the mouseover color change
         bg_color = self.palette.color("background3")
@@ -2291,7 +2291,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         config_view = config.get_view()
 
         current_path = "%s/%s" % (base_path, element_name)
-        
+
         # create HTML elements for Section Link ...
         outer_div = DivWdg()
 
@@ -2308,9 +2308,9 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         outer_div.add_attr("spt_title", title)
         outer_div.add_style("padding-left: 5px")
 
-        
-        #if info.get('login') : 
-        #    outer_div.add_attr("spt_login", info.get('login')) 
+
+        #if info.get('login') :
+        #    outer_div.add_attr("spt_login", info.get('login'))
 
         # add an invisible drop widget
         outer_div.add(self.get_drop_wdg())
@@ -2349,7 +2349,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         icon = attributes.get("icon")
         if icon:
             icon = icon.upper()
-            icon_wdg =  IconWdg(title, icon ) 
+            icon_wdg =  IconWdg(title, icon )
             s_link_div.add(icon_wdg)
         s_link_div.add(SpanWdg(title))
 
@@ -2359,7 +2359,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         s_content_div.add_class("SPT_DTS")
 
         s_content_div.add_attr("spt_path", current_path)
-        
+
         s_content_div.add_class("spt_side_bar_section_content")
 
         s_content_div.add_style( "padding-left: 11px" )
@@ -2451,7 +2451,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         popup = False
         if options.get('popup') == 'true':
             popup = True
-           
+
         values = config.get_web_options(element_name)
         behavior = {
             'type':         'click_up',
@@ -2464,7 +2464,7 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         }
         if popup:
             behavior['is_popup'] = 'true'
-        
+
         if options.get('popup') != None:
             del options['popup']
 
@@ -2593,19 +2593,19 @@ class ViewPanelWdg(BaseRefreshWdg):
         "order_by": "order by a particular column",
         "search_limit": "The number of items to show on each page",
         "expression": "use an expression for the search",
-        
+
         "parent_key":  {
             'description': '(Advanced) filter for a parent specified by this parent_key. Can accept "self" which takes the search_key',
             'type': 'TextWdg',
             'order': 8
         },
-     
+
         "search_key": {
             'description': 'filter for a search_key usually used for an accompnaying expression',
             'type': 'TextWdg',
             'order': 9
         },
-        
+
 
 
         "filter": "filter structure",
@@ -2675,7 +2675,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '06',
             'category': 'Display'
         },
- 
+
 
         "show_search_limit": {
             'description': "determines whether or not to show the search limit",
@@ -2764,7 +2764,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'order': '15'
         },
-     
+
         'ingest_data_view': {
             'description': 'a view similar to edit view that defines any data to be saved with each ingested sobject.',
             'type': 'TextWdg',
@@ -2792,7 +2792,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'type': 'TextWdg',
             'category': 'Display',
             'order': '19'
-        },    
+        },
 
         "no_results_msg" : {
             'description': 'the message displayed when the search returns no item',
@@ -2807,7 +2807,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'default|compact',
             'category': 'Display',
             'order': '21'
-        }, 
+        },
 
         "show_collection_tool" : {
             'description': 'determines whether to show the collection button or not',
@@ -2815,7 +2815,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             'values': 'true|false',
             'category': 'Display',
             'order': '22'
-        }, 
+        },
 
         "show_help": {
             'description': 'Determine whether or not to display the help button in shelf',
@@ -2924,7 +2924,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-        if link_view:   
+        if link_view:
+
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", "definition", default=self.default)
             display_options = config.get_display_options(link_view)
 
@@ -2938,6 +2939,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         else:
+
             search_type = self.kwargs.get("search_type")
             view = self.kwargs.get("view")
             search_view = self.kwargs.get('search_view')
@@ -2947,7 +2949,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             # take the search filter structure from search_view
             # if filter is a non-xml string, then it is in JSON format
-            
+
             if isinstance(filter, basestring) and filter != '':
                 try:
                     filter = jsonloads(filter)
@@ -2982,8 +2984,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-           
-         
+
+
         # this is needed so that each custom made view can have its own last-search settings
         if not search_view:
             search_view = 'auto_search:%s'%view
@@ -3028,7 +3030,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         top.set_attr("spt_node", "true")
         self.set_as_panel(top, class_name='spt_view_panel')
 
-            
+
         if not search_type or not view:
             return top
 
@@ -3072,7 +3074,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
 
-        
+
 
         # Search box
         inline_search = "true"
@@ -3082,7 +3084,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             use_last_search = False
         else:
             use_last_search = True
-        
+
         # Advanced search is shown by default
         show_search = self.kwargs.get('show_search')
         if show_search in [False,'false']:
@@ -3091,7 +3093,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             show_search = 'true'
 
         search_limit = self.kwargs.get("search_limit")
-        run_search_bvr = self.kwargs.get('run_search_bvr') 
+        run_search_bvr = self.kwargs.get('run_search_bvr')
 
 
         search_dialog_id = 0
@@ -3135,7 +3137,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             from tactic.ui.container import DialogWdg
             search_dialog = DialogWdg(offset={'x':-250,'y':0})
             search_dialog_id = search_dialog.get_id()
-            # Comment out the above. 
+            # Comment out the above.
             # Needs to draw the search_dialog for pre-saved parameters to go thru
             # Fast(Base) Table Layout will take care of hiding it
             inner.add(search_dialog)
@@ -3151,7 +3153,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # add an exposed search
         simple_search_config = self.kwargs.get('simple_search_config')
-        
+
         custom_simple_search_view = None
 
         simple_search_mode = self.kwargs.get("simple_search_mode")
@@ -3185,17 +3187,17 @@ class ViewPanelWdg(BaseRefreshWdg):
 
             kwargs['visible_rows'] = self.kwargs.get("simple_search_visible_rows")
             kwargs['columns'] = self.kwargs.get("simple_search_columns")
- 
+
 
 
             show_shelf = self.kwargs.get("show_shelf")
-            
+
             # display search button when shelf is not shown
             if show_shelf in [True, 'true', ""]:
                 show_search = False
             else:
                 show_search = True
-            
+
             kwargs['show_search'] = show_search
 
             simple_search_wdg = Common.create_from_class_path(search_class, kwargs=kwargs)
@@ -3292,7 +3294,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         document_mode = self.kwargs.get("document_mode")
 
         js_load = self.kwargs.get("js_load") or False
-       
+
 
         save_inputs = self.kwargs.get("save_inputs")
         no_results_mode = self.kwargs.get("no_results_mode")
@@ -3304,7 +3306,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         # create a table widget and set the sobjects to it
         table_id = "%s_table_%s" % (target_id, Common.randint(0,10000))
 
-        # this can be used to relate a View Panel to a table in order to 
+        # this can be used to relate a View Panel to a table in order to
         # tell if a table is embedded or not in js
         top.set_attr('table_id', table_id)
         layout = self.kwargs.get("layout")
@@ -3312,7 +3314,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
-        
+
 
         search = self.kwargs.get("search")
 
@@ -3372,7 +3374,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "do_initial_search": do_initial_search,
             "no_results_mode": no_results_mode,
             "no_results_msg": no_results_msg,
-            "init_load_num": init_load_num, 
+            "init_load_num": init_load_num,
             "checkin_context": checkin_context,
             "checkin_type" : checkin_type,
             "ingest_data_view" : ingest_data_view,
@@ -3422,7 +3424,7 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         # set up the extra keys (for all layouts)
         if not layout or layout == "table":
-            layout_class_path = "tactic.ui.panel.TableLayoutWdg"
+            layout_class_path = "tactic.ui.panel.CollectionLayoutWdg"
         elif layout == "collection":
             layout_class_path = "tactic.ui.panel.CollectionLayoutWdg"
         elif layout == "tile":
@@ -3498,7 +3500,15 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['mode'] = 'raw'
             layout_table = StaticTableLayoutWdg(**kwargs)
 
-        elif layout in ['fast_table', 'table']:
+        # elif layout in ['fast_table', 'table']:
+        #     print("are we here??????????????????????")#change change
+        #     kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
+        #     kwargs['edit'] = self.kwargs.get("edit")
+        #     from .table_layout_wdg import FastTableLayoutWdg
+        #     layout_table = FastTableLayoutWdg(**kwargs)
+
+        elif layout in ['fast_table']:
+            print("are we here??????????????????????")#change change
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
             from .table_layout_wdg import FastTableLayoutWdg
@@ -3543,6 +3553,14 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
             kwargs['window_resize_offset'] = self.kwargs.get("window_resize_offset")
             from .collection_wdg import CollectionLayoutWdg
+            print("line 3549  elif layout == collection ")#change change
+            layout_table = CollectionLayoutWdg(**kwargs)
+
+        elif layout == 'table':
+            print("line 3554 layout == table ")
+            kwargs['mode'] = 'table' #change change
+            from .collection_wdg import CollectionLayoutWdg
+            print("line 3573  elif layout == table ")#change change
             layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
@@ -3627,8 +3645,8 @@ class ViewPanelWdg(BaseRefreshWdg):
                 inner.add(popup)
 
 
-        
-        target_node.add(layout_table) 
+
+        target_node.add(layout_table)
 
         if self.kwargs.get('is_refresh') in ['true', True]:
             return inner
@@ -3692,7 +3710,7 @@ spt.view_panel.top = null;
 
 spt.view_panel.set_top = function(top_el) {
     if (!top_el.hasClass("spt_view_panel_top")) {
-        top_el.getElement(".spt_view_panel_top"); 
+        top_el.getElement(".spt_view_panel_top");
         if (!top_el) {
             throw("Can't find view panel_top");
         }
@@ -3711,7 +3729,7 @@ spt.view_panel.get_current_layout = function() {
 
 
 spt.view_panel.switch_layout = function(layout) {
-          
+
     var top = spt.view_panel.top;
     if (!top) {
         throw("Error: spt_view_panel_top not found");
@@ -3776,7 +3794,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         assert self.table_id
 
     def get_display(self):
-       
+
         js_action = "spt.table.save_view_cbk('%s','%s')" % (self.table_id, Environment.get_user_name())
 
         # create the buttons
@@ -3832,7 +3850,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         var code_el = top.getElement(".spt_new_view_name");
         code_el.value = code;
         var radios = top.getElements("input[name='save_mode']");
-        
+
         var is_checked = false;
         for (var k = 0 ; k < radios.length; k++) {
             if (radios[k].checked) {
@@ -3841,7 +3859,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
             }
         }
         if (!is_checked) {
-            
+
             radios[0].checked = true;
 
         }
@@ -3851,7 +3869,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
         div.add(HtmlElement.br(2))
 
-        
+
         title_div = FloatDivWdg("View Name: ")
         title_div.add_style('width: 80px')
         div.add(title_div)
@@ -3863,7 +3881,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         text.add_class('spt_save_view_name')
         div.add(text)
         div.add(HtmlElement.br(2))
-     
+
         #cb = CheckboxWdg('save_a_link', label='Add View To Side Bar')
         #cb.set_default_checked()
         #div.add(cb)
@@ -3887,8 +3905,8 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         } )
         names = []
         labels = []
-       
-        is_reg_user = False 
+
+        is_reg_user = False
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
             is_admin = True
@@ -3941,7 +3959,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         button_table.add_cell(cancel_button)
         div.add(button_table)
 
-        
+
         return div
 
     def get_existing_views(is_personal):
@@ -3952,7 +3970,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
         login = None
         if is_personal:
             login = Environment.get_user_name()
-            
+
         search.add_filter('login', login)
         db_configs = search.get_sobjects()
         views = SObject.get_values(db_configs, 'view', unique=True)
