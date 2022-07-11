@@ -522,15 +522,43 @@ class GlobalSearchTrigger(Trigger):
 
             child_codes = []
             if parent_code in collection_keywords_dict:
+
+                # This is better handled in the code below
+                """
                 # Remove "collection" keywords_data from child with key matching parent_code
                 del collection_keywords_dict[parent_code]
 
                 # Also need to remove parent's "collection" keywords_data from child
                 for key in parent_collection_keywords_dict.keys():
                     del collection_keywords_dict[key]
+                """
+
+
+                # rebuild collection keywords dict
+                collection_codes = collection_keywords_dict.keys()
+                search = Search(asset_stype)
+                search.add_filters("code", collection_codes)
+                collections = search.get_sobjects()
+
+
+                collection_keywords_dict = {}
+                for collection in collections:
+
+                    if collection.get_code() == parent_code:
+                        continue
+
+                    parent_keywords_dict = collection.get_value("keywords_data->collection") or {}
+
+                    collection_keywords_dict[collection.get_code()] = collection.get_value("keywords")
+
+                    if parent_keywords_dict:
+                        collection_keywords_dict.update(parent_keywords_dict)
+
+
 
                 child_codes = self.get_child_codes(search_code, asset_stype)
-            
+
+
             if child_codes:
                 child_nest_sobjects = Search.get_by_code(asset_stype, child_codes)
                 for child_nest_sobject in child_nest_sobjects:
