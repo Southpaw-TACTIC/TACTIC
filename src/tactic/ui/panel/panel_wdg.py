@@ -3501,14 +3501,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout_table = StaticTableLayoutWdg(**kwargs)
 
         # elif layout in ['fast_table', 'table']:
-        #     print("are we here??????????????????????")#change change
         #     kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
         #     kwargs['edit'] = self.kwargs.get("edit")
         #     from .table_layout_wdg import FastTableLayoutWdg
         #     layout_table = FastTableLayoutWdg(**kwargs)
 
         elif layout in ['fast_table']:
-            print("are we here??????????????????????")#change change
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
             from .table_layout_wdg import FastTableLayoutWdg
@@ -3553,14 +3551,11 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
             kwargs['window_resize_offset'] = self.kwargs.get("window_resize_offset")
             from .collection_wdg import CollectionLayoutWdg
-            print("line 3549  elif layout == collection ")#change change
             layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'table':
-            print("line 3554 layout == table ")
-            kwargs['mode'] = 'table' #change change
+            kwargs['mode'] = 'table'
             from .collection_wdg import CollectionLayoutWdg
-            print("line 3573  elif layout == table ")#change change
             layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
