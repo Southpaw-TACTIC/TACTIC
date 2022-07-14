@@ -87,7 +87,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         if not self.target_id:
             self.target_id = "main_body"
 
-            
+
         self.search_type = kwargs.get('search_type')
         if not self.search_type:
             raise TacticException("Must define a search type")
@@ -170,8 +170,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         elif not config:
-            custom_column_configs = WidgetConfigView.get_by_type("column") 
-            
+            custom_column_configs = WidgetConfigView.get_by_type("column")
+
             # handle element names explicitly set
             self.element_names = self.kwargs.get("element_names")
             if self.element_names:
@@ -179,7 +179,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 if isinstance(self.element_names, basestring):
                     self.element_names = self.element_names.split(",")
                     self.element_names = [x.strip() for x in self.element_names]
-                
+
                 config_xml = "<config><custom layout='TableLayoutWdg'>"
                 for element_name in self.element_names:
                         config_xml += "<element name='%s'/>" % element_name
@@ -196,7 +196,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             else:
                 config = WidgetConfigView.get_by_search_type(search_type=self.search_type, view=self.view)
-            
+
             config.get_configs().extend( custom_column_configs )
         #
         # FIXME: For backwards compatibility. Remove this
@@ -245,7 +245,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 finally:
                     sudo.exit()
-                parser = ExpressionParser() 
+                parser = ExpressionParser()
                 related = parser.get_plain_related_types(expression)
 
                 related_type = None
@@ -256,11 +256,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         related_type = m.groups()[0]
                     else:
                         related_type = None
-                
+
                 if not related_type and self.search_key:
                     # this is needed for single search type expression
                     related_type = SearchKey.extract_search_type(self.search_key)
-                  
+
                 if self.expr_sobjects and related_type and not isinstance(self.expr_sobjects[0], Search):
                     # Even if these expression driven sobjects have more than 1 parent.. we can only take 1 parent key
                     # for insert popup purpose.. This doesn't affect the search though since with expression, the search logic
@@ -273,7 +273,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     # the expression table could start out empty
                     self.parent_key = self.search_key
 
-                   
+
             else:
                 self.parent_key = self.search_key
 
@@ -292,7 +292,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # handle a connect key
         self.connect_key = self.kwargs.get("connect_key")
-    
+
 
         self.table = Table(mode="div")
         self.table.set_id(self.table_id)
@@ -304,8 +304,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         self.table.add_class("spt_table")
         mode = self.kwargs.get("mode")
-        
-        # this makes Task edit content not refreshing properly, commented out 
+
+        # this makes Task edit content not refreshing properly, commented out
         # for now
         #if mode != "insert":
         self.table.add_class("spt_table_content")
@@ -322,7 +322,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         self.simple_search_view = self.kwargs.get("simple_search_view")
         # Always instantiate the search limit for the pagination at the bottom
-        
+
         from tactic.ui.app import SearchLimitWdg
         self.search_limit = SearchLimitWdg()
 
@@ -370,7 +370,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def set_items_found(self, number):
         self.items_found = number
-    
+
     def set_search_wdg(self, search_wdg):
         self.search_wdg = search_wdg
 
@@ -414,12 +414,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             direction = 'asc'
         else:
             tmp_order_element = order_element
-            
+
         return tmp_order_element, direction
 
     def alter_search(self, search):
         '''give the table a chance to alter the search'''
-       
+
         from tactic.ui.filter import FilterData
         filter_data = FilterData.get_from_cgi()
 
@@ -429,7 +429,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         state_filter = ''
         if self.state.get('filter'):
             state_filter = self.state.get('filter')
-        if self.kwargs.get('filter'): 
+        if self.kwargs.get('filter'):
             state_filter = '%s%s' %(state_filter, self.kwargs.get('filter') )
 
         if self.kwargs.get('op_filters'):
@@ -443,7 +443,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             self.order_element = order
             if not values:
                 tmp_order_element, direction = self.get_order_element(self.order_element)
-                
+
                 widget = self.get_widget(tmp_order_element)
                 self.order_widget = widget
                 try:
@@ -485,7 +485,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         sobject = search.get_sobjects()[0]
                         parent = sobject.get_parent()
                         parent_search_type = parent.get_search_type()
-                        
+
                         parent_search_type = parent_search_type + "." + tmp_order_element_list[1 + i]
 
                         search.add_order_by(parent_search_type, direction)
@@ -516,6 +516,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 search_filter.alter_search(self.search)
             except:
                 pass
+
+
+        # to handle collection view.
+        collection_key = self.kwargs.get("collection_key")
+        if collection_key:
+            collection = Search.get_by_search_key(collection_key)
+            search2 = Search( collection.get_collection_type() )
+            search2.add_column("search_code")
+            search2.add_filter("parent_code", collection.get_code() )
+            search.add_search_filter("code", search2) #markmark ask Remko does it have to be self.search?
+
 
         # make sure the search limit is the last filter added so that the counts
         # are correct
@@ -593,7 +604,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     expr_search = Search(self.search_type)
                     ids = SObject.get_values(self.expr_sobjects, 'id')
                     expr_search.add_filters('id', ids)
-                finally: 
+                finally:
                     sudo.exit()
 
         elif expression:
@@ -612,8 +623,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         filter_json = ''
         if self.kwargs.get('filter'):
             filter_json = self.kwargs.get('filter')
-            
-        # turn on user_override since the user probably would alter the saved search 
+
+        # turn on user_override since the user probably would alter the saved search
         limit = self.kwargs.get('search_limit')
         custom_search_view = self.kwargs.get('custom_search_view')
         if not custom_search_view:
@@ -638,7 +649,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 self.search_wdg = SearchWdg(search=search, search_type=self.search_type, state=self.state, filter=filter_json, view=self.search_view, user_override=True, parent_key=None, run_search_bvr=run_search_bvr, limit=limit, custom_search_view=custom_search_view, filter_view=filter_view)
             finally:
                 sudo.exit()
-        
+
         search = self.search_wdg.get_search()
         self.search = search
 
@@ -717,9 +728,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             # add a custom search class
             self.search_class = self.kwargs.get('search_class')
             simple_search_view = self.kwargs.get("search_view")
-    
 
-        
+
+
         if self.search_class and self.search_class not in  ['None','null']:
             kwargs = {
                 "search_type": self.search_type,
@@ -806,7 +817,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         sobjects = search.process_sobjects(self.sobjects)
         if sobjects != None:
             self.sobjects = sobjects
-        
+
     def set_as_panel(self, widget):
         widget.add_class("spt_panel")
         widget.add_attr("spt_class_name", Common.get_full_class_name(self) )
@@ -965,14 +976,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
         style = HtmlElement.style("""
-        
-            .SPT_DTS { 
+
+            .SPT_DTS {
                 color: #000;
                 padding-top: 2px;
                 padding-right: 8px;
                 background: #fcfcfc;
             }
-      
+
             .spt_search_limit_activator {
                 border-radius: 6px;
                 font-size: 10px;
@@ -984,7 +995,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 border-style: none;
                 margin: 0px 10px;
                 display: inline-block;
-            
+
             }
 
             .spt_table_search_limit {
@@ -1000,18 +1011,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_bootstrap_shelf_styles(self):
 
-        return HtmlElement.style(""" 
+        return HtmlElement.style("""
 
             .spt_table_action_wdg {
                  background: var(--spt_palette_background2);
             }
-            
+
         """)
 
 
     def get_action_wdg(self):
 
-        
+
         # add the ability to put in a custom shelf
         shelf_view = self.kwargs.get("shelf_view")
 
@@ -1023,7 +1034,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         from tactic.ui.widget import TextBtnWdg, TextBtnSetWdg
 
-        div = DivWdg() 
+        div = DivWdg()
         div.add_class("spt_table_action_wdg")
         div.add_class("SPT_DTS")
 
@@ -1084,7 +1095,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if not gear_settings:
                 gear_settings = self.get_setting("gear_settings")
 
-           
+
             btn_dd = DgTableGearMenuWdg(
                 menus=gear_settings,
                 layout=self,
@@ -1198,7 +1209,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         spt.simple_search.show();
                     }
 
-                   
+
 
                     '''
                 } )
@@ -1212,12 +1223,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # -- ITEM COUNT DISPLAY
         # add number found
         if self.show_search_limit:
-            
+
             # -- SEARCH LIMIT DISPLAY
             if self.items_found == 0:
                 try:
                     if self.search:
-                        
+
                         self.items_found = self.search.get_count()
                     elif self.sobjects:
                         self.items_found = len(self.sobjects)
@@ -1230,11 +1241,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 title = "%s %s" % (self.items_found, _("item found"))
             else:
                 title = "%s %s" % (self.items_found, _("items found"))
-           
-            
+
+
             num_div = ActionButtonWdg(title=title, btn_class='btn dropdown-toggle')
             num_div.add_class("spt_search_limit_activator")
-            
+
             #HACK
             num_div.add_style("height", "32px")
 
@@ -1243,13 +1254,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             dialog.set_as_activator(num_div.get_button_wdg(), offset={'x':0,'y': 0})
             dialog.set_as_activator(num_div.get_collapsible_wdg(), offset={'x':0,'y': 0})
             dialog.add_title("Search Range")
-            
+
             limit_div = DivWdg()
             limit_div.add_class("spt_table_search")
             limit_div.add_class("spt_table_search_limit")
             limit_div.add(self.search_limit)
             dialog.add(limit_div)
-        
+
         else:
             num_div = None
 
@@ -1264,10 +1275,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         layout_wdg = None
         column_wdg = None
-        
+
         show_column_wdg = self.get_setting("column_manager")
         show_layout_wdg = self.get_setting('layout_switcher')
-        
+
         if show_column_wdg and self.can_add_columns():
             column_wdg = self.get_column_manager_wdg()
         if show_layout_wdg:
@@ -1291,10 +1302,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 help_wdg = HelpButtonWdg(alias=help_alias, use_icon=True)
                 help_wdg.add_style("margin-top: -2px")
 
-        
+
 
         wdg_list = []
-        
+
 
         badge_view = self.kwargs.get("badge_view")
         if badge_view and badge_view.strip():
@@ -1304,7 +1315,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 wdg_list.append( { 'wdg': widget } )
             else:
                 print("WARNING: badge view '%s' not defined" % badge_view)
- 
+
 
         if keyword_div:
             wdg_list.append( {
@@ -1312,13 +1323,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 'wdg': keyword_div
             } )
 
-       
+
         if self.get_setting("refresh"):
             if self.get_setting("keyword_search"):
                 button_div = ButtonNewWdg(title='Search', icon="FA_REFRESH")
             else:
                 button_div = ButtonNewWdg(title='Refresh', icon="FA_SYNC")
-               
+
             self.run_search_bvr = self.kwargs.get('run_search_bvr')
             if self.run_search_bvr:
                 button_div.add_behavior(self.run_search_bvr)
@@ -1357,16 +1368,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             from .collection_wdg import CollectionAddWdg
             collection_div = CollectionAddWdg(search_type=self.search_type, parent_key=self.parent_key)
             wdg_list.append( {'wdg': collection_div} )
-        
+
 
         #if button_row_wdg.get_num_buttons() != 0:
         #    wdg_list.append( { 'wdg': button_row_wdg } )
 
         if gear_button:
             wdg_list.append( { 'wdg': gear_button } )
-            
+
         if self.show_search_limit:
-            
+
             if num_div:
                 wdg_list.append( { 'wdg': num_div } )
         else:
@@ -1374,13 +1385,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 wdg_list.append( { 'wdg': num_div } )
 
         if search_button_row:
-            wdg_list.append( { 
+            wdg_list.append( {
                 'wdg': search_button_row,
                 'mobile_display': True
             } )
             if self.filter_num_div:
                 wdg_list.append( { 'wdg': self.filter_num_div } )
-            
+
         if column_wdg:
             wdg_list.append( { 'wdg': column_wdg } )
 
@@ -1427,12 +1438,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     wdg_list.append( { 'wdg': widget } )
                 else:
                     print("WARNING: shelf view '%s' not defined" % custom_shelf_view)
- 
 
 
-        
+
+
         #xx = DivWdg()
-        div.add_class("navbar") 
+        div.add_class("navbar")
         div.add_class("spt_base_table_action_wdg")
 
         div.add_style("flex-wrap: nowrap")
@@ -1465,7 +1476,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         action_div.add_class("d-flex")
 
         from tactic.ui.widget import BootstrapButtonRowWdg
-        collapse_div = BootstrapButtonRowWdg() 
+        collapse_div = BootstrapButtonRowWdg()
 
         for item in wdg_list:
             widget = item.get('wdg')
@@ -1494,7 +1505,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             outer.add(self.view_save_dialog)
 
         outer.add_style("white-space: nowrap")
-        
+
         return outer
 
 
@@ -1694,7 +1705,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                       mode: 'insert',
                       //num_columns: 2,
                       save_event: 'search_table_' + bvr.table_id
-                     
+
                     };
                     spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
                     '''%self.parent_key
@@ -1824,13 +1835,13 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             smenu_set = SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
-            
+
             smenu_set = SmartMenu.add_smart_menu_set( button.get_collapsible_wdg(), { 'BUTTON_MENU': self.gear_menus } )
             SmartMenu.assign_as_local_activator( button.get_collapsible_wdg(), "BUTTON_MENU", True )
 
         else:
             button = None
-      
+
 
         return button
 
@@ -1855,23 +1866,23 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             show_search = self.get_setting("advanced_search")
 
         if show_search and search_dialog_id:
-            
+
             if self.search_wdg:
                 num_filters = self.search_wdg.get_num_filters_enabled()
             else:
                 num_filters = 0
-            
+
             if num_filters > 0:
                 title = "%s filters" % num_filters
             else:
                 title = "View Advanced Search"
-            
+
             div = DivWdg()
             self.table.add_attr("spt_search_dialog_id", search_dialog_id)
             button = ButtonNewWdg(title=title, icon="FA_FILTER", show_menu=False, show_arrow=False)
             button.add_class("spt_table_search_button")
             div.add(button)
-            
+
             if num_filters > 0:
                 button.add_class("text-primary")
 
@@ -1943,14 +1954,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         if isinstance(custom_views, basestring):
             custom_views = jsonloads(custom_views)
-        
+
         if isinstance(custom_views, dict):
             if view not in custom_views.keys():
                 for key, val in custom_views.items():
                     if view in val:
                         view = val[0]
                         break
-                
+
         button_wdg = layout.get_button_wdg()
         collapsible_wdg = layout.get_collapsible_wdg()
 
@@ -1978,7 +1989,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if (version == "2") {
                 spt.table.set_table(table);
                 spt.table.add_columns(["task_edit", "task_status_edit"]);
-            } 
+            }
             else {
                 spt.dg_table.toggle_column_cbk(table,'task_status_edit','1');
             }
@@ -2001,7 +2012,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if (version == "2") {
                 spt.table.set_table(table);
                 spt.table.add_columns(["notes"]);
-            } 
+            }
             else {
                 spt.dg_table.toggle_column_cbk(table,'notes','1');
             }
@@ -2022,7 +2033,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if (version == "2") {
                 spt.table.set_table(table);
                 spt.table.add_columns(["file_list","history","general_checkin"]);
-            } 
+            }
             else {
                 spt.dg_table.toggle_column_cbk(table,'general_checkin','1');
             }
@@ -2079,7 +2090,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     element_names = spt.table.get_element_names();
                 }
                 else {
-                    element_names = spt.dg_table.get_element_names(table); 
+                    element_names = spt.dg_table.get_element_names(table);
                 }
                 bvr.args.element_names = element_names;
 
@@ -2121,10 +2132,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         interval_value = values.get('interval')
         if interval_value:
             group_interval_input.set_value(interval_value)
-            
+
         group_div.add(group_input)
         group_div.add(group_interval_input)
-        
+
         # add an order by element
         order_input = HiddenWdg("order")
         order_input.add_class("spt_search_order")
@@ -2203,7 +2214,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         menu_data.append( {
             "type": "separator"
         } )
-        
+
         # Group By menu item ...
         menu_data.append( {
             "type": "action",
@@ -2234,7 +2245,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 '''
             },
         } )
-      
+
 
         menu_data.append( {
             "type": "action",
@@ -2266,7 +2277,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 '''
             },
         } )
- 
+
         # Group By Week Optional menu item ...
         menu_data.append( {
             "type": "action",
@@ -2292,7 +2303,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             },
             #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
             #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
-        } )    
+        } )
 
         # Group By Week Optional menu item ...
         menu_data.append( {
@@ -2319,14 +2330,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             },
             #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
             #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
-        } )    
+        } )
 
         # Group Advanced menu item ...
         menu_data.append( {
             "type": "action",
             "label": "Group (Advanced)",
 
-            
+
             "bvr_cb": {
                 "args": {
                     'title': 'Group - Advanced',
@@ -2347,17 +2358,17 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     var table = activator.getParent('.spt_table');
                     var panel = activator.getParent('.spt_panel');
                     var layout = activator.getParent('.spt_layout');
-                   
+
 
                     if (layout.getAttribute("spt_version") == "2") {
                         spt.table.set_layout(layout);
                         element_names = spt.table.get_element_names();
                     }
                     else {
-                        element_names = spt.dg_table.get_element_names(table); 
+                        element_names = spt.dg_table.get_element_names(table);
                     }
                     bvr.args.element_names = element_names;
-                    
+
                     bvr.args.group_by = group_by;
 
 
@@ -2369,8 +2380,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             },
             #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
             #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
-        } )    
-      
+        } )
+
         #menu_data.append( {
         #    "type": "separator"
         #} )
@@ -2428,7 +2439,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         # DEPRECATED: we used the simple search widget for this
         """
         kwargs = {
-            "args": {'use_last_search': True,  
+            "args": {'use_last_search': True,
                      'display' : True,
                      'search_type': self.search_type
                     },
@@ -2459,7 +2470,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             }
         } )
         """
-       
+
 
         # Edit Column Definition menu item ...
         search_type_obj = SearchType.get(self.search_type)
@@ -2467,8 +2478,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         security = Environment.get_security()
 
 
-      
-      
+
+
 
         menu_data.append( {
             "type": "title", "label": "Table Columns &amp; Contents"
@@ -2535,7 +2546,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         element_names = spt.table.get_element_names();
                     }
                     else {
-                        element_names = spt.dg_table.get_element_names(table); 
+                        element_names = spt.dg_table.get_element_names(table);
                     }
                     bvr.args.element_names = element_names;
 
@@ -2580,7 +2591,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             "type": "separator"
          } )
 
-        
+
         # Remove Column menu item ...
         menu_data.append( {
             "type": "action",
@@ -2610,18 +2621,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #"hover_bvr_cb": { 'activator_add_looks': 'dg_header_cell_hilite',
             #                  'affect_activator_relatives' : [ 'spt.get_next_same_sibling( @, null )' ] }
         } )
-        
- 
+
+
 
 
         menu_data.append( {
             "type": "separator"
         } )
 
-        
+
 
         group_columns = self.kwargs.get("group_elements")
-        
+
         # Remove Grouping menu item ...
         menu_data.append( {
             "type": "action",
@@ -2671,7 +2682,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             }
         } )
 
-        
+
         return { 'menu_tag_suffix': 'MAIN', 'width': 200, 'opt_spec_list': menu_data, 'allow_icons': False,
                  'setup_cbfn':  'spt.smenu_ctx.setup_cbk' }
 
@@ -2683,14 +2694,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         project_code = Project.get_project_code()
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
         if self.view_editable:
-            
+
             access_keys = self._get_access_keys("edit",  project_code)
             if security.check_access("builtin", access_keys, "edit"):
 
                 edit_view = self.kwargs.get("edit_view")
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
-            
+
                 spec_list.append( {
                     "type": "action",
                     "label": "Edit",
@@ -2712,7 +2723,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     "hover_bvr_cb": {
                         'activator_add_look_suffix': 'hilite',
                         'target_look_order': [
-                            'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ] 
+                            'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ]
                         }
                     }
                 )
@@ -2734,14 +2745,14 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 use_html5 = False
             else:
                 use_html5 = True
-            
+
             div = DivWdg()
             search_api_key = div.generate_api_key("get_by_search_key", inputs=["__API_UNKNOWN__"], attr=False)
             add_api_key = div.generate_api_key("add_file", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", {"file_type": 'icon', "mode": 'upload', "create_icon": 'True'}], attr=False)
             checkin_api_key = div.generate_api_key("simple_checkin", inputs=["__API_UNKNOWN__", "__API_UNKNOWN__", "__API_UNKNOWN__", {"mode": 'uploaded', 'use_handoff_dir': False, 'checkin_type': 'auto'}], attr=False)
-            
+
             if not use_html5:
-                
+
                 bvr_cb = {
                 'cbjs_action': r'''
 
@@ -2761,9 +2772,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     else {
                         tbody = activator.getParent('.spt_table_tbody');
                     }
-                    
+
                     search_key = tbody.getAttribute("spt_search_key");
-                    
+
                     var context = bvr.context;
                     if (!context)
                         context = tbody.getAttribute("spt_icon_context");
@@ -2866,9 +2877,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     else {
                         tbody = activator.getParent('.spt_table_tbody');
                     }
-                    
+
                     search_key = tbody.getAttribute("spt_search_key");
-                     
+
                     var context = bvr.context;
                     // there are 2 modes: file, icon
                     if (bvr.mode == 'icon') {
@@ -2878,7 +2889,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             context = "icon";
                     }
                     // set the form
-                    
+
                     if (!spt.html5upload.form) {
                         spt.html5upload.set_form( document.id(bvr.upload_id) );
                     }
@@ -2898,11 +2909,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             spt.app_busy.hide();
                             return;
                         }
-                        
+
                         var has_error = false;
 
                         try {
-                            
+
                             if (search_key.search('sthpw/snapshot')!= -1){
                                 var search_api_key = '%s';
                                 server.set_api_key(search_api_key);
@@ -2924,9 +2935,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                                 if (spt.get_typeof(bvr.checkin_context)=='array')
                                     bvr.checkin_context= bvr.checkin_context[0];
-                                
+
                                 //checkin_context would override the default context
-                                if (bvr.checkin_context) 
+                                if (bvr.checkin_context)
                                     context = bvr.checkin_context;
 
                                 if (bvr.mode != "icon" && bvr.checkin_type=='auto') {
@@ -2936,7 +2947,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                 }
                                 else {
                                     kwargs = {mode: 'uploaded'};
-                                    
+
                                 }
                                 var checkin_api_key = '%s';
                                 server.set_api_key(checkin_api_key);
@@ -2979,22 +2990,22 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     }
 
                     try {
-                       
+
                         var onchange = function() {
-                                
-                            server.start({'title':' Check-in', 'description': bvr.description + ' ' + search_key}); 
+
+                            server.start({'title':' Check-in', 'description': bvr.description + ' ' + search_key});
                             spt.html5upload.events['start'] = true;
 
                             spt.html5upload.upload_file( {
                               ticket: server.get_transaction_ticket(),
                               upload_complete: upload_complete,
                               upload_progress: percent_complete
-                              
+
                             } );
                         };
 
                         spt.html5upload.select_file( onchange );
-                            
+
 
                     }
                     catch(e) {
@@ -3020,7 +3031,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
                     'target_look_order': [
-                        'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ] 
+                        'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ]
                     }
             } )
 
@@ -3039,7 +3050,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 "hover_bvr_cb": {
                     'activator_add_look_suffix': 'hilite',
                     'target_look_order': [
-                        'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ] 
+                        'dg_row_retired_selected', 'dg_row_retired', self.look_row_selected, self.look_row ]
                     }
             } )
 
@@ -3049,12 +3060,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        
+
         access_keys = self._get_access_keys("retire_delete",  project_code)
         if security.check_access("builtin", access_keys, "allow") or security.check_access("search_type", self.search_type, "delete"):
-        
+
             spec_list.extend( [{ "type": "separator" },
-                
+
                 { "type": "action", "label": "Reactivate", "icon": IconWdg.CREATE,
                     "enabled_check_setup_key" : "is_retired",
                     "hide_when_disabled" : True,
@@ -3085,9 +3096,9 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         subscribe_label = 'Item'
         if self.search_type in ['sthpw/task','sthpw/note','sthpw/snapshot']:
             subscribe_label = 'Parent'
-        elif self.search_type.startswith('sthpw') or self.search_type.startswith('config'): 
+        elif self.search_type.startswith('sthpw') or self.search_type.startswith('config'):
             subscribe_label = None
-       
+
         if subscribe_label:
             spec_list.extend( [
 
@@ -3100,7 +3111,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  self.look_row_selected, self.look_row ] }
                     },
-                    
+
                     { "type": "action", "label": "Subscribe to %s"%subscribe_label,
                         #"icon": IconWdg.PICTURE_EDIT,
                         "enabled_check_setup_key": "is_not_subscribed",
@@ -3120,19 +3131,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         else {
                             tbody = activator.getParent('.spt_table_tbody');
                         }
-                        
+
                         var search_key = tbody.getAttribute("spt_search_key");
                         var server = TacticServerStub.get();
                         // search_key here is "id" based: need code based
                         var sobject = server.get_by_search_key(search_key);
                         var temps = server.split_search_key(search_key);
                         var st = temps[0];
-                        
+
                         if (['sthpw/note','sthpw/snapshot','sthpw/task'].contains(st))
                             search_key = server.build_search_key(sobject.search_type, sobject.search_code);
                         else
                             search_key = sobject.__search_key__;
-                       
+
                         try {
                             var sub = server.subscribe(search_key, {category: "sobject"} );
                             spt.notify.show_message('Subscribed to [' + sub.message_code + ']');
@@ -3140,7 +3151,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         } catch(e) {
                             spt.info(spt.exception.handler(e));
                         }
-     
+
                         ''' },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
@@ -3166,19 +3177,19 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         else {
                             tbody = activator.getParent('.spt_table_tbody');
                         }
-                        
+
                         var search_key = tbody.getAttribute("spt_search_key");
                         var server = TacticServerStub.get();
                         // search_key here is "id" based: need code based
                         var sobject = server.get_by_search_key(search_key);
                         var temps = server.split_search_key(search_key);
                         var st = temps[0];
-                        
+
                         if (['sthpw/note','sthpw/snapshot','sthpw/task'].contains(st))
                             search_key = server.build_search_key(sobject.search_type, sobject.search_code);
                         else
                             search_key = sobject.__search_key__;
-                       
+
                         try {
                             server.unsubscribe(search_key);
                             spt.notify.show_message('Unsubscribed from [' + search_key + ']');
@@ -3186,20 +3197,20 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         } catch(e) {
                             spt.info(spt.exception.handler(e));
                         }
-     
+
                         ''' },
                         "hover_bvr_cb": { 'activator_add_look_suffix': 'hilite',
                                           'target_look_order': [ 'dg_row_retired_selected', 'dg_row_retired',
                                                                  self.look_row_selected, self.look_row ] }
                     }
 
-                    ])   
+                    ])
 
         spec_list.extend( [
 
                 { "type": "title", "label": 'All Table Items' },
 
-                { "type": "action", 
+                { "type": "action",
                     "label": "Save All Changes",
                     #"icon": IconWdg.DB,
                     "enabled_check_setup_key" : "commit_enabled",
@@ -3207,12 +3218,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     '''
                     var activator = spt.smenu.get_activator(bvr);
                     var layout = activator.getParent(".spt_layout");
-                   
+
 
                     if (layout.getAttribute("spt_version") == "2") {
                         var dummy = layout.getElement('.spt_table_insert_row');
                         if (dummy) dummy.focus();
-                        
+
                         spt.table.row_ctx_menu_save_changes_cbk(evt, bvr);
                     }
                     else {
