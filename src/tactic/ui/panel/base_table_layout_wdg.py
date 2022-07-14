@@ -525,7 +525,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search2 = Search( collection.get_collection_type() )
             search2.add_column("search_code")
             search2.add_filter("parent_code", collection.get_code() )
-            search.add_search_filter("code", search2) #markmark ask Remko does it have to be self.search?
+            search.add_search_filter("code", search2)
 
 
         # make sure the search limit is the last filter added so that the counts
