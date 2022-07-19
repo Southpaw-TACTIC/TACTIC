@@ -15,6 +15,7 @@ __all__ = ["CollectionAddWdg", "CollectionAddCmd", "CollectionListWdg", "Collect
 
 
 
+
 from pyasm.common import Common, Environment, Container, TacticException
 from pyasm.search import SearchType, Search
 from pyasm.web import DivWdg, Table, SpanWdg, HtmlElement, Widget
@@ -908,12 +909,15 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 '''
             } )
 
+
+
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
         expression = self.kwargs.get("expression")
         mode = self.kwargs.get("mode") or "tile"
         collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key, expression=expression, collection_key=collection_key, mode=mode)
         div.add(collections_div)
+
 
         return div
 
@@ -956,6 +960,9 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 expression=expression,
                 sobjects=self.sobjects,
                 search=self.search,
+                element_names=self.kwargs.get("element_names"),
+                mode=self.kwargs.get("mode"),
+
                 element_names=self.kwargs.get("element_names"),
                 mode=self.kwargs.get("mode"),
 
@@ -1278,6 +1285,7 @@ class CollectionContentWdg(BaseRefreshWdg):
             sobjects = self.kwargs.get("sobjects")
             search = None
 
+
             # this will designate a search
             """
             search = Search(collection.get_base_search_type() )
@@ -1305,6 +1313,7 @@ class CollectionContentWdg(BaseRefreshWdg):
         if sobjects is None:
             self.kwargs["do_search"] = 'true'
 
+
         if mode == "table":
             self.kwargs['element_names'] = ["asset_view", "code", "name", "modified_date"]
             from .table_layout_wdg import TableLayoutWdg
@@ -1325,6 +1334,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
         if search:
+            print("search:", search) #markmark
             tile.set_search(search)
 
         elif sobjects:
@@ -1838,6 +1848,10 @@ class CollectionItemWdg(BaseRefreshWdg):
             count_div.add_style("margin-left: 23px")
             count_div.add_style("margin-top: -6px")
             count_div.add_style("box-shadow: 0px 0px 3px rgba(0,0,0,0.5)")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5509312300bc2de299cae4d1ca76fa2af431867e
             expression = "@COUNT(%s['parent_code','%s'].%s)" % (collection_type, collection.get_code(), search_type)
             count_div.add(count)
             count_div.add_update( {
