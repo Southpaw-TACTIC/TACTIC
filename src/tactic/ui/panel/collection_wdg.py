@@ -962,10 +962,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 search=self.search,
                 element_names=self.kwargs.get("element_names"),
                 mode=self.kwargs.get("mode"),
-
-                element_names=self.kwargs.get("element_names"),
-                mode=self.kwargs.get("mode"),
-
         )
         div.add(tile)
 
