@@ -3420,12 +3420,9 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         kwargs['config_xml'] = self.kwargs.get("config_xml")
-        print("# # # # #ViewPanelWdg # # # # # #  panel_wdg.py")
-        print("layout: ", layout)
         # set up the extra keys (for all layouts)
         if not layout or layout == "table":
             layout_class_path = "tactic.ui.panel.TableLayoutWdg"
-            #layout_class_path = "tactic.ui.panel.CollectionLayoutWdg"
         elif layout == "collection":
             layout_class_path = "tactic.ui.panel.CollectionLayoutWdg"
         elif layout == "tile":
@@ -3505,7 +3502,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['expand_on_load'] = self.kwargs.get("expand_on_load")
             kwargs['edit'] = self.kwargs.get("edit")
             from .table_layout_wdg import FastTableLayoutWdg
-            layout_table = FastTableLayoutWdg(**kwargs)#change change
+            layout_table = FastTableLayoutWdg(**kwargs)
 
 
         elif layout == 'tool':
@@ -3545,23 +3542,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             kwargs['process'] = self.kwargs.get("process")
             kwargs['gallery_align'] = self.kwargs.get("gallery_align")
             kwargs['window_resize_offset'] = self.kwargs.get("window_resize_offset")
-            kwargs['spt_mode'] = self.kwargs.get("spt_mode") #change change
-            kwargs['mode'] = self.kwargs.get("mode") #change change
+            kwargs['spt_mode'] = self.kwargs.get("spt_mode")
+            kwargs['mode'] = self.kwargs.get("mode")
             kwargs['layout']  =self.kwargs.get("layout")
             kwargs['spt_layout']  =self.kwargs.get("layout")
-            print("@ @ @ @ @ ViewPanelWdg @ @ @ @ @ layout == collection")
-            print("spt_mode: ", self.kwargs.get("spt_mode") )
-            print("mode: ", self.kwargs.get("mode") )
-            print("spt_layout: ", self.kwargs.get("spt_layout"))
-            print("layout: ", self.kwargs.get("layout"))
-            #kwargs['mode'] = 'table'
             from .collection_wdg import CollectionLayoutWdg
             layout_table = CollectionLayoutWdg(**kwargs)
-
-        # elif layout == 'table':  #change change this breaks the Search Type in job_type
-        #     kwargs['mode'] = 'table'
-        #     from .collection_wdg import CollectionLayoutWdg
-        #     layout_table = CollectionLayoutWdg(**kwargs)
 
         elif layout == 'custom':
             from .tool_layout_wdg import CustomLayoutWithSearchWdg
