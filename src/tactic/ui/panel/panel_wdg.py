@@ -2925,10 +2925,6 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         if link_view:
-<<<<<<< HEAD
-=======
-
->>>>>>> 5509312300bc2de299cae4d1ca76fa2af431867e
             config = SideBarBookmarkMenuWdg.get_config("SideBarWdg", "definition", default=self.default)
             display_options = config.get_display_options(link_view)
 
