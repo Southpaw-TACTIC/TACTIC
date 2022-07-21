@@ -517,7 +517,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             except:
                 pass
 
-
         # to handle collection view.
         collection_key = self.kwargs.get("collection_key")
         if collection_key:
