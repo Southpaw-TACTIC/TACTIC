@@ -148,13 +148,15 @@ class WebLoginCmd(Command):
                 if not login_sobject:
                     raise SecurityException("User does not exist")
 
+                # commented out on 2022-07-21. We are passing the exception to the UI.
                 # first check that the password is correct
-                try:
-                    security.login_user(login, self.password, domain=self.domain, test=True)
-                except:
-                    # suppress the real error
-                    raise SecurityException("Need two factor code")
-
+                # try:
+                #     security.login_user(login, self.password, domain=self.domain, test=True)
+                # except:
+                #     # suppress the real error
+                #     raise SecurityException("Need two factor code")
+                # first check that the password is correct
+                security.login_user(login, self.password, domain=self.domain, test=True)
 
 
                 # email recipients
