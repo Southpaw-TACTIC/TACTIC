@@ -7119,6 +7119,7 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
     let config_xml = layout_el.getAttribute("spt_config_xml");
 
     let layout = layout_el.getAttribute("spt_layout");
+    let mode = layout_el.getAttribute("spt_mode");
 
     //let extra_data = layout_el.getAttribute("spt_extra_data");
     let inner = layout_el.getElement(".spt_layout_inner");
@@ -7173,7 +7174,8 @@ spt.table.refresh_rows = function(rows, search_keys, web_data, kw) {
         group_elements: group_elements,
         config_xml: config_xml,
         expand_on_load: expand_on_load,
-        extra_data: extra_data
+        extra_data: extra_data,
+        mode: mode
     }
 
     if (layout == "tile") {

@@ -875,11 +875,10 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         library_title = self.kwargs.get("library_title")
         if not library_title:
             library_title = "Asset Library"
-
+        mode = self.kwargs.get("mode") or "tile"
         asset_lib_div = DivWdg()
         div.add(asset_lib_div)
         folder_icon = IconWdg(icon="FAR_FOLDER_OPEN", width='30px')
-
         asset_lib_div.add(folder_icon)
         asset_lib_div.add_style("margin: 5px 0px 10px 0px")
         asset_lib_div.add_style("padding-top: 5px")
@@ -892,11 +891,13 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         asset_lib_div.add_class("hand")
         asset_lib_div.add_behavior( {
                 'type': 'click_up',
+                'mode': mode,
                 'cbjs_action': '''
                 var top = bvr.src_el.getParent('.spt_collection_top');
                 var view_panel = top.getParent('.spt_view_panel');
+                var mode = bvr.mode;
 
-                if (view_panel.getAttribute('spt_layout') == 'table') {
+                if (mode == 'table') {
                     view_panel.setAttribute('spt_layout', 'collection');
                     view_panel.setAttribute('spt_mode','table');
                 }
@@ -904,7 +905,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                     view_panel.setAttribute('spt_layout', 'collection');
                     view_panel.setAttribute('spt_mode','tile');
                 }
-
                 spt.panel.refresh(view_panel);
                 '''
             } )
@@ -914,8 +914,12 @@ class CollectionLayoutWdg(ToolLayoutWdg):
         # Collections folder structure in the left panel
         search_type = self.kwargs.get('search_type')
         expression = self.kwargs.get("expression")
-        mode = self.kwargs.get("mode") or "tile"
-        collections_div = CollectionFolderWdg(search_type=search_type, parent_key=self.parent_key, expression=expression, collection_key=collection_key, mode=mode)
+        collections_div = CollectionFolderWdg(
+            search_type=search_type,
+            parent_key=self.parent_key,
+            expression=expression,
+            collection_key=collection_key,
+            mode=mode)
         div.add(collections_div)
 
 
@@ -937,7 +941,6 @@ class CollectionLayoutWdg(ToolLayoutWdg):
 
         group_elements = self.kwargs.get("group_elements") or []
         window_resize_offset = self.kwargs.get("window_resize_offset") or None
-
         # FIXME: don't really need this as search is already defined with this
         # expression
         expression = self.kwargs.get("expression")
@@ -952,14 +955,11 @@ class CollectionLayoutWdg(ToolLayoutWdg):
                 show_search_limit=False,
                 detail_element_names=self.kwargs.get("detail_element_names"),
                 upload_mode=self.kwargs.get("upload_mode"),
-                group_elements=group_elements,
                 parent_key=parent_key,
                 collection_key=collection_key,
                 window_resize_offset=window_resize_offset,
-
                 expression=expression,
                 sobjects=self.sobjects,
-                search=self.search,
                 element_names=self.kwargs.get("element_names"),
                 mode=self.kwargs.get("mode"),
         )
@@ -1185,7 +1185,10 @@ class CollectionFolderWdg(BaseRefreshWdg):
             else:
                 selected = False
 
-            collection_wdg = CollectionItemWdg(collection=collection, path=collection.get_value("name"), selected=selected)
+            collection_wdg = CollectionItemWdg(
+                collection=collection,
+                path=collection.get_value("name"),
+                selected=selected)
             collections_div.add(collection_wdg)
             collection_wdg.add_class("spt_collection_div")
 
@@ -1216,8 +1219,6 @@ class CollectionContentWdg(BaseRefreshWdg):
         path = self.kwargs.get("path")
         if not path and collection:
             path = collection.get("name")
-
-
 
         top = self.top
         top.add_class("spt_collection_tile_wrap")
@@ -1272,15 +1273,18 @@ class CollectionContentWdg(BaseRefreshWdg):
             #search2 = Search(collection_type)
             #search2.add_column("search_code")
             #search.add_search_filter("code", search2, op="not in")
+            if self.collection_key:
+                del(self.kwargs['collection_key'])
 
-            del(self.kwargs['collection_key'])
-            self.kwargs["search"] = search
+            if not self.kwargs['mode']:
+                self.kwargs['mode'] = 'tile'
 
             sobjects = None
         else:
             sobjects = self.kwargs.get("sobjects")
             search = None
-
+            if not self.kwargs['mode']:
+                self.kwargs['mode'] = 'table'
 
             # this will designate a search
             """
@@ -1301,7 +1305,6 @@ class CollectionContentWdg(BaseRefreshWdg):
         #mode = "table"
         mode = self.kwargs.get("mode") or "tile"
         #self.kwargs['show_border'] = 'horizontal'
-
         # remove the sobjects from the kwargs so on refresh, the stringified sobjects
         # don't cause a stack trace
         if "sobjects" in self.kwargs:
@@ -1317,7 +1320,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                 **self.kwargs
             )
         elif mode == "panel":
-            from .panel_wdg import ViewPanel
+            from .panel_wdg import ViewPanelWdg
             tile = ViewPanelWdg(
                 **self.kwargs
             )
