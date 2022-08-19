@@ -2272,6 +2272,7 @@ class IngestUploadCmd(Command):
                 search.add_filter(column, new_filename)
 
                 # add job_code as a search filter
+                job_code = extra_data.get("job_code")
                 if job_code:
                     search.add_filter("job_code", job_code)
 
