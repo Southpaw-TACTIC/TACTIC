@@ -506,7 +506,7 @@ class IngestUploadWdg(BaseRefreshWdg):
             update_mode = SelectWdg(name="update mode")
             update_mode.add_class("spt_update_mode_select")
             update_mode.set_option("values", ["false", "true", "sequence"])
-            update_mode.set_option("labels", ["Always insert a new item", "Update duplicate items", "Update groups as sequences"])
+            update_mode.set_option("labels", ["Always insert a new item", "Update existing assets", "Update groups as sequences"])
             update_mode.set_option("default", update_mode_option)
             update_mode.add_style("margin-top: -3px")
             update_mode.add_style("margin-right: 5px")
@@ -2270,6 +2270,10 @@ class IngestUploadCmd(Command):
                 search = Search(search_type)
                 # ingested files into search type applies filename without i.e. _v001 suffix
                 search.add_filter(column, new_filename)
+
+                # add job_code as a search filter
+                if job_code:
+                    search.add_filter("job_code", job_code)
 
                 if relative_dir and search.column_exists("relative_dir"):
                     if not dated_dirs:
