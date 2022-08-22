@@ -3278,6 +3278,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         column_widths = self.kwargs.get("column_widths")
 
 
+
         if extra_data:
             if isinstance(extra_data, dict):
                 extra_data = jsondumps(extra_data)
@@ -3314,8 +3315,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             layout = search_type_obj.get_value("default_layout", no_exception=True)
         if not layout:
             layout = 'default'
-
-
         search = self.kwargs.get("search")
 
         resize_cbjs = self.kwargs.get("resize_cbjs")
@@ -3411,7 +3410,8 @@ class ViewPanelWdg(BaseRefreshWdg):
             "name": name,
             "column_widths": column_widths,
             "resize_cbjs": resize_cbjs,
-            "reorder_cbjs": reorder_cbjs
+            "reorder_cbjs": reorder_cbjs,
+            "layout": layout
         }
 
 
