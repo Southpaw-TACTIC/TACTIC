@@ -1030,6 +1030,7 @@ class TileLayoutWdg(ToolLayoutWdg):
             # A list of extensions that will be opened  when clicked, instead of viewed in
             # the gallery
             excludes = [".pdf", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".doc", ".docx"]
+            view_mode = self.kwargs.get("mode") or "tile"
 
             gallery_div = DivWdg()
             layout_wdg.add( gallery_div )
@@ -1040,6 +1041,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                 'excludes': excludes,
                 'width': gallery_width,
                 'align': self.gallery_align,
+                'mode': view_mode,
                 'bvr_match_class': 'spt_tile_content',
                 'cbjs_action': '''
                 var layout = bvr.src_el.getParent(".spt_layout");
@@ -1075,6 +1077,7 @@ class TileLayoutWdg(ToolLayoutWdg):
                             search_type: bvr.search_type,
                             show_shelf: false,
                             path: path+"/"+name,
+                            mode: bvr.mode
                         }
                         spt.panel.load(content, class_name2, kwargs2);
                     }
