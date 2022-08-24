@@ -1276,14 +1276,14 @@ class CollectionContentWdg(BaseRefreshWdg):
             if self.collection_key:
                 del(self.kwargs['collection_key'])
 
-            if not self.kwargs['mode']:
+            if not self.kwargs.get('mode'):
                 self.kwargs['mode'] = 'tile'
 
             sobjects = None
         else:
             sobjects = self.kwargs.get("sobjects")
             search = None
-            if not self.kwargs['mode']:
+            if not self.kwargs.get('mode'):
                 self.kwargs['mode'] = 'table'
 
             # this will designate a search
