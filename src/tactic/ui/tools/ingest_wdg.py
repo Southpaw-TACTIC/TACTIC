@@ -2588,7 +2588,11 @@ class IngestUploadCmd(Command):
             else:
                 format_context = ProjectSetting.get_value_by_key("checkin/format_context", search_type=search_type)
                 if format_context not in ['false', "False", False]:
-                    context = "%s/%s" % (context, filename)
+                    if new_filename:
+                        context = "%s/%s" % (context, new_filename)
+                    else:
+                        context = "%s/%s" % (context, filename)
+
 
             if context_mode == "case_insensitive":
                 context = context.lower()
