@@ -3360,12 +3360,135 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         lock_width = 0
 
-        for i, widget in enumerate(self.widgets):
+    ###########  code to make asset view collection tile clickable ###############
 
+
+        tr.add_class("spt_collection_wrap")
+        tr.add_class("spt_collection_item")
+        from tactic.ui.panel import ThumbWdg2
+        parent_key = self.kwargs.get("parent_key")
+        if parent_key:
+            parent = Search.get_by_search_key(parent_key)
+            search.add_parent_filter(parent)
+        self.search_type = self.kwargs.get("search_type")
+        parts = self.search_type.split("/")
+        collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
+
+        for i, widget in enumerate(self.widgets):
             element_name = widget.get_name()
 
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+            #this view is always table since "asset_view" is only used in Detail Layout
+            view_mode = "table"
+            collection_key = ""
+            collection_code = ""
+            collection_path = ""
+            collection_parent_path = ""
+            isCollection = False
+
+            if (collection_type == "workflow/asset_in_asset"):
+                isCollection = sobject.get_value("_is_collection")
+
+            if (isCollection) and (element_name == "asset_view"):
+
+                collection_parent_path = self.kwargs.get("path")# this needs some work
+                collection_path = sobject.get_name()
+                if not collection_path:
+                    collection_path = self.kwargs.get("collection_path")
+
+                collection_code = sobject.get_code()
+                self.kwargs["collection_code"] = collection_code
+                collection_key = sobject.get_search_key()
+                self.kwargs["collection_key"] = collection_key
+                expression = self.kwargs.get("expression")
+                if expression:
+                    search = Search.eval(expression)
+                else:
+                    search = Search(self.search_type)
+
+                search.add_filter("_is_collection", True)
+
+                tr.add_behavior( {
+                    'type': 'click',
+                    'mode': view_mode,
+                    'search_type': self.search_type,
+                    'parent_key': parent_key,
+                    'collection_type': collection_type,
+                    'collection_key': collection_key,
+                    'collection_code': collection_code,
+                    'collection_path': collection_path,
+                    'collection_parent_path': collection_parent_path,
+                    'bvr_match_class': 'spt_collection_item',
+
+                    'cbjs_action': '''
+                    var top = bvr.src_el.getParent(".spt_collection_top");
+                    var content = top.getElement(".spt_collection_content");
+                    var layout = bvr.src_el.getParent(".spt_layout");
+                    spt.table.set_layout(layout);
+
+                    var collection_key = bvr.src_el.getAttribute("spt_collection_key");
+                    if (!collection_key) {
+                        collection_key = bvr.collection_key;
+                        content.setAttribute("spt_collection_key", collection_key);
+                    }
+                    var collection_code = bvr.src_el.getAttribute("spt_collection_code");
+                    if (!collection_code) {
+                       collection_code = bvr.collection_code;
+                       content.setAttribute("spt_collection_code", collection_code);
+                    }
+
+                    var collection_path = bvr.collection_path;
+
+                    //build collection path
+                    //this needs some work in the future
+                    //steps in path are missed in some circumstances
+                    //i.e. when in a sub collection in detail layout then changing the view to collection layout does not pass the path correctly
+                    var path = "";
+                    if (!bvr.collection_parent_path && !collection_path) {
+                        path = "/";
+                    }
+                    else if (!bvr.collection_parent_path && collection_path) {
+                        path = collection_path;
+                    }
+                    else {
+                        path = bvr.collection_parent_path+"/"+collection_path;
+                    }
+                    content.setAttribute("spt_collection_path", path);
+
+                    var expr = "@SEARCH("+bvr.collection_type+"['parent_code','"+collection_code+"']."+bvr.search_type+")";
+
+                    var parent_dict = {};
+                    var parent_collection = bvr.src_el.getParent(".spt_subcollection_wdg");
+
+                    if (parent_collection) {
+                        for (var i = 0; i < collection_path.split("/").length - 1; i++) {
+                            var n = path.lastIndexOf("/");
+                            var collection_name = path.substring(n+1);
+                            path = path.substring(0, n);
+                            var parent_key = parent_collection.getAttribute("spt_parent_key");
+                            parent_dict[collection_name] = parent_key;
+                            parent_collection = parent_collection.getParent(".spt_subcollection_wdg");
+                        }
+                    }
+
+                    var class_name = "tactic.ui.panel.CollectionContentWdg";
+                    var element_names = bvr.src_el.getParent(".spt_element_names");
+                    var kwargs = {
+                        collection_key: collection_key,
+                        path: path,
+                        search_type: bvr.search_type,
+                        show_shelf: false,
+                        show_search_limit: true,
+                        expression: expr,
+                        parent_dict: parent_dict,
+                        parent_key: bvr.parent_key,
+                        element_names: element_names,
+                        mode: bvr.mode,
+                    }
+                    spt.panel.load(content, class_name, kwargs);
+                    '''
+                })
 
 
             if sobject.is_insert():
