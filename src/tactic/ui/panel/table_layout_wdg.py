@@ -3366,10 +3366,11 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         tr.add_class("spt_collection_wrap")
         tr.add_class("spt_collection_item")
         from tactic.ui.panel import ThumbWdg2
+
         parent_key = self.kwargs.get("parent_key")
-        if parent_key:
-            parent = Search.get_by_search_key(parent_key)
-            search.add_parent_filter(parent)
+
+        expression = self.kwargs.get("expression")
+
         self.search_type = self.kwargs.get("search_type")
         parts = self.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
@@ -3401,13 +3402,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 self.kwargs["collection_code"] = collection_code
                 collection_key = sobject.get_search_key()
                 self.kwargs["collection_key"] = collection_key
-                expression = self.kwargs.get("expression")
-                if expression:
-                    search = Search.eval(expression)
-                else:
-                    search = Search(self.search_type)
-
-                search.add_filter("_is_collection", True)
 
                 tr.add_behavior( {
                     'type': 'click',
