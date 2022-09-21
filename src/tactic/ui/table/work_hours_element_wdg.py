@@ -385,24 +385,20 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             td.add(day_wdg)
             td.add_styles("text-align: center; padding-left: 2px;min-width: %spx"%self.day_width)
 
-        icon = IconButtonWdg(tip="cccccNext Week", icon="FA_CHEVRON_RIGHT")
+        icon = IconButtonWdg(tip="Next Week", icon="FA_CHEVRON_RIGHT")
         icon.add_behavior( {
             'type': 'click_up',
             'start_date': next_start_date.__str__(),
             'cbjs_action': '''
             spt.app_busy.show('Loading next week...');
             var header = bvr.src_el.getParent('.spt_table_header');
-            console.log("header: ", header);
             if (!header) {
-                    spt.alert('Work hour widget requires the new Fast Table Layout to scroll to next week. You can do so in [Manage Side Bar].');
-                    spt.app_busy.hide();
-                    return;
+                spt.alert('Work hour widget requires the new Fast Table Layout to scroll to next week. You can do so in [Manage Side Bar].');
+                spt.app_busy.hide();
+                return;
             }
             var cur_name = spt.table.get_element_name_by_header(header);
-            //var cur_name = spt.table.get_next_col_name(header);
-            console.log("cur_name: ", cur_name);
             var values = {'start_date': bvr.start_date};
-            console.log("values: ", values);
             spt.table.refresh_column(cur_name, values);
             spt.app_busy.hide();
 
@@ -410,12 +406,11 @@ class WorkHoursElementWdg(SimpleTableElementWdg):
             '''
         } )
         td = table.add_cell(icon)
-        print("!!!!!!!!!!!!!!!/home/tactic/TACTIC/src/tactic/ui/table/work_hours_element_wdg.py!!!!!!!!!!!!!!!!! line 414")
         td.add_style('width: %spx'%self.day_width)
         # empty total cell
         td = table.add_blank_cell()
         td.add_style('width: 100%')
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! line 419")
+
         return div
 
     def get_time_value(self, entry, row):
