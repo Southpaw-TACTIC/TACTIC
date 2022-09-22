@@ -888,7 +888,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #"search_limit": True,
             #"expand": True,
             #"insert": True,
-            "layour_switcher": True,
+            "layout_switcher": True,
         }
         #settings = None
         #settings = "save|insert|search|keyword_search"
