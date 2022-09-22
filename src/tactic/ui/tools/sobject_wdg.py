@@ -69,13 +69,10 @@ class SObjectDetailWdg(BaseRefreshWdg):
         return HtmlElement.style(""" 
             
             .spt_detail_title {
-                display: inline-block;
                 vertical-align: top;
-                width: 500px
             }
 
             .spt_detail_panel {
-                display: inline-block;
                 vertical-align: top;
             }
                 
@@ -132,12 +129,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         div.add_style("min-height: 200px")
 
         border_color = div.get_color("border")
-        #div.add_style("border: solid 1px %s" % border_color)
-        #div.add_style("border-radius: 5px")
-        #div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
         div.add_style("margin: 20px")
-
-
 
 
         title = DivWdg()
@@ -293,21 +285,29 @@ class SObjectDetailWdg(BaseRefreshWdg):
             return layout
 
 
+
+
+        # standard format
+
+        top_row = DivWdg()
+        top.add(top_row)
+        top_row.add_style("display: flex")
+        top_row.add_style("gap: 15px")
+
         show_header = self.kwargs.get("show_header")
         if show_header not in ['false', False]:
             title_wdg = self.get_title_wdg()
             title_wdg.add_class("spt_detail_title")
-            top.add(title_wdg)
-
-
-
-        panel_wdg = DivWdg()
-        top.add(panel_wdg)
-        panel_wdg.add_class("spt_detail_panel")
+            top_row.add(title_wdg)
 
 
         show_thumb = self.kwargs.get("show_thumb")
         if show_thumb not in ['false', False]:
+
+            panel_wdg = DivWdg()
+            top_row.add(panel_wdg)
+            panel_wdg.add_class("spt_detail_panel")
+
 
             from tactic.ui.panel import ThumbWdg2
             thumb_div = DivWdg()
@@ -367,8 +367,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
         #top.add("<hr/>")
 
 
-        top.add("<br class='spt_sobject_detail_spacer' clear='all'/>")
-
         top.add( self.get_tab_wdg() )
 
         return top
@@ -384,6 +382,11 @@ class SObjectDetailWdg(BaseRefreshWdg):
     def get_tab_wdg(self):
 
         div = DivWdg()
+        div.add_class("spt_tab_container")
+        div.add_class("card")
+
+        div.add_style("margin: 15px 15px")
+        div.add_style("padding: 10px")
 
 
         # get the process
@@ -463,18 +466,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
 
         div.add(tab)
-        div.add_class("spt_tab_container")
-        div.add_class("card")
-
-        tab_container_style = HtmlElement.style('''
-
-            .spt_tab_container {
-                margin: 5px 10px 15px 10px;
-                padding: 10px;
-                height: auto;
-            }
-            
-            ''')
 
         return div
 
