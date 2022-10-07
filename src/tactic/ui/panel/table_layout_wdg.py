@@ -3365,7 +3365,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             ### start ########  code to make asset view collection tile clickable ###############
             #this view is always table since "asset_view" is only used in Detail Layout
             view_mode = "table"
-            parent_key = self.kwargs.get("parent_key")
+
             collection_key = ""
             collection_code = ""
             collection_path = ""
@@ -3388,7 +3388,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     'type': 'click',
                     'mode': view_mode,
                     'search_type': self.search_type,
-                    'parent_key': parent_key,
                     'collection_type': collection_type,
                     'collection_key': collection_key,
                     'collection_code': collection_code,
@@ -3456,7 +3455,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         show_search_limit: true,
                         expression: expr,
                         parent_dict: parent_dict,
-                        parent_key: bvr.parent_key,
                         element_names: element_names,
                         mode: bvr.mode,
                     }
