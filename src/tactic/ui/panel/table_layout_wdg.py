@@ -3353,17 +3353,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         lock_width = 0
 
-    ###########  code to make asset view collection tile clickable ###############
-
-
-        tr.add_class("spt_collection_wrap")
-        tr.add_class("spt_collection_item")
-        from tactic.ui.panel import ThumbWdg2
-
-        parent_key = self.kwargs.get("parent_key")
-
-        expression = self.kwargs.get("expression")
-
         self.search_type = self.kwargs.get("search_type")
         parts = self.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
@@ -3372,17 +3361,18 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             element_name = widget.get_name()
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+
+            ### start ########  code to make asset view collection tile clickable ###############
             #this view is always table since "asset_view" is only used in Detail Layout
             view_mode = "table"
+            parent_key = self.kwargs.get("parent_key")
             collection_key = ""
             collection_code = ""
             collection_path = ""
             collection_parent_path = ""
             isCollection = False
 
-            if (collection_type == "workflow/asset_in_asset") or (collection_type == "workflow/job_asset_in_job_asset"):
-                isCollection = sobject.get_value("_is_collection")
-
+            isCollection = sobject.get_value("_is_collection", no_exception=True)
             if (isCollection) and (element_name == "asset_view"):
                 collection_parent_path = self.kwargs.get("path")# this needs some work
                 collection_path = sobject.get_name()
@@ -3394,7 +3384,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 collection_key = sobject.get_search_key()
                 self.kwargs["collection_key"] = collection_key
 
-                tr.add_behavior( {
+                tr.add_relay_behavior( {
                     'type': 'click',
                     'mode': view_mode,
                     'search_type': self.search_type,
@@ -3404,9 +3394,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     'collection_code': collection_code,
                     'collection_path': collection_path,
                     'collection_parent_path': collection_parent_path,
-                    'bvr_match_class': 'spt_collection_item',
-
-                    'cbjs_action': '''
+                    'bvr_match_class': 'spt_thumb_top',
+                    'cbjs_action': r'''
                     var top = bvr.src_el.getParent(".spt_collection_top");
                     var content = top.getElement(".spt_collection_content");
                     var layout = bvr.src_el.getParent(".spt_layout");
@@ -3475,6 +3464,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     '''
                 })
 
+                ### end ########   code to make asset view collection tile clickable ###############
 
             if sobject.is_insert():
                 onload_js = widget.get_onload_js()
