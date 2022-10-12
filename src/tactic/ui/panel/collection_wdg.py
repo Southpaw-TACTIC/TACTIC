@@ -1314,7 +1314,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
         if mode == "table":
-            self.kwargs['element_names'] = ["asset_view", "code", "name", "modified_date", "asset_type"]#change change
+            self.kwargs['element_names'] = ["asset_view", "code", "name", "modified_date", "asset_type"]
             from .table_layout_wdg import TableLayoutWdg
             tile = TableLayoutWdg(
                 **self.kwargs
