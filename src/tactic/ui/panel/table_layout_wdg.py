@@ -868,9 +868,8 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         #
         self.validations_div = DivWdg()
         self.validations_div.add_class("spt_table_validations")
-        self.validations_div.add_styles("display: none;")
+        self.validations_div.add_styles("display: none")
         inner.add(self.validations_div)
-
 
         self.check_access()
 
@@ -915,7 +914,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         group_span.add_class("spt_table_search")
         group_span.add(self.get_group_wdg() )
         inner.add(group_span)
-
         info = self.search_limit.get_info()
         if info.get("count") == None:
             info["count"] = len(self.sobjects)
@@ -946,7 +944,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         if not self.is_refresh and self.kwargs.get("do_initial_search") in ['hidden']:
             inner.set_style("display: none")
-
 
 
         self.element_names = self.config.get_element_names()
@@ -2296,7 +2293,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
         if hidden:
             tr.add_style("display: none")
 
-
         autofit = self.view_attributes.get("autofit") != 'false'
 
         show_header = self.kwargs.get("show_header")
@@ -2308,7 +2304,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         if not show_header:
             tr.add_style("display: none")
-
 
         tr.add_color("background", "background", -2)
         border_color = table.get_color("table_border", 0, default="border")
@@ -3002,7 +2997,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             show_group_insert = self.kwargs.get("show_group_insert") or True
             show_group_insert = False
             if show_group_insert:
-
                 td.add_style("position: relative")
 
                 add_div = DivWdg()
@@ -3207,7 +3201,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
 
     def handle_row(self, table, sobject, row, level=0):
-
         # add the new row
         tr = table.add_row()
         if not self.is_on:
@@ -3360,39 +3353,27 @@ class TableLayoutWdg(BaseTableLayoutWdg):
 
         lock_width = 0
 
-    ###########  code to make asset view collection tile clickable ###############
-
-
-        tr.add_class("spt_collection_wrap")
-        tr.add_class("spt_collection_item")
-        from tactic.ui.panel import ThumbWdg2
-
-        parent_key = self.kwargs.get("parent_key")
-
-        expression = self.kwargs.get("expression")
-
         self.search_type = self.kwargs.get("search_type")
         parts = self.search_type.split("/")
         collection_type = "%s/%s_in_%s" % (parts[0], parts[1], parts[1])
 
         for i, widget in enumerate(self.widgets):
             element_name = widget.get_name()
-
             td = table.add_cell()
             td.add_class("spt_cell_edit")
+
+            ### start ########  code to make asset view collection tile clickable ###############
             #this view is always table since "asset_view" is only used in Detail Layout
             view_mode = "table"
+
             collection_key = ""
             collection_code = ""
             collection_path = ""
             collection_parent_path = ""
             isCollection = False
 
-            if (collection_type == "workflow/asset_in_asset"):
-                isCollection = sobject.get_value("_is_collection")
-
+            isCollection = sobject.get_value("_is_collection", no_exception=True)
             if (isCollection) and (element_name == "asset_view"):
-
                 collection_parent_path = self.kwargs.get("path")# this needs some work
                 collection_path = sobject.get_name()
                 if not collection_path:
@@ -3403,19 +3384,17 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                 collection_key = sobject.get_search_key()
                 self.kwargs["collection_key"] = collection_key
 
-                tr.add_behavior( {
+                tr.add_relay_behavior( {
                     'type': 'click',
                     'mode': view_mode,
                     'search_type': self.search_type,
-                    'parent_key': parent_key,
                     'collection_type': collection_type,
                     'collection_key': collection_key,
                     'collection_code': collection_code,
                     'collection_path': collection_path,
                     'collection_parent_path': collection_parent_path,
-                    'bvr_match_class': 'spt_collection_item',
-
-                    'cbjs_action': '''
+                    'bvr_match_class': 'spt_thumb_top',
+                    'cbjs_action': r'''
                     var top = bvr.src_el.getParent(".spt_collection_top");
                     var content = top.getElement(".spt_collection_content");
                     var layout = bvr.src_el.getParent(".spt_layout");
@@ -3476,7 +3455,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                         show_search_limit: true,
                         expression: expr,
                         parent_dict: parent_dict,
-                        parent_key: bvr.parent_key,
                         element_names: element_names,
                         mode: bvr.mode,
                     }
@@ -3484,6 +3462,7 @@ class TableLayoutWdg(BaseTableLayoutWdg):
                     '''
                 })
 
+                ### end ########   code to make asset view collection tile clickable ###############
 
             if sobject.is_insert():
                 onload_js = widget.get_onload_js()
@@ -4212,6 +4191,9 @@ spt.table.get_total_count = function() {
 }
 
 spt.table.get_table = function() {
+    var layout = spt.table.layout;
+    var table = layout.getElement(".spt_table_table");
+    spt.table.last_table = table;
     return spt.table.last_table;
 }
 
@@ -4676,7 +4658,6 @@ spt.table.get_all_rows = function(embedded) {
     if (rows.length > 0 && rows[rows.length-1].hasClass("spt_table_insert_row")) {
         rows.pop();
     }
-
 
     return rows;
 }
@@ -7437,23 +7418,21 @@ spt.table.modify_columns = function(element_names, mode, values) {
 
 
     try {
-    var search_keys = spt.table.get_all_search_keys();
-    var rows = spt.table.get_all_rows();
-    var header_row = spt.table.get_header_row();
-    var group_rows = spt.table.get_group_rows();
-    var bottom_row = spt.table.get_bottom_row();
-    var col_indices = [];
-    for (var k=0; k<element_names.length; k++) {
-        col_indices.push(spt.table.get_column_index(element_names[k]));
-    }
+        var search_keys = spt.table.get_all_search_keys();
+        var rows = spt.table.get_all_rows();
+        var header_row = spt.table.get_header_row();
+        var group_rows = spt.table.get_group_rows();
+        var bottom_row = spt.table.get_bottom_row();
+        var col_indices = [];
+        for (var k=0; k<element_names.length; k++) {
+            col_indices.push(spt.table.get_column_index(element_names[k]));
+        }
 
 
     var layout = spt.table.get_layout();
     var table = spt.table.get_table();
     var view = layout.getAttribute("spt_view");
     var search_type = layout.getAttribute("spt_search_type");
-
-
     var group_elements = spt.table.get_group_elements();
 
     var current_table = spt.table.get_table();
@@ -7474,7 +7453,6 @@ spt.table.modify_columns = function(element_names, mode, values) {
         group_elements: group_elements,
         init_load_num : -1
     }
-
 
     var server = TacticServerStub.get();
 
@@ -10027,7 +10005,6 @@ class TableGroupManageWdg(BaseRefreshWdg):
         self.group_columns = self.group_columns.split(',')
 
     def get_columns_wdg(self, title, element_names, is_open=False):
-
         widget_idx = 3
         content_wdg = DivWdg()
         content_wdg.add_class("spt_columns")
