@@ -845,7 +845,7 @@ class XMPKeywordsParser(BaseMetadataParser):
             if not line:
                 break
 
-            line = line.strip()
+            line = str(line).strip()
 
             if not start:
                 if line.startswith( "<x:xmpmeta"):
