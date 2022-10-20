@@ -55,7 +55,7 @@ except:
     HAS_EXIF = False
 
 try:
-    import iptcinfo
+    import iptcinfo3
     HAS_IPTC = True
 except:
     HAS_IPTC = False
@@ -497,26 +497,39 @@ class IPTCMetadataParser(BaseMetadataParser):
 
         path = self.kwargs.get("path")
 
-        from pyasm.checkin.iptcinfo import IPTCInfo, c_datasets, c_datasets_r
+        #from pyasm.checkin.iptcinfo import IPTCInfo, c_datasets, c_datasets_r
+        from iptcinfo3 import IPTCInfo, c_datasets, c_datasets_r
 
         try:
+            info = IPTCInfo(path, force=True)
 
-            info = IPTCInfo(path)
-            data = info.data 
+            #data = info.data 
+            data = info._data 
 
             metadata = {}
             for key, value in data.items():
                 real_key = c_datasets.get(key)
                 if not real_key:
                     real_key = key
-                metadata[real_key] = value
 
+
+                if isinstance(value, list):
+                    value = " ".join(value)
+                else:
+                    try:
+                        value = value.decode()
+                    except:
+                        value = value.decode("latin-1")
+
+                if value != "":
+                    metadata[real_key] = value
 
             return metadata
         except Exception as e:
             info = {
-                    "Message": str(e)
+                    "Message": str(e),
             }
+            raise
             return info
 
 
@@ -602,12 +615,18 @@ class ImageMagickMetadataParser(BaseMetadataParser):
             return ret
 
         ret_val = self.sanitize_data(ret_val)
+        try:
+            ret_val = ret_val.decode()
+        except Exception as e:
+            ret_val = ret_val.decode("latin-1")
+
+
         p = re.compile(":\ +")
 
         level = 0
         names = set()
         curr_ret = ret
-        for line in ret_val.decode().split("\n"):
+        for line in ret_val.split("\n"):
             line = line.strip()
             if not line:
                 continue
