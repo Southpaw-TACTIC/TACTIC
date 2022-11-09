@@ -1355,7 +1355,7 @@ class Ticket(SObject):
 
         if expiry == -1:
             expiry = "NULL"
-        elif not expiry:
+        elif not expiry or expiry == "NULL":
             if not interval:
                 interval = Config.get_value("security","ticket_expiry")
                 if not interval:
@@ -1714,15 +1714,27 @@ class Security(Base):
                 login_in_group.set_value("login_group", group_name)
                 login_in_group.commit()
 
+
+            # Search for unexpired ticket
+            search = Search("sthpw/ticket")
+            search.add_filter("login", login_name)
+            now = search.get_database_impl().get_timestamp_now()
+            search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
+            ticket = search.get_sobject()
+
         finally:
             sudo.exit()
 
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        #self._find_all_login_groups()
 
-        # create a new ticket for the user
-        self._ticket = self._generate_ticket(login_name)
+
+        #self._find_all_login_groups()
+        if ticket:
+            self._ticket = ticket
+        else:
+            # create a new ticket for the user
+            self._ticket = self._generate_ticket(login_name)
 
         self._do_login()
 
@@ -1869,7 +1881,7 @@ class Security(Base):
 
 
 
-    def login_user_without_password(self, login_name, expiry=None, ticket_key=None):
+    def login_user_without_password(self, login_name, expiry=None, ticket_key=None, category=None):
         '''login a user without a password.  This should be used sparingly'''
 
         sudo = Sudo()
@@ -1899,7 +1911,7 @@ class Security(Base):
             if ticket and ticket.get("ticket"):
                 self._ticket = ticket
             elif ticket_key:
-                self._ticket = self._generate_ticket(login_name, expiry, ticket_key=ticket_key)
+                self._ticket = self._generate_ticket(login_name, expiry, ticket_key=ticket_key, category=category)
         finally:
             sudo.exit()
 
