@@ -1314,7 +1314,7 @@ class CollectionContentWdg(BaseRefreshWdg):
 
 
         if mode == "table":
-            self.kwargs['element_names'] = ["asset_view", "code", "name", "modified_date"]
+            self.kwargs['element_names'] = ["asset_view", "code", "name", "modified_date", "asset_type"]
             from .table_layout_wdg import TableLayoutWdg
             tile = TableLayoutWdg(
                 **self.kwargs
@@ -1415,13 +1415,24 @@ class CollectionContentWdg(BaseRefreshWdg):
                     '''
                 } )
                 # make icon and All Assets title clickable to return to view all assets
+                mode = self.kwargs.get("mode") or "tile"
                 asset_lib_span_div.add_class("hand")
                 asset_lib_span_div.add_behavior( {
                     'type': 'click_up',
+                    'mode': mode,
                     'cbjs_action': '''
-                    var top = bvr.src_el.getParent(".spt_collection_top");
-                    var view_panel = top.getParent(".spt_view_panel");
+                    var top = bvr.src_el.getParent('.spt_collection_top');
+                    var view_panel = top.getParent('.spt_view_panel');
+                    var mode = bvr.mode;
 
+                    if (mode == 'table') {
+                        view_panel.setAttribute('spt_layout', 'collection');
+                        view_panel.setAttribute('spt_mode','table');
+                    }
+                    else  {
+                        view_panel.setAttribute('spt_layout', 'collection');
+                        view_panel.setAttribute('spt_mode','tile');
+                    }
                     spt.panel.refresh(view_panel);
                     '''
                 } )
@@ -1434,6 +1445,7 @@ class CollectionContentWdg(BaseRefreshWdg):
                     'parent_key': self.parent_key,
                     'window_resize_offset': window_resize_offset,
                     'collection_type': collection_type,
+                    'mode': mode,
                     'bvr_match_class': 'spt_collection_link',
                     'cbjs_action': '''
 
@@ -1458,7 +1470,8 @@ class CollectionContentWdg(BaseRefreshWdg):
                             show_search_limit: true,
                             expression: expr,
                             parent_key: bvr.parent_key,
-                            window_resize_offset: bvr.window_resize_offset
+                            window_resize_offset: bvr.window_resize_offset,
+                            mode: bvr.mode
                         }
                         spt.panel.load(content, cls, kwargs);
 
