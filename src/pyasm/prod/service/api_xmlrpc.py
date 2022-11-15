@@ -893,12 +893,14 @@ class BaseApiXMLRPC(XmlrpcServer):
         container = Container.create()
         #self.session_containers[key] = container
 
-        # need to set site
+        
+        XmlRpcInit(ticket)
+
+        # need to set site as default following authentication
         from pyasm.security import Site
         if site:
             Site.set_site(site)
 
-        XmlRpcInit(ticket)
 
         if project_code:
             Project.set_project(project_code)
@@ -5932,21 +5934,6 @@ class ApiXMLRPC(BaseApiXMLRPC):
                 cmd.execute()
 
         except Exception as e:
-            '''
-            import traceback
-            tb = sys.exc_info()[2]
-            stacktrace = traceback.format_tb(tb)
-            stacktrace_str = "".join(stacktrace)
-            print("-"*50)
-            print(stacktrace_str)
-            print(str(e))
-            print("-"*50)
-
-            ret_val['status'] = 'ERROR'
-            ret_val['stack'] = stacktrace_str
-            ret_val['message'] = str(e)
-            '''
-
             # NOTE: we can do one or the other (not both).  Either we
             # reraise the exception and let the API command handle it
             # or we have to rollback here.  Using raise for now because
