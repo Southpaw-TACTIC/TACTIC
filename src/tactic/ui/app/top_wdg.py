@@ -94,6 +94,7 @@ class TopWdg(Widget):
         click_div.add_behavior( {
         'type': 'load',
         'cbjs_action': '''
+
         spt.body = {};
 
         spt.body.is_active = function() {
@@ -1209,8 +1210,8 @@ class TopWdg(Widget):
             widget.add('''
               <!-- Load React. -->
               <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-              <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-              <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+              <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+              <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
             ''')
 
         # add the color wheel css (DEPRECATED)
