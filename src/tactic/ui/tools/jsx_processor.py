@@ -1,13 +1,18 @@
 #!/usr/bin/python
 
-__all__ = ["JSXTranspile"]
+__all__ = ["BaseReactWdg", "JSXTranspile"]
 
 import tacticenv
 from pyasm.common import Xml, Config, GlobalContainer
+from pyasm.web import DivWdg
+
+from tactic.ui.common import BaseRefreshWdg
 
 from subprocess import Popen, PIPE
 
 import os, sys
+
+
 
 
 class JSXTranspile():
@@ -74,6 +79,7 @@ class JSXTranspile():
         if isinstance(jsx, str):
             jsx = jsx.encode()
 
+
         from subprocess import Popen, PIPE
         p = Popen(cmds, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
@@ -81,7 +87,7 @@ class JSXTranspile():
         o = o.strip()
         e = e.strip()
         if e:
-            print("WARNING: ", e)
+            e = e.decode()
             raise Exception(e)
 
         if jsx and not o:
@@ -92,7 +98,7 @@ class JSXTranspile():
 
 
 
-    def cache_jsx(cls, path, jsx, top=None):
+    def cache_jsx(cls, jsx_path, jsx, top=None):
         '''Onload JSX with caching'''
 
         tactic_mode = os.environ['TACTIC_MODE']
@@ -102,23 +108,38 @@ class JSXTranspile():
 
 
 
-        cache_key = "jsx:%s" % path
+        cache_key = "jsx:%s" % jsx_path
 
 
         # store this somewhere
-        basename, ext = os.path.splitext(path)
+        basename, ext = os.path.splitext(jsx_path)
         js_path = "%s.js" % basename
 
 
-        js = GlobalContainer.get(cache_key)
-        if js == None and not is_dev_mode:
-            # production mode always reads from file first time as there
-            # likely is no jsx processor
-            f = open(js_path, "r")
-            js = f.read()
-            f.close()
+        js = None
+        if is_dev_mode:
+            if os.path.exists(js_path):
 
-            GlobalContainer.put(cache_key, js)
+                js_time = os.path.getmtime(js_path)
+                jsx_time = os.path.getmtime(jsx_path)
+
+                if js_time - jsx_time > 0:
+                    f = open(js_path, "r")
+                    js = f.read()
+                    f.close()
+
+
+        else:
+            js = GlobalContainer.get(cache_key)
+            if js == None:
+                # production mode always reads from file first time as there
+                # likely is no jsx processor
+                f = open(js_path, "r")
+                js = f.read()
+                f.close()
+
+                GlobalContainer.put(cache_key, js)
+
 
         if js == None:
             #jsx = self.get_onload_jsx()
@@ -132,7 +153,11 @@ class JSXTranspile():
                 except Exception as e:
                     # if transpile fails, then try to read the js file
                     # (for those who do not have a JSX processor
-                    print("WARNING: ", e)
+                    message = str(e).replace("\\n", "\n")
+
+                    print("Error transpiling: ", jsx_path)
+                    print(message)
+                    raise
                     f = open(js_path, "r")
                     js = f.read()
                     f.close()
@@ -141,6 +166,7 @@ class JSXTranspile():
                     f = open(js_path, "w")
                     f.write(js)
                     f.close()
+                    print("Saved %s" % js_path )
 
             else:
                 raise Exception("No corresponding js file found for jsx")
@@ -166,7 +192,6 @@ class JSXTranspile():
     def main(cls, text):
         '''method that is run from the command line in Popen above'''
 
-
         # Need this to get the environment right.
         # FIXME: hard coded
         # FIXME: there must be a better way to set the environment of node.js
@@ -184,6 +209,10 @@ class JSXTranspile():
         executable = "%s/node_modules/.bin/babel" % dirname
 
         cmds = [executable, "-f", "temp", "--no-comments"]
+        cmds.append("--compact")
+        cmds.append("--minified")
+        #cmds.append("--plugins")
+        #cmds.append("babel-plugin-anonymize")
         p = Popen(cmds, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
         (o, e) = p.communicate(input=text)
@@ -192,6 +221,99 @@ class JSXTranspile():
 
         return o.decode()
     main = classmethod(main)
+
+
+
+
+
+class BaseReactWdg(BaseRefreshWdg):
+
+
+    def init_react(self, top, jsx_path):
+
+        f = open(jsx_path, "r")
+        jsx = f.read()
+        f.close()
+
+        js_div = DivWdg()
+
+        #
+        # This code needs to move to JSX transpiler
+        #
+        #js = JSXTranspile.cache_jsx(jsx_path, self.get_onload_jsx())
+        try:
+            js = JSXTranspile.cache_jsx(jsx_path, jsx)
+        except Exception as e:
+            error_div = DivWdg()
+            top.add(error_div)
+            error_div.add_style("margin: 20px")
+            error_div.add_style("padding: 20px")
+            error_div.add("<pre>%s</pre>" % e)
+
+            return
+
+
+        js = "if (!spt.react) { spt.react = {}; }\n\n" + js
+
+        js_div.add_behavior( {
+            'type': 'load',
+            'cbjs_action': js
+        } )
+
+        top.add(js_div)
+
+
+
+    def get_react_wdg(self, class_name, props):
+        react_wdg = DivWdg()
+        react_wdg.add_behavior( {
+            'type': 'load',
+            'props': props,
+            'cls': class_name,
+            'cbjs_action': '''
+
+            let cls_name = "spt.react." + bvr.cls;
+
+            let cls;
+            try {
+                cls = eval(cls_name);
+            }
+            catch(e) {
+                alert("ERROR: " + e);
+                return;
+            }
+
+            if (!cls) {
+                throw( bvr.cls + " does not exist");
+            }
+
+
+            let el = React.createElement(cls, bvr.props);
+
+            // React 18
+            let container = bvr.src_el;
+            container.addClass("spt_react");
+
+            const root = ReactDOM.createRoot(container);
+            container.react_root = root;
+            root.render(el);
+
+            // React 17
+            /*
+            let react = ReactDOM.render(el, bvr.src_el);
+            bvr.src_el.react = react;
+            bvr.src_el.addClass("spt_react");
+            */
+            '''
+        } )
+
+        return react_wdg
+
+
+    def get_onload_jsx(self):
+        return ''
+
+
 
 
 
