@@ -142,7 +142,6 @@ class JSXTranspile():
 
 
         if js == None:
-            #jsx = self.get_onload_jsx()
 
             from tactic.ui.tools import JSXTranspile
 
@@ -155,12 +154,18 @@ class JSXTranspile():
                     # (for those who do not have a JSX processor
                     message = str(e).replace("\\n", "\n")
 
-                    print("Error transpiling: ", jsx_path)
-                    print(message)
-                    raise
-                    f = open(js_path, "r")
-                    js = f.read()
-                    f.close()
+                    lines = message.split("\n")
+                    if lines[-1] == "Exception: Babel is not installed":
+                        print("WARNING: Babel is not installed")
+                        f = open(js_path, "r")
+                        js = f.read()
+                        f.close()
+                    else:
+                        print("Error transpiling: ", jsx_path)
+                        print(message)
+                        raise
+
+
                 else:
                     print("Compiled JSX." )
                     f = open(js_path, "w")
@@ -200,6 +205,9 @@ class JSXTranspile():
         if not dirname:
             dirname = "/home/tactic/npm/babel"
 
+        if not os.path.exists(dirname):
+            raise Exception("Babel is not installed")
+
         os.chdir(dirname)
 
         if isinstance(text, str):
@@ -209,8 +217,10 @@ class JSXTranspile():
         executable = "%s/node_modules/.bin/babel" % dirname
 
         cmds = [executable, "-f", "temp", "--no-comments"]
-        cmds.append("--compact")
-        cmds.append("--minified")
+        minified = False
+        if minified:
+            cmds.append("--compact")
+            cmds.append("--minified")
         #cmds.append("--plugins")
         #cmds.append("babel-plugin-anonymize")
         p = Popen(cmds, stdin=PIPE, stdout=PIPE, stderr=PIPE)

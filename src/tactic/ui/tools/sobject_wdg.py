@@ -425,6 +425,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         search.add_filter("search_type", self.search_type)
         search.add_filter("view", custom_view)
         custom_config_sobj = search.get_sobject()
+
         if custom_config_sobj:
             custom_config_xml = custom_config_sobj.get_value("config")
             custom_config = WidgetConfig.get(view=custom_view, xml=custom_config_xml)
@@ -463,7 +464,6 @@ class SObjectDetailWdg(BaseRefreshWdg):
 
  
         tab = TabWdg(**tab_kwargs)
-
 
         div.add(tab)
 
@@ -519,6 +519,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
             sobject = Search.get_by_search_key(search_key)
             search_key = sobject.get_search_key()
         search_key = search_key.replace("&", "&amp;")
+
 
         title = self.search_type.split("/")[-1].title()
 
