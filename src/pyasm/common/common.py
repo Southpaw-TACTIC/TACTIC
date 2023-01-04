@@ -1039,8 +1039,10 @@ class Common(Base):
 
 
     def pretty_print(data):
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(data)
+        #pp = pprint.PrettyPrinter(indent=4)
+        #pp.pprint(data)
+        import json
+        print( json.dumps(data, indent=2) )
     pretty_print = staticmethod(pretty_print)
 
 
