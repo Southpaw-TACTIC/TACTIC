@@ -1158,7 +1158,7 @@ class TableUndo(Base):
 
 
             from pyasm.biz import Project
-            from search import DbContainer
+            from .search import DbContainer
             db_resource = Project.get_db_resource_by_search_type(search_type)
             sql = DbContainer.get(db_resource)
 
@@ -1173,7 +1173,7 @@ class TableUndo(Base):
                 os.unlink(schema_path)
 
             # dump the table to a file and store it in cache
-            from sql_dumper import TableSchemaDumper
+            from .sql_dumper import TableSchemaDumper
             dumper = TableSchemaDumper(search_type)
             try:
                 dumper.dump_to_tactic(path=schema_path)
@@ -1181,7 +1181,7 @@ class TableUndo(Base):
                 print("SqlException: ", e)
         
             # dump the table data to a file and store it in cache
-            from sql_dumper import TableDataDumper
+            from .sql_dumper import TableDataDumper
             dumper = TableDataDumper()
             dumper.set_info(table)
             try:
@@ -1221,7 +1221,7 @@ class TableUndo(Base):
 
             # re-enter table
             from .sql import DbContainer
-            from search import SearchType
+            from .search import SearchType
             from pyasm.biz import Project
             project = Project.get_by_code(database)
             db_resource = project.get_project_db_resource()
