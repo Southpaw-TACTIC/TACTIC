@@ -1212,7 +1212,9 @@ class TopWdg(Widget):
               <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
               <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
               <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-              <script src="https://unpkg.com/redux@4.2.0/dist/redux.js"></script>
+              <script src="https://unpkg.com/redux@4.2.0/dist/redux.js" crossorigin></script>
+              <script src="https://unpkg.com/@reduxjs/toolkit@1.5.0/dist/redux-toolkit.umd.min.js" crossorigin></script>
+              <script src="https://unpkg.com/react-redux@5.0.6/dist/react-redux.min.js" crossorigin></script>
 
             ''')
 

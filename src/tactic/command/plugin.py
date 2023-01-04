@@ -1066,9 +1066,13 @@ class PluginInstaller(PluginBase):
 
 
                 # import the backup data back
-                backup_path = "%s/backup/%s.spt" % (self.plugin_dir, search_type.replace("/", "_"))
+                backup_dir = "%s/backup" % self.plugin_dir
+                backup_path = "%s/%s.spt" % (backup_dir, search_type.replace("/", "_"))
                 tools_backup = PluginTools(plugin_dir=self.plugin_dir, verbose=self.verbose)
                 tools_backup.import_data(backup_path)
+
+                if os.path.exists(backup_dir):
+                    shutil.rmtree(backup_dir)
 
 
             elif node_name == 'sobject':
