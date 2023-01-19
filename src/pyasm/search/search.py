@@ -3589,6 +3589,24 @@ class SObject(object):
 
 
     def set_data_value(self, column, name, value, quoted=True):
+
+        # TODO: for now try to cast to numbers.  This does not work
+        # for the boolean type as it cannot be automatically deduced.
+        if isinstance(value, str):
+            try:
+                int_value = int(value)
+                float_value = float(value)
+                #bool_value = bool(value)
+                if int_value == float_value:
+                    value = int_value
+                else:
+                    value = float_value
+            except Exception as e:
+                print("eeee: ", e)
+                pass
+
+
+
         data = self.get_json_value(column, default={})
         data = data.copy()
 
