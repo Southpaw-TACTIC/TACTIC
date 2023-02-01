@@ -2061,7 +2061,9 @@ class Security(Base):
         # database.
         if mode == 'autocreate':
             # get the login from the authentication class
-            self._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
             if not self._login:
                 self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
@@ -2075,7 +2077,9 @@ class Security(Base):
         # this is called
         elif mode == 'cache':
             # get the login from the authentication class
-            self._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
             if not self._login:
                 self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
@@ -2102,6 +2106,9 @@ class Security(Base):
             if not self._login:
                 self._login = Login.get_by_login(login_name, use_upn=True)
 
+
+        # always use the code
+        login_name = self._login.get_value("login")
 
         # if it doesn't exist, then the login fails
         if not self._login:
