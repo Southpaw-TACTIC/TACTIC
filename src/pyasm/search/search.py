@@ -3594,7 +3594,10 @@ class SObject(object):
         # for the boolean type as it cannot be automatically deduced.
         if isinstance(value, str):
             try:
-                int_value = int(value)
+                try:
+                    int_value = int(value)
+                except:
+                    int_value = ""
                 float_value = float(value)
                 #bool_value = bool(value)
                 if int_value == float_value:
