@@ -56,13 +56,21 @@ class Login(SObject):
 
     def get_defaults(self):
         '''specifies the defaults for this sobject'''
-
         defaults = super(Login, self).get_defaults()
+
+        login = self.get_value("login")
+        if not login:
+            login = self.get_value("code")
+
+        if not login:
+            login = Common.generate_alphanum_key(num_digits=12, delimit=4)
+
         # add the password "tactic" to any user that does not have one
         # specified
         defaults['password']= "39195b0707436a7ecb92565bf3411ab1"
-        defaults['code'] = self.get_value('login')
-        defaults['upn'] = self.get_value('login')
+        defaults['code'] = login
+        defaults['upn'] = login
+        defaults['login'] = login
 
         return defaults
 
