@@ -6,7 +6,6 @@ class StatusWdg extends React.Component {
     this.state = {};
     this.task = props.task;
   }
-
   render() {
     return React.createElement("div", {
       style: {
@@ -28,7 +27,5 @@ class StatusWdg extends React.Component {
       value: "horse"
     }, "Horse")));
   }
-
 }
-
 spt.task_element.StatusWdg = StatusWdg;

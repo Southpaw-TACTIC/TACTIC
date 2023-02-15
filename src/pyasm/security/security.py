@@ -56,13 +56,21 @@ class Login(SObject):
 
     def get_defaults(self):
         '''specifies the defaults for this sobject'''
-
         defaults = super(Login, self).get_defaults()
+
+        login = self.get_value("login")
+        if not login:
+            login = self.get_value("code")
+
+        if not login:
+            login = Common.generate_alphanum_key(num_digits=12, delimit=4)
+
         # add the password "tactic" to any user that does not have one
         # specified
         defaults['password']= "39195b0707436a7ecb92565bf3411ab1"
-        defaults['code'] = self.get_value('login')
-        defaults['upn'] = self.get_value('login')
+        defaults['code'] = login
+        defaults['upn'] = login
+        defaults['login'] = login
 
         return defaults
 
@@ -2061,7 +2069,9 @@ class Security(Base):
         # database.
         if mode == 'autocreate':
             # get the login from the authentication class
-            self._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
             if not self._login:
                 self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
@@ -2075,7 +2085,9 @@ class Security(Base):
         # this is called
         elif mode == 'cache':
             # get the login from the authentication class
-            self._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
             if not self._login:
                 self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
@@ -2102,6 +2114,9 @@ class Security(Base):
             if not self._login:
                 self._login = Login.get_by_login(login_name, use_upn=True)
 
+
+        # always use the code
+        login_name = self._login.get_value("login")
 
         # if it doesn't exist, then the login fails
         if not self._login:
