@@ -1281,9 +1281,11 @@ class PreviewDataWdg(BaseRefreshWdg):
                     processed_type = column_data.get("type")
                     if not processed_type:
                         processed_type = self._guess_column_type(csv_data, j)
-            
-            
-            column_select.add_empty_option("%s (New)" % processed_title)
+           
+            if processed_title.find("->") != -1:
+                column_select.add_empty_option("%s" % processed_title)
+            else:
+                column_select.add_empty_option("%s (New)" % processed_title)
             column_select.set_persist_on_submit()
             
             # Set options and labels
