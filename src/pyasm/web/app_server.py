@@ -882,7 +882,6 @@ class BaseAppServer(Base):
                         return security
 
                     if login and password and not two_factor_code:
-                        dsafadfs
                         return security
                         raise Exception("Two Factor Code not specified")
 

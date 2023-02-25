@@ -112,6 +112,7 @@ class WebLoginCmd(Command):
         # check to see if the login exists in the database
         login_sobject = None
         sudo = Sudo()
+        Site.set_site("default")
         try:
             if SearchType.column_exists("sthpw/login", "upn"):
                 search = Search("sthpw/login")
@@ -127,6 +128,8 @@ class WebLoginCmd(Command):
                 login_sobject = search2.get_sobject()
         finally:
             sudo.exit()
+            Site.pop_site()
+
 
 
 

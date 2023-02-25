@@ -33,6 +33,9 @@ class CsvImportCmd(Command):
         '''strip punctuation and Cf BOM characters for unicode string'''
         chars = []
         for char in word:
+            if char == "_":
+                chars.append(char)
+                continue
             cat = unicodedata.category(char)
             if cat == 'Cf' or cat.startswith('P'):
                 continue
@@ -103,8 +106,14 @@ class CsvImportCmd(Command):
  
             # New column name if column==''
             new_column = web.get_form_value("new_column_%s" % i)
-            
-            new_column = self.strip_punctuation(new_column)
+
+            if new_column.find("->") != -1:
+                parts = new_column.split("->")
+                a = self.strip_punctuation(parts[0])
+                b = self.strip_punctuation(parts[1])
+                new_column = "%s->%s" % (a,b)
+            else:
+                new_column = self.strip_punctuation(new_column)
             
             self.new_columns.append(new_column)
             
@@ -156,9 +165,18 @@ class CsvImportCmd(Command):
         for i, column in enumerate(self.columns):
             if not column:
                 new_column = self.new_columns[i]
-                new_column_type = self.new_column_types[i]
-                if new_column and new_column not in ['id', 'code'] and\
-                    i in self.enabled_idx:
+                if new_column.find("->") != -1:
+                    csv_titles.append( new_column )
+                    continue
+                    """
+                    parts = new_column.split("->")
+                    new_column = parts[0]
+                    new_column_type = "json"
+                    """
+                else:
+                    new_column_type = self.new_column_types[i]
+
+                if new_column and new_column not in ['id', 'code'] and i in self.enabled_idx:
                     # create the new column
                     from pyasm.command import ColumnAddCmd
                     #col_type = "Name/Code"
@@ -191,7 +209,7 @@ class CsvImportCmd(Command):
         updated_entries = []
         error_entries = []
         error = False
-        
+
 
         statements = []
         chunk = 100
@@ -303,9 +321,9 @@ class CsvImportCmd(Command):
                 else:
                     updated_entries.append(sobject.get_code())
 
-
-
             else:
+
+                statement = sobject.get_statement()
                 try:
                     sobject.commit(triggers=self.triggers_mode)
 
