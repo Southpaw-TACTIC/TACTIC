@@ -28,7 +28,7 @@ from .drupal_password_hasher import DrupalPasswordHasher
 
 if Config.get_value("install", "shutil_fix") in ["enabled"]:
     # disabling copystat method for windows shared folder mounted on linux
-    def copystat_dummy(src, dst):
+    def copystat_dummy(src, dst, follow_symlinks):
         pass
 
     import shutil
