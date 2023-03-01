@@ -75,6 +75,15 @@ class Login(SObject):
         return defaults
 
 
+
+    def get_display_value(self, long=False):
+            return self.get_value("display_name") or self.get_value("code")
+        
+
+
+
+
+
     def update_trigger(self):
         # the login groups are cached, so when an update has been made,
         # this cache has to be refreshed
@@ -432,6 +441,11 @@ class LoginGroup(Login):
         # LoginGroupTrigger handles the update event
         return defaults
 
+
+    def get_display_value(self, long=False):
+        return self.get_value("name") or self.get_value("code")
+
+
     def is_admin(self):
         group = self.get_value("login_group")
         return group == "admin"
@@ -690,6 +704,9 @@ class LoginInGroup(SObject):
 
     SEARCH_TYPE = "sthpw/login_in_group"
 
+    def get_display_value(self, long=False):
+        user = Search.get_by_code("sthpw/login", self.get_value("login"))
+        return user.get_value("display_name") or user.get_code()
 
     def get_by_names(login_name, group_name):
         search = Search( LoginInGroup.SEARCH_TYPE, sudo=True )
