@@ -103,9 +103,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             builtin_key = "view_column_manager"
 
         if builtin_key:
-
             access_keys = self._get_access_keys(builtin_key,  project_code)
             builtin = security.check_access("builtin", access_keys, "allow")
+
 
         return builtin
 
@@ -173,11 +173,13 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_names = GearMenuSecurityWdg.get_all_menu_names()
 
             for key,value in menu_names:
+
                 submenu = key
                 for label in value.get('label'):
                     builtin_access = self.get_builtin_access(label)
 
                     access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
+
 
                     if builtin_access or security.check_access("gear_menu", access_keys, "allow"):
                         if not submenu in access_keys_dict:
@@ -431,6 +433,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         access_keys_dict = self.get_access_keys_dict()
         label_list = []
+        print(access_keys_dict)
         if access_keys_dict.get('Edit'):
             label_list = access_keys_dict['Edit']
 
@@ -484,7 +487,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
 
         else:
-            accept = {"Retire Selcted Items"}
+            accept = {"Retire Selected Items"}
             if self.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Retire Selected Items",
@@ -492,7 +495,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 )
 
-            accept = {"Delete Selcted Items"}
+            accept = {"Delete Selected Items"}
             if self.matches(label_set, accept):
                 opt_spec_list.extend([
                     { "type": "action", "label": "Delete Selected Items",
