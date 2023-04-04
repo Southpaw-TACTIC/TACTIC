@@ -1,10 +1,10 @@
 // -------------------------------------------------------------------------------------------------------------------
 //
 //   Copyright (c) 2008, Southpaw Technology Inc., All Rights Reserved
-//   
+//
 //   PROPRIETARY INFORMATION.  This software is proprietary to Southpaw Technology Inc., and is not to be
 //   reproduced, transmitted, or disclosed in any way without written permission.
-//   
+//
 // -------------------------------------------------------------------------------------------------------------------
 
 
@@ -72,7 +72,7 @@ Command.undo_last = function() {
     cmd.undo();
     Command.command_index -= 1;
     return cmd
-    
+
 }
 
 
@@ -87,7 +87,7 @@ Command.redo_last = function() {
     cmd.redo();
     Command.command_index += 1;
     return cmd
-    
+
 }
 
 
@@ -333,7 +333,7 @@ spt.dg_table.get_element_names = function(table_id) {
     }
 
     return element_names
-    
+
 }
 
 
@@ -361,7 +361,7 @@ spt.dg_table.get_element_value = function(src_element, element_name) {
     var tbody = src_element.getParent(".spt_table_tbody");
     var tds = tbody.getElements(".spt_table_td");
     var td = tds[index+1];
-    
+
     var value = td.getAttribute("spt_input_value");
     return value;
 }
@@ -405,7 +405,7 @@ spt.dg_table.get_bottom_cell = function(src_element, element_name) {
 // get all of the column cells for a given element
 //
 spt.dg_table.get_element_cells = function(table_id, element_name) {
-    
+
     var table = document.id(table_id);
 
     var found = false;
@@ -611,7 +611,7 @@ spt.dg_table.gear_smenu_delete_selected_cbk = function( evt, bvr )
     } else {
 
         var table = spt.get_cousin( activator, '.spt_table_top', '.spt_table' );
-        spt.dg_table.delete_selected( table, { 'table_el': table, 
+        spt.dg_table.delete_selected( table, { 'table_el': table,
             'bvr': bvr, 'activator_el': activator,
             'post_delete_handler_fn': spt.dg_table._post_delete_handler } );
     }
@@ -623,7 +623,7 @@ spt.dg_table.gear_smenu_delete_selected_cbk = function( evt, bvr )
     } else {
         spt.dg_table._new_toggle_commit_btn( activator, false );  // hide = false (meaning display commit btn)
     }
-    
+
 }
 
 
@@ -679,7 +679,7 @@ spt.dg_table.delete_selected = function(table, kwargs)
     }
     var plural_s = '';
     if (parseInt(num, 10) > 1) plural_s = 's';
-    
+
     var title = 'DELETE Selected Items';
     var msg = 'Deleting ' + num + '  "' + stype_display + '" item' + plural_s + ' ...';
     spt.app_busy.show( title, msg );
@@ -780,7 +780,7 @@ spt.dg_table._post_delete_handler = function( table, bvr, activator )
         // it will have needed info set since bvr.src_el is gone due to the refresh
         bvr = post_delete_bvr;
     }
-    
+
     // Now run any configured "post-action on delete" javascript if its been configured ...
     if( bvr.cbjs_dg_table_delete_post_action ) {
         try {
@@ -836,7 +836,7 @@ spt.dg_table.gear_smenu_add_task_matched_cbk = function( evt, bvr )
         var table = spt.get_cousin( activator, '.spt_table_top', '.spt_table' );
         var table_id = table.get('id');
     }
-    
+
     var search_type = table.get("spt_search_type");
     var view = table.get("spt_view");
     var search_class = table.get("spt_search_class") || "";
@@ -852,28 +852,28 @@ spt.dg_table.gear_smenu_add_task_matched_cbk = function( evt, bvr )
         'search_class': search_class,
         'mode': 'matched'
     };
-   
+
 
     var popup_id = 'Add Tasks to Matched';
     var class_name = 'tactic.ui.app.AddTaskWdg';
-     
+
     var top = table.getParent(".spt_view_panel");
     var search_wdg;
     if (top) {
         search_wdg = top.getElement(".spt_search");
         search_view = search_wdg.getAttribute("spt_view");
-        args.search_view = search_view; 
+        args.search_view = search_view;
         simple_search_view = top.getAttribute("spt_simple_search_view");
-        args.simple_search_view = simple_search_view; 
+        args.simple_search_view = simple_search_view;
     }
     if (!top || !search_wdg) {
         spt.alert('The search box is not found. Please use "Export Selected, Export Displayed" instead')
         return;
     }
 
-  
 
-    var search_values = spt.dg_table.get_search_values(search_wdg); 
+
+    var search_values = spt.dg_table.get_search_values(search_wdg);
     search_values_dict = {'json' : search_values};
 
     spt.panel.load_popup(popup_id, class_name, args, {'values': search_values_dict} );
@@ -882,7 +882,7 @@ spt.dg_table.gear_smenu_add_task_matched_cbk = function( evt, bvr )
 spt.dg_table.gear_smenu_add_task_selected_cbk = function( evt, bvr )
 {
     var activator = spt.smenu.get_activator(bvr);
-    if (!activator) 
+    if (!activator)
         activator = bvr.src_el;
 
     var layout = activator.getParent(".spt_layout");
@@ -936,26 +936,26 @@ spt.dg_table.add_task_selected = function(bvr)
     }
 
     //var search_key_info = spt.dg_table.parse_search_key( selected_rows[0].getAttribute("spt_search_key") );
-   
 
-    
+
+
     var add_task_cancel = function() {
          spt.app_busy.hide();
     }
-        
-    var add_task_ok = function() { 
+
+    var add_task_ok = function() {
         var aborted = false;
         var server = TacticServerStub.get();
         var title = 'Add Tasks:';
         var refresh_event = bvr.post_event;
-        
+
         var msg = 'Adding tasks to  ' + num + ' items ...';
-        
+
         spt.app_busy.show( title, msg );
         server.start({title: "Adding task to ["+num+"] items"});
 
         on_complete = function() {
-            server.finish(); 
+            server.finish();
             if (!aborted) {
                 spt.notify.show_message("Task creation completed.");
                 spt.named_events.fire_event(refresh_event, {});
@@ -968,7 +968,7 @@ spt.dg_table.add_task_selected = function(bvr)
                     'search_key_list': bvr.search_key_list};
             var values = spt.api.Utility.get_input_values(bvr.src_el.getParent('.spt_add_task_panel'))
             rtn = server.execute_cmd(cmd, options, values,{on_complete:on_complete});
-            
+
             //spt.alert(rtn.description);
         }
         catch(e) {
@@ -1016,9 +1016,9 @@ spt.dg_table._new_toggle_commit_btn = function(el, hide)
 
 //
 // Extract the size and order of the table columns
-// 
+//
 // Description: creates xml document of the widget config format
-// 
+//
 // <config>
 //   <list width='800px'>
 //     <element name="checkbox" width='14.5%'/>
@@ -1041,7 +1041,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     var view_attrs = panel.getAttribute("spt_view_attrs");
     if (view_attrs)
         eval('view_attrs=' + view_attrs);
-    
+
     if (view_attrs == null)
         view_attrs = {};
     var search_type = table.getAttribute("spt_search_type");
@@ -1076,25 +1076,25 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     if (view_attrs && view_attrs.layout == null)
         view_attrs['layout'] = 'TableLayoutWdg';
     var config = '<config>\n';
-    
+
     if (view.test(/@/)) {
         config += '  <view name="' + view  + '" ';
-        
+
     }
     else
         config += '  <' + view ;
-        
+
     for (attr in view_attrs) {
         if (attr == 'name') continue;
 
         if (view_attrs.hasOwnProperty(attr))
             config += ' ' + attr +'="'+view_attrs[attr] + '" ';
     }
-   
-    
+
+
     config += '>\n';
     // go through each header cell and get the element name
-    // skip the first selection 
+    // skip the first selection
     var table_elements = [];
     let cells = row.getElements(".spt_table_header");
     for( var c=first_idx; c < cells.length; c++ ) {
@@ -1127,7 +1127,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
             }
         }
     }
-    if (view.test(/@/)) 
+    if (view.test(/@/))
         config += '  </view>\n';
     else
         config += '  </' + view + '>\n';
@@ -1203,16 +1203,16 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     }
 
     return config;
-   
+
 }
 
 
 spt.dg_table.get_selection_value = function(element) {
     // get the value of the element
     var value;
-    if (typeof(element) == 'string')  
+    if (typeof(element) == 'string')
         value = element;
-    else 
+    else
         value = element.value;
     return value;
 }
@@ -1221,7 +1221,7 @@ spt.dg_table.get_selection_value = function(element) {
 // appropriate method depending on the value of the selection
 //
 // TODO: make this into a real callback
-// 
+//
 spt.dg_table.table_action_cbk = function(element, table_id ) {
 
     var table = document.getElementById(table_id);
@@ -1244,13 +1244,13 @@ spt.dg_table.table_action_cbk = function(element, table_id ) {
             server.abort();
             throw(e);
         }
-        server.finish();    
+        server.finish();
         break;
 
-    
+
     case "delete":
         // put the delete in a transaction
-        server.start({"title": "Delete selcted sobjects"});
+        server.start({"title": "Delete selected sobjects"});
         try {
             if (confirm("Are you sure you wish to delete the select items?")) {
                 spt.dg_table.delete_selected(table_id);
@@ -1262,7 +1262,7 @@ spt.dg_table.table_action_cbk = function(element, table_id ) {
         }
         server.finish();
         break;
-    
+
     default:
         spt.alert("Unimplemented option: " + value);
     }
@@ -1308,15 +1308,15 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
         value = "save";
     }
     else {
-        value = spt.dg_table.get_selection_value(element); 
+        value = spt.dg_table.get_selection_value(element);
     }
 
     bvr.src_table = table;
- 
+
     if (value == "save") {
         var login = spt.Environment.get().get_user()
-        
-        var kwargs = {'login': login, 'is_admin': bvr.is_admin}; 
+
+        var kwargs = {'login': login, 'is_admin': bvr.is_admin};
         kwargs['unique'] = false;
         kwargs['save_as_personal'] = false;
 
@@ -1366,7 +1366,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
         }
         var new_view = table_view;
 
-      
+
         var new_title = '';
         var last_element = '';
         if (panel) {
@@ -1384,13 +1384,13 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
         kwargs['last_element_name'] = last_element;
 
         //kwargs['new_title'] = table_view;
-        
+
 
         if ((/\./).test(element_name)) {
             kwargs['save_as_personal'] = true;
         }
         var panel_id = "main_body";
-        
+
         //show busy message
         var title = 'Save Current View';
         var msg = 'Saving View [ ' + kwargs.new_title + ' ]';
@@ -1408,7 +1408,7 @@ spt.dg_table.view_action_cbk = function(element, table_id , bvr) {
         };
         bvr.class_name = widget_class;
         bvr.args = args;
-        //spt.dg_table_action.set_actionbar_aux_content( {}, bvr);    
+        //spt.dg_table_action.set_actionbar_aux_content( {}, bvr);
         spt.panel.load_popup("Save Project View", widget_class, args);
 
     }
@@ -1442,7 +1442,7 @@ spt.dg_table.save_view_cbk = function(table_id, login) {
     var top = table.getParent(".spt_view_panel");
     // it may not always be a View Panel top
     if (!top) top = table.getParent(".spt_table_top");
-    
+
     //var search_wdg = top.getElement(".spt_search");
 
     // TODO: Will this break on embedded tables now?????  Maybe not
@@ -1464,7 +1464,7 @@ spt.dg_table.save_view_cbk = function(table_id, login) {
     var new_title = values["save_view_title"];
     var same_as_title = values["same_as_title"] == 'on';
     //var save_a_link = values["save_a_link"] == 'on';
-  
+
     var save_mode = values['save_mode'];
     if (!save_mode) {
         var save_project_views = values['save_project_views'] == 'on';
@@ -1486,14 +1486,14 @@ spt.dg_table.save_view_cbk = function(table_id, login) {
     }
 
     if (spt.input.has_special_chars(new_view)) {
-        spt.alert("The name contains special characters. Do not use empty spaces.");  
+        spt.alert("The name contains special characters. Do not use empty spaces.");
         return;
     }
     if (new_view == "") {
         spt.alert("Empty view name not permitted");
         return;
     }
-    
+
     if ((/^(saved_search|link_search)/i).test(new_view)) {
         spt.alert('view names starting with these words [saved_search, link_search] are reserved.');
         return;
@@ -1508,11 +1508,11 @@ spt.dg_table.save_view_cbk = function(table_id, login) {
     var last_element = top.getAttribute("spt_element_name");
 
 
-    var kwargs = {'login' : login, 'new_title' : new_title, 
+    var kwargs = {'login' : login, 'new_title' : new_title,
         'element_name': new_view,
         'last_element_name': last_element,
         'save_mode': save_mode,
-    } 
+    }
 
     spt.app_busy.show( 'Saving View', new_title );
     var rtn = spt.dg_table.save_view(table_id, table_view, kwargs);
@@ -1520,7 +1520,7 @@ spt.dg_table.save_view_cbk = function(table_id, login) {
 
     if (!rtn)
         return;
-    
+
     return true;
 }
 
@@ -1534,12 +1534,12 @@ spt.dg_table.is_embedded = function(table){
     var table_view = table.getAttribute('spt_view');
     var panel_search_type = top.getAttribute("spt_search_type");
     var table_search_type = table.getAttribute("spt_search_type");
-     
+
     var is_embedded = false;
     if (panel_table_view != table_view || panel_search_type != table_search_type) {
         //spt.alert('Embedded table view saving not supported yet');
         is_embedded = true;
-       
+
     }
     return is_embedded;
 }
@@ -1559,7 +1559,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             this.get_size_info(table, new_view, login);
             return false;
         }
-        
+
         var table_search_type = table.getAttribute("spt_search_type");
 
 
@@ -1579,7 +1579,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         var server = TacticServerStub.get();
         var title = side_bar_view + " updated from: " + new_view;
         server.start({"title": "Saving View", "description": "Saving View: " +  title});
-      
+
         var element_name = new_view;
         var unique = kwargs.unique;
 
@@ -1613,13 +1613,13 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         // add to the project views
         var search_type = "SideBarWdg";
         var class_name = "LinkWdg";
-       
+
         var simple_search_view = top ? top.getAttribute('spt_simple_search_view'): null;
         var insert_view = top ? top.getAttribute('spt_insert_view'): null;
         var edit_view = top ? top.getAttribute('spt_edit_view'): null;
         var layout = top ? top.getAttribute('spt_layout'): null;
-      
-      
+
+
         dis_options['search_type'] = table_search_type;
         dis_options['view'] = element_name;
         dis_options['search_view'] = search_view;
@@ -1633,15 +1633,15 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             dis_options['edit_view'] = edit_view;
         if (layout)
             dis_options['layout'] = layout;
-        
+
         // redefine kwargs
         var kwargs = {};
         kwargs['login'] = null;
-        if (save_as_personal) 
+        if (save_as_personal)
             kwargs['login'] = login;
-        kwargs['class_name'] = class_name; 
+        kwargs['class_name'] = class_name;
         kwargs['display_options'] = dis_options;
-        
+
         kwargs['unique'] = unique;
 
 
@@ -1677,13 +1677,13 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
 
 
         if (new_title)
-            kwargs['element_attrs'] = {'title': new_title, 'icon': icon}; 
+            kwargs['element_attrs'] = {'title': new_title, 'icon': icon};
 
-         
+
         // add the definiton to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
-        
+
         //raw and static_table layout has no checkbox in the first row
         var first_idx = 1;
         if (['raw_table','static_table'].contains(layout))
@@ -1691,11 +1691,11 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
 
         // create the view for this table
         this.get_size_info(table, unique_el_name, kwargs.login, first_idx);
-         
+
         //if (side_bar_view && save_a_link) {
         if (save_mode != 'save_view_only') {
             var kwargs2 = save_as_personal ? {'login': login } : {};
-           
+
             server.add_config_element(search_type, side_bar_view, unique_el_name, kwargs2);
         }
         server.finish();
@@ -1706,7 +1706,7 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
         return false;
     }
     return true;
-    
+
 }
 
 
@@ -1719,16 +1719,16 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
 spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index, popup_id)
 {
     var table = document.id(table_id);
-   
+
     var layout = table.getParent(".spt_layout");
     if (table.hasClass("spt_layout")) {
         layout = table;
     }
-    if (layout.getAttribute("spt_version") == "2") 
+    if (layout.getAttribute("spt_version") == "2")
         var element_names = spt.table.get_element_names();
     else
         var element_names = spt.dg_table.get_element_names(table_id);
-   
+
     var is_present = false;
     for (var i=0; i<element_names.length; i++) {
         if (element_names[i] == element_name) {
@@ -1746,9 +1746,9 @@ spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index,
             if (is_present) {
                 spt.app_busy.show( 'Column Manager', 'Removing Column');
                 spt.table.remove_column(element_name);
-            } else {   
+            } else {
                 spt.app_busy.show( 'Column Manager', 'Adding Column');
-                setTimeout(function() { 
+                setTimeout(function() {
                     spt.table.add_column(element_name);
                     //spt.dg_table.search_cbk( {}, {'src_el': layout} )
                     // need to do this twice
@@ -1786,14 +1786,14 @@ spt.dg_table.toggle_column_cbk = function(table_id, element_name, element_index,
 spt.dg_table.load_column_cbk = function(table_id, element_name, element_index)
 {
     spt.app_busy.show( 'Column Manager', 'Adding Column');
-       
+
     //IE and FF compatible
     setTimeout(function() { var cmd = new spt.dg_table.LoadColumnCmd(
                 table_id, element_name, element_index);
                 Command.execute_cmd(cmd);
                 spt.app_busy.hide();
                     }, 50 );
-    
+
 }
 
 
@@ -1801,7 +1801,7 @@ spt.dg_table.load_column_cbk = function(table_id, element_name, element_index)
 spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 {
     this.table_id= table_id;
-    
+
     this.element_name = element_name;
     this.element_index = element_index;
 
@@ -1823,7 +1823,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
         // get the search_keys
         var search_keys = [];
         var search_type = table.getAttribute("spt_search_type");
-       
+
 
         for (var i = spt.dg_table.INSERT_ROW; i < spt.dg_table.EDIT_ROW; i++) {
             var row = table.rows[i];
@@ -1834,13 +1834,13 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
             search_keys.push(search_key);
         }
 
-        
+
         // get widgets
         var widgets_html = server.get_column_widgets(search_type, search_keys, this.element_name);
         // iterate through the widgets
         var widgets_html_idx = 0;
 
-        
+
 
         for (var i = 0; i < 1; i++) {
             var row = table.rows[i];
@@ -1862,9 +1862,9 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
             else {
                 right_cell = row.cells[column_index];
             }
-            
+
             var widgets_html_value =  widgets_html[ widgets_html_idx ];
-            
+
             // we really only need the header 'cuz the table is refreshed at the
             // end anyways
             if (widgets_html_idx > 0) {
@@ -1875,7 +1875,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
                 for (j = 0; j <widgets_html_value.length; j++) {
                     var widget_html = widgets_html_value[j];
-                        
+
                     // hack a full table in the html
                     widget_html = "<table><tbody><tr>" + widget_html + "</tr></tbody></table>"
 
@@ -1921,7 +1921,7 @@ spt.dg_table.LoadColumnCmd = function(table_id, element_name, element_index)
 
             if (column_index < 0)
                 column_index = row.cells.length - 2;
-                
+
 
             var cell = row.cells[column_index];
             var space = row.cells[column_index+1];
@@ -1994,7 +1994,7 @@ spt.dg_table.RemoveColumnCmd = new Class({
     execute: function() {
         this.redo();
     },
-    
+
     redo: function() {
         var column_index = this.element_index*2;
         var table = document.id(this.table_id);
@@ -2008,7 +2008,7 @@ spt.dg_table.RemoveColumnCmd = new Class({
                 break;
             }
         }
-        // remove all of the cells 
+        // remove all of the cells
         for (var i = 0; i < table.rows.length; i++) {
             var row = table.rows[i];
             var cell = row.cells[column_index];
@@ -2049,7 +2049,7 @@ spt.dg_table.RemoveColumnCmd = new Class({
 //
 
 // Callback when search is pressed
-// @param: 
+// @param:
 // bvr.search_el - child element of the search_top. If unspecified, it equals bvr.src_el
 // bvr.src_el - child element of the table_top
 spt.dg_table.search_cbk = function(evt, bvr){
@@ -2071,10 +2071,10 @@ spt.dg_table.search_cbk = function(evt, bvr){
     if (el_name == null)
         el_name = '';
 
-    if (bvr.return_html) { 
+    if (bvr.return_html) {
         var ret_val = spt.dg_table._search_cbk(evt, bvr);
         return ret_val;
-    } 
+    }
     setTimeout( function() {
         spt.dg_table._search_cbk(evt, bvr);
     }, 10 );
@@ -2108,7 +2108,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
 
 
-    
+
     var layout;
     // adopt it if element is already the layout
     if (element.hasClass("spt_layout"))
@@ -2116,7 +2116,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     else {
         layout = element.getParent(".spt_layout");
         if (!layout) {
-            
+
             if (panel)
                 layout = panel.getElement(".spt_layout");
         }
@@ -2149,11 +2149,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
         }
         if (table_top){
             var table = table_top.getElement('.spt_table_content');
-            if (table){ 
-                   
+            if (table){
+
                    var element_names = version == "2" ? spt.table.get_element_names() :  spt.dg_table.get_element_names(table);
-                   
-              
+
+
                    if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
@@ -2182,7 +2182,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     // this is usually null
     if (search_top == null) {
-        if (spt.has_class( search_el, "spt_view_panel")){ 
+        if (spt.has_class( search_el, "spt_view_panel")){
             search_top = search_el.getElement('.spt_search');
         } else {
             search_top = spt.get_cousin(search_el, ".spt_view_panel", ".spt_search");
@@ -2192,9 +2192,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         spt.panel.refresh(panel);
         return;
     }
-   
+
     // search_top is only meaningful for this if it is the Search Criteria box
-    // If show_search is false, the simple search top will be found if available    
+    // If show_search is false, the simple search top will be found if available
     // which is essential for retrieving the search_parameters later.
 
     var custom_search_view = search_top.getAttribute('spt_custom_search_view');
@@ -2293,7 +2293,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     }
     // convert to json
     var search_values_dict = {'json' : JSON.stringify(new_values)};
-    
+
     // get the actual filter
     var filter_json= '';
     if (search_top){
@@ -2346,7 +2346,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_border = target.getAttribute("spt_show_border");
     var show_collection_tool = target.getAttribute("spt_show_collection_tool");
     var order_by = target.getAttribute("spt_order_by");
-    
+
     var file_system_edit = target.getAttribute("spt_file_system_edit") || "";
     var base_dir = target.getAttribute("spt_base_dir") || "";
     var parent_mode = target.getAttribute("spt_parent_mode") || "";
@@ -2470,7 +2470,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     for (var k=0; k < attr_list.length; k++) {
         var attr_val = target.getAttribute('spt_'+ attr_list[k]);
         if (attr_val)
-            args[attr_list[k]] = attr_val; 
+            args[attr_list[k]] = attr_val;
     }
 
     if (bvr.extra_args) {
@@ -2519,7 +2519,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         }
     }
 
-    
+
     // Here is where you can target the list of items shown with a specific, arbitrary list of
     // search keys ... this will override the .handle_search() call
     if( 'selected_search_keys' in bvr ) {
@@ -2551,7 +2551,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     spt.panel.load(target, class_name, args, search_values_dict, {fade: fade, callback: on_complete});
 
      // for reference on how to use ctags
-    
+
      //var table_top = spt.ctags.find_parent( activator_el, "spt_table_top", "spt_table_top spt_view_panel spt_search" );
     //var search_top = spt.ctags.find_parent( activator_el, "spt_search", "spt_table_top spt_view_panel spt_search" );
 
@@ -2575,7 +2575,7 @@ spt.dg_table.local_search_cbk = function(evt, bvr)
             new_values.push(values);
         }
     }
-   
+
     // have to hard-code main_body_search for now
     var src_el = document.id('main_body_search');
     var bvr2 = {}
@@ -2596,7 +2596,7 @@ spt.dg_table.toggle_search_cbk = function(evt, bvr) {
 
 
 spt.dg_table.search_action_cbk = function(element ) {
-   
+
     var value = element.value;
     if (value == "retrieve") {
         spt.popup.open('retrieve_search_wdg', false);
@@ -2716,7 +2716,7 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
 
     // replace the search widget
     var server = TacticServerStub.get();
-    
+
     var class_name = "tactic.ui.app.SaveSearchCbk";
     server.execute_cmd(class_name, options, json_values);
 
@@ -2725,7 +2725,7 @@ spt.dg_table.save_search = function(search_wdg, search_view, kwargs) {
         document.id('save_search_wdg').style.display = 'none';
     */
 
- 
+
 }
 
 
@@ -2747,7 +2747,7 @@ spt.dg_table.add_filter = function(element) {
     // get template
     var filter_top = element.getParent(".spt_filter_top");
     var filter_template = filter_top.getElement(".spt_filter_template_with_op");
-    
+
     var filter_options = filter_top.getElement(".spt_filter_options");
     var filters = filter_options.getElements(".spt_filter_type_wdg");
     // clear the value in the textbox if any
@@ -2756,8 +2756,8 @@ spt.dg_table.add_filter = function(element) {
         // hidden used for expression
         if (input && input.getAttribute('type') !='hidden' ) input.value ='';
     }
-     
-   
+
+
 
     // clone the filter
     var new_filter = spt.behavior.clone(filter_template);
@@ -2774,18 +2774,18 @@ spt.dg_table.add_filter = function(element) {
     // make this into a new search filter
     var children = new_filter.getElements(".spt_filter_template");
     for (var i=0; i<children.length; i++) {
-        var child = children[i];    
+        var child = children[i];
         child.addClass("spt_search_filter");
     }
     var children = new_filter.getElements(".spt_op_template");
     for (var i=0; i<children.length; i++) {
         var child = children[i];
         child.addClass("spt_op");
-        
+
         child.setAttribute("spt_op", op_value);
     }
-    
-  
+
+
 
 }
 
@@ -2872,13 +2872,13 @@ spt.dg_table.set_filter2 = function(evt, bvr) {
     //value = value.replace(/'/g, '"')
     //var column_indexes = JSON.parse(value);
     var column_indexes = bvr.search_type_indexes;
-    
+
     //var filter_types = document.id(prefix + '_filter_columns');
     var filter_types = spt.get_cousin(selector, '.spt_filter_top', '.' + prefix + '_filter_columns');
 
     // get a handle on all of the alternative filters
     var filters = filter_types.getChildren();
-  
+
     // get the value of the column selector
     var value = selector.value;
 
@@ -2984,10 +2984,10 @@ spt.dg_table.select_cell_for_edit_cbk = function( evt, bvr )
     //
     var edit_wdg = spt.dg_table.adopt_edit_wdg( table, element );
     /* if not edit_wdg exit */
-    if (!edit_wdg) 
+    if (!edit_wdg)
         return;
-    
-    
+
+
     var value = element.getAttribute('spt_input_value');
     var input = spt.api.Utility.set_input_values(edit_wdg, value);
     if (input && input.type !='checkbox') {
@@ -3116,7 +3116,7 @@ spt.dg_table.adopt_preview_edit_wdg = function( table_id, cell_to_edit )
 
     if ( exists) {
         clone.parentNode.setStyle("margin-left", "0px");
-        
+
     }
     else {
         // get the second row
@@ -3175,7 +3175,7 @@ spt.dg_table.adopt_preview_edit_wdg = function( table_id, cell_to_edit )
     var size = document.id(cell_to_edit).getSize();
     clone.setStyle( "height", size.y+'px');
     clone.setStyle( "width", size.x+'px');
- 
+
     spt.dg_table.edit.widget = clone;
     spt.dg_table.preview_last_clone = clone;
     return clone
@@ -3202,7 +3202,7 @@ spt.dg_table.set_process = function(bvr) {
             }
         }
         if (process_index != -1) {
-            
+
             var tbody = ele.getParent(".spt_table_tbody");
             var tds = tbody.getElements(".spt_table_td");
             // FIXME: td index is not the same as process index!!!!
@@ -3230,7 +3230,7 @@ spt.dg_table.get_status_key = function(cell_to_edit, edit_cell) {
             break;
         }
     }
-    
+
     if (process_index != -1) {
         var layout = cell_to_edit.getParent(".spt_layout");
 
@@ -3293,7 +3293,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
     var edit_wdg = null;
     var wdg_index = 0;
 
-    
+
     var home_edit_cell = null;
     for (var x =0; x<edit_cells.length;x++) {
         edit_cell = edit_cells[x];
@@ -3308,7 +3308,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
         // Figure out what element to use for editing
         //
         var element_script = edit_cell.getAttribute("spt_edit_script");
-       
+
         // create one from scratch
         if (element_script != null) {
             //cell_to_edit.setStyle("background-color", "yellow");
@@ -3330,7 +3330,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
         //edit_wdg = edit_cell.getChildren()[wdg_index];
         else if (edit_wdg_options.length == 0) {
             var type = cell_to_edit.getAttribute("spt_input_type");
-            if (type == 'inline') 
+            if (type == 'inline')
                 return null;
             home_edit_cell = edit_cell;
             edit_wdg = edit_cell.getChildren()[wdg_index];
@@ -3374,7 +3374,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
         break;
     }
 
-    
+
     if (home_edit_cell == null) {
         home_edit_cell = edit_cell;
     }
@@ -3511,7 +3511,7 @@ spt.dg_table.adopt_edit_wdg = function( table_id, cell_to_edit )
     spt.dg_table.edit.widget = edit_wdg;
     //home_edit_cell.removeChild( edit_wdg );
     cell_to_edit.insertBefore( edit_wdg, cell_to_edit.firstChild );
-    
+
     //cell_to_edit.replaceChild( edit_wdg, cell_to_edit.firstChild );
 
     // Need to ensure that the INPUT element gets focus (for keyboard handler)
@@ -3537,8 +3537,8 @@ spt.dg_table.select_wdg_clicked = function( evt, select_el )
     var new_value = target.value;
     // if offsetWidth > clientWidth, it's just clicking on the scrollbar
     // FIXME: only works in FF, but IE does not need it
-    
-    if (spt.browser.is_Firefox() && 
+
+    if (spt.browser.is_Firefox() &&
         target.offsetWidth > spt.get_render_display_width(target)) {
         return;
     }
@@ -3681,7 +3681,7 @@ spt.dg_table.inline_edit_cell_cbk = function( element, cached_data ) {
     if (typeof(cached_data) == 'undefined') {
         cached_data = {};
     }
-        
+
 
     var table = element.getParent(".spt_table");
 
@@ -3824,7 +3824,7 @@ spt.dg_table.accept_single_edit_cell_td = function( element, td, row, values, la
     }
     else {
         cookie_data = JSON.parse(cookie_value);
-    } 
+    }
     cookie_data[key] = values[element_name];
     cookie_value = JSON.stringify(cookie_data);
     cookie.write(cookie_value);
@@ -3856,7 +3856,7 @@ spt.dg_table.accept_single_edit_cell_td = function( element, td, row, values, la
         }
     }
     if (['gantt', 'inline','work_hour'].contains(type)) {
-        // do nothing.  These inputs are inline and do not need anything 
+        // do nothing.  These inputs are inline and do not need anything
         // replaced.
     }
     else {
@@ -4058,7 +4058,7 @@ spt.dg_table.parse_search_key = function( search_key_str )
 spt.dg_table.get_show_retired_flag = function( table_child_el )
 {
     var el = spt.get_cousin( table_child_el, ".spt_view_panel", ".spt_search_show_retired" );
-    if (!el) 
+    if (!el)
         el = spt.get_cousin( table_child_el, ".spt_layout", ".spt_search_show_retired" );
     if (!el) return false;
 
@@ -4125,8 +4125,8 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     var table = spt.get_cousin( activator, '.spt_table_top', '.spt_table' );
 
     var layout = activator.getParent(".spt_layout");
-        
-    
+
+
     var version = layout.getAttribute("spt_version");
     version = parseInt(version);
 
@@ -4147,9 +4147,9 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     var search_class = table.get("spt_search_class") || "";
 
     var tmp_bvr = {};
-   
 
-   
+
+
 
     var search_view;
     // init the args to be passed to CsvExportWdg
@@ -4173,21 +4173,21 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     else if (bvr.mode=='export_matched') {
         title = 'Export Matched items from "' + search_type + '" list ';
         var top = table.getParent(".spt_view_panel");
-                    
+
         var search_wdg;
         if (top) {
             search_wdg = top.getElement(".spt_search");
             var matched_search_type = search_type == top.getAttribute('spt_search_type');
             var simple_search_view  = top.getAttribute('spt_simple_search_view');
             search_view = search_wdg.getAttribute("spt_view");
-            tmp_bvr.args.search_view = search_view; 
-            tmp_bvr.args.simple_search_view = simple_search_view; 
+            tmp_bvr.args.search_view = search_view;
+            tmp_bvr.args.simple_search_view = simple_search_view;
         }
         if (!top || !search_wdg || !matched_search_type) {
             spt.alert('The search box is not found. Please use "Export Selected, Export Displayed" instead')
             return;
         }
-        var search_values = spt.dg_table.get_search_values(search_wdg); 
+        var search_values = spt.dg_table.get_search_values(search_wdg);
         search_values_dict['json'] = search_values;
 
         }
@@ -4200,8 +4200,8 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
                 continue;
             }
             var sk = tbodies[k].getAttribute('spt_search_key');
-  
-            
+
+
             sel_search_keys.push(sk);
         }
         if( sel_search_keys.length == 0 ) {
@@ -4240,8 +4240,8 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
         }
         tmp_bvr.args.related_view = related_views[0];
     }
-    
-    
+
+
     var view_name = '';
     var main_panel = activator.getParent('.spt_main_panel');
     /*
@@ -4261,7 +4261,7 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     */
 
     title += 'in [' + view + '] view';
-    
+
     tmp_bvr.options = {
         'title': title + " to CSV",
         'class_name': 'tactic.ui.widget.CsvExportWdg',
@@ -4269,7 +4269,7 @@ spt.dg_table.gear_smenu_export_cbk = function(evt, bvr)
     };
     tmp_bvr.args.selected_search_keys = sel_search_keys;
     tmp_bvr.values = search_values_dict;
-   
+
 
     var popup = spt.popup.get_widget( evt, tmp_bvr );
     // add the search_values_dict to the popup
@@ -4341,7 +4341,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
         try {
             if( show_retired ) {
                 server.retire_sobject(search_key);
-               
+
                 var func = function() { spt.table.expand_table(); };
 
                 var kw =  {on_complete: func, refresh_bottom: false};
@@ -4353,7 +4353,7 @@ spt.dg_table.drow_smenu_retire_cbk = function(evt, bvr)
                 on_complete = function() {spt.behavior.destroy_element(row);}
                 spt.table.remove_hidden_row(row);
                 Effects.fade_out(row, 500, on_complete);
-                
+
             }
             server.clear_api_key();
             if (is_project)
@@ -4407,15 +4407,15 @@ spt.dg_table.drow_smenu_reactivate_cbk = function(evt, bvr)
         server.reactivate_sobject(search_key);
         server.clear_api_key();
         var is_project = search_key.test('sthpw/project?') ? true : false;
-        
-        
+
+
         var kw = {on_complete: function() {spt.table.expand_table()}};
         on_complete = function() {
-                        spt.table.refresh_rows([row], null, null, kw); 
+                        spt.table.refresh_rows([row], null, null, kw);
                         };
         if (is_project)
             on_complete = function() {
-                spt.table.refresh_rows([row], null, null, kw); 
+                spt.table.refresh_rows([row], null, null, kw);
                 spt.panel.refresh('ProjectSelectWdg');}
         Effects.fade_out(row, 500, on_complete);
     }
@@ -4462,10 +4462,10 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
 
     // open delete popup
     var class_name;
-    if (search_type == "sthpw/search_type") { 
+    if (search_type == "sthpw/search_type") {
         class_name = 'tactic.ui.tools.DeleteSearchTypeToolWdg';
     }
-    else if (search_type == "sthpw/project") { 
+    else if (search_type == "sthpw/project") {
         class_name = 'tactic.ui.tools.DeleteProjectToolWdg';
     }
     else {
@@ -4498,7 +4498,7 @@ spt.dg_table.drow_smenu_delete_cbk = function(evt, bvr)
 spt.dg_table.drow_smenu_item_audit_log_cbk = function(evt, bvr)
 {
     var activator = spt.smenu.get_activator(bvr);
-    
+
     var row = spt.has_class(activator, 'spt_table_row') ? activator : activator.getParent('.spt_table_row')
 
     var search_key = row.get("spt_search_key");
@@ -4536,7 +4536,7 @@ spt.dg_table.drow_smenu_edit_row_context_cbk = function(evt, bvr)
     var tbody = activator.getParent('.spt_table_tbody');
     var search_key_info = spt.dg_table.parse_search_key( tbody.get("spt_search_key") );
     var edit_view = bvr.edit_view ? bvr.edit_view : 'edit';
-    
+
     var tmp_bvr = {};
     tmp_bvr.args = {
         'search_type': search_key_info.search_type,
@@ -4578,7 +4578,7 @@ spt.dg_table.drow_smenu_update_row_context_cbk = function(evt, bvr)
 
 
 
-// TODO: this is more of a way to notify the context menu that something 
+// TODO: this is more of a way to notify the context menu that something
 // has been changed in the table. The visiblity of the commit buttons can be replaced
 // with another mechanism
 spt.dg_table._toggle_commit_btn = function(el, hide)
@@ -4592,7 +4592,7 @@ spt.dg_table._toggle_commit_btn = function(el, hide)
     if (!panel) {
         spt.js_log.warning('panel not found! Cannot display commit button');
         return;
-    } 
+    }
     var table = panel.getElement('.spt_table_content');
     var commit_buttons = panel.getElements(".spt_table_commit_btn[id*='" + table.id+"']");
     // in case there are mutiple buttons like commit all
@@ -4660,7 +4660,7 @@ spt.dg_table.update_uber_notes = function(table, search_type, element_names, val
     }
     return result;
 */
-        
+
 }
 
 
