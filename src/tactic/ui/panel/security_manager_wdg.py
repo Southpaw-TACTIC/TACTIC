@@ -181,7 +181,8 @@ class SecurityManagerWdg(BaseRefreshWdg):
 
 
             item_div.add_style("color: #222")
-            item_div.add(item.get('title') )
+            item_div.add("&nbsp; ")
+            item_div.add( item.get('title') )
 
             
 
@@ -194,7 +195,12 @@ class SecurityManagerWdg(BaseRefreshWdg):
         save_button = ActionButtonWdg(title="Save", tip="Save Security Settings")
         save_button.add_behavior( {
             "type": "click_up",
-            "cbjs_action": "el=bvr.src_el.getParent('.spt_security');spt.panel.refresh(el);"        } )
+            "cbjs_action": '''
+                let el = bvr.src_el.getParent('.spt_security');
+                let values = spt.api.get_input_values(el);
+                spt.panel.refresh(el, values);
+            '''
+        } )
 
         save_button.add_style("margin-left: auto")
         save_button.add_style("margin-right: auto")

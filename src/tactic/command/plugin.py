@@ -270,6 +270,7 @@ class PluginBase(Command):
             finally:
                 sudo.exit()
 
+
             # order by id
             def sort_sobjects(a, b):
                 a_id = a.get_code()
