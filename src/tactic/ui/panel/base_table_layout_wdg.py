@@ -1712,8 +1712,11 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
+            if self.kwargs.get("show_add_new_item_arrow_menu") == False:
+                button.set_show_arrow_menu(False)
+            else:
+                button.set_show_arrow_menu(True)
 
-            button.set_show_arrow_menu(True)
             menu = Menu(width=180)
             menu_item = MenuItem(type='title', label='Actions')
             menu.add(menu_item)
