@@ -4794,8 +4794,8 @@ spt.table.select_row = function(row) {
 
         row.setAttribute("spt_last_background", current_color);
         row.setStyle("background-color", spt.table.select_color);
-        row.setStyle("font-weight", "700");
         row.setAttribute("spt_background", spt.table.select_color);
+        row.setStyle("font-weight", 700);
         row.addClass("spt_table_selected");
     }
     spt.table.last_selected_row = row;
@@ -6319,7 +6319,7 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
     // Multi EDIT
     var selected_rows = spt.table.get_selected_rows();
-    var in_selected_row = edited_cell.getParent("tr.spt_table_selected");
+    var in_selected_row = edited_cell.getParent(".spt_table_selected");
 
     var changed = old_value != new_value;
 
@@ -6336,7 +6336,6 @@ spt.table.accept_edit = function(edit_wdg, new_value, set_display, kwargs) {
 
     // empty the redo queue
     layout_top.redo_queue = [];
-
 
 
 

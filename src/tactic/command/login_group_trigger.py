@@ -55,7 +55,8 @@ class LoginGroupTrigger(Trigger):
             if not login_group_name:
                 raise Exception("A Group Name has not been entered. Please enter a Group Name.")
 
-            sobj.set_value('name', login_group_name)
+            if not sobj.get_value("name"):
+                sobj.set_value('name', login_group_name)
 
         elif mode == "update":
             if 'login_group' in update_data:
@@ -65,6 +66,7 @@ class LoginGroupTrigger(Trigger):
 
             if not login_group_name:
                 login_group_name = sobj.get_value('login_group')
+
 
         login_group = re.sub(r'[\$\s,#~`\%\*\^\&\(\)\+\=\[\]\[\}\{\;\:\'\"\<\>\?\|\\\!-]', "_", login_group_name)
         login_group = login_group.lower()
