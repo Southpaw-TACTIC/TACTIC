@@ -424,11 +424,17 @@ class LoginGroup(Login):
 
     def get_defaults(self):
         defaults = {}
-        if self.get_value("name"):
-            defaults['login_group'] = self.get_value("name")
-            defaults['code'] = defaults['login_group']
+        if not self.get_value("code"):
+            if self.get_value("name"):
+                defaults['login_group'] = self.get_value("name")
+                defaults['code'] = self.get_vlaue("name")
+            else:
+                defaults['code'] = self.get_value("login_group")
         else:
-            defaults['code'] = self.get_value("login_group")
+            defaults['login_group'] = self.get_value("code")
+
+
+
         # LoginGroupTrigger handles the update event
         return defaults
 
