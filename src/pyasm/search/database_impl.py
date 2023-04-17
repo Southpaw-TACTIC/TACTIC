@@ -672,10 +672,10 @@ class BaseSQLDatabaseImpl(DatabaseImpl):
     def is_column_sortable(self, db_resource, table, column):
 
         # support -> operator
-        if column.find("->>"):
+        if column.find("->>") != -1:
             parts = column.split("->>")
             column = parts[0]
-        elif column.find("->"):
+        elif column.find("->") != -1:
             parts = column.split("->")
             column = parts[0]
 
