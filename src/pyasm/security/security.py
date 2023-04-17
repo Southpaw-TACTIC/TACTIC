@@ -434,14 +434,14 @@ class LoginGroup(Login):
     def get_defaults(self):
         defaults = {}
         if not self.get_value("code"):
-            if self.get_value("name"):
-                defaults['login_group'] = self.get_value("name")
-                defaults['code'] = self.get_vlaue("name")
-            else:
+            if self.get_value("login_group"):
                 defaults['code'] = self.get_value("login_group")
+            else:
+                code = Common.generate_alphanum_key(12, delimit=4)
+                defaults['code'] = code
+                defaults['login_group'] = code
         else:
             defaults['login_group'] = self.get_value("code")
-
 
 
         # LoginGroupTrigger handles the update event
