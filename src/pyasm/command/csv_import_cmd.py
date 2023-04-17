@@ -177,11 +177,23 @@ class CsvImportCmd(Command):
                     new_column_type = self.new_column_types[i]
 
                 if new_column and new_column not in ['id', 'code'] and i in self.enabled_idx:
-                    # create the new column
-                    from pyasm.command import ColumnAddCmd
-                    #col_type = "Name/Code"
-                    cmd = ColumnAddCmd(self.search_type, new_column, new_column_type)
-                    cmd.execute()
+
+                    # if there is a json data column, then add the data there instead of creating a new column
+                    use_data_column = True
+                    column_info = SearchType.get_column_info(self.search_type)
+                    data_column_info = column_info.get("data")
+                    if data_column_info and data_column_info.get("data_type") == "json":
+                        key = Common.clean_filesystem_name(self.new_columns[i])
+                        key = key.lower()
+                        csv_titles.append( "data->%s" % key)
+                    else:
+                        # create the new column
+                        from pyasm.command import ColumnAddCmd
+                        #col_type = "Name/Code"
+                        cmd = ColumnAddCmd(self.search_type, new_column, new_column_type)
+                        cmd.execute()
+
+                        csv_titles.append( self.new_columns[i] )
 
                     # create the sobject for now
                     """
@@ -192,7 +204,6 @@ class CsvImportCmd(Command):
                     sobject.commit()
                     """
 
-                csv_titles.append( self.new_columns[i] )
             else:
                 csv_titles.append( column )
 
