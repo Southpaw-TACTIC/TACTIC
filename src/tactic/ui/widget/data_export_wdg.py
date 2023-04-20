@@ -21,7 +21,7 @@ import shutil
 from pyasm.biz import CsvParser, File, Project
 from pyasm.search import Search, SObjectFactory, SearchType, SearchKey
 from pyasm.command import Command, FileUpload, CsvImportCmd
-from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg 
+from pyasm.web import HtmlElement, SpanWdg, DivWdg, Table, WebContainer, Widget, FloatDivWdg
 from pyasm.widget import CheckboxWdg, IconSubmitWdg, HiddenRowToggleWdg, HiddenWdg, WidgetConfigView, ProdIconButtonWdg, TextWdg, TextAreaWdg, IconWdg, ProgressWdg, HintWdg, SelectWdg
 from pyasm.common import Common, Environment, TacticException
 
@@ -51,7 +51,7 @@ class CsvExportWdg(BaseRefreshWdg):
         if self.search_type.find("?") == -1:
             project_code = Project.get_project_code()
             self.search_type = SearchType.build_search_type(self.search_type, project_code)
-        
+
         self.view = self.kwargs.get('view')
         self.element_names = self.kwargs.get('element_names')
         self.related_view = self.kwargs.get('related_view')
@@ -87,9 +87,9 @@ class CsvExportWdg(BaseRefreshWdg):
             id = SearchKey.extract_id(sk)
             if id == '-1':
                 continue
-            
+
             self.selected_search_keys.append(sk)
-        
+
         if len(self.search_type_list) > 1:
             self.check_passed = False
             self.error_msg = 'More than 1 search type is selected. Please keep the selection to one type only.'
@@ -101,21 +101,21 @@ class CsvExportWdg(BaseRefreshWdg):
             return False
         return True
 
-    def get_display(self): 
-      
+    def get_display(self):
+
         top = self.top
         top.add_color("background", "background")
         top.add_color("color", "color")
         top.add_style("padding: 10px")
         top.add_style("min-width: 400px")
-     
+
         from tactic.ui.app import HelpButtonWdg
         help_wdg = HelpButtonWdg(alias="exporting-csv-data")
         top.add(help_wdg)
         help_wdg.add_style("float: right")
         help_wdg.add_style("margin-top: -3px")
-        
-        if not self.check(): 
+
+        if not self.check():
             top.add(DivWdg('Error: %s' %self.error_msg))
             top.add(HtmlElement.br(2))
             return super(CsvExportWdg, self).get_display()
@@ -141,14 +141,14 @@ class CsvExportWdg(BaseRefreshWdg):
         if num > 300:
             msg_div.add_behavior({'type':'load',
             'cbjs_action': "spt.alert('%s items are about to be exported. It may take a while.')" %num})
-                
+
         top.add(HtmlElement.br())
 
         div  = DivWdg(css='spt_csv_export', id='csv_export_action')
         div.add_color("background", "background", -5)
         div.add_style("padding: 10px")
         div.add_style("margin: 5px")
-        
+
         div.add_styles('max-height: 350px; overflow: auto')
         table = Table()
         table.add_color("color", "color")
@@ -156,8 +156,8 @@ class CsvExportWdg(BaseRefreshWdg):
         table.set_id('csv_export_table')
         table.center()
         table.add_style("width: 70%")
-        
-        
+
+
         cb_name = 'csv_column_name'
         master_cb = CheckboxWdg('master_control')
         master_cb.set_checked()
@@ -188,7 +188,7 @@ class CsvExportWdg(BaseRefreshWdg):
         col1 = table.add_col()
         col1.add_style('width: 35px')
         col2 = table.add_col()
-        
+
         if not self.search_type or not self.view:
             return table
 
@@ -202,7 +202,7 @@ class CsvExportWdg(BaseRefreshWdg):
                 titles.append(title)
 
         else:
-            
+
             # excluding FunctionalTableElement
             filtered_columns = []
             titles = []
@@ -212,13 +212,13 @@ class CsvExportWdg(BaseRefreshWdg):
                 titles = ['n/a'] * len(filtered_columns)
             else:
                 columns = config.get_element_names()
-                
+
                 filtered_columns = columns
                 titles = config.get_element_titles()
 
-        
+
             """
-            # commented out until it is decided 2.5 widgets will 
+            # commented out until it is decided 2.5 widgets will
             # use this class to differentiate between reg and functional element
             from pyasm.widget import FunctionalTableElement
             for column in columns:
@@ -236,8 +236,8 @@ class CsvExportWdg(BaseRefreshWdg):
             cb.set_checked()
             td = table.add_cell(cb)
             td.add_style("padding: 5px 0px")
-            
-            
+
+
             title = titles[idx]
             #td = table.add_cell('<b>%s</b> (%s) '%(title, column))
             td = table.add_cell('<b>%s</b>'%(title))
@@ -256,7 +256,7 @@ class CsvExportWdg(BaseRefreshWdg):
         cb = CheckboxWdg('include_id', label=" Include ID")
         cb.set_default_checked()
         widget.add(cb)
-        hint = HintWdg('To update entries with specific ID later, please check this option. For new inserts in this or other table later on, uncheck this option.') 
+        hint = HintWdg('To update entries with specific ID later, please check this option. For new inserts in this or other table later on, uncheck this option.')
         widget.add(" ")
         widget.add(hint)
 
@@ -340,7 +340,7 @@ class CsvExportWdg(BaseRefreshWdg):
         document.location = rtn_file_path;
 
         ''',
-            
+
         })
 
         self.close_action = "var popup = bvr.src_el.getParent('.spt_popup');spt.popup.close(popup)"
@@ -462,7 +462,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
     def init(self):
         web = WebContainer.get_web()
-        
+
         self.is_refresh = self.kwargs.get('is_refresh')
         if not self.is_refresh:
             self.is_refresh = web.get_form_value('is_refresh')
@@ -505,7 +505,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 f.close()
             elif file_name:
                 self.file_path = '%s/%s' %(web.get_upload_dir(ticket=ticket), file_name)
-                
+
 
         self.columns = self.kwargs.get("columns")
         if not self.columns:
@@ -523,7 +523,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
     def get_display(self):
-        
+
         widget = DivWdg()
 
         show_title = self.kwargs.get("show_title") not in [False, 'false']
@@ -547,10 +547,10 @@ class CsvImportWdg(BaseRefreshWdg):
         widget.add_style('padding: 10px')
         widget.add_style('font-size: 12px')
         #widget.add_border()
-        widget.add_color('color','color') 
-        widget.add_color('background','background') 
+        widget.add_color('color','color')
+        widget.add_color('background','background')
         widget.add_class("spt_import_top")
-       
+
 
         inner = DivWdg()
         widget.add(inner)
@@ -566,7 +566,6 @@ class CsvImportWdg(BaseRefreshWdg):
         '''get search type select and upload wdg'''
 
         key = 'csv_import'
-
 
         widget = DivWdg(css='spt_import_csv')
         widget.add_color('color','color')
@@ -612,7 +611,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 sobj = SObjectFactory.create(self.search_type)
             except ImportError:
                 widget.add(HtmlElement.br())
-                widget.add(SpanWdg('WARNING: Import Error encountered. Please choose another search type.', css='warning')) 
+                widget.add(SpanWdg('WARNING: Import Error encountered. Please choose another search type.', css='warning'))
                 return widget
 
             extra_data = self.kwargs.get("extra_data")
@@ -637,7 +636,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 button = ActionButtonWdg(title='Start Again', color="secondary")
                 button.add_style('float','right')
                 button.add_behavior( {
-                    'type': 'click_up', 
+                    'type': 'click_up',
                     'columns': "|".join(self.columns),
                     'labels': "|".join(self.labels),
                     'cbjs_action': '''
@@ -651,7 +650,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 widget.add(button)
 
 
-                
+
                 if self.web_url:
                     file_div = FloatDivWdg('URL: <i>%s</i>&nbsp;&nbsp;&nbsp;' %self.web_url, css='med')
 
@@ -683,20 +682,20 @@ class CsvImportWdg(BaseRefreshWdg):
 
             ticket = Environment.get_security().get_ticket_key()
 
-            
+
             on_complete = '''var server = TacticServerStub.get();
             var file = spt.html5upload.get_file();
             if (file) {
                 var file_name = file.name;
                 // clean up the file name the way it is done in the server
-                //file_name = spt.path.get_filesystem_name(file_name);    
+                //file_name = spt.path.get_filesystem_name(file_name);
                 var server = TacticServerStub.get();
-
                 var class_name = 'tactic.ui.widget.CsvImportWdg';
                 var values = spt.api.Utility.get_input_values('csv_import_main');
                 values['is_refresh'] = true;
                 values['file_name'] = file_name;
                 values['html5_ticket'] = '%s';
+
                 try {
                     var info = spt.panel.load('csv_import_main', class_name, {}, values);
                     spt.app_busy.hide();
@@ -720,7 +719,7 @@ class CsvImportWdg(BaseRefreshWdg):
             browse_div.add_style("text-align: center")
 
 
-            
+
             # this is now only used in the copy and paste Upload button for backward-compatibility
             upload_div = DivWdg()
             msg.add(upload_div)
@@ -730,11 +729,11 @@ class CsvImportWdg(BaseRefreshWdg):
 
 
             msg.add("<br/>")
-          
+
 
             msg.add("<div style='margin: 30px; text-align: center'>-- OR --</div>")
 
-            msg.add("<b>Copy and Paste from a Spreadsheet: </b><br/>") 
+            msg.add("<b>Copy and Paste from a Spreadsheet: </b><br/>")
             text = TextAreaWdg("data")
             text.add_style('width: 100%')
             text.add_style('height: 100px')
@@ -793,7 +792,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 hidden.value = path;
 
                 var file_name = spt.path.get_basename(hidden.value);
-                file_name = spt.path.get_filesystem_name(file_name); 
+                file_name = spt.path.get_filesystem_name(file_name);
                 */
 
                 var class_name = 'tactic.ui.widget.CsvImportWdg';
@@ -811,7 +810,7 @@ class CsvImportWdg(BaseRefreshWdg):
                 '''
             } )
 
-        
+
         return widget
 
 
@@ -823,7 +822,7 @@ class CsvImportWdg(BaseRefreshWdg):
 
         div = DivWdg(id='csv_import_main')
         div.add_class('spt_panel')
-        
+
         div.add( self.get_upload_wdg() )
         if not self.search_type:
             return div
@@ -843,7 +842,7 @@ class CsvImportWdg(BaseRefreshWdg):
         if not os.path.exists(self.file_path):
             raise TacticException("Path '%s' does not exist" % self.file_path)
 
-        
+
 
 
         div.add(HtmlElement.br(3))
@@ -873,7 +872,7 @@ class CsvImportWdg(BaseRefreshWdg):
         #option_div.add( HtmlElement.br() )
         option_div.add(SpanWdg("Use Title Row: ", css='med'))
         title_row_checkbox = CheckboxWdg("has_title")
-        
+
         # Has title is default true
         title_row_checkbox.set_default_checked()
         title_row_checkbox.set_checked()
@@ -888,7 +887,7 @@ class CsvImportWdg(BaseRefreshWdg):
         })
         option_div.add(title_row_checkbox)
         option_div.add( HintWdg("Set this to use the first row as a title row to match up columns in the database") )
-        
+
 
         option_div.add( HtmlElement.br(2) )
         option_div.add(SpanWdg("Use Lowercase Title: ", css='med'))
@@ -913,19 +912,19 @@ class CsvImportWdg(BaseRefreshWdg):
                     'cbjs_action': "spt.panel.refresh('preview_data',\
                     spt.api.Utility.get_input_values('csv_import_main'))"})
         option_div.add(data_row_text)
-        hint = HintWdg("Set this as a sample data row for display here") 
+        hint = HintWdg("Set this as a sample data row for display here")
         hint.add_styles('padding-top: 8px; display: block')
         option_div.add( hint )
 
         option_div.add( HtmlElement.br(2) )
-      
+
         # encoder
         span = SpanWdg("Encoder: ", css='med')
         option_div.add(span)
         option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('encoder')
-        select_wdg.set_option('values', ['','utf-8', 'iso_8859-1']) 
-        select_wdg.set_option('labels', ['ASCII (default)','UTF-8','Excel ISO 8859-1']) 
+        select_wdg.set_option('values', ['','utf-8', 'iso_8859-1'])
+        select_wdg.set_option('labels', ['ASCII (default)','UTF-8','Excel ISO 8859-1'])
         select_wdg.add_style('width','80%')
         select_wdg.add_behavior({'type' : 'change',
                     'cbjs_action': "spt.panel.refresh('preview_data',\
@@ -943,7 +942,7 @@ class CsvImportWdg(BaseRefreshWdg):
         select_wdg.add_style('width','80%')
         #columns = self.search_type_obj.get_columns()
         columns = SearchType.get_columns(self.search_type)
-        
+
         # make sure it starts off with id, code where applicable
         if 'code' in columns:
             columns.remove('code')
@@ -952,21 +951,21 @@ class CsvImportWdg(BaseRefreshWdg):
             columns.remove('id')
             columns.insert(0, 'id')
 
-        select_wdg.set_option('values', columns) 
+        select_wdg.set_option('values', columns)
         option_div.add(select_wdg)
-        hint = HintWdg("Set which column to use for identifying an item to update during CSV Import") 
+        hint = HintWdg("Set which column to use for identifying an item to update during CSV Import")
         hint.add_styles('padding-top: 8px; display: block')
         option_div.add( hint )
         option_div.add( HtmlElement.br(2) )
 
-        
+
         # triggers mode
         span = SpanWdg("Triggers: ", css='med')
         option_div.add(span)
         option_div.add(HtmlElement.br())
         select_wdg = SelectWdg('triggers_mode')
-        select_wdg.set_option('values', ['','False', 'True', 'none']) 
-        select_wdg.set_option('labels', ['- Select -','Internal Triggers Only','All Triggers','No Triggers']) 
+        select_wdg.set_option('values', ['','False', 'True', 'none'])
+        select_wdg.set_option('labels', ['- Select -','Internal Triggers Only','All Triggers','No Triggers'])
         select_wdg.add_style('float','left')
         select_wdg.add_style('width','80%')
         select_wdg.add_behavior({'type' : 'change',
@@ -977,16 +976,16 @@ class CsvImportWdg(BaseRefreshWdg):
 
         div.add(option_div_top)
 
-        
-        
+
+
         # need to somehow specify defaults for columns
         div.add(self.get_preview_wdg())
 
 
-        return div          
+        return div
 
 
-    
+
     def get_preview_wdg(self):
         columns = self.columns
         labels = self.labels
@@ -995,11 +994,11 @@ class CsvImportWdg(BaseRefreshWdg):
 
 class PreviewDataWdg(BaseRefreshWdg):
 
-    
+
     def init(self):
 
-        self.is_refresh = self.kwargs.get('is_refresh') 
-        self.file_path = self.kwargs.get('file_path') 
+        self.is_refresh = self.kwargs.get('is_refresh')
+        self.file_path = self.kwargs.get('file_path')
         self.search_type = self.kwargs.get('search_type')
         self.search_type_obj = SearchType.get(self.search_type)
         web = WebContainer.get_web()
@@ -1018,17 +1017,17 @@ class PreviewDataWdg(BaseRefreshWdg):
 
 
         self.columns = web.get_form_value("columns")
-        if not self.columns: 
+        if not self.columns:
             self.columns = self.kwargs.get("columns")
         if self.columns and isinstance(self.columns, basestring):
             self.columns = self.columns.split("|")
 
         self.labels = web.get_form_value("labels")
-        if not self.labels: 
+        if not self.labels:
             self.labels = self.kwargs.get("labels")
         if self.labels and isinstance(self.labels, basestring):
             self.labels = self.labels.split("|")
- 
+
         self.csv_column_data = {}
 
 
@@ -1045,7 +1044,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             csv_parser.set_lowercase_title(True)
         if self.encoder:
             csv_parser.set_encoder(self.encoder)
-        try:    
+        try:
             csv_parser.parse()
         # that can be all kinds of encoding/decoding exception
         except Exception as e:
@@ -1056,7 +1055,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             div.add(HtmlElement.br())
             div.add(span, 'warning')
             return div
-        
+
         # For 2nd guess of similar column titles
         csv_titles = csv_parser.get_titles()
         processed_csv_titles = [x.replace(' ', '_').lower() for x in csv_titles]
@@ -1108,7 +1107,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         tr = table.add_row()
         tr.add_color("background", "background", -5)
         tr.add_border()
-        
+
         # Checkbox
         cb = CheckboxWdg('csv_row')
         cb.set_default_checked()
@@ -1125,22 +1124,22 @@ class PreviewDataWdg(BaseRefreshWdg):
                 cbs[i].checked = toggle;
              }
         '''
-        } ) 
+        } )
 
         th = table.add_header(cb)
         th.add_style("padding: 5px")
-        
+
         # Preview column value
         th = table.add_header("Column Value")
         th.add_style("padding: 5px")
         th.add_class('smaller')
- 
+
         # Matching TACTIC column or new column selection
         th = table.add_header("TACTIC Column")
         th.add_style("padding: 5px")
         th.add_class('smaller')
-    
-        # Settings activator 
+
+        # Settings activator
         th = table.add_header("&nbsp;")
         th.add_style("padding: 5px")
         th.add_style('min-width: 10px')
@@ -1149,7 +1148,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         # set the columns and labels
         columns = self.columns
         labels = self.labels
-        
+
         # Get columns or labels if missing
         if not columns:
             columns = SearchType.get_columns(self.search_type)
@@ -1159,7 +1158,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             columns.sort()
 
             labels = []
-           
+
             for column in columns:
                 if column in required_columns:
                     label = '%s**'%column
@@ -1179,7 +1178,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         self.num_columns = len(row)
         hidden = HiddenWdg("num_columns", self.num_columns)
         div.add(hidden)
- 
+
         skipped_columns = []
 
         column_option_message = DivWdg()
@@ -1187,9 +1186,9 @@ class PreviewDataWdg(BaseRefreshWdg):
         column_option_message.add_class("spt_column_option_message")
         column_option_message.add_style("padding: 10px")
         column_option_message.add("Select <div class='fa fa-cog'></div> to edit column definition.")
-         
+
         csv_column_data = self.csv_column_data
-        
+
         # Build the column selection table
         for j, cell in enumerate(row):
             # skip extra empty title
@@ -1207,12 +1206,12 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_select.set_option("default", processed_csv_titles[j])
                 use_processed = True
             sel_val = column_select.get_value()
-            
-            
+
+
             tr = table.add_row()
             tr.add_class("tactic_hover")
 
-            cb = CheckboxWdg('column_enabled_%s' %j) 
+            cb = CheckboxWdg('column_enabled_%s' %j)
             cb.add_style("margin-left: 5px")
             cb.set_default_checked()
             #cb.set_persistence()
@@ -1233,13 +1232,13 @@ class PreviewDataWdg(BaseRefreshWdg):
                 if sel_val != '' or not self.is_refresh:
                     cb.set_default_checked()
 
-            td = table.add_cell(cb) 
+            td = table.add_cell(cb)
             td.add_style("padding-left: 5px")
 
 
             td = table.add_cell(cell)
             td.add_style("padding: 3px")
-            
+
             # this is an optimal max width
             td.add_style('max-width: 600px')
 
@@ -1249,12 +1248,12 @@ class PreviewDataWdg(BaseRefreshWdg):
                 'id': str(j),
                 'cbjs_action': '''
                 var values = spt.api.Utility.get_input_values('csv_import_main');
-                
+
                 //If user selected "**Widget" option, then default to Note.
-                column_select_key = "column_" + bvr.id; 
+                column_select_key = "column_" + bvr.id;
                 if (values[column_select_key] == "widget") {
                     values[column_select_key] = "(note)";
-                } 
+                }
 
                 spt.panel.refresh('preview_data', values );
             '''
@@ -1262,7 +1261,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             # Get new column or note process options
             column_data = csv_column_data.get(j)
-            
+
             processed_title = ""
             processed_type = ""
             process_value = ""
@@ -1277,17 +1276,17 @@ class PreviewDataWdg(BaseRefreshWdg):
                         processed_title = processed_csv_titles[j]
                     if not processed_title:
                         processed_title = csv_titles[j]
-                    
+
                     processed_type = column_data.get("type")
                     if not processed_type:
                         processed_type = self._guess_column_type(csv_data, j)
-           
+
             if processed_title.find("->") != -1:
                 column_select.add_empty_option("%s" % processed_title)
             else:
                 column_select.add_empty_option("%s (New)" % processed_title)
             column_select.set_persist_on_submit()
-            
+
             # Set options and labels
             column_options = list(columns)
             column_options.append("widget")
@@ -1298,7 +1297,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             column_select.set_option("values", column_options)
             column_select.set_option("labels", label_options)
- 
+
             display = column_select.get_buffer_display()
             td = table.add_cell( display )
             td.add_style("padding: 3px")
@@ -1312,12 +1311,12 @@ class PreviewDataWdg(BaseRefreshWdg):
                 options_form.add_style("width", "250px")
                 options_form.add_style("margin-top", "10px")
                 options_form.add_class("spt_form")
-                
+
                 # Inputs in form depend on note or new column
                 options_form_inputs = DivWdg()
                 options_form.add(options_form_inputs)
                 options_form_inputs.add_style("display", "inline-block")
-                
+
                 save = ActionButtonWdg(title="OK")
                 save.add_style("display", "block")
                 save.add_style("width", "150px")
@@ -1333,13 +1332,13 @@ class PreviewDataWdg(BaseRefreshWdg):
                         new_name_key = 'new_column_name_' + bvr.id;
                         name_key = 'new_column_' + bvr.id;
                         if (values[new_name_key]) {
-                            values[name_key] = values[new_name_key]; 
+                            values[name_key] = values[new_name_key];
                         }
-                        
+
                         new_type_key  = 'column_type_' + bvr.id;
-                        type_key = 'column_type_' + bvr.id;  
+                        type_key = 'column_type_' + bvr.id;
                         if (values[new_type_key]) {
-                            values[type_key] = values[new_type_key]; 
+                            values[type_key] = values[new_type_key];
                         }
 
                         new_note_process_key = 'new_note_process_' + bvr.id;
@@ -1351,15 +1350,15 @@ class PreviewDataWdg(BaseRefreshWdg):
                         } else {
                             note_process = values[new_note_process_key];
                         }
-                        
+
                         if (note_process) {
                             values[note_process_key] = note_process;
                         }
-   
+
                         spt.panel.refresh('preview_data', values );
                     '''
                 } )
-                
+
                 options_form.add("<br clear='all'/>")
                 options_form.add("<br clear='all'/>")
 
@@ -1368,10 +1367,10 @@ class PreviewDataWdg(BaseRefreshWdg):
                 dialog = DialogWdg(offset=offset)
                 dialog.add(options_form, name="content")
                 dialog.set_as_activator(column_option_div)
-                div.add(dialog)  
+                div.add(dialog)
             else:
                 column_option_div.add_style("display", "none")
- 
+
             if sel_val == '(note)':
                 # Context options for note column
                 process = HiddenWdg("note_process_%s" % j)
@@ -1387,17 +1386,17 @@ class PreviewDataWdg(BaseRefreshWdg):
                 note_process_group.add_class("form-group")
                 note_process_group.add_style("display", "inline-block")
                 note_process_group.add_style("padding", "5px")
-                
+
                 note_process_group.add("<label>Note process</label>")
-                
+
                 note_process_input_group = DivWdg()
                 note_process_group.add(note_process_input_group)
-               
+
                 # Choose process from pipeline (SelectWdg) or custom process (TextWdg)
                 # Custom process is hidden by default
                 process_pipeline_input = SelectWdg("new_note_process_%s" % j)
                 note_process_input_group.add(process_pipeline_input)
-                
+
                 # Get processes from pipelines, and add 'publish' and 'custom' options
                 from pyasm.biz import Pipeline
                 search_type_obj = SearchType.get(self.search_type)
@@ -1406,16 +1405,16 @@ class PreviewDataWdg(BaseRefreshWdg):
                 all_processes = []
                 for pipeline in pipelines:
                     process_names = pipeline.get_process_names()
-                    all_processes.extend(process_names) 
+                    all_processes.extend(process_names)
                 process_names = list(set(all_processes))
-                
+
                 process_names.append("publish")
                 if process_value not in process_names:
                     process_names.append(process_value)
                 process_pipeline_input.set_option("values", process_names)
                 process_pipeline_input.set_option("default", process_value)
                 process_pipeline_input.append_option("Custom process", "custom")
-                
+
                 process_pipeline_input.add_style("display", "inline-block")
                 process_pipeline_input.add_class("form-control")
                 process_pipeline_input.add_style('border-color: #8DA832')
@@ -1447,11 +1446,11 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_name = HiddenWdg("new_column_%s" % j)
                 column_option_div.add( column_name )
                 column_name.set_value(processed_title)
- 
+
                 column_type = HiddenWdg("column_type_%s" % j)
                 column_option_div.add( column_type )
                 column_type.set_value(processed_type)
-                
+
                 # Option form for new column
                 column_name_group = DivWdg()
                 options_form_inputs.add(column_name_group)
@@ -1459,7 +1458,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_name_group.add_style("display", "inline-block")
                 column_name_group.add_style("padding", "5px")
 
-                column_name_group.add("<label>Column name</label>") 
+                column_name_group.add("<label>Column name</label>")
                 column_name_input = TextWdg("new_column_name_%s" % j)
                 column_name_group.add(column_name_input)
                 column_name_input.add_class("form-control")
@@ -1471,7 +1470,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type_group.add_class("form-group")
                 column_type_group.add_style("display", "inline-block")
                 column_type_group.add_style("padding", "5px")
-                
+
                 column_type_group.add("<label>Column type</label>")
                 column_type_input = SelectWdg("column_type_%s" % j)
                 column_type_group.add( column_type_input )
@@ -1489,8 +1488,8 @@ class PreviewDataWdg(BaseRefreshWdg):
         div.add(table)
 
 
-     
-    
+
+
 
     def get_display(self):
 
@@ -1501,7 +1500,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         if self.encoder:
             csv_parser.set_encoder(self.encoder)
 
-        try:    
+        try:
             csv_parser.parse()
         # that can be all kinds of encoding/decoding exception
         except Exception as e:
@@ -1543,7 +1542,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 columns.append(column)
         self.csv_column_data = csv_column_data
 
-        # Preview data and column selection 
+        # Preview data and column selection
         widget = DivWdg(id='preview_data')
         widget.add_style('padding: 6px')
         self.set_as_panel(widget)
@@ -1552,9 +1551,9 @@ class PreviewDataWdg(BaseRefreshWdg):
         self.get_column_preview(widget)
 
         response_div = DivWdg(css='spt_cmd_response')
-        #response_div.add_style('color','#F0C956') 
+        #response_div.add_style('color','#F0C956')
         response_div.add_color('background','background3')
-        response_div.add_color('color','color3') 
+        response_div.add_color('color','color3')
         response_div.add_style('padding: 30px')
         response_div.add_style('display: none')
         widget.add(HtmlElement.br())
@@ -1564,7 +1563,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         sobject_title = self.search_type_obj.get_title()
         div = DivWdg(css='spt_csv_sample')
         widget.add(div)
-        h3 = DivWdg("Preview Data") 
+        h3 = DivWdg("Preview Data")
         #h3.add_border()
         h3.add_color('color','color')
         #h3.add_gradient('background','background', -5)
@@ -1575,7 +1574,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         h3.add_style("margin-right: -20px")
         div.add(h3)
         div.add("<br/>")
-        
+
         refresh_button = ActionButtonWdg(title="Refresh Preview", color="secondary")
         refresh_button.add_style("margin-right: 10px")
 
@@ -1595,12 +1594,11 @@ class PreviewDataWdg(BaseRefreshWdg):
         import_button = ActionButtonWdg(title="Import")
         # import_button.set_id('CsvImportButton')
         import_button.add_behavior({
-            'type':'click_up', 
+            'type':'click_up',
             'entry_error_msg': entry_error_msg,
             'top_id':'csv_import_main',
             'cbjs_action': r'''
             var src_el = bvr.src_el;
-
             var project = spt.Environment.get().get_project();
             var my_search_type = bvr.search_type;
             var top_id = bvr.top_id;
@@ -1612,32 +1610,33 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             var response_div = src_el.getParent('.spt_panel').getElement('.spt_cmd_response');
             var csv_control = src_el.getParent('.spt_panel').getElement('.spt_csv_sample')
-            
+
             var run_cmd;
 
             var on_complete = function(response_div) {
                 spt.app_busy.hide();
-                
+
                 response_div.innerHTML = 'CSV Import Completed';
-                 
-                setTimeout( function() { 
+
+                setTimeout( function() {
                     var popup = bvr.src_el.getParent(".spt_popup");
                     if (popup) {
                         spt.popup.hide_background();
-                        popup.destroy();
+                        //popup.destroy();
+                        spt.popup.close(popup);
                     }
                     spt.table.run_search() } , 2000
                 );
             }
-           
+
             /* On error includes handling of failure for single commit.
-             * If a single commit fails, user is prompted to skip that 
+             * If a single commit fails, user is prompted to skip that
              * entry or abort entire import. */
             var on_error = function(e) {
                 var err_message = spt.exception.handler(e);
 
                 spt.app_busy.hide();
-                
+
                 // This function is executed when Command fails or user
                 // chooses to abort after single entry fails.
                 var abort = function() {
@@ -1653,18 +1652,18 @@ class PreviewDataWdg(BaseRefreshWdg):
                     new_start_index = parseInt(message_parts[1]) + 1;
                     ok_fn = run_cmd;
                     cancel_fn = abort;
-                    options = {ok_args: [new_start_index], okText: "Skip this entry", cancelText: "Cancel entire import"}; 
+                    options = {ok_args: [new_start_index], okText: "Skip this entry", cancelText: "Cancel entire import"};
                     spt.confirm(err_message, ok_fn, cancel_fn, options);
                     return;
-                } 
-                
+                }
+
                 spt.error(err_message);
                 abort();
             }
-            
+
             var run_cmd = function (start_index) {
                 if (start_index) {
-                    values['start_index'] = start_index; 
+                    values['start_index'] = start_index;
                 }
                 spt.app_busy.show("Importing Data");
                 server.execute_cmd(class_name, {}, values,  {on_complete: on_complete, on_error: on_error});
@@ -1675,7 +1674,7 @@ class PreviewDataWdg(BaseRefreshWdg):
 
             '''
         })
-        
+
         import_button.add_style("float: left")
         div.add( import_button )
         div.add(HtmlElement.br(clear='all'))
@@ -1685,7 +1684,7 @@ class PreviewDataWdg(BaseRefreshWdg):
         message_div.add_color('color','color')
         message_div.add_style('margin-left: 14px')
         div.add(message_div)
-        
+
         widget.add(HtmlElement.br())
 
 
@@ -1746,22 +1745,22 @@ class PreviewDataWdg(BaseRefreshWdg):
                     td.add_style("color: red")
                 elif column_type == 'varchar(256)' and not self._check_varchar(cell):
                     td.add_style("color: red")
-                
-        return widget 
+
+        return widget
 
     def _guess_column_type(self, csv_data, idx):
         ''' given csv data and a column idx, determine appropriate data type '''
         column_types = {}
         data_cell_list = []
-        column_type = ''       
+        column_type = ''
         for k, row in enumerate(csv_data):
             if k >= len(row):
                 data = ''
             else:
-                data = row[idx] 
+                data = row[idx]
             if data.strip() == '':
                 continue
-            
+
             # Use democracy to determine type
             column_type = self._check_timestamp(data)
             if not column_type:
@@ -1779,7 +1778,7 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_types[column_type] = column_types[column_type] + 1
 
 
-            # max 30 per analysis    
+            # max 30 per analysis
             if k > 30:
                 break
 
@@ -1789,9 +1788,9 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type = key
                 largest = num
             return column_type
-    
+
     # ensure this is not a partial date, which should be treated as a regular integer
-    def _parse_date(self, dt_str):    
+    def _parse_date(self, dt_str):
         from dateutil import parser
         dt = parser.parse(dt_str, default=datetime.datetime(1900, 1, 1)).date()
         dt2 = parser.parse(dt_str, default=datetime.datetime(1901, 2, 2)).date()
@@ -1807,7 +1806,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             column_type = 'varchar(256)'
         else:
             column_type = 'text'
-       
+
         return column_type
 
     def _check_boolean(self, data):
@@ -1824,7 +1823,7 @@ class PreviewDataWdg(BaseRefreshWdg):
             column_type = 'integer'
         except ValueError as e:
             pass
-       
+
         return column_type
 
     def _check_float(self, data):
@@ -1834,12 +1833,12 @@ class PreviewDataWdg(BaseRefreshWdg):
             column_type = 'float'
         except ValueError as e:
             pass
-        
+
         return column_type
 
     def _check_timestamp(self, data):
         column_type = None
-        try: 
+        try:
             timestamp = self._parse_date(data)
             if timestamp:
                 column_type = 'timestamp'
@@ -1848,8 +1847,8 @@ class PreviewDataWdg(BaseRefreshWdg):
                 column_type = self._check_integer(data)
         except Exception as e:
             pass
-           
-        return column_type 
+
+        return column_type
 
 
 
