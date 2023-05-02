@@ -3271,6 +3271,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         shelf_view = self.kwargs.get("shelf_view")
         badge_view = self.kwargs.get("badge_view")
         filter_view = self.kwargs.get("filter_view")
+        edit_config_xml = self.kwargs.get("edit_config_xml")
         extra_data = self.kwargs.get("extra_data")
         layout_switcher_custom_views = self.kwargs.get("layout_switcher_custom_views")
         default_views = self.kwargs.get("default_views")
@@ -3420,6 +3421,8 @@ class ViewPanelWdg(BaseRefreshWdg):
 
 
         kwargs['config_xml'] = self.kwargs.get("config_xml")
+        kwargs['edit_config_xml'] = self.kwargs.get("edit_config_xml")
+        kwargs['keyword_column'] = self.kwargs.get("keyword_column")
         # set up the extra keys (for all layouts)
         if not layout or layout == "table":
             layout_class_path = "tactic.ui.panel.TableLayoutWdg"

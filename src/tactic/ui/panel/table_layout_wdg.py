@@ -47,7 +47,6 @@ class TableLayoutWdg(BaseTableLayoutWdg):
     #    '_order': ['Required', 'Misc']
     #}
 
-
     ARGS_KEYS = {
         "mode": {
             'description': "Determines whether to draw with widgets or just use the raw data",

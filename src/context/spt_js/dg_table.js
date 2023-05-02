@@ -2364,6 +2364,11 @@ spt.dg_table._search_cbk = function(evt, bvr)
 
     var filter_view = target.getAttribute("spt_filter_view") || "";
 
+    var config_xml = target.getAttribute("spt_config_xml") || "";
+    var edit_config_xml = target.getAttribute("spt_edit_config_xml") || "";
+
+    var keyword_column = target.getAttribute("spt_keyword_column") || "";
+
     var height = target.getAttribute("spt_height") || "";
     var window_resize_offset = target.getAttribute("spt_window_resize_offset")
     var element_names;
@@ -2463,6 +2468,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'resize_cbjs': resize_cbjs,
         'reorder_cbjs': reorder_cbjs,
         'title': title,
+        'config_xml': config_xml,
+        'edit_config_xml': edit_config_xml,
+        'keyword_column': keyword_column,
     }
 
     var pat = /TileLayoutWdg|CollectionLayoutWdg/;

@@ -56,7 +56,6 @@ class SearchBoxPopupWdg(BaseRefreshWdg):
 
         # 
         filter_view = self.kwargs.get("filter_view")
-        filter_view = "job_filter"
 
         
         self.state = BaseRefreshWdg.process_state(self.state)
@@ -132,6 +131,7 @@ class SearchWdg(BaseRefreshWdg):
         custom_filter_view = self.kwargs.get('custom_filter_view')
         if not custom_filter_view:
             custom_filter_view=''
+
 
         config = []
         config.append("<config>\n")
@@ -236,6 +236,7 @@ class SearchWdg(BaseRefreshWdg):
 
         config = ''.join(config)
 
+        
         config_xml = Xml()
         config_xml.read_string(config)
         config = WidgetConfig.get(xml=config_xml, view='filter')
