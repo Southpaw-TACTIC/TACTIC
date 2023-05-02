@@ -247,6 +247,17 @@ class BaseNodeWdg(BaseRefreshWdg):
 
 
 
+__all__.append('PipelineGetAllCmd')
+class PipelineGetAllCmd(Command):
+
+    def execute(self):
+        sobjects = Search.eval("@SOBJECT(sthpw/pipeline)")
+        pipelines = []
+        for sobject in sobjects:
+            pipelines.append( sobject.get_sobject_dict() )
+        return pipelines
+
+
 class PipelineCanvasWdg(BaseRefreshWdg):
     '''Pipeline Widget'''
 
@@ -2928,15 +2939,19 @@ spt.pipeline.first_init = function(bvr) {
     var expr = ''
     var key = ''
     // either pipeline or stype can have color
+
+    let sobjs;
     if (schema_editor) {
         expr = "@SOBJECT(sthpw/search_object)";
         key = 'search_type';
+        sobjs = server.eval(expr);
     }
     else {
-        expr = "@SOBJECT(sthpw/pipeline)";
+        let cmd = "tactic.ui.tools.PipelineGetAllCmd";
+        let ret = server.execute_cmd(cmd);
+        sobjs = ret.info;
         key = 'code';
     }
-    var sobjs = server.eval(expr);
 
     data.names = {};
     data.colors = {};
