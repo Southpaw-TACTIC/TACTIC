@@ -574,8 +574,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
         '''method where the table handles it's own search on refresh'''
 
 
-        from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-        self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
+        self.keyword_column = self.kwargs.get("keyword_column")
+        if not self.keyword_column:
+            from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+            self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
 
 
         if self.is_sobjects_explicitly_set():
@@ -616,7 +618,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
         # Not sure if filter_view should ever be simple_search_view (this is how it was before)
         filter_view = self.kwargs.get('filter_view') or self.simple_search_view
-
 
         # don't set the view here, it affects the logic in SearchWdg
         filter_json = ''
@@ -1163,9 +1164,16 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     values = {}
 
 
-            from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
-            self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
-            self.keyword_hint_text = SimpleSearchWdg.get_hint_text(self.search_type, self.simple_search_view)
+            self.keyword_column = self.kwargs.get("keyword_column")
+            if not self.keyword_column:
+                from tactic.ui.app.simple_search_wdg import SimpleSearchWdg
+                self.keyword_column = SimpleSearchWdg.get_search_col(self.search_type, self.simple_search_view)
+                self.keyword_hint_text = SimpleSearchWdg.get_hint_text(self.search_type, self.simple_search_view)
+            else:
+                text = self.keyword_column.title()
+                text = text.replace("_", " ")
+                text = text.replace("|", ", ")
+                self.keyword_hint_text = text
 
             show_toggle = False
             if simple_search_mode == "hidden":

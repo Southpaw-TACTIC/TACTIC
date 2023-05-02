@@ -396,6 +396,8 @@ class SimpleSearchWdg(BaseRefreshWdg):
 
         filter_view = self.kwargs.get("filter_view")
         if filter_view:
+
+            filter_xml = None
             search = Search("config/widget_config")
             search.add_filter("view", filter_view)
             search.add_filter("category", "search_filter")
@@ -403,6 +405,7 @@ class SimpleSearchWdg(BaseRefreshWdg):
             filter_config = search.get_sobject()
             if filter_config:
                 filter_xml = filter_config.get_xml_value("config")
+
                 filter_value = filter_xml.get_value("config/filter/values")
                 if filter_value:
                     data_list = jsonloads(filter_value)
