@@ -403,8 +403,80 @@ class Login(SObject):
     encrypt_password = staticmethod(encrypt_password)
 
 
+    # markmark
+    def validate_password(password):
+        # Regex modified from  https://www.geeksforgeeks.org/password-validation-in-python/
+        try:
+            password = password.decode()
+        except (UnicodeDecodeError, AttributeError):
+            pass
+
+        import re
+        """
+        - at least one number.
+        - at least one uppercase and one lowercase character.
+        - at least one special symbol.
+        - 6 to 20 characters long.
+        """
+        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$"
+
+        # compiling regex
+        pat = re.compile(reg)
+
+        # searching regex
+        mat = re.search(pat, password)
+
+        # validating conditions
+        if mat:
+            return True
+
+        return False
+
+    validate_password = staticmethod(validate_password)
 
 
+    def check_previous_passwords(self, password):
+        data = self.get("data")
+        previous_passwords = []
+        if data:
+            previous_passwords = data.get("previous_passwords")
+        if previous_passwords:
+            for previous_password in previous_passwords:
+                if previous_password:
+                    if previous_password.startswith("$S$"):
+                        salt = previous_password[4:12]
+                        iter_code = previous_password[3]
+                        #salt = Common.generate_alphanum_key(num_digits=8, mode='alpha')
+                        #iter_code = 'D'
+                        new_encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
+                        print(new_encrypted)
+                        if new_encrypted == previous_password:
+                            return False
+
+        return True
+
+
+    def check_password_expiry(self):
+        data = self.get("data")
+        if data:
+            password_expiry = data.get("password_expiry")
+            if password_expiry:
+                expiry = parser.parse(password_expiry)
+                now = datetime.now()
+                if now > expiry:
+                    return False
+        return True
+
+    def check_invalid_logins(self):
+        data = self.get("data")
+        if data:
+            invalid_logins = data.get("invalid_logins")
+            print("INVALID LOGINS:", invalid_logins)
+            if invalid_logins:
+                invalid_logins = int(invalid_logins)
+                if invalid_logins >= 5:
+                    return False
+        return True
 
 
 class LoginGroup(Login):

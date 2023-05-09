@@ -154,6 +154,18 @@ class NewPasswordCmd(Command):
                 if data:
                     temporary_code = data.get('temporary_code')
                     if code == temporary_code:
+                        # for password complexity and previous passwords check
+                        password_complexity = Config.get_value("security", "password_complexity", no_exception=True)
+                        if password_complexity in ['true', 'True']:
+                            if not login.check_previous_passwords(password):
+                                web.set_form_value("is_err", "true")
+                                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'You cannot reuse previous passwords.')
+                                return
+                            if not Login.validate_password(password):
+                                web.set_form_value("is_err", "true")
+                                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'Your password does not meet standards.')
+                                return
+
                         # call reset_password from the auth_class
                         authenticate = Common.create_from_class_path(auth_class)
                         authenticate.reset_password(login, password)
