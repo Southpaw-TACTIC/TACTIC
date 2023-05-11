@@ -403,9 +403,7 @@ class Login(SObject):
     encrypt_password = staticmethod(encrypt_password)
 
 
-    # markmark
     def validate_password(password):
-        # Regex modified from  https://www.geeksforgeeks.org/password-validation-in-python/
         try:
             password = password.decode()
         except (UnicodeDecodeError, AttributeError):
@@ -416,9 +414,10 @@ class Login(SObject):
         - at least one number.
         - at least one uppercase and one lowercase character.
         - at least one special symbol.
-        - 6 to 20 characters long.
+        - 8 to 20 characters long.
         """
-        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{6,20}$"
+        # Regex modified from  https://www.geeksforgeeks.org/password-validation-in-python/
+        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
 
         # compiling regex
         pat = re.compile(reg)
@@ -449,7 +448,6 @@ class Login(SObject):
                         #salt = Common.generate_alphanum_key(num_digits=8, mode='alpha')
                         #iter_code = 'D'
                         new_encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
-                        print(new_encrypted)
                         if new_encrypted == previous_password:
                             return False
 
@@ -467,14 +465,14 @@ class Login(SObject):
                     return False
         return True
 
-    def check_invalid_logins(self):
+
+    def check_invalid_logins(self, num_attempts=5):
         data = self.get("data")
         if data:
             invalid_logins = data.get("invalid_logins")
-            print("INVALID LOGINS:", invalid_logins)
             if invalid_logins:
                 invalid_logins = int(invalid_logins)
-                if invalid_logins >= 5:
+                if invalid_logins >= num_attempts:
                     return False
         return True
 

@@ -97,10 +97,14 @@ class TacticAuthenticate(Authenticate):
             raise SecurityException("Login/Password combination incorrect")
 
         if self.login:
-            password_complexity = Config.get_value("security", "password_complexity")
-            if password_complexity in ['true', 'True'] and not self.login.check_password_expiry():
+            password_expiry = Config.get_value("security", "password_expiry")
+            password_expiry = password_expiry.strip()
+            if password_expiry and not self.login.check_password_expiry():
                 raise SecurityException("Password expired. Please reset by clicking on Forgot your password link.")
-            if password_complexity in ['true', 'True'] and not self.login.check_invalid_logins():
+
+            invalid_login_attempts = Config.get_value("security", "invalid_login_attempts")
+            invalid_login_attempts = invalid_login_attempts.strip()
+            if invalid_login_attempts and not self.login.check_invalid_logins(int(invalid_login_attempts)):
                 raise SecurityException("Too many login attemtps. Please reset your password.")
 
         user_encrypted = self.login.get_value("password")
@@ -167,13 +171,21 @@ class TacticAuthenticate(Authenticate):
         data["previous_passwords"] = previous_passwords
 
         # password expiry
-        expiry = datetime.now() + timedelta(days=90)
+        password_expiry_days = 90
+        password_expiry = Config.get_value("security", "password_expiry")
+        password_expiry = password_expiry.strip()
+        if password_expiry:
+            try:
+                password_expiry_days = int(password_expiry)
+            except:
+                raise Exception("Check password_expiry config value.")
+        expiry = datetime.now() + timedelta(days=password_expiry_days)
         data["password_expiry"] = expiry
 
         # invalid_login_attempt reset
         data["invalid_logins"] = 0
 
-        login.set_value("data", data)  # markmark
+        login.set_value("data", data)
         login.commit()
 
 
