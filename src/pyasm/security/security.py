@@ -414,7 +414,7 @@ class Login(SObject):
         - at least one number.
         - at least one uppercase and one lowercase character.
         - at least one special symbol.
-        - 8 to 20 characters long.
+        - min 8 characters long.
         """
         # Regex modified from  https://www.geeksforgeeks.org/password-validation-in-python/
         reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
