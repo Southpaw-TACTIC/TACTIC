@@ -432,7 +432,7 @@ class SendPasswordResetCmd(Command):
                 email_msg = 'Your TACTIC password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (auto_password, url)
                 subject = 'TACTIC password change'
             else:
-                email_msg = "You've been invited to a TACTIC project. Visit the following URL to set a password: \n\n%s" % (url)
+                email_msg = "You've been invited to a TACTIC project. Your user name is [%s]. Visit the following URL to set a password: \n\n%s" % (self.login, url)
                 subject = 'TACTIC project invitation'
             email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject=subject)
 
