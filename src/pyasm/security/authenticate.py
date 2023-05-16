@@ -190,8 +190,15 @@ class TacticAuthenticate(Authenticate):
 
 
     def increment_login_attempt(self, login, reset=False):
+        """This will increment the login attempt count by 1.
+        If reset is true, it will set the count to 0.
         """
-        """
+        invalid_login_attempts = Config.get_value("security", "invalid_login_attempts")
+        invalid_login_attempts = invalid_login_attempts.strip()
+        if not invalid_login_attemtps:
+            return
+
+
         data = login.get("data") or {}
         invalid_logins = 0
         if data:
