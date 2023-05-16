@@ -105,7 +105,7 @@ class TacticAuthenticate(Authenticate):
             invalid_login_attempts = Config.get_value("security", "invalid_login_attempts")
             invalid_login_attempts = invalid_login_attempts.strip()
             if invalid_login_attempts and not self.login.check_invalid_logins(int(invalid_login_attempts)):
-                raise SecurityException("Too many login attemtps. Please reset your password.")
+                raise SecurityException("Too many login attempts. Please reset your password.")
 
         user_encrypted = self.login.get_value("password")
 
@@ -195,7 +195,7 @@ class TacticAuthenticate(Authenticate):
         """
         invalid_login_attempts = Config.get_value("security", "invalid_login_attempts")
         invalid_login_attempts = invalid_login_attempts.strip()
-        if not invalid_login_attemtps:
+        if not invalid_login_attempts:
             return
 
 
