@@ -306,6 +306,7 @@ class BaseReactWdg(BaseRefreshWdg):
 
             const root = ReactDOM.createRoot(container);
             container.react_root = root;
+            container.react_element = el;
             root.render(el);
 
             // React 17

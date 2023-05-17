@@ -240,11 +240,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
-                sudo = Sudo()
-                try:
-                    self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
-                finally:
-                    sudo.exit()
+                self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 parser = ExpressionParser()
                 related = parser.get_plain_related_types(expression)
 
@@ -693,7 +689,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             cross_db=cross_db
                     )
                     keyword_filter.set_values(keyword_values[0])
-                    keyword_filter.alter_search(search)
+                    sudo = Sudo()
+                    try:
+                        keyword_filter.alter_search(search)
+                    finally:
+                        sudo.exit()
+
 
 
         if self.no_results:
