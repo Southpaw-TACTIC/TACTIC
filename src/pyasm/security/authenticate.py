@@ -18,6 +18,7 @@ from pyasm.common import SecurityException, Config, Common
 from .security import Login
 from .drupal_password_hasher import DrupalPasswordHasher
 
+from datetime import datetime, timedelta
 
 
 class Authenticate(object):
@@ -95,6 +96,17 @@ class TacticAuthenticate(Authenticate):
         if not self.login:
             raise SecurityException("Login/Password combination incorrect")
 
+        if self.login:
+            password_expiry = Config.get_value("security", "password_expiry")
+            password_expiry = password_expiry.strip()
+            if password_expiry and not self.login.check_password_expiry():
+                raise SecurityException("Password expired. Please reset by clicking on Forgot your password link.")
+
+            invalid_login_attempts = Config.get_value("security", "invalid_login_attempts")
+            invalid_login_attempts = invalid_login_attempts.strip()
+            if invalid_login_attempts and not self.login.check_invalid_logins(int(invalid_login_attempts)):
+                raise SecurityException("Too many login attempts. Please reset your password.")
+
         user_encrypted = self.login.get_value("password")
 
         if user_encrypted.startswith("$S$"):
@@ -109,7 +121,9 @@ class TacticAuthenticate(Authenticate):
 
         # encrypt and check the password
         if encrypted != user_encrypted:
+            self.increment_login_attempt(self.login)
             raise SecurityException("Login/Password combination incorrect")
+        self.increment_login_attempt(self.login, reset=True)
         return True
 
 
@@ -141,10 +155,66 @@ class TacticAuthenticate(Authenticate):
     def reset_password(self, login, password):
         """reset the password
         """
+
         encrypted = Login.encrypt_password(password)
         login.set_value('password', encrypted)
+
+        # previous passwords
+        data = login.get("data") or {}
+        previous_passwords = []
+        if data:
+            previous_passwords = data.get("previous_passwords")
+
+        previous_passwords.append(encrypted)
+        if len(previous_passwords) > 3:
+            previous_passwords.pop(0)
+        data["previous_passwords"] = previous_passwords
+
+        # password expiry
+        password_expiry_days = 90
+        password_expiry = Config.get_value("security", "password_expiry")
+        password_expiry = password_expiry.strip()
+        if password_expiry:
+            try:
+                password_expiry_days = int(password_expiry)
+            except:
+                raise Exception("Check password_expiry config value.")
+        expiry = datetime.now() + timedelta(days=password_expiry_days)
+        data["password_expiry"] = expiry
+
+        # invalid_login_attempt reset
+        data["invalid_logins"] = 0
+
+        login.set_value("data", data)
         login.commit()
 
+
+    def increment_login_attempt(self, login, reset=False):
+        """This will increment the login attempt count by 1.
+        If reset is true, it will set the count to 0.
+        """
+        invalid_login_attempts = Config.get_value("security", "invalid_login_attempts")
+        invalid_login_attempts = invalid_login_attempts.strip()
+        if not invalid_login_attempts:
+            return
+
+
+        data = login.get("data") or {}
+        invalid_logins = 0
+        if data:
+            invalid_logins = data.get("invalid_logins")
+            # ask Remko. how to check. This is what I saw at 2 factor expiry:
+            # != "__NONE___"
+            if invalid_logins:
+                invalid_logins = int(invalid_logins)
+                invalid_logins += 1
+            else:
+                invalid_logins = 1
+            if reset:
+                invalid_logins = 0
+        data["invalid_logins"] = invalid_logins
+        login.set_value("data", data)
+        login.commit()
 
 
 #
