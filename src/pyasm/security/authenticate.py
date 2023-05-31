@@ -164,6 +164,8 @@ class TacticAuthenticate(Authenticate):
         previous_passwords = []
         if data:
             previous_passwords = data.get("previous_passwords")
+            if not previous_passwords:
+                previous_passwords = []
 
         previous_passwords.append(encrypted)
         if len(previous_passwords) > 3:

@@ -163,7 +163,7 @@ class NewPasswordCmd(Command):
                                 return
                             if not Login.validate_password(password):
                                 web.set_form_value("is_err", "true")
-                                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'Your password does not meet standards.')
+                                web.set_form_value(BaseSignInWdg.RESET_MSG_LABEL, 'Your password does not meet standards. It must have at least one number, one UPPERCASE and one lowercase character. It must also have at least one special character and be a minimum of 8 characters long.')
                                 return
 
                         # call reset_password from the auth_class
