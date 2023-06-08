@@ -2714,6 +2714,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if security.check_access("builtin", access_keys, "edit"):
 
                 edit_view = self.kwargs.get("edit_view")
+                edit_class = self.kwargs.get("edit_class")
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
 
@@ -2723,6 +2724,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     #"icon": IconWdg.EDIT,
                     "bvr_cb": {
                         'edit_view': edit_view,
+                        'edit_class': edit_class,
                         'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");

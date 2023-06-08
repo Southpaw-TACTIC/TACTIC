@@ -8664,13 +8664,17 @@ spt.table.row_ctx_menu_setup_cbk = function( menu_el, activator_el ) {
 //
 spt.table.row_ctx_menu_edit_cbk = function(evt, bvr)
 {
-    var activator = spt.smenu.get_activator(bvr);
-    var row = activator;
-    var search_key = row.getAttribute("spt_search_key");
-    var search_key_info = spt.dg_table.parse_search_key( search_key );
-    var edit_view = bvr.edit_view ? bvr.edit_view : 'edit';
+    let activator = spt.smenu.get_activator(bvr);
+    let row = activator;
+    let search_key = row.getAttribute("spt_search_key");
+    let search_key_info = spt.dg_table.parse_search_key( search_key );
+    let edit_view = bvr.edit_view ? bvr.edit_view : 'edit';
+    let edit_class = bvr.edit_class;
+    if (!edit_class) {
+        edit_class = 'tactic.ui.panel.EditWdg';
+    }
 
-    var tmp_bvr = {};
+    let tmp_bvr = {};
     tmp_bvr.args = {
         'search_key': search_key,
         'input_prefix': 'edit',
@@ -8679,7 +8683,7 @@ spt.table.row_ctx_menu_edit_cbk = function(evt, bvr)
 
     tmp_bvr.options = {
         'title': 'Edit: ' + search_key_info.search_type,
-        'class_name': 'tactic.ui.panel.EditWdg',
+        'class_name': edit_class,
         'popup_id': 'edit_popup'
     };
 
