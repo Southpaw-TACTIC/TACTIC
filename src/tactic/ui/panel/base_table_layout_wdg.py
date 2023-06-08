@@ -1634,6 +1634,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search_type_obj = SearchType.get(self.search_type)
             search_type_title = search_type_obj.get_value("title")
 
+            edit_class = self.kwargs.get("edit_class")
+
 
             button = ButtonNewWdg(title='Add New Item', icon="FA_PLUS")
 
@@ -1641,6 +1643,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
+                'edit_class': edit_class,
                 'title': search_type_title,
                 'parent_key': self.parent_key,
                 'table_id': self.table_id,
@@ -1652,14 +1655,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 // NOTE: not sure if this condition is good enough to
                 // separate a custom view from an insert view
-                if (bvr.view && bvr.view.contains(".")) {
-                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                let class_name;
+                if (bvr.edit_class) {
+                    class_name = bvr.edit_class;
+                }
+                else if (bvr.view && bvr.view.contains(".")) {
+                    class_name = 'tactic.ui.panel.CustomLayoutWdg';
                 }
                 else {
-                    var class_name = 'tactic.ui.panel.EditWdg';
+                    class_name = 'tactic.ui.panel.EditWdg';
                 }
 
-                var kwargs = {
+                let kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
                   view: bvr.view,

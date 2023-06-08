@@ -3277,6 +3277,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         default_views = self.kwargs.get("default_views")
         name = self.kwargs.get("name")
         column_widths = self.kwargs.get("column_widths")
+        edit_class = self.kwargs.get("edit_class")
 
 
 
@@ -3360,6 +3361,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "state": self.state,
             "show_border": show_border,
             "search_class": search_class,
+            "edit_class": edit_class,
             "search_view": search_view,
             "search_limit": search_limit,
             "custom_search_view": custom_search_view,
