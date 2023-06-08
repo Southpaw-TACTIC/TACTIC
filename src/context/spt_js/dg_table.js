@@ -2324,6 +2324,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var show_help = target.getAttribute("spt_show_help");
     var insert_view = target.getAttribute("spt_insert_view");
     var edit_view = target.getAttribute("spt_edit_view");
+    var edit_class = target.getAttribute("spt_edit_class");
     var ingest_data_view = target.getAttribute("spt_ingest_data_view");
     var ingest_custom_view = target.getAttribute("spt_ingest_custom_view");
     var checkin_context = target.getAttribute("spt_checkin_context");
@@ -2434,6 +2435,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'show_help': show_help,
         'insert_view': insert_view,
         'edit_view': edit_view,
+        'edit_class': edit_class,
         'simple_search_view': simple_search_view,
         'simple_search_config': simple_search_config,
         'simple_search_mode': simple_search_mode,
