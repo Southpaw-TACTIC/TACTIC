@@ -397,6 +397,10 @@ class SendPasswordResetCmd(Command):
             error_msg = 'This user [%s] does not exist or has been disabled. Please contact the Administrator.' % self.login
             raise TacticException(error_msg)
 
+        upn = login.get_value("upn")
+        if not upn:
+            upn = self.login
+
         email = login.get_value('email')
         if not email:
             error_msg = 'This user [%s] does not have an email entry for us to email you the new password. Please contact the Administrator.' % self.login
@@ -432,7 +436,7 @@ class SendPasswordResetCmd(Command):
                 email_msg = 'Your TACTIC password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (auto_password, url)
                 subject = 'TACTIC password change'
             else:
-                email_msg = "You've been invited to a TACTIC project. Your user name is [%s]. Visit the following URL to set a password: \n\n%s" % (self.login, url)
+                email_msg = "You've been invited to a TACTIC project. Your user name is [%s]. Visit the following URL to set a password: \n\n%s" % (upn, url)
                 subject = 'TACTIC project invitation'
             email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject=subject)
 
