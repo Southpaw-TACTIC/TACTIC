@@ -332,15 +332,13 @@ class EditWdg(BaseRefreshWdg):
         # for inline config definitions
         config_xml = self.kwargs.get("config_xml")
         if config_xml:
-            #from pyasm.common import Xml
-            #xml = Xml()
-            #xml.read_string(config_xml)
-            #node = xml.get_node("config/%s" % self.view)
-            #xml.set_attribute(node, "class", "tactic.ui.panel.EditWdg")
-            #config = WidgetConfig.get(view=self.view, xml=xml)
             config_xml = config_xml.replace("&", "&amp;")
 
+            # FIXME: not sure why there is a tab view??
             config = WidgetConfig.get(view="tab", xml=config_xml)
+            self.config.insert_config(0, config)
+
+            config = WidgetConfig.get(view=self.view, xml=config_xml)
             self.config.insert_config(0, config)
 
         

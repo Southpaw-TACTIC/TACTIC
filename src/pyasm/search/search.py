@@ -284,6 +284,12 @@ class Search(Base):
                 #'sthpw/search_object'
                 #'config/project_settings',
         }:
+
+            # Need explicit permission
+            security = Environment.get_security()
+            if security.check_access("search_type", search_type, "view"):
+                return
+
             raise Exception("Search Permission Denied [%s]" % search_type)
 
 

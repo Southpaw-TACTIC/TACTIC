@@ -19,6 +19,9 @@ from .search import SObject, Search, SObjectFactory
 from .transaction_log import TransactionLog
 from .transaction import Transaction
 
+
+# DEPRECATED
+
 class TransactionState(SObject):
 
     SEARCH_TYPE = "sthpw/transaction_state"
@@ -36,7 +39,11 @@ class TransactionState(SObject):
             data = Xml()
             data.create_doc("state")
             state.set_value("data", data.to_string() )
-            state.commit()
+            try:
+                state.commit()
+            except:
+                # Sometimes this has a duplicate
+                pass
 
         return state
 

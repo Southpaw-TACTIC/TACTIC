@@ -240,11 +240,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     start_sobj = Search.get_by_search_key(self.search_key)
                 else:
                     start_sobj = None
-                sudo = Sudo()
-                try:
-                    self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
-                finally:
-                    sudo.exit()
+                self.expr_sobjects = Search.eval(expression, start_sobj, list=True)
                 parser = ExpressionParser()
                 related = parser.get_plain_related_types(expression)
 
@@ -693,7 +689,12 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                             cross_db=cross_db
                     )
                     keyword_filter.set_values(keyword_values[0])
-                    keyword_filter.alter_search(search)
+                    sudo = Sudo()
+                    try:
+                        keyword_filter.alter_search(search)
+                    finally:
+                        sudo.exit()
+
 
 
         if self.no_results:
@@ -1633,6 +1634,8 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             search_type_obj = SearchType.get(self.search_type)
             search_type_title = search_type_obj.get_value("title")
 
+            edit_class = self.kwargs.get("edit_class")
+
 
             button = ButtonNewWdg(title='Add New Item', icon="FA_PLUS")
 
@@ -1640,6 +1643,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
+                'edit_class': edit_class,
                 'title': search_type_title,
                 'parent_key': self.parent_key,
                 'table_id': self.table_id,
@@ -1651,14 +1655,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
                 // NOTE: not sure if this condition is good enough to
                 // separate a custom view from an insert view
-                if (bvr.view && bvr.view.contains(".")) {
-                    var class_name = 'tactic.ui.panel.CustomLayoutWdg';
+                let class_name;
+                if (bvr.edit_class) {
+                    class_name = bvr.edit_class;
+                }
+                else if (bvr.view && bvr.view.contains(".")) {
+                    class_name = 'tactic.ui.panel.CustomLayoutWdg';
                 }
                 else {
-                    var class_name = 'tactic.ui.panel.EditWdg';
+                    class_name = 'tactic.ui.panel.EditWdg';
                 }
 
-                var kwargs = {
+                let kwargs = {
                   search_type: search_type,
                   parent_key: bvr.parent_key,
                   view: bvr.view,
@@ -2709,6 +2717,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             if security.check_access("builtin", access_keys, "edit"):
 
                 edit_view = self.kwargs.get("edit_view")
+                edit_class = self.kwargs.get("edit_class")
                 if not edit_view or edit_view == 'None':
                     edit_view = "edit"
 
@@ -2718,6 +2727,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                     #"icon": IconWdg.EDIT,
                     "bvr_cb": {
                         'edit_view': edit_view,
+                        'edit_class': edit_class,
                         'cbjs_action': '''
                         var activator = spt.smenu.get_activator(bvr);
                         var layout = activator.getParent(".spt_layout");
