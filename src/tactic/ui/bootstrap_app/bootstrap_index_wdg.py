@@ -1380,7 +1380,7 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
         login = Environment.get_login()
         display_name = login.get_full_name()
         if not display_name:
-            display_name = login.get_login()
+            display_name = login.get_value("upn") or login.get_login()
 
         from pyasm.biz import Snapshot
         snapshot = Snapshot.get_latest_by_sobject(login)
