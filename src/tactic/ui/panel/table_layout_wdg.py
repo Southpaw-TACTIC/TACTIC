@@ -6979,7 +6979,10 @@ spt.table.save_changes = function(kwargs) {
     }
 
 
-    var config_xml = layout.getAttribute("spt_config_xml");
+    let  config_xml = layout_top.getAttribute("spt_edit_config_xml");
+    if (!config_xml) {
+        config_xml = layout_top.getAttribute("spt_config_xml");
+    }
 
     var kwargs2 = {
         parent_key: parent_key,
