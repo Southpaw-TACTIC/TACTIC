@@ -287,9 +287,10 @@ class DatabaseImpl(DatabaseImplInterface):
                     vendor = Config.get_value("database", "vendor")
                     host = Config.get_value("database", "server")
                     port = Config.get_value("database", "port")
+                    password = Config.get_value("database", "password")
                 else:
                     vendor = self.get_database_type()
-                db_resource = DbResource(database=database, host=host, vendor=vendor, port=port)
+                db_resource = DbResource(database=database, host=host, vendor=vendor, port=port, password=password)
 
             cached = Container.get("Sql:database_exists:%s"%db_resource.get_key())
             if cached != None:
