@@ -27,8 +27,8 @@ basestring = six.string_types
 class EditCmdException(Exception):
     pass
 
-  
-        
+
+
 class EditCmd(Command):
 
     def __init__(self, **kwargs):
@@ -75,13 +75,13 @@ class EditCmd(Command):
                 self.config_xml = self.config_xml.replace("&", "&amp;")
         else:
             form_data = {}
-            self.config_xml = None
+            self.config_xml = kwargs.get("config_xml")
 
         self.multiplier = 1
         self.multiplier_str = kwargs.get("multiplier")
         if not self.multiplier_str:
             self.multiplier_str = web.get_form_value("multiplier")
-        
+
         if self.multiplier_str:
             try:
                 self.multiplier = int(self.multiplier_str)
@@ -132,8 +132,8 @@ class EditCmd(Command):
            by default'''
         return True
 
-       
-       
+
+
     def execute(self):
         last_sobject = None
         last_code = None
@@ -182,7 +182,6 @@ class EditCmd(Command):
                 default_elements.append(element_name)
 
 
-
         # if element names are not specified, then get it from the view
         if not self.element_names:
             config = WidgetConfigView.get_by_search_type(search_type_obj, self.view)
@@ -191,7 +190,11 @@ class EditCmd(Command):
 
         elif self.config_xml:
             config = WidgetConfigView.get_by_search_type(search_type_obj, self.view)
+
             extra_config = WidgetConfig.get(view="tab", xml=self.config_xml)
+            config.get_configs().insert(0, extra_config)
+
+            extra_config = WidgetConfig.get(view="edit", xml=self.config_xml)
             config.get_configs().insert(0, extra_config)
 
         else:
@@ -283,18 +286,18 @@ class EditCmd(Command):
 
 
         return action_handlers
- 
+
 
 
 
 
     def _execute_single(self, code, name=None):
         #  only do actions if the edit button has been pressed
-        
+
         from pyasm.web import WebContainer
         web = WebContainer.get_web()
 
-       
+
         no_commit = (web.get_form_value("sobject_commit") == 'false')
 
 
@@ -320,11 +323,11 @@ class EditCmd(Command):
             if self.search_type == "":
                 raise EditCmdException( "Search type not found" )
             search_id = web.get_form_value("search_id")
-     
+
             # get the search object based on these parameters
             if search_id == "" or search_id == "-1":
                 sobject = SearchType.create(self.search_type)
-            
+
             else:
                 sudo = Sudo()
                 try:
@@ -350,7 +353,7 @@ class EditCmd(Command):
                 if self.connect_key:
                     action_handler.set_option('connect_key', self.connect_key)
                 action_handler.execute()
-               
+
 
         #sobject.commit(triggers=self.trigger_mode)
 
@@ -397,7 +400,7 @@ class EditCmd(Command):
                     is_insert = False
 
                 sobject.commit(triggers=self.trigger_mode)
-         
+
 
                 # only connect on insert
                 if is_insert and self.connect_key and self.connect_key != "__NONE__":
@@ -469,6 +472,8 @@ class EditMultipleCmd(Command):
         update_data = self.kwargs.get("update_data")
         update_data = jsonloads(update_data)
 
+        config_xml = self.kwargs.get("config_xml")
+
         trigger_mode = self.kwargs.get("trigger_mode")
 
         # add the extra data
@@ -516,6 +521,7 @@ class EditMultipleCmd(Command):
                 input_prefix=input_prefix,
                 extra_action=extra_action[i],
                 trigger_mode=trigger_mode,
+                config_xml=config_xml,
             )
             cmd.execute()
 
@@ -532,7 +538,7 @@ class EditMultipleCmd(Command):
                 sk_dict[base_search_type] = sk_data_list
 
             sk_data_list.append((search_key, data))
-            
+
         self.info['search_keys'] = edit_search_keys
 
         search_types = list(search_types)
@@ -546,8 +552,8 @@ class EditMultipleCmd(Command):
         for search_type in search_types:
             sk_data_list = sk_dict.get(search_type)
             grouped_edit_search_keys, data_list = map(list, zip(*sk_data_list))
-                
-                
+
+
             output = {}
             output['search_keys'] = grouped_edit_search_keys
             output['update_data'] = data_list
@@ -616,7 +622,7 @@ class RelatedDatabaseAction(DatabaseAction):
         elif related_type:
             related_types = related_type.split(".")
 
-            related = sobject 
+            related = sobject
             for related_type in related_types:
                 next_related = related.get_related_sobject(related_type)
                 if not next_related:
