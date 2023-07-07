@@ -19,10 +19,10 @@ __all__ = ['BootstrapIndexWdg', 'BootstrapSideBarPanelWdg', 'BootstrapTopNavWdg'
 
 from tactic.ui.panel import SideBarPanelWdg, SideBarBookmarkMenuWdg
 class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
-    
+
 
     def get_display(self):
-        
+
         self.config_search_type = self.kwargs.get("config_search_type")
         if not self.config_search_type:
             self.config_search_type = "SideBarWdg"
@@ -46,14 +46,14 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
 
         # get the content div
         section_div = HtmlElement("nav")
-        section_div.add_class("spt_bs_left_sidebar_inner") 
+        section_div.add_class("spt_bs_left_sidebar_inner")
 
         section_div.set_attr('spt_class_name', Common.get_full_class_name(self))
         for name, value in self.kwargs.items():
             if name == "config":
                 continue
             section_div.set_attr("spt_%s" % name, value)
-        
+
         content_div = HtmlElement.ul()
         section_div.add(content_div)
         content_div.add_class("spt_side_bar_content")
@@ -132,7 +132,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         div.add_class("dropdown-divider")
         div.add_style("margin: 3px 30px 3px 20px")
         div.add_style("opacity: 0.5")
-        
+
         options = config.get_display_options(element_name)
         self.add_separator_behavior(div, element_name, config, options)
 
@@ -286,7 +286,7 @@ class BootstrapSideBarBookmarkMenuWdg(SideBarBookmarkMenuWdg):
         link_wdg.add_class("spt_side_bar_element")
         link_wdg.add_class("spt_side_bar_link")
         link_wdg.add_class("hand")
- 
+
         link_wdg.add_class("nav-item")
 
         # add the mouseover color change
@@ -384,7 +384,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
 .spt_bs_left_sidebar.active .CTAs {
     display: none;
 }
-        
+
 
 .spt_bs_left_sidebar.active .sidebar-header strong {
     display: block;
@@ -513,54 +513,54 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         -ms-transform: translateX(50%);
         transform: translateX(50%);
     }
-    
+
     .spt_bs_left_sidebar.active {
         margin-left: 0 !important;
     }
-    
+
     .spt_bs_left_sidebar .sidebar-header h3,
     .spt_bs_left_sidebar .CTAs {
         display: none;
     }
-    
-    
+
+
     .spt_bs_left_sidebar .sidebar-header strong {
         display: block;
     }
-    
+
     .spt_bs_left_sidebar ul li a {
         padding: 20px 10px;
     }
-    
+
     .spt_bs_left_sidebar ul li a span {
         font-size: 0.85em;
     }
-    
+
     .spt_bs_left_sidebar ul li a i {
         margin-right: 0;
         display: block;
     }
-    
+
     .spt_bs_left_sidebar ul ul a {
         padding: 10px !important;
     }
-    
+
     .spt_bs_left_sidebar ul li a i {
         font-size: 1.3em;
     }
-    
+
     .spt_bs_left_sidebar {
         margin-left: 0;
     }
-    
+
     .spt_bs_left_sidebarCollapse span {
         display: none;
     }
-    
+
 }
 
 @media (max-width: 575.98px) {
-    
+
     .spt_bs_left_sidebar {
         display: none;
     }
@@ -570,7 +570,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
     }
 
 
-}    
+}
 
 
         ''')
@@ -666,7 +666,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
         outer_div.add(down)
 
 
-        
+
         inner_div = DivWdg()
         inner_div.set_id("side_bar_scroll")
         outer_div.add(inner_div)
@@ -711,7 +711,7 @@ class BootstrapSideBarPanelWdg(SideBarPanelWdg):
             'auto_size': self.kwargs.get('auto_size')
         }
         section_wdg = BootstrapSideBarBookmarkMenuWdg(**kwargs)
-        
+
         return section_wdg
 
 
@@ -758,14 +758,15 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
     def get_display(self):
 
+
         top_nav_wdg =  HtmlElement("nav")
-        
+
         styles = self.get_bootstrap_styles()
         top_nav_wdg.add(styles)
 
         #top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark fixed-top")
         top_nav_wdg.add_class("spt_bs_top_nav navbar navbar-dark")
-        
+
         nav_header = DivWdg()
         top_nav_wdg.add(nav_header)
         nav_header.add_class("spt_bs_top_nav_left d-flex")
@@ -775,17 +776,17 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         if view_side_bar:
             toggle_div = DivWdg()
             nav_header.add(toggle_div)
-            
+
             btn_class = "btn bmd-btn-icon"
             toggle_btn = ButtonNewWdg(
-                icon="FA_TH", 
-                title="Toggle Sidebar", 
+                icon="FA_TH",
+                title="Toggle Sidebar",
                 btn_class=btn_class,
                 opacity="1.0",
                 navbar_collapse_target="navbarCollapse"
             )
             toggle_div.add(toggle_btn)
-            
+
             toggle_btn.add_class("spt_toggle_sidebar")
             toggle_btn.add_class("spt_nav_icon")
 
@@ -818,7 +819,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             hidden_nav.add_class("collapse")
             hidden_nav.add_class("navbar-collapse")
             hidden_nav.set_id("navbarCollapse")
-            
+
             hidden_nav.add_behavior({
                 'type': 'load',
                 'cbjs_action': '''
@@ -835,7 +836,7 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
                     let handle_section = function(section_el) {
                        let toggle = section_el.getElement(".spt_side_bar_section_link");
                        let dropdown = section_el.getElement(".spt_side_bar_section_content");
-                       
+
                        let new_id = ID();
                        toggle.setAttribute("href", "#" + new_id);
                        dropdown.setAttribute("id", new_id);
@@ -875,10 +876,10 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
 
     def get_logo_div(self):
-        
+
         brand_div = DivWdg()
         brand_div.add_class("spt_logo")
-       
+
         palette = Palette()
         sidebar_title_color = palette.color("side_bar_title_color")
         if sidebar_title_color == "#000000":
@@ -887,18 +888,18 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             src = "/context/logo/tactic_logo_white.svg"
         brand_div.add("""<a><img src="%s"/></a>""" % src)
 
-        style = HtmlElement.style(""" 
+        style = HtmlElement.style("""
             .spt_bs_top_nav .spt_logo {
                 display: flex;
                 align-items: center;
             }
 
-            .spt_bs_top_nav .spt_logo img { 
+            .spt_bs_top_nav .spt_logo img {
                 height: 16px;
             }
         """)
         brand_div.add(style)
-        
+
         return brand_div
 
 
@@ -931,20 +932,20 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
 
         tab_div = self.get_tab_manager()
         right_wdg.add(tab_div)
-        
+
         return right_wdg
 
 
 
     def get_user_wdg(self):
-       
+
         user_wdg = DivWdg()
 
         login = Environment.get_login()
         display_name = login.get_full_name()
         if not display_name:
             display_name = login.get_login()
-       
+
         from pyasm.biz import Snapshot
 
 
@@ -954,13 +955,13 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             try:
                 path = snapshot.get_web_path_by_type()
 
-     
+
                 user_wdg.add(HtmlElement.style("""
-                    .spt_hit_wdg.spt_nav_user_btn {                
+                    .spt_hit_wdg.spt_nav_user_btn {
                         background-image: url(%s);
                         background-size: cover;
                         background-repeat: no-repeat;
-                    } 
+                    }
                 """ % path))
             finally:
                 sudo.exit()
@@ -970,28 +971,28 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             icon = "FA_USER"
 
         title = "Logged in as %s" % display_name
-        
-        
+
+
         btn_class = "btn bmd-btn-icon"
         user_btn = ButtonNewWdg(
-            icon=icon, 
-            title=title, 
+            icon=icon,
+            title=title,
             btn_class=btn_class,
             opacity="1.0"
         )
-        
-        
+
+
         user_wdg.add(user_btn)
         user_btn.add_class("ml-1 spt_nav_user_btn spt_nav_icon")
         user_btn.get_collapsible_wdg().add_class("dropdown-toggle")
-        
+
         menus = self.get_smart_menu()
         SmartMenu.add_smart_menu_set(user_btn.get_button_wdg(), [menus])
         SmartMenu.add_smart_menu_set(user_btn.get_collapsible_wdg(), [menus])
         SmartMenu.assign_as_local_activator(user_btn.get_button_wdg(), None, True)
         SmartMenu.assign_as_local_activator(user_btn.get_collapsible_wdg(), None, True)
 
-        
+
         return user_wdg
 
     def get_tab_manager(self):
@@ -1014,20 +1015,20 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         tab_btn.add_behavior({
             'type': 'click',
             'cbjs_action': '''
-                
+
                 // Dynamically build the tab menu
                 tab_div = bvr.src_el.getParent(".spt_mobile_tab_manager");
                 menu = tab_div.getElement(".dropdown-menu");
-                
+
                 // Reset menu
                 menu.innerHTML = "";
-                
+
                 item_template = tab_div.getElement(".SPT_TEMPLATE");
 
                 spt.tab.set_main_body_tab();
                 var headers = spt.tab.get_headers();
 
- 
+
                 // TODO: Fix styling.
                 handle_header = function(header) {
                     header.removeAttribute("style");
@@ -1069,10 +1070,10 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
         tab_div.add(item_template)
         item_template.add_class("SPT_TEMPLATE")
         item_template.add_class("dropdown-menu-item")
-        
+
         main_body_tab_id = self.kwargs.get("main_body_tab_id")
         item_template.add_attr("spt_tab_id", main_body_tab_id)
-        
+
         item_template.add_behavior({
             'type': 'click',
             'tab_id': main_body_tab_id,
@@ -1086,24 +1087,24 @@ class BootstrapTopNavWdg(BaseRefreshWdg, PageHeaderWdg):
             '''
         })
 
-        
+
         item_template.add_relay_behavior({
             'type': 'click',
             'tab_id': main_body_tab_id,
             'bvr_match_class': 'spt_tab_remove',
             'cbjs_action': '''
-                
+
                 var mobile_header = bvr.src_el.getParent(".spt_tab_header");
                 var element_name = mobile_header.getAttribute("spt_element_name");
 
                 spt.tab.top = document.id(bvr.tab_id);
                 orig_header = spt.tab.get_header(element_name);
-                orig_tab_remove = orig_header.getElement(".spt_tab_remove"); 
+                orig_tab_remove = orig_header.getElement(".spt_tab_remove");
                 spt.tab.close(orig_tab_remove);
             '''
         })
 
-        
+
         return tab_div
 
 
@@ -1118,7 +1119,7 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
 
         brand_div = DivWdg()
         brand_div.add_class("spt_logo")
-       
+
         palette = Palette()
 
         brand_div.add("""<a><img src="%s"/></a>""" % portal_logo_path)
@@ -1129,14 +1130,14 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
                 align-items: center;
             }
 
-            .spt_bs_top_nav .spt_logo img { 
+            .spt_bs_top_nav .spt_logo img {
                 height: 16px;
             }
         """)
         brand_div.add(style)
-        
+
         return brand_div
-    
+
 
     def get_left_wdg(self):
         style = HtmlElement.style('''
@@ -1156,7 +1157,7 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
         left_wdg.add(style)
         left_wdg.add_class("spt_portal_header_left_top d-flex")
 
-        
+
         # start_div.add("<div>Start New Project</div>")
 
         invite_div = DivWdg()
@@ -1175,8 +1176,8 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
         invite_div.add_attr("target", "spt_header_top.spt_home_content")
         invite_div.add_attr("view", "user.site.members")
         invite_div.add_class("tactic_load")
-        
-        
+
+
         invite_div.add(invite_btn)
         # invite_div.add("<div>Invite Members</div>")
 
@@ -1196,13 +1197,13 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
         roles_div.add_attr("target", "spt_header_top.spt_home_content")
         roles_div.add_attr("view", "user.project.list")
         roles_div.add_class("tactic_load")
-        
+
         roles_div.add(roles_btn)
         # roles_div.add("<div>Assign Roles</div>")
-        
+
 
         return left_wdg
-    
+
 
     def get_right_wdg(self):
         style = HtmlElement.style('''
@@ -1229,8 +1230,8 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
                 font-size: 1.5em;
                 margin-top: -5px;
                 margin-right: 10px;
-                -webkit-transform: rotate(-20deg); 
-                -moz-transform: rotate(-20deg);  
+                -webkit-transform: rotate(-20deg);
+                -moz-transform: rotate(-20deg);
                 filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=5); /*for IE*/
                 -o-transform: rotate(-20deg);
             }
@@ -1296,7 +1297,7 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
 
         user_wdg = self.get_user_wdg()
         right_wdg.add(user_wdg)
-        
+
         return right_wdg
 
 
@@ -1308,13 +1309,13 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
 
             .spt_header_menu_top{
                 position: absolute;
-                display: none; 
-                z-index: 100; 
-                font-size: 12px; 
-                width: 175px; 
-                top: 10px; 
-                right: 20px; 
-                color: #000; 
+                display: none;
+                z-index: 100;
+                font-size: 12px;
+                width: 175px;
+                top: 10px;
+                right: 20px;
+                color: #000;
                 text-align: center;
                 margin-top: -4px;
             }
@@ -1379,19 +1380,19 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
         login = Environment.get_login()
         display_name = login.get_full_name()
         if not display_name:
-            display_name = login.get_login()
-       
+            display_name = login.get_value("upn") or login.get_login()
+
         from pyasm.biz import Snapshot
         snapshot = Snapshot.get_latest_by_sobject(login)
         if snapshot:
             path = snapshot.get_web_path_by_type()
- 
+
             user_wdg.add(HtmlElement.style("""
-                .spt_hit_wdg.spt_nav_user_btn {                
+                .spt_hit_wdg.spt_nav_user_btn {
                     background-image: url(%s);
                     background-size: cover;
                     background-repeat: no-repeat;
-                } 
+                }
             """ % path))
 
             icon = "FA_USERX"
@@ -1399,17 +1400,18 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
             icon = "FA_USER"
 
         title = "Logged in as %s" % display_name
-        
+
         btn_class = "btn bmd-btn-icon"
+
         user_btn = ButtonNewWdg(
-            icon=icon, 
-            title=title, 
+            icon=icon,
+            title=title,
             btn_class=btn_class,
             opacity="1.0"
         )
 
         user_btn.add_behavior({
-            "type": "click", 
+            "type": "click",
             "cbjs_action": '''
                 var el = document.id(document.body).getElement(".spt_header_menu_top");
                 el.setStyle("display", "block");
@@ -1417,17 +1419,15 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
             '''
         })
 
-        
-        user_wdg.add(user_btn)
+
         name_wdg = DivWdg(display_name)
         name_wdg.add_class("spt_user_name")
         user_wdg.add(name_wdg)
 
         user_btn.add_class("ml-1 spt_nav_user_btn spt_nav_icon")
         user_btn.get_collapsible_wdg().add_class("dropdown-toggle")
-
         user_wdg.add(user_btn)
-        user_btn.add_class("ml-1 spt_nav_user_btn spt_nav_icon")
+
 
         user_menu = DivWdg()
         user_menu.add_class("spt_header_menu_top")
@@ -1485,7 +1485,7 @@ class BootstrapPortalTopNavWdg(BootstrapTopNavWdg):
 
         user_wdg.add(user_menu)
 
-        
+
         return user_wdg
 
 
@@ -1587,7 +1587,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
         link = self.kwargs.get('link')
         hash = self.kwargs.get('hash')
-        
+
         self.widget = None
         config = None
 
@@ -1617,7 +1617,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             config_sobj = search.get_sobject()
             if config_sobj:
                 config = config_sobj.get_value("config")
-            
+
         if not config:
             # get start link from default config
             config = self.get_default_config()
@@ -1643,7 +1643,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
             self.widget = main_body_content
         """
- 
+
 
     def get_default_config(self):
         use_sidebar = self.kwargs.get('use_sidebar')
@@ -1691,10 +1691,10 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
         css_vars += "--left_modal_width: 300px;"
         style = ":root {%s}" % css_vars
-        
+
         style += """
             body {overflow: hidden;}
-            
+
             .spt_bootstrap_top {
                 overflow: hidden;
                 height: 100vh;
@@ -1725,13 +1725,13 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
 
             }
-            
+
             @media (max-width: 575.98px) {
 
                 .spt_bs_content {
                     //padding-top: 49px;
                 }
-                
+
             }
 
             .spt_hit_wdg.spt_nav_icon {
@@ -1741,7 +1741,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             """
 
 
-        return HtmlElement.style(style) 
+        return HtmlElement.style(style)
 
 
     def get_onload_js(self):
@@ -1749,18 +1749,18 @@ class BootstrapIndexWdg(PageNavContainerWdg):
 
 
     def get_display(self):
-        
+
         is_admin_project = Project.get().is_admin()
         security = Environment.get_security()
         if is_admin_project and not security.check_access("builtin", "view_site_admin", "allow"):
             from pyasm.widget import Error403Wdg
             return Error403Wdg()
-        
+
         top = self.top
         top.add_class("d-flex")
         top.add_class("spt_bootstrap_top")
 
-        top.add(self.get_bootstrap_styles())            
+        top.add(self.get_bootstrap_styles())
 
         view_side_bar = security.check_access("builtin", "view_side_bar", "allow", default='allow')
         if view_side_bar:
@@ -1771,29 +1771,29 @@ class BootstrapIndexWdg(PageNavContainerWdg):
                 left_nav_wdg = Common.create_from_class_path(left_nav_handler, [], left_nav_options)
                 # caching
                 side_bar_cache = self.get_side_bar_cache(left_nav_wdg)
-                
+
                 top.add_class("spt_view_side_bar")
                 top.add(left_nav_wdg)
-                
+
                 sidebar_overlay = DivWdg()
                 top.add(sidebar_overlay)
                 sidebar_overlay.set_id("side_bar_overlay")
                 sidebar_overlay.add_class("spt_bs_left_sidebar_overlay")
-                sidebar_overlay.add_behavior({ 
+                sidebar_overlay.add_behavior({
                     'type': 'click',
                     'cbjs_action': '''spt.side_bar.toggle();'''
                 })
 
             else:
                 view_side_bar = False
-        
+
 
         self.view_side_bar = view_side_bar
 
         content_wdg = self.get_content_wdg()
         top.add(content_wdg)
 
-        top.add_behavior( {                                                                      
+        top.add_behavior( {
             "type": "load",
             "cbjs_action": '''
                 window.onresize = function() {
@@ -1806,7 +1806,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             "cbjs_action": self.get_onload_js()
         })
 
-        
+
         return top
 
 
@@ -1856,8 +1856,8 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             main_body_content = main_body_content.get_buffer_display()
             tab = BootstrapTabWdg()
             tab.add(main_body_content, "error", "Error")
-        
-        
+
+
         tab_id = tab.get_tab_id()
         config = WidgetConfig.get(xml=self.config_xml, view="application")
         top_nav_handler = config.get_display_handler("top_nav")
@@ -1865,7 +1865,7 @@ class BootstrapIndexWdg(PageNavContainerWdg):
         top_nav_options['main_body_tab_id'] = tab_id
         top_nav_options['view_side_bar'] = self.view_side_bar
         top_nav_wdg = Common.create_from_class_path(top_nav_handler, [], top_nav_options)
-        
+
         main_body_panel.add(top_nav_wdg)
         main_body_panel.add(tab)
 
@@ -1881,36 +1881,36 @@ class BootstrapIndexWdg(PageNavContainerWdg):
             main_body_panel.add(quick_box)
 
 
-        # TEST for Bootstrap Modal 
+        # TEST for Bootstrap Modal
         modal_container = DivWdg()
         modal_container.add("""
 <!-- The Modal -->
   <div class="modal fade right" id="myModal">
     <div class="modal-dialog modal-side modal-top-right">
       <div class="modal-content">
-      
+
         <!-- Modal Header -->
         <div class="modal-header">
           <h4 class="modal-title">Modal Heading</h4>
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
-        
+
         <!-- Modal body -->
         <div class="modal-body">
           Modal body..
         </div>
-        
+
         <!-- Modal footer -->
         <div class="modal-footer">
           <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
         </div>
-        
+
       </div>
     </div>
   </div>""")
         main_body_panel.add(modal_container)
 
- 
+
         return main_body_panel
 
 
@@ -1922,10 +1922,10 @@ class BootstrapPortalIndexWdg(BootstrapIndexWdg):
               <display class="tactic.ui.bootstrap_app.BootstrapPortalTopNavWdg">
               </display>
         </element>"""
-    
+
     def _get_tab_save_state(self):
         return "portal_tab_state"
-    
+
     def _get_startup_xml(self):
 
          return """
@@ -1935,7 +1935,7 @@ class BootstrapPortalIndexWdg(BootstrapIndexWdg):
                 </display>
             </element>
          """
-    
+
     def get_content_wdg(self):
         from tactic.ui.panel import CustomLayoutWdg
 
@@ -1963,7 +1963,7 @@ class BootstrapPortalIndexWdg(BootstrapIndexWdg):
         main_body_panel.add(footer)
 
         return main_body_panel
-    
+
 
 
 from tactic.ui.widget import PageHeaderGearMenuWdg
@@ -1979,19 +1979,19 @@ class BootstrapIndexGearMenuWdg(PageHeaderGearMenuWdg):
 
         btn_class = "btn bmd-btn-icon"
         btn = ButtonNewWdg(
-            icon="FA_COG", 
-            title="Global Options", 
+            icon="FA_COG",
+            title="Global Options",
             btn_class=btn_class,
             opacity="1.0",
         )
         btn.add_class("ml-1 spt_nav_icon")
-        
+
         smenu_set = SmartMenu.add_smart_menu_set( btn.get_button_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )
         SmartMenu.assign_as_local_activator( btn.get_button_wdg(), "DG_TABLE_GEAR_MENU", True )
-        
+
         smenu_set = SmartMenu.add_smart_menu_set( btn.get_collapsible_wdg(), { 'DG_TABLE_GEAR_MENU': menus } )
         SmartMenu.assign_as_local_activator( btn.get_collapsible_wdg(), "DG_TABLE_GEAR_MENU", True )
-        
+
         return btn
 
 
@@ -2009,14 +2009,14 @@ class BootstrapProjectSelectWdg(ProjectSelectWdg):
 
         #HACK
         activator.button_wdg.add_style("margin-bottom: unset")
-        
+
         smenu_set = SmartMenu.add_smart_menu_set( activator.get_button_wdg(), { 'BUTTON_MENU': menus } )
         SmartMenu.assign_as_local_activator( activator.get_button_wdg(), "BUTTON_MENU", True )
-        
+
         smenu_set = SmartMenu.add_smart_menu_set( activator.get_collapsible_wdg(), { 'BUTTON_MENU': menus } )
         SmartMenu.assign_as_local_activator( activator.get_collapsible_wdg(), "BUTTON_MENU", True )
-        
-        
-        
+
+
+
         return activator
 

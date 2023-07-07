@@ -28,7 +28,7 @@ from .drupal_password_hasher import DrupalPasswordHasher
 
 if Config.get_value("install", "shutil_fix") in ["enabled"]:
     # disabling copystat method for windows shared folder mounted on linux
-    def copystat_dummy(src, dst):
+    def copystat_dummy(src, dst, follow_symlinks):
         pass
 
     import shutil
@@ -73,6 +73,15 @@ class Login(SObject):
         defaults['login'] = login
 
         return defaults
+
+
+
+    def get_display_value(self, long=False):
+            return self.get_value("display_name") or self.get_value("code")
+
+
+
+
 
 
     def update_trigger(self):
@@ -412,6 +421,78 @@ class Login(SObject):
 
 
 
+    def validate_password(password):
+        try:
+            password = password.decode()
+        except (UnicodeDecodeError, AttributeError):
+            pass
+
+        import re
+        """
+        - at least one number.
+        - at least one uppercase and one lowercase character.
+        - at least one special symbol.
+        - min 8 characters long.
+        """
+        # Regex modified from  https://www.geeksforgeeks.org/password-validation-in-python/
+        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,}$"
+
+        # compiling regex
+        pat = re.compile(reg)
+
+        # searching regex
+        mat = re.search(pat, password)
+
+        # validating conditions
+        if mat:
+            return True
+
+        return False
+
+    validate_password = staticmethod(validate_password)
+
+
+    def check_previous_passwords(self, password):
+        data = self.get("data")
+        previous_passwords = []
+        if data:
+            previous_passwords = data.get("previous_passwords")
+        if previous_passwords:
+            for previous_password in previous_passwords:
+                if previous_password:
+                    if previous_password.startswith("$S$"):
+                        salt = previous_password[4:12]
+                        iter_code = previous_password[3]
+                        #salt = Common.generate_alphanum_key(num_digits=8, mode='alpha')
+                        #iter_code = 'D'
+                        new_encrypted = DrupalPasswordHasher().encode(password, salt, iter_code)
+                        if new_encrypted == previous_password:
+                            return False
+
+        return True
+
+
+    def check_password_expiry(self):
+        data = self.get("data")
+        if data:
+            password_expiry = data.get("password_expiry")
+            if password_expiry:
+                expiry = parser.parse(password_expiry)
+                now = datetime.now()
+                if now > expiry:
+                    return False
+        return True
+
+
+    def check_invalid_logins(self, num_attempts=5):
+        data = self.get("data")
+        if data:
+            invalid_logins = data.get("invalid_logins")
+            if invalid_logins:
+                invalid_logins = int(invalid_logins)
+                if invalid_logins >= num_attempts:
+                    return False
+        return True
 
 
 
@@ -437,6 +518,11 @@ class LoginGroup(Login):
 
         # LoginGroupTrigger handles the update event
         return defaults
+
+
+    def get_display_value(self, long=False):
+        return self.get_value("name") or self.get_value("code")
+
 
     def is_admin(self):
         group = self.get_value("login_group")
@@ -696,6 +782,9 @@ class LoginInGroup(SObject):
 
     SEARCH_TYPE = "sthpw/login_in_group"
 
+    def get_display_value(self, long=False):
+        user = Search.get_by_code("sthpw/login", self.get_value("login"))
+        return user.get_value("display_name") or user.get_code()
 
     def get_by_names(login_name, group_name):
         search = Search( LoginInGroup.SEARCH_TYPE, sudo=True )
@@ -1025,7 +1114,7 @@ class Site(object):
                 LoginInGroup.clear_cache()
                 security._find_all_login_groups()
 
-                # copy the ticket 
+                # copy the ticket
                 ticket = cur_security.get_ticket()
                 security._ticket = ticket
                 security.add_access_rules()
@@ -1369,7 +1458,7 @@ class Ticket(SObject):
 
         if expiry == -1:
             expiry = "NULL"
-        elif not expiry:
+        elif not expiry or expiry == "NULL":
             if not interval:
                 interval = Config.get_value("security","ticket_expiry")
                 if not interval:
@@ -1728,15 +1817,27 @@ class Security(Base):
                 login_in_group.set_value("login_group", group_name)
                 login_in_group.commit()
 
+
+            # Search for unexpired ticket
+            search = Search("sthpw/ticket")
+            search.add_filter("login", login_name)
+            now = search.get_database_impl().get_timestamp_now()
+            search.add_where('("expiry" > %s or "expiry" is NULL)' % now)
+            ticket = search.get_sobject()
+
         finally:
             sudo.exit()
 
         # clear the login_in_group cache
         LoginInGroup.clear_cache()
-        #self._find_all_login_groups()
 
-        # create a new ticket for the user
-        self._ticket = self._generate_ticket(login_name)
+
+        #self._find_all_login_groups()
+        if ticket:
+            self._ticket = ticket
+        else:
+            # create a new ticket for the user
+            self._ticket = self._generate_ticket(login_name)
 
         self._do_login()
 
@@ -1883,7 +1984,7 @@ class Security(Base):
 
 
 
-    def login_user_without_password(self, login_name, expiry=None, ticket_key=None):
+    def login_user_without_password(self, login_name, expiry=None, ticket_key=None, category=None):
         '''login a user without a password.  This should be used sparingly'''
 
         sudo = Sudo()
@@ -1913,7 +2014,7 @@ class Security(Base):
             if ticket and ticket.get("ticket"):
                 self._ticket = ticket
             elif ticket_key:
-                self._ticket = self._generate_ticket(login_name, expiry, ticket_key=ticket_key)
+                self._ticket = self._generate_ticket(login_name, expiry, ticket_key=ticket_key, category=category)
         finally:
             sudo.exit()
 
@@ -1984,7 +2085,7 @@ class Security(Base):
         auth_class = None
 
         site = Site.get_site()
-    
+
         if login_name == 'admin':
             if site == "" or site == "default":
                 auth_class = "pyasm.security.TacticAuthenticate"
@@ -2042,7 +2143,7 @@ class Security(Base):
         # If we are just testing, then return without loggin in
         if test:
             return
-            
+
 
 
 
@@ -2063,7 +2164,9 @@ class Security(Base):
         # database.
         if mode == 'autocreate':
             # get the login from the authentication class
-            self._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
             if not self._login:
                 self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
@@ -2077,7 +2180,9 @@ class Security(Base):
         # this is called
         elif mode == 'cache':
             # get the login from the authentication class
-            self._login = Login.get_by_login(login_name, use_upn=True)
+            self._login = authenticate.get_login()
+            if not self._login:
+                self._login = Login.get_by_login(login_name, use_upn=True)
             if not self._login:
                 self._login = SearchType.create("sthpw/login")
                 if SearchType.column_exists('sthpw/login','upn'):
@@ -2104,6 +2209,9 @@ class Security(Base):
             if not self._login:
                 self._login = Login.get_by_login(login_name, use_upn=True)
 
+
+        # always use the code
+        login_name = self._login.get_value("login")
 
         # if it doesn't exist, then the login fails
         if not self._login:
@@ -2314,10 +2422,10 @@ except:
 class LicenseKey(object):
     def __init__(self, public_key, version="2"):
         self.version = version
-        
+
         # unwrap the public key (for backwards compatibility)
         unwrapped_key = self.unwrap("Key", public_key)
-        
+
         if version == "1":
             try:
                 # get the size and key object
@@ -2347,7 +2455,7 @@ class LicenseKey(object):
             m = MD5.new()
             m.update(raw.encode())
             d = m.digest()
-            
+
             if self.keyobj.verify(d, raw_signature):
                 return True
             else:
@@ -2428,7 +2536,7 @@ class License(object):
         data_node = self.xml.get_node("license/data")
         data = self.xml.to_string(data_node).strip()
         public_key = str(self.xml.get_value("license/public_key"))
-        
+
         version = self.xml.get_value("license/data/version")
 
         # the data requires a very specific spacing.  4Suite puts out a

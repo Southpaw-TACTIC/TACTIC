@@ -103,9 +103,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             builtin_key = "view_column_manager"
 
         if builtin_key:
-
             access_keys = self._get_access_keys(builtin_key,  project_code)
             builtin = security.check_access("builtin", access_keys, "allow")
+
 
         return builtin
 
@@ -173,12 +173,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_names = GearMenuSecurityWdg.get_all_menu_names()
 
             for key,value in menu_names:
+
                 submenu = key
                 for label in value.get('label'):
                     builtin_access = self.get_builtin_access(label)
-                    
+
                     access_keys = {'submenu': submenu, 'label': label, 'project': project_code}
-                    
+
+
                     if builtin_access or security.check_access("gear_menu", access_keys, "allow"):
                         if not submenu in access_keys_dict:
                             access_keys_dict[submenu] = [label]
@@ -230,7 +232,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
     def get_menu_data(self):
-        
+
         main_menu = self.get_main_menu()
         menus = [
             main_menu,
@@ -265,8 +267,8 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             else:
                 custom_menu_error = True
             if custom_menu_error:
-                menus = [ main_menu, 
-                           self.get_file_menu(), 
+                menus = [ main_menu,
+                           self.get_file_menu(),
                            self.get_edit_menu(),
                            self.get_clipboard_menu(),
                             self.get_view_menu(),
@@ -296,7 +298,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         security = Environment.get_security()
 
         group_names = security.get_group_names()
-        
+
         access_keys_dict = self.get_access_keys_dict()
         if security.check_access("builtin", "view_site_admin", "allow"):
             self.is_admin = True
@@ -306,11 +308,11 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             self.is_admin = True
         else:
             self.is_admin = False
-       
-       
+
+
 
         if self.is_admin:
-        
+
             opt_spec_list = [
             { "type": "submenu", "label": "File", "submenu_tag_suffix": "FILE" },
             { "type": "submenu", "label": "Edit", "submenu_tag_suffix": "EDIT" },
@@ -320,7 +322,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             { "type": "submenu", "label": "Chart", "submenu_tag_suffix": "CHART" },
             ]
 
-            
+
 
 
             if not self.layout or self.layout.can_add_columns():
@@ -372,7 +374,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     { "type": "submenu", "label": "View", "submenu_tag_suffix": "VIEW" }
                 )
 
-            
+
             if not self.layout or self.layout.can_add_columns():
                 if access_keys_dict.get('Tasks'):
                     opt_spec_list.append(
@@ -382,7 +384,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     opt_spec_list.append(
                         { "type": "submenu", "label": "Notes", "submenu_tag_suffix": "NOTE" },
                     )
-                if access_keys_dict.get('Check-ins'):    
+                if access_keys_dict.get('Check-ins'):
                     opt_spec_list.append(
                         { "type": "submenu", "label": "Check-ins", "submenu_tag_suffix": "CHECKIN" },
                     )
@@ -421,28 +423,29 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
 
-    
+
 
     def get_edit_menu(self):
-        
+
         opt_spec_list = []
         security = Environment.get_security()
         project_code = Project.get_project_code()
-        
+
         access_keys_dict = self.get_access_keys_dict()
         label_list = []
+        print(access_keys_dict)
         if access_keys_dict.get('Edit'):
             label_list = access_keys_dict['Edit']
 
         label_set = set(label_list)
-        
+
 
         if self.is_admin:
             access_keys = self._get_access_keys("retire_delete",  project_code)
             if security.check_access("builtin", access_keys, "allow"):
                 if not self.layout or self.layout.can_select():
                     opt_spec_list.extend([
-                
+
                         { "type": "action", "label": "Retire Selected Items",
                             "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_retire_selected_cbk(evt,bvr);"}
                         },
@@ -484,7 +487,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
 
         else:
-            accept = {"Retire Selcted Items"}
+            accept = {"Retire Selected Items"}
             if self.matches(label_set, accept):
                 opt_spec_list.append(
                     { "type": "action", "label": "Retire Selected Items",
@@ -492,18 +495,18 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 )
 
-            accept = {"Delete Selcted Items"}
+            accept = {"Delete Selected Items"}
             if self.matches(label_set, accept):
                 opt_spec_list.extend([
                     { "type": "action", "label": "Delete Selected Items",
                         "bvr_cb": {'cbjs_action': "spt.dg_table.gear_smenu_delete_selected_cbk(evt,bvr);"}
-                
+
                     },
 
                     {"type": "separator"}
 
                 ])
-            
+
 
             accept = {"Show Server Transaction Log"}
             if self.matches(label_set, accept):
@@ -544,7 +547,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 opt_spec_list.pop()
 
             return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
-        
+
 
     def get_file_menu(self):
 
@@ -561,7 +564,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         label_set = set(label_list)
 
         #access_keys = self._get_access_keys("export_all_csv",  project_code)
-        
+
         accept = {"Export All", "Export All ..."}
         if self.matches(label_set, accept):
             menu_items.append(
@@ -583,10 +586,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 )
                 show_export_separator = True
 
-        
+
         accept = {"Export Matched", "Export Matched ..."}
         if self.matches(label_set, accept):
-            menu_items.append( 
+            menu_items.append(
                  { "type": "action", "label": "Export Matched ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                                 'mode': 'export_matched'}
@@ -597,7 +600,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         accept = {"Export Displayed", "Export Displayed ..."}
         if self.matches(label_set, accept):
-            menu_items.append( 
+            menu_items.append(
                  { "type": "action", "label": "Export Displayed ...",
                     "bvr_cb": { 'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk(evt,bvr);' ,
                                 'mode': 'export_displayed'}
@@ -636,17 +639,17 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                         search_type: search_type,
                         ingest_data_view: bvr.ingest_data_view
                     };
-                    
+
                     if (bvr.ingest_custom_view) {
                         kwargs['view'] = bvr.ingest_custom_view;
                         var class_name = 'tactic.ui.panel.CustomLayoutWdg';
                     } else {
                         var class_name = 'tactic.ui.tools.IngestUploadWdg';
                     }
-                    
+
                     var title = "Ingest Files";
                     spt.tab.set_main_body_tab();
-                    spt.tab.add_new("ingest_" + search_type, title, class_name, kwargs);  
+                    spt.tab.add_new("ingest_" + search_type, title, class_name, kwargs);
                                    '''}
                 } )
 
@@ -679,7 +682,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
 
     def get_clipboard_menu(self):
-        
+
         menu_items = []
 
         access_keys_dict = self.get_access_keys_dict()
@@ -688,7 +691,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             label_list = access_keys_dict['Clipboard']
 
         security = Environment.get_security()
-        
+
         if self.is_admin or 'Copy Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Copy Selected",
@@ -744,7 +747,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     spt.app_busy.show("Pasting contents from Clipboard");
 
                     var class_name = 'tactic.command.sobject_copy_cmd.SObjectCopyCmd';
-                   
+
                     // don't pass in context to get all current contexts automatically
                     var kwargs = {
                         dst_search_type: search_type,
@@ -826,7 +829,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             menu_items.append(
                { "type": "separator" }
             )
-        
+
         if self.is_admin or 'Append Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Append Selected",
@@ -965,7 +968,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         label_list = []
         if access_keys_dict.get('Tasks'):
             label_list = access_keys_dict['Tasks']
-        
+
         if self.is_admin or 'Show Tasks' in label_list:
             menu_items.append(
                 {
@@ -980,7 +983,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                         if (version == "2") {
                             spt.table.set_table(table);
                             spt.table.add_columns(["task_edit", "task_status_edit"]);
-                        } 
+                        }
                         else {
                             spt.dg_table.toggle_column_cbk(table,'task_status_edit','1');
                         }
@@ -1070,7 +1073,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         label_list = []
         if access_keys_dict.get('Check-ins'):
             label_list = access_keys_dict['Check-ins']
-        
+
         if self.is_admin or 'Show Check-in History' in label_list:
             menu_items.append(
                 {
@@ -1095,7 +1098,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                     }
                 }
             )
-        
+
         if self.is_admin or 'Show General Check-in Tool' in label_list:
             menu_items.append(
                 {
@@ -1203,7 +1206,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                             element_names = spt.table.get_element_names();
                         }
                         else {
-                            element_names = spt.dg_table.get_element_names(table); 
+                            element_names = spt.dg_table.get_element_names(table);
                         }
                         bvr.args.element_names = element_names;
                         bvr.args.target_id = panel.getAttribute('id');
@@ -1248,7 +1251,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
             menu_items.append( { "type": "separator" })
 
-       
+
         view = self.kwargs.get("view")
         if self.is_admin or 'Save Current View' in label_list:
             menu_items.append(
@@ -1290,13 +1293,13 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                       'cbjs_action': "spt.show(document.id(bvr.dialog_id));",
                     }
                 }
-            ) 
+            )
         if self.is_admin or 'Edit Current View' in label_list:
-            
+
             if menu_items and menu_items[-1] != { "type": "separator" }:
                 menu_items.append( { "type": "separator" } )
 
-            menu_items.append( 
+            menu_items.append(
                     { "type": "action", "label": "Edit Current View <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
                   "bvr_cb": {'cbjs_action': "spt.dg_table.view_action_cbk('edit_current_view','',bvr);",
                              'is_table_embedded_smenu_activator': True
@@ -1305,7 +1308,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
             )
 
         if self.is_admin or 'Edit Config XML' in label_list:
-            menu_items.append( 
+            menu_items.append(
               { "type": "action", "label": "Edit Config XML <i style='font-size: 10px; opacity: 0.7'>(%s)</i>" % view,
               "bvr_cb": {'cbjs_action': '''
                 var class_name = "tactic.ui.panel.EditWdg"
@@ -1380,7 +1383,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         security = Environment.get_security()
         project_code = Project.get_project_code()
-        
+
         access_keys_dict = self.get_access_keys_dict()
         label_list = []
         if access_keys_dict.get('Chart'):
@@ -1396,9 +1399,9 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 var search_type = top.getAttribute("spt_search_type")
                 var layout = activator.getParent(".spt_layout");
                 var version = layout.getAttribute("spt_version");
-                
+
                 var elements = spt.dg_table.get_element_names(table);
-                
+
                 if (version == "2") {
                     elements = spt.table.get_element_names();
                 } else {
@@ -1415,7 +1418,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 '''}
                 }
             )
-        
+
         if self.is_admin or 'Chart Selected' in label_list:
             menu_items.append(
                 { "type": "action", "label": "Chart Selected",
@@ -1424,10 +1427,10 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
                 var top = activator.getParent(".spt_table_top");
                 var search_type = top.getAttribute("spt_search_type")
-                
+
                 var layout = activator.getParent(".spt_layout");
                 var version = layout.getAttribute("spt_version");
-                
+
                 var selected_tbodies = [];
                 var elements = [];
                 if (version == "2") {
@@ -1454,14 +1457,14 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                 '''}
                 }
             )
-            
+
             #{ "type": "action", "label": "Chart This Page of Matched Items",
                 #        "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("page_matched_items") }
                 #},
                 #{ "type": "action", "label": "Chart All Items Matching Search",
                 #        "bvr_cb": { 'cbjs_action': TablePrintLayoutWdg.get_print_action_js("all_matched_items") }
                 #}
-        
+
         return {'menu_tag_suffix': 'CHART', 'width': 210, 'opt_spec_list': menu_items}
 
 
@@ -1473,7 +1476,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
         }
 
         access_key2 = {
-            'key': key 
+            'key': key
 
         }
         access_keys = [access_key1, access_key2]
@@ -1552,7 +1555,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
         menu = {
             'menu_tag_suffix': 'ADD', 'width': 200
         }
-        
+
         opt_spec_list = [
             { "type": "action", "label": "Add New sType",
                 "bvr_cb": {
@@ -1632,7 +1635,7 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
                         "bvr_cb": {'cbjs_action': 'spt.panel.load_popup("TACTIC Script Editor",\
                                     "tactic.ui.app.ShelfEditWdg", {}, {"load_once": true} );'} }
         ]
-      
+
 
         return { 'menu_tag_suffix': 'TOOLS', 'width': 160, 'opt_spec_list': menu_items }
 

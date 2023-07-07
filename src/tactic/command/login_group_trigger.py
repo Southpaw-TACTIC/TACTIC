@@ -21,9 +21,12 @@ from pyasm.biz import Project
 from tactic_client_lib import TacticServerStub
 
 
+# DEPRECATED.
 class LoginGroupTrigger(Trigger):
 
     def execute(self):
+
+        return
 
         input = self.get_input()
         mode = input.get("mode")
