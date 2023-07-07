@@ -1063,7 +1063,8 @@ class DiscussionWdg(BaseRefreshWdg):
 
 
             if mode == "icon":
-                add_wdg = IconWdg("Add Note", "FAS_PENCIL_ALT", size=8)
+                size = self.kwargs.get("size") or 8
+                add_wdg = IconWdg("Add Note", "FAS_PENCIL_ALT", size=size)
                 no_notes_msg.add(add_wdg)
                 if len(notes):
                     no_notes_msg.add("<i> (%s) </i>" % len(notes))
