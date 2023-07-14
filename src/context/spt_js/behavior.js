@@ -247,11 +247,13 @@ spt.behavior.propagate_hover_up = function( hover_type, start_el, evt )
 
 spt.behavior.run_cbjs = function( cbjs_str, bvr, evt, mouse_411 )
 {
-
-
-    cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
-
-    eval( cbjs_str );
+    if (typeof(cbjs_str) == "string") {
+        cbjs_str = 'var run_bvr = function() { '+cbjs_str+' }';
+        eval( cbjs_str );
+    }
+    else {
+        var run_bvr = cbjs_str;
+    }
     //console.log(cbjs_str);
    
     // basically disable js_logger for this because we loose the origin

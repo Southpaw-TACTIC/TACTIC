@@ -292,7 +292,7 @@ class DialogWdg(BaseRefreshWdg):
 
         z_index = self.kwargs.get("z_index")
         if not z_index:
-            z_index = "1000"
+            z_index = "2000"
         widget.add_style("z-index: %s" % z_index)
 
 
