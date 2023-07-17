@@ -489,23 +489,6 @@ class BaseAppServer(Base):
             body = top.get_body()
 
 
-            # Declare CSS variables
-            palette = Palette.push_palette("DARK")
-            palette = Palette.get()
-            keys = palette.get_keys()
-
-            css_vars = ""
-            for key in keys:
-                value = palette.color(key)
-                css_vars += "--spt_palette_%s: %s;" % (key, value)
-
-            style = ":root {%s}" % css_vars
-
-            body.add(HtmlElement.style(style))
-
-
-
-
 
             has_site = False
 
@@ -579,6 +562,31 @@ class BaseAppServer(Base):
                         top.add(web_wdg)
                 else:
                     web_wdg = None
+
+
+
+                # Declare CSS variables
+                from pyasm.biz import ProjectSetting
+                palette_code = ProjectSetting.get_value_by_key("palette")
+                if not palette_code:
+                    palette_code = "DARK"
+                palette = Palette.push_palette(palette_code)
+                palette = Palette.get()
+                keys = palette.get_keys()
+
+                css_vars = ""
+                for key in keys:
+                    value = palette.color(key)
+                    css_vars += "--spt_palette_%s: %s;" % (key, value)
+
+                style = ":root {%s}" % css_vars
+
+                body.add(HtmlElement.style(style))
+
+
+
+
+
             finally:
                 sudo.exit()
 

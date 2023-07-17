@@ -223,6 +223,7 @@ class Palette(object):
                 self.colors[name] = value
 
 
+
     def _init_palette(self):
         from pyasm.biz import ProjectSetting
         value = self.kwargs.get("palette")
