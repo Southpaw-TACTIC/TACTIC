@@ -34,12 +34,12 @@ class TransactionState(SObject):
 
         # create the state data for this ticket
         if not state:
-            state = SObjectFactory.create(TransactionState.SEARCH_TYPE)
-            state.set_value("ticket", ticket)
-            data = Xml()
-            data.create_doc("state")
-            state.set_value("data", data.to_string() )
             try:
+                state = SObjectFactory.create(TransactionState.SEARCH_TYPE)
+                state.set_value("ticket", ticket)
+                data = Xml()
+                data.create_doc("state")
+                state.set_value("data", data.to_string() )
                 state.commit()
             except:
                 # Sometimes this has a duplicate
