@@ -5948,8 +5948,21 @@ class SObject(object):
 
 
 
-    def get_sobject_dict(self, columns=None, use_id=False, language='python'):
+    def get_sobject_dict(self, columns=None, use_id=False, language='python', mode="normal"):
         '''gets all the values for this sobject in a dictionary form, this mimics the one in API-XMLRPC'''
+
+
+        if mode == "fast":
+            result = self.get_data()
+            if columns:
+                result = {key: result[key] for key in columns if key in result}
+            else:
+                result = result.copy()
+
+            result['__search_key__'] = SearchKey.build_by_sobject(self, use_id=use_id)
+            result['__search_type__'] = self.get_base_search_type()
+            return result
+            
 
         if self.get_base_search_type() == "sthpw/virtual":
             columns = set(self.data.keys())
@@ -5973,8 +5986,9 @@ class SObject(object):
                     # use str to avoid loss of precision
                     value = str(value)
 
-
             result[column] = value
+
+
         result['__search_key__'] = SearchKey.build_by_sobject(self, use_id=use_id)
         result['__search_type__'] = self.get_base_search_type()
         return result
