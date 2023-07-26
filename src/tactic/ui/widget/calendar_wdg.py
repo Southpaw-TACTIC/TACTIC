@@ -31,8 +31,8 @@ try:
     from calendar import Calendar
     HAS_CALENDAR = True
 except ImportError as e:
-    HAS_CALENDAR = False 
-    
+    HAS_CALENDAR = False
+
 import calendar
 
 
@@ -56,8 +56,8 @@ class CalendarWdg(BaseRefreshWdg):
 
         'first_day_of_week': 'integer indicating first day of the week',
         'layout_version': '1 or 2'
-       
-               
+
+
     }
 
     def init(self):
@@ -70,7 +70,7 @@ class CalendarWdg(BaseRefreshWdg):
         if is_refresh in  ["true", True]:
             self.is_refresh = True
 
-        
+
         self.top_wdg = DivWdg()
         self.top_wdg.add_style("z-index: 100")
         css_class = self.kwargs.get('css_class')
@@ -98,7 +98,7 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         date = Date()
-        
+
 
         # the 3 cbk_values are search_key, tbody_id, col_name
         self.search_key = web.get_form_value("search_key")
@@ -114,14 +114,14 @@ class CalendarWdg(BaseRefreshWdg):
             date = Date(self.date)
             self.year = date.get_year()
             self.month = date.get_month()
-        if not self.year:    
+        if not self.year:
             self.year = web.get_form_value("year")
         if not self.year:
             self.year = self.kwargs.get('year')
         if not self.year:
             self.year = date.get_year()
-        
-        
+
+
         if not self.month:
             self.month = web.get_form_value("month")
         if not self.month:
@@ -129,8 +129,8 @@ class CalendarWdg(BaseRefreshWdg):
         if not self.month:
             # PREV (this caused bug of cal wdg being a month in the future):  self.month = int(date.get_month())+1
             self.month = int(date.get_month())
-        
-        self.year = int(self.year)    
+
+        self.year = int(self.year)
         self.month = int(self.month)
 
         self.weeks = self.get_weeks(self.year, self.month)
@@ -153,7 +153,7 @@ class CalendarWdg(BaseRefreshWdg):
         return self.get_name()
 
 
-   
+
 
     def get_display(self):
         # handle size
@@ -166,7 +166,6 @@ class CalendarWdg(BaseRefreshWdg):
             self.size = 1
         else:
             self.size = 2
-
 
         # add some boundary conditions
         if self.month < 1:
@@ -196,7 +195,7 @@ class CalendarWdg(BaseRefreshWdg):
         self.top_wdg.add(style)
         inner = DivWdg()
         self.top_wdg.add(inner)
-      
+
         inner.add( calendar )
 
         if not Container.get_dict("JSLibraries", "spt_calendar"):
@@ -216,7 +215,7 @@ class CalendarWdg(BaseRefreshWdg):
                 }
                 var temp = document.getElement('.spt_calendar_template_top');
                 var new_cal;
-                if (temp) { 
+                if (temp) {
                     new_cal = spt.behavior.clone(temp);
                     new_cal.removeClass('spt_calendar_template_top');
                     new_cal.addClass('spt_calendar_top');
@@ -413,17 +412,17 @@ class CalendarWdg(BaseRefreshWdg):
         for cbk in self.day_cbks:
             behavior = {
                 'type': 'click_up',
-                'cbjs_action': cbk, 
-                'bvr_match_class': 'spt_calendar_day', 
+                'cbjs_action': cbk,
+                'bvr_match_class': 'spt_calendar_day',
                 'search_key' : self.search_key,
                 'top_id' : self.top_id,
                 'col_name': self.col_name
             }
             table.add_relay_behavior(behavior)
-        
+
         for i, week in enumerate(weeks):
             table.add_row()
-            
+
             if has_left_wdgs:
                 left_wdg = left_wdgs[i]
                 if left_wdg:
@@ -512,7 +511,7 @@ class CalendarWdg(BaseRefreshWdg):
         # add the navigator
         td = DivWdg()
         header.add(td)
- 
+
         month_nav = DivWdg()
         month_nav.add_style("margin: auto")
         month_nav.add_style("display: flex")
@@ -553,7 +552,7 @@ class CalendarWdg(BaseRefreshWdg):
             'cbjs_action':  '''
                 var kwargs = {async: false, fade: false};
                 var el = bvr.src_el.getParent('.spt_calendar_top');
-                spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true', 
+                spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true',
                         'search_key': '%s', 'top_id': '%s',
                     'col_name': '%s'}, kwargs );
             ''' % (prev_year, prev_month, self.search_key, self.top_id, self.col_name )
@@ -576,13 +575,13 @@ class CalendarWdg(BaseRefreshWdg):
             'cbjs_action':  '''
                 var kwargs = {async: false, fade: false};
                 var el = bvr.src_el.getParent('.spt_calendar_top');
-                spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true', 
+                spt.panel.refresh(el, {year: '%s', month: '%s', is_refresh: 'true',
                         'search_key': '%s', 'top_id': '%s',
                     'col_name': '%s'}, kwargs);
             ''' % (next_year, next_month, self.search_key, self.top_id, self.col_name )
         })
         return next_month_wdg
-       
+
 
     def get_today_icon(self):
 
@@ -599,13 +598,13 @@ class CalendarWdg(BaseRefreshWdg):
                 var value = date_obj.getFullYear() + '-' + spt.zero_pad(date_obj.getMonth()+1, 2) +
                             '-' + spt.zero_pad(date_obj.getDate(), 2);
                 var input_top = bvr.src_el.getParent('.calendar_input_top');
-                
+
                 if (input_top) {
                     var el = input_top.getElement('.spt_calendar_input');
                     // add timezone info
                     value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
                     el.value = value;
-                     
+
                     var layout = bvr.src_el.getParent(".spt_layout");
                     var version = layout ? layout.getAttribute("spt_version"): 1;
                     if (version == "2") {
@@ -628,7 +627,7 @@ class CalendarWdg(BaseRefreshWdg):
             '''
         } )
         return today_icon
-        
+
 
     def get_close_icon(self):
 
@@ -705,7 +704,7 @@ class CalendarWdg(BaseRefreshWdg):
         for cbk in self.day_cbks:
             behavior = {
                 'type': 'click_up',
-                'cbjs_action': cbk, 
+                'cbjs_action': cbk,
                 'search_key' : self.search_key,
                 'top_id' : self.top_id,
                 'col_name': self.col_name
@@ -722,7 +721,7 @@ class CalendarWdg(BaseRefreshWdg):
 
 
         # put a different color for days that are not in the current month
-        if day.month != month: 
+        if day.month != month:
             div.add_style("color: #bbb")
 
         # store date like the database does YYYY-MM-DD
@@ -731,7 +730,7 @@ class CalendarWdg(BaseRefreshWdg):
         div.add_class('spt_date_day')
 
         return div
-        
+
 
 
 class CalendarInputWdg(BaseInputWdg):
@@ -783,7 +782,7 @@ class CalendarInputWdg(BaseInputWdg):
             'category': 'Display',
             'order': 8,
         },
-        
+
         "display_format" : {
             'description': "display format like YYYY/MM/DD HH:MM AM or default to the project setting DATETIME or DATE",
             'type': 'TextWdg',
@@ -796,7 +795,7 @@ class CalendarInputWdg(BaseInputWdg):
             'type': 'TextWdg',
             'category': 'Display',
         },
-        
+
 
         'default': {
         'description': 'The default selection value in an edit form. Can be a TEL variable.',
@@ -856,8 +855,8 @@ class CalendarInputWdg(BaseInputWdg):
     def set_validation(self, validation, validation_warning):
         self.cbjs_validation = validation
         self.validation_warning = validation_warning
-   
-     
+
+
 
     def get_display(self):
 
@@ -886,7 +885,7 @@ class CalendarInputWdg(BaseInputWdg):
             show_activator = True
         else:
             show_activator = False
-        
+
         if isinstance(self.parent_wdg, EditWdg):
             if show_activator != 'false':
                 show_activator = True
@@ -916,11 +915,12 @@ class CalendarInputWdg(BaseInputWdg):
         width = self.get_option('width')
 
         title = self.get_display_title()
-        
+
         from tactic.ui.input import TextInputWdg
         # read_only is passed in so it gets darker bg color
 
         show_time = self.get_option("show_time") in [True, 'true']
+
 
         value = self.get_value()
 
@@ -939,7 +939,7 @@ class CalendarInputWdg(BaseInputWdg):
         if display_mode == "table":
             input = TextWdg(name=name, required=required)
             text = input
-            text.add_class("spt_calendar_input") 
+            text.add_class("spt_calendar_input")
             if value:
                 input.set_value(value)
 
@@ -950,7 +950,7 @@ class CalendarInputWdg(BaseInputWdg):
             else:
                 input = TextInputWdg(name=name, type="date", required=required, read_only=read_only)
             text = input.get_text()
-            text.add_class("spt_calendar_input") 
+            text.add_class("spt_calendar_input")
 
             if value:
                 input.set_value(value)
@@ -969,7 +969,7 @@ class CalendarInputWdg(BaseInputWdg):
                 hint_text = None
             input = TextInputWdg( name=name, read_only=read_only, hint_text=hint_text, required=required, icon=activator, width=width)
             text = input.get_text()
-            text.add_class("spt_calendar_input") 
+            text.add_class("spt_calendar_input")
 
             if value:
                 input.set_value(value)
@@ -1027,39 +1027,39 @@ class CalendarInputWdg(BaseInputWdg):
                     var el = document.id(this).getParent('.calendar_input_top').getElement('.spt_calendar_top');
                     if (el)
                         spt.show(el);
-                  
+
                     spt.show(el);
-                    spt.body.add_focus_element(el); 
+                    spt.body.add_focus_element(el);
                     event.stopPropagation();
             ''')
 
             text.add_behavior( {
-                'type': 'focus', 
-                'cbjs_action': 
-                    '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
+                'type': 'focus',
+                'cbjs_action':
+                    '''var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top');
                     if (!el)  {
-                        el = spt.calendar.get(); 
+                        el = spt.calendar.get();
                         el.setStyle("width", "220px");
-                       
+
                         var top = bvr.src_el.getParent('.calendar_input_top');
                         top.appendChild(el);
                         el.position({position: 'upperleft', relativeTo: bvr.src_el, offset: {x:bvr.offset_x, y:bvr.offset_y}});
                     }
-                    
+
                     spt.show(el);
-                    spt.body.add_focus_element(el); 
+                    spt.body.add_focus_element(el);
                     //evt.stopPropagation();
-                    ''', 
+                    ''',
                     'offset_x' : offset_x,
                     'offset_y' : offset_y
                 })
 
             """
             # FIXME: keyup 'tab' occurs after blur
-            text.add_behavior({'type': 'keyupX', 'cbjs_action': 
+            text.add_behavior({'type': 'keyupX', 'cbjs_action':
                     '''
                     if (evt.key == 'tab') {
-                        var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top'); 
+                        var el = bvr.src_el.getParent('.calendar_input_top').getElement('.spt_calendar_top');
                         spt.hide(el);
                     }
                     '''
@@ -1106,7 +1106,7 @@ class CalendarInputWdg(BaseInputWdg):
 
         cbks = []
         date_format = self.get_option('date_format')
-      
+
         if not date_format:
 
             if show_time:
@@ -1119,17 +1119,17 @@ class CalendarInputWdg(BaseInputWdg):
                 date_format = setting
 
         if show_activator:
-            
+
             day_cbk='''
             var top = spt.get_parent(bvr.src_el, '.spt_calendar_top');
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');
             //spt.hide( top );
-             
+
             var value = bvr.src_el.getAttribute('spt_date');
             if (bvr.date_format && value) {
                 var date_obj = new Date().parse(value)
                 value = date_obj.format(bvr.date_format);
-               
+
             }
 
             var el = input_top.getElement('.spt_calendar_input');
@@ -1139,7 +1139,7 @@ class CalendarInputWdg(BaseInputWdg):
             var layout = bvr.src_el.getParent(".spt_layout");
             var version = layout ? layout.getAttribute("spt_version"): 1;
 
-           
+
             var show_time = input_top.getAttribute("show_time");
             if (show_time == 'true') {
                 // keep the time (FIXME: this is not right because AM/PM
@@ -1211,12 +1211,14 @@ class CalendarInputWdg(BaseInputWdg):
             #calendar = CalendarWdg( name=name, first_day_of_week=first_day_of_week)
 
         else:
-            
+
             day_cbk='''
             var top = spt.get_parent(bvr.src_el, '.spt_calendar_top');
 
             var value = bvr.src_el.getAttribute('spt_date');
+
             if (bvr.date_format) {
+
                 var date_obj = new Date().parse(value)
                 //%m-%d-%Y
                 value = date_obj.format(bvr.date_format);
@@ -1225,12 +1227,13 @@ class CalendarInputWdg(BaseInputWdg):
             var old_value = el.value;
 
             // add timezone info
-            value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
-
+            //value = value + " -00:00 " + spt.api.Utility.get_user_timezone_offset();
+            value = value + " 12:00";
             el.value = value;
 
             var input_top = spt.get_parent(bvr.src_el, '.calendar_input_top');
             var show_time = input_top.getAttribute("show_time");
+
             if (show_time == 'true') {
                 // keep the time (FIXME: this is not right because AM/PM
                 // introduces uncertainty in what all the parts are
@@ -1274,7 +1277,7 @@ class CalendarInputWdg(BaseInputWdg):
                 if (bvr.time_input_default) {
                     value = value + ' ' + bvr.time_input_default;
                     el.value = value;
-                   
+
                 }
                 var layout = bvr.src_el.getParent(".spt_layout");
                 var version = layout ? layout.getAttribute("spt_version"): 1;
@@ -1303,7 +1306,6 @@ class CalendarInputWdg(BaseInputWdg):
 
             #calendar = CalendarWdg( name=name, first_day_of_week=first_day_of_week)
 
-
         # add all of the callbacks to the top widget
         for day_cbk in cbks:
             self.top.add_relay_behavior( {
@@ -1331,7 +1333,7 @@ class CalendarInputWdg(BaseInputWdg):
     def get_value(self):
 
 
-        # has to use self.value instead of self.get_value() 
+        # has to use self.value instead of self.get_value()
         # to avoid a display bug with multiple inputs
         default = self.get_option("default")
 
@@ -1341,39 +1343,39 @@ class CalendarInputWdg(BaseInputWdg):
             value = default_value
             if value:
                 value = parser.parse(value)
-                # NOTE: it's better not to do auto-convert for passed in value 
+                # NOTE: it's better not to do auto-convert for passed in value
                 # since it could be already in local time
                 #if not SObject.is_day_column(self.get_name()):
                 #    value = SPTDate.convert_to_local(value)
 
         current = self.get_current_sobject()
-        
+
         if current and not current.is_insert():
             column = self.get_option("column")
             if not column:
                 column = self.get_name()
 
             db_date = current.get_value(column, no_exception=True)
-            
+
             if db_date:
                 # This date is assumed to be GMT
                 try:
                     value = parser.parse(db_date)
                 except:
                     value = datetime.now()
-                
+
 
                 #from pyasm.common import SPTDate
                 #from pyasm.search import SObject
                 if not SObject.is_day_column(self.get_name()):
                     date = self.get_timezone_value(value)
-                    
+
                 try:
                     encoding = locale.getlocale()[1]
                     value = date.strftime("%b %d, %Y - %H:%M").decode(encoding)
                 except:
                     value = date.strftime("%b %d, %Y - %H:%M")
-               
+
 
 
         show_time = self.get_option("show_time") in [True, 'true']
@@ -1381,17 +1383,16 @@ class CalendarInputWdg(BaseInputWdg):
             key = 'DATETIME'
         else:
             key = 'DATE'
-       
+
         if not value:
             value = self.value
 
-            
         if value:
             format = self.get_option("display_format")
 
             if not format:
                 format = key
-            
+
             from pyasm.common import FormatValue
             f = FormatValue()
             value = f.get_format_value(value, format)
@@ -1490,7 +1491,7 @@ class CalendarMonthWdg(BaseRefreshWdg):
             };
             var top = spt.get_parent(bvr.src_el, '.spt_calendar_top');
             spt.panel.load(top, class_name, kwargs);
-            
+
             '''
         } )
 
@@ -1539,7 +1540,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             else:
                 date_format = "%Y-%m-%d"
 
-        
+
         date = self.kwargs.get("date")
         time = self.kwargs.get("time")
 
@@ -1567,7 +1568,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
                     tmps = date.split(' ')
                     if tmps[1].find(':') != -1:
                         date = tmps[0]
-                
+
                 try:
                     if date_format.startswith('%m'):
                         date = parser.parse(date, dayfirst=False)
@@ -1630,7 +1631,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
 
         name = self.kwargs.get("name")
         interval = 5
-       
+
         top.add_behavior( {
             'type': 'load',
             'interval': interval,
@@ -1652,7 +1653,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
                 src_el.select();
             }
             spt.time_input.drag_motion = function(evt, bvr, mouse_411) {
-                var start_value = spt.time_input.drag_start_value; 
+                var start_value = spt.time_input.drag_start_value;
                 if (isNaN(parseInt(start_value))) {
                     return;
                 }
@@ -1755,7 +1756,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
                         bvr.src_el.value = value;
                         trimmed = true;
                     }
-                   
+
                 }
                 if (!trimmed && value.length > 2){
                     bvr.src_el.value = value.substr(value.length-2, value.length );
@@ -1845,8 +1846,8 @@ class CalendarTimeWdg(BaseRefreshWdg):
             date_str = ""
         else:
             date_str = date.strftime(date_format)
-        
-      
+
+
         button.add_behavior( {
             'type': 'click_up',
             'date': date_str,
@@ -1877,7 +1878,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             else {
                 value = hour + ":" + mins + am_pm;
             }
-            
+
             // add timezone info
             value = value + " " + spt.api.Utility.get_user_timezone_offset();
 
@@ -1895,7 +1896,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
             if (layout) {
                 spt.table.set_layout(layout);
                 spt.table.accept_edit(top, value);
-            } 
+            }
 
             '''
         } )
@@ -1910,7 +1911,7 @@ class CalendarTimeWdg(BaseRefreshWdg):
 
         return top
 
- 
+
 
 
 
@@ -2016,13 +2017,13 @@ class TimeInputWdg(BaseInputWdg):
             'order': 2,
             'category': 'Display',
         }
- 
+
     }
 
     def init(self):
         self.top = DivWdg()
 
- 
+
     def get_display(self):
         top = self.top
         top.add_class("calendar_input_top")
@@ -2065,7 +2066,7 @@ class TimeInputWdg(BaseInputWdg):
             time = "12:00 PM"
         time_input = CalendarTimeWdg(name=name, date="", mode=mode, time=time)
         div.add(time_input)
- 
+
         return top
 
 
@@ -2075,10 +2076,10 @@ class CalendarIntervalInputWdg(BaseRefreshWdg):
 
     def add_class(self, class_name):
         self.top.add_class(class_name)
-    
+
     def add_style(self, style):
         self.top.add_style(style)
-    
+
     def get_display(self):
 
         top = DivWdg()
@@ -2109,7 +2110,7 @@ class CalendarIntervalInputWdg(BaseRefreshWdg):
             'bvr_match_class': 'spt_calendar_day',
             'cbjs_action':'''
             var selected_date = bvr.src_el.getAttribute("spt_date");
-            
+
             if (spt.calendar.interval.selection_start) {
                 if (selected_date < spt.calendar.interval.start_date) {
                     return;
