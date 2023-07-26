@@ -70,7 +70,9 @@ class EditCmd(Command):
 
             self.config_xml = form_data.get("config_xml")
             if not self.config_xml:
-                self.config_xml = None
+                # self.config_xml = None # this was original.
+                # changed to the following on 2023/07/26
+                self.config_xml = kwargs.get("config_xml") or None
             else:
                 self.config_xml = self.config_xml.replace("&", "&amp;")
         else:
