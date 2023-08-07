@@ -33,6 +33,7 @@ class TransactionState(SObject):
         state = search.get_sobject()
 
         # create the state data for this ticket
+        """
         if not state:
             try:
                 state = SObjectFactory.create(TransactionState.SEARCH_TYPE)
@@ -44,7 +45,18 @@ class TransactionState(SObject):
             except:
                 # Sometimes this has a duplicate
                 pass
+        """
+        return state
 
+
+    @staticmethod
+    def create(ticket):
+        state = SObjectFactory.create(TransactionState.SEARCH_TYPE)
+        state.set_value("ticket", ticket)
+        data = Xml()
+        data.create_doc("state")
+        state.set_value("data", data.to_string() )
+        state.commit()
         return state
 
 

@@ -10,12 +10,14 @@
 
 // Only to be called on "body" tag "onload" event ...
 //
-spt.onload_startup = function(admin=false)
+spt.onload_startup = function(admin=false, handle_hash_changes=true)
 {
     // Set-up keyboard handler to allow for trapping keyboard events on a per element basis ...
     //
     if (admin) spt.kbd.setup_handler();
 
+
+    // IMPORTANT: initializes all behaviors
     spt.behavior.construct_behaviors_on_startup();
 
     var body_el = document.id(document.body);
@@ -38,7 +40,7 @@ spt.onload_startup = function(admin=false)
 
 
     // handle hash changes
-    spt.hash.onload_first();
+    spt.hash.onload_first(handle_hash_changes);
 
 
 }
@@ -217,7 +219,7 @@ spt.hash.onpopstate = function(evt) {
 
 spt.hash.first_load = true;
 
-spt.hash.onload_first = function() {
+spt.hash.onload_first = function(handle_hash_changes=true) {
 
     if (spt.browser.is_Chrome()) {
         spt.hash.ignore = true;
@@ -234,7 +236,7 @@ spt.hash.onload_first = function() {
     hash = hash.replace(/#/, '');
 
     // On Qt browsers, this causes the page to refresh continuously
-    if (!spt.browser.is_Qt() ) {
+    if (!spt.browser.is_Qt() && handle_hash_changes) {
         window.onpopstate = spt.hash.onpopstate;
     }
 

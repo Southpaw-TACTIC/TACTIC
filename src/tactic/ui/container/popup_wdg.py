@@ -67,7 +67,8 @@ class PopupWdg(BaseRefreshWdg):
         if self.kwargs.get('allow_page_activity'):
             self.allow_page_activity = True
 
-        self.z_start = 200
+        # set so that it itegrates well with MUI
+        self.z_start = 1350
         if self.kwargs.get('z_start'):
             self.z_start = self.kwargs.get('z_start')
 

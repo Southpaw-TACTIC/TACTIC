@@ -222,22 +222,28 @@ def get_full_cmd(self, meth, ticket, args):
             sudo = Sudo()
 
             state = TransactionState.get_by_ticket(ticket)
-            transaction_id = state.get_state("transaction")
-            if not transaction_id:
+            if state:
+                transaction_id = state.get_state("transaction")
+                if not transaction_id:
+                    return Command.get_transaction(self2)
+
+                #print("WARNING: ClientAPI:get_full_cmd - Getting transaction")
+
+                # continue the transaction
+                transaction_log = TransactionLog.get_by_id(transaction_id)
+            else:
                 return Command.get_transaction(self2)
 
-            #print("WARNING: ClientAPI:get_full_cmd - Getting transaction")
 
-            # continue the transaction
-            transaction_log = TransactionLog.get_by_id(transaction_id)
             if transaction_log:
                 transaction = Transaction.resume(transaction_log)
             else:
-                raise ApiException( "Can't resume transaction" )
-
-            #transaction = Transaction.get(create=True)
+                #raise ApiException( "Can't resume transaction" )
+                return None
 
             return transaction
+
+
 
         def execute(self2):
             start = time.time()
@@ -2696,7 +2702,7 @@ class ApiXMLRPC(BaseApiXMLRPC):
             return self._get_sobject_dict(sobject)
 
     @xmlrpc_decorator
-    def get_by_code(self, ticket, search_type, code):
+    def get_by_code(self, ticket, search_type, code, x=None):
         '''Gets the info on an sobject based on search_type and code
 
         @params

@@ -889,12 +889,16 @@ class TopWdg(Widget):
         }
         '''} )
 
-
+        from pyasm.prod.biz import ProdSetting
+        handle_hash_changes = "true"
+        if ProdSetting.get_value_by_key("handle_hash_changes"):
+            handle_hash_changes = ProdSetting.get_value_by_key("handle_hash_changes")
         
         if self.tactic_kbd == True:
-            body.add_event('onload', 'spt.onload_startup(admin=true)')
+            body.add_event('onload', 'spt.onload_startup(admin=true, handle_hash_changes=true)')
         else:
-            body.add_event('onload', 'spt.onload_startup(admin=false)')
+            body.add_event('onload', 'spt.onload_startup(admin=false, handle_hash_changes='+handle_hash_changes+')')
+            #body.add_event('onload', 'spt.onload_startup(admin=false)');
         
 
 
@@ -909,7 +913,6 @@ class TopWdg(Widget):
 
     
         from pyasm.security import Site
-        from pyasm.prod.biz import ProdSetting
         from pyasm.biz import PrefSetting
 
         site = Site.get_site()
