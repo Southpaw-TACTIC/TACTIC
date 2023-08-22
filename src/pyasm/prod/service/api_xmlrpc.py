@@ -6872,6 +6872,8 @@ class ApiXMLRPC(BaseApiXMLRPC):
 
             # set the state
             state = TransactionState.get_by_ticket(transaction_ticket)
+            if not state:
+                state = TransactionState.create(transaction_ticket)
             state.reset_state()
 
             # create a log outside of a transaction

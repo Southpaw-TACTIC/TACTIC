@@ -1636,7 +1636,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
             edit_class = self.kwargs.get("edit_class")
 
-
             button = ButtonNewWdg(title='Add New Item', icon="FA_PLUS")
 
             button_row_wdg.add(button)
