@@ -1285,15 +1285,18 @@ TacticServerStub = function() {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
             kwargs.on_error = function(x) { reject(x); }
-            this.get_by_search_key(search_key, kwargs);
+            return this.get_by_search_key(search_key, kwargs);
         }.bind(this) )
     }
 
 
 
 
-    this.get_by_code = function(search_type, code) {
-        return this._delegate("get_by_code", arguments);
+    this.get_by_code = function(search_type, code, kwargs, on_complete, on_error) {
+        [on_complete, on_error] = this._handle_callbacks(kwargs, on_complete, on_error);
+
+        passed_args = [search_type, code, kwargs];
+        return this._delegate("get_by_code", passed_args, kwargs, null, on_complete, on_error);
     }
 
     this.p_get_by_code = function(search_type, code, kwargs) {
@@ -1301,7 +1304,7 @@ TacticServerStub = function() {
             if (!kwargs) kwargs = {}
             kwargs.on_complete = function(x) { resolve(x); }
             kwargs.on_error = function(x) { reject(x); }
-            this.get_by_code(search_type, code, kwargs);
+            this.get_by_code(search_type, code);
         }.bind(this) )
     }
 
