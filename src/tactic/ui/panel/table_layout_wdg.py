@@ -6895,8 +6895,11 @@ spt.table.save_changes = function(kwargs) {
                 extra_data.push(extra_data_row);
             }
             else {
-                extra_data.push(null);
+                //extra_data.push(null);
             }
+
+            let table_extra_data = layout.getAttribute("spt_extra_data") || "{}";
+            extra_data.push(JSON.parse(table_extra_data));
 
             // get extra action
             var extra_action_row = rows[i].extra_action;

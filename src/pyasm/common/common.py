@@ -43,6 +43,8 @@ DICT_KEYS_TYPE = type({}.keys())
 from .base import Base
 
 from random import SystemRandom
+SYSTEM_RANDOM = SystemRandom()
+RANDOM_ITEMS = {}
 
 try:
     #from cjson import encode as jsondumps
@@ -423,7 +425,8 @@ class Common(Base):
 
     def randint(lower, upper):
         # a cryptographically "secure" random integer
-        integer = SystemRandom().randrange(upper-lower)
+        #integer = SystemRandom().randrange(upper-lower)
+        integer = SYSTEM_RANDOM.randrange(upper-lower)
         integer += lower
         return integer
     randint = staticmethod(randint)
@@ -437,35 +440,42 @@ class Common(Base):
 
 
     def generate_alphanum_key(num_digits=10, mode="alpha", delimit=0):
-        if mode == "alpha":
-            low = 65
-            high = 90
-        elif mode == "hex":
-            low = 48
-            high = 71
-        elif mode == "numeric":
-            low = 48
-            high = 58
-        else:
-            low = 48
-            high = 90
+        key = []
+
+        items = RANDOM_ITEMS.get(mode)
+        if items == None:
+            start = time.time()
+            if mode == "alpha":
+                low = 65
+                high = 90
+            elif mode == "hex":
+                low = 48
+                high = 71
+            elif mode == "numeric":
+                low = 48
+                high = 58
+            else:
+                low = 48
+                high = 90
+
+            items = []
+            for idx in range(low, high):
+                if idx >= 58 and idx <= 64:
+                    continue
+                items.append(chr(idx))
+            RANDOM_ITEMS[mode] = items
+
+
         # generate a random key
-        key = ""
-
-        items = []
-        for idx in range(low, high):
-            if idx >= 58 and idx <= 64:
-                continue
-            items.append(chr(idx))
-
-
         for i in range(0, num_digits):
             upper = len(items) - 1
-            idx = SystemRandom().randrange(upper)
+            #idx = SystemRandom().randrange(upper)
+            idx = SYSTEM_RANDOM.randrange(upper)
             if i and delimit and i % delimit == 0:
-                key += "-"
-            key += items[idx]
+                key.append("-")
+            key.append(items[idx])
 
+        key = "".join(key)
         return key
     generate_alphanum_key = staticmethod(generate_alphanum_key)
 
