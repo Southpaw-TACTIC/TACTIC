@@ -4995,7 +4995,13 @@ class SObject(object):
 
 
 
-    def delete(self, log=True, triggers=True):
+    def get_delete_statement(self, log=False):
+        statement = self.delete(log=log, return_sql=True)
+        return statement
+
+
+
+    def delete(self, log=True, triggers=True, return_sql=False):
         '''delete the sobject (only the database)
         WARNING: use with extreme caution.  If you are uncertain,
         just use retire()
@@ -5068,6 +5074,11 @@ class SObject(object):
                 statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
             else:
                 statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
+
+            if return_sql:
+                if log:
+                    SObjectUndo.log_undo_for_delete(self)
+                return statement
 
             sql.do_update(statement)
 
