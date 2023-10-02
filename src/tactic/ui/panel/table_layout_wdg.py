@@ -3092,9 +3092,15 @@ class TableLayoutWdg(BaseTableLayoutWdg):
             try:
                 extra_data = jsonloads(extra_data)
             except:
-                print("WARNING: bad extra_data!!!")
-                print(extra_data)
-                extra_data = {}
+                # try replace single quotes with double quotes ... there was a point
+                # when we just used str instead of json, so this may still occur
+                extra_data = extra_data.replace("'", '"')
+                try:
+                    extra_data = jsonloads(extra_data)
+                except:
+                    print("WARNING: bad extra_data!!!")
+                    print(extra_data)
+                    extra_data = {}
 
             min_height = extra_data.get("min_height")
             if min_height:
