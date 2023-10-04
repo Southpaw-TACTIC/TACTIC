@@ -131,9 +131,12 @@ class FormatElementWdg(SimpleTableElementWdg):
         elif widget_type in ['date','time']:
             name = self.get_name()
             if value and not SObject.is_day_column(name):               
-                value = self.get_timezone_value(value)
-         
 
+                try:
+                    value = self.get_timezone_value(value)
+                except:
+                    pass
+         
                 value = str(value)
 
         else:
@@ -146,7 +149,11 @@ class FormatElementWdg(SimpleTableElementWdg):
         top.add_style("min-height: 15px")
 
         format = self.get_option('format')
-        value = self.get_format_value( value, format )
+        try:
+            value = self.get_format_value( value, format )
+        except Exception as e:
+            value = "Bad Date [%s]" % value
+            
         top.add(value)
 
 
