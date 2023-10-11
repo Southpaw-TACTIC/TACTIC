@@ -1209,7 +1209,6 @@ class TopWdg(Widget):
 
         # Test react
         include_react = Config.get_value("install", "include_react")
-        include_react = "true"
         if include_react == "true":
             """
             widget.add('''
@@ -1227,11 +1226,11 @@ class TopWdg(Widget):
             widget.add('''
               <!-- Load React. -->
               <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-              <script src="/plugins/unpkg/react.development.js" crossorigin></script>
-              <script src="/plugins/unpkg/react-dom.development.js" crossorigin></script>
-              <script src="/plugins/unpkg/redux.js" crossorigin></script>
-              <script src="/plugins/unpkg/redux-toolkit.umd.min.js" crossorigin></script>
-              <script src="/plugins/unpkg/react-redux.min.js" crossorigin></script>
+              <script src="/context/react/react.development.js" crossorigin></script>
+              <script src="/context/react/react-dom.development.js" crossorigin></script>
+              <script src="/context/react/redux.js" crossorigin></script>
+              <script src="/context/react/redux-toolkit.umd.min.js" crossorigin></script>
+              <script src="/context/react/react-redux.min.js" crossorigin></script>
             ''')
 
 
