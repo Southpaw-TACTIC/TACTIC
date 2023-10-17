@@ -201,9 +201,11 @@ class JSXTranspile():
         # FIXME: hard coded
         # FIXME: there must be a better way to set the environment of node.js
 
+        install_dir = tacticenv.get_install_dir()
+
         dirname = Config.get_value("jsx", "babel")
         if not dirname:
-            dirname = "/home/tactic/npm/babel"
+            dirname = "%s/3rd_party/babel" % install_dir
 
         if not os.path.exists(dirname):
             raise Exception("Babel is not installed")
