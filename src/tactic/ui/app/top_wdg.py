@@ -1208,7 +1208,7 @@ class TopWdg(Widget):
 
 
         # Test react
-        include_react = Config.get_value("install", "include_react")
+        include_react = Config.get_value("install", "include_react") or "true"
         if include_react == "true":
             """
             widget.add('''
