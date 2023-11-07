@@ -306,7 +306,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
           // default col def properties get applied to all columns
           defaultColDef: {sortable: true, filter: true},
 
-          rowSelection: 'multiple', // allow rows to be selected
+          rowSelection: props.row_selection || 'multiple', // allow rows to be selected
           animateRows: true, // have rows animate to new positions when sorted
 
           //paginationAutoPageSize: true,
