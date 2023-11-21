@@ -30,6 +30,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     },
     refresh_cells(nodes) {
       grid_ref.current.refresh_cells(nodes);
+    },
+    get_grid_ref() {
+      return grid_ref;
     }
   }));
   const [data, set_data] = useState([]);
@@ -53,6 +56,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     });
   }, []);
   const save = (item, column) => {
+
     let selected = grid_ref.current.get_selected_nodes();
     let items = [];
     if (selected.length) {
@@ -63,22 +67,36 @@ const TableLayout = React.forwardRef((props, ref) => {
       items.push(item);
     }
     let cmd = props.save_cmd;
-
+    if (!cmd) {
+      cmd = "tactic.react.TableSaveCmd";
+    }
+    let updates = [];
+    let inserts = [];
     items.forEach(item => {
-      let kwargs = {
-        item: item,
-        column: column
-      };
       let mode = item.code ? "edit" : "insert";
-      let server = TACTIC.get();
-      server.p_execute_cmd(cmd, kwargs).then(ret => {
-        if (mode == "insert") {
-          data.push(item);
-          set_data([...data]);
-        }
-      }).catch(e => {
-        alert("TACTIC ERROR: " + e);
+      let update = {
+        search_key: item.__search_key__,
+        column: column,
+        value: item[column],
+        mode: mode
+      };
+      if (mode == "insert") {
+        inserts.push(item);
+      }
+      updates.push(update);
+    });
+    let kwargs = {
+      updates: updates
+    };
+    let server = TACTIC.get();
+    server.p_execute_cmd(cmd, kwargs).then(ret => {
+      updates.forEach(item => {
+        data.push(item);
       });
+      set_data([...data]);
+
+    }).catch(e => {
+      alert("TACTIC ERROR: " + e);
     });
   };
   const cell_value_changed = props => {
@@ -335,7 +353,7 @@ class SelectEditor {
     }
     this.input = document.createElement("div");
     this.root = ReactDOM.createRoot(this.input);
-    this.el = React.createElement(TextField, {
+    this.el = React.createElement("div", null, React.createElement(TextField, {
       label: label,
       variant: variant,
       defaultValue: this.value,
@@ -343,7 +361,9 @@ class SelectEditor {
       select: true,
       style: {
         width: "100%",
-        height: "100%"
+        height: "100%",
+        padding: "0px 15px",
+        fontSize: "0.8rem"
       },
       SelectProps: {
         defaultOpen: open,
@@ -365,11 +385,12 @@ class SelectEditor {
       }
     }, values.map((value, index) => React.createElement(MenuItem, {
       key: index,
-      value: value,
+      value: value
+    }, React.createElement("div", {
       style: {
-        background: colors[value] || "transparent"
+        fontSize: "0.8rem"
       }
-    }, React.createElement("div", null, labels[index]))));
+    }, labels[index])))));
   }
   getEl() {
     return this.el;
@@ -409,6 +430,7 @@ class InputEditor {
   init(params) {
     this.value = params.value;
     let mode = params.mode || "text";
+    this.mode = mode;
     let variant = params.variant || "standard";
     let name = params.name;
     let label = params.label || "";
@@ -417,8 +439,7 @@ class InputEditor {
     if (!is_form) {
       el_style = {
         fontSize: "0.75rem",
-        padding: "3px 3px",
-        height: "35px"
+        padding: "3px 3px"
       };
     } else {
       el_style = {};
@@ -433,7 +454,8 @@ class InputEditor {
       type: mode,
       style: {
         width: "100%",
-        height: "100%"
+        height: "100%",
+        padding: "0px 15px"
       },
       inputProps: {
         className: "input",
@@ -466,6 +488,9 @@ class InputEditor {
   }
 
   getValue() {
+    if (this.mode == "date") {
+      this.value = Date.parse(this.value);
+    }
     return this.value;
   }
 
@@ -500,6 +525,7 @@ const SimpleCellRenderer = params => {
   if (label == null) {
     label = "";
   }
+  let mode = params.mode;
   let onClick = params.onClick;
   let values = params.values;
   if (values != null) {
@@ -516,6 +542,7 @@ const SimpleCellRenderer = params => {
   el.appendChild(inner);
   inner.style.width = "100%";
   inner.style.padding = "0px 3px";
+
   if (true) {
     let icon = document.createElement("i");
     el.appendChild(icon);
@@ -542,6 +569,10 @@ const SimpleCellRenderer = params => {
     el.addEventListener("mouseleave", e => {
       icon.style.display = "none";
     });
+  }
+
+  if (params.mode == "color") {
+    inner.style.background = value;
   }
   let color = colors[value];
   if (color) {

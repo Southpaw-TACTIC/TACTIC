@@ -1,5 +1,8 @@
 
-__all__ = ['TableCreatePropertyCmd']
+__all__ = [
+    'TableCreatePropertyCmd',
+    'TableSaveCmd'
+]
 
 from pyasm.search import SearchType
 
@@ -42,6 +45,31 @@ class TableCreatePropertyCmd(Command):
         property_item.commit()
 
 
+
+
+class TableSaveCmd(Command):
+
+    def execute(self):
+
+        updates = self.kwargs.get("updates")
+
+        for update in updates:
+            print("update: ", update)
+
+            search_key = update.get("search_key")
+            sobject = Search.get_by_search_key(search_key)
+
+            column = update.get("column")
+            value = update.get("value")
+
+            if value == "":
+                sobject.set_value(column, "NULL", op="is", quoted=False)
+
+            sobject.set_value(column, value)
+            sobject.commit()
+
+
+        
 
 
 
