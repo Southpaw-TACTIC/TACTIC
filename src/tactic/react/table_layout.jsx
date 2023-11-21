@@ -38,6 +38,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
         },
         refresh_cells(nodes) {
             grid_ref.current.refresh_cells(nodes);
+        },
+        get_grid_ref() {
+            return grid_ref;
         }
     } ) )
    
@@ -74,7 +77,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }, [] );
 
 
+
     const save = (item, column) => {
+
+        //console.log("table: ", item, column)
 
         let selected = grid_ref.current.get_selected_nodes();
         let items = [];
@@ -89,27 +95,50 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
         let cmd = props.save_cmd;
+        if (!cmd) {
+            cmd = "tactic.react.TableSaveCmd";
+        }
 
-        // FIXME: should call save cmd just once
+
+        let updates = [];
+        let inserts = [];
         items.forEach( item => {
-            let kwargs = {
-                item: item,
-                column: column,
-            };
-
             let mode = item.code ? "edit" : "insert";
 
-            let server = TACTIC.get();
-            server.p_execute_cmd(cmd, kwargs)
-            .then( ret => {
-                if (mode == "insert") {
-                    data.push(item);
-                    set_data([...data]);
-                }
+            let update = {
+                search_key: item.__search_key__,
+                column: column,
+                value: item[column],
+                mode: mode,
+            };
+
+            if (mode == "insert") {
+                inserts.push(item)
+            }
+
+            updates.push(update);
+
+        } )
+
+        let kwargs = {
+            updates: updates,
+        }
+
+
+        let server = TACTIC.get();
+        server.p_execute_cmd(cmd, kwargs)
+        .then( ret => {
+            // ad the new items
+            updates.forEach( item => {
+                data.push(item);
             } )
-            .catch( e => {
-                alert("TACTIC ERROR: " + e);
-            } )
+            set_data([...data]);
+
+            // TODO: refresh the nodes
+
+        } )
+        .catch( e => {
+            alert("TACTIC ERROR: " + e);
         } )
     }
 
@@ -465,6 +494,7 @@ class SelectEditor {
         this.input = document.createElement("div")
         this.root = ReactDOM.createRoot( this.input );
         this.el = (
+            <div>
             <TextField
                 label={label}
                 variant={variant}
@@ -473,7 +503,9 @@ class SelectEditor {
                 select
                 style={{
                     width: "100%",
-                    height: "100%"
+                    height: "100%",
+                    padding: "0px 15px",
+                    fontSize: "0.8rem",
                 }}
                 SelectProps={{
                     defaultOpen: open,
@@ -497,15 +529,15 @@ class SelectEditor {
                 }}
             >
                 { values.map( (value, index) => (
-                    <MenuItem key={index} value={value}
-                        style={{
-                            background: colors[value] || "transparent"
+                    <MenuItem key={index} value={value}>
+                        <div style={{
+                            fontSize: "0.8rem",
                         }}
-                    >
-                        <div>{labels[index]}</div>
+                        >{labels[index]}</div>
                     </MenuItem>
                 ) ) }
             </TextField>
+            </div>
         );
 
     }
@@ -582,6 +614,7 @@ class InputEditor {
         this.value = params.value;
 
         let mode = params.mode || "text";
+        this.mode = mode;
 
         let variant = params.variant || "standard";
         let name = params.name;
@@ -593,7 +626,7 @@ class InputEditor {
             el_style = {
                 fontSize: "0.75rem",
                 padding: "3px 3px",
-                height: "35px",
+                //height: "22px",
             }
         }
         else {
@@ -613,6 +646,7 @@ class InputEditor {
                     style={{
                         width: "100%",
                         height: "100%",
+                        padding: "0px 15px",
                     }}
                     inputProps={{
                         className: "input",
@@ -658,6 +692,9 @@ class InputEditor {
 
     // the final value to send to the grid, on completion of editing
     getValue() {
+        if (this.mode == "date") {
+            this.value = Date.parse(this.value);
+        }
         return this.value;
     }
 
@@ -710,6 +747,8 @@ const SimpleCellRenderer = (params) => {
         label = "";
     }
 
+    let mode = params.mode;
+
     let onClick = params.onClick;
 
     let values = params.values;
@@ -733,7 +772,7 @@ const SimpleCellRenderer = (params) => {
     inner.style.padding = "0px 3px";
 
 
-
+    // Edit icon
     if (true) {
         let icon = document.createElement("i");
         el.appendChild(icon);
@@ -765,8 +804,10 @@ const SimpleCellRenderer = (params) => {
         } );
     }
 
-
-
+    // if the mode is color, the set the background color
+    if (params.mode == "color") {
+        inner.style.background = value;
+    }
 
     let color = colors[value];
     if (color) {
