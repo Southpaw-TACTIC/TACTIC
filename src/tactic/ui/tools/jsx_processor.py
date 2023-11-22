@@ -217,6 +217,8 @@ class JSXTranspile():
 
 
         executable = "%s/node_modules/.bin/babel" % dirname
+        if not os.path.exists(executable):
+            raise Exception("Babel is not installed")
 
         cmds = [executable, "-f", "temp", "--no-comments"]
         minified = False

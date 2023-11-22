@@ -223,7 +223,7 @@ const DataGrid = React.forwardRef((props, ref) => {
         sortable: true,
         filter: true
       },
-      rowSelection: 'multiple',
+      rowSelection: props.row_selection || 'multiple',
       animateRows: true,
 
       pagination: props.auto_height ? false : true,
