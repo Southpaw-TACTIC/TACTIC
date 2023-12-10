@@ -350,7 +350,7 @@ class ExpressionParser(object):
 
 
     def get_cache_sobjects(self):
-        '''method to store all the sobjects as they being searched through
+        '''method to get all the sobjects as they being searched through
         the hierarchy'''
         key = "%s|%s|%s" % (self.expression, self.related_types, str(self.sobjects))
         cache = Container.get_full_dict('Expression:%s' % key)
@@ -367,13 +367,13 @@ class ExpressionParser(object):
         cache = Container.get_full_dict('Expression:%s' % key)
         cache[sobject] = related_sobjects
 
-
         if isinstance(sobject, basestring):
             search_key = sobject
         else:
             search_key = SearchKey.get_by_sobject(sobject)
 
         cache[search_key] = related_sobjects
+
 
 
 
@@ -2080,7 +2080,7 @@ class MethodMode(ExpressionParser):
                 for sobject in self.sobjects:
                     parent = sobject.get_parent()
                     related_sobjects.append(parent)
-                    self.cache_sobjects(sobject.get_search_key(), [parent])
+                    self.cache_sobjects(sobject, [parent])
                 return related_sobjects
 
             elif related_type == 'connect':
