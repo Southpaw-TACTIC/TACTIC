@@ -343,7 +343,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
           // while this is the behvaior we want, it does not behave well with selects
           //stopEditingWhenCellsLoseFocus: true,
         
-          headerHeight: "25px",
+          headerHeight: props.header_height || "25px",
           groupHeaderHeight: "20px"
 
         };
