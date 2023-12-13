@@ -180,14 +180,15 @@ const DataGrid = React.forwardRef( (props, ref) => {
             }
         }
 
+        /*
         if (!params.processHeaderCallback) {
 
             params[processHeaderCallback] = (cell) => {
                 let column = cell.column.collId;
                 console.log("column: ", column);
-                return "cow";
             }
         }
+        */
 
         grid_options.api.exportDataAsCsv(params);
     }

@@ -26,7 +26,7 @@ const DataGrid = spt.react.DataGrid;
 const NotesWdg = spt.react.widget.NotesWdg;
 
 
-const ROOT_CMD = "spt.modules.workflow.apps.CRM.lib";
+const ROOT_CMD = "tactic.react";
 
 
 
@@ -43,7 +43,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
             return grid_ref;
         }
     } ) )
-   
+  
+    const [search_type, set_search_type] = useState("");
     const [data, set_data] = useState([]);
     const [element_names, set_element_names] = useState([]);
     const [column_defs, set_column_defs] = useState([]);
@@ -57,6 +58,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         let element_names = props.element_names;
         set_element_names([...element_names]);
+
+        set_search_type(props.search_type);
 
         build_column_defs(element_names);
 
@@ -83,6 +86,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
         //console.log("table: ", item, column)
 
         let selected = grid_ref.current.get_selected_nodes();
+
         let items = [];
         if (selected.length) {
             selected.forEach( selected_item => {
@@ -128,8 +132,69 @@ const TableLayout = React.forwardRef( (props, ref) => {
         let server = TACTIC.get();
         server.p_execute_cmd(cmd, kwargs)
         .then( ret => {
-            // ad the new items
-            updates.forEach( item => {
+
+            let info = ret.info;
+            let updated_sobjects = info.updated_sobjects;
+            let new_sobjects = info.new_sobjects;
+
+            // add the new items
+            new_sobjects.forEach( item => {
+                data.push(item);
+            } )
+            set_data([...data]);
+
+        } )
+        .catch( e => {
+            alert("TACTIC ERROR: " + e);
+        } )
+    }
+
+
+
+    const insert_item = (item) => {
+
+        //console.log("table: ", item, column)
+
+        let cmd = props.save_cmd;
+        if (!cmd) {
+            cmd = "tactic.react.EditSaveCmd";
+        }
+
+
+        let inserts = [];
+
+        let mode = item.__search_key__ ? "edit" : "insert";
+
+        let code = Common.generate_key(12);
+        item.code = code;
+
+
+        let update = {
+            search_type: search_type,
+            search_key: item.__search_key__,
+            mode: mode,
+            item: item,
+        };
+
+        if (mode == "insert") {
+            inserts.push(item)
+        }
+
+        let kwargs = {
+            updates: [update],
+            extra_data: props.extra_data,
+        }
+
+
+        let server = TACTIC.get();
+        server.p_execute_cmd(cmd, kwargs)
+        .then( ret => {
+
+            let info = ret.info;
+            let sobjects = info.sobjects || [];
+
+            // add the new items
+            sobjects.forEach( item => {
                 data.push(item);
             } )
             set_data([...data]);
@@ -148,6 +213,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
         let data = props.data;
         save(data, column);
     }
+
 
 
     const build_column_defs = (new_element_names) => {
@@ -169,11 +235,13 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 pinned: "left",
             },
         ]
+
         new_element_names.forEach( element => {
             let column_def = props.element_definitions[element];
             if (!column_def) {
                 column_def = {
                     field: element,
+                    headerName: Common.capitalize(element),
                     maxWidth: 150,
                     editable: true,
                     onCellValueChanged: cell_value_changed,
@@ -225,7 +293,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
             <EditModal
                 name={props.name}
                 ref={edit_modal_ref}
-                on_insert={save}
+                on_insert={insert_item}
                 element_names={props.element_names}
                 element_definitions={props.element_definitions}
             />
@@ -269,7 +337,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     onClick={ e => {
                         let selected = grid_ref.current.get_selected_nodes();
                         if (selected.length == 0) {
-                            alert("No contacts selected")
+                            alert("No items selected")
                             return;
                         }
 
@@ -356,7 +424,7 @@ const EditModal = React.forwardRef( (props, ref) => {
         let name = e.name;
         let value = e.target.value;
 
-        console.log("name: ", name, value)
+        //console.log("name: ", name, value)
 
         item[name] = value;
     }
@@ -622,12 +690,17 @@ class InputEditor {
 
         let is_form = params.is_form;
         let el_style;
+        let style = {
+            width: "100%",
+            height: "100%",
+        }
         if (!is_form) {
             el_style = {
                 fontSize: "0.75rem",
                 padding: "3px 3px",
                 //height: "22px",
             }
+            style.padding = "0px 15px";
         }
         else {
             el_style = {};
@@ -643,11 +716,7 @@ class InputEditor {
                     defaultValue={this.value}
                     size="small"
                     type={mode}
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        padding: "0px 15px",
-                    }}
+                    style={style}
                     inputProps={{
                         className: "input",
                         style: el_style

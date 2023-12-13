@@ -7,7 +7,6 @@ const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
 const PreviewCellRenderer = spt.react.PreviewCellRenderer;
-
 const on_cell_value_changed = params => {
   let table_ref = params.table_ref;
   let data = params.data;
@@ -18,7 +17,6 @@ const Xon_cell_value_changed = params => {
   let table_ref = params.table_ref;
   let item = params.data;
   let column = params.column.colId;
-
   let selected = [];
   let items = [];
   if (selected.length) {
@@ -28,9 +26,7 @@ const Xon_cell_value_changed = params => {
   } else {
     items.push(item);
   }
-
   let cmd = "tactic.react.TableSaveCmd";
-
   updates = [];
   items.forEach(item => {
     let mode = item.code ? "edit" : "insert";
@@ -44,8 +40,7 @@ const Xon_cell_value_changed = params => {
     updates: updates
   };
   let server = TACTIC.get();
-  server.p_execute_cmd(cmd, kwargs).then(ret => {
-  }).catch(e => {
+  server.p_execute_cmd(cmd, kwargs).then(ret => {}).catch(e => {
     alert("TACTIC ERROR: " + e);
   });
 };
@@ -55,7 +50,6 @@ const Config = (config, options) => {
     cell_value_changed = on_cell_value_changed;
   }
   let table_ref = options.table_ref;
-
   let definition_types = {
     simple: {
       width: 150,
@@ -74,7 +68,6 @@ const Config = (config, options) => {
       cellRenderer: SimpleCellRenderer
     }
   };
-
   let config_defs = {};
   config.forEach(config_item => {
     let element_type = config_item.type;
@@ -92,6 +85,9 @@ const Config = (config, options) => {
     let title = config_item.title;
     let pinned = config_item.pinned;
     let width = config_item.width;
+    if (!name) {
+      throw "No name provided in config";
+    }
     let config_def = {
       ...definition_types[definition_type]
     };
@@ -128,7 +124,6 @@ const Config = (config, options) => {
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
-
       config_def.onCellValueChanged = e => {
         let p = {
           ...e,
@@ -172,5 +167,4 @@ const Config = (config, options) => {
   });
   return config_defs;
 };
-
 spt.react.Config = Config;

@@ -1,7 +1,8 @@
 
 __all__ = [
     'TableCreatePropertyCmd',
-    'TableSaveCmd'
+    'TableSaveCmd',
+    'EditSaveCmd',
 ]
 
 from pyasm.search import SearchType
@@ -53,8 +54,10 @@ class TableSaveCmd(Command):
 
         updates = self.kwargs.get("updates")
 
+        new_sobjects = []
+        updated_sobjects = []
+
         for update in updates:
-            print("update: ", update)
 
             search_key = update.get("search_key")
             sobject = Search.get_by_search_key(search_key)
@@ -68,8 +71,56 @@ class TableSaveCmd(Command):
             sobject.set_value(column, value)
             sobject.commit()
 
+            sobject_dict = sobject.get_sobject_dict()
+            updated_sobjects.append(sobject_dict)
+
+        self.info["new_sobjects"] = new_sobjects
+        self.info["updated_sobjects"] = updated_sobjects
+
+
+
 
         
+
+class EditSaveCmd(Command):
+
+    def execute(self):
+
+        updates = self.kwargs.get("updates")
+        extra_data = self.kwargs.get("extra_data") or {}
+
+        new_sobjects = []
+
+        for update in updates:
+
+            search_type = update.get("search_type")
+
+            item = update.get("item")
+
+            sobject = SearchType.create(search_type)
+            for name, value in item.items():
+                sobject.set_value(name, value)
+
+            item_data = {};
+
+
+            for name, value in extra_data.items():
+                try:
+                    sobject.set_value(name, value)
+                except:
+                    item_data[name] = value
+
+            if item_data:
+                sobject.set_value("data", item_data)
+
+
+            sobject.commit()
+
+            sobject_dict = sobject.get_sobject_dict()
+            new_sobjects.append(sobject_dict)
+
+        self.info["sobjects"] = new_sobjects
+
 
 
 

@@ -131,6 +131,10 @@ const Config = (config, options) => {
         let pinned = config_item.pinned;
         let width = config_item.width;
 
+        if (!name) {
+            throw("No name provided in config")
+        }
+
         let config_def = {...definition_types[definition_type]};
         config_defs[name] = config_def;
 
