@@ -5,6 +5,7 @@ __all__ = [
     'EditSaveCmd',
 ]
 
+from pyasm.common import Common
 from pyasm.search import SearchType
 
 from pyasm.command import Command
@@ -50,9 +51,30 @@ class TableCreatePropertyCmd(Command):
 
 class TableSaveCmd(Command):
 
+
+    def get_config(self):
+
+        config_class = self.kwargs.get("config_handler")
+
+        handler = Common.create_from_class_path(config_class)
+        config = handler.get_config()
+
+        return config
+       
+
+
+
     def execute(self):
 
         updates = self.kwargs.get("updates")
+
+        config = self.get_config()
+
+        configs = {}
+        for item in config:
+            name = item.get("name")
+            configs[name] = item;
+
 
         new_sobjects = []
         updated_sobjects = []
@@ -65,10 +87,17 @@ class TableSaveCmd(Command):
             column = update.get("column")
             value = update.get("value")
 
-            if value == "":
-                sobject.set_value(column, "NULL", op="is", quoted=False)
+            update_column = column
 
-            sobject.set_value(column, value)
+            config = configs.get(column)
+            if config:
+                update_column = config.get("column") or config.get("name")
+
+
+            if value == "":
+                sobject.set_value(update_column, "NULL", op="is", quoted=False)
+
+            sobject.set_value(update_column, value)
             sobject.commit()
 
             sobject_dict = sobject.get_sobject_dict()

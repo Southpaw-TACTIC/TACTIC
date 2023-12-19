@@ -126,6 +126,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         let kwargs = {
             updates: updates,
+            config_handler: props.config_handler,
         }
 
 
@@ -540,6 +541,13 @@ class SelectEditor {
         let labels = params.labels || [];
         let values = params.values || [];
         let colors = params.colors || {};
+
+        if (typeof(labels) == "string") {
+            labels = labels.split("|")
+        }
+        if (typeof(values) == "string") {
+            values = values.split("|")
+        }
 
         let variant = params.variant || "standard";
         let label = params.label || "";

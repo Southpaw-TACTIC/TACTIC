@@ -87,16 +87,19 @@ const Config = (config, options) => {
     let definition_types = {
         simple: {
             width: 150,
+            resizable: true,
             onCellValueChanged: cell_value_changed,
             cellRenderer: SimpleCellRenderer,
         },
         preview: {
             width: 60,
+            resizable: true,
             cellRenderer: PreviewCellRenderer,
         },
         select: {
             width: 150,
             editable: true,
+            resizable: true,
             onCellValueChanged: cell_value_changed,
             cellEditor: SelectEditor,
             cellRenderer: SimpleCellRenderer,
