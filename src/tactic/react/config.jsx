@@ -2,6 +2,7 @@ const useEffect = React.useEffect;
 const useState = React.useState;
 const useRef = React.useRef;
 
+const Common = spt.react.Common;
 const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
@@ -146,6 +147,9 @@ const Config = (config, options) => {
         config_def["field"] = name;
         if (title) {
             config_def["headerName"] = title;
+        }
+        else {
+            config_def["headerName"] = Common.capitalize(name);
         }
 
         if (pinned) {

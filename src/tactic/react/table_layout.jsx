@@ -124,6 +124,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         } )
 
+
         let kwargs = {
             updates: updates,
             config_handler: props.config_handler,
@@ -184,6 +185,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
         let kwargs = {
             updates: [update],
             extra_data: props.extra_data,
+            config_handler: props.config_handler,
         }
 
 
