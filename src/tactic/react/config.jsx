@@ -72,6 +72,8 @@ const Xon_cell_value_changed = params => {
 
 
 
+
+
 const Config = (config, options) => {
 
     let cell_value_changed = options.cell_value_changed;
@@ -106,6 +108,7 @@ const Config = (config, options) => {
             cellRenderer: SimpleCellRenderer,
         }
     }
+
 
 
     // convert to config_def data
@@ -181,7 +184,6 @@ const Config = (config, options) => {
                 values: values,
             }
 
-            config_def.cellEditor = SelectEditor;
             config_def.cellEditorParams = params;
             config_def.cellRendererParams = params;
 

@@ -126,7 +126,6 @@ const Config = (config, options) => {
         labels: labels,
         values: values
       };
-      config_def.cellEditor = SelectEditor;
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;

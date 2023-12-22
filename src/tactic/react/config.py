@@ -6,6 +6,7 @@ import json
 
 from pyasm.common import Common
 from pyasm.command import Command
+from pyasm.search import Search
 
 
 class ConfigCmd(Command):

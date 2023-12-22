@@ -47,21 +47,33 @@ const TableLayout = React.forwardRef( (props, ref) => {
     const [search_type, set_search_type] = useState("");
     const [data, set_data] = useState([]);
     const [element_names, set_element_names] = useState([]);
+    const [element_definitions, set_element_definitions] = useState({});
+
     const [column_defs, set_column_defs] = useState([]);
 
     const edit_modal_ref = useRef();
     const property_modal_ref = useRef();
     const grid_ref = useRef();
 
-
     useEffect( () => {
+        init();
+    }, [] );
 
+
+    const init = async () => {
         let element_names = props.element_names;
         set_element_names([...element_names]);
 
+        let element_definitions = props.element_definitions;
+        if (!element_definitions) {
+            config_handler = props.config_handler;
+            element_definitions = await get_element_definitions(config_handler);
+        }
+        await set_element_definitions(element_definitions);
+
         set_search_type(props.search_type);
 
-        build_column_defs(element_names);
+        build_column_defs(element_names, element_definitions);
 
         let cmd = props.get_cmd;
         let kwargs = props.get_kwargs;
@@ -76,8 +88,29 @@ const TableLayout = React.forwardRef( (props, ref) => {
         .catch( e => {
             alert("TACTIC ERROR: " + e);
         } )
+    }
 
-    }, [] );
+
+    const get_element_definitions = async (cmd, kwargs) => {
+
+        if (!kwargs) {
+            kwargs = {};
+        }
+
+        let server = TACTIC.get();
+        let ret = await server.p_execute_cmd( cmd, kwargs )
+        let info = ret.info;
+        let config = info.config;
+
+        // convert to AGgrid definitions
+        let definitions = spt.react.Config(config, {
+            table_ref: ref
+        });
+
+        return definitions;
+    }
+
+
 
 
 
@@ -219,7 +252,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
 
-    const build_column_defs = (new_element_names) => {
+    const build_column_defs = (new_element_names, definitions) => {
         let column_defs = props.column_defs;
         if (column_defs) {
             return column_defs;
@@ -239,8 +272,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
             },
         ]
 
+
+
         new_element_names.forEach( element => {
-            let column_def = props.element_definitions[element];
+            let column_def = definitions[element];
             if (!column_def) {
                 column_def = {
                     field: element,
@@ -298,7 +333,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 ref={edit_modal_ref}
                 on_insert={insert_item}
                 element_names={props.element_names}
-                element_definitions={props.element_definitions}
+                element_definitions={element_definitions}
             />
 
             <EditModal
