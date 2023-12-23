@@ -176,7 +176,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
             new_sobjects.forEach( item => {
                 data.push(item);
             } )
-            set_data([...data]);
+            //grid_ref.current.refresh_rows();
 
         } )
         .catch( e => {
@@ -883,6 +883,7 @@ const SimpleCellRenderer = (params) => {
     el.appendChild(inner);
     //inner.setAttribute("class", "resource-cell-inner");
     inner.style.width = "100%";
+    inner.style.height = "100%";
     inner.style.padding = "0px 3px";
 
 

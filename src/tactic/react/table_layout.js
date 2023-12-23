@@ -121,7 +121,6 @@ const TableLayout = React.forwardRef((props, ref) => {
       new_sobjects.forEach(item => {
         data.push(item);
       });
-      set_data([...data]);
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
@@ -601,6 +600,7 @@ const SimpleCellRenderer = params => {
   let inner = document.createElement("div");
   el.appendChild(inner);
   inner.style.width = "100%";
+  inner.style.height = "100%";
   inner.style.padding = "0px 3px";
   if (true) {
     let icon = document.createElement("i");

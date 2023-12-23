@@ -116,7 +116,24 @@ class BaseElementWdg():
         return
 
     def execute(self, data):
-        return
+        column = self.config.get("column")
+
+        if name.find("->") != -1:
+            if not column:
+                column = name
+            parts = name.split("->")
+            name = parts[1]
+
+
+        if not column:
+            column = name
+
+        try:
+            value = sobject.get_value(column)
+        except:
+            value = "N/A"
+        sobject_dict[name] = value
+
 
 
 class BaseEditElementWdg():

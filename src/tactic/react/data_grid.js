@@ -226,8 +226,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       singleClickEdit: props.single_click == true ? true : false,
       suppressClickEdit: props.suppress_click == true ? true : false,
       suppressRowClickSelection: true,
-      headerHeight: props.header_height || "25px",
-      groupHeaderHeight: "20px"
+      headerHeight: props.header_height || 25,
+      groupHeaderHeight: 20
     };
     if (props.enable_undo || props.on_undo) {
       gridOptions.undoRedoCellEditing = true;
