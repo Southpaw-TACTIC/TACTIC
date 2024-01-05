@@ -57,8 +57,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         clear_filters() {
             clear_filters();
         },
-        export_csv() {
-            export_csv();
+        export_csv(params) {
+            export_csv(params);
         }
     }))
 
@@ -167,14 +167,33 @@ const DataGrid = React.forwardRef( (props, ref) => {
         return columns;
     }
 
-    const export_csv = () => {
-        let params = {
-            processCellCallback: (cell) => {
+
+    const export_csv = (params) => {
+
+        if (!params) {
+            params = {};
+        }
+
+        if (!params.processCellCallback) {
+            params[processCellCallback] = (cell) => {
                 return cell.value;
             }
-        };
+        }
+
+        /*
+        if (!params.processHeaderCallback) {
+
+            params[processHeaderCallback] = (cell) => {
+                let column = cell.column.collId;
+                console.log("column: ", column);
+            }
+        }
+        */
+
         grid_options.api.exportDataAsCsv(params);
     }
+
+
 
     const redrawRows = (nodes) => {
         setTimeout( () => {
@@ -306,7 +325,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
           // default col def properties get applied to all columns
           defaultColDef: {sortable: true, filter: true},
 
-          rowSelection: 'multiple', // allow rows to be selected
+          rowSelection: props.row_selection || 'multiple', // allow rows to be selected
           animateRows: true, // have rows animate to new positions when sorted
 
           //paginationAutoPageSize: true,
@@ -325,8 +344,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
           // while this is the behvaior we want, it does not behave well with selects
           //stopEditingWhenCellsLoseFocus: true,
         
-          headerHeight: "25px",
-          groupHeaderHeight: "20px"
+          headerHeight: props.header_height || 25,
+          groupHeaderHeight: 20
 
         };
 

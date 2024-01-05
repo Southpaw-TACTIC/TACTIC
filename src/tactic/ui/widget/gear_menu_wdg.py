@@ -433,7 +433,7 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
 
         access_keys_dict = self.get_access_keys_dict()
         label_list = []
-        print(access_keys_dict)
+        #print(access_keys_dict)
         if access_keys_dict.get('Edit'):
             label_list = access_keys_dict['Edit']
 
