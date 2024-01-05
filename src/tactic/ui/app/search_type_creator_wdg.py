@@ -1559,7 +1559,8 @@ class SearchTypeCreatorCmd(Command):
             columns.insert(0, "preview")
 
         # remove some of the defaults columns
-        columns.remove("id")
+        if 'id' in columns:
+            columns.remove("id")
         if 's_status' in columns:
             columns.remove("s_status")
         if 'login' in columns:
@@ -1571,7 +1572,10 @@ class SearchTypeCreatorCmd(Command):
 
         self.show_code = False
         if not self.show_code:
-            columns.remove("code")
+            try:
+                columns.remove("code")
+            except:
+                pass
 
 
         if self.has_preview:
