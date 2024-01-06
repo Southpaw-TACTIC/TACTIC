@@ -180,15 +180,23 @@ const DataGrid = React.forwardRef( (props, ref) => {
             }
         }
 
-        /*
         if (!params.processHeaderCallback) {
-
-            params[processHeaderCallback] = (cell) => {
-                let column = cell.column.collId;
-                console.log("column: ", column);
+            params.processHeaderCallback = (cell) => {
+                let column = cell.column.colId;
+                try {
+                    let parts = column.split("-");
+                    if (parts.length != 3) {
+                        throw("Not a date");
+                    }
+                    let date = Date.parse(column);
+                    return column;
+                }
+                catch(e) {
+                    // return display name
+                    return cell.columnApi.getDisplayNameForColumn(params.column, null);
+                }
             }
         }
-        */
 
         grid_options.api.exportDataAsCsv(params);
     }
