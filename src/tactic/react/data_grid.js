@@ -122,13 +122,6 @@ const DataGrid = React.forwardRef((props, ref) => {
         return cell.value;
       };
     }
-    if (!params.processHeaderCallback) {
-      params[processHeaderCallback] = cell => {
-        let column = cell.column.collId;
-        console.log("column: ", column);
-        return "cow";
-      };
-    }
     grid_options.api.exportDataAsCsv(params);
   };
   const redrawRows = nodes => {
@@ -233,8 +226,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       singleClickEdit: props.single_click == true ? true : false,
       suppressClickEdit: props.suppress_click == true ? true : false,
       suppressRowClickSelection: true,
-      headerHeight: "25px",
-      groupHeaderHeight: "20px"
+      headerHeight: props.header_height || 25,
+      groupHeaderHeight: 20
     };
     if (props.enable_undo || props.on_undo) {
       gridOptions.undoRedoCellEditing = true;

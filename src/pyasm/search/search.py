@@ -2153,6 +2153,15 @@ class Search(Base):
             return None
 
 
+    def get_sobject_dicts(cls, sobjects, columns=None):
+        sobjects_list = []
+        for sobject in sobjects:
+            sobject_dict = sobject.get_sobject_dict(columns, mode="fast")
+            sobjects_list.append(sobject_dict)
+        return sobjects_list
+    get_sobject_dicts = classmethod(get_sobject_dicts)
+
+
 
     def get_count(self, no_exception=False):
         '''Get the number of sobjects that this search will retrieve'''
@@ -6003,6 +6012,7 @@ class SObject(object):
         result['__search_key__'] = SearchKey.build_by_sobject(self, use_id=use_id)
         result['__search_type__'] = self.get_base_search_type()
         return result
+
 
 
     def is_day_column(col):

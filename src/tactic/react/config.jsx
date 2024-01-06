@@ -2,6 +2,7 @@ const useEffect = React.useEffect;
 const useState = React.useState;
 const useRef = React.useRef;
 
+const Common = spt.react.Common;
 const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
@@ -71,6 +72,8 @@ const Xon_cell_value_changed = params => {
 
 
 
+
+
 const Config = (config, options) => {
 
     let cell_value_changed = options.cell_value_changed;
@@ -80,7 +83,6 @@ const Config = (config, options) => {
     }
 
     let table_ref = options.table_ref;
-
 
 
     // use these definition types as a starting point
@@ -105,6 +107,7 @@ const Config = (config, options) => {
             cellRenderer: SimpleCellRenderer,
         }
     }
+
 
 
     // convert to config_def data
@@ -147,6 +150,9 @@ const Config = (config, options) => {
         if (title) {
             config_def["headerName"] = title;
         }
+        else {
+            config_def["headerName"] = Common.capitalize(name);
+        }
 
         if (pinned) {
             config_def["pinned"] = pinned;
@@ -177,7 +183,6 @@ const Config = (config, options) => {
                 values: values,
             }
 
-            config_def.cellEditor = SelectEditor;
             config_def.cellEditorParams = params;
             config_def.cellRendererParams = params;
 
@@ -227,7 +232,20 @@ const Config = (config, options) => {
             config_def.cellRendererParams = params;
         }
 
+
+
+        // handle the display
+        let cell_renderer = config_item.cell_renderer;
+        if (cell_renderer) {
+            config_def.cellRenderer = eval(cell_renderer)
+        }
+
+
+
+
     } );
+
+
 
     return config_defs;
 

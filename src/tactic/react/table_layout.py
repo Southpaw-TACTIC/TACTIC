@@ -55,9 +55,12 @@ class TableSaveCmd(Command):
     def get_config(self):
 
         config_class = self.kwargs.get("config_handler")
+        if not config_class:
+            return []
 
         handler = Common.create_from_class_path(config_class)
-        config = handler.get_config()
+        config = handler.get_full_config()
+
 
         return config
        
