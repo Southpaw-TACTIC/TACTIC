@@ -169,6 +169,10 @@ const Config = (config, options) => {
       }
       config_def.cellRendererParams = params;
     }
+    let cell_renderer = config_item.cell_renderer;
+    if (cell_renderer) {
+      config_def.cellRenderer = eval(cell_renderer);
+    }
   });
   return config_defs;
 };

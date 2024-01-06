@@ -85,7 +85,6 @@ const Config = (config, options) => {
     let table_ref = options.table_ref;
 
 
-
     // use these definition types as a starting point
     let definition_types = {
         simple: {
@@ -233,7 +232,20 @@ const Config = (config, options) => {
             config_def.cellRendererParams = params;
         }
 
+
+
+        // handle the display
+        let cell_renderer = config_item.cell_renderer;
+        if (cell_renderer) {
+            config_def.cellRenderer = eval(cell_renderer)
+        }
+
+
+
+
     } );
+
+
 
     return config_defs;
 
