@@ -87,20 +87,29 @@ class TableSaveCmd(Command):
             search_key = update.get("search_key")
             sobject = Search.get_by_search_key(search_key)
 
+
             column = update.get("column")
             value = update.get("value")
 
             update_column = column
 
-            config = configs.get(column)
-            if config:
+            config = configs.get(column) or {"name": column}
+            edit = config.get("edit")
+
+            if edit:
+                edit_handler = Common.create_from_class_path(edit)
+                edit_handler.update(sobject, update)
+
+
+            else:
                 update_column = config.get("column") or config.get("name")
+                if value == "":
+                    sobject.set_value(update_column, "NULL", op="is", quoted=False)
+
+                sobject.set_value(update_column, value)
 
 
-            if value == "":
-                sobject.set_value(update_column, "NULL", op="is", quoted=False)
 
-            sobject.set_value(update_column, value)
             sobject.commit()
 
             sobject_dict = sobject.get_sobject_dict()

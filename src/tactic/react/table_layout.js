@@ -75,12 +75,14 @@ const TableLayout = React.forwardRef((props, ref) => {
     let ret = await server.p_execute_cmd(cmd, kwargs);
     let info = ret.info;
     let config = info.config;
+
     let definitions = spt.react.Config(config, {
       table_ref: ref
     });
     return definitions;
   };
   const save = (item, column) => {
+
     let selected = grid_ref.current.get_selected_nodes();
     let items = [];
     if (selected.length) {
@@ -118,6 +120,7 @@ const TableLayout = React.forwardRef((props, ref) => {
       let info = ret.info;
       let updated_sobjects = info.updated_sobjects;
       let new_sobjects = info.new_sobjects;
+
       new_sobjects.forEach(item => {
         data.push(item);
       });
@@ -126,6 +129,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     });
   };
   const insert_item = item => {
+
     let cmd = props.save_cmd;
     if (!cmd) {
       cmd = "tactic.react.EditSaveCmd";
@@ -152,10 +156,12 @@ const TableLayout = React.forwardRef((props, ref) => {
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let info = ret.info;
       let sobjects = info.sobjects || [];
+
       sobjects.forEach(item => {
         data.push(item);
       });
       set_data([...data]);
+
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
@@ -173,6 +179,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     if (!new_element_names) {
       new_element_names = element_names;
     }
+    if (!definitions) {
+      definitions = element_definitions;
+    }
     column_defs = [{
       field: '',
       maxWidth: 50,
@@ -182,7 +191,10 @@ const TableLayout = React.forwardRef((props, ref) => {
       pinned: "left"
     }];
     new_element_names.forEach(element => {
-      let column_def = definitions[element];
+      let column_def;
+      try {
+        column_def = definitions[element];
+      } catch (e) {}
       if (!column_def) {
         column_def = {
           field: element,
@@ -313,6 +325,7 @@ const EditModal = React.forwardRef((props, ref) => {
   const onchange = e => {
     let name = e.name;
     let value = e.target.value;
+
     item[name] = value;
   };
   return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
@@ -364,9 +377,11 @@ const EditModal = React.forwardRef((props, ref) => {
         onchange: onchange
       }, definition));
     }
+
     return React.createElement(TextField, {
       key: index,
-      label: Common.capitalize(element_name),
+      label: Common.capitalize(element_name)
+      ,
       size: "small",
       variant: "outlined",
       defaultValue: item[element_name],
@@ -436,6 +451,7 @@ class SelectEditor {
       },
       onChange: e => {
         this.value = e.target.value;
+
         e.name = name;
         if (params.onchange) {
           params.onchange(e);
@@ -459,13 +475,16 @@ class SelectEditor {
   getEl() {
     return this.el;
   }
+
   getGui() {
     this.root.render(this.el);
     return this.input;
   }
+
   getValue() {
     return this.value;
   }
+
   afterGuiAttached() {}
 }
 const SelectEditorWdg = props => {
@@ -506,6 +525,7 @@ class InputEditor {
         fontSize: "0.75rem",
         padding: "3px 3px"
       };
+
       style.padding = "0px 15px";
     } else {
       el_style = {};
@@ -525,6 +545,7 @@ class InputEditor {
       },
       onChange: e => {
         this.value = e.target.value;
+
         e.name = name;
         if (params.onchange) {
           params.onchange(e);
@@ -547,12 +568,14 @@ class InputEditor {
     this.root.render(this.el);
     return this.input;
   }
+
   getValue() {
     if (this.mode == "date") {
       this.value = Date.parse(this.value);
     }
     return this.value;
   }
+
   afterGuiAttached() {
     setTimeout(() => {
       let x = document.id(this.input);
@@ -581,28 +604,68 @@ const InputEditorWdg = props => {
 const SimpleCellRenderer = params => {
   let value = params.value;
   let label = value;
+  let onClick = params.onClick;
+  let mode = params.mode;
+  let renderer = params.renderer;
+  let editable = params.colDef.editable;
   if (label == null) {
     label = "";
   }
-  let mode = params.mode;
-  let onClick = params.onClick;
-  let values = params.values;
-  if (values != null) {
-    let labels = params.labels;
-    let index = values.indexOf(value);
-    if (index != -1) {
-      label = labels[index];
+  if (mode == "date") {
+    try {
+      let date = Date.parse(value);
+      let day = date.getDate() + "";
+      let month = date.getMonth() + 1 + "";
+      let year = date.getFullYear() + "";
+      label = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+    } catch (e) {
+      label = "";
+    }
+  } else {
+    let values = params.values;
+    if (values != null) {
+      let labels = params.labels;
+      let index = values.indexOf(value);
+      if (index != -1) {
+        label = labels[index];
+      }
     }
   }
   let colors = params.colors || {};
+
   let el = document.createElement("div");
-  el.setAttribute("class", "resource-cell");
-  let inner = document.createElement("div");
-  el.appendChild(inner);
-  inner.style.width = "100%";
-  inner.style.height = "100%";
-  inner.style.padding = "0px 3px";
-  if (true) {
+  let inner;
+  if (renderer) {
+    inner = renderer(params);
+    el.appendChild(inner);
+  } else {
+    inner = document.createElement("div");
+    el.appendChild(inner);
+    inner.style.width = "100%";
+    inner.style.height = "100%";
+    inner.style.padding = "0px 3px";
+
+    if (params.mode == "color") {
+      inner.style.background = value;
+    }
+    let color = colors[value];
+    if (color) {
+      inner.style.background = color;
+    }
+    if (typeof value != "undefined") {
+      inner.appendChild(document.createTextNode(label));
+      if (onClick) {
+        inner.style.textDecoration = "underline";
+        inner.style.cursor = "pointer";
+
+        inner.addEventListener("click", e => {
+          onClick(params);
+        });
+      }
+    }
+  }
+
+  if (editable) {
     let icon = document.createElement("i");
     el.appendChild(icon);
     icon.classList.add("fas");
@@ -612,7 +675,7 @@ const SimpleCellRenderer = params => {
     icon.style.display = "none";
     icon.style.position = "absolute";
     icon.style.opacity = 0.4;
-    icon.style.right = "5px";
+    icon.style.right = "-5px";
     icon.style.top = "-3px";
     icon.style.fontSize = "0.8rem";
     icon.addEventListener("click", e => {
@@ -628,23 +691,6 @@ const SimpleCellRenderer = params => {
     el.addEventListener("mouseleave", e => {
       icon.style.display = "none";
     });
-  }
-  if (params.mode == "color") {
-    inner.style.background = value;
-  }
-  let color = colors[value];
-  if (color) {
-    inner.style.background = color;
-  }
-  if (typeof value != "undefined") {
-    inner.appendChild(document.createTextNode(label));
-    if (onClick) {
-      inner.style.textDecoration = "underline";
-      inner.style.cursor = "pointer";
-      inner.addEventListener("click", e => {
-        onClick(params);
-      });
-    }
   }
   return el;
 };
@@ -771,6 +817,7 @@ const ColumnCreateModal = React.forwardRef((props, ref) => {
     }
   }, "Create"))));
 });
+
 spt.react.TableLayout = TableLayout;
 spt.react.EditModal = EditModal;
 spt.react.SelectEditor = SelectEditor;

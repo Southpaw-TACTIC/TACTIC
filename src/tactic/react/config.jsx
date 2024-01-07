@@ -128,7 +128,9 @@ const Config = (config, options) => {
         else if (element_type == "text") {
             definition_type = "simple";
         }
-
+        else if (!element_type) {
+            definition_type = "simple";
+        }
 
 
 
@@ -143,6 +145,8 @@ const Config = (config, options) => {
 
         let config_def = {...definition_types[definition_type]};
         config_defs[name] = config_def;
+
+
 
         config_def["resizable"] = true;
 
@@ -205,12 +209,30 @@ const Config = (config, options) => {
             }
             else if (element_type == "date") {
                 format = "date";
+
+                config_def.valueGetter = params => {
+                    let column = params.column.colId;
+                    let value = params.data[column];
+                    if (value) {
+                        try {
+                            let date = Date.parse(value);
+                            let day = date.getDate() + "";
+                            let month = (date.getMonth() + 1) + "";
+                            let year = date.getFullYear() + "";
+                            value = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+                        }
+                        catch(e) {
+                            value = null;
+                        }
+                    }
+                    return value;
+                }
             }
 
 
             let params = {
                 table_ref: table_ref,
-                mode: format
+                mode: format,
             }
 
             let editable = config_item.editable;
@@ -235,13 +257,18 @@ const Config = (config, options) => {
 
 
         // handle the display
-        let cell_renderer = config_item.cell_renderer;
+        let cell_renderer = config_item.renderer;
         if (cell_renderer) {
-            config_def.cellRenderer = eval(cell_renderer)
+            try {
+                // see if there is a component defined for this
+                config_def.cellRenderer = eval(cell_renderer);
+            }
+            catch(e) {
+                // otherwise it is accessed through a named string
+                config_def.renderer = cell_renderer;
+            }
+
         }
-
-
-
 
     } );
 

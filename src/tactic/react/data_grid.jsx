@@ -174,12 +174,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
             params = {};
         }
 
-        if (!params.processCellCallback) {
-            params[processCellCallback] = (cell) => {
-                return cell.value;
-            }
-        }
-
         if (!params.processHeaderCallback) {
             params.processHeaderCallback = (cell) => {
                 let column = cell.column.colId;

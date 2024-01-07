@@ -148,3 +148,9 @@ class BaseEditElementWdg():
     def preprocess(self):
         pass
 
+
+
+    def update(self, sobject, update):
+        pass
+
+

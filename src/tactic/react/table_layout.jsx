@@ -262,6 +262,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
             new_element_names = element_names;
         }
 
+        if (!definitions) {
+            definitions = element_definitions;
+        }
+
 
         column_defs = [
             { field: '', maxWidth: 50,
@@ -273,9 +277,12 @@ const TableLayout = React.forwardRef( (props, ref) => {
         ]
 
 
-
         new_element_names.forEach( element => {
-            let column_def = definitions[element];
+            let column_def;
+            try {
+                column_def = definitions[element];
+            } catch(e) {}
+
             if (!column_def) {
                 column_def = {
                     field: element,
@@ -857,38 +864,91 @@ const SimpleCellRenderer = (params) => {
 
     let value = params.value;
     let label = value;
+    let onClick = params.onClick;
+    let mode = params.mode;
+
+    let renderer = params.renderer;
+    let editable = params.colDef.editable;
+
     if (label == null) {
         label = "";
     }
 
-    let mode = params.mode;
+    if (mode == "date") {
+        try {
+            let date = Date.parse(value);
+            let day = date.getDate() + "";
+            let month = (date.getMonth() + 1) + "";
+            let year = date.getFullYear() + "";
+            label = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+        }
+        catch(e) {
+            label = "";
+        }
 
-    let onClick = params.onClick;
-
-    let values = params.values;
-    if (values != null) {
-        let labels = params.labels;
-        let index = values.indexOf(value);
-        if (index != -1) {
-            label = labels[index];
+    }
+    else {
+        let values = params.values;
+        if (values != null) {
+            let labels = params.labels;
+            let index = values.indexOf(value);
+            if (index != -1) {
+                label = labels[index];
+            }
         }
     }
 
+
+
     let colors = params.colors || {};
 
-    let el = document.createElement("div");
-    el.setAttribute("class", "resource-cell");
 
-    let inner = document.createElement("div");
-    el.appendChild(inner);
-    //inner.setAttribute("class", "resource-cell-inner");
-    inner.style.width = "100%";
-    inner.style.height = "100%";
-    inner.style.padding = "0px 3px";
+    // default behavior
+    let el = document.createElement("div");
+    let inner;
+
+    if (renderer) {
+        inner = renderer(params);
+        el.appendChild(inner);
+    }
+    else {
+        inner = document.createElement("div");
+        el.appendChild(inner);
+        inner.style.width = "100%";
+        inner.style.height = "100%";
+        inner.style.padding = "0px 3px";
+
+        // if the mode is color, the set the background color
+        if (params.mode == "color") {
+            inner.style.background = value;
+        }
+
+        let color = colors[value];
+        if (color) {
+            inner.style.background = color;
+        }
+
+
+        if (typeof(value) != "undefined") {
+
+            inner.appendChild( document.createTextNode(label) );
+            if (onClick) {
+                inner.style.textDecoration = "underline";
+                inner.style.cursor = "pointer";
+
+                // provide a link
+                inner.addEventListener( "click", e => {
+                    onClick(params);
+                } )
+            }
+
+        }
+
+    }
 
 
     // Edit icon
-    if (true) {
+    if (editable) {
         let icon = document.createElement("i");
         el.appendChild(icon);
         icon.classList.add("fas");
@@ -899,7 +959,7 @@ const SimpleCellRenderer = (params) => {
         icon.style.display = "none";
         icon.style.position = "absolute";
         icon.style.opacity = 0.4;
-        icon.style.right = "5px";
+        icon.style.right = "-5px";
         icon.style.top = "-3px";
         icon.style.fontSize = "0.8rem";
 
@@ -917,32 +977,6 @@ const SimpleCellRenderer = (params) => {
         el.addEventListener( "mouseleave", e => {
             icon.style.display = "none";
         } );
-    }
-
-    // if the mode is color, the set the background color
-    if (params.mode == "color") {
-        inner.style.background = value;
-    }
-
-    let color = colors[value];
-    if (color) {
-        inner.style.background = color;
-    }
-
-
-    if (typeof(value) != "undefined") {
-
-        inner.appendChild( document.createTextNode(label) );
-        if (onClick) {
-            inner.style.textDecoration = "underline";
-            inner.style.cursor = "pointer";
-
-            // provide a link
-            inner.addEventListener( "click", e => {
-                onClick(params);
-            } )
-        }
-
     }
 
     return el;
