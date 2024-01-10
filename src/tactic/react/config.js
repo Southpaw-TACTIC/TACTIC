@@ -8,42 +8,14 @@ const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
 const PreviewCellRenderer = spt.react.PreviewCellRenderer;
+
 const on_cell_value_changed = params => {
   let table_ref = params.table_ref;
   let data = params.data;
   let column = params.column.colId;
+
+  data[column] = params.newValue;
   table_ref.current.save(data, column);
-};
-const Xon_cell_value_changed = params => {
-  let table_ref = params.table_ref;
-  let item = params.data;
-  let column = params.column.colId;
-  let selected = [];
-  let items = [];
-  if (selected.length) {
-    selected.forEach(selected_item => {
-      items.push(selected_item.data);
-    });
-  } else {
-    items.push(item);
-  }
-  let cmd = "tactic.react.TableSaveCmd";
-  updates = [];
-  items.forEach(item => {
-    let mode = item.code ? "edit" : "insert";
-    let update = {
-      search_key: item.__search_key__,
-      column: column
-    };
-    updates.push(update);
-  });
-  let kwargs = {
-    updates: updates
-  };
-  let server = TACTIC.get();
-  server.p_execute_cmd(cmd, kwargs).then(ret => {}).catch(e => {
-    alert("TACTIC ERROR: " + e);
-  });
 };
 const Config = (config, options) => {
   let cell_value_changed = options.cell_value_changed;
@@ -51,6 +23,7 @@ const Config = (config, options) => {
     cell_value_changed = on_cell_value_changed;
   }
   let table_ref = options.table_ref;
+
   let definition_types = {
     simple: {
       width: 150,
@@ -72,6 +45,7 @@ const Config = (config, options) => {
       cellRenderer: SimpleCellRenderer
     }
   };
+
   let config_defs = {};
   config.forEach(config_item => {
     let element_type = config_item.type;
@@ -83,6 +57,8 @@ const Config = (config, options) => {
     } else if (element_type == "date") {
       definition_type = "simple";
     } else if (element_type == "text") {
+      definition_type = "simple";
+    } else if (!element_type) {
       definition_type = "simple";
     }
     let name = config_item.name;
@@ -144,13 +120,29 @@ const Config = (config, options) => {
         format = "color";
       } else if (element_type == "date") {
         format = "date";
+        config_def.valueGetter = params => {
+          let column = params.column.colId;
+          let value = params.data[column];
+          if (value) {
+            try {
+              let date = Date.parse(value);
+              let day = date.getDate() + "";
+              let month = date.getMonth() + 1 + "";
+              let year = date.getFullYear() + "";
+              value = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+            } catch (e) {
+              value = null;
+            }
+          }
+          return value;
+        };
       }
       let params = {
         table_ref: table_ref,
         mode: format
       };
       let editable = config_item.editable;
-      if (editable) {
+      if (editable != false || editable != "false") {
         config_def.editable = true;
         if (format) {
           config_def.cellDataType = format;
@@ -169,11 +161,17 @@ const Config = (config, options) => {
       }
       config_def.cellRendererParams = params;
     }
-    let cell_renderer = config_item.cell_renderer;
+
+    let cell_renderer = config_item.renderer;
     if (cell_renderer) {
-      config_def.cellRenderer = eval(cell_renderer);
+      try {
+        config_def.cellRenderer = eval(cell_renderer);
+      } catch (e) {
+        config_def.renderer = cell_renderer;
+      }
     }
   });
   return config_defs;
 };
+
 spt.react.Config = Config;

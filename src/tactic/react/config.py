@@ -116,6 +116,9 @@ class BaseElementWdg():
         return
 
     def execute(self, data):
+
+        sobject = get_current_sobject()
+
         column = self.config.get("column")
 
         if name.find("->") != -1:
@@ -147,4 +150,10 @@ class BaseEditElementWdg():
 
     def preprocess(self):
         pass
+
+
+
+    def update(self, sobject, update):
+        pass
+
 

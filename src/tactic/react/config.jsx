@@ -11,65 +11,16 @@ const PreviewCellRenderer = spt.react.PreviewCellRenderer;
 
 // default save implementation
 const on_cell_value_changed = params => {
-    //console.log("params: ", params);
+
     let table_ref = params.table_ref;
     let data = params.data;
     let column = params.column.colId;
+
+    //console.log("params: ", params);
+    data[column] = params.newValue;
+
     table_ref.current.save(data, column);
 }
-
-
-
-const Xon_cell_value_changed = params => {
-
-    let table_ref = params.table_ref;
-
-    let item = params.data;
-    let column = params.column.colId;
-
-
-    //let selected = grid_ref.current.get_selected_nodes();
-    let selected = [];
-    let items = [];
-    if (selected.length) {
-        selected.forEach( selected_item => {
-            items.push(selected_item.data);
-        } )
-    }
-    else {
-        items.push(item);
-    }
-
-
-    //let cmd = params.save_cmd;
-    let cmd = "tactic.react.TableSaveCmd";
-
-    // FIXME: should call save cmd just once
-    updates = [];
-    items.forEach( item => {
-        let mode = item.code ? "edit" : "insert";
-        let update = {
-            search_key: item.__search_key__,
-            column: column,
-        };
-        updates.push(update);
-    } )
-
-
-    let kwargs = {
-        updates: updates
-    }
-
-    let server = TACTIC.get();
-    server.p_execute_cmd(cmd, kwargs)
-    .then( ret => {
-        // TODO: refresh nodes
-    } )
-    .catch( e => {
-        alert("TACTIC ERROR: " + e);
-    } )
-}
-
 
 
 
@@ -128,7 +79,9 @@ const Config = (config, options) => {
         else if (element_type == "text") {
             definition_type = "simple";
         }
-
+        else if (!element_type) {
+            definition_type = "simple";
+        }
 
 
 
@@ -143,6 +96,8 @@ const Config = (config, options) => {
 
         let config_def = {...definition_types[definition_type]};
         config_defs[name] = config_def;
+
+
 
         config_def["resizable"] = true;
 
@@ -188,7 +143,6 @@ const Config = (config, options) => {
 
             config_def.editable = true;
 
-            //config_def.onCellValueChanged = cell_value_changed;
             config_def.onCellValueChanged = e => {
                 let p = {...e, ...params}
                 return cell_value_changed(p);
@@ -205,16 +159,34 @@ const Config = (config, options) => {
             }
             else if (element_type == "date") {
                 format = "date";
+
+                config_def.valueGetter = params => {
+                    let column = params.column.colId;
+                    let value = params.data[column];
+                    if (value) {
+                        try {
+                            let date = Date.parse(value);
+                            let day = date.getDate() + "";
+                            let month = (date.getMonth() + 1) + "";
+                            let year = date.getFullYear() + "";
+                            value = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+                        }
+                        catch(e) {
+                            value = null;
+                        }
+                    }
+                    return value;
+                }
             }
 
 
             let params = {
                 table_ref: table_ref,
-                mode: format
+                mode: format,
             }
 
             let editable = config_item.editable;
-            if (editable) {
+            if (editable != false || editable != "false") {
                 config_def.editable = true;
                 if (format) {
                     config_def.cellDataType = format;
@@ -235,13 +207,18 @@ const Config = (config, options) => {
 
 
         // handle the display
-        let cell_renderer = config_item.cell_renderer;
+        let cell_renderer = config_item.renderer;
         if (cell_renderer) {
-            config_def.cellRenderer = eval(cell_renderer)
+            try {
+                // see if there is a component defined for this
+                config_def.cellRenderer = eval(cell_renderer);
+            }
+            catch(e) {
+                // otherwise it is accessed through a named string
+                config_def.renderer = cell_renderer;
+            }
+
         }
-
-
-
 
     } );
 

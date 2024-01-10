@@ -41,6 +41,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
         },
         get_grid_ref() {
             return grid_ref;
+        },
+        export_csv() {
+            grid_ref.current.export_csv();
         }
     } ) )
   
@@ -262,6 +265,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
             new_element_names = element_names;
         }
 
+        if (!definitions) {
+            definitions = element_definitions;
+        }
+
 
         column_defs = [
             { field: '', maxWidth: 50,
@@ -273,9 +280,12 @@ const TableLayout = React.forwardRef( (props, ref) => {
         ]
 
 
-
         new_element_names.forEach( element => {
-            let column_def = definitions[element];
+            let column_def;
+            try {
+                column_def = definitions[element];
+            } catch(e) {}
+
             if (!column_def) {
                 column_def = {
                     field: element,
@@ -394,8 +404,13 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     onClick={ e => {
                         edit_modal_ref.current.show()
                     } }
-                >New {props.name}
+                >New
                 </Button>
+
+                <TableLayoutActionMenu
+                    grid_ref={grid_ref}
+                />
+
             </div>
         </>
         )
@@ -424,6 +439,70 @@ const TableLayout = React.forwardRef( (props, ref) => {
     )
 
 } )
+
+
+
+const TableLayoutActionMenu = props => {
+
+    //
+    // Action Menu
+    //
+    const [action_anchorEl, action_setAnchorEl] = React.useState(null);
+    const action_is_open = Boolean(action_anchorEl);
+
+    const action_handle_click = (event) => {
+        action_setAnchorEl(event.currentTarget);
+    };
+    const action_handle_close =  async () => {
+        action_setAnchorEl(null);
+    }
+    const action_handle_select = async () => {
+        action_setAnchorEl(null);
+    };
+
+
+    return (
+    <div style={{marginRight: "5px"}}>
+      <Button
+        variant="outlined"
+        id="action-button"
+        onClick={action_handle_click}
+      >
+        ACTION
+        <i className="fa-xs fas fa-caret-down"></i>
+      </Button>
+      <Menu
+        id="action-menu"
+        anchorEl={action_anchorEl}
+        open={action_is_open}
+        onClose={action_handle_close}
+      >
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>New</MenuItem>
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>Edit Selected</MenuItem>
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>Export CSV</MenuItem>
+
+
+      </Menu>
+    </div>
+    )
+
+}
+
+
 
 
 
@@ -857,38 +936,91 @@ const SimpleCellRenderer = (params) => {
 
     let value = params.value;
     let label = value;
+    let onClick = params.onClick;
+    let mode = params.mode;
+
+    let renderer = params.renderer;
+    let editable = params.colDef.editable;
+
     if (label == null) {
         label = "";
     }
 
-    let mode = params.mode;
+    if (mode == "date") {
+        try {
+            let date = Date.parse(value);
+            let day = date.getDate() + "";
+            let month = (date.getMonth() + 1) + "";
+            let year = date.getFullYear() + "";
+            label = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+        }
+        catch(e) {
+            label = "";
+        }
 
-    let onClick = params.onClick;
-
-    let values = params.values;
-    if (values != null) {
-        let labels = params.labels;
-        let index = values.indexOf(value);
-        if (index != -1) {
-            label = labels[index];
+    }
+    else {
+        let values = params.values;
+        if (values != null) {
+            let labels = params.labels;
+            let index = values.indexOf(value);
+            if (index != -1) {
+                label = labels[index];
+            }
         }
     }
 
+
+
     let colors = params.colors || {};
 
-    let el = document.createElement("div");
-    el.setAttribute("class", "resource-cell");
 
-    let inner = document.createElement("div");
-    el.appendChild(inner);
-    //inner.setAttribute("class", "resource-cell-inner");
-    inner.style.width = "100%";
-    inner.style.height = "100%";
-    inner.style.padding = "0px 3px";
+    // default behavior
+    let el = document.createElement("div");
+    let inner;
+
+    if (renderer) {
+        inner = renderer(params);
+        el.appendChild(inner);
+    }
+    else {
+        inner = document.createElement("div");
+        el.appendChild(inner);
+        inner.style.width = "100%";
+        inner.style.height = "100%";
+        inner.style.padding = "0px 3px";
+
+        // if the mode is color, the set the background color
+        if (params.mode == "color") {
+            inner.style.background = value;
+        }
+
+        let color = colors[value];
+        if (color) {
+            inner.style.background = color;
+        }
+
+
+        if (typeof(value) != "undefined") {
+
+            inner.appendChild( document.createTextNode(label) );
+            if (onClick) {
+                inner.style.textDecoration = "underline";
+                inner.style.cursor = "pointer";
+
+                // provide a link
+                inner.addEventListener( "click", e => {
+                    onClick(params);
+                } )
+            }
+
+        }
+
+    }
 
 
     // Edit icon
-    if (true) {
+    if (editable) {
         let icon = document.createElement("i");
         el.appendChild(icon);
         icon.classList.add("fas");
@@ -899,7 +1031,7 @@ const SimpleCellRenderer = (params) => {
         icon.style.display = "none";
         icon.style.position = "absolute";
         icon.style.opacity = 0.4;
-        icon.style.right = "5px";
+        icon.style.right = "-5px";
         icon.style.top = "-3px";
         icon.style.fontSize = "0.8rem";
 
@@ -917,32 +1049,6 @@ const SimpleCellRenderer = (params) => {
         el.addEventListener( "mouseleave", e => {
             icon.style.display = "none";
         } );
-    }
-
-    // if the mode is color, the set the background color
-    if (params.mode == "color") {
-        inner.style.background = value;
-    }
-
-    let color = colors[value];
-    if (color) {
-        inner.style.background = color;
-    }
-
-
-    if (typeof(value) != "undefined") {
-
-        inner.appendChild( document.createTextNode(label) );
-        if (onClick) {
-            inner.style.textDecoration = "underline";
-            inner.style.cursor = "pointer";
-
-            // provide a link
-            inner.addEventListener( "click", e => {
-                onClick(params);
-            } )
-        }
-
     }
 
     return el;
