@@ -116,6 +116,9 @@ class BaseElementWdg():
         return
 
     def execute(self, data):
+
+        sobject = get_current_sobject()
+
         column = self.config.get("column")
 
         if name.find("->") != -1:

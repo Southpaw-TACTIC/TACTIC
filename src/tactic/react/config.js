@@ -13,42 +13,9 @@ const on_cell_value_changed = params => {
   let table_ref = params.table_ref;
   let data = params.data;
   let column = params.column.colId;
+
+  data[column] = params.newValue;
   table_ref.current.save(data, column);
-};
-const Xon_cell_value_changed = params => {
-  let table_ref = params.table_ref;
-  let item = params.data;
-  let column = params.column.colId;
-
-  let selected = [];
-  let items = [];
-  if (selected.length) {
-    selected.forEach(selected_item => {
-      items.push(selected_item.data);
-    });
-  } else {
-    items.push(item);
-  }
-
-  let cmd = "tactic.react.TableSaveCmd";
-
-  updates = [];
-  items.forEach(item => {
-    let mode = item.code ? "edit" : "insert";
-    let update = {
-      search_key: item.__search_key__,
-      column: column
-    };
-    updates.push(update);
-  });
-  let kwargs = {
-    updates: updates
-  };
-  let server = TACTIC.get();
-  server.p_execute_cmd(cmd, kwargs).then(ret => {
-  }).catch(e => {
-    alert("TACTIC ERROR: " + e);
-  });
 };
 const Config = (config, options) => {
   let cell_value_changed = options.cell_value_changed;
@@ -138,7 +105,6 @@ const Config = (config, options) => {
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
-
       config_def.onCellValueChanged = e => {
         let p = {
           ...e,
@@ -176,7 +142,7 @@ const Config = (config, options) => {
         mode: format
       };
       let editable = config_item.editable;
-      if (editable) {
+      if (editable != false || editable != "false") {
         config_def.editable = true;
         if (format) {
           config_def.cellDataType = format;

@@ -333,7 +333,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
           //paginationAutoPageSize: true,
           pagination: props.auto_height ? false : true,
 
-          //overlayNoRowsTemplate: "Whatever",
 
           onGridReady: on_grid_ready,
           onFilterChanged: on_filter_changed,
@@ -347,7 +346,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
           //stopEditingWhenCellsLoseFocus: true,
         
           headerHeight: props.header_height || 25,
-          groupHeaderHeight: 20
+          groupHeaderHeight: 20,
+
+          //overlayNoRowsTemplate: "...",
 
         };
 

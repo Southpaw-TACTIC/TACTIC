@@ -33,6 +33,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     },
     get_grid_ref() {
       return grid_ref;
+    },
+    export_csv() {
+      grid_ref.current.export_csv();
     }
   }));
   const [search_type, set_search_type] = useState("");
@@ -278,7 +281,9 @@ const TableLayout = React.forwardRef((props, ref) => {
       onClick: e => {
         edit_modal_ref.current.show();
       }
-    }, "New ", props.name)));
+    }, "New"), React.createElement(TableLayoutActionMenu, {
+      grid_ref: grid_ref
+    })));
   };
   return React.createElement("div", null, React.createElement("div", {
     style: {
@@ -300,6 +305,50 @@ const TableLayout = React.forwardRef((props, ref) => {
     enable_undo: props.enable_undo
   }));
 });
+const TableLayoutActionMenu = props => {
+  const [action_anchorEl, action_setAnchorEl] = React.useState(null);
+  const action_is_open = Boolean(action_anchorEl);
+  const action_handle_click = event => {
+    action_setAnchorEl(event.currentTarget);
+  };
+  const action_handle_close = async () => {
+    action_setAnchorEl(null);
+  };
+  const action_handle_select = async () => {
+    action_setAnchorEl(null);
+  };
+  return React.createElement("div", {
+    style: {
+      marginRight: "5px"
+    }
+  }, React.createElement(Button, {
+    variant: "outlined",
+    id: "action-button",
+    onClick: action_handle_click
+  }, "ACTION", React.createElement("i", {
+    className: "fa-xs fas fa-caret-down"
+  })), React.createElement(Menu, {
+    id: "action-menu",
+    anchorEl: action_anchorEl,
+    open: action_is_open,
+    onClose: action_handle_close
+  }, React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      props.grid_ref.current.export_csv();
+    }
+  }, "New"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      props.grid_ref.current.export_csv();
+    }
+  }, "Edit Selected"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      props.grid_ref.current.export_csv();
+    }
+  }, "Export CSV")));
+};
 const EditModal = React.forwardRef((props, ref) => {
   const [show, set_show] = useState(false);
   const [item, set_item] = useState({});

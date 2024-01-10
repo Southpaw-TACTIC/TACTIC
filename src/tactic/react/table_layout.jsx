@@ -41,6 +41,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
         },
         get_grid_ref() {
             return grid_ref;
+        },
+        export_csv() {
+            grid_ref.current.export_csv();
         }
     } ) )
   
@@ -401,8 +404,13 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     onClick={ e => {
                         edit_modal_ref.current.show()
                     } }
-                >New {props.name}
+                >New
                 </Button>
+
+                <TableLayoutActionMenu
+                    grid_ref={grid_ref}
+                />
+
             </div>
         </>
         )
@@ -431,6 +439,70 @@ const TableLayout = React.forwardRef( (props, ref) => {
     )
 
 } )
+
+
+
+const TableLayoutActionMenu = props => {
+
+    //
+    // Action Menu
+    //
+    const [action_anchorEl, action_setAnchorEl] = React.useState(null);
+    const action_is_open = Boolean(action_anchorEl);
+
+    const action_handle_click = (event) => {
+        action_setAnchorEl(event.currentTarget);
+    };
+    const action_handle_close =  async () => {
+        action_setAnchorEl(null);
+    }
+    const action_handle_select = async () => {
+        action_setAnchorEl(null);
+    };
+
+
+    return (
+    <div style={{marginRight: "5px"}}>
+      <Button
+        variant="outlined"
+        id="action-button"
+        onClick={action_handle_click}
+      >
+        ACTION
+        <i className="fa-xs fas fa-caret-down"></i>
+      </Button>
+      <Menu
+        id="action-menu"
+        anchorEl={action_anchorEl}
+        open={action_is_open}
+        onClose={action_handle_close}
+      >
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>New</MenuItem>
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>Edit Selected</MenuItem>
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>Export CSV</MenuItem>
+
+
+      </Menu>
+    </div>
+    )
+
+}
+
+
 
 
 

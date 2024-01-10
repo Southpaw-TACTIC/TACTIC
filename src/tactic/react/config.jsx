@@ -11,65 +11,16 @@ const PreviewCellRenderer = spt.react.PreviewCellRenderer;
 
 // default save implementation
 const on_cell_value_changed = params => {
-    //console.log("params: ", params);
+
     let table_ref = params.table_ref;
     let data = params.data;
     let column = params.column.colId;
+
+    //console.log("params: ", params);
+    data[column] = params.newValue;
+
     table_ref.current.save(data, column);
 }
-
-
-
-const Xon_cell_value_changed = params => {
-
-    let table_ref = params.table_ref;
-
-    let item = params.data;
-    let column = params.column.colId;
-
-
-    //let selected = grid_ref.current.get_selected_nodes();
-    let selected = [];
-    let items = [];
-    if (selected.length) {
-        selected.forEach( selected_item => {
-            items.push(selected_item.data);
-        } )
-    }
-    else {
-        items.push(item);
-    }
-
-
-    //let cmd = params.save_cmd;
-    let cmd = "tactic.react.TableSaveCmd";
-
-    // FIXME: should call save cmd just once
-    updates = [];
-    items.forEach( item => {
-        let mode = item.code ? "edit" : "insert";
-        let update = {
-            search_key: item.__search_key__,
-            column: column,
-        };
-        updates.push(update);
-    } )
-
-
-    let kwargs = {
-        updates: updates
-    }
-
-    let server = TACTIC.get();
-    server.p_execute_cmd(cmd, kwargs)
-    .then( ret => {
-        // TODO: refresh nodes
-    } )
-    .catch( e => {
-        alert("TACTIC ERROR: " + e);
-    } )
-}
-
 
 
 
@@ -192,7 +143,6 @@ const Config = (config, options) => {
 
             config_def.editable = true;
 
-            //config_def.onCellValueChanged = cell_value_changed;
             config_def.onCellValueChanged = e => {
                 let p = {...e, ...params}
                 return cell_value_changed(p);
@@ -236,7 +186,7 @@ const Config = (config, options) => {
             }
 
             let editable = config_item.editable;
-            if (editable) {
+            if (editable != false || editable != "false") {
                 config_def.editable = true;
                 if (format) {
                     config_def.cellDataType = format;
