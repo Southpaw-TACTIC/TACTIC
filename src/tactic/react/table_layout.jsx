@@ -107,7 +107,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         // convert to AGgrid definitions
         let definitions = spt.react.Config(config, {
-            table_ref: ref
+            table_ref: ref,
+            renderer_params: props.renderer_params
         });
 
         return definitions;
@@ -421,7 +422,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
     return (
     <div>
         <div style={{display: "flex", justifyContent: "space-between"}}>
-            <div style={{fontSize: "1.2rem"}}>{props.name} List</div>
+            <div style={{fontSize: "1.2rem"}}>{props.name}</div>
             { get_shelf() }
         </div>
 

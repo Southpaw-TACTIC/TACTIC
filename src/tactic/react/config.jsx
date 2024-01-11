@@ -138,6 +138,10 @@ const Config = (config, options) => {
                 values: values,
             }
 
+            if (options.renderer_params) {
+                params = {...params, ...options.renderer_params}
+            }
+
             config_def.cellEditorParams = params;
             config_def.cellRendererParams = params;
 
@@ -185,6 +189,12 @@ const Config = (config, options) => {
                 mode: format,
             }
 
+            if (options.renderer_params) {
+                params = {...params, ...options.renderer_params}
+            }
+
+
+
             let editable = config_item.editable;
             if (editable != false || editable != "false") {
                 config_def.editable = true;
@@ -211,13 +221,12 @@ const Config = (config, options) => {
         if (cell_renderer) {
             try {
                 // see if there is a component defined for this
-                config_def.cellRenderer = eval(cell_renderer);
+                config_def.cellRenderer = eval(cell_renderer) || cell_renderer;
             }
             catch(e) {
                 // otherwise it is accessed through a named string
                 config_def.renderer = cell_renderer;
             }
-
         }
 
     } );

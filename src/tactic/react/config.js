@@ -102,6 +102,12 @@ const Config = (config, options) => {
         labels: labels,
         values: values
       };
+      if (options.renderer_params) {
+        params = {
+          ...params,
+          ...options.renderer_params
+        };
+      }
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
@@ -141,6 +147,12 @@ const Config = (config, options) => {
         table_ref: table_ref,
         mode: format
       };
+      if (options.renderer_params) {
+        params = {
+          ...params,
+          ...options.renderer_params
+        };
+      }
       let editable = config_item.editable;
       if (editable != false || editable != "false") {
         config_def.editable = true;
@@ -165,7 +177,7 @@ const Config = (config, options) => {
     let cell_renderer = config_item.renderer;
     if (cell_renderer) {
       try {
-        config_def.cellRenderer = eval(cell_renderer);
+        config_def.cellRenderer = eval(cell_renderer) || cell_renderer;
       } catch (e) {
         config_def.renderer = cell_renderer;
       }

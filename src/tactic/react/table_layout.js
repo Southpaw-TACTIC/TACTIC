@@ -80,7 +80,8 @@ const TableLayout = React.forwardRef((props, ref) => {
     let config = info.config;
 
     let definitions = spt.react.Config(config, {
-      table_ref: ref
+      table_ref: ref,
+      renderer_params: props.renderer_params
     });
     return definitions;
   };
