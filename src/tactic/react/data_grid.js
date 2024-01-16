@@ -248,9 +248,10 @@ const DataGrid = React.forwardRef((props, ref) => {
       suppressRowClickSelection: true,
 
       headerHeight: props.header_height || 25,
-      groupHeaderHeight: 20,
-      overlayNoRowsTemplate: "Nothing to see"
+      groupHeaderHeight: 20
+
     };
+
     if (props.enable_undo || props.on_undo) {
       gridOptions.undoRedoCellEditing = true;
       gridOptions.undoRedoCellEditingLimit = 20;
@@ -407,6 +408,16 @@ const DataGrid = React.forwardRef((props, ref) => {
     });
     return target;
   }
+  const get_height = () => {
+
+    if (props.auto_height) return "";
+    let height = props.height;
+    if (height) {
+      return height;
+    } else {
+      return "calc(100vh - 250px)";
+    }
+  };
   return React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       boxSizing: "border-box",
@@ -419,7 +430,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     style: {
       display: loading ? "none" : "",
       width: "100%",
-      height: props.auto_height ? "" : "calc(100vh - 250px)"
+      height: get_height()
     }
   })));
 });

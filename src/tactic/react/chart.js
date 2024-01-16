@@ -5,6 +5,7 @@ const useState = React.useState;
 const useRef = React.useRef;
 const useReducer = React.useReducer;
 const ROOT_CMD = "spt.modules.workflow.apps.Resource.lib";
+
 const Chart = props => {
   const [loading, set_loading] = useState(true);
   const [name, set_name] = useState("chart" + Math.floor(Math.random() * 100000));

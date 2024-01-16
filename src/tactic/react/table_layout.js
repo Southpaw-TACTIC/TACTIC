@@ -50,7 +50,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     init();
   }, []);
   const init = async () => {
-    let element_names = props.element_names;
+    let element_names = props.element_names || ["code"];
     set_element_names([...element_names]);
     let element_definitions = props.element_definitions;
     if (!element_definitions) {
@@ -78,10 +78,11 @@ const TableLayout = React.forwardRef((props, ref) => {
     let ret = await server.p_execute_cmd(cmd, kwargs);
     let info = ret.info;
     let config = info.config;
+    let renderer_params = info.renderer_params;
 
     let definitions = spt.react.Config(config, {
       table_ref: ref,
-      renderer_params: props.renderer_params
+      renderer_params: props.renderer_params || renderer_params
     });
     return definitions;
   };
@@ -123,7 +124,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let info = ret.info;
       let updated_sobjects = info.updated_sobjects;
-      let new_sobjects = info.new_sobjects;
+      let new_sobjects = info.new_sobjects || [];
 
       new_sobjects.forEach(item => {
         data.push(item);
@@ -286,7 +287,14 @@ const TableLayout = React.forwardRef((props, ref) => {
       grid_ref: grid_ref
     })));
   };
-  return React.createElement("div", null, React.createElement("div", {
+  const get_name = () => {
+    if (props.name) {
+      return props.name;
+    } else {
+      return "TABLE";
+    }
+  };
+  return React.createElement("div", null, props.show_shelf != false && React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between"
@@ -295,13 +303,14 @@ const TableLayout = React.forwardRef((props, ref) => {
     style: {
       fontSize: "1.2rem"
     }
-  }, props.name, " List"), get_shelf()), React.createElement(DataGrid, {
+  }, get_name()), get_shelf()), React.createElement(DataGrid, {
     ref: grid_ref,
-    name: props.name,
+    name: get_name(),
     column_defs: column_defs,
     data: data,
     supress_click: true,
-    auto_height: true,
+    auto_height: false,
+    height: props.height,
     row_height: props.row_height,
     enable_undo: props.enable_undo
   }));
@@ -344,6 +353,10 @@ const TableLayoutActionMenu = props => {
       props.grid_ref.current.export_csv();
     }
   }, "Edit Selected"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+    }
+  }, "Import Data"), React.createElement(MenuItem, {
     onClick: e => {
       action_handle_select();
       props.grid_ref.current.export_csv();
