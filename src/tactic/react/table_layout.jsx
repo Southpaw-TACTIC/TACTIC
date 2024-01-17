@@ -64,7 +64,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
     const init = async () => {
-        let element_names = props.element_names;
+        let element_names = props.element_names || ["code"];
         set_element_names([...element_names]);
 
         let element_definitions = props.element_definitions;
@@ -104,11 +104,12 @@ const TableLayout = React.forwardRef( (props, ref) => {
         let ret = await server.p_execute_cmd( cmd, kwargs )
         let info = ret.info;
         let config = info.config;
+        let renderer_params = info.renderer_params;
 
         // convert to AGgrid definitions
         let definitions = spt.react.Config(config, {
             table_ref: ref,
-            renderer_params: props.renderer_params
+            renderer_params: props.renderer_params || renderer_params
         });
 
         return definitions;
@@ -174,7 +175,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
             let info = ret.info;
             let updated_sobjects = info.updated_sobjects;
-            let new_sobjects = info.new_sobjects;
+            let new_sobjects = info.new_sobjects || [];
 
             // add the new items
             new_sobjects.forEach( item => {
@@ -418,21 +419,35 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
+    const get_name = () => {
+
+        if (props.name) {
+            return props.name;
+        }
+        else {
+            return "TABLE"
+        }
+    }
+
+
 
     return (
     <div>
+        { props.show_shelf != false &&
         <div style={{display: "flex", justifyContent: "space-between"}}>
-            <div style={{fontSize: "1.2rem"}}>{props.name}</div>
+            <div style={{fontSize: "1.2rem"}}>{get_name()}</div>
             { get_shelf() }
         </div>
+        }
 
         <DataGrid
             ref={grid_ref}
-            name={props.name}
+            name={get_name()}
             column_defs={column_defs}
             data={data}
             supress_click={true}
-            auto_height={true}
+            auto_height={false}
+            height={props.height}
             row_height={props.row_height}
             enable_undo={props.enable_undo}
         />
@@ -489,6 +504,13 @@ const TableLayoutActionMenu = props => {
             action_handle_select();
             props.grid_ref.current.export_csv();
         }}>Edit Selected</MenuItem>
+
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+        }}>Import Data</MenuItem>
+
 
 
         <MenuItem onClick={e => {
