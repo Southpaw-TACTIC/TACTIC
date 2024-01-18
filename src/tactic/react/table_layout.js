@@ -264,27 +264,9 @@ const TableLayout = React.forwardRef((props, ref) => {
       onClick: e => {
         grid_ref.current.set_filter("director", "Jil");
       }
-    }, "Filter"), React.createElement(Button, {
-      size: "small",
-      variant: "contained",
-      onClick: e => {
-        let selected = grid_ref.current.get_selected_nodes();
-        if (selected.length == 0) {
-          alert("No items selected");
-          return;
-        }
-        let data = selected[0].data;
-        edit_modal_ref.current.set_item(data);
-        edit_modal_ref.current.show();
-      }
-    }, "Edit"), React.createElement(Button, {
-      size: "small",
-      variant: "contained",
-      onClick: e => {
-        edit_modal_ref.current.show();
-      }
-    }, "New"), React.createElement(TableLayoutActionMenu, {
-      grid_ref: grid_ref
+    }, "Filter"), React.createElement(TableLayoutActionMenu, {
+      grid_ref: grid_ref,
+      edit_modal_ref: edit_modal_ref
     })));
   };
   const get_name = () => {
@@ -327,6 +309,16 @@ const TableLayoutActionMenu = props => {
   const action_handle_select = async () => {
     action_setAnchorEl(null);
   };
+  const open_edit_modal = () => {
+    let selected = props.grid_ref.current.get_selected_nodes();
+    if (selected.length == 0) {
+      alert("No items selected");
+      return;
+    }
+    let data = selected[0].data;
+    props.edit_modal_ref.current.set_item(data);
+    props.edit_modal_ref.current.show();
+  };
   return React.createElement("div", {
     style: {
       marginRight: "5px"
@@ -345,12 +337,12 @@ const TableLayoutActionMenu = props => {
   }, React.createElement(MenuItem, {
     onClick: e => {
       action_handle_select();
-      props.grid_ref.current.export_csv();
+      props.edit_modal_ref.current.show();
     }
   }, "New"), React.createElement(MenuItem, {
     onClick: e => {
       action_handle_select();
-      props.grid_ref.current.export_csv();
+      open_edit_modal();
     }
   }, "Edit Selected"), React.createElement(MenuItem, {
     onClick: e => {
