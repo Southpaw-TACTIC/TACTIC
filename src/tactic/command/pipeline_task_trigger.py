@@ -518,7 +518,12 @@ class TaskCreatorTrigger(Trigger):
         from pyasm.biz import Pipeline, Task
         from pyasm.search import SearchType
 
-        pipeline = Pipeline.get_by_code(pipeline_code)
+        try:
+            pipeline = Pipeline.get_by_code(pipeline_code)
+        except:
+            # if pipeline does not exist
+            pipeline = None
+
         if not pipeline:
             return
 
