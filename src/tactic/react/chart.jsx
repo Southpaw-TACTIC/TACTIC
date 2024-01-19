@@ -10,12 +10,13 @@ const ROOT_CMD = "spt.modules.workflow.apps.Resource.lib";
 
 
 //
-// Periodic Cost Report Report
+// Chart
 //
 
 const Chart = (props) => {
 
     const [loading, set_loading] = useState(true);
+    const [name, set_name] = useState("chart" + Math.floor(Math.random() * 100000));
 
     useEffect( () => {
         init()
@@ -23,7 +24,7 @@ const Chart = (props) => {
 
 
     const init = () => {
-        let container = document.getElementById('myChart');
+        let container = document.getElementById(name);
         if (!container) {
             setTimeout( () => {
                 init();
@@ -36,6 +37,7 @@ const Chart = (props) => {
 
         let series = props.series || [];
         let data = props.data || [];
+
 
 
         let options = {
@@ -59,7 +61,7 @@ const Chart = (props) => {
             options["axes"] = axes;
         }
 
-        agCharts.AgChart.create(options);
+        let chart = agCharts.AgChart.create(options);
 
         set_loading(false);
     }
@@ -71,7 +73,7 @@ const Chart = (props) => {
         }
 
         { !loading &&
-            <div id="myChart" style={{height: "calc(100% - 50px)"}}></div>
+            <div id={name} style={{height: "calc(100% - 50px)"}}></div>
         }
       </div>
     )

@@ -8,11 +8,12 @@ const ROOT_CMD = "spt.modules.workflow.apps.Resource.lib";
 
 const Chart = props => {
   const [loading, set_loading] = useState(true);
+  const [name, set_name] = useState("chart" + Math.floor(Math.random() * 100000));
   useEffect(() => {
     init();
   }, []);
   const init = () => {
-    let container = document.getElementById('myChart');
+    let container = document.getElementById(name);
     if (!container) {
       setTimeout(() => {
         init();
@@ -41,11 +42,11 @@ const Chart = props => {
     if (axes) {
       options["axes"] = axes;
     }
-    agCharts.AgChart.create(options);
+    let chart = agCharts.AgChart.create(options);
     set_loading(false);
   };
   return React.createElement("div", null, loading && React.createElement("div", null, "Loading ..."), !loading && React.createElement("div", {
-    id: "myChart",
+    id: name,
     style: {
       height: "calc(100% - 50px)"
     }

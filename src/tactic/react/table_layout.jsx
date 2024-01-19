@@ -41,6 +41,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
         },
         get_grid_ref() {
             return grid_ref;
+        },
+        export_csv() {
+            grid_ref.current.export_csv();
         }
     } ) )
   
@@ -61,7 +64,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
     const init = async () => {
-        let element_names = props.element_names;
+        let element_names = props.element_names || ["code"];
         set_element_names([...element_names]);
 
         let element_definitions = props.element_definitions;
@@ -101,10 +104,12 @@ const TableLayout = React.forwardRef( (props, ref) => {
         let ret = await server.p_execute_cmd( cmd, kwargs )
         let info = ret.info;
         let config = info.config;
+        let renderer_params = info.renderer_params;
 
         // convert to AGgrid definitions
         let definitions = spt.react.Config(config, {
-            table_ref: ref
+            table_ref: ref,
+            renderer_params: props.renderer_params || renderer_params
         });
 
         return definitions;
@@ -170,7 +175,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
             let info = ret.info;
             let updated_sobjects = info.updated_sobjects;
-            let new_sobjects = info.new_sobjects;
+            let new_sobjects = info.new_sobjects || [];
 
             // add the new items
             new_sobjects.forEach( item => {
@@ -262,6 +267,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
             new_element_names = element_names;
         }
 
+        if (!definitions) {
+            definitions = element_definitions;
+        }
+
 
         column_defs = [
             { field: '', maxWidth: 50,
@@ -273,9 +282,12 @@ const TableLayout = React.forwardRef( (props, ref) => {
         ]
 
 
-
         new_element_names.forEach( element => {
-            let column_def = definitions[element];
+            let column_def;
+            try {
+                column_def = definitions[element];
+            } catch(e) {}
+
             if (!column_def) {
                 column_def = {
                     field: element,
@@ -325,6 +337,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
+
+
+
     const get_shelf = () => {
         return (
         <>
@@ -367,56 +382,46 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 </Button>
                 }
 
+                <TableLayoutActionMenu
+                    grid_ref={grid_ref}
+                    edit_modal_ref={edit_modal_ref}
+                />
 
-
-                <Button
-                    size="small"
-                    variant="contained"
-                    onClick={ e => {
-                        let selected = grid_ref.current.get_selected_nodes();
-                        if (selected.length == 0) {
-                            alert("No items selected")
-                            return;
-                        }
-
-                        let data = selected[0].data;
-
-                        edit_modal_ref.current.set_item(data);
-                        edit_modal_ref.current.show()
-
-                    } }
-                >Edit
-                </Button>
-
-                <Button
-                    size="small"
-                    variant="contained"
-                    onClick={ e => {
-                        edit_modal_ref.current.show()
-                    } }
-                >New {props.name}
-                </Button>
             </div>
         </>
         )
     }
 
 
+    const get_name = () => {
+
+        if (props.name) {
+            return props.name;
+        }
+        else {
+            return "TABLE"
+        }
+    }
+
+
 
     return (
     <div>
+        { props.show_shelf != false &&
         <div style={{display: "flex", justifyContent: "space-between"}}>
-            <div style={{fontSize: "1.2rem"}}>{props.name} List</div>
+            <div style={{fontSize: "1.2rem"}}>{get_name()}</div>
             { get_shelf() }
         </div>
+        }
 
         <DataGrid
             ref={grid_ref}
-            name={props.name}
+            name={get_name()}
             column_defs={column_defs}
             data={data}
             supress_click={true}
-            auto_height={true}
+            auto_height={false}
+            height={props.height}
             row_height={props.row_height}
             enable_undo={props.enable_undo}
         />
@@ -424,6 +429,93 @@ const TableLayout = React.forwardRef( (props, ref) => {
     )
 
 } )
+
+
+
+const TableLayoutActionMenu = props => {
+
+    //
+    // Action Menu
+    //
+    const [action_anchorEl, action_setAnchorEl] = React.useState(null);
+    const action_is_open = Boolean(action_anchorEl);
+
+    const action_handle_click = (event) => {
+        action_setAnchorEl(event.currentTarget);
+    };
+    const action_handle_close =  async () => {
+        action_setAnchorEl(null);
+    }
+    const action_handle_select = async () => {
+        action_setAnchorEl(null);
+    };
+
+
+
+    const open_edit_modal = () => {
+        let selected = props.grid_ref.current.get_selected_nodes();
+        if (selected.length == 0) {
+            alert("No items selected")
+            return;
+        }
+        let data = selected[0].data;
+
+        props.edit_modal_ref.current.set_item(data);
+        props.edit_modal_ref.current.show()
+    }
+
+
+
+
+    return (
+    <div style={{marginRight: "5px"}}>
+      <Button
+        variant="outlined"
+        id="action-button"
+        onClick={action_handle_click}
+      >
+        ACTION
+        <i className="fa-xs fas fa-caret-down"></i>
+      </Button>
+      <Menu
+        id="action-menu"
+        anchorEl={action_anchorEl}
+        open={action_is_open}
+        onClose={action_handle_close}
+      >
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.edit_modal_ref.current.show()
+        }}>New</MenuItem>
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            open_edit_modal()
+        }}>Edit Selected</MenuItem>
+
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+        }}>Import Data</MenuItem>
+
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            props.grid_ref.current.export_csv();
+        }}>Export CSV</MenuItem>
+
+
+      </Menu>
+    </div>
+    )
+
+}
+
+
 
 
 
@@ -857,38 +949,91 @@ const SimpleCellRenderer = (params) => {
 
     let value = params.value;
     let label = value;
+    let onClick = params.onClick;
+    let mode = params.mode;
+
+    let renderer = params.renderer;
+    let editable = params.colDef.editable;
+
     if (label == null) {
         label = "";
     }
 
-    let mode = params.mode;
+    if (mode == "date") {
+        try {
+            let date = Date.parse(value);
+            let day = date.getDate() + "";
+            let month = (date.getMonth() + 1) + "";
+            let year = date.getFullYear() + "";
+            label = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+        }
+        catch(e) {
+            label = "";
+        }
 
-    let onClick = params.onClick;
-
-    let values = params.values;
-    if (values != null) {
-        let labels = params.labels;
-        let index = values.indexOf(value);
-        if (index != -1) {
-            label = labels[index];
+    }
+    else {
+        let values = params.values;
+        if (values != null) {
+            let labels = params.labels;
+            let index = values.indexOf(value);
+            if (index != -1) {
+                label = labels[index];
+            }
         }
     }
 
+
+
     let colors = params.colors || {};
 
-    let el = document.createElement("div");
-    el.setAttribute("class", "resource-cell");
 
-    let inner = document.createElement("div");
-    el.appendChild(inner);
-    //inner.setAttribute("class", "resource-cell-inner");
-    inner.style.width = "100%";
-    inner.style.height = "100%";
-    inner.style.padding = "0px 3px";
+    // default behavior
+    let el = document.createElement("div");
+    let inner;
+
+    if (renderer) {
+        inner = renderer(params);
+        el.appendChild(inner);
+    }
+    else {
+        inner = document.createElement("div");
+        el.appendChild(inner);
+        inner.style.width = "100%";
+        inner.style.height = "100%";
+        inner.style.padding = "0px 3px";
+
+        // if the mode is color, the set the background color
+        if (params.mode == "color") {
+            inner.style.background = value;
+        }
+
+        let color = colors[value];
+        if (color) {
+            inner.style.background = color;
+        }
+
+
+        if (typeof(value) != "undefined") {
+
+            inner.appendChild( document.createTextNode(label) );
+            if (onClick) {
+                inner.style.textDecoration = "underline";
+                inner.style.cursor = "pointer";
+
+                // provide a link
+                inner.addEventListener( "click", e => {
+                    onClick(params);
+                } )
+            }
+
+        }
+
+    }
 
 
     // Edit icon
-    if (true) {
+    if (editable) {
         let icon = document.createElement("i");
         el.appendChild(icon);
         icon.classList.add("fas");
@@ -899,7 +1044,7 @@ const SimpleCellRenderer = (params) => {
         icon.style.display = "none";
         icon.style.position = "absolute";
         icon.style.opacity = 0.4;
-        icon.style.right = "5px";
+        icon.style.right = "-5px";
         icon.style.top = "-3px";
         icon.style.fontSize = "0.8rem";
 
@@ -917,32 +1062,6 @@ const SimpleCellRenderer = (params) => {
         el.addEventListener( "mouseleave", e => {
             icon.style.display = "none";
         } );
-    }
-
-    // if the mode is color, the set the background color
-    if (params.mode == "color") {
-        inner.style.background = value;
-    }
-
-    let color = colors[value];
-    if (color) {
-        inner.style.background = color;
-    }
-
-
-    if (typeof(value) != "undefined") {
-
-        inner.appendChild( document.createTextNode(label) );
-        if (onClick) {
-            inner.style.textDecoration = "underline";
-            inner.style.cursor = "pointer";
-
-            // provide a link
-            inner.addEventListener( "click", e => {
-                onClick(params);
-            } )
-        }
-
     }
 
     return el;

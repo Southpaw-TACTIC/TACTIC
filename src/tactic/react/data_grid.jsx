@@ -174,21 +174,23 @@ const DataGrid = React.forwardRef( (props, ref) => {
             params = {};
         }
 
-        if (!params.processCellCallback) {
-            params[processCellCallback] = (cell) => {
-                return cell.value;
-            }
-        }
-
-        /*
         if (!params.processHeaderCallback) {
-
-            params[processHeaderCallback] = (cell) => {
-                let column = cell.column.collId;
-                console.log("column: ", column);
+            params.processHeaderCallback = (cell) => {
+                let column = cell.column.colId;
+                try {
+                    let parts = column.split("-");
+                    if (parts.length != 3) {
+                        throw("Not a date");
+                    }
+                    let date = Date.parse(column);
+                    return column;
+                }
+                catch(e) {
+                    // return display name
+                    return cell.columnApi.getDisplayNameForColumn(params.column, null);
+                }
             }
         }
-        */
 
         grid_options.api.exportDataAsCsv(params);
     }
@@ -331,7 +333,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
           //paginationAutoPageSize: true,
           pagination: props.auto_height ? false : true,
 
-          //overlayNoRowsTemplate: "Whatever",
 
           onGridReady: on_grid_ready,
           onFilterChanged: on_filter_changed,
@@ -345,7 +346,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
           //stopEditingWhenCellsLoseFocus: true,
         
           headerHeight: props.header_height || 25,
-          groupHeaderHeight: 20
+          groupHeaderHeight: 20,
+
+          //overlayNoRowsTemplate: "...",
 
         };
 
@@ -573,18 +576,37 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
+    const get_height = () => {
+        //return props.auto_height ? "" : "calc(100vh - 250px)";
+
+        if (props.auto_height) return "";
+
+        let height = props.height;
+        if (height) {
+            return height;
+        }
+        else {
+            return "calc(100vh - 250px)";
+        }
+    }
+
+
 
 
 
     return (
     <>
-        <div style={{boxSizing: "border-box", margin: "10px 0px 0px 0px", width: "100%"}}>
+        <div style={{
+            boxSizing: "border-box",
+            margin: "10px 0px 0px 0px",
+            width: "100%"
+        }}>
             { grid_name &&
             <div id={grid_name} className="ag-theme-alpine"
                 style={{
                     display: loading ? "none": "",
                     width: "100%",
-                    height: props.auto_height ? "" : "calc(100vh - 250px)",
+                    height: get_height(),
                 }}
             ></div>
             }

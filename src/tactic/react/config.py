@@ -11,9 +11,15 @@ from pyasm.search import Search
 
 class ConfigCmd(Command):
 
-    # overrie this metho
+    # override this method
     def get_config(self):
         return {}
+
+    def get_renderer_params(self):
+        return None
+
+
+
 
 
     def get_full_config(self):
@@ -63,8 +69,10 @@ class ConfigCmd(Command):
             display_handlers[name] = handler
         """
 
+        params = self.get_renderer_params()
 
         self.info["config"] = config
+        self.info["renderer_params"] = params
 
 
     def process_config(self, config):
@@ -116,6 +124,9 @@ class BaseElementWdg():
         return
 
     def execute(self, data):
+
+        sobject = get_current_sobject()
+
         column = self.config.get("column")
 
         if name.find("->") != -1:
@@ -147,4 +158,10 @@ class BaseEditElementWdg():
 
     def preprocess(self):
         pass
+
+
+
+    def update(self, sobject, update):
+        pass
+
 
