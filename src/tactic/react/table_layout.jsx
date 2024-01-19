@@ -337,6 +337,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
+
+
+
     const get_shelf = () => {
         return (
         <>
@@ -379,38 +382,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 </Button>
                 }
 
-
-
-                <Button
-                    size="small"
-                    variant="contained"
-                    onClick={ e => {
-                        let selected = grid_ref.current.get_selected_nodes();
-                        if (selected.length == 0) {
-                            alert("No items selected")
-                            return;
-                        }
-
-                        let data = selected[0].data;
-
-                        edit_modal_ref.current.set_item(data);
-                        edit_modal_ref.current.show()
-
-                    } }
-                >Edit
-                </Button>
-
-                <Button
-                    size="small"
-                    variant="contained"
-                    onClick={ e => {
-                        edit_modal_ref.current.show()
-                    } }
-                >New
-                </Button>
-
                 <TableLayoutActionMenu
                     grid_ref={grid_ref}
+                    edit_modal_ref={edit_modal_ref}
                 />
 
             </div>
@@ -477,6 +451,22 @@ const TableLayoutActionMenu = props => {
     };
 
 
+
+    const open_edit_modal = () => {
+        let selected = props.grid_ref.current.get_selected_nodes();
+        if (selected.length == 0) {
+            alert("No items selected")
+            return;
+        }
+        let data = selected[0].data;
+
+        props.edit_modal_ref.current.set_item(data);
+        props.edit_modal_ref.current.show()
+    }
+
+
+
+
     return (
     <div style={{marginRight: "5px"}}>
       <Button
@@ -496,13 +486,13 @@ const TableLayoutActionMenu = props => {
 
         <MenuItem onClick={e => {
             action_handle_select();
-            props.grid_ref.current.export_csv();
+            props.edit_modal_ref.current.show()
         }}>New</MenuItem>
 
 
         <MenuItem onClick={e => {
             action_handle_select();
-            props.grid_ref.current.export_csv();
+            open_edit_modal()
         }}>Edit Selected</MenuItem>
 
 
