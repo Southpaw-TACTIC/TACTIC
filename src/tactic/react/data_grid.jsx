@@ -585,18 +585,37 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
+    const get_height = () => {
+        //return props.auto_height ? "" : "calc(100vh - 250px)";
+
+        if (props.auto_height) return "";
+
+        let height = props.height;
+        if (height) {
+            return height;
+        }
+        else {
+            return "calc(100vh - 250px)";
+        }
+    }
+
+
 
 
 
     return (
     <>
-        <div style={{boxSizing: "border-box", margin: "10px 0px 0px 0px", width: "100%"}}>
+        <div style={{
+            boxSizing: "border-box",
+            margin: "10px 0px 0px 0px",
+            width: "100%"
+        }}>
             { grid_name &&
             <div id={grid_name} className="ag-theme-alpine"
                 style={{
                     display: loading ? "none": "",
                     width: "100%",
-                    height: props.auto_height ? "" : "calc(100vh - 250px)",
+                    height: get_height(),
                 }}
             ></div>
             }

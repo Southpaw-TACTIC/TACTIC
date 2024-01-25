@@ -23,7 +23,7 @@ const Config = (config, options) => {
   let table_ref = options.table_ref;
   let definition_types = {
     simple: {
-      width: 150,
+      minWidth: 150,
       resizable: true,
       onCellValueChanged: cell_value_changed,
       cellRenderer: SimpleCellRenderer
@@ -34,7 +34,7 @@ const Config = (config, options) => {
       cellRenderer: PreviewCellRenderer
     },
     select: {
-      width: 150,
+      minWidth: 150,
       editable: true,
       resizable: true,
       onCellValueChanged: cell_value_changed,
@@ -61,6 +61,7 @@ const Config = (config, options) => {
     let title = config_item.title;
     let pinned = config_item.pinned;
     let width = config_item.width;
+    let flex = config_item.flex;
     if (!name) {
       throw "No name provided in config";
     }
@@ -81,6 +82,9 @@ const Config = (config, options) => {
     if (width) {
       config_def["width"] = width;
     }
+    if (flex) {
+      config_def["flex"] = flex;
+    }
     if (element_type == "select") {
       let labels = config_item.labels;
       let values = config_item.values || [];
@@ -98,6 +102,12 @@ const Config = (config, options) => {
         labels: labels,
         values: values
       };
+      if (options.renderer_params) {
+        params = {
+          ...params,
+          ...options.renderer_params
+        };
+      }
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
@@ -137,8 +147,16 @@ const Config = (config, options) => {
         table_ref: table_ref,
         mode: format
       };
+      if (options.renderer_params) {
+        params = {
+          ...params,
+          ...options.renderer_params
+        };
+      }
       let editable = config_item.editable;
-      if (editable != false || editable != "false") {
+      if (editable == false || editable == "false") {
+        config_def.editable = false;
+      } else {
         config_def.editable = true;
         if (format) {
           config_def.cellDataType = format;
@@ -152,15 +170,13 @@ const Config = (config, options) => {
           };
           return cell_value_changed(p);
         };
-      } else {
-        config_def.editable = false;
       }
       config_def.cellRendererParams = params;
     }
     let cell_renderer = config_item.renderer;
     if (cell_renderer) {
       try {
-        config_def.cellRenderer = eval(cell_renderer);
+        config_def.cellRenderer = eval(cell_renderer) || cell_renderer;
       } catch (e) {
         config_def.renderer = cell_renderer;
       }

@@ -32,7 +32,10 @@ except (ValueError, locale.Error):
     # if auto setting of locale fails, then set the locale to en_US
     # Windows only understands alias language name like English
     if os.name == 'posix':
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        try:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        except:
+            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
     elif os.name == 'nt':
         locale.setlocale(locale.LC_ALL, 'English')
 

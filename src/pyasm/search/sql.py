@@ -837,7 +837,7 @@ class Sql(Base):
             self.query = query
             self.cursor = self.conn.cursor()
 
-            #print "query: ", query
+            #print("query: ", query)
             #import time
             #start = time.time()
 
@@ -2251,14 +2251,20 @@ class Select(object):
         if quoted:
             value = Sql.quote(value)
 
+        if subcolumn:
+            if value == "NULL":
+                json_op = "->"
+            else:
+                json_op = "->>"
+
         if table:
             if subcolumn:
-                where = "\"%s\".\"%s\"->>'%s' %s %s" % (table, column, subcolumn, op, value)
+                where = "\"%s\".\"%s\"%s'%s' %s %s" % (table, column, json_op, subcolumn, op, value)
             else:
                 where = "\"%s\".\"%s\" %s %s" % (table, column, op, value)
         else:
             if subcolumn:
-                where = "\"%s\"->>'%s' %s %s" % (column, subcolumn, op, value)
+                where = "\"%s\"%s'%s' %s %s" % (column, json_op, subcolumn, op, value)
             else:
                 where = "\"%s\" %s %s" % (column, op, value)
         self.add_where(where)
