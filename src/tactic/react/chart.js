@@ -53,6 +53,7 @@ const Chart = props => {
     let chart = agCharts.AgChart.create(options);
     set_loading(false);
   };
+
   let height = props.height || "200px";
   let width = props.width || "300px";
   return React.createElement("div", null, loading && React.createElement("div", null, "Loading ..."), !loading && React.createElement("div", {
