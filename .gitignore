@@ -37,6 +37,9 @@ nosetests.xml
 # PyCharm
 .idea
 
+# VSCode
+.vscode
+
 # VI swp files
 *.swp
 
