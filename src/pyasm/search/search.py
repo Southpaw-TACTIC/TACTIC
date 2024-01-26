@@ -1439,7 +1439,8 @@ class Search(Base):
 
 
     def add_id_filter(self, value):
-        self.add_filter( self.get_id_col(), value , quoted=False)
+        if isinstance(value, int):
+            self.add_filter( self.get_id_col(), value , quoted=False)
 
         # when adding an explicit id filter, you probably want it even
         # if it is retired
@@ -4319,9 +4320,13 @@ class SObject(object):
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                sequence = impl.get_sequence_name(SearchType.get(self.full_search_type), database=database)
-                id = sql.get_value( impl.get_currval_select(sequence))
-                id = int(id)
+                # use id if it is not -1 (ie: it was set explicitly)
+                id = self.get_id()
+                if id == -1:
+                    sequence = impl.get_sequence_name(SearchType.get(self.full_search_type), database=database)
+                    id = sql.get_value( impl.get_currval_select(sequence))
+                    # Not sure if this is necessary
+                    id = int(id)
 
 
         if triggers == "ingest":

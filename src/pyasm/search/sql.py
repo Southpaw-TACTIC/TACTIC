@@ -837,7 +837,7 @@ class Sql(Base):
             self.query = query
             self.cursor = self.conn.cursor()
 
-            #print "query: ", query
+            #print("query: ", query)
             #import time
             #start = time.time()
 

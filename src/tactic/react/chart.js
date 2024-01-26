@@ -19,36 +19,47 @@ const Chart = props => {
         init();
       }, 250);
     }
-    let title = props.title || "";
-    let subtitle = props.subtitle || "";
+    let title = props.title;
+    let subtitle = props.subtitle;
     let series = props.series || [];
     let data = props.data || [];
     let options = {
       container: container,
       autoSize: true,
-      title: {
-        text: title
-      },
-      subtitle: {
-        text: subtitle
-      },
       legend: {
         position: "bottom"
       },
       data: data,
       series: series
     };
+    if (title) {
+      options["title"] = {
+        text: title
+      };
+    }
+    if (subtitle) {
+      options["subtitle"] = {
+        text: subtitle
+      };
+    }
     let axes = props.axes;
     if (axes) {
       options["axes"] = axes;
     }
+    let legend = props.legend;
+    if (legend) {
+      options["legend"] = legend;
+    }
     let chart = agCharts.AgChart.create(options);
     set_loading(false);
   };
+  let height = props.height || "200px";
+  let width = props.width || "300px";
   return React.createElement("div", null, loading && React.createElement("div", null, "Loading ..."), !loading && React.createElement("div", {
     id: name,
     style: {
-      height: "calc(100% - 50px)"
+      width: width,
+      height: height
     }
   }));
 };
