@@ -688,11 +688,12 @@ class SelectEditor {
                 fontSize: "0.75rem",
                 padding: "0px 3px",
                 width: "100%",
-                height: "40px"
+                height: "100%"
             }
         }
         else {
-            el_style = null;
+            el_style = {
+            }
         }
 
 
@@ -725,6 +726,7 @@ class SelectEditor {
                     if (params.onchange) {
                         params.onchange(e);
                     }
+                    params.api.stopEditing();
                 }}
                 onKeyUp={ e => {
                     if (e.key == 13) {
@@ -832,12 +834,17 @@ class InputEditor {
             height: "100%",
         }
         if (!is_form) {
-            el_style = {
-                fontSize: "0.75rem",
-                padding: "3px 3px",
-                //height: "22px",
+            if (mode == "color") {
             }
-            style.padding = "0px 15px";
+            else {
+                el_style = {
+                    fontSize: "0.75rem",
+                    padding: "5px 3px",
+                    height: "100%",
+                    boxSizing: "border-box",
+                }
+                style.padding = "0px 15px";
+            }
         }
         else {
             el_style = {};
@@ -869,6 +876,9 @@ class InputEditor {
                         }
 
                     }}
+                    onBlur={ e => {
+                        params.api.stopEditing();
+                    } }
                     onKeyUp={ e => {
                         this.value = e.target.value;
                         if (e.code == "Tab" && params.api) {
