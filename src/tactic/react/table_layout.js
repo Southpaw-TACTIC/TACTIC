@@ -564,7 +564,6 @@ class InputEditor {
       height: "100%"
     };
     if (!is_form) {
-<<<<<<< HEAD
       if (mode == "color") {} else {
         el_style = {
           fontSize: "0.75rem",

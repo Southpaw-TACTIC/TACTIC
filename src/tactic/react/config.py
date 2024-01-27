@@ -125,7 +125,7 @@ class BaseElementWdg():
 
     def execute(self, data):
 
-        sobject = get_current_sobject()
+        sobject = self.get_current_sobject()
 
         column = self.config.get("column")
 
