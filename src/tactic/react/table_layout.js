@@ -7,6 +7,7 @@ const useRef = React.useRef;
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Modal = MaterialUI.Modal;
+const Alert = MaterialUI.Alert;
 const Tab = MaterialUI.Tab;
 const Tabs = MaterialUI.Tabs;
 const MenuItem = MaterialUI.MenuItem;
@@ -44,6 +45,7 @@ const TableLayout = React.forwardRef((props, ref) => {
   const [element_definitions, set_element_definitions] = useState({});
   const [column_defs, set_column_defs] = useState([]);
   const edit_modal_ref = useRef();
+  const delete_modal_ref = useRef();
   const property_modal_ref = useRef();
   const grid_ref = useRef();
   useEffect(() => {
@@ -79,7 +81,6 @@ const TableLayout = React.forwardRef((props, ref) => {
     let info = ret.info;
     let config = info.config;
     let renderer_params = info.renderer_params;
-
     let definitions = spt.react.Config(config, {
       table_ref: ref,
       renderer_params: props.renderer_params || renderer_params
@@ -87,7 +88,6 @@ const TableLayout = React.forwardRef((props, ref) => {
     return definitions;
   };
   const save = (item, column) => {
-
     let selected = grid_ref.current.get_selected_nodes();
     let items = [];
     if (selected.length) {
@@ -125,7 +125,6 @@ const TableLayout = React.forwardRef((props, ref) => {
       let info = ret.info;
       let updated_sobjects = info.updated_sobjects;
       let new_sobjects = info.new_sobjects || [];
-
       new_sobjects.forEach(item => {
         data.push(item);
       });
@@ -134,7 +133,6 @@ const TableLayout = React.forwardRef((props, ref) => {
     });
   };
   const insert_item = item => {
-
     let cmd = props.save_cmd;
     if (!cmd) {
       cmd = "tactic.react.EditSaveCmd";
@@ -161,12 +159,10 @@ const TableLayout = React.forwardRef((props, ref) => {
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let info = ret.info;
       let sobjects = info.sobjects || [];
-
       sobjects.forEach(item => {
         data.push(item);
       });
       set_data([...data]);
-
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
@@ -235,6 +231,7 @@ const TableLayout = React.forwardRef((props, ref) => {
       alert("TACTIC ERROR: " + e);
     });
   };
+  on_select = selected => {};
   const get_shelf = () => {
     return React.createElement(React.Fragment, null, React.createElement(EditModal, {
       name: props.name,
@@ -246,6 +243,12 @@ const TableLayout = React.forwardRef((props, ref) => {
       name: "Custom Property",
       ref: property_modal_ref,
       on_insert: property_save,
+      element_names: property_names,
+      element_definitions: property_definitions
+    }), React.createElement(DeleteModal, {
+      name: "Delete",
+      ref: delete_modal_ref,
+      grid_ref: grid_ref,
       element_names: property_names,
       element_definitions: property_definitions
     }), React.createElement("div", {
@@ -266,7 +269,8 @@ const TableLayout = React.forwardRef((props, ref) => {
       }
     }, "Filter"), React.createElement(TableLayoutActionMenu, {
       grid_ref: grid_ref,
-      edit_modal_ref: edit_modal_ref
+      edit_modal_ref: edit_modal_ref,
+      delete_modal_ref: delete_modal_ref
     })));
   };
   const get_name = () => {
@@ -353,7 +357,14 @@ const TableLayoutActionMenu = props => {
       action_handle_select();
       props.grid_ref.current.export_csv();
     }
-  }, "Export CSV")));
+  }, "Export CSV"), React.createElement("hr", null), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      let selected = props.grid_ref.current.get_selected_nodes();
+      props.delete_modal_ref.current.set_items(selected);
+      props.delete_modal_ref.current.show();
+    }
+  }, "Delete Selected")));
 };
 const EditModal = React.forwardRef((props, ref) => {
   const [show, set_show] = useState(false);
@@ -380,7 +391,6 @@ const EditModal = React.forwardRef((props, ref) => {
   const onchange = e => {
     let name = e.name;
     let value = e.target.value;
-
     item[name] = value;
   };
   return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
@@ -432,11 +442,9 @@ const EditModal = React.forwardRef((props, ref) => {
         onchange: onchange
       }, definition));
     }
-
     return React.createElement(TextField, {
       key: index,
-      label: Common.capitalize(element_name)
-      ,
+      label: Common.capitalize(element_name),
       size: "small",
       variant: "outlined",
       defaultValue: item[element_name],
@@ -451,6 +459,72 @@ const EditModal = React.forwardRef((props, ref) => {
       insert();
     }
   }, "Insert"))));
+});
+const DeleteModal = React.forwardRef((props, ref) => {
+  const [show, set_show] = useState(false);
+  const [items, set_items] = useState([]);
+  React.useImperativeHandle(ref, () => ({
+    show() {
+      set_show(true);
+    },
+    set_items(items) {
+      set_items(items);
+    }
+  }));
+  const handleClickOpen = () => {
+    set_show(true);
+  };
+  const handleClose = () => {
+    set_show(false);
+  };
+  const delete_selected = () => {
+    if (props.ondelete) {
+      props.ondelete(items);
+    } else {
+      items.reverse();
+      let data = props.grid_ref.current.get_data();
+      let search_keys = [];
+      items.forEach(item => {
+        let item_data = item.data;
+        search_keys.push(item_data.__search_key__);
+        data.splice(item.rowIndex, 1);
+      });
+      props.grid_ref.current.set_data([...data]);
+      let server = TACTIC.get();
+      let cmd = "tactic.react.DeleteCmd";
+      let kwargs = {
+        search_keys: search_keys
+      };
+      server.p_execute_cmd(cmd, kwargs).then(ret => {
+        alert("Deleted");
+      }).catch(e => {
+        alert("QDAC Error: " + e);
+      });
+    }
+    handleClose();
+  };
+  return React.createElement(React.Fragment, null, React.createElement(Dialog, {
+    open: show,
+    onClose: handleClose,
+    fullWidth: true,
+    maxWidth: "sm"
+  }, React.createElement(DialogTitle, null, "Delete"), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, React.createElement(Alert, {
+    severity: "error"
+  }, "Do you wish to delete the following:")), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "30px",
+      margin: "30px 0px"
+    }
+  }, React.createElement("h1", null, "Name"))), React.createElement(DialogActions, null, React.createElement(Button, {
+    onClick: handleClose
+  }, "Cancel"), React.createElement(Button, {
+    severity: "error",
+    onClick: e => {
+      delete_selected();
+    }
+  }, "Delete"))));
 });
 class SelectEditor {
   init(params) {
@@ -506,7 +580,6 @@ class SelectEditor {
       },
       onChange: e => {
         this.value = e.target.value;
-
         e.name = name;
         if (params.onchange) {
           params.onchange(e);
@@ -531,16 +604,13 @@ class SelectEditor {
   getEl() {
     return this.el;
   }
-
   getGui() {
     this.root.render(this.el);
     return this.input;
   }
-
   getValue() {
     return this.value;
   }
-
   afterGuiAttached() {}
 }
 const SelectEditorWdg = props => {
@@ -604,7 +674,6 @@ class InputEditor {
       },
       onChange: e => {
         this.value = e.target.value;
-
         e.name = name;
         if (params.onchange) {
           params.onchange(e);
@@ -630,14 +699,12 @@ class InputEditor {
     this.root.render(this.el);
     return this.input;
   }
-
   getValue() {
     if (this.mode == "date") {
       this.value = Date.parse(this.value);
     }
     return this.value;
   }
-
   afterGuiAttached() {
     setTimeout(() => {
       let x = document.id(this.input);
@@ -694,7 +761,6 @@ const SimpleCellRenderer = params => {
     }
   }
   let colors = params.colors || {};
-
   let el = document.createElement("div");
   let inner;
   if (renderer) {
@@ -706,7 +772,6 @@ const SimpleCellRenderer = params => {
     inner.style.width = "100%";
     inner.style.height = "100%";
     inner.style.padding = "0px 3px";
-
     if (params.mode == "color") {
       inner.style.background = value;
     }
@@ -719,14 +784,12 @@ const SimpleCellRenderer = params => {
       if (onClick) {
         inner.style.textDecoration = "underline";
         inner.style.cursor = "pointer";
-
         inner.addEventListener("click", e => {
           onClick(params);
         });
       }
     }
   }
-
   if (editable) {
     let icon = document.createElement("i");
     el.appendChild(icon);
@@ -879,7 +942,6 @@ const ColumnCreateModal = React.forwardRef((props, ref) => {
     }
   }, "Create"))));
 });
-
 spt.react.TableLayout = TableLayout;
 spt.react.EditModal = EditModal;
 spt.react.SelectEditor = SelectEditor;

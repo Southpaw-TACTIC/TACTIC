@@ -4,6 +4,7 @@ __all__ = [
     'TableCreatePropertyCmd',
     'TableSaveCmd',
     'EditSaveCmd',
+    'DeleteCmd',
 ]
 
 from pyasm.common import Common
@@ -258,6 +259,21 @@ class EditSaveCmd(Command):
             new_sobjects.append(sobject_dict)
 
         self.info["sobjects"] = new_sobjects
+
+
+
+class DeleteCmd(Command):
+
+    def execute(self):
+
+        search_keys = self.kwargs.get("search_keys")
+        print("sss: ", search_keys);
+
+        sobjects = Search.get_by_search_keys(search_keys)
+
+        for sobject in sobjects:
+            sobject.delete()
+
 
 
 

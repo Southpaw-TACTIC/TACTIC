@@ -5,6 +5,7 @@ const useRef = React.useRef;
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Modal = MaterialUI.Modal;
+const Alert = MaterialUI.Alert;
 const Tab = MaterialUI.Tab;
 const Tabs = MaterialUI.Tabs;
 const MenuItem = MaterialUI.MenuItem;
@@ -55,6 +56,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
     const [column_defs, set_column_defs] = useState([]);
 
     const edit_modal_ref = useRef();
+    const delete_modal_ref = useRef();
     const property_modal_ref = useRef();
     const grid_ref = useRef();
 
@@ -337,6 +339,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
+    on_select = (selected) => {
+    }
+
+
 
 
 
@@ -360,6 +366,14 @@ const TableLayout = React.forwardRef( (props, ref) => {
             />
 
 
+            <DeleteModal
+                name={"Delete"}
+                ref={delete_modal_ref}
+                grid_ref={grid_ref}
+                //ondelete={ e => {alert("delete")}}
+                element_names={property_names}
+                element_definitions={property_definitions}
+            />
 
             <div style={{display: "flex", gap: "15px"}}>
                 { props.element_names &&
@@ -385,6 +399,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 <TableLayoutActionMenu
                     grid_ref={grid_ref}
                     edit_modal_ref={edit_modal_ref}
+                    delete_modal_ref={delete_modal_ref}
                 />
 
             </div>
@@ -507,6 +522,15 @@ const TableLayoutActionMenu = props => {
             action_handle_select();
             props.grid_ref.current.export_csv();
         }}>Export CSV</MenuItem>
+
+        <hr/>
+
+        <MenuItem onClick={e => {
+            action_handle_select();
+            let selected = props.grid_ref.current.get_selected_nodes();
+            props.delete_modal_ref.current.set_items(selected)
+            props.delete_modal_ref.current.show()
+        }}>Delete Selected</MenuItem>
 
 
       </Menu>
@@ -643,6 +667,105 @@ const EditModal = React.forwardRef( (props, ref) => {
             <Button onClick={ e => {
                 insert();
             }}>Insert</Button>
+          </DialogActions>
+        </Dialog>
+    </>
+    )
+
+} )
+
+
+
+const DeleteModal = React.forwardRef( (props, ref) => {
+
+    const [show, set_show] = useState(false);
+    const [items, set_items] = useState([]);
+
+    React.useImperativeHandle( ref, () => ({
+        show() {
+            set_show(true);
+        },
+        set_items(items) {
+            set_items(items)
+        }
+    } ) )
+   
+    const handleClickOpen = () => {
+        set_show(true);
+    };
+   
+    const handleClose = () => {
+        set_show(false);
+    };
+
+
+    const delete_selected = () => {
+
+        if (props.ondelete) {
+            props.ondelete(items);
+        }
+        else {
+
+            items.reverse()
+
+            let data = props.grid_ref.current.get_data();
+
+
+            let search_keys = [];
+            items.forEach( item => {
+                let item_data = item.data;
+                search_keys.push( item_data.__search_key__ );
+
+                data.splice(item.rowIndex, 1);
+            } )
+
+            // TODO: make row disappear
+
+
+            let server = TACTIC.get();
+            let cmd = "tactic.react.DeleteCmd";
+            let kwargs = {
+                search_keys: search_keys
+            };
+            server.p_execute_cmd(cmd, kwargs)
+            .then( ret => {
+               alert("Deleted"); 
+            } )
+            .catch( e => {
+                alert("QDAC Error: " + e);
+            } )
+
+        }
+
+
+
+
+        handleClose()
+    }
+
+
+    return (
+    <>
+        <Dialog open={show} onClose={handleClose}
+                fullWidth={true}
+                maxWidth={"sm"}>
+          <DialogTitle>Delete</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              <Alert severity="error">
+              Do you wish to delete the following:
+              </Alert>
+            </DialogContentText>
+
+            <div style={{display: "flex", flexDirection: "column", gap: "30px", margin: "30px 0px"}}>
+                <h1>Name</h1>
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button severity="error" onClick={ e => {
+                delete_selected();
+            }}>Delete</Button>
           </DialogActions>
         </Dialog>
     </>

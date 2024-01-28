@@ -59,7 +59,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
         },
         export_csv(params) {
             export_csv(params);
+        },
+        set_data(data) {
+            set_data(data);
+        },
+        get_data() {
+            return data;
         }
+
     }))
 
     const [loading, set_loading] = useState(true);
