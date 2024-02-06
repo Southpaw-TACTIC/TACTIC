@@ -1439,13 +1439,14 @@ class Search(Base):
 
 
     def add_id_filter(self, value):
-        if isinstance(value, int):
-            self.add_filter( self.get_id_col(), value , quoted=False)
+        if not isinstance(value, int):
+            self.add_filter( self.get_id_col(), str(value))
+        else:
+            self.add_filter( self.get_id_col(), value, quoted=False)
 
         # when adding an explicit id filter, you probably want it even
         # if it is retired
         self.set_show_retired_flag(True)
-
 
     def add_code_filter(self, value):
         self.add_filter( "code", value )
@@ -3798,7 +3799,7 @@ class SObject(object):
         '''handles the changing of the id.  This has to be a special function
         because, since this is the unique identifier, the "where id='##'"
         will update the incorrect in the database.'''
-        self.new_id = int(value)
+        self.new_id = value
 
     def set_auto_code(self):
         '''set a unique code automatically for certain internal sTypes'''
@@ -5645,7 +5646,11 @@ class SObject(object):
             if relationship == "search_code":
                 search_type = self.get_value("%ssearch_type" % prefix)
                 search_code = self.get_value("%ssearch_code" % prefix)
-                return Search.get_by_code(search_type,search_code)
+                has_code = SearchType.column_exists(search_type, "code")
+                if has_code:
+                    return Search.get_by_code(search_type,search_code)
+                else:
+                    return Search.get_by_id(search_type,search_code)
 
             elif relationship == "search_id":
                 search_type = self.get_value("%ssearch_type" % prefix)
