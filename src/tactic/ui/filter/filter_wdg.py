@@ -1102,7 +1102,7 @@ class GeneralFilterWdg(BaseFilterWdg):
         action_div.add_style("border: solid 1px #DDD")
         action_div.add_style("box-shadow: 0px 0px 15px rgba(0,0,0,0.1)")
         action_div.add_style("background: #FFF")
-        action_div.add_style("z-index: 1000")
+        action_div.add_style("z-index: 2000")
         action_div.add_style("padding: 5px 0px")
         action_div.add_style("max-height: 150px")
         action_div.add_style("overflow: auto")

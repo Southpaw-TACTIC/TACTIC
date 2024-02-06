@@ -59,7 +59,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
         },
         export_csv(params) {
             export_csv(params);
+        },
+        set_data(data) {
+            set_data(data);
+        },
+        get_data() {
+            return data;
         }
+
     }))
 
     const [loading, set_loading] = useState(true);
@@ -345,7 +352,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
           // while this is the behvaior we want, it does not behave well with selects
           //stopEditingWhenCellsLoseFocus: true,
         
-          headerHeight: props.header_height || 25,
           groupHeaderHeight: 20,
 
           //overlayNoRowsTemplate: "...",
@@ -386,6 +392,16 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (props.filter) {
             gridOptions["isExternalFilterPresent"] = () => {return true};
             gridOptions["doesExternalFilterPass"] = props.filter;
+        }
+
+        if (props.show_full_header) {
+            gridOptions["defaultColDef"] = {
+                "wrapHeaderText": true,
+                "autoHeaderHeight": true,
+            }
+        }
+        else {
+          gridOptions["headerHeight"] = props.header_height || 25;
         }
 
         set_grid_options(gridOptions);
