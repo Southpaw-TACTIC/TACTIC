@@ -58,6 +58,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
     const edit_modal_ref = useRef();
     const delete_modal_ref = useRef();
     const property_modal_ref = useRef();
+    const import_data_modal_ref = useRef();
     const grid_ref = useRef();
 
     useEffect( () => {
@@ -339,10 +340,39 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
-    on_select = (selected) => {
+
+    //
+    // Import Data
+    //
+    const [import_options, set_import_options] = useState({
+    } )
+    const get_import_data_modal = () => {
+
+        let cmd = props.import_cmd;
+        if (!cmd) {
+            cmd = ROOT_CMD + ".ImportDataCmd";
+        }
+        return (
+            <spt.react.ImportDataModal
+                ref={import_data_modal_ref}
+                kwargs={import_options}
+                cmd={cmd}
+                reload={ () => {
+                    alert("reload")
+                } }
+            />
+        )
+    }
+    const show_import_data_modal = async () => {
+        await set_import_options( {...import_options} );
+        import_data_modal_ref.current.show();
     }
 
 
+
+
+    on_select = (selected) => {
+    }
 
 
 
@@ -375,6 +405,11 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 element_definitions={property_definitions}
             />
 
+
+            { get_import_data_modal() }
+
+
+
             <div style={{display: "flex", gap: "15px"}}>
                 { props.element_names &&
                 <ColumnManagerMenu
@@ -400,6 +435,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     grid_ref={grid_ref}
                     edit_modal_ref={edit_modal_ref}
                     delete_modal_ref={delete_modal_ref}
+                    import_data_modal_ref={import_data_modal_ref}
                 />
 
             </div>
@@ -511,9 +547,9 @@ const TableLayoutActionMenu = props => {
         }}>Edit Selected</MenuItem>
 
 
-
         <MenuItem onClick={e => {
             action_handle_select();
+            props.import_data_modal_ref.current.show();
         }}>Import Data</MenuItem>
 
 
