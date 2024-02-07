@@ -44,8 +44,14 @@ const DataGrid = React.forwardRef((props, ref) => {
     clear_filters() {
       clear_filters();
     },
-    export_csv() {
-      export_csv();
+    export_csv(params) {
+      export_csv(params);
+    },
+    set_data(data) {
+      set_data(data);
+    },
+    get_data() {
+      return data;
     }
   }));
   const [loading, set_loading] = useState(true);
@@ -118,12 +124,25 @@ const DataGrid = React.forwardRef((props, ref) => {
     });
     return columns;
   };
-  const export_csv = () => {
-    let params = {
-      processCellCallback: cell => {
-        return cell.value;
-      }
-    };
+  const export_csv = params => {
+    if (!params) {
+      params = {};
+    }
+    if (!params.processHeaderCallback) {
+      params.processHeaderCallback = cell => {
+        let column = cell.column.colId;
+        try {
+          let parts = column.split("-");
+          if (parts.length != 3) {
+            throw "Not a date";
+          }
+          let date = Date.parse(column);
+          return column;
+        } catch (e) {
+          return cell.columnApi.getDisplayNameForColumn(params.column, null);
+        }
+      };
+    }
     grid_options.api.exportDataAsCsv(params);
   };
   const redrawRows = nodes => {
@@ -227,7 +246,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       animateRows: true,
 
       pagination: props.auto_height ? false : true,
-
       onGridReady: on_grid_ready,
       onFilterChanged: on_filter_changed,
       onCellClicked: on_cell_clicked,
@@ -235,9 +253,10 @@ const DataGrid = React.forwardRef((props, ref) => {
       suppressClickEdit: props.suppress_click == true ? true : false,
       suppressRowClickSelection: true,
 
-      headerHeight: "25px",
-      groupHeaderHeight: "20px"
+      groupHeaderHeight: 20
+
     };
+
     if (props.enable_undo || props.on_undo) {
       gridOptions.undoRedoCellEditing = true;
       gridOptions.undoRedoCellEditingLimit = 20;
@@ -266,6 +285,14 @@ const DataGrid = React.forwardRef((props, ref) => {
         return true;
       };
       gridOptions["doesExternalFilterPass"] = props.filter;
+    }
+    if (props.show_full_header) {
+      gridOptions["defaultColDef"] = {
+        "wrapHeaderText": true,
+        "autoHeaderHeight": true
+      };
+    } else {
+      gridOptions["headerHeight"] = props.header_height || 25;
     }
     set_grid_options(gridOptions);
     set_api(gridOptions.api);
@@ -394,6 +421,16 @@ const DataGrid = React.forwardRef((props, ref) => {
     });
     return target;
   }
+  const get_height = () => {
+
+    if (props.auto_height) return "";
+    let height = props.height;
+    if (height) {
+      return height;
+    } else {
+      return "calc(100vh - 250px)";
+    }
+  };
   return React.createElement(React.Fragment, null, React.createElement("div", {
     style: {
       boxSizing: "border-box",
@@ -406,7 +443,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     style: {
       display: loading ? "none" : "",
       width: "100%",
-      height: props.auto_height ? "" : "calc(100vh - 250px)"
+      height: get_height()
     }
   })));
 });

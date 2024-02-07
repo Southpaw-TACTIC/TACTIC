@@ -59,7 +59,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
         },
         export_csv(params) {
             export_csv(params);
+        },
+        set_data(data) {
+            set_data(data);
+        },
+        get_data() {
+            return data;
         }
+
     }))
 
     const [loading, set_loading] = useState(true);
@@ -174,18 +181,21 @@ const DataGrid = React.forwardRef( (props, ref) => {
             params = {};
         }
 
-        if (!params.processCellCallback) {
-            params[processCellCallback] = (cell) => {
-                return cell.value;
-            }
-        }
-
         if (!params.processHeaderCallback) {
-
-            params[processHeaderCallback] = (cell) => {
-                let column = cell.column.collId;
-                console.log("column: ", column);
-                return "cow";
+            params.processHeaderCallback = (cell) => {
+                let column = cell.column.colId;
+                try {
+                    let parts = column.split("-");
+                    if (parts.length != 3) {
+                        throw("Not a date");
+                    }
+                    let date = Date.parse(column);
+                    return column;
+                }
+                catch(e) {
+                    // return display name
+                    return cell.columnApi.getDisplayNameForColumn(params.column, null);
+                }
             }
         }
 
@@ -330,7 +340,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
           //paginationAutoPageSize: true,
           pagination: props.auto_height ? false : true,
 
-          //overlayNoRowsTemplate: "Whatever",
 
           onGridReady: on_grid_ready,
           onFilterChanged: on_filter_changed,
@@ -343,8 +352,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
           // while this is the behvaior we want, it does not behave well with selects
           //stopEditingWhenCellsLoseFocus: true,
         
-          headerHeight: "25px",
-          groupHeaderHeight: "20px"
+          groupHeaderHeight: 20,
+
+          //overlayNoRowsTemplate: "...",
 
         };
 
@@ -382,6 +392,16 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (props.filter) {
             gridOptions["isExternalFilterPresent"] = () => {return true};
             gridOptions["doesExternalFilterPass"] = props.filter;
+        }
+
+        if (props.show_full_header) {
+            gridOptions["defaultColDef"] = {
+                "wrapHeaderText": true,
+                "autoHeaderHeight": true,
+            }
+        }
+        else {
+          gridOptions["headerHeight"] = props.header_height || 25;
         }
 
         set_grid_options(gridOptions);
@@ -572,18 +592,37 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
+    const get_height = () => {
+        //return props.auto_height ? "" : "calc(100vh - 250px)";
+
+        if (props.auto_height) return "";
+
+        let height = props.height;
+        if (height) {
+            return height;
+        }
+        else {
+            return "calc(100vh - 250px)";
+        }
+    }
+
+
 
 
 
     return (
     <>
-        <div style={{boxSizing: "border-box", margin: "10px 0px 0px 0px", width: "100%"}}>
+        <div style={{
+            boxSizing: "border-box",
+            margin: "10px 0px 0px 0px",
+            width: "100%"
+        }}>
             { grid_name &&
             <div id={grid_name} className="ag-theme-alpine"
                 style={{
                     display: loading ? "none": "",
                     width: "100%",
-                    height: props.auto_height ? "" : "calc(100vh - 250px)",
+                    height: get_height(),
                 }}
             ></div>
             }

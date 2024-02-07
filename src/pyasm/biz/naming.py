@@ -683,7 +683,11 @@ class NamingUtil(object):
                         value = "0" * len(attr)
 
                 elif attr.startswith("id"):
-                    value = "%0.5d" % sobject.get_id()
+                    sobject_id = sobject.get_id()
+                    if isinstance(sobject_id, int):
+                        value = "%0.5d" % sobject.get_id()
+                    else:
+                        value = sobject_id
 
                 elif attr == "basefile":
 

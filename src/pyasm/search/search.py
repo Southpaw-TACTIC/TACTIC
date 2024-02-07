@@ -1439,12 +1439,14 @@ class Search(Base):
 
 
     def add_id_filter(self, value):
-        self.add_filter( self.get_id_col(), value , quoted=False)
+        if not isinstance(value, int):
+            self.add_filter( self.get_id_col(), str(value))
+        else:
+            self.add_filter( self.get_id_col(), value, quoted=False)
 
         # when adding an explicit id filter, you probably want it even
         # if it is retired
         self.set_show_retired_flag(True)
-
 
     def add_code_filter(self, value):
         self.add_filter( "code", value )
@@ -2151,6 +2153,15 @@ class Search(Base):
             return sobjects[0]
         else:
             return None
+
+
+    def get_sobject_dicts(cls, sobjects, columns=None):
+        sobjects_list = []
+        for sobject in sobjects:
+            sobject_dict = sobject.get_sobject_dict(columns, mode="fast")
+            sobjects_list.append(sobject_dict)
+        return sobjects_list
+    get_sobject_dicts = classmethod(get_sobject_dicts)
 
 
 
@@ -3788,7 +3799,7 @@ class SObject(object):
         '''handles the changing of the id.  This has to be a special function
         because, since this is the unique identifier, the "where id='##'"
         will update the incorrect in the database.'''
-        self.new_id = int(value)
+        self.new_id = value
 
     def set_auto_code(self):
         '''set a unique code automatically for certain internal sTypes'''
@@ -4310,9 +4321,13 @@ class SObject(object):
             if not impl.has_sequences():
                 id = sql.last_row_id
             else:
-                sequence = impl.get_sequence_name(SearchType.get(self.full_search_type), database=database)
-                id = sql.get_value( impl.get_currval_select(sequence))
-                id = int(id)
+                # use id if it is not -1 (ie: it was set explicitly)
+                id = self.get_id()
+                if id == -1:
+                    sequence = impl.get_sequence_name(SearchType.get(self.full_search_type), database=database)
+                    id = sql.get_value( impl.get_currval_select(sequence))
+                    # Not sure if this is necessary
+                    id = int(id)
 
 
         if triggers == "ingest":
@@ -5631,7 +5646,11 @@ class SObject(object):
             if relationship == "search_code":
                 search_type = self.get_value("%ssearch_type" % prefix)
                 search_code = self.get_value("%ssearch_code" % prefix)
-                return Search.get_by_code(search_type,search_code)
+                has_code = SearchType.column_exists(search_type, "code")
+                if has_code:
+                    return Search.get_by_code(search_type,search_code)
+                else:
+                    return Search.get_by_id(search_type,search_code)
 
             elif relationship == "search_id":
                 search_type = self.get_value("%ssearch_type" % prefix)
@@ -6003,6 +6022,7 @@ class SObject(object):
         result['__search_key__'] = SearchKey.build_by_sobject(self, use_id=use_id)
         result['__search_type__'] = self.get_base_search_type()
         return result
+
 
 
     def is_day_column(col):

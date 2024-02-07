@@ -2,6 +2,7 @@ const useEffect = React.useEffect;
 const useState = React.useState;
 const useRef = React.useRef;
 
+const Common = spt.react.Common;
 const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
@@ -10,64 +11,17 @@ const PreviewCellRenderer = spt.react.PreviewCellRenderer;
 
 // default save implementation
 const on_cell_value_changed = params => {
-    //console.log("params: ", params);
+
     let table_ref = params.table_ref;
     let data = params.data;
     let column = params.column.colId;
+
+    //console.log("params: ", params);
+    data[column] = params.newValue;
+
     table_ref.current.save(data, column);
 }
 
-
-
-const Xon_cell_value_changed = params => {
-
-    let table_ref = params.table_ref;
-
-    let item = params.data;
-    let column = params.column.colId;
-
-
-    //let selected = grid_ref.current.get_selected_nodes();
-    let selected = [];
-    let items = [];
-    if (selected.length) {
-        selected.forEach( selected_item => {
-            items.push(selected_item.data);
-        } )
-    }
-    else {
-        items.push(item);
-    }
-
-
-    //let cmd = params.save_cmd;
-    let cmd = "tactic.react.TableSaveCmd";
-
-    // FIXME: should call save cmd just once
-    updates = [];
-    items.forEach( item => {
-        let mode = item.code ? "edit" : "insert";
-        let update = {
-            search_key: item.__search_key__,
-            column: column,
-        };
-        updates.push(update);
-    } )
-
-
-    let kwargs = {
-        updates: updates
-    }
-
-    let server = TACTIC.get();
-    server.p_execute_cmd(cmd, kwargs)
-    .then( ret => {
-        // TODO: refresh nodes
-    } )
-    .catch( e => {
-        alert("TACTIC ERROR: " + e);
-    } )
-}
 
 
 
@@ -82,26 +36,29 @@ const Config = (config, options) => {
     let table_ref = options.table_ref;
 
 
-
     // use these definition types as a starting point
     let definition_types = {
         simple: {
-            width: 150,
+            minWidth: 150,
+            resizable: true,
             onCellValueChanged: cell_value_changed,
             cellRenderer: SimpleCellRenderer,
         },
         preview: {
             width: 60,
+            resizable: true,
             cellRenderer: PreviewCellRenderer,
         },
         select: {
-            width: 150,
+            minWidth: 150,
             editable: true,
+            resizable: true,
             onCellValueChanged: cell_value_changed,
             cellEditor: SelectEditor,
             cellRenderer: SimpleCellRenderer,
         }
     }
+
 
 
     // convert to config_def data
@@ -122,7 +79,9 @@ const Config = (config, options) => {
         else if (element_type == "text") {
             definition_type = "simple";
         }
-
+        else if (!element_type) {
+            definition_type = "simple";
+        }
 
 
 
@@ -130,15 +89,25 @@ const Config = (config, options) => {
         let title = config_item.title;
         let pinned = config_item.pinned;
         let width = config_item.width;
+        let flex = config_item.flex;
+
+        if (!name) {
+            throw("No name provided in config")
+        }
 
         let config_def = {...definition_types[definition_type]};
         config_defs[name] = config_def;
+
+
 
         config_def["resizable"] = true;
 
         config_def["field"] = name;
         if (title) {
             config_def["headerName"] = title;
+        }
+        else {
+            config_def["headerName"] = Common.capitalize(name);
         }
 
         if (pinned) {
@@ -148,6 +117,12 @@ const Config = (config, options) => {
         if (width) {
             config_def["width"] = width;
         }
+        if (flex) {
+            config_def["flex"] = flex;
+        }
+
+
+
 
         if (element_type == "select") {
             let labels = config_item.labels;
@@ -170,13 +145,15 @@ const Config = (config, options) => {
                 values: values,
             }
 
-            config_def.cellEditor = SelectEditor;
+            if (options.renderer_params) {
+                params = {...params, ...options.renderer_params}
+            }
+
             config_def.cellEditorParams = params;
             config_def.cellRendererParams = params;
 
             config_def.editable = true;
 
-            //config_def.onCellValueChanged = cell_value_changed;
             config_def.onCellValueChanged = e => {
                 let p = {...e, ...params}
                 return cell_value_changed(p);
@@ -193,16 +170,43 @@ const Config = (config, options) => {
             }
             else if (element_type == "date") {
                 format = "date";
+
+                config_def.valueGetter = params => {
+                    let column = params.column.colId;
+                    let value = params.data[column];
+                    if (value) {
+                        try {
+                            let date = Date.parse(value);
+                            let day = date.getDate() + "";
+                            let month = (date.getMonth() + 1) + "";
+                            let year = date.getFullYear() + "";
+                            value = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+                        }
+                        catch(e) {
+                            value = null;
+                        }
+                    }
+                    return value;
+                }
             }
 
 
             let params = {
                 table_ref: table_ref,
-                mode: format
+                mode: format,
             }
 
+            if (options.renderer_params) {
+                params = {...params, ...options.renderer_params}
+            }
+
+
+
             let editable = config_item.editable;
-            if (editable) {
+            if (editable == false || editable == "false") {
+                config_def.editable = false;
+            }
+            else {
                 config_def.editable = true;
                 if (format) {
                     config_def.cellDataType = format;
@@ -214,13 +218,26 @@ const Config = (config, options) => {
                     return cell_value_changed(p);
                 }
             }
-            else {
-                config_def.editable = false;
-            }
             config_def.cellRendererParams = params;
         }
 
+
+        // handle the display
+        let cell_renderer = config_item.renderer;
+        if (cell_renderer) {
+            try {
+                // see if there is a component defined for this
+                config_def.cellRenderer = eval(cell_renderer) || cell_renderer;
+            }
+            catch(e) {
+                // otherwise it is accessed through a named string
+                config_def.renderer = cell_renderer;
+            }
+        }
+
     } );
+
+
 
     return config_defs;
 

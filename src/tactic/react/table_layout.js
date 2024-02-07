@@ -7,6 +7,7 @@ const useRef = React.useRef;
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Modal = MaterialUI.Modal;
+const Alert = MaterialUI.Alert;
 const Tab = MaterialUI.Tab;
 const Tabs = MaterialUI.Tabs;
 const MenuItem = MaterialUI.MenuItem;
@@ -22,7 +23,7 @@ const DialogActions = MaterialUI.DialogActions;
 const Common = spt.react.Common;
 const DataGrid = spt.react.DataGrid;
 const NotesWdg = spt.react.widget.NotesWdg;
-const ROOT_CMD = "spt.modules.workflow.apps.CRM.lib";
+const ROOT_CMD = "tactic.react";
 const TableLayout = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
     save(item, column) {
@@ -33,18 +34,35 @@ const TableLayout = React.forwardRef((props, ref) => {
     },
     get_grid_ref() {
       return grid_ref;
+    },
+    export_csv() {
+      grid_ref.current.export_csv();
     }
   }));
+  const [search_type, set_search_type] = useState("");
   const [data, set_data] = useState([]);
   const [element_names, set_element_names] = useState([]);
+  const [element_definitions, set_element_definitions] = useState({});
   const [column_defs, set_column_defs] = useState([]);
   const edit_modal_ref = useRef();
+  const delete_modal_ref = useRef();
   const property_modal_ref = useRef();
+  const import_data_modal_ref = useRef();
   const grid_ref = useRef();
   useEffect(() => {
-    let element_names = props.element_names;
+    init();
+  }, []);
+  const init = async () => {
+    let element_names = props.element_names || ["code"];
     set_element_names([...element_names]);
-    build_column_defs(element_names);
+    let element_definitions = props.element_definitions;
+    if (!element_definitions) {
+      config_handler = props.config_handler;
+      element_definitions = await get_element_definitions(config_handler);
+    }
+    await set_element_definitions(element_definitions);
+    set_search_type(props.search_type);
+    build_column_defs(element_names, element_definitions);
     let cmd = props.get_cmd;
     let kwargs = props.get_kwargs;
     let server = TACTIC.get();
@@ -54,7 +72,23 @@ const TableLayout = React.forwardRef((props, ref) => {
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
-  }, []);
+  };
+  const get_element_definitions = async (cmd, kwargs) => {
+    if (!kwargs) {
+      kwargs = {};
+    }
+    let server = TACTIC.get();
+    let ret = await server.p_execute_cmd(cmd, kwargs);
+    let info = ret.info;
+    let config = info.config;
+    let renderer_params = info.renderer_params;
+
+    let definitions = spt.react.Config(config, {
+      table_ref: ref,
+      renderer_params: props.renderer_params || renderer_params
+    });
+    return definitions;
+  };
   const save = (item, column) => {
 
     let selected = grid_ref.current.get_selected_nodes();
@@ -86,11 +120,52 @@ const TableLayout = React.forwardRef((props, ref) => {
       updates.push(update);
     });
     let kwargs = {
-      updates: updates
+      updates: updates,
+      config_handler: props.config_handler
     };
     let server = TACTIC.get();
     server.p_execute_cmd(cmd, kwargs).then(ret => {
-      updates.forEach(item => {
+      let info = ret.info;
+      let updated_sobjects = info.updated_sobjects;
+      let new_sobjects = info.new_sobjects || [];
+
+      new_sobjects.forEach(item => {
+        data.push(item);
+      });
+    }).catch(e => {
+      alert("TACTIC ERROR: " + e);
+    });
+  };
+  const insert_item = item => {
+
+    let cmd = props.save_cmd;
+    if (!cmd) {
+      cmd = "tactic.react.EditSaveCmd";
+    }
+    let inserts = [];
+    let mode = item.__search_key__ ? "edit" : "insert";
+    let code = Common.generate_key(12);
+    item.code = code;
+    let update = {
+      search_type: search_type,
+      search_key: item.__search_key__,
+      mode: mode,
+      item: item
+    };
+    if (mode == "insert") {
+      inserts.push(item);
+    }
+    let kwargs = {
+      updates: [update],
+      extra_data: props.extra_data,
+      config_handler: props.config_handler
+    };
+    let server = TACTIC.get();
+    server.p_execute_cmd(cmd, kwargs).then(ret => {
+      let info = ret.info;
+      let sobjects = info.sobjects || [];
+
+      sobjects.forEach(item => {
         data.push(item);
       });
       set_data([...data]);
@@ -104,13 +179,16 @@ const TableLayout = React.forwardRef((props, ref) => {
     let data = props.data;
     save(data, column);
   };
-  const build_column_defs = new_element_names => {
+  const build_column_defs = (new_element_names, definitions) => {
     let column_defs = props.column_defs;
     if (column_defs) {
       return column_defs;
     }
     if (!new_element_names) {
       new_element_names = element_names;
+    }
+    if (!definitions) {
+      definitions = element_definitions;
     }
     column_defs = [{
       field: '',
@@ -121,10 +199,14 @@ const TableLayout = React.forwardRef((props, ref) => {
       pinned: "left"
     }];
     new_element_names.forEach(element => {
-      let column_def = props.element_definitions[element];
+      let column_def;
+      try {
+        column_def = definitions[element];
+      } catch (e) {}
       if (!column_def) {
         column_def = {
           field: element,
+          headerName: Common.capitalize(element),
           maxWidth: 150,
           editable: true,
           onCellValueChanged: cell_value_changed,
@@ -156,20 +238,50 @@ const TableLayout = React.forwardRef((props, ref) => {
       alert("TACTIC ERROR: " + e);
     });
   };
+
+  const [import_options, set_import_options] = useState({});
+  const get_import_data_modal = () => {
+    let cmd = props.import_cmd;
+    if (!cmd) {
+      cmd = ROOT_CMD + ".ImportDataCmd";
+    }
+    return React.createElement(spt.react.ImportDataModal, {
+      ref: import_data_modal_ref,
+      kwargs: import_options,
+      cmd: cmd,
+      reload: () => {
+        alert("reload");
+      }
+    });
+  };
+  const show_import_data_modal = async () => {
+    await set_import_options({
+      ...import_options
+    });
+    import_data_modal_ref.current.show();
+  };
+  on_select = selected => {};
   const get_shelf = () => {
     return React.createElement(React.Fragment, null, React.createElement(EditModal, {
       name: props.name,
       ref: edit_modal_ref,
-      on_insert: save,
+      on_insert: insert_item,
       element_names: props.element_names,
-      element_definitions: props.element_definitions
+      element_definitions: element_definitions
     }), React.createElement(EditModal, {
       name: "Custom Property",
       ref: property_modal_ref,
       on_insert: property_save,
       element_names: property_names,
       element_definitions: property_definitions
-    }), React.createElement("div", {
+    }), React.createElement(DeleteModal, {
+      name: "Delete",
+      ref: delete_modal_ref,
+      grid_ref: grid_ref
+      ,
+      element_names: property_names,
+      element_definitions: property_definitions
+    }), get_import_data_modal(), React.createElement("div", {
       style: {
         display: "flex",
         gap: "15px"
@@ -185,28 +297,21 @@ const TableLayout = React.forwardRef((props, ref) => {
       onClick: e => {
         grid_ref.current.set_filter("director", "Jil");
       }
-    }, "Filter"), React.createElement(Button, {
-      size: "small",
-      variant: "contained",
-      onClick: e => {
-        let selected = grid_ref.current.get_selected_nodes();
-        if (selected.length == 0) {
-          alert("No contacts selected");
-          return;
-        }
-        let data = selected[0].data;
-        edit_modal_ref.current.set_item(data);
-        edit_modal_ref.current.show();
-      }
-    }, "Edit"), React.createElement(Button, {
-      size: "small",
-      variant: "contained",
-      onClick: e => {
-        edit_modal_ref.current.show();
-      }
-    }, "New ", props.name)));
+    }, "Filter"), React.createElement(TableLayoutActionMenu, {
+      grid_ref: grid_ref,
+      edit_modal_ref: edit_modal_ref,
+      delete_modal_ref: delete_modal_ref,
+      import_data_modal_ref: import_data_modal_ref
+    })));
   };
-  return React.createElement("div", null, React.createElement("div", {
+  const get_name = () => {
+    if (props.name) {
+      return props.name;
+    } else {
+      return "TABLE";
+    }
+  };
+  return React.createElement("div", null, props.show_shelf != false && React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between"
@@ -215,17 +320,84 @@ const TableLayout = React.forwardRef((props, ref) => {
     style: {
       fontSize: "1.2rem"
     }
-  }, props.name, " List"), get_shelf()), React.createElement(DataGrid, {
+  }, get_name()), get_shelf()), React.createElement(DataGrid, {
     ref: grid_ref,
-    name: props.name,
+    name: get_name(),
     column_defs: column_defs,
     data: data,
     supress_click: true,
-    auto_height: true,
+    auto_height: false,
+    height: props.height,
     row_height: props.row_height,
     enable_undo: props.enable_undo
   }));
 });
+const TableLayoutActionMenu = props => {
+  const [action_anchorEl, action_setAnchorEl] = React.useState(null);
+  const action_is_open = Boolean(action_anchorEl);
+  const action_handle_click = event => {
+    action_setAnchorEl(event.currentTarget);
+  };
+  const action_handle_close = async () => {
+    action_setAnchorEl(null);
+  };
+  const action_handle_select = async () => {
+    action_setAnchorEl(null);
+  };
+  const open_edit_modal = () => {
+    let selected = props.grid_ref.current.get_selected_nodes();
+    if (selected.length == 0) {
+      alert("No items selected");
+      return;
+    }
+    let data = selected[0].data;
+    props.edit_modal_ref.current.set_item(data);
+    props.edit_modal_ref.current.show();
+  };
+  return React.createElement("div", {
+    style: {
+      marginRight: "5px"
+    }
+  }, React.createElement(Button, {
+    variant: "outlined",
+    id: "action-button",
+    onClick: action_handle_click
+  }, "ACTION", React.createElement("i", {
+    className: "fa-xs fas fa-caret-down"
+  })), React.createElement(Menu, {
+    id: "action-menu",
+    anchorEl: action_anchorEl,
+    open: action_is_open,
+    onClose: action_handle_close
+  }, React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      props.edit_modal_ref.current.show();
+    }
+  }, "New"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      open_edit_modal();
+    }
+  }, "Edit Selected"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      props.import_data_modal_ref.current.show();
+    }
+  }, "Import Data"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      props.grid_ref.current.export_csv();
+    }
+  }, "Export CSV"), React.createElement("hr", null), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
+      let selected = props.grid_ref.current.get_selected_nodes();
+      props.delete_modal_ref.current.set_items(selected);
+      props.delete_modal_ref.current.show();
+    }
+  }, "Delete Selected")));
+};
 const EditModal = React.forwardRef((props, ref) => {
   const [show, set_show] = useState(false);
   const [item, set_item] = useState({});
@@ -251,7 +423,7 @@ const EditModal = React.forwardRef((props, ref) => {
   const onchange = e => {
     let name = e.name;
     let value = e.target.value;
-    console.log("name: ", name, value);
+
     item[name] = value;
   };
   return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
@@ -323,6 +495,72 @@ const EditModal = React.forwardRef((props, ref) => {
     }
   }, "Insert"))));
 });
+const DeleteModal = React.forwardRef((props, ref) => {
+  const [show, set_show] = useState(false);
+  const [items, set_items] = useState([]);
+  React.useImperativeHandle(ref, () => ({
+    show() {
+      set_show(true);
+    },
+    set_items(items) {
+      set_items(items);
+    }
+  }));
+  const handleClickOpen = () => {
+    set_show(true);
+  };
+  const handleClose = () => {
+    set_show(false);
+  };
+  const delete_selected = () => {
+    if (props.ondelete) {
+      props.ondelete(items);
+    } else {
+      items.reverse();
+      let data = props.grid_ref.current.get_data();
+      let search_keys = [];
+      items.forEach(item => {
+        let item_data = item.data;
+        search_keys.push(item_data.__search_key__);
+        data.splice(item.rowIndex, 1);
+      });
+
+      let server = TACTIC.get();
+      let cmd = "tactic.react.DeleteCmd";
+      let kwargs = {
+        search_keys: search_keys
+      };
+      server.p_execute_cmd(cmd, kwargs).then(ret => {
+        alert("Deleted");
+      }).catch(e => {
+        alert("QDAC Error: " + e);
+      });
+    }
+    handleClose();
+  };
+  return React.createElement(React.Fragment, null, React.createElement(Dialog, {
+    open: show,
+    onClose: handleClose,
+    fullWidth: true,
+    maxWidth: "sm"
+  }, React.createElement(DialogTitle, null, "Delete"), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, React.createElement(Alert, {
+    severity: "error"
+  }, "Do you wish to delete the following:")), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "30px",
+      margin: "30px 0px"
+    }
+  }, React.createElement("h1", null, "Name"))), React.createElement(DialogActions, null, React.createElement(Button, {
+    onClick: handleClose
+  }, "Cancel"), React.createElement(Button, {
+    severity: "error",
+    onClick: e => {
+      delete_selected();
+    }
+  }, "Delete"))));
+});
 class SelectEditor {
   init(params) {
     let column = params.colDef?.field;
@@ -337,6 +575,12 @@ class SelectEditor {
     let labels = params.labels || [];
     let values = params.values || [];
     let colors = params.colors || {};
+    if (typeof labels == "string") {
+      labels = labels.split("|");
+    }
+    if (typeof values == "string") {
+      values = values.split("|");
+    }
     let variant = params.variant || "standard";
     let label = params.label || "";
     let name = params.name;
@@ -346,10 +590,10 @@ class SelectEditor {
         fontSize: "0.75rem",
         padding: "0px 3px",
         width: "100%",
-        height: "40px"
+        height: "100%"
       };
     } else {
-      el_style = null;
+      el_style = {};
     }
     this.input = document.createElement("div");
     this.root = ReactDOM.createRoot(this.input);
@@ -376,6 +620,7 @@ class SelectEditor {
         if (params.onchange) {
           params.onchange(e);
         }
+        params.api.stopEditing();
       },
       onKeyUp: e => {
         if (e.key == 13) {
@@ -436,11 +681,20 @@ class InputEditor {
     let label = params.label || "";
     let is_form = params.is_form;
     let el_style;
+    let style = {
+      width: "100%",
+      height: "100%"
+    };
     if (!is_form) {
-      el_style = {
-        fontSize: "0.75rem",
-        padding: "3px 3px"
-      };
+      if (mode == "color") {} else {
+        el_style = {
+          fontSize: "0.75rem",
+          padding: "5px 3px",
+          height: "100%",
+          boxSizing: "border-box"
+        };
+        style.padding = "0px 15px";
+      }
     } else {
       el_style = {};
     }
@@ -452,11 +706,7 @@ class InputEditor {
       defaultValue: this.value,
       size: "small",
       type: mode,
-      style: {
-        width: "100%",
-        height: "100%",
-        padding: "0px 15px"
-      },
+      style: style,
       inputProps: {
         className: "input",
         style: el_style
@@ -468,6 +718,9 @@ class InputEditor {
         if (params.onchange) {
           params.onchange(e);
         }
+      },
+      onBlur: e => {
+        params.api.stopEditing();
       },
       onKeyUp: e => {
         this.value = e.target.value;
@@ -522,28 +775,68 @@ const InputEditorWdg = props => {
 const SimpleCellRenderer = params => {
   let value = params.value;
   let label = value;
+  let onClick = params.onClick;
+  let mode = params.mode;
+  let renderer = params.renderer;
+  let editable = params.colDef.editable;
   if (label == null) {
     label = "";
   }
-  let mode = params.mode;
-  let onClick = params.onClick;
-  let values = params.values;
-  if (values != null) {
-    let labels = params.labels;
-    let index = values.indexOf(value);
-    if (index != -1) {
-      label = labels[index];
+  if (mode == "date") {
+    try {
+      let date = Date.parse(value);
+      let day = date.getDate() + "";
+      let month = date.getMonth() + 1 + "";
+      let year = date.getFullYear() + "";
+      label = year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+    } catch (e) {
+      label = "";
+    }
+  } else {
+    let values = params.values;
+    if (values != null) {
+      let labels = params.labels;
+      let index = values.indexOf(value);
+      if (index != -1) {
+        label = labels[index];
+      }
     }
   }
   let colors = params.colors || {};
-  let el = document.createElement("div");
-  el.setAttribute("class", "resource-cell");
-  let inner = document.createElement("div");
-  el.appendChild(inner);
-  inner.style.width = "100%";
-  inner.style.padding = "0px 3px";
 
-  if (true) {
+  let el = document.createElement("div");
+  let inner;
+  if (renderer) {
+    inner = renderer(params);
+    el.appendChild(inner);
+  } else {
+    inner = document.createElement("div");
+    el.appendChild(inner);
+    inner.style.width = "100%";
+    inner.style.height = "100%";
+    inner.style.padding = "0px 3px";
+
+    if (params.mode == "color") {
+      inner.style.background = value;
+    }
+    let color = colors[value];
+    if (color) {
+      inner.style.background = color;
+    }
+    if (typeof value != "undefined") {
+      inner.appendChild(document.createTextNode(label));
+      if (onClick) {
+        inner.style.textDecoration = "underline";
+        inner.style.cursor = "pointer";
+
+        inner.addEventListener("click", e => {
+          onClick(params);
+        });
+      }
+    }
+  }
+
+  if (editable) {
     let icon = document.createElement("i");
     el.appendChild(icon);
     icon.classList.add("fas");
@@ -553,7 +846,7 @@ const SimpleCellRenderer = params => {
     icon.style.display = "none";
     icon.style.position = "absolute";
     icon.style.opacity = 0.4;
-    icon.style.right = "5px";
+    icon.style.right = "-5px";
     icon.style.top = "-3px";
     icon.style.fontSize = "0.8rem";
     icon.addEventListener("click", e => {
@@ -569,25 +862,6 @@ const SimpleCellRenderer = params => {
     el.addEventListener("mouseleave", e => {
       icon.style.display = "none";
     });
-  }
-
-  if (params.mode == "color") {
-    inner.style.background = value;
-  }
-  let color = colors[value];
-  if (color) {
-    inner.style.background = color;
-  }
-  if (typeof value != "undefined") {
-    inner.appendChild(document.createTextNode(label));
-    if (onClick) {
-      inner.style.textDecoration = "underline";
-      inner.style.cursor = "pointer";
-
-      inner.addEventListener("click", e => {
-        onClick(params);
-      });
-    }
   }
   return el;
 };

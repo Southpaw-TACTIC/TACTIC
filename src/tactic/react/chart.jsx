@@ -10,12 +10,13 @@ const ROOT_CMD = "spt.modules.workflow.apps.Resource.lib";
 
 
 //
-// Periodic Cost Report Report
+// Chart
 //
 
 const Chart = (props) => {
 
     const [loading, set_loading] = useState(true);
+    const [name, set_name] = useState("chart" + Math.floor(Math.random() * 100000));
 
     useEffect( () => {
         init()
@@ -23,7 +24,7 @@ const Chart = (props) => {
 
 
     const init = () => {
-        let container = document.getElementById('myChart');
+        let container = document.getElementById(name);
         if (!container) {
             setTimeout( () => {
                 init();
@@ -31,22 +32,15 @@ const Chart = (props) => {
         }
 
 
-        let title = props.title || "";
-        let subtitle = props.subtitle || "";
+        let title = props.title;
+        let subtitle = props.subtitle;
 
         let series = props.series || [];
         let data = props.data || [];
 
-
         let options = {
             container: container,
             autoSize: true,
-            title: {
-                text: title,
-            },
-            subtitle: {
-                text: subtitle,
-            },
             legend: {
                 position: "bottom"
             },
@@ -54,15 +48,39 @@ const Chart = (props) => {
             series: series,
         };
 
+        if (title) {
+            options["title"] = {
+                text: title,
+            }
+        }
+        if (subtitle) {
+            options["subtitle"] = {
+                text: subtitle,
+            }
+        }
+
+
+
         let axes = props.axes;
         if (axes) {
             options["axes"] = axes;
         }
 
-        agCharts.AgChart.create(options);
+
+        let legend = props.legend;
+        if (legend) {
+            options["legend"] = legend;
+        }
+
+
+        let chart = agCharts.AgChart.create(options);
 
         set_loading(false);
     }
+
+    //let height = "calc(100% - 50px)";
+    let height = props.height || "200px";
+    let width = props.width || "300px";
 
     return (
       <div>
@@ -71,7 +89,7 @@ const Chart = (props) => {
         }
 
         { !loading &&
-            <div id="myChart" style={{height: "calc(100% - 50px)"}}></div>
+            <div id={name} style={{width: width, height: height}}></div>
         }
       </div>
     )
