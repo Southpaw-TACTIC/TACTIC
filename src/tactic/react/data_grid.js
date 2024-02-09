@@ -139,7 +139,7 @@ const DataGrid = React.forwardRef((props, ref) => {
           let date = Date.parse(column);
           return column;
         } catch (e) {
-          return cell.columnApi.getDisplayNameForColumn(params.column, null);
+          return cell.columnApi.getDisplayNameForColumn(cell.column, null);
         }
       };
     }
