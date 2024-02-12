@@ -194,7 +194,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 }
                 catch(e) {
                     // return display name
-                    return cell.columnApi.getDisplayNameForColumn(params.column, null);
+                    return cell.columnApi.getDisplayNameForColumn(cell.column, null);
                 }
             }
         }

@@ -84,9 +84,16 @@ class Snapshot(SObject):
         if not search_type:
             return None
 
+        if not search_id:
+            search_id = search_code
+
+
         sobject = None
         if search_code and isinstance(search_code, basestring):
-            sobject = Search.get_by_code(search_type, search_code, show_retired=True)
+
+            has_code = SearchType.column_exists(search_type, "code")
+            if has_code:
+                sobject = Search.get_by_code(search_type, search_code, show_retired=True)
         else:
             sobject = Search.get_by_id(search_type, search_id, show_retired=True)
         if sobject == None:
@@ -1561,7 +1568,7 @@ class Snapshot(SObject):
     def get_latest_by_sobject(sobject, context=None, show_retired=False, \
             process=None, skip_contexts=[]):
         search_type = sobject.get_search_type()
-        search_code = sobject.get_value("code")
+        search_code = sobject.get_value("code", no_exception=True)
         if not search_code:
             search_code = sobject.get_id()
         snapshot = Snapshot.get_latest(search_type, search_code, \
@@ -1624,6 +1631,8 @@ class Snapshot(SObject):
 
         if not snapshot:
             if isinstance(search_id, int):
+                sobject = Search.get_by_id(search_type, search_id)
+            elif not SearchType.column_exists(search_type, "code"):
                 sobject = Search.get_by_id(search_type, search_id)
             else:
                 sobject = Search.get_by_code(search_type, search_id)
@@ -1972,6 +1981,11 @@ class Snapshot(SObject):
         search_type = sobject.get_search_type()
         search_id = sobject.get_id()
         search_code = sobject.get_value("code", no_exception=True)
+        # for ids that are strings
+        if not search_code and isinstance(search_id, str):
+            search_code = search_id
+
+
         # temp var
         search_combo = search_code
         if not search_code:
@@ -2205,7 +2219,8 @@ class Snapshot(SObject):
         search_type = sobject.get_search_type()
         search_code = sobject.get_value("code", no_exception=True)
         search_id = sobject.get_id()
-
+        if not search_id:
+            search_id = search_code
 
 
         # this makes it work with 3d App loader, but it removes the attribute that it's a versionless type
