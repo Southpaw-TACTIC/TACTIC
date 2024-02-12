@@ -159,6 +159,10 @@ const ImportDataModal = React.forwardRef((props, ref) => {
     style: {
       margin: "0px 30px"
     }
+  }, props.elements?.help && props.elements?.help()), React.createElement("div", {
+    style: {
+      margin: "0px 30px"
+    }
   }, "Cut and paste rows from a spreadsheet into the text boxes below."), React.createElement("br", null), error != "" && React.createElement(Alert, {
     severity: severity,
     style: {
