@@ -45,6 +45,15 @@ class Document(object):
         if self.kwargs.get("document"):
             self.document = jsonloads(self.kwargs.get("document") )
 
+        # store for fast look up
+        self.sobjects = self.kwargs.get("sobjects")
+        self.sobjects_dict = {}
+        for sobject in self.sobjects:
+            code = sobject.get_code()
+            self.sobjects_dict[code] = sobject
+
+
+
     def get_document(self):
         return self.document
 
@@ -62,8 +71,8 @@ class Document(object):
         gstack = []
         for sobject in sobjects:
 
-            if sobject.get_value("is_group"):
-                group_level = sobject.get_value("group_level") or 0
+            if sobject.get("is_group"):
+                group_level = sobject.get("group_level") or 0
 
                 # keep track of the group stack
                 if group_level < len(gstack):
@@ -93,10 +102,22 @@ class Document(object):
         search_key = item.get("search_key")
         expression = item.get("expression")
 
+        if item_type == "title":
+            sobject = item
+            sobjects.append(sobject)
 
-        if item_type == "sobject":
-            sobject = item.get("sobject")
-            if sobject.get("__search_key__"):
+        elif item_type == "sobject":
+            code = item.get("code")
+            if code:
+                sobject = self.sobjects_dict.get(code)
+                if sobject:
+                    sobject = sobject.get_sobject_dict(mode="fast")
+                else:
+                    return
+            else:
+                sobject = item.get("sobject")
+
+            if sobject and sobject.get("__search_key__"):
                 search_key = sobject.get("__search_key__")
                 if not search_key:
                     search_key = "sthpw/virtual?id=%s" % sobject.get("id")
@@ -120,6 +141,8 @@ class Document(object):
 
                     s = SearchType.create(search_type)
                     for n, v in sobject.items():
+                        if v is None:
+                            continue
                         s.set_value(n,v)
                     sobject = s
                     SObject.cache_sobject(sobject.get_search_key(), s, search_type=search_type)

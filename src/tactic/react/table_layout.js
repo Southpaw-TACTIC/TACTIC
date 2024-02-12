@@ -63,8 +63,13 @@ const TableLayout = React.forwardRef((props, ref) => {
     await set_element_definitions(element_definitions);
     set_search_type(props.search_type);
     build_column_defs(element_names, element_definitions);
+    await load_data();
+  };
+  const load_data = async () => {
     let cmd = props.get_cmd;
     let kwargs = props.get_kwargs;
+    let config_handler = props.config_handler;
+    kwargs["config_handler"] = config_handler;
     let server = TACTIC.get();
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let data = ret.info;
@@ -239,7 +244,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     });
   };
 
-  const [import_options, set_import_options] = useState({});
+  const [import_options, set_import_options] = useState({
+    search_type: props.search_type
+  });
   const get_import_data_modal = () => {
     let cmd = props.import_cmd;
     if (!cmd) {
@@ -250,7 +257,10 @@ const TableLayout = React.forwardRef((props, ref) => {
       kwargs: import_options,
       cmd: cmd,
       reload: () => {
-        alert("reload");
+        load_data();
+      },
+      elements: {
+        help: props.elements?.import_help
       }
     });
   };
@@ -301,7 +311,8 @@ const TableLayout = React.forwardRef((props, ref) => {
       grid_ref: grid_ref,
       edit_modal_ref: edit_modal_ref,
       delete_modal_ref: delete_modal_ref,
-      import_data_modal_ref: import_data_modal_ref
+      import_data_modal_ref: import_data_modal_ref,
+      on_import: load_data
     })));
   };
   const get_name = () => {
@@ -372,6 +383,11 @@ const TableLayoutActionMenu = props => {
   }, React.createElement(MenuItem, {
     onClick: e => {
       action_handle_select();
+      props.on_import();
+    }
+  }, "Reload"), React.createElement(MenuItem, {
+    onClick: e => {
+      action_handle_select();
       props.edit_modal_ref.current.show();
     }
   }, "New"), React.createElement(MenuItem, {
@@ -379,7 +395,7 @@ const TableLayoutActionMenu = props => {
       action_handle_select();
       open_edit_modal();
     }
-  }, "Edit Selected"), React.createElement(MenuItem, {
+  }, "Edit Selected"), props.import_cmd && React.createElement(MenuItem, {
     onClick: e => {
       action_handle_select();
       props.import_data_modal_ref.current.show();
@@ -533,7 +549,7 @@ const DeleteModal = React.forwardRef((props, ref) => {
       server.p_execute_cmd(cmd, kwargs).then(ret => {
         alert("Deleted");
       }).catch(e => {
-        alert("QDAC Error: " + e);
+        alert("TACTIC Error: " + e);
       });
     }
     handleClose();

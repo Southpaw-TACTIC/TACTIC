@@ -311,15 +311,66 @@ const DataGrid = React.forwardRef((props, ref) => {
     });
     if (props.column_defs) {
       grid_options.api.setColumnDefs(props.column_defs);
+
     }
+
     if (props.data != data) {
       grid_options.api.setRowData(props.data);
       set_data(props.data);
     }
-    if (props.get_row_style) {
-      grid_options["getRowStyle"] = props.get_row_style;
-    }
+    grid_options["getRowStyle"] = get_row_style;
+    add_grouping(grid_options);
   }, [grid_name, grid_options]);
+  const get_row_style = params => {
+    let css = {};
+    if (props.get_row_style) {
+      css = props.get_row_style(params);
+    }
+    if (params.data.__type__ == "group") {
+      css["background"] = "#000";
+      css["color"] = "#FFF";
+    }
+    return css;
+  };
+  const add_grouping = grid_options => {
+    let group_column = ['department'];
+
+    function generateHeaderRows(rowData) {
+      let newData = [];
+      let last_group_value = null;
+      rowData.forEach(data => {
+        if (data.is_group_row) {
+          return;
+        }
+        let group_value = data[group_column];
+        console.log("ddd: ", last_group_value, group_value);
+        if (last_group_value == null || group_value != last_group_value) {
+          console.log("..... new");
+          newData.push({
+            display_name: Common.capitalize(group_value),
+            role_name: group_value + "XXX",
+            department: group_value,
+            is_group_row: true
+          });
+        }
+        newData.push(data);
+        last_group_value = group_value;
+      });
+      return newData;
+    }
+
+    grid_options.api.addEventListener('filterChanged', function () {});
+
+    grid_options.api.addEventListener('sortChanged', function () {
+      var rowData = [];
+      grid_options.api.forEachNode(function (node) {
+        rowData.push(node.data);
+      });
+      let newData = generateHeaderRows(rowData);
+      grid_options.api.setRowData(newData);
+      grid_options.api.redrawRows();
+    });
+  };
   useEffect(() => {
     if (!grid_options) {
       return;
@@ -327,9 +378,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (props.column_defs) {
       grid_options.api.setColumnDefs(props.column_defs);
     }
-    if (props.get_row_style) {
-      grid_options["getRowStyle"] = props.get_row_style;
-    }
+    grid_options["getRowStyle"] = get_row_style;
     if (props.data) {
       grid_options.api.setRowData(props.data);
     }

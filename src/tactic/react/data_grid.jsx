@@ -404,6 +404,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
           gridOptions["headerHeight"] = props.header_height || 25;
         }
 
+
+
         set_grid_options(gridOptions);
         set_api( gridOptions.api );
 
@@ -433,6 +435,34 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         if (props.column_defs) {
             grid_options.api.setColumnDefs(props.column_defs);
+
+            /*
+            // Custom comparator that sorts header rows separately
+            function customComparator(valueA, valueB, nodeA, nodeB) {
+              if (nodeA.data.is_group_row && !nodeB.data.is_group_row) {
+                return -1; // Always sort header rows first
+              } else if (!nodeA.data.is_group_row && nodeB.data.is_group_row) {
+                return 1; // Always sort non-header rows last
+              } else {
+                // Normal comparison logic
+                if (valueA < valueB) {
+                  return -1;
+                } else if (valueA > valueB) {
+                  return 1;
+                } else {
+                  return 0;
+                }
+              }
+            }
+
+            let group_column = "department";
+            let definition = props.column_defs[group_column];
+            console.log("props: ", props.column_defs);
+            if (definition) {
+                definition.comparator = customComparator;
+            }
+            */
+
         }
 
 
@@ -441,14 +471,76 @@ const DataGrid = React.forwardRef( (props, ref) => {
             set_data(props.data);
         }
 
-        if (props.get_row_style) {
-            grid_options["getRowStyle"] = props.get_row_style;
-        }
+        grid_options["getRowStyle"] = get_row_style;
+
+        add_grouping(grid_options);
 
 
 
     }, [grid_name, grid_options] );
 
+
+
+    const get_row_style = params => {
+
+        let css = {};
+        if (props.get_row_style) {
+            css = props.get_row_style(params);
+        }
+
+        if (params.data.__type__ == "group") {
+            css["background"] = "#000";
+            css["color"] = "#FFF";
+        }
+        return css;
+    }
+
+
+    const add_grouping = (grid_options) => {
+
+        let group_column = ['department'];
+
+        // TEST grouping
+        function generateHeaderRows(rowData) {
+
+            let newData = [];
+            let last_group_value = null;
+            rowData.forEach( data => {
+                if (data.is_group_row) {
+                    return;
+                }
+                // add a new group
+                let group_value = data[group_column];
+                console.log("ddd: ", last_group_value, group_value);
+                if (last_group_value == null || group_value != last_group_value) {
+                    console.log("..... new");
+                    newData.push( { display_name: Common.capitalize(group_value), role_name: group_value+"XXX", department: group_value, is_group_row: true } );
+                }
+
+                newData.push(data);
+                last_group_value = group_value;
+            } )
+            return newData;
+        }
+
+
+
+        // Event listener for when the filter is changed
+        grid_options.api.addEventListener('filterChanged', function() {
+        });
+
+        // Event listener for when the sort order is changed
+        grid_options.api.addEventListener('sortChanged', function() {
+            var rowData = [];
+            grid_options.api.forEachNode(function(node) {
+                 rowData.push(node.data);
+            });
+            let newData = generateHeaderRows(rowData);
+            grid_options.api.setRowData(newData);
+            grid_options.api.redrawRows();
+        });
+
+    }
 
 
     useEffect( () => {
@@ -461,10 +553,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (props.column_defs) {
             grid_options.api.setColumnDefs(props.column_defs);
         }
-        //this might not be neseccary
-        if (props.get_row_style) {
-            grid_options["getRowStyle"] = props.get_row_style;
-        }
+
+        grid_options["getRowStyle"] = get_row_style;
 
 
         if (props.data) {
