@@ -35,11 +35,15 @@ const TableLayout = React.forwardRef((props, ref) => {
     get_grid_ref() {
       return grid_ref;
     },
+    group_data(group_column) {
+      return group_by(data, group_column);
+    },
     export_csv() {
       grid_ref.current.export_csv();
     }
   }));
   const [search_type, set_search_type] = useState("");
+  const [base_data, set_base_data] = useState([]);
   const [data, set_data] = useState([]);
   const [element_names, set_element_names] = useState([]);
   const [element_definitions, set_element_definitions] = useState({});
