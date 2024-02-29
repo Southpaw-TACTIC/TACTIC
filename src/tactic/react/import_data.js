@@ -41,6 +41,9 @@ const ImportDataModal = React.forwardRef((props, ref) => {
     if (props.show) {
       set_show(true);
     }
+    if (props.kwargs) {
+      data["extra_data"] = props.kwargs;
+    }
   }, [props]);
   const import_data = () => {
     set_importing(true);
