@@ -6,7 +6,7 @@ import tacticenv
 class React():
 
     @classmethod
-    def load_libraries(widget):
+    def load_libraries(cls, widget):
         tactic_src_dir = tacticenv.get_install_dir()
         react_dir = "%s/src/tactic/ui/react" % tactic_src_dir
 
