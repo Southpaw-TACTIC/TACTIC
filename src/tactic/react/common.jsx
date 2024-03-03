@@ -1,5 +1,5 @@
 
-const store = spt.react.redux.store;
+//const store = spt.react.redux.store;
 
 
 class Common {
