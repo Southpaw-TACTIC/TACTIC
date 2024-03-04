@@ -43,12 +43,16 @@ const TableLayout = React.forwardRef( (props, ref) => {
         get_grid_ref() {
             return grid_ref;
         },
+        group_data(group_column) {
+            return group_by(data, group_column);
+        },
         export_csv() {
             grid_ref.current.export_csv();
         }
     } ) )
   
     const [search_type, set_search_type] = useState("");
+    const [base_data, set_base_data] = useState([]);
     const [data, set_data] = useState([]);
     const [element_names, set_element_names] = useState([]);
     const [element_definitions, set_element_definitions] = useState({});
@@ -81,8 +85,19 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         build_column_defs(element_names, element_definitions);
 
+        await load_data();
+
+    }
+
+
+    const load_data = async() => {
+
         let cmd = props.get_cmd;
         let kwargs = props.get_kwargs;
+        let config_handler = props.config_handler;
+
+        kwargs["config_handler"] = config_handler;
+
 
         let server = TACTIC.get();
         server.p_execute_cmd(cmd, kwargs)
@@ -340,11 +355,11 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
-
     //
     // Import Data
     //
     const [import_options, set_import_options] = useState({
+        search_type: props.search_type
     } )
     const get_import_data_modal = () => {
 
@@ -358,8 +373,11 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 kwargs={import_options}
                 cmd={cmd}
                 reload={ () => {
-                    alert("reload")
+                    load_data();
                 } }
+                elements={{
+                    help: props.elements?.import_help
+                }}
             />
         )
     }
@@ -436,6 +454,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     edit_modal_ref={edit_modal_ref}
                     delete_modal_ref={delete_modal_ref}
                     import_data_modal_ref={import_data_modal_ref}
+                    on_import={load_data}
                 />
 
             </div>
@@ -537,6 +556,12 @@ const TableLayoutActionMenu = props => {
 
         <MenuItem onClick={e => {
             action_handle_select();
+            props.on_import();
+        }}>Reload</MenuItem>
+
+
+        <MenuItem onClick={e => {
+            action_handle_select();
             props.edit_modal_ref.current.show()
         }}>New</MenuItem>
 
@@ -547,10 +572,12 @@ const TableLayoutActionMenu = props => {
         }}>Edit Selected</MenuItem>
 
 
+        { props.import_cmd &&
         <MenuItem onClick={e => {
             action_handle_select();
             props.import_data_modal_ref.current.show();
         }}>Import Data</MenuItem>
+        }
 
 
 
@@ -768,7 +795,7 @@ const DeleteModal = React.forwardRef( (props, ref) => {
                alert("Deleted"); 
             } )
             .catch( e => {
-                alert("QDAC Error: " + e);
+                alert("TACTIC Error: " + e);
             } )
 
         }

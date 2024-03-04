@@ -2,6 +2,7 @@
 
 let useEffect = React.useEffect;
 let useState = React.useState;
+const Common = spt.react.Common;
 
 const DataGrid = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
@@ -43,6 +44,9 @@ const DataGrid = React.forwardRef((props, ref) => {
     },
     clear_filters() {
       clear_filters();
+    },
+    clear_sort() {
+      clear_sort();
     },
     export_csv(params) {
       export_csv(params);
@@ -139,7 +143,7 @@ const DataGrid = React.forwardRef((props, ref) => {
           let date = Date.parse(column);
           return column;
         } catch (e) {
-          return cell.columnApi.getDisplayNameForColumn(params.column, null);
+          return cell.columnApi.getDisplayNameForColumn(cell.column, null);
         }
       };
     }
@@ -178,6 +182,15 @@ const DataGrid = React.forwardRef((props, ref) => {
   const clear_filters = () => {
     let api = grid_options.api;
     api.setFilterModel(null);
+  };
+  const clear_sort = () => {
+    let column_api = grid_options.columnApi;
+    console.log("opt: ", grid_options);
+    column_api.applyColumnState({
+      defaultState: {
+        sort: null
+      }
+    });
   };
 
   const _show_total = params => {
@@ -311,15 +324,65 @@ const DataGrid = React.forwardRef((props, ref) => {
     });
     if (props.column_defs) {
       grid_options.api.setColumnDefs(props.column_defs);
+
     }
+
     if (props.data != data) {
-      grid_options.api.setRowData(props.data);
-      set_data(props.data);
+      let data = props.data;
+      if (props.group_by) {
+        data = group_data(data, props.group_by);
+      }
+      grid_options.api.setRowData(data);
+      set_data(data);
     }
-    if (props.get_row_style) {
-      grid_options["getRowStyle"] = props.get_row_style;
-    }
+    grid_options["getRowStyle"] = get_row_style;
+
+    add_grouping(grid_options);
   }, [grid_name, grid_options]);
+  const get_row_style = params => {
+    let css = {};
+    if (props.get_row_style) {
+      css = props.get_row_style(params) || {};
+    }
+    if (params.data.__type__ == "group") {
+      css["background"] = "#000";
+      css["color"] = "#FFF";
+    }
+    return css;
+  };
+  const add_grouping = grid_options => {
+    let group_column = 'department';
+    let sort_column = 'department';
+
+    function generateHeaderRows(rowData) {
+      let newData = [];
+      let last_group_value = null;
+      rowData.forEach(data => {
+        if (data.__type__ == 'group') {
+          data.isVisible = false;
+          return;
+        }
+        let group_value = data[group_column];
+        newData.push(data);
+        last_group_value = group_value;
+      });
+      return newData;
+    }
+
+    grid_options.api.addEventListener('filterChanged', function (e) {});
+
+    grid_options.onSortChanged = event => {
+      var rowData = [];
+      grid_options.api.forEachNode(function (node) {
+        if (node.data.__type__ == 'group') {
+          return;
+        }
+        rowData.push(node.data);
+      });
+      grid_options.api.setRowData(rowData);
+      grid_options.api.redrawRows();
+    };
+  };
   useEffect(() => {
     if (!grid_options) {
       return;
@@ -327,13 +390,38 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (props.column_defs) {
       grid_options.api.setColumnDefs(props.column_defs);
     }
-    if (props.get_row_style) {
-      grid_options["getRowStyle"] = props.get_row_style;
-    }
+    grid_options["getRowStyle"] = get_row_style;
     if (props.data) {
-      grid_options.api.setRowData(props.data);
+      let data = props.data;
+      if (props.group_by) {
+        data = group_data(data, props.group_by);
+      }
+      grid_options.api.setRowData(data);
     }
   }, [props]);
+
+  const group_data = (items, group_by) => {
+    let last_group_value = null;
+    items = [...items];
+    items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+    let group_data = [];
+    items.forEach(item => {
+      let group_value = item[group_by];
+      if (group_value != last_group_value) {
+        let group_item = {
+          name: group_value,
+          __type__: "group",
+          background: "#000"
+        };
+        group_data.push(group_item);
+      }
+      group_data.push(item);
+      last_group_value = group_value;
+    });
+    return group_data;
+  };
+
+  const collapse_data = (data, collapse_by) => {};
 
   function generate_pinned_data(params) {
     let result2 = {};

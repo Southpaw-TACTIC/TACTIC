@@ -50,6 +50,9 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
         if (props.show) {
             set_show(true)
         }
+        if (props.kwargs) {
+            data["extra_data"] = props.kwargs;
+        }
     }, [props] )
 
 
@@ -200,6 +203,9 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
 
         { !importing &&
         <>
+            <div style={{margin: "0px 30px"}}>
+            { props.elements?.help && props.elements?.help() }
+            </div>
 
             <div style={{margin: "0px 30px"}}>Cut and paste rows from a spreadsheet into the text boxes below.</div>
             <br/>
@@ -438,8 +444,6 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
     )
 
 })
-
-
 
 
 

@@ -242,8 +242,8 @@ class JSXTranspile():
 
 class BaseReactWdg(BaseRefreshWdg):
 
-
-    def init_react(self, top, jsx_path):
+    @classmethod
+    def init_react(cls, top, jsx_path):
 
         f = open(jsx_path, "r")
         jsx = f.read()
@@ -254,7 +254,6 @@ class BaseReactWdg(BaseRefreshWdg):
         #
         # This code needs to move to JSX transpiler
         #
-        #js = JSXTranspile.cache_jsx(jsx_path, self.get_onload_jsx())
         try:
             js = JSXTranspile.cache_jsx(jsx_path, jsx)
         except Exception as e:

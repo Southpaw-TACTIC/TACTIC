@@ -5079,7 +5079,10 @@ class SObject(object):
 
 
         else:
-            where = '"%s" = %s' % (self.get_id_col(),id)
+            if isinstance(id, str):
+                where = '"%s" = \'%s\'' % (self.get_id_col(),id)
+            else:
+                where = '"%s" = %s' % (self.get_id_col(),id)
 
             if database_type == 'Oracle':
                 # do fully qualified table names (i.e. include schema prefix) for Oracle SQL ... needed

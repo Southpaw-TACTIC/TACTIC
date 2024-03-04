@@ -1,6 +1,5 @@
 "use strict";
 
-const store = spt.react.redux.store;
 class Common {
   constructor() {}
   static capitalize = str => {
