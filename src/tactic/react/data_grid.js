@@ -259,6 +259,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       animateRows: true,
 
       pagination: props.auto_height ? false : true,
+
       onGridReady: on_grid_ready,
       onFilterChanged: on_filter_changed,
       onCellClicked: on_cell_clicked,
@@ -279,6 +280,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (props.on_cell_key_down) {
       gridOptions.onCellKeyDown = props.on_cell_key_down;
     }
+
     let row_height = 25;
     if (props.row_height) {
       row_height = props.row_height;
