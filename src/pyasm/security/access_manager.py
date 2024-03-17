@@ -156,7 +156,8 @@ class AccessManager(Base):
     # access level definitions
     (DENY, VIEW, EDIT, INSERT, RETIRE, DELETE) = range(6)
 
-    def _get_access_enum(self, access_level_attr):
+    @classmethod
+    def _get_access_enum(cls, access_level_attr):
         '''converts text access levels to their corresponding enum'''
         if access_level_attr == "false":
             access_level = AccessManager.DENY

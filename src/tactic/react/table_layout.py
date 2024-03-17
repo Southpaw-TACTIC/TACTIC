@@ -21,6 +21,18 @@ class BaseTableSearchCmd(Command):
     def get_sobjects(self):
         return None
 
+
+    def get_config(self):
+        config_handler = self.kwargs.get("config_handler")
+        if config_handler:
+            handler = Common.create_from_class_path(config_handler, [])
+            config = handler.get_full_config()
+        else:
+            config = []
+
+        return config
+
+
     """
     def alter_search(self, search):
         return

@@ -41,6 +41,9 @@ const ImportDataModal = React.forwardRef((props, ref) => {
     if (props.show) {
       set_show(true);
     }
+    if (props.kwargs) {
+      data["extra_data"] = props.kwargs;
+    }
   }, [props]);
   const import_data = () => {
     set_importing(true);
@@ -154,6 +157,10 @@ const ImportDataModal = React.forwardRef((props, ref) => {
       width: '100%'
     }
   }, React.createElement(LinearProgress, null))), !importing && React.createElement(React.Fragment, null, React.createElement("div", {
+    style: {
+      margin: "0px 30px"
+    }
+  }, props.elements?.help && props.elements?.help()), React.createElement("div", {
     style: {
       margin: "0px 30px"
     }

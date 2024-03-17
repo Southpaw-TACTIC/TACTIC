@@ -145,6 +145,10 @@ class ImportDataCmd(Command):
         line_errors = {}
         data = []
 
+
+        search_type = self.kwargs.get("search_type")
+        print("sss: ", search_type)
+
         # insert the data
         for item in data:
             print("item: ", item)
