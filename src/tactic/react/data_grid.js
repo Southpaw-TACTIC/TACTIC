@@ -240,6 +240,12 @@ const DataGrid = React.forwardRef((props, ref) => {
     let random = Math.floor(Math.random() * 100000000);
     let grid_name = props.name + random;
     set_grid_name(grid_name);
+    let pagination = true;
+    if (props.pagination != null) {
+      pagination = props.pagination;
+    } else {
+      pagination: props.auto_height ? false : true;
+    }
     const gridOptions = {
       columnDefs: props.column_defs,
       defaultColDef: {
@@ -248,7 +254,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       },
       rowSelection: props.row_selection || 'multiple',
       animateRows: true,
-      pagination: props.auto_height ? false : true,
+      pagination: pagination,
       onGridReady: on_grid_ready,
       onFilterChanged: on_filter_changed,
       onCellClicked: on_cell_clicked,

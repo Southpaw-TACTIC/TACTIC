@@ -20,8 +20,6 @@ class ConfigCmd(Command):
 
 
 
-
-
     def get_full_config(self):
         self.execute()
         return self.info.get("config")
@@ -98,6 +96,12 @@ class ConfigCmd(Command):
                 item["labels"] = labels
 
         return config
+
+
+
+    def preprocess_commit(self, sobject):
+        '''Called before an sobject is committed'''
+        return
 
 
 

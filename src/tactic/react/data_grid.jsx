@@ -343,6 +343,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
         let grid_name = props.name + random;
         set_grid_name(grid_name);
 
+        let pagination = true;
+        if (props.pagination != null) {
+            pagination = props.pagination;
+        }
+        else {
+            pagination: props.auto_height ? false : true;
+        }
+
 
         // Grid Options are properties passed to the grid
         const gridOptions = {
@@ -357,7 +365,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
           animateRows: true, // have rows animate to new positions when sorted
 
           //paginationAutoPageSize: true,
-          pagination: props.auto_height ? false : true,
+          pagination: pagination,
           //pagination: props.auto_height ? false : false,
 
 
