@@ -91,6 +91,7 @@ const Config = (config, options) => {
         let width = config_item.width;
         let flex = config_item.flex;
 
+
         if (!name) {
             throw("No name provided in config")
         }
@@ -98,9 +99,11 @@ const Config = (config, options) => {
         let config_def = {...definition_types[definition_type]};
         config_defs[name] = config_def;
 
-
-
         config_def["resizable"] = true;
+
+        if (config_item.filterable == false) {
+            config_def["filter"] = null;
+        }
 
         config_def["field"] = name;
         if (title) {
@@ -116,6 +119,7 @@ const Config = (config, options) => {
 
         if (width) {
             config_def["width"] = width;
+            config_def["minWidth"] = width;
         }
         if (flex) {
             config_def["flex"] = flex;
@@ -219,6 +223,8 @@ const Config = (config, options) => {
                 }
             }
             config_def.cellRendererParams = params;
+
+
         }
 
 
@@ -235,7 +241,10 @@ const Config = (config, options) => {
             }
         }
 
+        config_def.autoHeight = true;
+
     } );
+
 
 
 
