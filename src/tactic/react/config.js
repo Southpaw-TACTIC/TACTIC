@@ -74,6 +74,9 @@ const Config = (config, options) => {
     };
     config_defs[name] = config_def;
     config_def["resizable"] = true;
+    if (config_item.filterable == false) {
+      config_def["filter"] = null;
+    }
     config_def["field"] = name;
     if (title) {
       config_def["headerName"] = title;
@@ -85,6 +88,7 @@ const Config = (config, options) => {
     }
     if (width) {
       config_def["width"] = width;
+      config_def["minWidth"] = width;
     }
     if (flex) {
       config_def["flex"] = flex;
@@ -186,6 +190,7 @@ const Config = (config, options) => {
         config_def.renderer = cell_renderer;
       }
     }
+    config_def.autoHeight = true;
   });
   return config_defs;
 };

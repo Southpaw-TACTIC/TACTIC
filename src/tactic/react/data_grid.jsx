@@ -358,6 +358,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
           //paginationAutoPageSize: true,
           pagination: props.auto_height ? false : true,
+          //pagination: props.auto_height ? false : false,
 
 
           onGridReady: on_grid_ready,
@@ -390,18 +391,23 @@ const DataGrid = React.forwardRef( (props, ref) => {
             gridOptions.onCellKeyDown = props.on_cell_key_down;
         }
 
+
+        // Set the height
         let row_height = 25;
         if (props.row_height) {
             row_height = props.row_height;
         }
         gridOptions["rowHeight"] = row_height;
 
+
         if (props.auto_height) {
             gridOptions["domLayout"] = "autoHeight";
+
         }
         else {
             gridOptions["domLayout"] = "normal";
         }
+
 
         if (props.components) {
              gridOptions["components"] = props.components;
