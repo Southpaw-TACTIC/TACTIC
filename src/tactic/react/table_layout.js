@@ -82,7 +82,6 @@ const TableLayout = React.forwardRef((props, ref) => {
     let info = ret.info;
     let config = info.config;
     let renderer_params = info.renderer_params;
-
     let definitions = spt.react.Config(config, {
       table_ref: ref,
       renderer_params: props.renderer_params || renderer_params
@@ -90,7 +89,6 @@ const TableLayout = React.forwardRef((props, ref) => {
     return definitions;
   };
   const save = (item, column) => {
-
     let selected = grid_ref.current.get_selected_nodes();
     let items = [];
     if (selected.length) {
@@ -128,7 +126,6 @@ const TableLayout = React.forwardRef((props, ref) => {
       let info = ret.info;
       let updated_sobjects = info.updated_sobjects;
       let new_sobjects = info.new_sobjects || [];
-
       new_sobjects.forEach(item => {
         data.push(item);
       });
@@ -137,7 +134,6 @@ const TableLayout = React.forwardRef((props, ref) => {
     });
   };
   const insert_item = item => {
-
     let cmd = props.save_cmd;
     if (!cmd) {
       cmd = "tactic.react.EditSaveCmd";
@@ -164,12 +160,10 @@ const TableLayout = React.forwardRef((props, ref) => {
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let info = ret.info;
       let sobjects = info.sobjects || [];
-
       sobjects.forEach(item => {
         data.push(item);
       });
       set_data([...data]);
-
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
@@ -238,7 +232,6 @@ const TableLayout = React.forwardRef((props, ref) => {
       alert("TACTIC ERROR: " + e);
     });
   };
-
   const [import_options, set_import_options] = useState({});
   const get_import_data_modal = () => {
     let cmd = props.import_cmd;
@@ -277,8 +270,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     }), React.createElement(DeleteModal, {
       name: "Delete",
       ref: delete_modal_ref,
-      grid_ref: grid_ref
-      ,
+      grid_ref: grid_ref,
       element_names: property_names,
       element_definitions: property_definitions
     }), get_import_data_modal(), React.createElement("div", {
@@ -423,7 +415,6 @@ const EditModal = React.forwardRef((props, ref) => {
   const onchange = e => {
     let name = e.name;
     let value = e.target.value;
-
     item[name] = value;
   };
   return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
@@ -475,11 +466,9 @@ const EditModal = React.forwardRef((props, ref) => {
         onchange: onchange
       }, definition));
     }
-
     return React.createElement(TextField, {
       key: index,
-      label: Common.capitalize(element_name)
-      ,
+      label: Common.capitalize(element_name),
       size: "small",
       variant: "outlined",
       defaultValue: item[element_name],
@@ -524,7 +513,6 @@ const DeleteModal = React.forwardRef((props, ref) => {
         search_keys.push(item_data.__search_key__);
         data.splice(item.rowIndex, 1);
       });
-
       let server = TACTIC.get();
       let cmd = "tactic.react.DeleteCmd";
       let kwargs = {
@@ -615,7 +603,6 @@ class SelectEditor {
       },
       onChange: e => {
         this.value = e.target.value;
-
         e.name = name;
         if (params.onchange) {
           params.onchange(e);
@@ -640,16 +627,13 @@ class SelectEditor {
   getEl() {
     return this.el;
   }
-
   getGui() {
     this.root.render(this.el);
     return this.input;
   }
-
   getValue() {
     return this.value;
   }
-
   afterGuiAttached() {}
 }
 const SelectEditorWdg = props => {
@@ -713,7 +697,6 @@ class InputEditor {
       },
       onChange: e => {
         this.value = e.target.value;
-
         e.name = name;
         if (params.onchange) {
           params.onchange(e);
@@ -739,14 +722,12 @@ class InputEditor {
     this.root.render(this.el);
     return this.input;
   }
-
   getValue() {
     if (this.mode == "date") {
       this.value = Date.parse(this.value);
     }
     return this.value;
   }
-
   afterGuiAttached() {
     setTimeout(() => {
       let x = document.id(this.input);
@@ -803,7 +784,6 @@ const SimpleCellRenderer = params => {
     }
   }
   let colors = params.colors || {};
-
   let el = document.createElement("div");
   let inner;
   if (renderer) {
@@ -815,7 +795,6 @@ const SimpleCellRenderer = params => {
     inner.style.width = "100%";
     inner.style.height = "100%";
     inner.style.padding = "0px 3px";
-
     if (params.mode == "color") {
       inner.style.background = value;
     }
@@ -828,14 +807,12 @@ const SimpleCellRenderer = params => {
       if (onClick) {
         inner.style.textDecoration = "underline";
         inner.style.cursor = "pointer";
-
         inner.addEventListener("click", e => {
           onClick(params);
         });
       }
     }
   }
-
   if (editable) {
     let icon = document.createElement("i");
     el.appendChild(icon);
@@ -988,7 +965,6 @@ const ColumnCreateModal = React.forwardRef((props, ref) => {
     }
   }, "Create"))));
 });
-
 spt.react.TableLayout = TableLayout;
 spt.react.EditModal = EditModal;
 spt.react.SelectEditor = SelectEditor;

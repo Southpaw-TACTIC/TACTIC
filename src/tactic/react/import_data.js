@@ -45,7 +45,6 @@ const ImportDataModal = React.forwardRef((props, ref) => {
   const import_data = () => {
     set_importing(true);
     data.dry_run = false;
-
     extra_data.forEach(item => {
       if (item[0] == "" || !item[0]) {
         return;
@@ -79,7 +78,6 @@ const ImportDataModal = React.forwardRef((props, ref) => {
   };
   const dry_run = () => {
     data.dry_run = true;
-
     extra_data.forEach(item => {
       if (item[0] == "" || !item[0]) {
         return;
