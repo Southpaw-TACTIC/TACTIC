@@ -112,7 +112,7 @@ const DataGrid = React.forwardRef((props, ref) => {
   };
   const get_filtered_rows = () => {
     let all_rows = [];
-    grid_options.api.forEachNodeAfterFilter(rowNode => all_rows.push(rowNode.data));
+    grid_options?.api.forEachNodeAfterFilter(rowNode => all_rows.push(rowNode.data));
     return all_rows;
   };
   const get_columns = () => {
@@ -292,6 +292,9 @@ const DataGrid = React.forwardRef((props, ref) => {
       gridOptions["doesExternalFilterPass"] = props.filter;
     }
     if (props.show_full_header) {
+      if (props.header_height) {
+        gridOptions["headerHeight"] = props.header_height;
+      }
       gridOptions["defaultColDef"] = {
         "wrapHeaderText": true,
         "autoHeaderHeight": true

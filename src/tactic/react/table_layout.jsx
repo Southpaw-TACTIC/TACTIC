@@ -455,6 +455,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     delete_modal_ref={delete_modal_ref}
                     import_data_modal_ref={import_data_modal_ref}
                     on_import={load_data}
+                    import_cmd={props.import_cmd }
+                    action_menu_items={props.action_menu_items}
                 />
 
             </div>
@@ -594,6 +596,14 @@ const TableLayoutActionMenu = props => {
             props.delete_modal_ref.current.set_items(selected)
             props.delete_modal_ref.current.show()
         }}>Delete Selected</MenuItem>
+
+
+        { props.action_menu_items &&
+            <>
+            <hr/>
+            { props.action_menu_items({close: action_handle_select}) }
+            </>
+        }
 
 
       </Menu>
