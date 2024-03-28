@@ -214,7 +214,7 @@ class TableSaveCmd(Command):
             else:
                 update_column = config.get("column") or config.get("name")
                 if value == "":
-                    sobject.set_value(update_column, "NULL", op="is", quoted=False)
+                    sobject.set_value(update_column, "NULL", quoted=False)
 
                 sobject.set_value(update_column, value)
 
@@ -240,6 +240,9 @@ class EditSaveCmd(Command):
         updates = self.kwargs.get("updates")
         extra_data = self.kwargs.get("extra_data") or {}
 
+        config_handler = self.kwargs.get("config_handler")
+        config = Common.create_from_class_path(config_handler)
+
         new_sobjects = []
 
         for update in updates:
@@ -264,7 +267,7 @@ class EditSaveCmd(Command):
             if item_data:
                 sobject.set_value("data", item_data)
 
-
+            config.preprocess_commit(sobject)
             sobject.commit()
 
             sobject_dict = sobject.get_sobject_dict()

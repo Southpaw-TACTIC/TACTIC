@@ -3,7 +3,6 @@
 let useEffect = React.useEffect;
 let useState = React.useState;
 const Common = spt.react.Common;
-
 const DataGrid = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
     add_filter(filter) {
@@ -69,14 +68,12 @@ const DataGrid = React.forwardRef((props, ref) => {
   };
   const get_filter = column => {
     let api = grid_options.api;
-
     const filterInstance = api.getFilterInstance(column);
     let model = filterInstance.getModel();
     return model;
   };
   const set_filter = (column, options) => {
     let api = grid_options.api;
-
     const filterInstance = api.getFilterInstance(column);
     if (options.conditions) {
       filterInstance.setModel(options);
@@ -93,9 +90,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (!options.type) {
       options.type = "startsWith";
     }
-
     filterInstance.setModel(options);
-
     api.onFilterChanged();
   };
   const select_all = () => {
@@ -117,7 +112,7 @@ const DataGrid = React.forwardRef((props, ref) => {
   };
   const get_filtered_rows = () => {
     let all_rows = [];
-    grid_options.api.forEachNodeAfterFilter(rowNode => all_rows.push(rowNode.data));
+    grid_options?.api.forEachNodeAfterFilter(rowNode => all_rows.push(rowNode.data));
     return all_rows;
   };
   const get_columns = () => {
@@ -167,7 +162,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       });
     }, 0);
   };
-
   const deselect = () => {
     grid_options.api.deselectAll();
   };
@@ -192,7 +186,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       }
     });
   };
-
   const _show_total = params => {
     if (!props.show_total && !props.get_total_data) return;
     let pinned;
@@ -220,7 +213,6 @@ const DataGrid = React.forwardRef((props, ref) => {
           columns.push(column);
         }
       });
-
       setTimeout(() => {
         pinned = props.get_total_data(params, columns);
         if (pinned) {
@@ -248,7 +240,12 @@ const DataGrid = React.forwardRef((props, ref) => {
     let random = Math.floor(Math.random() * 100000000);
     let grid_name = props.name + random;
     set_grid_name(grid_name);
-
+    let pagination = true;
+    if (props.pagination != null) {
+      pagination = props.pagination;
+    } else {
+      pagination: props.auto_height ? false : true;
+    }
     const gridOptions = {
       columnDefs: props.column_defs,
       defaultColDef: {
@@ -257,19 +254,15 @@ const DataGrid = React.forwardRef((props, ref) => {
       },
       rowSelection: props.row_selection || 'multiple',
       animateRows: true,
-
-      pagination: props.auto_height ? false : true,
+      pagination: pagination,
       onGridReady: on_grid_ready,
       onFilterChanged: on_filter_changed,
       onCellClicked: on_cell_clicked,
       singleClickEdit: props.single_click == true ? true : false,
       suppressClickEdit: props.suppress_click == true ? true : false,
       suppressRowClickSelection: true,
-
       groupHeaderHeight: 20
-
     };
-
     if (props.enable_undo || props.on_undo) {
       gridOptions.undoRedoCellEditing = true;
       gridOptions.undoRedoCellEditingLimit = 20;
@@ -292,7 +285,6 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (props.components) {
       gridOptions["components"] = props.components;
     }
-
     if (props.filter) {
       gridOptions["isExternalFilterPresent"] = () => {
         return true;
@@ -300,6 +292,9 @@ const DataGrid = React.forwardRef((props, ref) => {
       gridOptions["doesExternalFilterPass"] = props.filter;
     }
     if (props.show_full_header) {
+      if (props.header_height) {
+        gridOptions["headerHeight"] = props.header_height;
+      }
       gridOptions["defaultColDef"] = {
         "wrapHeaderText": true,
         "autoHeaderHeight": true
@@ -315,18 +310,14 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (!grid_options) return;
     if (!grid_name) return;
     grid_options.onSelectionChanged = on_selection_changed;
-
     const eGridDiv = document.getElementById(grid_name);
     let grid = new agGrid.Grid(eGridDiv, grid_options);
-
     eGridDiv.addEventListener("blur", e => {
       grid_options.api.stopEditing();
     });
     if (props.column_defs) {
       grid_options.api.setColumnDefs(props.column_defs);
-
     }
-
     if (props.data != data) {
       let data = props.data;
       if (props.group_by) {
@@ -336,7 +327,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       set_data(data);
     }
     grid_options["getRowStyle"] = get_row_style;
-
     add_grouping(grid_options);
   }, [grid_name, grid_options]);
   const get_row_style = params => {
@@ -353,7 +343,6 @@ const DataGrid = React.forwardRef((props, ref) => {
   const add_grouping = grid_options => {
     let group_column = 'department';
     let sort_column = 'department';
-
     function generateHeaderRows(rowData) {
       let newData = [];
       let last_group_value = null;
@@ -368,9 +357,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       });
       return newData;
     }
-
     grid_options.api.addEventListener('filterChanged', function (e) {});
-
     grid_options.onSortChanged = event => {
       var rowData = [];
       grid_options.api.forEachNode(function (node) {
@@ -399,7 +386,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       grid_options.api.setRowData(data);
     }
   }, [props]);
-
   const group_data = (items, group_by) => {
     let last_group_value = null;
     items = [...items];
@@ -420,9 +406,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     });
     return group_data;
   };
-
   const collapse_data = (data, collapse_by) => {};
-
   function generate_pinned_data(params) {
     let result2 = {};
     let result = {
@@ -439,8 +423,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       "booking_budget": 0,
       "actual_budget": 0
     };
-    params.columnApi.getAllGridColumns().forEach(item => {
-    });
+    params.columnApi.getAllGridColumns().forEach(item => {});
     return calculatePinnedBottomData(result, params);
   }
   function calculatePinnedBottomData(target, params) {
@@ -459,7 +442,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       groups: "TOTAL",
       work_hours: {}
     };
-
     let columns = [];
     params.columnApi.getAllGridColumns().forEach(item => {
       let column = item.colId;
@@ -492,7 +474,6 @@ const DataGrid = React.forwardRef((props, ref) => {
           }
         }
       });
-
       if (element == "budget") {
         target[element] = total;
       } else {
@@ -500,7 +481,6 @@ const DataGrid = React.forwardRef((props, ref) => {
           days: total,
           type: "total"
         };
-
         target["work_hours"][element] = [{
           straight_time: total,
           type: "total"
@@ -510,7 +490,6 @@ const DataGrid = React.forwardRef((props, ref) => {
     return target;
   }
   const get_height = () => {
-
     if (props.auto_height) return "";
     let height = props.height;
     if (height) {
@@ -535,5 +514,4 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
   })));
 });
-
 spt.react.DataGrid = DataGrid;

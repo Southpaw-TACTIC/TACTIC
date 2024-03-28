@@ -165,7 +165,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
     const get_filtered_rows = () => {
         let all_rows = [];
-        grid_options.api.forEachNodeAfterFilter((rowNode) => all_rows.push(rowNode.data));
+        grid_options?.api.forEachNodeAfterFilter((rowNode) => all_rows.push(rowNode.data));
         return all_rows;
     }
 
@@ -343,6 +343,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
         let grid_name = props.name + random;
         set_grid_name(grid_name);
 
+        let pagination = true;
+        if (props.pagination != null) {
+            pagination = props.pagination;
+        }
+        else {
+            pagination: props.auto_height ? false : true;
+        }
+
 
         // Grid Options are properties passed to the grid
         const gridOptions = {
@@ -357,7 +365,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
           animateRows: true, // have rows animate to new positions when sorted
 
           //paginationAutoPageSize: true,
-          pagination: props.auto_height ? false : true,
+          pagination: pagination,
+          //pagination: props.auto_height ? false : false,
 
 
           onGridReady: on_grid_ready,
@@ -390,18 +399,23 @@ const DataGrid = React.forwardRef( (props, ref) => {
             gridOptions.onCellKeyDown = props.on_cell_key_down;
         }
 
+
+        // Set the height
         let row_height = 25;
         if (props.row_height) {
             row_height = props.row_height;
         }
         gridOptions["rowHeight"] = row_height;
 
+
         if (props.auto_height) {
             gridOptions["domLayout"] = "autoHeight";
+
         }
         else {
             gridOptions["domLayout"] = "normal";
         }
+
 
         if (props.components) {
              gridOptions["components"] = props.components;
@@ -414,13 +428,16 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         if (props.show_full_header) {
+            if (props.header_height) {
+                gridOptions["headerHeight"] = props.header_height;
+            }
             gridOptions["defaultColDef"] = {
                 "wrapHeaderText": true,
                 "autoHeaderHeight": true,
             }
         }
         else {
-          gridOptions["headerHeight"] = props.header_height || 25;
+            gridOptions["headerHeight"] = props.header_height || 25;
         }
 
 

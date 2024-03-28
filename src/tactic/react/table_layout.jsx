@@ -455,6 +455,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
                     delete_modal_ref={delete_modal_ref}
                     import_data_modal_ref={import_data_modal_ref}
                     on_import={load_data}
+                    import_cmd={props.import_cmd }
+                    action_menu_items={props.action_menu_items}
                 />
 
             </div>
@@ -490,7 +492,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
             column_defs={column_defs}
             data={data}
             supress_click={true}
-            auto_height={false}
+            auto_height={props.auto_height}
             height={props.height}
             row_height={props.row_height}
             enable_undo={props.enable_undo}
@@ -596,6 +598,14 @@ const TableLayoutActionMenu = props => {
         }}>Delete Selected</MenuItem>
 
 
+        { props.action_menu_items &&
+            <>
+            <hr/>
+            { props.action_menu_items({close: action_handle_select}) }
+            </>
+        }
+
+
       </Menu>
     </div>
     )
@@ -678,7 +688,7 @@ const EditModal = React.forwardRef( (props, ref) => {
               Enter the following data for {props.name}
             </DialogContentText>
 
-            <div style={{display: "flex", flexDirection: "column", gap: "30px", margin: "30px 0px"}}>
+            <div style={{display: "flex", flexDirection: "column", gap: "20px", margin: "30px 10px"}}>
 
                 { props.element_names?.map( (element_name, index) => {
 
@@ -726,10 +736,21 @@ const EditModal = React.forwardRef( (props, ref) => {
    
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={ e => {
-                insert();
-            }}>Insert</Button>
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "30px",
+                width: "100%",
+            }}>
+                <Button 
+                    onClick={handleClose}
+                >Cancel</Button>
+                <Button
+                    variant="contained"
+                    onClick={ e => {
+                        insert();
+                }}>Insert</Button>
+            </div>
           </DialogActions>
         </Dialog>
     </>
@@ -869,6 +890,10 @@ class SelectEditor {
         let name = params.name;
 
         let el_style;
+        let style = {
+            width: "100%",
+            height: "100%"
+        }
         if (!params.is_form) {
             el_style = {
                 fontSize: "0.75rem",
@@ -884,21 +909,17 @@ class SelectEditor {
 
 
         this.input = document.createElement("div")
+        this.input.style.width = "100%";
+        this.input.style.border = "solid 1px green";
         this.root = ReactDOM.createRoot( this.input );
         this.el = (
-            <div>
             <TextField
                 label={label}
                 variant={variant}
                 defaultValue={this.value}
                 size="small"
                 select
-                style={{
-                    width: "100%",
-                    height: "100%",
-                    padding: "0px 15px",
-                    fontSize: "0.8rem",
-                }}
+                style={style}
                 SelectProps={{
                     defaultOpen: open,
                     style: el_style,
@@ -930,7 +951,6 @@ class SelectEditor {
                     </MenuItem>
                 ) ) }
             </TextField>
-            </div>
         );
 
     }
@@ -983,7 +1003,7 @@ const SelectEditorWdg = (props) => {
     let props2 = {
         is_form: true,
         name: name,
-        label: label,
+        label: "",
         variant: "outlined",
         values: cellEditorParams.values || [],
         labels: cellEditorParams.labels || [],
@@ -995,7 +1015,11 @@ const SelectEditorWdg = (props) => {
     let el = select.getEl();
 
     return (
-        <div>{el}</div>
+        <div>
+            <div>{label}</div>
+            <div>{el}</div>
+        </div>
+ 
     );
 }
 
@@ -1025,11 +1049,13 @@ class InputEditor {
             else {
                 el_style = {
                     fontSize: "0.75rem",
-                    padding: "5px 3px",
+                    padding: "3px 3px",
                     height: "100%",
+                    width: "100%",
                     boxSizing: "border-box",
                 }
                 style.padding = "0px 15px";
+                style.width = "max-width";
             }
         }
         else {
@@ -1037,16 +1063,19 @@ class InputEditor {
         }
 
         this.input = document.createElement("div")
+        this.input.style.width = "100%";
+        this.input.style.border = "solid 1px green";
         this.root = ReactDOM.createRoot( this.input );
         this.el = (
-            <div>
                 <TextField
                     label={label}
                     variant={variant}
                     defaultValue={this.value}
+                    fullWidth
                     size="small"
                     type={mode}
                     style={style}
+                    InputProps={{ disableUnderline: true }}
                     inputProps={{
                         className: "input",
                         style: el_style
@@ -1077,7 +1106,6 @@ class InputEditor {
  
                 >
                 </TextField>
-            </div>
         );
 
     }
@@ -1124,7 +1152,7 @@ const InputEditorWdg = (props) => {
     let props2 = {
         is_form: true,
         name: props.name,
-        label: label,
+        label: "",
         variant: "outlined",
         mode: cellEditorParams.mode,
         onchange: props.onchange
@@ -1135,7 +1163,10 @@ const InputEditorWdg = (props) => {
     let el = input.getEl();
 
     return (
-        <div>{el}</div>
+        <div>
+            <div>{label}</div>
+            <div>{el}</div>
+        </div>
     );
 }
 
@@ -1168,6 +1199,34 @@ const SimpleCellRenderer = (params) => {
         }
 
     }
+    else if (mode == "%") {
+        try {
+            let display_value = value * 100;
+            label = display_value + "%";
+        }
+        catch(e) {
+            label = "";
+        }
+
+    }
+
+    else if (mode == "$") {
+
+        function numberWithCommasAndDecimals(x) {
+            const parts = x.toString().split(".");
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join(".");
+        }
+
+        try {
+            label = "$" + numberWithCommasAndDecimals(value);
+        }
+        catch(e) {
+            label = "";
+        }
+    }
+
+
     else {
         let values = params.values;
         if (values != null) {
@@ -1198,6 +1257,8 @@ const SimpleCellRenderer = (params) => {
         inner.style.width = "100%";
         inner.style.height = "100%";
         inner.style.padding = "0px 3px";
+
+        inner.style.whiteSpace = "normal";
 
         // if the mode is color, the set the background color
         if (params.mode == "color") {
@@ -1259,6 +1320,29 @@ const SimpleCellRenderer = (params) => {
             icon.style.display = "none";
         } );
     }
+    else {
+        let icon = document.createElement("i");
+        el.appendChild(icon);
+        icon.classList.add("fas");
+        icon.classList.add("fa-ban");
+        icon.classList.add("btn");
+        icon.classList.add("btn-link");
+
+        icon.style.display = "none";
+        icon.style.position = "absolute";
+        icon.style.opacity = 0.4;
+        icon.style.right = "-5px";
+        icon.style.top = "-3px";
+        icon.style.fontSize = "0.8rem";
+        el.addEventListener( "mouseenter", e => {
+            icon.style.display = "";
+        } );
+        el.addEventListener( "mouseleave", e => {
+            icon.style.display = "none";
+        } );
+
+    }
+
 
     return el;
 
