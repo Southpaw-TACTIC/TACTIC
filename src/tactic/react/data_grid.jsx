@@ -344,6 +344,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         set_grid_name(grid_name);
 
         let pagination = true;
+        let pagination_size = props.pagination_size || 10000;
         if (props.pagination != null) {
             pagination = props.pagination;
         }
@@ -366,6 +367,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
           //paginationAutoPageSize: true,
           pagination: pagination,
+          paginationPageSize: pagination_size,
           //pagination: props.auto_height ? false : false,
 
 
@@ -531,8 +533,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         if (params.data.__type__ == "group") {
-            css["background"] = "#000";
-            css["color"] = "#FFF";
+            css["background"] = params.data.__background__;
+            css["color"] = params.data.__color__;
         }
         return css;
     }
@@ -632,8 +634,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
             if (group_value != last_group_value) {
                 let group_item = {
                     name: group_value,
+                    column: group_by,
                     __type__: "group",
-                    background: "#000",
+                    __background__: "#DDD",
+                    __color__: "#000",
                 }
                 group_data.push(group_item)
             }
