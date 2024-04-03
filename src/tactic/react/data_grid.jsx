@@ -503,16 +503,11 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
 
-        /*
         if (props.data != data) {
             let data = props.data;
-            if (props.group_by) {
-                data = group_data(data, props.group_by)
-            }
             grid_options.api.setRowData(data);
             set_data(data);
         }
-        */
 
         grid_options["getRowStyle"] = get_row_style;
 

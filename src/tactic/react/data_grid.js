@@ -339,6 +339,11 @@ const DataGrid = React.forwardRef((props, ref) => {
 
     }
 
+    if (props.data != data) {
+      let data = props.data;
+      grid_options.api.setRowData(data);
+      set_data(data);
+    }
     grid_options["getRowStyle"] = get_row_style;
 
     add_grouping(grid_options);
