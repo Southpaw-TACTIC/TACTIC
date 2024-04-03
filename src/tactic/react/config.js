@@ -8,10 +8,12 @@ const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
 const PreviewCellRenderer = spt.react.PreviewCellRenderer;
+
 const on_cell_value_changed = params => {
   let table_ref = params.table_ref;
   let data = params.data;
   let column = params.column.colId;
+
   data[column] = params.newValue;
   table_ref.current.save(data, column);
 };
@@ -21,6 +23,7 @@ const Config = (config, options) => {
     cell_value_changed = on_cell_value_changed;
   }
   let table_ref = options.table_ref;
+
   let definition_types = {
     simple: {
       minWidth: 150,
@@ -42,6 +45,7 @@ const Config = (config, options) => {
       cellRenderer: SimpleCellRenderer
     }
   };
+
   let config_defs = {};
   config.forEach(config_item => {
     let element_type = config_item.type;
@@ -177,6 +181,7 @@ const Config = (config, options) => {
       }
       config_def.cellRendererParams = params;
     }
+
     let cell_renderer = config_item.renderer;
     if (cell_renderer) {
       try {
@@ -189,4 +194,5 @@ const Config = (config, options) => {
   });
   return config_defs;
 };
+
 spt.react.Config = Config;
