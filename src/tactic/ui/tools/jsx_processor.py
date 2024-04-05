@@ -231,7 +231,11 @@ class JSXTranspile():
 
         (o, e) = p.communicate(input=text)
         if e:
-            sys.stderr.write(e.decode())
+            decode = e.decode()
+            if decode.startswith("Browserslist:"):
+                pass
+            else:
+                sys.stderr.write(e.decode())
 
         return o.decode()
     main = classmethod(main)
