@@ -273,7 +273,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       singleClickEdit: props.single_click == true ? true : false,
       suppressClickEdit: props.suppress_click == true ? true : false,
       suppressRowClickSelection: true,
-
+      stopEditingWhenCellsLoseFocus: props.click_off == true ? true : false,
       groupHeaderHeight: 20
 
     };
@@ -314,7 +314,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       }
       gridOptions["defaultColDef"] = {
         "wrapHeaderText": true,
-        "autoHeaderHeight": true
+        "autoHeaderHeight": true,
+        "XvalueGetter": params => {}
       };
     } else {
       gridOptions["headerHeight"] = props.header_height || 25;
@@ -345,6 +346,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       set_data(data);
     }
     grid_options["getRowStyle"] = get_row_style;
+    grid_options["getRowHeight"] = get_row_height;
 
     add_grouping(grid_options);
   }, [grid_name, grid_options]);
@@ -357,7 +359,17 @@ const DataGrid = React.forwardRef((props, ref) => {
       css["background"] = params.data.__background__;
       css["color"] = params.data.__color__;
     }
+    if (params.data.__isVisible__ == false) {
+      css["display"] = "none";
+    } else {
+      css["display"] = "";
+    }
     return css;
+  };
+  const get_row_height = params => {
+    if (params.data.__isVisible__ == false) {
+      return 0;
+    }
   };
   const add_grouping = grid_options => {
 
@@ -389,6 +401,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       grid_options.api.setColumnDefs(props.column_defs);
     }
     grid_options["getRowStyle"] = get_row_style;
+    grid_options["getRowHeight"] = get_row_height;
     if (props.data) {
       let data = props.data;
       if (props.group_by) {
@@ -422,7 +435,7 @@ const DataGrid = React.forwardRef((props, ref) => {
           name: group_value,
           column: group_by,
           __type__: "group",
-          __background__: "#DDD",
+          __background__: "#CCC",
           __color__: "#000"
         };
         group_data.push(group_item);
