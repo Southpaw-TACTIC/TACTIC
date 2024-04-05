@@ -379,7 +379,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
           suppressRowClickSelection: true,
 
           // while this is the behvaior we want, it does not behave well with selects
-          //stopEditingWhenCellsLoseFocus: true,
+          stopEditingWhenCellsLoseFocus: props.click_off == true ? true : false,
         
           groupHeaderHeight: 20,
 
@@ -435,6 +435,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
             gridOptions["defaultColDef"] = {
                 "wrapHeaderText": true,
                 "autoHeaderHeight": true,
+                "XvalueGetter": params => {
+                }
             }
         }
         else {
@@ -510,6 +512,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         grid_options["getRowStyle"] = get_row_style;
+        grid_options["getRowHeight"] = get_row_height;
 
 
         // Add grouping
@@ -533,9 +536,22 @@ const DataGrid = React.forwardRef( (props, ref) => {
             css["color"] = params.data.__color__;
         }
 
+        if (params.data.__isVisible__ == false) {
+            css["display"] = "none";
+        }
+        else {
+            css["display"] = "";
+        }
+
         return css;
     }
 
+    const get_row_height = params => {
+        if (params.data.__isVisible__ == false) {
+            return 0;
+        }
+
+    }
 
 
     const add_grouping = (grid_options) => {
@@ -603,6 +619,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         grid_options["getRowStyle"] = get_row_style;
+        grid_options["getRowHeight"] = get_row_height;
 
 
         if (props.data) {
@@ -658,7 +675,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
                     name: group_value,
                     column: group_by,
                     __type__: "group",
-                    __background__: "#DDD",
+                    __background__: "#CCC",
                     __color__: "#000",
                 }
                 group_data.push(group_item)
