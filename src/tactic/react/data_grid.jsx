@@ -167,7 +167,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
     const get_columns = () => {
         let columns = [];
-        grid_options.columnApi.getAllGridColumns().forEach(item => {
+        //grid_options.columnApi.getAllGridColumns().forEach(item => {
+        api.getAllGridColumns().forEach(item => {
             let column = item.colId;
             columns.push(column);
         } )
@@ -233,10 +234,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
-    const on_selection_changed = () => {
+    const on_selection_changed = (e) => {
 
-        let selectedRows = api.getSelectedRows();
-        let selectedNodes = api.getSelectedNodes();
+        let selectedRows = e.api.getSelectedRows();
+        let selectedNodes = e.api.getSelectedNodes();
 
         let onselect = props.onselect;
         if (!onselect) return;
@@ -293,7 +294,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         else if (props.get_total_data) {
 
             let columns = [];
-            params.columnApi.getAllGridColumns().forEach(item => {
+            params.api.getAllGridColumns().forEach(item => {
                 let column = item.colId;
                 let parts = column.split("-");
                 if (parts.length == 3) {
@@ -383,6 +384,13 @@ const DataGrid = React.forwardRef( (props, ref) => {
           onColumnVisible: e => {
               //console.log("e: ", e)
           },
+
+
+          getRowStyle: get_row_style,
+          getRowHeight: get_row_height,
+
+
+
 
 
           // while this is the behvaior we want, it does not behave well with selects
@@ -485,7 +493,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
  
 
         if (props.column_defs) {
-            api.setColumnDefs(props.column_defs);
+            //api.setColumnDefs(props.column_defs);
+            api.setGridOption("columnDefs", props.column_defs);
 
             /*
             // Custom comparator that sorts header rows separately
@@ -523,10 +532,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
             set_data(data);
         }
 
-        grid_options["getRowStyle"] = get_row_style;
-        grid_options["getRowHeight"] = get_row_height;
-
-
         // Add grouping
         add_grouping(grid_options);
 
@@ -546,8 +551,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         if (params.data.__type__ == "group") {
-            css["background"] = params.data.__background__;
-            css["color"] = params.data.__color__;
+            css["background"] = params.data.__background__ || "#CCC";
+            css["color"] = params.data.__color__ || "#000";
         }
 
         if (params.data.__isVisible__ == false) {
@@ -589,7 +594,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
             });
 
 
-            let columnState = grid_options.columnApi.getColumnState();
+            //let columnState = grid_options.columnApi.getColumnState();
+            let columnState = api.columnModel.getColumnState();
             let sortedColumns = columnState.filter(column => column.sort !== null);
             if (sortedColumns.length == 0) {
                 if (grid_options.group_by != "") {
@@ -617,11 +623,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
         if (props.column_defs) {
-            api.setColumnDefs(props.column_defs);
+            //api.setColumnDefs(props.column_defs);
+            api.setGridOption("columnDefs", props.column_defs);
         }
 
-        grid_options["getRowStyle"] = get_row_style;
-        grid_options["getRowHeight"] = get_row_height;
 
 
         if (props.data) {
@@ -631,7 +636,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 grid_options["group_by"] = props.group_by;
 
                 // Find the sorted column(s)
-                let columnState = grid_options.columnApi.getColumnState();
+                //let columnState = grid_options.columnApi.getColumnState();
+                let columnState = api.columnModel.getColumnState();
                 let sortedColumns = columnState.filter(column => column.sort !== null);
                 if (sortedColumns.length > 0) {
                     // let event handle the grouping
@@ -723,7 +729,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
 
-        params.columnApi.getAllGridColumns().forEach(item => {
+        //params.columnApi.getAllGridColumns().forEach(item => {
+        api.getAllGridColumns().forEach(item => {
             //result[item.colId] = null;
         });
         return calculatePinnedBottomData(result, params);
@@ -754,7 +761,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         let columns = [];
-        params.columnApi.getAllGridColumns().forEach(item => {
+        //params.columnApi.getAllGridColumns().forEach(item => {
+        api.getAllGridColumns().forEach(item => {
             //result[item.colId] = null;
             let column = item.colId;
             let parts = column.split("-");

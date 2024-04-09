@@ -118,7 +118,7 @@ const DataGrid = React.forwardRef((props, ref) => {
   };
   const get_columns = () => {
     let columns = [];
-    grid_options.columnApi.getAllGridColumns().forEach(item => {
+    api.getAllGridColumns().forEach(item => {
       let column = item.colId;
       columns.push(column);
     });
@@ -167,9 +167,9 @@ const DataGrid = React.forwardRef((props, ref) => {
   const deselect = () => {
     api.deselectAll();
   };
-  const on_selection_changed = () => {
-    let selectedRows = api.getSelectedRows();
-    let selectedNodes = api.getSelectedNodes();
+  const on_selection_changed = e => {
+    let selectedRows = e.api.getSelectedRows();
+    let selectedNodes = e.api.getSelectedNodes();
     let onselect = props.onselect;
     if (!onselect) return;
     onselect(selectedRows, selectedNodes);
@@ -206,7 +206,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       });
     } else if (props.get_total_data) {
       let columns = [];
-      params.columnApi.getAllGridColumns().forEach(item => {
+      params.api.getAllGridColumns().forEach(item => {
         let column = item.colId;
         let parts = column.split("-");
         if (parts.length == 3) {
@@ -274,6 +274,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       suppressDragLeaveHidesColumns: true,
       onColumnVisible: e => {
       },
+      getRowStyle: get_row_style,
+      getRowHeight: get_row_height,
       stopEditingWhenCellsLoseFocus: props.click_off == true ? true : false,
       groupHeaderHeight: 20
 
@@ -340,7 +342,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       api.stopEditing();
     });
     if (props.column_defs) {
-      api.setColumnDefs(props.column_defs);
+      api.setGridOption("columnDefs", props.column_defs);
 
     }
 
@@ -349,8 +351,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       api.setRowData(data);
       set_data(data);
     }
-    grid_options["getRowStyle"] = get_row_style;
-    grid_options["getRowHeight"] = get_row_height;
 
     add_grouping(grid_options);
     if (props.on_column_moved) {
@@ -363,8 +363,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       css = props.get_row_style(params) || {};
     }
     if (params.data.__type__ == "group") {
-      css["background"] = params.data.__background__;
-      css["color"] = params.data.__color__;
+      css["background"] = params.data.__background__ || "#CCC";
+      css["color"] = params.data.__color__ || "#000";
     }
     if (params.data.__isVisible__ == false) {
       css["display"] = "none";
@@ -390,7 +390,8 @@ const DataGrid = React.forwardRef((props, ref) => {
         }
         rowData.push(node.data);
       });
-      let columnState = grid_options.columnApi.getColumnState();
+
+      let columnState = api.columnModel.getColumnState();
       let sortedColumns = columnState.filter(column => column.sort !== null);
       if (sortedColumns.length == 0) {
         if (grid_options.group_by != "") {
@@ -408,16 +409,14 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
     if (!api) return;
     if (props.column_defs) {
-      api.setColumnDefs(props.column_defs);
+      api.setGridOption("columnDefs", props.column_defs);
     }
-    grid_options["getRowStyle"] = get_row_style;
-    grid_options["getRowHeight"] = get_row_height;
     if (props.data) {
       let data = props.data;
       if (props.group_by) {
         grid_options["group_by"] = props.group_by;
 
-        let columnState = grid_options.columnApi.getColumnState();
+        let columnState = api.columnModel.getColumnState();
         let sortedColumns = columnState.filter(column => column.sort !== null);
         if (sortedColumns.length > 0) {
           clear_sort();
@@ -474,7 +473,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       "booking_budget": 0,
       "actual_budget": 0
     };
-    params.columnApi.getAllGridColumns().forEach(item => {
+
+    api.getAllGridColumns().forEach(item => {
     });
     return calculatePinnedBottomData(result, params);
   }
@@ -496,7 +496,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     };
 
     let columns = [];
-    params.columnApi.getAllGridColumns().forEach(item => {
+    api.getAllGridColumns().forEach(item => {
       let column = item.colId;
       let parts = column.split("-");
       if (parts.length == 3) {
