@@ -259,7 +259,11 @@ const DataGrid = React.forwardRef((props, ref) => {
       columnDefs: props.column_defs,
       defaultColDef: {
         sortable: true,
-        filter: true
+        filter: true,
+        filterParams: {
+          "maxNumConditions": 10,
+          "numAlwaysVisibleConiions": 2
+        }
       },
       rowSelection: props.row_selection || 'multiple',
       animateRows: true,
@@ -273,6 +277,9 @@ const DataGrid = React.forwardRef((props, ref) => {
       singleClickEdit: props.single_click == true ? true : false,
       suppressClickEdit: props.suppress_click == true ? true : false,
       suppressRowClickSelection: true,
+      suppressDragLeaveHidesColumns: true,
+      onColumnVisible: e => {
+      },
       stopEditingWhenCellsLoseFocus: props.click_off == true ? true : false,
       groupHeaderHeight: 20
 
@@ -315,7 +322,9 @@ const DataGrid = React.forwardRef((props, ref) => {
       gridOptions["defaultColDef"] = {
         "wrapHeaderText": true,
         "autoHeaderHeight": true,
-        "XvalueGetter": params => {}
+        filterParams: {
+          "maxNumConditions": 10
+        }
       };
     } else {
       gridOptions["headerHeight"] = props.header_height || 25;
@@ -349,6 +358,9 @@ const DataGrid = React.forwardRef((props, ref) => {
     grid_options["getRowHeight"] = get_row_height;
 
     add_grouping(grid_options);
+    if (props.on_column_moved) {
+      grid_options.onColumnMoved = props.on_column_moved;
+    }
   }, [grid_name, grid_options]);
   const get_row_style = params => {
     let css = {};
@@ -372,6 +384,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
   };
   const add_grouping = grid_options => {
+    grid_options.onFilterChanged = event => {};
 
     grid_options.onSortChanged = event => {
       var rowData = [];
@@ -389,6 +402,7 @@ const DataGrid = React.forwardRef((props, ref) => {
           rowData = group_data(rowData, grid_options.group_by);
         }
       }
+      set_data(rowData);
       grid_options.api.setRowData(rowData);
       grid_options.api.redrawRows();
     };
