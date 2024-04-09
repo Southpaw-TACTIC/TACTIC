@@ -20,11 +20,11 @@ class JSIncludes(object):
     # currently in spt_js_url (tactic/src/context/spt_js) ... should be in own separate location
     third_party = [
         # add mootools
-        "mootools/mootools-core-1.4.1-full-nocompat-yc.js",
-        "mootools/mootools-more-1.4.0.1-yc.js",
+        #"mootools/mootools-core-1.4.1-full-nocompat-yc.js",
+        #"mootools/mootools-more-1.4.0.1-yc.js",
         #"json2.js",
-        #"mootools/MooTools-Core-1.6.0.js",
-        #"mootools/MooTools-More-1.6.0.js",
+        "mootools/MooTools-Core-1.6.0.js",
+        "mootools/MooTools-More-1.6.0.js",
     ]
 
 

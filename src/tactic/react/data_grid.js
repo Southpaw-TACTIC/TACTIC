@@ -65,18 +65,14 @@ const DataGrid = React.forwardRef((props, ref) => {
   const [onselect, set_onselect] = useState(null);
   const [data, set_data] = useState([]);
   const add_filter = filter => {
-    grid_options.api.setQuickFilter(filter);
+    api.setQuickFilter(filter);
   };
   const get_filter = column => {
-    let api = grid_options.api;
-
     const filterInstance = api.getFilterInstance(column);
     let model = filterInstance.getModel();
     return model;
   };
   const set_filter = (column, options) => {
-    let api = grid_options.api;
-
     const filterInstance = api.getFilterInstance(column);
     if (options.conditions) {
       filterInstance.setModel(options);
@@ -99,20 +95,20 @@ const DataGrid = React.forwardRef((props, ref) => {
     api.onFilterChanged();
   };
   const select_all = () => {
-    grid_options.api.selectAll();
+    api.selectAll();
   };
   const unselect_all = () => {
-    grid_options.api.deselectAll();
+    api.deselectAll();
   };
   const get_selected_nodes = () => {
-    return grid_options.api.getSelectedNodes();
+    return api.getSelectedNodes();
   };
   const get_selected_rows = () => {
-    return grid_options.api.getSelectedRows();
+    return api.getSelectedRows();
   };
   const get_filtered_nodes = () => {
     let all_nodes = [];
-    grid_options.api.forEachNodeAfterFilter(rowNode => all_nodes.push(rowNode));
+    api.forEachNodeAfterFilter(rowNode => all_nodes.push(rowNode));
     return all_nodes;
   };
   const get_filtered_rows = () => {
@@ -147,11 +143,11 @@ const DataGrid = React.forwardRef((props, ref) => {
         }
       };
     }
-    grid_options.api.exportDataAsCsv(params);
+    api.exportDataAsCsv(params);
   };
   const redrawRows = nodes => {
     setTimeout(() => {
-      grid_options.api.redrawRows({
+      api.redrawRows({
         nodes: nodes,
         force: true,
         suppressFlash: true
@@ -160,7 +156,7 @@ const DataGrid = React.forwardRef((props, ref) => {
   };
   const refresh_cells = nodes => {
     setTimeout(() => {
-      grid_options.api.refreshCells({
+      api.refreshCells({
         nodes: nodes,
         force: true,
         suppressFlash: true
@@ -169,10 +165,9 @@ const DataGrid = React.forwardRef((props, ref) => {
   };
 
   const deselect = () => {
-    grid_options.api.deselectAll();
+    api.deselectAll();
   };
   const on_selection_changed = () => {
-    let api = grid_options.api;
     let selectedRows = api.getSelectedRows();
     let selectedNodes = api.getSelectedNodes();
     let onselect = props.onselect;
@@ -180,7 +175,6 @@ const DataGrid = React.forwardRef((props, ref) => {
     onselect(selectedRows, selectedNodes);
   };
   const clear_filters = () => {
-    let api = grid_options.api;
     return api.setFilterModel(null);
   };
   const clear_sort = () => {
@@ -339,19 +333,20 @@ const DataGrid = React.forwardRef((props, ref) => {
     grid_options.onSelectionChanged = on_selection_changed;
 
     const eGridDiv = document.getElementById(grid_name);
-    let grid = new agGrid.Grid(eGridDiv, grid_options);
+    let api = agGrid.createGrid(eGridDiv, grid_options);
+    set_api(api);
 
     eGridDiv.addEventListener("blur", e => {
-      grid_options.api.stopEditing();
+      api.stopEditing();
     });
     if (props.column_defs) {
-      grid_options.api.setColumnDefs(props.column_defs);
+      api.setColumnDefs(props.column_defs);
 
     }
 
     if (props.data != data) {
       let data = props.data;
-      grid_options.api.setRowData(data);
+      api.setRowData(data);
       set_data(data);
     }
     grid_options["getRowStyle"] = get_row_style;
@@ -389,7 +384,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     grid_options.onSortChanged = event => {
       var rowData = [];
 
-      grid_options.api.forEachNode(function (node) {
+      event.api.forEachNode(function (node) {
         if (node.data.__type__ == 'group') {
           return;
         }
@@ -403,16 +398,17 @@ const DataGrid = React.forwardRef((props, ref) => {
         }
       }
       set_data(rowData);
-      grid_options.api.setRowData(rowData);
-      grid_options.api.redrawRows();
+      event.api.setRowData(rowData);
+      event.api.redrawRows();
     };
   };
   useEffect(() => {
     if (!grid_options) {
       return;
     }
+    if (!api) return;
     if (props.column_defs) {
-      grid_options.api.setColumnDefs(props.column_defs);
+      api.setColumnDefs(props.column_defs);
     }
     grid_options["getRowStyle"] = get_row_style;
     grid_options["getRowHeight"] = get_row_height;
@@ -427,14 +423,14 @@ const DataGrid = React.forwardRef((props, ref) => {
           clear_sort();
         } else {
           data = group_data(data, props.group_by);
-          grid_options.api.setRowData(data);
+          api.setRowData(data);
         }
       } else {
         grid_options["group_by"] = "";
-        grid_options.api.setRowData(data);
+        api.setRowData(data);
       }
     }
-  }, [props]);
+  }, [props, api]);
 
   const group_data = (items, group_by) => {
     let last_group_value = null;
