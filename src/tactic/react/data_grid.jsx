@@ -359,7 +359,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
           columnDefs: props.column_defs,
 
           // default col def properties get applied to all columns
-          defaultColDef: {sortable: true, filter: true},
+          defaultColDef: {
+              sortable: true,
+              filter: true,
+              filterParams: {
+                  "maxNumConditions": 10,
+                  "numAlwaysVisibleConiions": 2,
+              }
+          },
 
           rowSelection: props.row_selection || 'multiple', // allow rows to be selected
           animateRows: true, // have rows animate to new positions when sorted
@@ -377,6 +384,12 @@ const DataGrid = React.forwardRef( (props, ref) => {
           singleClickEdit: props.single_click == true ? true : false,
           suppressClickEdit: props.suppress_click == true ? true : false,
           suppressRowClickSelection: true,
+
+          suppressDragLeaveHidesColumns: true,
+          onColumnVisible: e => {
+              //console.log("e: ", e)
+          },
+
 
           // while this is the behvaior we want, it does not behave well with selects
           stopEditingWhenCellsLoseFocus: props.click_off == true ? true : false,
@@ -435,8 +448,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
             gridOptions["defaultColDef"] = {
                 "wrapHeaderText": true,
                 "autoHeaderHeight": true,
-                "XvalueGetter": params => {
+                filterParams: {
+                    "maxNumConditions": 10,
                 }
+
             }
         }
         else {
@@ -478,9 +493,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
             /*
             // Custom comparator that sorts header rows separately
             function customComparator(valueA, valueB, nodeA, nodeB) {
-              if (nodeA.data.is_group_row && !nodeB.data.is_group_row) {
+              if (nodeA.data.__type__ == "group" && !nodeB.data.__type__ == "group") {
                 return -1; // Always sort header rows first
-              } else if (!nodeA.data.is_group_row && nodeB.data.is_group_row) {
+              } else if (!nodeA.data.__type__ == "group" && nodeB.data.__type__ == "group") {
                 return 1; // Always sort non-header rows last
               } else {
                 // Normal comparison logic
@@ -518,7 +533,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
         // Add grouping
         add_grouping(grid_options);
 
-
+        if (props.on_column_moved) {
+            grid_options.onColumnMoved = props.on_column_moved;
+        }
 
     }, [grid_name, grid_options] );
 
@@ -557,23 +574,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
     const add_grouping = (grid_options) => {
 
         // Event listener for when the filter is changed
-        /*
         grid_options.onFilterChanged = event => {
-            var rowData = [];
-            // if you sort, then all groups are removed
-            grid_options.api.forEachNode(function(node) {
-                if (node.data.__type__ == 'group') {
-                    return;
-                }
-                rowData.push(node.data);
-            });
-
-
-            grid_options.api.setRowData(rowData);
-            grid_options.api.redrawRows();
-
         };
-        */
+
 
         // Event listener for when the sort order is changed
         grid_options.onSortChanged = event => {
@@ -598,6 +601,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 }
             }
 
+            set_data(rowData);
             grid_options.api.setRowData(rowData);
             grid_options.api.redrawRows();
 
