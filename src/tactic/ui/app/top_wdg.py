@@ -1233,9 +1233,6 @@ class TopWdg(Widget):
               <script src="/context/react/redux.js" crossorigin></script>
               <script src="/context/react/redux-toolkit.umd.min.js" crossorigin></script>
               <script src="/context/react/react-redux.min.js" crossorigin></script>
-
-<script src="/context/react/ag-grid-community.min.noStyle.js?ver=5.0.0.a01" ></script>
-<script src="#https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js?ver=5.0.0.a01" ></script>
             ''')
 
 
