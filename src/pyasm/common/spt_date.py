@@ -250,6 +250,9 @@ class SPTDate(object):
 
     # convert to UTC, no timezone.  If no timezone is given in the date, use local
     def convert(cls, date, is_gmt=False):
+        if isinstance(date, datetime.date):
+            return date
+
         if date == "CURRENT_TIMESTAMP":
             date = datetime.utcnow()
 
