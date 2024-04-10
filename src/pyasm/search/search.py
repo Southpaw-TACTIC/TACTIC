@@ -2690,8 +2690,8 @@ class SObject(object):
                         if value:
                             # convert to UTC (NOTE: are we sure that this
                             # is always coming from the database?)
-                            if not SObject.is_day_column(col):
-                                value = SPTDate.convert(value, is_gmt=is_gmt)
+                            #if not SObject.is_day_column(col):
+                            value = SPTDate.convert(value, is_gmt=is_gmt)
                             self.data[col] = str(value)
                     
 

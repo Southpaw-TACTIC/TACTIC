@@ -13,8 +13,7 @@ import tacticenv
 
 __all__ = ['SPTDate']
 
-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date as datetype, time
 from dateutil import parser
 from dateutil.tz import *
 from dateutil.rrule import DAILY, rrule, MO, TU, WE, TH, FR
@@ -250,7 +249,9 @@ class SPTDate(object):
 
     # convert to UTC, no timezone.  If no timezone is given in the date, use local
     def convert(cls, date, is_gmt=False):
-        if isinstance(date, datetime.date):
+        if isinstance(date, datetype):
+            noon = time(12, 0)
+            date = datetime.combine(date, noon)
             return date
 
         if date == "CURRENT_TIMESTAMP":
