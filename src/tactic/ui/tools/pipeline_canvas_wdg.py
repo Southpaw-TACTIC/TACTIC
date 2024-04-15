@@ -6306,7 +6306,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var from_pos = spt.pipeline.get_position(this.from_node);
         var to_pos = spt.pipeline.get_position(this.to_node);
 
-        canvas.style.border = "solid 3px blue";
+        //canvas.style.border = "solid 3px blue";
 
         var from_size = spt.pipeline.get_size(this.from_node);
         var to_size = spt.pipeline.get_size(this.to_node);
@@ -6354,7 +6354,7 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var height = size.y;
 
 
-        spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: from_pos.x, y: from_pos.y }, "#0F0");
+        //spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: from_pos.x, y: from_pos.y }, "#0F0");
 
         var from_pos = {
             x: (unscaled_from_pos.x - width/2) * scale + width/2,
@@ -6369,9 +6369,9 @@ spt.pipeline.Connector = function(from_node, to_node) {
         }
 
         //spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: width/2+2 + offset.x, y: height/2+2 + offset.y }, "#F00");
-        let center = { x: width/2 + offset.x, y: height/2 + offset.y };
+        //let center = { x: width/2 + offset.x, y: height/2 + offset.y };
 
-        spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: center.x, y: center.y }, "#F00");
+        //spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: center.x, y: center.y }, "#F00");
 
 
 
