@@ -87,14 +87,12 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
     const add_filter = filter => {
-        grid_options.api.setQuickFilter(filter);
+        api.setQuickFilter(filter);
     }
 
 
 
     const get_filter = (column) => {
-        let api = grid_options.api;
-
         // Get a reference to the filter instance
         const filterInstance = api.getFilterInstance(column);
         let model = filterInstance.getModel();
@@ -103,8 +101,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
     const set_filter = (column, options) => {
-
-        let api = grid_options.api;
 
         // Get a reference to the filter instance
         const filterInstance = api.getFilterInstance(column);
@@ -143,35 +139,36 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
     const select_all = () => {
-        grid_options.api.selectAll();
+        api.selectAll();
     }
 
     const unselect_all = () => {
-        grid_options.api.deselectAll();
+        api.deselectAll();
     }
 
     const get_selected_nodes = () => {
-        return grid_options.api.getSelectedNodes();
+        return api.getSelectedNodes();
     }
     const get_selected_rows = () => {
-        return grid_options.api.getSelectedRows();
+        return api.getSelectedRows();
     }
 
     const get_filtered_nodes = () => {
         let all_nodes = [];
-        grid_options.api.forEachNodeAfterFilter((rowNode) => all_nodes.push(rowNode));
+        api.forEachNodeAfterFilter((rowNode) => all_nodes.push(rowNode));
         return all_nodes;
     }
 
     const get_filtered_rows = () => {
         let all_rows = [];
-        grid_options?.api.forEachNodeAfterFilter((rowNode) => all_rows.push(rowNode.data));
+        api.forEachNodeAfterFilter((rowNode) => all_rows.push(rowNode.data));
         return all_rows;
     }
 
     const get_columns = () => {
         let columns = [];
-        grid_options.columnApi.getAllGridColumns().forEach(item => {
+        //grid_options.columnApi.getAllGridColumns().forEach(item => {
+        api.getAllGridColumns().forEach(item => {
             let column = item.colId;
             columns.push(column);
         } )
@@ -203,14 +200,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
             }
         }
 
-        grid_options.api.exportDataAsCsv(params);
+        api.exportDataAsCsv(params);
     }
 
 
 
     const redrawRows = (nodes) => {
         setTimeout( () => {
-            grid_options.api.redrawRows({
+            api.redrawRows({
                 nodes: nodes,
                 force: true,
                 suppressFlash: true
@@ -220,8 +217,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
     const refresh_cells = (nodes) => {
         setTimeout( () => {
-            //grid_options.api.redrawRows({
-            grid_options.api.refreshCells({
+            //api.redrawRows({
+            api.refreshCells({
                 nodes: nodes,
                 force: true,
                 suppressFlash: true
@@ -232,16 +229,15 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
     // Function to demonstrate calling grid's API
     const deselect = () => {
-        grid_options.api.deselectAll()
+        api.deselectAll()
     }
 
 
 
-    const on_selection_changed = () => {
-        let api = grid_options.api;
+    const on_selection_changed = (e) => {
 
-        let selectedRows = api.getSelectedRows();
-        let selectedNodes = api.getSelectedNodes();
+        let selectedRows = e.api.getSelectedRows();
+        let selectedNodes = e.api.getSelectedNodes();
 
         let onselect = props.onselect;
         if (!onselect) return;
@@ -252,14 +248,13 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
     const clear_filters = () => {
-        let api = grid_options.api;
         return api.setFilterModel(null);
     }
 
 
     const clear_sort = () => {
-        let column_api = grid_options.columnApi;
-        return column_api.applyColumnState( {
+        //let column_api = grid_options.columnApi;
+        return api.applyColumnState( {
             defaultState: { sort: null }
         } )
 
@@ -299,7 +294,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         else if (props.get_total_data) {
 
             let columns = [];
-            params.columnApi.getAllGridColumns().forEach(item => {
+            params.api.getAllGridColumns().forEach(item => {
                 let column = item.colId;
                 let parts = column.split("-");
                 if (parts.length == 3) {
@@ -359,7 +354,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
           columnDefs: props.column_defs,
 
           // default col def properties get applied to all columns
-          defaultColDef: {sortable: true, filter: true},
+          defaultColDef: {
+              sortable: true,
+              filter: true,
+              filterParams: {
+                  "maxNumConditions": 10,
+                  "numAlwaysVisibleConiions": 2,
+              }
+          },
 
           rowSelection: props.row_selection || 'multiple', // allow rows to be selected
           animateRows: true, // have rows animate to new positions when sorted
@@ -378,8 +380,21 @@ const DataGrid = React.forwardRef( (props, ref) => {
           suppressClickEdit: props.suppress_click == true ? true : false,
           suppressRowClickSelection: true,
 
+          suppressDragLeaveHidesColumns: true,
+          onColumnVisible: e => {
+              //console.log("e: ", e)
+          },
+
+
+          getRowStyle: get_row_style,
+          getRowHeight: get_row_height,
+
+
+
+
+
           // while this is the behvaior we want, it does not behave well with selects
-          //stopEditingWhenCellsLoseFocus: true,
+          stopEditingWhenCellsLoseFocus: props.click_off == true ? true : false,
         
           groupHeaderHeight: 20,
 
@@ -435,12 +450,23 @@ const DataGrid = React.forwardRef( (props, ref) => {
             gridOptions["defaultColDef"] = {
                 "wrapHeaderText": true,
                 "autoHeaderHeight": true,
+                filterParams: {
+                    "maxNumConditions": 10,
+                }
+
             }
         }
         else {
             gridOptions["headerHeight"] = props.header_height || 25;
         }
 
+
+        // Add grouping
+        add_grouping(gridOptions);
+
+        if (props.on_column_moved) {
+            gridOptions.onColumnMoved = props.on_column_moved;
+        }
 
 
         set_grid_options(gridOptions);
@@ -456,29 +482,33 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (!grid_options) return;
         if (!grid_name) return;
 
+
         grid_options.onSelectionChanged = on_selection_changed;
 
         // get div to host the grid
         const eGridDiv = document.getElementById(grid_name);
         // new grid instance, passing in the hosting DIV and Grid Options
-        let grid = new agGrid.Grid(eGridDiv, grid_options);
+        //let grid = new agGrid.Grid(eGridDiv, grid_options);
+        let api = agGrid.createGrid(eGridDiv, grid_options);
+        set_api(api);
 
 
         // Stop editing when click on anything
         eGridDiv.addEventListener( "blur", e => {
-            grid_options.api.stopEditing();
+            api.stopEditing();
         } )
  
 
         if (props.column_defs) {
-            grid_options.api.setColumnDefs(props.column_defs);
+            //api.setColumnDefs(props.column_defs);
+            api.setGridOption("columnDefs", props.column_defs);
 
             /*
             // Custom comparator that sorts header rows separately
             function customComparator(valueA, valueB, nodeA, nodeB) {
-              if (nodeA.data.is_group_row && !nodeB.data.is_group_row) {
+              if (nodeA.data.__type__ == "group" && !nodeB.data.__type__ == "group") {
                 return -1; // Always sort header rows first
-              } else if (!nodeA.data.is_group_row && nodeB.data.is_group_row) {
+              } else if (!nodeA.data.__type__ == "group" && nodeB.data.__type__ == "group") {
                 return 1; // Always sort non-header rows last
               } else {
                 // Normal comparison logic
@@ -505,17 +535,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         if (props.data != data) {
             let data = props.data;
-            grid_options.api.setRowData(data);
+            api.setRowData(data);
             set_data(data);
         }
-
-        grid_options["getRowStyle"] = get_row_style;
-
-
-        // Add grouping
-        add_grouping(grid_options);
-
-
 
     }, [grid_name, grid_options] );
 
@@ -529,43 +551,43 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         if (params.data.__type__ == "group") {
-            css["background"] = params.data.__background__;
-            css["color"] = params.data.__color__;
+            css["background"] = params.data.__background__ || "#CCC";
+            css["color"] = params.data.__color__ || "#000";
+        }
+
+        if (params.data.__isVisible__ == false) {
+            css["display"] = "none";
+        }
+        else {
+            css["display"] = "";
         }
 
         return css;
     }
 
+    const get_row_height = params => {
+        if (params.data.__isVisible__ == false) {
+            return 0;
+        }
+
+    }
 
 
     const add_grouping = (grid_options) => {
 
         // Event listener for when the filter is changed
-        /*
         grid_options.onFilterChanged = event => {
-            var rowData = [];
-            // if you sort, then all groups are removed
-            grid_options.api.forEachNode(function(node) {
-                if (node.data.__type__ == 'group') {
-                    return;
-                }
-                rowData.push(node.data);
-            });
-
-
-            grid_options.api.setRowData(rowData);
-            grid_options.api.redrawRows();
-
         };
-        */
+
 
         // Event listener for when the sort order is changed
         grid_options.onSortChanged = event => {
 
+
             var rowData = [];
 
             // remove all groups
-            grid_options.api.forEachNode(function(node) {
+            event.api.forEachNode(function(node) {
                 if (node.data.__type__ == 'group') {
                     return;
                 }
@@ -573,7 +595,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
             });
 
 
-            let columnState = grid_options.columnApi.getColumnState();
+            //let columnState = grid_options.columnApi.getColumnState();
+            let columnState = event.api.getColumnState();
             let sortedColumns = columnState.filter(column => column.sort !== null);
             if (sortedColumns.length == 0) {
                 if (grid_options.group_by != "") {
@@ -582,8 +605,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 }
             }
 
-            grid_options.api.setRowData(rowData);
-            grid_options.api.redrawRows();
+            set_data(rowData);
+            //event.api.setRowData(rowData);
+            event.api.setGridOption('rowData', rowData)
+            event.api.redrawRows();
 
         };
 
@@ -596,13 +621,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (!grid_options) {
             return;
         }
+        if (!api) return;
 
 
         if (props.column_defs) {
-            grid_options.api.setColumnDefs(props.column_defs);
+            //api.setColumnDefs(props.column_defs);
+            api.setGridOption("columnDefs", props.column_defs);
         }
 
-        grid_options["getRowStyle"] = get_row_style;
 
 
         if (props.data) {
@@ -612,7 +638,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 grid_options["group_by"] = props.group_by;
 
                 // Find the sorted column(s)
-                let columnState = grid_options.columnApi.getColumnState();
+                //let columnState = grid_options.columnApi.getColumnState();
+                let columnState = api.columnModel.getColumnState();
                 let sortedColumns = columnState.filter(column => column.sort !== null);
                 if (sortedColumns.length > 0) {
                     // let event handle the grouping
@@ -621,17 +648,17 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 }
                 else {
                     data = group_data(data, props.group_by);
-                    grid_options.api.setRowData(data);
+                    api.setRowData(data);
                 }
             }
             else {
                 grid_options["group_by"] = "";
-                grid_options.api.setRowData(data);
+                api.setRowData(data);
             }
         }
 
 
-    }, [props] )
+    }, [props, api] )
 
 
 
@@ -640,15 +667,51 @@ const DataGrid = React.forwardRef( (props, ref) => {
     //
     // Group Data
     //
-    const group_data = (items, group_by) => {
+    const group_data = (items, group_by, order_list) => {
         // Add groups
         let last_group_value = null;
 
         //clear_filters();
         //clear_sort();
 
+        //let sort_column = "level";
+        //order_list = ["Roto", "Match Move", "Modeling", "Animation", "FX", "Lighting", "Compositing"]
+
         items = [...items];
-        items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+
+        if (!order_list) {
+            items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+        }
+        else {
+
+            items.sort((a, b) => {
+              let indexA = order_list.indexOf(a[group_by]);
+              let indexB = order_list.indexOf(b[group_by]);
+
+              // If both values are found in the 'order_list', sort by their index
+              if (indexA !== -1 && indexB !== -1) {
+
+                  if (sort_column && indexA == indexB) {
+                      return a[sort_column].localeCompare(b[sort_column]);
+                  }
+
+                return indexA - indexB;
+              }
+
+              // If one of the values is not found in the 'order_list',
+              // it will be placed at the end
+              if (indexA === -1) {
+                return 1;
+              }
+              if (indexB === -1) {
+                return -1;
+              }
+
+              // If neither value is found in the 'orderList',
+              // sort by the Unicode value of the group_by
+              return a[group_by].localeCompare(b[group_by]);
+            });
+        }
 
         let group_data = [];
         items.forEach( item => {
@@ -658,7 +721,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
                     name: group_value,
                     column: group_by,
                     __type__: "group",
-                    __background__: "#DDD",
+                    __background__: "#CCC",
                     __color__: "#000",
                 }
                 group_data.push(group_item)
@@ -704,7 +767,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
 
-        params.columnApi.getAllGridColumns().forEach(item => {
+        //params.columnApi.getAllGridColumns().forEach(item => {
+        api.getAllGridColumns().forEach(item => {
             //result[item.colId] = null;
         });
         return calculatePinnedBottomData(result, params);
@@ -735,7 +799,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         let columns = [];
-        params.columnApi.getAllGridColumns().forEach(item => {
+        //params.columnApi.getAllGridColumns().forEach(item => {
+        api.getAllGridColumns().forEach(item => {
             //result[item.colId] = null;
             let column = item.colId;
             let parts = column.split("-");

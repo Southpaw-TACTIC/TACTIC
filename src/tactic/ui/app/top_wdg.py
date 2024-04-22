@@ -1116,18 +1116,20 @@ class TopWdg(Widget):
         ''')
 
         # JQuery
-        """
-        widget.add('''
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-        ''')
-        """
-        widget.add('''
-<script src="/context/spt_js/jquery/jquery-3.4.1.min.js"></script>
-<script src="/context/spt_js/jquery/jquery-ui.min.js"></script>
-<script src="/context/spt_js/jquery/popper.min.js"></script>
-        ''')
+        include_jquery = Config.get_value("install", "include_jquery") or "true"
+        if include_jquery == "true":
+            """
+            widget.add('''
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+            ''')
+            """
+            widget.add('''
+    <script src="/context/spt_js/jquery/jquery-3.4.1.min.js"></script>
+    <script src="/context/spt_js/jquery/jquery-ui.min.js"></script>
+    <script src="/context/spt_js/jquery/popper.min.js"></script>
+            ''')
  
         use_formio = True
         if use_formio:

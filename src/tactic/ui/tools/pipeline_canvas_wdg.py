@@ -6306,6 +6306,8 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var from_pos = spt.pipeline.get_position(this.from_node);
         var to_pos = spt.pipeline.get_position(this.to_node);
 
+        //canvas.style.border = "solid 3px blue";
+
         var from_size = spt.pipeline.get_size(this.from_node);
         var to_size = spt.pipeline.get_size(this.to_node);
 
@@ -6331,11 +6333,18 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var unscaled_from_pos = {x: from_pos.x + from_width, y: from_pos.y + from_height/2 };
         var unscaled_to_pos = {x: to_pos.x, y: to_pos.y + to_height/2 };
 
+        var pos = spt.pipeline.top.getPosition();
+        var pos2 = canvas.getPosition();
+        let offset = { x: pos2.x - pos.x, y: pos2.y - pos.y }
+
+
         // offset translate
         unscaled_from_pos.x += translate.x;
         unscaled_from_pos.y += translate.y;
         unscaled_to_pos.x += translate.x
         unscaled_to_pos.y += translate.y
+
+
 
         // put a scale transformation on it
         // moz transform scales from the center, so have to move
@@ -6343,6 +6352,9 @@ spt.pipeline.Connector = function(from_node, to_node) {
         var size = spt.pipeline.get_canvas_size();
         var width = size.x;
         var height = size.y;
+
+
+        //spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: from_pos.x, y: from_pos.y }, "#0F0");
 
         var from_pos = {
             x: (unscaled_from_pos.x - width/2) * scale + width/2,
@@ -6355,6 +6367,12 @@ spt.pipeline.Connector = function(from_node, to_node) {
             x: (unscaled_to_pos.x - width/2) * scale + width/2,
             y: (unscaled_to_pos.y - height/2) * scale + height/2,
         }
+
+        //spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: width/2+2 + offset.x, y: height/2+2 + offset.y }, "#F00");
+        //let center = { x: width/2 + offset.x, y: height/2 + offset.y };
+
+        //spt.pipeline.draw_connector({ x: 0, y: 0 }, { x: center.x, y: center.y }, "#F00");
+
 
 
         // don't bother drawing if it is outside the drawing site

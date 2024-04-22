@@ -40,6 +40,12 @@ const TableLayout = React.forwardRef((props, ref) => {
     },
     export_csv() {
       grid_ref.current.export_csv();
+    },
+    get_selected_nodes() {
+      return grid_ref.current.get_selected_nodes();
+    },
+    get_selected_rows() {
+      return grid_ref.current.get_selected_rows();
     }
   }));
   const [search_type, set_search_type] = useState("");
@@ -71,7 +77,11 @@ const TableLayout = React.forwardRef((props, ref) => {
   };
   const load_data = async () => {
     let cmd = props.get_cmd;
-    let kwargs = props.get_kwargs;
+    if (!cmd) {
+      alert("Get cmd is not defined");
+      return;
+    }
+    let kwargs = props.get_kwargs || {};
     let config_handler = props.config_handler;
     kwargs["config_handler"] = config_handler;
     let server = TACTIC.get();
@@ -188,6 +198,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     let data = props.data;
     save(data, column);
   };
+  const column_moved = () => {};
   const build_column_defs = (new_element_names, definitions) => {
     let column_defs = props.column_defs;
     if (column_defs) {
@@ -346,7 +357,8 @@ const TableLayout = React.forwardRef((props, ref) => {
     auto_height: props.auto_height,
     height: props.height,
     row_height: props.row_height,
-    enable_undo: props.enable_undo
+    enable_undo: props.enable_undo,
+    on_column_moved: props.on_column_moved
   }));
 });
 const TableLayoutActionMenu = props => {
