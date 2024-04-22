@@ -178,8 +178,7 @@ const DataGrid = React.forwardRef((props, ref) => {
     return api.setFilterModel(null);
   };
   const clear_sort = () => {
-    let column_api = grid_options.columnApi;
-    return column_api.applyColumnState({
+    return api.applyColumnState({
       defaultState: {
         sort: null
       }
@@ -325,6 +324,11 @@ const DataGrid = React.forwardRef((props, ref) => {
     } else {
       gridOptions["headerHeight"] = props.header_height || 25;
     }
+
+    add_grouping(gridOptions);
+    if (props.on_column_moved) {
+      gridOptions.onColumnMoved = props.on_column_moved;
+    }
     set_grid_options(gridOptions);
     set_api(gridOptions.api);
     set_loading(false);
@@ -350,11 +354,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       let data = props.data;
       api.setRowData(data);
       set_data(data);
-    }
-
-    add_grouping(grid_options);
-    if (props.on_column_moved) {
-      grid_options.onColumnMoved = props.on_column_moved;
     }
   }, [grid_name, grid_options]);
   const get_row_style = params => {
@@ -391,15 +390,16 @@ const DataGrid = React.forwardRef((props, ref) => {
         rowData.push(node.data);
       });
 
-      let columnState = api.columnModel.getColumnState();
+      let columnState = event.api.getColumnState();
       let sortedColumns = columnState.filter(column => column.sort !== null);
+      console.log("sort: ", sortedColumns);
       if (sortedColumns.length == 0) {
         if (grid_options.group_by != "") {
           rowData = group_data(rowData, grid_options.group_by);
         }
       }
       set_data(rowData);
-      event.api.setRowData(rowData);
+      event.api.setGridOption('rowData', rowData);
       event.api.redrawRows();
     };
   };
@@ -431,11 +431,34 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
   }, [props, api]);
 
-  const group_data = (items, group_by) => {
+  const group_data = (items, group_by, order_list) => {
     let last_group_value = null;
 
     items = [...items];
-    items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+    if (!order_list) {
+      items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+    } else {
+      items.sort((a, b) => {
+        let indexA = order_list.indexOf(a[group_by]);
+        let indexB = order_list.indexOf(b[group_by]);
+
+        if (indexA !== -1 && indexB !== -1) {
+          if (sort_column && indexA == indexB) {
+            return a[sort_column].localeCompare(b[sort_column]);
+          }
+          return indexA - indexB;
+        }
+
+        if (indexA === -1) {
+          return 1;
+        }
+        if (indexB === -1) {
+          return -1;
+        }
+
+        return a[group_by].localeCompare(b[group_by]);
+      });
+    }
     let group_data = [];
     items.forEach(item => {
       let group_value = item[group_by];

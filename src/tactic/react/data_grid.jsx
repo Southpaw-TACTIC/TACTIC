@@ -253,8 +253,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
     const clear_sort = () => {
-        let column_api = grid_options.columnApi;
-        return column_api.applyColumnState( {
+        //let column_api = grid_options.columnApi;
+        return api.applyColumnState( {
             defaultState: { sort: null }
         } )
 
@@ -461,6 +461,13 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
 
+        // Add grouping
+        add_grouping(gridOptions);
+
+        if (props.on_column_moved) {
+            gridOptions.onColumnMoved = props.on_column_moved;
+        }
+
 
         set_grid_options(gridOptions);
         set_api( gridOptions.api );
@@ -532,13 +539,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
             set_data(data);
         }
 
-        // Add grouping
-        add_grouping(grid_options);
-
-        if (props.on_column_moved) {
-            grid_options.onColumnMoved = props.on_column_moved;
-        }
-
     }, [grid_name, grid_options] );
 
 
@@ -583,6 +583,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         // Event listener for when the sort order is changed
         grid_options.onSortChanged = event => {
 
+
             var rowData = [];
 
             // remove all groups
@@ -595,7 +596,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
             //let columnState = grid_options.columnApi.getColumnState();
-            let columnState = api.columnModel.getColumnState();
+            let columnState = event.api.getColumnState();
             let sortedColumns = columnState.filter(column => column.sort !== null);
             if (sortedColumns.length == 0) {
                 if (grid_options.group_by != "") {
@@ -605,7 +606,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
             }
 
             set_data(rowData);
-            event.api.setRowData(rowData);
+            //event.api.setRowData(rowData);
+            event.api.setGridOption('rowData', rowData)
             event.api.redrawRows();
 
         };
@@ -665,15 +667,51 @@ const DataGrid = React.forwardRef( (props, ref) => {
     //
     // Group Data
     //
-    const group_data = (items, group_by) => {
+    const group_data = (items, group_by, order_list) => {
         // Add groups
         let last_group_value = null;
 
         //clear_filters();
         //clear_sort();
 
+        //let sort_column = "level";
+        //order_list = ["Roto", "Match Move", "Modeling", "Animation", "FX", "Lighting", "Compositing"]
+
         items = [...items];
-        items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+
+        if (!order_list) {
+            items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
+        }
+        else {
+
+            items.sort((a, b) => {
+              let indexA = order_list.indexOf(a[group_by]);
+              let indexB = order_list.indexOf(b[group_by]);
+
+              // If both values are found in the 'order_list', sort by their index
+              if (indexA !== -1 && indexB !== -1) {
+
+                  if (sort_column && indexA == indexB) {
+                      return a[sort_column].localeCompare(b[sort_column]);
+                  }
+
+                return indexA - indexB;
+              }
+
+              // If one of the values is not found in the 'order_list',
+              // it will be placed at the end
+              if (indexA === -1) {
+                return 1;
+              }
+              if (indexB === -1) {
+                return -1;
+              }
+
+              // If neither value is found in the 'orderList',
+              // sort by the Unicode value of the group_by
+              return a[group_by].localeCompare(b[group_by]);
+            });
+        }
 
         let group_data = [];
         items.forEach( item => {
