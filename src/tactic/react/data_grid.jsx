@@ -642,12 +642,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 let sortedColumns = columnState.filter(column => column.sort !== null);
                 if (sortedColumns.length > 0) {
                     // let event handle the grouping
-                    //clear_filters();
-                    //clear_sort();
+                    clear_filters();
+                    clear_sort();
+                    /*
                     let options = {
                         order_list: props.order_list,
                         sort_column: sortedColumns[0].colId,
                     }
+                    */
                     data = group_data(data, props.group_by, options);
                     api.setRowData(data);
  
