@@ -418,10 +418,8 @@ const DataGrid = React.forwardRef((props, ref) => {
         let columnState = api.columnModel.getColumnState();
         let sortedColumns = columnState.filter(column => column.sort !== null);
         if (sortedColumns.length > 0) {
-          let options = {
-            order_list: props.order_list,
-            sort_column: sortedColumns[0].colId
-          };
+          clear_filters();
+          clear_sort();
           data = group_data(data, props.group_by, options);
           api.setRowData(data);
         } else {
