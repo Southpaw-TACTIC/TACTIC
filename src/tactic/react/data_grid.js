@@ -392,7 +392,6 @@ const DataGrid = React.forwardRef((props, ref) => {
 
       let columnState = event.api.getColumnState();
       let sortedColumns = columnState.filter(column => column.sort !== null);
-      console.log("sort: ", sortedColumns);
       if (sortedColumns.length == 0) {
         if (grid_options.group_by != "") {
           rowData = group_data(rowData, grid_options.group_by);
@@ -419,9 +418,17 @@ const DataGrid = React.forwardRef((props, ref) => {
         let columnState = api.columnModel.getColumnState();
         let sortedColumns = columnState.filter(column => column.sort !== null);
         if (sortedColumns.length > 0) {
-          clear_sort();
+          let options = {
+            order_list: props.order_list,
+            sort_column: sortedColumns[0].colId
+          };
+          data = group_data(data, props.group_by, options);
+          api.setRowData(data);
         } else {
-          data = group_data(data, props.group_by);
+          let options = {
+            order_list: props.order_list
+          };
+          data = group_data(data, props.group_by, options);
           api.setRowData(data);
         }
       } else {
@@ -431,9 +438,19 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
   }, [props, api]);
 
-  const group_data = (items, group_by, order_list) => {
+  const group_data = (items, group_by, options) => {
+    if (!options) options = {};
+
     let last_group_value = null;
 
+    let sort_column = null;
+    if (options.sort_column) {
+      sort_column = options.sort_column;
+    }
+    let order_list = null;
+    if (options.order_list) {
+      order_list = options.order_list;
+    }
     items = [...items];
     if (!order_list) {
       items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
@@ -444,19 +461,32 @@ const DataGrid = React.forwardRef((props, ref) => {
 
         if (indexA !== -1 && indexB !== -1) {
           if (sort_column && indexA == indexB) {
-            return a[sort_column].localeCompare(b[sort_column]);
+            if (typeOf(a[sort_column]) == "string") {
+              return a[sort_column]?.localeCompare(b[sort_column]);
+            } else {
+              return a[sort_column] - b[sort_column];
+            }
           }
           return indexA - indexB;
         }
 
-        if (indexA === -1) {
-          return 1;
+        if (a[group_by] != b[group_by]) {
+          if (indexA === -1) {
+            return 1;
+          }
+          if (indexB === -1) {
+            return -1;
+          }
+          return a[group_by].localeCompare(b[group_by]);
+        } else if (sort_column) {
+          if (typeOf(a[sort_column]) == "string") {
+            return a[sort_column]?.localeCompare(b[sort_column]);
+          } else {
+            return a[sort_column] - b[sort_column];
+          }
+        } else {
+          return 0;
         }
-        if (indexB === -1) {
-          return -1;
-        }
-
-        return a[group_by].localeCompare(b[group_by]);
       });
     }
     let group_data = [];

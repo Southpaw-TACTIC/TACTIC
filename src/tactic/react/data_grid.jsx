@@ -582,8 +582,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         // Event listener for when the sort order is changed
         grid_options.onSortChanged = event => {
-
-
             var rowData = [];
 
             // remove all groups
@@ -602,6 +600,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 if (grid_options.group_by != "") {
                     // group all the data
                     rowData = group_data(rowData, grid_options.group_by);
+
                 }
             }
 
@@ -644,10 +643,20 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 if (sortedColumns.length > 0) {
                     // let event handle the grouping
                     //clear_filters();
-                    clear_sort();
+                    //clear_sort();
+                    let options = {
+                        order_list: props.order_list,
+                        sort_column: sortedColumns[0].colId,
+                    }
+                    data = group_data(data, props.group_by, options);
+                    api.setRowData(data);
+ 
                 }
                 else {
-                    data = group_data(data, props.group_by);
+                    let options = {
+                        order_list: props.order_list
+                    }
+                    data = group_data(data, props.group_by, options);
                     api.setRowData(data);
                 }
             }
@@ -667,15 +676,26 @@ const DataGrid = React.forwardRef( (props, ref) => {
     //
     // Group Data
     //
-    const group_data = (items, group_by, order_list) => {
+    const group_data = (items, group_by, options) => {
+
+        if (!options) options = {};
+
         // Add groups
         let last_group_value = null;
 
         //clear_filters();
         //clear_sort();
 
-        //let sort_column = "level";
-        //order_list = ["Roto", "Match Move", "Modeling", "Animation", "FX", "Lighting", "Compositing"]
+        let sort_column = null;
+        if (options.sort_column) {
+            sort_column = options.sort_column;
+        }
+
+        let order_list = null;
+        if (options.order_list) {
+            ///order_list = ["Roto", "Match Move", "Modeling", "Animation", "FX", "Lighting", "Compositing"]
+            order_list = options.order_list;
+        }
 
         items = [...items];
 
@@ -685,33 +705,53 @@ const DataGrid = React.forwardRef( (props, ref) => {
         else {
 
             items.sort((a, b) => {
+
               let indexA = order_list.indexOf(a[group_by]);
               let indexB = order_list.indexOf(b[group_by]);
 
               // If both values are found in the 'order_list', sort by their index
               if (indexA !== -1 && indexB !== -1) {
-
                   if (sort_column && indexA == indexB) {
-                      return a[sort_column].localeCompare(b[sort_column]);
+                      if (typeOf(a[sort_column]) == "string") {
+                          return a[sort_column]?.localeCompare(b[sort_column]);
+                      }
+                      else {
+                          return a[sort_column] - b[sort_column];
+                      }
+                    
                   }
 
-                return indexA - indexB;
+                  return indexA - indexB;
               }
 
-              // If one of the values is not found in the 'order_list',
-              // it will be placed at the end
-              if (indexA === -1) {
-                return 1;
-              }
-              if (indexB === -1) {
-                return -1;
-              }
+              // If either value is found in the 'orderList',
+              if (a[group_by] != b[group_by]) {
 
-              // If neither value is found in the 'orderList',
-              // sort by the Unicode value of the group_by
-              return a[group_by].localeCompare(b[group_by]);
+                  // If one of the values is not found in the 'order_list',
+                  // it will be placed at the end
+                  if (indexA === -1) {
+                    return 1;
+                  }
+                  if (indexB === -1) {
+                    return -1;
+                  }
+
+                  return a[group_by].localeCompare(b[group_by]);
+              }
+              else if (sort_column) {
+                  if (typeOf(a[sort_column]) == "string") {
+                      return a[sort_column]?.localeCompare(b[sort_column]);
+                  }
+                  else {
+                      return a[sort_column] - b[sort_column];
+                  }
+              }
+              else {
+                  return 0;
+              }
             });
         }
+
 
         let group_data = [];
         items.forEach( item => {
