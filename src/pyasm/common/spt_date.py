@@ -249,7 +249,7 @@ class SPTDate(object):
 
     # convert to UTC, no timezone.  If no timezone is given in the date, use local
     def convert(cls, date, is_gmt=False):
-        if isinstance(date, datetype):
+        if not isinstance(date, datetime):
             noon = time(12, 0)
             date = datetime.combine(date, noon)
             return date
