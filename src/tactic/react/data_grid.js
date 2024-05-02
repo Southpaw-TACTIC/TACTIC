@@ -378,7 +378,6 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
   };
   const add_grouping = grid_options => {
-    grid_options.onFilterChanged = event => {};
 
     grid_options.onSortChanged = event => {
       var rowData = [];
@@ -420,6 +419,10 @@ const DataGrid = React.forwardRef((props, ref) => {
         if (sortedColumns.length > 0) {
           clear_filters();
           clear_sort();
+          let options = {
+            order_list: props.order_list,
+            sort_column: sortedColumns[0].colId
+          };
           data = group_data(data, props.group_by, options);
           api.setRowData(data);
         } else {
@@ -454,36 +457,39 @@ const DataGrid = React.forwardRef((props, ref) => {
       items.sort((a, b) => a[group_by]?.localeCompare(b[group_by]));
     } else {
       items.sort((a, b) => {
-        let indexA = order_list.indexOf(a[group_by]);
-        let indexB = order_list.indexOf(b[group_by]);
+        let a_value = a[group_by];
+        let b_value = b[group_by];
+        if (!a_value || a_value == "") {
+          a_value = "ZZZ";
+        }
+        if (!b_value || b_value == "") {
+          b_value = "ZZZ";
+        }
 
-        if (indexA !== -1 && indexB !== -1) {
-          if (sort_column && indexA == indexB) {
+        if (a_value == b_value) {
+          if (sort_column) {
             if (typeOf(a[sort_column]) == "string") {
               return a[sort_column]?.localeCompare(b[sort_column]);
             } else {
               return a[sort_column] - b[sort_column];
             }
           }
-          return indexA - indexB;
+        }
+        let a_index = order_list.indexOf(a_value);
+        let b_index = order_list.indexOf(b_value);
+
+        if (a_index !== -1 && b_index !== -1) {
+          return a_index - b_index;
         }
 
-        if (a[group_by] != b[group_by]) {
-          if (indexA === -1) {
-            return 1;
-          }
-          if (indexB === -1) {
-            return -1;
-          }
-          return a[group_by].localeCompare(b[group_by]);
-        } else if (sort_column) {
-          if (typeOf(a[sort_column]) == "string") {
-            return a[sort_column]?.localeCompare(b[sort_column]);
-          } else {
-            return a[sort_column] - b[sort_column];
-          }
-        } else {
-          return 0;
+        if (a_index == -1 && b_index == -1) {
+          return a_value.localeCompare(b_value);
+        }
+        if (a_index == -1) {
+          return 1;
+        }
+        if (b_index == -1) {
+          return -1;
         }
       });
     }
