@@ -576,8 +576,17 @@ const DataGrid = React.forwardRef( (props, ref) => {
     const add_grouping = (grid_options) => {
 
         // Event listener for when the filter is changed
-        grid_options.onFilterChanged = event => {
+        //grid_options.onFilterChanged = event => {
+        //};
+
+        /*
+        grid_options.isExternalFilterPresent = () => {
+            return true;
         };
+        grid_options.doesExternalFilterPass = node => {
+            if (node.data.__type__ == "group") return true;
+        }
+        */
 
 
         // Event listener for when the sort order is changed
@@ -644,12 +653,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
                     // let event handle the grouping
                     clear_filters();
                     clear_sort();
-                    /*
                     let options = {
                         order_list: props.order_list,
                         sort_column: sortedColumns[0].colId,
                     }
-                    */
                     data = group_data(data, props.group_by, options);
                     api.setRowData(data);
  
@@ -707,50 +714,51 @@ const DataGrid = React.forwardRef( (props, ref) => {
         else {
 
             items.sort((a, b) => {
+                let a_value = a[group_by];
+                let b_value = b[group_by];
+                if (!a_value || a_value == "") {
+                    a_value = "ZZZ";
+                }
+                if (!b_value || b_value == "") {
+                    b_value = "ZZZ";
+                }
 
-              let indexA = order_list.indexOf(a[group_by]);
-              let indexB = order_list.indexOf(b[group_by]);
 
-              // If both values are found in the 'order_list', sort by their index
-              if (indexA !== -1 && indexB !== -1) {
-                  if (sort_column && indexA == indexB) {
-                      if (typeOf(a[sort_column]) == "string") {
-                          return a[sort_column]?.localeCompare(b[sort_column]);
-                      }
-                      else {
-                          return a[sort_column] - b[sort_column];
-                      }
-                    
-                  }
-
-                  return indexA - indexB;
-              }
-
-              // If either value is found in the 'orderList',
-              if (a[group_by] != b[group_by]) {
-
-                  // If one of the values is not found in the 'order_list',
-                  // it will be placed at the end
-                  if (indexA === -1) {
+                // If the group values are the same, then sort by the sort column if it exists
+                if (a_value == b_value) {
+                    if (sort_column) {
+                        if (typeOf(a[sort_column]) == "string") {
+                            return a[sort_column]?.localeCompare(b[sort_column]);
+                        }
+                        else {
+                            return a[sort_column] - b[sort_column];
+                        }
+                      
+                    }
+                }
+ 
+   
+              
+                let a_index = order_list.indexOf(a_value);
+                let b_index = order_list.indexOf(b_value);
+   
+   
+                // If both values are found in the 'order_list', sort by their index
+                if (a_index !== -1 && b_index !== -1) {
+                    return a_index - b_index;
+                }
+   
+                // If both are not found, then sort by their value
+                if (a_index == -1 && b_index == -1) {
+                    return a_value.localeCompare(b_value);
+                }
+   
+                if (a_index == -1) {
                     return 1;
-                  }
-                  if (indexB === -1) {
+                }
+                if (b_index == -1) {
                     return -1;
-                  }
-
-                  return a[group_by].localeCompare(b[group_by]);
-              }
-              else if (sort_column) {
-                  if (typeOf(a[sort_column]) == "string") {
-                      return a[sort_column]?.localeCompare(b[sort_column]);
-                  }
-                  else {
-                      return a[sort_column] - b[sort_column];
-                  }
-              }
-              else {
-                  return 0;
-              }
+                }
             });
         }
 
