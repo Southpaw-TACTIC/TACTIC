@@ -895,16 +895,15 @@ const SimpleCellRenderer = params => {
     if (color) {
       inner.style.background = color;
     }
-    if (typeof value != "undefined") {
-      inner.appendChild(document.createTextNode(label));
-      if (onClick) {
-        inner.style.textDecoration = "underline";
-        inner.style.cursor = "pointer";
+    if (label == "") label = "&nbsp;";
+    inner.appendChild(document.createTextNode(label));
+    if (onClick) {
+      inner.style.textDecoration = "underline";
+      inner.style.cursor = "pointer";
 
-        inner.addEventListener("click", e => {
-          onClick(params);
-        });
-      }
+      inner.addEventListener("click", e => {
+        onClick(params);
+      });
     }
   }
 

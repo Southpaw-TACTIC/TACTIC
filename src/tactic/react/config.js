@@ -128,6 +128,7 @@ const Config = (config, options) => {
       };
     } else {
       let format = config_item.format;
+      console.log("format: ", format);
       if (element_type == "number") {
         format = "number";
       } else if (element_type == "color") {
@@ -167,7 +168,7 @@ const Config = (config, options) => {
       } else {
         config_def.editable = true;
         if (format) {
-          config_def.cellDataType = format;
+          config_def.cellDataType = false;
         }
         config_def.cellEditor = InputEditor;
         config_def.cellEditorParams = params;
@@ -181,6 +182,7 @@ const Config = (config, options) => {
       }
       config_def.cellRendererParams = params;
     }
+    console.log("conf: ", config_def);
 
     let cell_renderer = config_item.renderer;
     if (cell_renderer) {

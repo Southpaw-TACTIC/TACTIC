@@ -1289,19 +1289,16 @@ const SimpleCellRenderer = (params) => {
         }
 
 
-        if (typeof(value) != "undefined") {
+        if (label == "") label = "&nbsp;";
+        inner.appendChild( document.createTextNode(label) );
+        if (onClick) {
+            inner.style.textDecoration = "underline";
+            inner.style.cursor = "pointer";
 
-            inner.appendChild( document.createTextNode(label) );
-            if (onClick) {
-                inner.style.textDecoration = "underline";
-                inner.style.cursor = "pointer";
-
-                // provide a link
-                inner.addEventListener( "click", e => {
-                    onClick(params);
-                } )
-            }
-
+            // provide a link
+            inner.addEventListener( "click", e => {
+                onClick(params);
+            } )
         }
 
     }

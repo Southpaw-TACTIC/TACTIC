@@ -166,6 +166,7 @@ const Config = (config, options) => {
         }
         else {
             let format = config_item.format;
+            console.log("format: ", format)
             if (element_type == "number") {
                 format = "number";
             }
@@ -213,7 +214,13 @@ const Config = (config, options) => {
             else {
                 config_def.editable = true;
                 if (format) {
-                    config_def.cellDataType = format;
+                    if (format == "number") {
+                        // for some reason, number doesn't work
+                        config_def.cellDataType = false;
+                    }
+                    else {
+                        config_def.cellDataType = format;
+                    }
                 }
                 config_def.cellEditor = InputEditor;
                 config_def.cellEditorParams = params;
@@ -226,6 +233,7 @@ const Config = (config, options) => {
 
 
         }
+
 
 
         // handle the display
@@ -244,8 +252,6 @@ const Config = (config, options) => {
         config_def.autoHeight = true;
 
     } );
-
-
 
 
     return config_defs;
