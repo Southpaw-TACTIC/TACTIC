@@ -309,6 +309,7 @@ const DataGrid = React.forwardRef((props, ref) => {
         return true;
       };
       gridOptions["doesExternalFilterPass"] = props.filter;
+      gridOptions.cacheQuickFilter = false;
     }
     if (props.show_full_header) {
       if (props.header_height) {

@@ -441,6 +441,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (props.filter) {
             gridOptions["isExternalFilterPresent"] = () => {return true};
             gridOptions["doesExternalFilterPass"] = props.filter;
+            gridOptions.cacheQuickFilter = false;
         }
 
         if (props.show_full_header) {

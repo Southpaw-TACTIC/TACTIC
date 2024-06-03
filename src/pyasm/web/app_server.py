@@ -628,6 +628,10 @@ class BaseAppServer(Base):
                         break
                 if not allowed:
                     return self.handle_not_logged_in()
+            else:
+                return self.handle_not_logged_in()
+
+
 
 
 

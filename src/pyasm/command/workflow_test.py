@@ -73,6 +73,7 @@ class WorkflowCmd(Command):
         #print("project: ", Project.get().get_data())
 
         try:
+            from pyasm.command import Workflow
             Workflow().init()
             
             self._test_namespace_dependency()
