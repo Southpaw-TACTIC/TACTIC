@@ -168,7 +168,11 @@ const Config = (config, options) => {
       } else {
         config_def.editable = true;
         if (format) {
-          config_def.cellDataType = false;
+          if (format == "number") {
+            config_def.cellDataType = false;
+          } else {
+            config_def.cellDataType = format;
+          }
         }
         config_def.cellEditor = InputEditor;
         config_def.cellEditorParams = params;
@@ -182,7 +186,6 @@ const Config = (config, options) => {
       }
       config_def.cellRendererParams = params;
     }
-    console.log("conf: ", config_def);
 
     let cell_renderer = config_item.renderer;
     if (cell_renderer) {

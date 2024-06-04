@@ -2041,7 +2041,9 @@ class TileLayoutWdg(ToolLayoutWdg):
                 border-radius: 5px;
                 overflow: hidden;
                 box-sizing: border-box;
-                border: solid 1px %s
+                border: solid 1px %s;
+                box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+
             }
 
         """ % (self.spacing, self.spacing, style.get_color("border"))
@@ -2540,6 +2542,8 @@ class TileLayoutWdg(ToolLayoutWdg):
         div.add_style("z-index", "0")
         border_color = div.get_color("border")
         div.add_style("border: solid 1px %s" % border_color)
+        div.add_style("border-radius: 10px")
+        div.add_style("box-shadow: 0px 0px 10px rgba(0,0,0,0.1)")
 
         div.add_class("spt_table_row")
         div.add_class("spt_table_row_%s" % self.table_id)

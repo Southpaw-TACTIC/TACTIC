@@ -237,7 +237,7 @@ spt.hash.onload_first = function(handle_hash_changes=true) {
 
     // On Qt browsers, this causes the page to refresh continuously
     if (!spt.browser.is_Qt() && handle_hash_changes) {
-        window.onpopstate = spt.hash.onpopstate;
+        //window.onpopstate = spt.hash.onpopstate;
     }
 
     spt.hash.first_load = false;
