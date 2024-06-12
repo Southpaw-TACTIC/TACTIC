@@ -46,6 +46,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     },
     get_selected_rows() {
       return grid_ref.current.get_selected_rows();
+    },
+    show_total() {
+      return grid_ref.current.show_total();
     }
   }));
   const [search_type, set_search_type] = useState("");
@@ -587,16 +590,18 @@ const DeleteModal = React.forwardRef((props, ref) => {
     onClose: handleClose,
     fullWidth: true,
     maxWidth: "sm"
-  }, React.createElement(DialogTitle, null, "Delete"), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, React.createElement(Alert, {
+  }, React.createElement(DialogTitle, null, "Delete Selected Items"), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, React.createElement(Alert, {
     severity: "error"
   }, "Do you wish to delete the following:")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: "30px",
-      margin: "30px 0px"
+      margin: "30px 20px"
     }
-  }, React.createElement("h1", null, "Name"))), React.createElement(DialogActions, null, React.createElement(Button, {
+  }, items.map((item, index) => React.createElement("h3", {
+    key: index
+  }, item.data.name || "")))), React.createElement(DialogActions, null, React.createElement(Button, {
     onClick: handleClose
   }, "Cancel"), React.createElement(Button, {
     severity: "error",
@@ -645,7 +650,6 @@ class SelectEditor {
     }
     this.input = document.createElement("div");
     this.input.style.width = "100%";
-    this.input.style.border = "solid 1px green";
     this.root = ReactDOM.createRoot(this.input);
     this.el = React.createElement(TextField, {
       label: label,
@@ -747,7 +751,6 @@ class InputEditor {
     }
     this.input = document.createElement("div");
     this.input.style.width = "100%";
-    this.input.style.border = "solid 1px green";
     this.root = ReactDOM.createRoot(this.input);
     this.el = React.createElement(TextField, {
       label: label,

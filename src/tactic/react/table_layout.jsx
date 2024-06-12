@@ -57,6 +57,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
            return  grid_ref.current.get_selected_rows();
         },
 
+        show_total() {
+           return  grid_ref.current.show_total();
+        },
+
     } ) )
   
     const [search_type, set_search_type] = useState("");
@@ -840,8 +844,6 @@ const DeleteModal = React.forwardRef( (props, ref) => {
         }
 
 
-
-
         handleClose()
     }
 
@@ -851,7 +853,7 @@ const DeleteModal = React.forwardRef( (props, ref) => {
         <Dialog open={show} onClose={handleClose}
                 fullWidth={true}
                 maxWidth={"sm"}>
-          <DialogTitle>Delete</DialogTitle>
+          <DialogTitle>Delete Selected Items</DialogTitle>
           <DialogContent>
             <DialogContentText>
               <Alert severity="error">
@@ -859,8 +861,10 @@ const DeleteModal = React.forwardRef( (props, ref) => {
               </Alert>
             </DialogContentText>
 
-            <div style={{display: "flex", flexDirection: "column", gap: "30px", margin: "30px 0px"}}>
-                <h1>Name</h1>
+            <div style={{display: "flex", flexDirection: "column", gap: "30px", margin: "30px 20px"}}>
+                { items.map( (item, index) => (
+                    <h3 key={index}>{item.data.name || ""}</h3>
+                ) ) }
             </div>
           </DialogContent>
           <DialogActions>
@@ -928,7 +932,6 @@ class SelectEditor {
 
         this.input = document.createElement("div")
         this.input.style.width = "100%";
-        this.input.style.border = "solid 1px green";
         this.root = ReactDOM.createRoot( this.input );
         this.el = (
             <TextField
@@ -1082,7 +1085,6 @@ class InputEditor {
 
         this.input = document.createElement("div")
         this.input.style.width = "100%";
-        this.input.style.border = "solid 1px green";
         this.root = ReactDOM.createRoot( this.input );
         this.el = (
                 <TextField
