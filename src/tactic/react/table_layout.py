@@ -242,6 +242,12 @@ class EditSaveCmd(Command):
 
         config_handler = self.kwargs.get("config_handler")
         config = Common.create_from_class_path(config_handler)
+        config_list = config.get_full_config() or []
+
+        config_dict = {}
+        for config_item in config_list:
+            config_dict[config_item.get("name")] = config_item
+
 
         new_sobjects = []
 
@@ -253,7 +259,12 @@ class EditSaveCmd(Command):
 
             sobject = SearchType.create(search_type)
             for name, value in item.items():
-                sobject.set_value(name, value)
+
+                config_item = config_dict.get(name) or {}
+                column = config_item.get("column")
+                if not column:
+                    column = name
+                sobject.set_value(column, value)
 
             item_data = {};
 

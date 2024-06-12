@@ -56,6 +56,11 @@ const DataGrid = React.forwardRef((props, ref) => {
     },
     get_data() {
       return data;
+    },
+    show_total() {
+      _show_total({
+        api: api
+      });
     }
   }));
   const [loading, set_loading] = useState(true);
@@ -187,6 +192,7 @@ const DataGrid = React.forwardRef((props, ref) => {
 
   const _show_total = params => {
     if (!props.show_total && !props.get_total_data) return;
+    if (!params.api) return;
     let pinned;
     if (props.show_total == "cost") {
       setTimeout(() => {
