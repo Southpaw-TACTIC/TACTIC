@@ -31,6 +31,7 @@ const ROOT_CMD = "tactic.react";
 
 
 
+
 const TableLayout = React.forwardRef( (props, ref) => {
 
     React.useImperativeHandle( ref, () => ({
@@ -344,6 +345,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
+
+
+
     let property_names = ["title", "name", "type", "width"];
     let property_definitions = {
         title: {
@@ -497,6 +501,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
     }
 
 
+    let EmptyWdg = props.empty_wdg;
 
     return (
     <div>
@@ -507,18 +512,27 @@ const TableLayout = React.forwardRef( (props, ref) => {
         </div>
         }
 
-        <DataGrid
-            ref={grid_ref}
-            name={get_name()}
-            column_defs={column_defs}
-            data={data}
-            supress_click={true}
-            auto_height={props.auto_height}
-            height={props.height}
-            row_height={props.row_height}
-            enable_undo={props.enable_undo}
-            on_column_moved={props.on_column_moved}
-        />
+        { (props.empty_wdg && data?.length == 0) ?
+            <div>
+                <EmptyWdg
+                    edit_modal_ref={edit_modal_ref}
+                    import_data_modal_ref={import_data_modal_ref}
+                />
+            </div>
+        :
+            <DataGrid
+                ref={grid_ref}
+                name={get_name()}
+                column_defs={column_defs}
+                data={data}
+                supress_click={true}
+                auto_height={props.auto_height}
+                height={props.height}
+                row_height={props.row_height}
+                enable_undo={props.enable_undo}
+                on_column_moved={props.on_column_moved}
+            />
+        }
     </div>
     )
 
@@ -637,6 +651,139 @@ const TableLayoutActionMenu = props => {
 
 
 
+const EditForm = React.forwardRef( (props, ref) => {
+
+    const [element_definitions, set_element_definitions] = useState(null);
+    const [element_names, set_element_names] = useState(null);
+
+    useEffect( () => {
+        init();
+    }, [] )
+
+
+    const init = async () => {
+
+        let element_names = props.element_names;
+
+        let element_definitions = props.element_definitions;
+        if (!element_definitions) {
+            config_handler = props.config_handler;
+            if (config_handler) {
+                element_definitions = await get_element_definitions(config_handler);
+            }
+            else {
+                if (!element_names) {
+                    element_names = [];
+                    props.config.forEach( item => {
+                        element_names.push(item.name)
+                    } )
+                }
+                element_definitions = spt.react.Config(props.config, {});
+            }
+        }
+
+
+        set_element_names(element_names);
+
+
+        if (props.sobject) {
+            element_names.forEach( element_name => {
+                let item = element_definitions[element_name];
+                let column = element_name;
+                if (item && column) {
+                    item.value = props.sobject[column];
+                }
+                item.sobject = props.sobject;
+            } )
+        }
+
+        set_element_definitions(element_definitions);
+    }
+
+
+
+    const load_data = async() => {
+
+        let cmd = props.get_cmd;
+        if (!cmd) {
+            alert("Get cmd is not defined");
+            return;
+        }
+        let kwargs = props.get_kwargs || {};
+        let config_handler = props.config_handler;
+
+        kwargs["config_handler"] = config_handler;
+
+
+        let server = TACTIC.get();
+        server.p_execute_cmd(cmd, kwargs)
+        .then( ret => {
+            let data = ret.info;
+            set_data(data);
+
+        } )
+        .catch( e => {
+            alert("TACTIC ERROR: " + e);
+        } )
+    }
+
+
+    const get_element_definitions = async (cmd, kwargs) => {
+
+        if (!kwargs) {
+            kwargs = {};
+        }
+
+        let server = TACTIC.get();
+        let ret = await server.p_execute_cmd( cmd, kwargs )
+        let info = ret.info;
+        let config = info.config;
+        let renderer_params = info.renderer_params;
+
+        // convert to AGgrid definitions
+        let definitions = spt.react.Config(config, {});
+
+        return definitions;
+    }
+
+
+
+
+    return (
+
+        <div className="spt_edit_form" style={{display: "flex", flexDirection: "column", gap: "20px", margin: "30px 10px"}}>
+
+            { element_definitions && element_names?.map( (element_name, index) => {
+
+                let definition = element_definitions && element_definitions[element_name];
+                if (!definition) definition = {};
+                if (!definition.name) definition.name = element_name;
+                if (!definition.title) definition.title = Common.capitalize(element_name);
+
+                let editor = definition?.cellEditor;
+                if (editor == SelectEditor) {
+                    return ( <SelectEditorWdg key={index} onchange={onchange} {...definition}/>)
+                }
+                else if (editor == "NotesEditor") {
+                    return ( <NotesEditorWdg key={index} onchange={onchange} {...definition}/>)
+                }
+                else if (editor == InputEditor) {
+                    return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
+                }
+                else {
+                    return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
+                }
+
+            } ) }
+
+
+        </div>
+
+    )
+} )
+
+
+
 
 
 const EditModal = React.forwardRef( (props, ref) => {
@@ -673,8 +820,6 @@ const EditModal = React.forwardRef( (props, ref) => {
         let name = e.name;
         let value = e.target.value;
 
-        //console.log("name: ", name, value)
-
         item[name] = value;
     }
 
@@ -710,50 +855,8 @@ const EditModal = React.forwardRef( (props, ref) => {
               Enter the following data for {props.name}
             </DialogContentText>
 
-            <div style={{display: "flex", flexDirection: "column", gap: "20px", margin: "30px 10px"}}>
 
-                { props.element_names?.map( (element_name, index) => {
-
-                    let definition = props.element_definitions && props.element_definitions[element_name];
-                    if (!definition) definition = {};
-                    if (!definition.name) definition.name = element_name;
-                    if (!definition.title) definition.title = Common.capitalize(element_name);
-
-                    let editor = definition?.cellEditor;
-                    if (editor == SelectEditor) {
-                        return ( <SelectEditorWdg key={index} onchange={onchange} {...definition}/>)
-                    }
-                    else if (editor == "NotesEditor") {
-                        return ( <NotesEditorWdg key={index} onchange={onchange} {...definition}/>)
-                    }
-                    else if (editor == InputEditor) {
-                        return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
-                    }
-                    else {
-                        return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
-                    }
-
-
-                    // doesn't go here anymore
-
-                    return (
-                    <TextField
-                        key={index}
-                        label={Common.capitalize(element_name)}
-                        //required
-                        size="small"
-                        variant="outlined"
-                        defaultValue={item[element_name]}
-                        onChange={ e => {
-                            item[element_name] = e.target.value; 
-                        }}
-                    />
-                    )
-                } ) }
-
-
-            </div>
-
+            <EditForm {...props}/>
 
    
           </DialogContent>
@@ -896,6 +999,7 @@ class SelectEditor {
             open = false;
         }
 
+        let mode = params.mode || "select";
         let labels = params.labels || [];
         let values = params.values || [];
         let colors = params.colors || {};
@@ -910,6 +1014,7 @@ class SelectEditor {
         let variant = params.variant || "standard";
         let label = params.label || "";
         let name = params.name;
+
 
         let el_style;
         let style = {
@@ -933,6 +1038,38 @@ class SelectEditor {
         this.input = document.createElement("div")
         this.input.style.width = "100%";
         this.root = ReactDOM.createRoot( this.input );
+
+
+        if (mode == "button") {
+            this.el = (
+            <div style={{display: "flex", flexDirection: "column", gap: "20px"}}>
+                { values.map( (value, index) => (
+                    <Button key={index}
+                        variant={this.value == value ? "contained" : "outlined"}
+                        onClick={ e => {
+                            this.value = value;
+
+                            // Need to add this
+                            e.name = name;
+
+                            if (params.onchange) {
+                                params.onchange(e, this.value);
+                            }
+                        }}
+                    >
+                        <div style={{
+                            fontSize: "0.8rem",
+                        }}
+                        >{labels[index]}</div>
+                    </Button>
+                ) ) }
+            </div>
+            )
+            return;
+        }
+
+
+
         this.el = (
             <TextField
                 label={label}
@@ -952,9 +1089,11 @@ class SelectEditor {
                     e.name = name;
 
                     if (params.onchange) {
-                        params.onchange(e);
+                        params.onchange(e, this.value);
                     }
-                    params.api.stopEditing();
+                    if (params.api?.stopEditing) {
+                        params.api.stopEditing();
+                    }
                 }}
                 onKeyUp={ e => {
                     if (e.key == 13) {
@@ -1015,30 +1154,55 @@ class SelectEditor {
 
 
 const SelectEditorWdg = (props) => {
-    let cellEditorParams = props.cellEditorParams || {};
-    let label = props.label || props.field;
-    label = Common.capitalize(label);
 
-    let name = props.name;
+    const [value, set_value] = useState();
+    const [label, set_label] = useState();
+    const [el, set_el] = useState();
 
-    let props2 = {
-        is_form: true,
-        name: name,
-        label: "",
-        variant: "outlined",
-        values: cellEditorParams.values || [],
-        labels: cellEditorParams.labels || [],
-        onchange: props.onchange,
-    }
 
-    let select = new SelectEditor()
-    select.init(props2);
-    let el = select.getEl();
+    useEffect( () => {
+        let value = props.value;
+        set_value(value);
+
+        let cellEditorParams = props.cellEditorParams || {};
+        let label = props.label || props.field;
+        label = Common.capitalize(label);
+        set_label(label);
+
+        let name = props.name;
+        let mode = props.mode;
+
+        let props2 = {
+            is_form: true,
+            name: name,
+            label: "",
+            variant: "outlined",
+            values: cellEditorParams.values || [],
+            labels: cellEditorParams.labels || [],
+            onchange: (e, new_value) => {
+                set_value(new_value);
+                if (props.onchange) {
+                    props.onchange(e, new_value);
+                }
+            },
+            value: value,
+            mode: mode,
+        }
+
+        let select = new SelectEditor()
+        select.init(props2);
+        let el = select.getEl();
+        set_el(el);
+
+
+    }, [] );
 
     return (
         <div>
-            <div>{label}</div>
-            <div>{el}</div>
+            <div className="spt_form_label">{label}</div>
+            { el &&
+            <div className="spt_form_input">{el}</div>
+            }
         </div>
  
     );
@@ -1107,12 +1271,15 @@ class InputEditor {
                         e.name = name;
 
                         if (params.onchange) {
-                            params.onchange(e);
+                            params.onchange(e, this.value);
                         }
 
                     }}
                     onBlur={ e => {
-                        params.api.stopEditing();
+
+                        if (params.api?.stopEditing) {
+                            params.api.stopEditing();
+                        }
                     } }
                     onKeyUp={ e => {
                         this.value = e.target.value;
@@ -1165,8 +1332,11 @@ class InputEditor {
 
 
 const InputEditorWdg = (props) => {
+
+    const [value, set_value] = useState();
+
     let cellEditorParams = props.cellEditorParams || {};
-    let label = props.label || props.field || props.name;
+    let label = props.label || props.headerName || props.field || props.name;
     label = Common.capitalize(label);
 
     let props2 = {
@@ -1175,7 +1345,18 @@ const InputEditorWdg = (props) => {
         label: "",
         variant: "outlined",
         mode: cellEditorParams.mode,
-        onchange: props.onchange
+        onchange: (e, new_value) => {
+            set_value(new_value);
+
+            if (props.sobject) {
+                props.sobject[props.name] = new_value;
+            }
+
+            if (props.onchange) {
+                props.onchange(e, new_value)
+            }
+        },
+        value: props.value,
     }
 
     let input = new InputEditor();
@@ -1184,8 +1365,8 @@ const InputEditorWdg = (props) => {
 
     return (
         <div>
-            <div>{label}</div>
-            <div>{el}</div>
+            <div className="spt_form_label">{label}</div>
+            <div className="spt_form_input">{el}</div>
         </div>
     );
 }
@@ -1564,6 +1745,7 @@ const ColumnCreateModal = React.forwardRef( (props, ref) => {
 
 // Store this
 spt.react.TableLayout = TableLayout;
+spt.react.EditForm = EditForm;
 spt.react.EditModal = EditModal;
 spt.react.SelectEditor = SelectEditor;
 spt.react.InputEditor = InputEditor;

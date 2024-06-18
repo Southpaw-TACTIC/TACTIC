@@ -369,7 +369,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
               filter: true,
               filterParams: {
                   "maxNumConditions": 10,
-                  "numAlwaysVisibleConiions": 2,
+                  "numAlwaysVisibleConditions": 2,
               }
           },
 
@@ -412,7 +412,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         };
 
-        
         if (props.enable_undo || props.on_undo) {
             gridOptions.undoRedoCellEditing = true;
             gridOptions.undoRedoCellEditingLimit = 20;
@@ -478,6 +477,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (props.on_column_moved) {
             gridOptions.onColumnMoved = props.on_column_moved;
         }
+
 
 
         set_grid_options(gridOptions);

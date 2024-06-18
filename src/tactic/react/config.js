@@ -94,6 +94,7 @@ const Config = (config, options) => {
       config_def["flex"] = flex;
     }
     if (element_type == "select") {
+      let mode = config_item.mode;
       let labels = config_item.labels;
       let values = config_item.values || [];
       if (!labels) {
@@ -119,6 +120,7 @@ const Config = (config, options) => {
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
+      config_def.mode = mode;
       config_def.onCellValueChanged = e => {
         let p = {
           ...e,
@@ -128,7 +130,6 @@ const Config = (config, options) => {
       };
     } else {
       let format = config_item.format;
-      console.log("format: ", format);
       if (element_type == "number") {
         format = "number";
       } else if (element_type == "color") {

@@ -261,7 +261,7 @@ const DataGrid = React.forwardRef((props, ref) => {
         filter: true,
         filterParams: {
           "maxNumConditions": 10,
-          "numAlwaysVisibleConiions": 2
+          "numAlwaysVisibleConditions": 2
         }
       },
       rowSelection: props.row_selection || 'multiple',
