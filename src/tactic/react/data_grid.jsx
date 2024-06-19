@@ -163,13 +163,13 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
     const get_filtered_nodes = () => {
         let all_nodes = [];
-        api.forEachNodeAfterFilter((rowNode) => all_nodes.push(rowNode));
+        api?.forEachNodeAfterFilter((rowNode) => all_nodes.push(rowNode));
         return all_nodes;
     }
 
     const get_filtered_rows = () => {
         let all_rows = [];
-        api.forEachNodeAfterFilter((rowNode) => all_rows.push(rowNode.data));
+        api?.forEachNodeAfterFilter((rowNode) => all_rows.push(rowNode.data));
         return all_rows;
     }
 
@@ -839,7 +839,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
     function calculatePinnedBottomData(target, params){
         let columnsWithAggregation = ['days', 'rate', 'booking_days', 'budget', 'booking_budget', 'actual_days', 'actual_cost']
         columnsWithAggregation.forEach(element => {
-            params.api.forEachNodeAfterFilter((rowNode) => {
+            params.api?.forEachNodeAfterFilter((rowNode) => {
                 if (rowNode.data[element])
                     target[element] += Number(rowNode.data[element].toFixed(2));
             });
@@ -880,7 +880,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
             let total = 0;
             let count = 0;
 
-            params.api.forEachNodeAfterFilter((rowNode) => {
+            params.api?.forEachNodeAfterFilter((rowNode) => {
                 let data = rowNode.data[element];
                 if (!data && element != "budget") {
                     data = rowNode.data.work_hours[element];

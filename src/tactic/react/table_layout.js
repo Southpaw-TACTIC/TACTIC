@@ -4,6 +4,7 @@ function _extends() { _extends = Object.assign ? Object.assign.bind() : function
 const useEffect = React.useEffect;
 const useState = React.useState;
 const useRef = React.useRef;
+const useReducer = React.useReducer;
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Modal = MaterialUI.Modal;
@@ -444,6 +445,14 @@ const TableLayoutActionMenu = props => {
 const EditForm = React.forwardRef((props, ref) => {
   const [element_definitions, set_element_definitions] = useState(null);
   const [element_names, set_element_names] = useState(null);
+  React.useImperativeHandle(ref, () => ({
+    get_config() {
+      return props.config;
+    },
+    get_sobject() {
+      return props.sobject;
+    }
+  }));
   useEffect(() => {
     init();
   }, []);
@@ -522,7 +531,6 @@ const EditForm = React.forwardRef((props, ref) => {
     if (!definition.title) definition.title = Common.capitalize(element_name);
     let editor = definition?.cellEditor;
     if (editor == SelectEditor) {
-      alert("onchnge: " + onchange);
       return React.createElement(SelectEditorWdg, _extends({
         key: index,
         onchange: onchange
@@ -794,15 +802,19 @@ const SelectEditorWdg = props => {
   const [value, set_value] = useState();
   const [label, set_label] = useState();
   const [el, set_el] = useState();
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
   useEffect(() => {
     let value = props.value;
     set_value(value);
-    let cellEditorParams = props.cellEditorParams || {};
-    let label = props.label || props.field;
+    let label = props.headerName || props.label || props.field;
     label = Common.capitalize(label);
     set_label(label);
+    init();
+  }, []);
+  const init = () => {
     let name = props.name;
     let mode = props.mode;
+    let cellEditorParams = props.cellEditorParams || {};
     let props2 = {
       is_form: true,
       name: name,
@@ -815,6 +827,9 @@ const SelectEditorWdg = props => {
         if (props.onchange) {
           props.onchange(e, new_value);
         }
+        if (props.sobject) {
+          props.sobject[name] = new_value;
+        }
       },
       value: value,
       mode: mode
@@ -823,10 +838,14 @@ const SelectEditorWdg = props => {
     select.init(props2);
     let el = select.getEl();
     set_el(el);
-  }, []);
+  };
+  useEffect(() => {
+    init();
+    forceUpdate();
+  }, [value]);
   return React.createElement("div", null, React.createElement("div", {
     className: "spt_form_label"
-  }, label), el && React.createElement("div", {
+  }, label, " ", props.required == true ? "*" : ""), el && React.createElement("div", {
     className: "spt_form_input"
   }, el));
 };
@@ -940,7 +959,7 @@ const InputEditorWdg = props => {
         props.sobject[props.name] = new_value;
       }
       if (props.onchange) {
-        props.onchange(e);
+        props.onchange(e, new_value);
       }
     },
     value: props.value
@@ -950,7 +969,7 @@ const InputEditorWdg = props => {
   let el = input.getEl();
   return React.createElement("div", null, React.createElement("div", {
     className: "spt_form_label"
-  }, label), React.createElement("div", {
+  }, label, props.required == true ? " *" : ""), React.createElement("div", {
     className: "spt_form_input"
   }, el));
 };

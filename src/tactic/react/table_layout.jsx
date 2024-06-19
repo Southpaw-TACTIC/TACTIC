@@ -1,6 +1,7 @@
 const useEffect = React.useEffect;
 const useState = React.useState;
 const useRef = React.useRef;
+const useReducer = React.useReducer;
 
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
@@ -650,11 +651,19 @@ const TableLayoutActionMenu = props => {
 
 
 
-
 const EditForm = React.forwardRef( (props, ref) => {
 
     const [element_definitions, set_element_definitions] = useState(null);
     const [element_names, set_element_names] = useState(null);
+
+    React.useImperativeHandle( ref, () => ({
+        get_config() {
+            return props.config;
+        },
+        get_sobject() {
+            return props.sobject;
+        },
+    } ) )
 
     useEffect( () => {
         init();
@@ -1159,18 +1168,25 @@ const SelectEditorWdg = (props) => {
     const [label, set_label] = useState();
     const [el, set_el] = useState();
 
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect( () => {
         let value = props.value;
         set_value(value);
 
-        let cellEditorParams = props.cellEditorParams || {};
-        let label = props.label || props.field;
+        let label = props.headerName || props.label || props.field;
         label = Common.capitalize(label);
         set_label(label);
 
+        init();
+    }, [] );
+
+
+    const init = () => {
+
         let name = props.name;
         let mode = props.mode;
+        let cellEditorParams = props.cellEditorParams || {};
 
         let props2 = {
             is_form: true,
@@ -1184,6 +1200,9 @@ const SelectEditorWdg = (props) => {
                 if (props.onchange) {
                     props.onchange(e, new_value);
                 }
+                if (props.sobject) {
+                    props.sobject[name] = new_value;
+                }
             },
             value: value,
             mode: mode,
@@ -1194,12 +1213,18 @@ const SelectEditorWdg = (props) => {
         let el = select.getEl();
         set_el(el);
 
+    }
 
-    }, [] );
+
+    useEffect( () => {
+        init();
+        forceUpdate();
+    }, [value] );
+
 
     return (
         <div>
-            <div className="spt_form_label">{label}</div>
+            <div className="spt_form_label">{label} {props.required == true ? "*" : ""}</div>
             { el &&
             <div className="spt_form_input">{el}</div>
             }
@@ -1365,7 +1390,7 @@ const InputEditorWdg = (props) => {
 
     return (
         <div>
-            <div className="spt_form_label">{label}</div>
+            <div className="spt_form_label">{label}{props.required == true ? " *" : ""}</div>
             <div className="spt_form_input">{el}</div>
         </div>
     );

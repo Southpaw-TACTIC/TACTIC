@@ -74,6 +74,8 @@ const Config = (config, options) => {
     };
     config_defs[name] = config_def;
     config_def["resizable"] = true;
+    let required = config_item.required;
+    config_def["required"] = required;
     if (config_item.filterable == false) {
       config_def["filter"] = null;
     }
