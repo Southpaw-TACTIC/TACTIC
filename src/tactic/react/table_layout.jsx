@@ -1336,7 +1336,7 @@ class InputEditor {
                     InputProps={{ disableUnderline: true }}
                     inputProps={{
                         className: "input",
-                        style: el_style
+                        style: el_style,
                     }}
                     onChange={ e => {
                         this.value = e.target.value;

@@ -56,6 +56,10 @@ const Config = (config, options) => {
       definition_type = "simple";
     } else if (element_type == "date") {
       definition_type = "simple";
+    } else if (element_type == "email") {
+      definition_type = "simple";
+    } else if (element_type == "phone_number") {
+      definition_type = "simple";
     } else if (element_type == "text") {
       definition_type = "simple";
     } else if (!element_type) {
