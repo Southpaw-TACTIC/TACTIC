@@ -663,6 +663,9 @@ const EditForm = React.forwardRef( (props, ref) => {
         get_sobject() {
             return props.sobject;
         },
+        validate() {
+            return validate();
+        }
     } ) )
 
     useEffect( () => {
@@ -755,6 +758,34 @@ const EditForm = React.forwardRef( (props, ref) => {
         return definitions;
     }
 
+
+    const validate = () => {
+
+        let config = props.config;
+        if (!config) return true;
+
+        let sobject = props.sobject;
+        if (!sobject) return true;
+
+        let form_validated = true;
+
+        element_names.forEach( element_name => {
+            let definition = element_definitions[element_name];
+            if (definition.required == true) {
+                let key = definition.column || definition.name;
+                if (!sobject[key]) {
+                    form_validated = false;
+                    definition.helper = "ERROR";
+                    definition.error = true;
+                }
+            }
+
+        } )
+
+        set_element_names([...element_names]);
+
+        return form_validated;
+    }
 
 
 
@@ -1011,6 +1042,7 @@ class SelectEditor {
         let mode = params.mode || "select";
         let labels = params.labels || [];
         let values = params.values || [];
+        let helpers = params.helpers || [];
         let colors = params.colors || {};
 
         if (typeof(labels) == "string") {
@@ -1018,6 +1050,9 @@ class SelectEditor {
         }
         if (typeof(values) == "string") {
             values = values.split("|")
+        }
+        if (typeof(helpers) == "string") {
+            helpers = helpers.split("|")
         }
 
         let variant = params.variant || "standard";
@@ -1053,8 +1088,10 @@ class SelectEditor {
             this.el = (
             <div style={{display: "flex", flexDirection: "column", gap: "20px"}}>
                 { values.map( (value, index) => (
+                <div style={{width: "100%"}}>
                     <Button key={index}
                         variant={this.value == value ? "contained" : "outlined"}
+                        fullWidth
                         onClick={ e => {
                             this.value = value;
 
@@ -1071,6 +1108,10 @@ class SelectEditor {
                         }}
                         >{labels[index]}</div>
                     </Button>
+                    { helpers.length > 0 &&
+                    <div style={{fontSize: "0.7rem", margin: "3px"}}>{ helpers[index] }</div>
+                    }
+                </div>
                 ) ) }
             </div>
             )
@@ -1195,6 +1236,7 @@ const SelectEditorWdg = (props) => {
             variant: "outlined",
             values: cellEditorParams.values || [],
             labels: cellEditorParams.labels || [],
+            helpers: cellEditorParams.helpers || [],
             onchange: (e, new_value) => {
                 set_value(new_value);
                 if (props.onchange) {
@@ -1246,6 +1288,9 @@ class InputEditor {
         let variant = params.variant || "standard";
         let name = params.name;
         let label = params.label || "";
+        let rows = params.rows || 1;
+        let helper = params.helper;
+        let error = params.error;
 
         let is_form = params.is_form;
         let el_style;
@@ -1280,6 +1325,10 @@ class InputEditor {
                     label={label}
                     variant={variant}
                     defaultValue={this.value}
+                    multiline={rows > 1 ? true : false}
+                    error={error}
+                    helperText={helper}
+                    rows={rows}
                     fullWidth
                     size="small"
                     type={mode}
@@ -1368,6 +1417,7 @@ const InputEditorWdg = (props) => {
         is_form: true,
         name: props.name,
         label: "",
+        rows: props.rows,
         variant: "outlined",
         mode: cellEditorParams.mode,
         onchange: (e, new_value) => {
@@ -1382,6 +1432,8 @@ const InputEditorWdg = (props) => {
             }
         },
         value: props.value,
+        helper: props.helper,
+        error: props.error,
     }
 
     let input = new InputEditor();

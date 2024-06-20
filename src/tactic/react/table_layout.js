@@ -451,6 +451,9 @@ const EditForm = React.forwardRef((props, ref) => {
     },
     get_sobject() {
       return props.sobject;
+    },
+    validate() {
+      return validate();
     }
   }));
   useEffect(() => {
@@ -515,6 +518,26 @@ const EditForm = React.forwardRef((props, ref) => {
 
     let definitions = spt.react.Config(config, {});
     return definitions;
+  };
+  const validate = () => {
+    let config = props.config;
+    if (!config) return true;
+    let sobject = props.sobject;
+    if (!sobject) return true;
+    let form_validated = true;
+    element_names.forEach(element_name => {
+      let definition = element_definitions[element_name];
+      if (definition.required == true) {
+        let key = definition.column || definition.name;
+        if (!sobject[key]) {
+          form_validated = false;
+          definition.helper = "ERROR";
+          definition.error = true;
+        }
+      }
+    });
+    set_element_names([...element_names]);
+    return form_validated;
   };
   return React.createElement("div", {
     className: "spt_edit_form",
@@ -693,12 +716,16 @@ class SelectEditor {
     let mode = params.mode || "select";
     let labels = params.labels || [];
     let values = params.values || [];
+    let helpers = params.helpers || [];
     let colors = params.colors || {};
     if (typeof labels == "string") {
       labels = labels.split("|");
     }
     if (typeof values == "string") {
       values = values.split("|");
+    }
+    if (typeof helpers == "string") {
+      helpers = helpers.split("|");
     }
     let variant = params.variant || "standard";
     let label = params.label || "";
@@ -728,9 +755,14 @@ class SelectEditor {
           flexDirection: "column",
           gap: "20px"
         }
-      }, values.map((value, index) => React.createElement(Button, {
+      }, values.map((value, index) => React.createElement("div", {
+        style: {
+          width: "100%"
+        }
+      }, React.createElement(Button, {
         key: index,
         variant: this.value == value ? "contained" : "outlined",
+        fullWidth: true,
         onClick: e => {
           this.value = value;
 
@@ -743,7 +775,12 @@ class SelectEditor {
         style: {
           fontSize: "0.8rem"
         }
-      }, labels[index]))));
+      }, labels[index])), helpers.length > 0 && React.createElement("div", {
+        style: {
+          fontSize: "0.7rem",
+          margin: "3px"
+        }
+      }, helpers[index]))));
       return;
     }
     this.el = React.createElement(TextField, {
@@ -822,6 +859,7 @@ const SelectEditorWdg = props => {
       variant: "outlined",
       values: cellEditorParams.values || [],
       labels: cellEditorParams.labels || [],
+      helpers: cellEditorParams.helpers || [],
       onchange: (e, new_value) => {
         set_value(new_value);
         if (props.onchange) {
@@ -857,6 +895,9 @@ class InputEditor {
     let variant = params.variant || "standard";
     let name = params.name;
     let label = params.label || "";
+    let rows = params.rows || 1;
+    let helper = params.helper;
+    let error = params.error;
     let is_form = params.is_form;
     let el_style;
     let style = {
@@ -885,6 +926,10 @@ class InputEditor {
       label: label,
       variant: variant,
       defaultValue: this.value,
+      multiline: rows > 1 ? true : false,
+      error: error,
+      helperText: helper,
+      rows: rows,
       fullWidth: true,
       size: "small",
       type: mode,
@@ -951,6 +996,7 @@ const InputEditorWdg = props => {
     is_form: true,
     name: props.name,
     label: "",
+    rows: props.rows,
     variant: "outlined",
     mode: cellEditorParams.mode,
     onchange: (e, new_value) => {
@@ -962,7 +1008,9 @@ const InputEditorWdg = props => {
         props.onchange(e, new_value);
       }
     },
-    value: props.value
+    value: props.value,
+    helper: props.helper,
+    error: props.error
   };
   let input = new InputEditor();
   input.init(props2);

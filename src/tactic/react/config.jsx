@@ -105,8 +105,6 @@ const Config = (config, options) => {
         config_def["required"] = required;
 
 
-
-
         if (config_item.filterable == false) {
             config_def["filter"] = null;
         }
@@ -139,6 +137,7 @@ const Config = (config, options) => {
 
             let labels = config_item.labels;
             let values = config_item.values || [];
+            let helpers = config_item.helpers || [];
             if (!labels) {
                 labels = values;
             }
@@ -149,12 +148,16 @@ const Config = (config, options) => {
             if (typeof(values) == "string" ) {
                 values = values.split(",")
             }
+            if (typeof(helpers) == "string" ) {
+                helpers = helpers.split(",")
+            }
 
 
             let params = {
                 table_ref: table_ref,
                 labels: labels,
                 values: values,
+                helpers: helpers,
             }
 
             if (options.renderer_params) {
@@ -213,7 +216,20 @@ const Config = (config, options) => {
                 params = {...params, ...options.renderer_params}
             }
 
+            let helper = config_item.helper;
+            if (helper) {
+                config_def.helper = helper;
+            }
 
+            let error = config_item.error;
+            if (error) {
+                config_def.error = error;
+            }
+
+            let rows = config_item.rows;
+            if (rows) {
+                config_def.rows = rows;
+            }
 
             let editable = config_item.editable;
             if (editable == false || editable == "false") {
