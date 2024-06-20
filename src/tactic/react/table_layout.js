@@ -4,6 +4,7 @@ function _extends() { _extends = Object.assign ? Object.assign.bind() : function
 const useEffect = React.useEffect;
 const useState = React.useState;
 const useRef = React.useRef;
+const useReducer = React.useReducer;
 const Box = MaterialUI.Box;
 const Button = MaterialUI.Button;
 const Modal = MaterialUI.Modal;
@@ -342,6 +343,7 @@ const TableLayout = React.forwardRef((props, ref) => {
       return "TABLE";
     }
   };
+  let EmptyWdg = props.empty_wdg;
   return React.createElement("div", null, props.show_shelf != false && React.createElement("div", {
     style: {
       display: "flex",
@@ -351,7 +353,10 @@ const TableLayout = React.forwardRef((props, ref) => {
     style: {
       fontSize: "1.2rem"
     }
-  }, get_name()), get_shelf()), React.createElement(DataGrid, {
+  }, get_name()), get_shelf()), props.empty_wdg && data?.length == 0 ? React.createElement("div", null, React.createElement(EmptyWdg, {
+    edit_modal_ref: edit_modal_ref,
+    import_data_modal_ref: import_data_modal_ref
+  })) : React.createElement(DataGrid, {
     ref: grid_ref,
     name: get_name(),
     column_defs: column_defs,
@@ -437,58 +442,113 @@ const TableLayoutActionMenu = props => {
     close: action_handle_select
   }))));
 };
-const EditModal = React.forwardRef((props, ref) => {
-  const [show, set_show] = useState(false);
-  const [item, set_item] = useState({});
+const EditForm = React.forwardRef((props, ref) => {
+  const [element_definitions, set_element_definitions] = useState(null);
+  const [element_names, set_element_names] = useState(null);
   React.useImperativeHandle(ref, () => ({
-    show() {
-      set_show(true);
+    get_config() {
+      return props.config;
     },
-    set_item(item) {
-      set_item(item);
+    get_sobject() {
+      return props.sobject;
+    },
+    validate() {
+      return validate();
     }
   }));
-  const handleClickOpen = () => {
-    set_show(true);
-  };
-  const handleClose = () => {
-    set_show(false);
-  };
-  const insert = () => {
-    if (props.on_insert) props.on_insert(item);
-    handleClose();
-    set_item({});
-  };
-  const onchange = e => {
-    let name = e.name;
-    let value = e.target.value;
-
-    item[name] = value;
-  };
-  return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
-    open: show,
-    onClose: e => set_show(false)
-  }, React.createElement("div", {
-    className: "spt_modal",
-    style: {
-      width: "60vw",
-      height: "fit-content",
-      padding: "20px"
+  useEffect(() => {
+    init();
+  }, []);
+  const init = async () => {
+    let element_names = props.element_names;
+    let element_definitions = props.element_definitions;
+    if (!element_definitions) {
+      config_handler = props.config_handler;
+      if (config_handler) {
+        element_definitions = await get_element_definitions(config_handler);
+      } else {
+        if (!element_names) {
+          element_names = [];
+          props.config.forEach(item => {
+            element_names.push(item.name);
+          });
+        }
+        element_definitions = spt.react.Config(props.config, {});
+      }
     }
-  })), React.createElement(Dialog, {
-    open: show,
-    onClose: handleClose,
-    fullWidth: true,
-    maxWidth: "sm"
-  }, React.createElement(DialogTitle, null, "New ", props.name), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, "Enter the following data for ", props.name), React.createElement("div", {
+    set_element_names(element_names);
+    if (props.sobject) {
+      element_names.forEach(element_name => {
+        let item = element_definitions[element_name];
+        let column = element_name;
+        if (item && column) {
+          item.value = props.sobject[column];
+        }
+        item.sobject = props.sobject;
+      });
+    }
+    set_element_definitions(element_definitions);
+  };
+  const load_data = async () => {
+    let cmd = props.get_cmd;
+    if (!cmd) {
+      alert("Get cmd is not defined");
+      return;
+    }
+    let kwargs = props.get_kwargs || {};
+    let config_handler = props.config_handler;
+    kwargs["config_handler"] = config_handler;
+    let server = TACTIC.get();
+    server.p_execute_cmd(cmd, kwargs).then(ret => {
+      let data = ret.info;
+      set_data(data);
+    }).catch(e => {
+      alert("TACTIC ERROR: " + e);
+    });
+  };
+  const get_element_definitions = async (cmd, kwargs) => {
+    if (!kwargs) {
+      kwargs = {};
+    }
+    let server = TACTIC.get();
+    let ret = await server.p_execute_cmd(cmd, kwargs);
+    let info = ret.info;
+    let config = info.config;
+    let renderer_params = info.renderer_params;
+
+    let definitions = spt.react.Config(config, {});
+    return definitions;
+  };
+  const validate = () => {
+    let config = props.config;
+    if (!config) return true;
+    let sobject = props.sobject;
+    if (!sobject) return true;
+    let form_validated = true;
+    element_names.forEach(element_name => {
+      let definition = element_definitions[element_name];
+      if (definition.required == true) {
+        let key = definition.column || definition.name;
+        if (!sobject[key]) {
+          form_validated = false;
+          definition.helper = "ERROR";
+          definition.error = true;
+        }
+      }
+    });
+    set_element_names([...element_names]);
+    return form_validated;
+  };
+  return React.createElement("div", {
+    className: "spt_edit_form",
     style: {
       display: "flex",
       flexDirection: "column",
       gap: "20px",
       margin: "30px 10px"
     }
-  }, props.element_names?.map((element_name, index) => {
-    let definition = props.element_definitions && props.element_definitions[element_name];
+  }, element_definitions && element_names?.map((element_name, index) => {
+    let definition = element_definitions && element_definitions[element_name];
     if (!definition) definition = {};
     if (!definition.name) definition.name = element_name;
     if (!definition.title) definition.title = Common.capitalize(element_name);
@@ -514,19 +574,51 @@ const EditModal = React.forwardRef((props, ref) => {
         onchange: onchange
       }, definition));
     }
-
-    return React.createElement(TextField, {
-      key: index,
-      label: Common.capitalize(element_name)
-      ,
-      size: "small",
-      variant: "outlined",
-      defaultValue: item[element_name],
-      onChange: e => {
-        item[element_name] = e.target.value;
-      }
-    });
-  }))), React.createElement(DialogActions, null, React.createElement("div", {
+  }));
+});
+const EditModal = React.forwardRef((props, ref) => {
+  const [show, set_show] = useState(false);
+  const [item, set_item] = useState({});
+  React.useImperativeHandle(ref, () => ({
+    show() {
+      set_show(true);
+    },
+    set_item(item) {
+      set_item(item);
+    }
+  }));
+  const handleClickOpen = () => {
+    set_show(true);
+  };
+  const handleClose = () => {
+    set_show(false);
+  };
+  const insert = () => {
+    if (props.on_insert) props.on_insert(item);
+    handleClose();
+    set_item({});
+  };
+  const onchange = e => {
+    let name = e.name;
+    let value = e.target.value;
+    item[name] = value;
+  };
+  return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
+    open: show,
+    onClose: e => set_show(false)
+  }, React.createElement("div", {
+    className: "spt_modal",
+    style: {
+      width: "60vw",
+      height: "fit-content",
+      padding: "20px"
+    }
+  })), React.createElement(Dialog, {
+    open: show,
+    onClose: handleClose,
+    fullWidth: true,
+    maxWidth: "sm"
+  }, React.createElement(DialogTitle, null, "New ", props.name), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, "Enter the following data for ", props.name), React.createElement(EditForm, props)), React.createElement(DialogActions, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "center",
@@ -621,14 +713,19 @@ class SelectEditor {
       this.value = params.value;
       open = false;
     }
+    let mode = params.mode || "select";
     let labels = params.labels || [];
     let values = params.values || [];
+    let helpers = params.helpers || [];
     let colors = params.colors || {};
     if (typeof labels == "string") {
       labels = labels.split("|");
     }
     if (typeof values == "string") {
       values = values.split("|");
+    }
+    if (typeof helpers == "string") {
+      helpers = helpers.split("|");
     }
     let variant = params.variant || "standard";
     let label = params.label || "";
@@ -651,6 +748,41 @@ class SelectEditor {
     this.input = document.createElement("div");
     this.input.style.width = "100%";
     this.root = ReactDOM.createRoot(this.input);
+    if (mode == "button") {
+      this.el = React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px"
+        }
+      }, values.map((value, index) => React.createElement("div", {
+        style: {
+          width: "100%"
+        }
+      }, React.createElement(Button, {
+        key: index,
+        variant: this.value == value ? "contained" : "outlined",
+        fullWidth: true,
+        onClick: e => {
+          this.value = value;
+
+          e.name = name;
+          if (params.onchange) {
+            params.onchange(e, this.value);
+          }
+        }
+      }, React.createElement("div", {
+        style: {
+          fontSize: "0.8rem"
+        }
+      }, labels[index])), helpers.length > 0 && React.createElement("div", {
+        style: {
+          fontSize: "0.7rem",
+          margin: "3px"
+        }
+      }, helpers[index]))));
+      return;
+    }
     this.el = React.createElement(TextField, {
       label: label,
       variant: variant,
@@ -667,9 +799,11 @@ class SelectEditor {
 
         e.name = name;
         if (params.onchange) {
-          params.onchange(e);
+          params.onchange(e, this.value);
         }
-        params.api.stopEditing();
+        if (params.api?.stopEditing) {
+          params.api.stopEditing();
+        }
       },
       onKeyUp: e => {
         if (e.key == 13) {
@@ -702,23 +836,56 @@ class SelectEditor {
   afterGuiAttached() {}
 }
 const SelectEditorWdg = props => {
-  let cellEditorParams = props.cellEditorParams || {};
-  let label = props.label || props.field;
-  label = Common.capitalize(label);
-  let name = props.name;
-  let props2 = {
-    is_form: true,
-    name: name,
-    label: "",
-    variant: "outlined",
-    values: cellEditorParams.values || [],
-    labels: cellEditorParams.labels || [],
-    onchange: props.onchange
+  const [value, set_value] = useState();
+  const [label, set_label] = useState();
+  const [el, set_el] = useState();
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+  useEffect(() => {
+    let value = props.value;
+    set_value(value);
+    let label = props.headerName || props.label || props.field;
+    label = Common.capitalize(label);
+    set_label(label);
+    init();
+  }, []);
+  const init = () => {
+    let name = props.name;
+    let mode = props.mode;
+    let cellEditorParams = props.cellEditorParams || {};
+    let props2 = {
+      is_form: true,
+      name: name,
+      label: "",
+      variant: "outlined",
+      values: cellEditorParams.values || [],
+      labels: cellEditorParams.labels || [],
+      helpers: cellEditorParams.helpers || [],
+      onchange: (e, new_value) => {
+        set_value(new_value);
+        if (props.onchange) {
+          props.onchange(e, new_value);
+        }
+        if (props.sobject) {
+          props.sobject[name] = new_value;
+        }
+      },
+      value: value,
+      mode: mode
+    };
+    let select = new SelectEditor();
+    select.init(props2);
+    let el = select.getEl();
+    set_el(el);
   };
-  let select = new SelectEditor();
-  select.init(props2);
-  let el = select.getEl();
-  return React.createElement("div", null, React.createElement("div", null, label), React.createElement("div", null, el));
+  useEffect(() => {
+    init();
+    forceUpdate();
+  }, [value]);
+  return React.createElement("div", null, React.createElement("div", {
+    className: "spt_form_label"
+  }, label, " ", props.required == true ? "*" : ""), el && React.createElement("div", {
+    className: "spt_form_input"
+  }, el));
 };
 class InputEditor {
   init(params) {
@@ -728,6 +895,9 @@ class InputEditor {
     let variant = params.variant || "standard";
     let name = params.name;
     let label = params.label || "";
+    let rows = params.rows || 1;
+    let helper = params.helper;
+    let error = params.error;
     let is_form = params.is_form;
     let el_style;
     let style = {
@@ -756,6 +926,10 @@ class InputEditor {
       label: label,
       variant: variant,
       defaultValue: this.value,
+      multiline: rows > 1 ? true : false,
+      error: error,
+      helperText: helper,
+      rows: rows,
       fullWidth: true,
       size: "small",
       type: mode,
@@ -772,11 +946,13 @@ class InputEditor {
 
         e.name = name;
         if (params.onchange) {
-          params.onchange(e);
+          params.onchange(e, this.value);
         }
       },
       onBlur: e => {
-        params.api.stopEditing();
+        if (params.api?.stopEditing) {
+          params.api.stopEditing();
+        }
       },
       onKeyUp: e => {
         this.value = e.target.value;
@@ -812,21 +988,38 @@ class InputEditor {
   }
 }
 const InputEditorWdg = props => {
+  const [value, set_value] = useState();
   let cellEditorParams = props.cellEditorParams || {};
-  let label = props.label || props.field || props.name;
+  let label = props.label || props.headerName || props.field || props.name;
   label = Common.capitalize(label);
   let props2 = {
     is_form: true,
     name: props.name,
     label: "",
+    rows: props.rows,
     variant: "outlined",
     mode: cellEditorParams.mode,
-    onchange: props.onchange
+    onchange: (e, new_value) => {
+      set_value(new_value);
+      if (props.sobject) {
+        props.sobject[props.name] = new_value;
+      }
+      if (props.onchange) {
+        props.onchange(e, new_value);
+      }
+    },
+    value: props.value,
+    helper: props.helper,
+    error: props.error
   };
   let input = new InputEditor();
   input.init(props2);
   let el = input.getEl();
-  return React.createElement("div", null, React.createElement("div", null, label), React.createElement("div", null, el));
+  return React.createElement("div", null, React.createElement("div", {
+    className: "spt_form_label"
+  }, label, props.required == true ? " *" : ""), React.createElement("div", {
+    className: "spt_form_input"
+  }, el));
 };
 const SimpleCellRenderer = params => {
   let value = params.value;
@@ -1083,6 +1276,7 @@ const ColumnCreateModal = React.forwardRef((props, ref) => {
 });
 
 spt.react.TableLayout = TableLayout;
+spt.react.EditForm = EditForm;
 spt.react.EditModal = EditModal;
 spt.react.SelectEditor = SelectEditor;
 spt.react.InputEditor = InputEditor;

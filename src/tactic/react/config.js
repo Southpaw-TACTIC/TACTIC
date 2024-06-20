@@ -56,6 +56,10 @@ const Config = (config, options) => {
       definition_type = "simple";
     } else if (element_type == "date") {
       definition_type = "simple";
+    } else if (element_type == "email") {
+      definition_type = "simple";
+    } else if (element_type == "phone_number") {
+      definition_type = "simple";
     } else if (element_type == "text") {
       definition_type = "simple";
     } else if (!element_type) {
@@ -74,6 +78,8 @@ const Config = (config, options) => {
     };
     config_defs[name] = config_def;
     config_def["resizable"] = true;
+    let required = config_item.required;
+    config_def["required"] = required;
     if (config_item.filterable == false) {
       config_def["filter"] = null;
     }
@@ -94,8 +100,10 @@ const Config = (config, options) => {
       config_def["flex"] = flex;
     }
     if (element_type == "select") {
+      let mode = config_item.mode;
       let labels = config_item.labels;
       let values = config_item.values || [];
+      let helpers = config_item.helpers || [];
       if (!labels) {
         labels = values;
       }
@@ -105,10 +113,14 @@ const Config = (config, options) => {
       if (typeof values == "string") {
         values = values.split(",");
       }
+      if (typeof helpers == "string") {
+        helpers = helpers.split(",");
+      }
       let params = {
         table_ref: table_ref,
         labels: labels,
-        values: values
+        values: values,
+        helpers: helpers
       };
       if (options.renderer_params) {
         params = {
@@ -119,6 +131,7 @@ const Config = (config, options) => {
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
+      config_def.mode = mode;
       config_def.onCellValueChanged = e => {
         let p = {
           ...e,
@@ -128,7 +141,6 @@ const Config = (config, options) => {
       };
     } else {
       let format = config_item.format;
-      console.log("format: ", format);
       if (element_type == "number") {
         format = "number";
       } else if (element_type == "color") {
@@ -161,6 +173,18 @@ const Config = (config, options) => {
           ...params,
           ...options.renderer_params
         };
+      }
+      let helper = config_item.helper;
+      if (helper) {
+        config_def.helper = helper;
+      }
+      let error = config_item.error;
+      if (error) {
+        config_def.error = error;
+      }
+      let rows = config_item.rows;
+      if (rows) {
+        config_def.rows = rows;
       }
       let editable = config_item.editable;
       if (editable == false || editable == "false") {
