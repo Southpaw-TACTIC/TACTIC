@@ -80,6 +80,8 @@ const Config = (config, options) => {
     config_def["resizable"] = true;
     let required = config_item.required;
     config_def["required"] = required;
+    let group = config_item.group || "default";
+    config_def["group"] = group;
     if (config_item.filterable == false) {
       config_def["filter"] = null;
     }
@@ -127,6 +129,11 @@ const Config = (config, options) => {
           ...params,
           ...options.renderer_params
         };
+      }
+
+      let layout = config_item.layout;
+      if (layout) {
+        config_def.layout = layout;
       }
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
@@ -182,6 +189,7 @@ const Config = (config, options) => {
       if (error) {
         config_def.error = error;
       }
+
       let rows = config_item.rows;
       if (rows) {
         config_def.rows = rows;

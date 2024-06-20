@@ -656,6 +656,11 @@ const EditForm = React.forwardRef( (props, ref) => {
     const [element_definitions, set_element_definitions] = useState(null);
     const [element_names, set_element_names] = useState(null);
 
+    const [groups, set_groups] = useState({});
+    const [group_names, set_group_names] = useState({});
+
+
+
     React.useImperativeHandle( ref, () => ({
         get_config() {
             return props.config;
@@ -710,6 +715,28 @@ const EditForm = React.forwardRef( (props, ref) => {
         }
 
         set_element_definitions(element_definitions);
+
+        // Group the definitions
+        let groups = {};
+        let group_names = [];
+        element_names.forEach( element_name => {
+            let definition = element_definitions[element_name];
+            if (!definition) { definition = {} }
+            if (!definition.name) definition.name = element_name;
+            if (!definition.title) definition.title = Common.capitalize(definition.name);
+
+            let group_name = definition.group || "default";
+            let group = groups[group_name];
+            if (!group) {
+                group = [];
+                groups[group_name] = group;
+                group_names.push(group_name);
+            }
+            group.push(definition);
+        } )
+
+        set_groups(groups);
+        set_group_names(group_names);
     }
 
 
@@ -791,14 +818,22 @@ const EditForm = React.forwardRef( (props, ref) => {
 
     return (
 
-        <div className="spt_edit_form" style={{display: "flex", flexDirection: "column", gap: "20px", margin: "30px 10px"}}>
+        <div style={{
+            //width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            margin: "30px 10px"
+        }}>
 
-            { element_definitions && element_names?.map( (element_name, index) => {
 
-                let definition = element_definitions && element_definitions[element_name];
-                if (!definition) definition = {};
-                if (!definition.name) definition.name = element_name;
-                if (!definition.title) definition.title = Common.capitalize(element_name);
+            { element_definitions && group_names?.map( (group_name, index) => (
+
+              <div className="spt_edit_form" style={{
+                  display: "flex", flexDirection: "row", gap: "10px"
+              }}>
+
+              { groups[group_name].map( (definition, index) => {
 
                 let editor = definition?.cellEditor;
                 if (editor == SelectEditor) {
@@ -813,8 +848,10 @@ const EditForm = React.forwardRef( (props, ref) => {
                 else {
                     return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
                 }
+              } ) }
 
-            } ) }
+              </div>
+            ) ) }
 
 
         </div>
@@ -1059,6 +1096,8 @@ class SelectEditor {
         let label = params.label || "";
         let name = params.name;
 
+        let layout = params.layout || "column";
+
 
         let el_style;
         let style = {
@@ -1086,7 +1125,7 @@ class SelectEditor {
 
         if (mode == "button") {
             this.el = (
-            <div style={{display: "flex", flexDirection: "column", gap: "20px"}}>
+            <div style={{display: "flex", flexDirection: layout, gap: "20px"}}>
                 { values.map( (value, index) => (
                 <div style={{width: "100%"}}>
                     <Button key={index}
@@ -1116,6 +1155,10 @@ class SelectEditor {
             </div>
             )
             return;
+        }
+
+        else if (mode == "checkbox") {
+            // implement checkboxes here
         }
 
 
@@ -1234,9 +1277,13 @@ const SelectEditorWdg = (props) => {
             name: name,
             label: "",
             variant: "outlined",
+
             values: cellEditorParams.values || [],
             labels: cellEditorParams.labels || [],
             helpers: cellEditorParams.helpers || [],
+
+            layout: props.layout,
+
             onchange: (e, new_value) => {
                 set_value(new_value);
                 if (props.onchange) {
@@ -1265,7 +1312,7 @@ const SelectEditorWdg = (props) => {
 
 
     return (
-        <div>
+        <div style={{width: "100%"}}>
             <div className="spt_form_label">{label} {props.required == true ? "*" : ""}</div>
             { el &&
             <div className="spt_form_input">{el}</div>
@@ -1441,7 +1488,7 @@ const InputEditorWdg = (props) => {
     let el = input.getEl();
 
     return (
-        <div>
+        <div style={{width: "100%"}}>
             <div className="spt_form_label">{label}{props.required == true ? " *" : ""}</div>
             <div className="spt_form_input">{el}</div>
         </div>
