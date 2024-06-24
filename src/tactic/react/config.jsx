@@ -111,8 +111,10 @@ const Config = (config, options) => {
         config_def["required"] = required;
 
 
-        let group = config_item.group || "default";
-        config_def["group"] = group;
+        let group = config_item.group;
+        if (group) {
+            config_def["group"] = group;
+        }
 
 
         if (config_item.filterable == false) {

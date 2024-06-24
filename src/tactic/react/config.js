@@ -80,8 +80,10 @@ const Config = (config, options) => {
     config_def["resizable"] = true;
     let required = config_item.required;
     config_def["required"] = required;
-    let group = config_item.group || "default";
-    config_def["group"] = group;
+    let group = config_item.group;
+    if (group) {
+      config_def["group"] = group;
+    }
     if (config_item.filterable == false) {
       config_def["filter"] = null;
     }

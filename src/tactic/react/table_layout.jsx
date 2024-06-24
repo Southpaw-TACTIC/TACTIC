@@ -702,15 +702,24 @@ const EditForm = React.forwardRef( (props, ref) => {
 
         set_element_names(element_names);
 
+        // make sure all the element names have definitions
+        element_names.forEach( element_name => {
+            let definition = element_definitions[element_name];
+            if (!definition) {
+                definition = {};
+                element_definitions[element_name] = definition;
+            }
+            if (!definition.name) definition.name = element_name;
+            if (!definition.title) definition.title = Common.capitalize(definition.name);
+        } )
+
 
         if (props.sobject) {
             element_names.forEach( element_name => {
-                let item = element_definitions[element_name];
+                let definition = element_definitions[element_name];
                 let column = element_name;
-                if (item && column) {
-                    item.value = props.sobject[column];
-                }
-                item.sobject = props.sobject;
+                definition.value = props.sobject[column];
+                definition.sobject = props.sobject;
             } )
         }
 
@@ -721,11 +730,7 @@ const EditForm = React.forwardRef( (props, ref) => {
         let group_names = [];
         element_names.forEach( element_name => {
             let definition = element_definitions[element_name];
-            if (!definition) { definition = {} }
-            if (!definition.name) definition.name = element_name;
-            if (!definition.title) definition.title = Common.capitalize(definition.name);
-
-            let group_name = definition.group || "default";
+            let group_name = definition.group || Common.generate_key();
             let group = groups[group_name];
             if (!group) {
                 group = [];
@@ -737,6 +742,8 @@ const EditForm = React.forwardRef( (props, ref) => {
 
         set_groups(groups);
         set_group_names(group_names);
+
+        //console.log("groups: ", groups, group_names)
     }
 
 
@@ -818,18 +825,19 @@ const EditForm = React.forwardRef( (props, ref) => {
 
     return (
 
-        <div style={{
+        <div className="spt_edit_form"
+          style={{
             //width: "100%",
             display: "flex",
             flexDirection: "column",
-            gap: "10px",
+            gap: "20px",
             margin: "30px 10px"
         }}>
 
 
             { element_definitions && group_names?.map( (group_name, index) => (
 
-              <div className="spt_edit_form" style={{
+              <div className="spt_edit_form_row" style={{
                   display: "flex", flexDirection: "row", gap: "10px"
               }}>
 
@@ -1082,6 +1090,8 @@ class SelectEditor {
         let helpers = params.helpers || [];
         let colors = params.colors || {};
 
+        let error = params.error;
+
         if (typeof(labels) == "string") {
             labels = labels.split("|")
         }
@@ -1130,6 +1140,9 @@ class SelectEditor {
                 <div style={{width: "100%"}}>
                     <Button key={index}
                         variant={this.value == value ? "contained" : "outlined"}
+                        style={{
+                            border: error ? "solid 1px red" : "",
+                        }}
                         fullWidth
                         onClick={ e => {
                             this.value = value;
@@ -1266,10 +1279,17 @@ const SelectEditorWdg = (props) => {
     }, [] );
 
 
+    useEffect( () => {
+        init();
+    }, [props.error] );
+
+
     const init = () => {
 
         let name = props.name;
         let mode = props.mode;
+
+
         let cellEditorParams = props.cellEditorParams || {};
 
         let props2 = {
@@ -1295,6 +1315,7 @@ const SelectEditorWdg = (props) => {
             },
             value: value,
             mode: mode,
+            error: props.error,
         }
 
         let select = new SelectEditor()
@@ -1316,6 +1337,9 @@ const SelectEditorWdg = (props) => {
             <div className="spt_form_label">{label} {props.required == true ? "*" : ""}</div>
             { el &&
             <div className="spt_form_input">{el}</div>
+            }
+            { props.helper &&
+                <div>{props.helper}</div>
             }
         </div>
  
