@@ -111,6 +111,12 @@ const Config = (config, options) => {
         config_def["required"] = required;
 
 
+        let group = config_item.group;
+        if (group) {
+            config_def["group"] = group;
+        }
+
+
         if (config_item.filterable == false) {
             config_def["filter"] = null;
         }
@@ -169,6 +175,14 @@ const Config = (config, options) => {
             if (options.renderer_params) {
                 params = {...params, ...options.renderer_params}
             }
+
+
+            // applies to buttons or checkboxes
+            let layout = config_item.layout;
+            if (layout) {
+                config_def.layout = layout;
+            }
+
 
             config_def.cellEditorParams = params;
             config_def.cellRendererParams = params;
@@ -232,10 +246,12 @@ const Config = (config, options) => {
                 config_def.error = error;
             }
 
+            // number of rows in the input
             let rows = config_item.rows;
             if (rows) {
                 config_def.rows = rows;
             }
+
 
             let editable = config_item.editable;
             if (editable == false || editable == "false") {

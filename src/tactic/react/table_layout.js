@@ -445,6 +445,8 @@ const TableLayoutActionMenu = props => {
 const EditForm = React.forwardRef((props, ref) => {
   const [element_definitions, set_element_definitions] = useState(null);
   const [element_names, set_element_names] = useState(null);
+  const [groups, set_groups] = useState({});
+  const [group_names, set_group_names] = useState({});
   React.useImperativeHandle(ref, () => ({
     get_config() {
       return props.config;
@@ -477,18 +479,44 @@ const EditForm = React.forwardRef((props, ref) => {
       }
     }
     set_element_names(element_names);
+
+    element_names.forEach(element_name => {
+      let definition = element_definitions[element_name];
+      if (!definition) {
+        definition = {};
+        element_definitions[element_name] = definition;
+      }
+      if (!definition.name) definition.name = element_name;
+      if (!definition.title) definition.title = Common.capitalize(definition.name);
+    });
     if (props.sobject) {
       element_names.forEach(element_name => {
-        let item = element_definitions[element_name];
+        let definition = element_definitions[element_name];
         let column = element_name;
-        if (item && column) {
-          item.value = props.sobject[column];
-        }
-        item.sobject = props.sobject;
+        definition.value = props.sobject[column];
+        definition.sobject = props.sobject;
       });
     }
     set_element_definitions(element_definitions);
+
+    let groups = {};
+    let group_names = [];
+    element_names.forEach(element_name => {
+      let definition = element_definitions[element_name];
+      let group_name = definition.group || Common.generate_key();
+      let group = groups[group_name];
+      if (!group) {
+        group = [];
+        groups[group_name] = group;
+        group_names.push(group_name);
+      }
+      group.push(definition);
+    });
+    set_groups(groups);
+    set_group_names(group_names);
+
   };
+
   const load_data = async () => {
     let cmd = props.get_cmd;
     if (!cmd) {
@@ -547,11 +575,14 @@ const EditForm = React.forwardRef((props, ref) => {
       gap: "20px",
       margin: "30px 10px"
     }
-  }, element_definitions && element_names?.map((element_name, index) => {
-    let definition = element_definitions && element_definitions[element_name];
-    if (!definition) definition = {};
-    if (!definition.name) definition.name = element_name;
-    if (!definition.title) definition.title = Common.capitalize(element_name);
+  }, element_definitions && group_names?.map((group_name, index) => React.createElement("div", {
+    className: "spt_edit_form_row",
+    style: {
+      display: "flex",
+      flexDirection: "row",
+      gap: "10px"
+    }
+  }, groups[group_name].map((definition, index) => {
     let editor = definition?.cellEditor;
     if (editor == SelectEditor) {
       return React.createElement(SelectEditorWdg, _extends({
@@ -574,7 +605,7 @@ const EditForm = React.forwardRef((props, ref) => {
         onchange: onchange
       }, definition));
     }
-  }));
+  }))));
 });
 const EditModal = React.forwardRef((props, ref) => {
   const [show, set_show] = useState(false);
@@ -718,6 +749,7 @@ class SelectEditor {
     let values = params.values || [];
     let helpers = params.helpers || [];
     let colors = params.colors || {};
+    let error = params.error;
     if (typeof labels == "string") {
       labels = labels.split("|");
     }
@@ -730,6 +762,7 @@ class SelectEditor {
     let variant = params.variant || "standard";
     let label = params.label || "";
     let name = params.name;
+    let layout = params.layout || "column";
     let el_style;
     let style = {
       width: "100%",
@@ -752,7 +785,7 @@ class SelectEditor {
       this.el = React.createElement("div", {
         style: {
           display: "flex",
-          flexDirection: "column",
+          flexDirection: layout,
           gap: "20px"
         }
       }, values.map((value, index) => React.createElement("div", {
@@ -762,6 +795,9 @@ class SelectEditor {
       }, React.createElement(Button, {
         key: index,
         variant: this.value == value ? "contained" : "outlined",
+        style: {
+          border: error ? "solid 1px red" : ""
+        },
         fullWidth: true,
         onClick: e => {
           this.value = value;
@@ -782,6 +818,7 @@ class SelectEditor {
         }
       }, helpers[index]))));
       return;
+    } else if (mode == "checkbox") {
     }
     this.el = React.createElement(TextField, {
       label: label,
@@ -848,6 +885,9 @@ const SelectEditorWdg = props => {
     set_label(label);
     init();
   }, []);
+  useEffect(() => {
+    init();
+  }, [props.error]);
   const init = () => {
     let name = props.name;
     let mode = props.mode;
@@ -860,6 +900,7 @@ const SelectEditorWdg = props => {
       values: cellEditorParams.values || [],
       labels: cellEditorParams.labels || [],
       helpers: cellEditorParams.helpers || [],
+      layout: props.layout,
       onchange: (e, new_value) => {
         set_value(new_value);
         if (props.onchange) {
@@ -870,7 +911,8 @@ const SelectEditorWdg = props => {
         }
       },
       value: value,
-      mode: mode
+      mode: mode,
+      error: props.error
     };
     let select = new SelectEditor();
     select.init(props2);
@@ -881,11 +923,15 @@ const SelectEditorWdg = props => {
     init();
     forceUpdate();
   }, [value]);
-  return React.createElement("div", null, React.createElement("div", {
+  return React.createElement("div", {
+    style: {
+      width: "100%"
+    }
+  }, React.createElement("div", {
     className: "spt_form_label"
   }, label, " ", props.required == true ? "*" : ""), el && React.createElement("div", {
     className: "spt_form_input"
-  }, el));
+  }, el), props.helper && React.createElement("div", null, props.helper));
 };
 class InputEditor {
   init(params) {
@@ -1015,7 +1061,11 @@ const InputEditorWdg = props => {
   let input = new InputEditor();
   input.init(props2);
   let el = input.getEl();
-  return React.createElement("div", null, React.createElement("div", {
+  return React.createElement("div", {
+    style: {
+      width: "100%"
+    }
+  }, React.createElement("div", {
     className: "spt_form_label"
   }, label, props.required == true ? " *" : ""), React.createElement("div", {
     className: "spt_form_input"
