@@ -428,7 +428,8 @@ class SendPasswordResetCmd(Command):
             if not url:
                 url = WebContainer.get_web().get_project_url()
 
-            url.set_option("reset_password", "true")
+            ongoing_url = url.to_string()
+	    url.set_option("reset_password", "true")
             url.set_option("login", self.login)
             url.set_option("code", auto_password)
             url = url.to_string()
@@ -436,8 +437,8 @@ class SendPasswordResetCmd(Command):
                 email_msg = 'Your TACTIC password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (auto_password, url)
                 subject = 'TACTIC password change'
             else:
-                email_msg = "You've been invited to a TACTIC project. Your user name is [%s]. Visit the following URL to set a password: \n\n%s" % (upn, url)
-                subject = 'TACTIC project invitation'
+                email_msg = "You've been invited to a TACTIC project. Your user name is [%s]. Visit the following URL to set a password. Password will expire after 90 days. \n\nPassword Requirements: \n- Can't be identical to User ID. \n- Must contain at least one number. \n- Must contain at least one uppercase and one lowercase character. \n- Must contain at least one special symbol. \n- Must be a minimum of 8 characters long. \n\n This password setup link is for one-time use only: \n%s \n\nFor ongoing access use the following URL: \n%s" % (upn, url, ongoing_url)
+		subject = 'TACTIC project invitation'
             email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject=subject)
 
             data = login.get_json_value("data", default={})
