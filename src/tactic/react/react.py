@@ -37,5 +37,9 @@ class React():
         jsx_path = "%s/config.jsx" % react_dir
         ReactWdg.init_react(widget, jsx_path)
 
+        jsx_path = "%s/pages.jsx" % react_dir
+        ReactWdg.init_react(widget, jsx_path)
+
+
 
 

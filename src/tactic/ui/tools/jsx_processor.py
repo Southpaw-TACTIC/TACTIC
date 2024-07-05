@@ -3,7 +3,7 @@
 __all__ = ["BaseReactWdg", "JSXTranspile"]
 
 import tacticenv
-from pyasm.common import Xml, Config, GlobalContainer
+from pyasm.common import Xml, Config, GlobalContainer, Container
 from pyasm.web import DivWdg
 
 from tactic.ui.common import BaseRefreshWdg
@@ -272,12 +272,48 @@ class BaseReactWdg(BaseRefreshWdg):
 
         js = "if (!spt.react) { spt.react = {}; }\n\n" + js
 
+
         js_div.add_behavior( {
             'type': 'load',
             'cbjs_action': js
         } )
 
+
+
+        # An atttempt not to use the whole behavior system just to load react
+        """
+        if Container.get("react_init") != True:
+            js_div.add('''
+            <script src="/plugins/unpkg/material-ui.production.min.js?ver=5.0.0.a02" ></script>
+            <script src="/plugins/unpkg/react-router-dom.min.js?ver=5.0.0.a02" ></script>
+            <script>
+                var spt;
+                if (!spt) spt = {};
+            </script>
+            ''');
+            top.add(js_div)
+            Container.put("react_init", True)
+
+
+        js = "if (!spt.react) { spt.react = {}; }\n\n" + js
+        import random
+        f = "x" + str(random.randint(0, 10000000))
+        js_div.add('''
+        <script src="/plugins/unpkg/material-ui.production.min.js?ver=5.0.0.a02" ></script>
+        <script src="/plugins/unpkg/react-router-dom.min.js?ver=5.0.0.a02" ></script>
+        <script>
+        let %s = function() {
+            %s
+        }
+        %s();
+        </script>
+        ''' % (f, js, f) )
+        """
+
+
+
         top.add(js_div)
+
 
 
 
