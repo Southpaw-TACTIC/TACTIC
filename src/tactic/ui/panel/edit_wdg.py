@@ -1280,8 +1280,10 @@ class EditWdg(BaseRefreshWdg):
             cmd_key = div.generate_command_key( "tactic.ui.panel.EditCmd", {
                 "search_key": self.search_key
             } )
+            if self.kwargs.get("edit_cmd"):
+                cmd_key = self.kwargs.get("edit_cmd")
         else:
-            cmd_key = self.kwargs.get("edit_cmd") or "tactic.ui.panel.EditCmd" # markmark
+            cmd_key = self.kwargs.get("edit_cmd") or "tactic.ui.panel.EditCmd" 
 
 
         bvr['cmd_class'] = cmd_key
