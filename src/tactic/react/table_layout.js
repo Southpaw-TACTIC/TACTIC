@@ -567,14 +567,18 @@ const EditForm = React.forwardRef((props, ref) => {
     set_element_names([...element_names]);
     return form_validated;
   };
-  return React.createElement("div", {
-    className: "spt_edit_form",
-    style: {
+  let style = props.style;
+  if (!style) {
+    style = {
       display: "flex",
       flexDirection: "column",
       gap: "20px",
       margin: "30px 10px"
-    }
+    };
+  }
+  return React.createElement("div", {
+    className: "spt_edit_form",
+    style: style
   }, element_definitions && group_names?.map((group_name, index) => React.createElement("div", {
     className: "spt_edit_form_row",
     style: {
@@ -880,7 +884,10 @@ const SelectEditorWdg = props => {
   useEffect(() => {
     let value = props.value;
     set_value(value);
-    let label = props.headerName || props.label || props.field;
+    let label = props.headerName || props.label || props.title;
+    if (label == null || typeof label == "undefined") {
+      label = props.field;
+    }
     label = Common.capitalize(label);
     set_label(label);
     init();
@@ -927,7 +934,7 @@ const SelectEditorWdg = props => {
     style: {
       width: "100%"
     }
-  }, React.createElement("div", {
+  }, props.show_title != false && React.createElement("div", {
     className: "spt_form_label"
   }, label, " ", props.required == true ? "*" : ""), el && React.createElement("div", {
     className: "spt_form_input"

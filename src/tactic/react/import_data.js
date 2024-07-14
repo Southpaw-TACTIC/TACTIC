@@ -37,12 +37,16 @@ const ImportDataModal = React.forwardRef((props, ref) => {
   const [error, set_error] = useState("");
   const [line_errors, set_line_errors] = useState({});
   const [extra_data, set_extra_data] = useState([]);
+  const [title, set_title] = useState("Import Data");
   useEffect(() => {
     if (props.show) {
       set_show(true);
     }
     if (props.kwargs) {
       data["extra_data"] = props.kwargs;
+    }
+    if (props.title) {
+      set_title(props.title);
     }
   }, [props]);
   const import_data = () => {
@@ -147,7 +151,7 @@ const ImportDataModal = React.forwardRef((props, ref) => {
       set_error("");
       set_show(false);
     }
-  }, "X"), React.createElement("h3", null, "Import Data"), React.createElement("hr", null), React.createElement("br", null), importing && React.createElement("div", {
+  }, "X"), React.createElement("h3", null, title), React.createElement("hr", null), React.createElement("br", null), importing && React.createElement("div", {
     style: {
       margin: "40px auto",
       width: "80%",
@@ -158,11 +162,13 @@ const ImportDataModal = React.forwardRef((props, ref) => {
     style: {
       width: '100%'
     }
-  }, React.createElement(LinearProgress, null))), !importing && React.createElement(React.Fragment, null, React.createElement("div", {
+  }, React.createElement(LinearProgress, null))), !importing && React.createElement(React.Fragment, null, props.elements?.help && React.createElement("div", {
     style: {
       margin: "0px 30px"
     }
-  }, props.elements?.help && props.elements?.help()), React.createElement("div", {
+  }, props.elements?.help({
+    extra_data: extra_data
+  })), React.createElement("div", {
     style: {
       margin: "0px 30px"
     }

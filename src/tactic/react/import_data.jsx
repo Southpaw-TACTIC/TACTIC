@@ -45,6 +45,7 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
 
     const [extra_data, set_extra_data] = useState([]);
 
+    const [title, set_title] = useState("Import Data")
 
     useEffect( () => {
         if (props.show) {
@@ -53,6 +54,12 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
         if (props.kwargs) {
             data["extra_data"] = props.kwargs;
         }
+
+        if (props.title) {
+            set_title(props.title)
+        }
+
+
     }, [props] )
 
 
@@ -183,7 +190,7 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
             }}
         >X</IconButton>
 
-        <h3>Import Data</h3>
+        <h3>{title}</h3>
 
         <hr/>
         <br/>
@@ -203,9 +210,11 @@ const ImportDataModal = React.forwardRef( (props, ref) => {
 
         { !importing &&
         <>
-            <div style={{margin: "0px 30px"}}>
-            { props.elements?.help && props.elements?.help() }
-            </div>
+            { props.elements?.help &&
+                <div style={{margin: "0px 30px"}}>
+                    {props.elements?.help({extra_data: extra_data})}
+                </div>
+            }
 
             <div style={{margin: "0px 30px"}}>Cut and paste rows from a spreadsheet into the text boxes below.</div>
             <br/>

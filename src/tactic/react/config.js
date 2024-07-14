@@ -90,6 +90,8 @@ const Config = (config, options) => {
     config_def["field"] = name;
     if (title) {
       config_def["headerName"] = title;
+    } else if (title == "") {
+      config_def["headerName"] = "";
     } else {
       config_def["headerName"] = Common.capitalize(name);
     }
@@ -137,6 +139,7 @@ const Config = (config, options) => {
       if (layout) {
         config_def.layout = layout;
       }
+      config_def.show_title = config_item.show_title;
       config_def.cellEditorParams = params;
       config_def.cellRendererParams = params;
       config_def.editable = true;
