@@ -18,8 +18,6 @@ const Chip = MaterialUI.Chip;
 const Switch = MaterialUI.Switch;
 const LinearProgress = MaterialUI.LinearProgress;
 const Checkbox = MaterialUI.Checkbox;
-const IMG_ROOT = "/plugins/advantaq/signia_globe/corporate/images";
-const signia_globe_icon = IMG_ROOT + "/Signia_Globe.png";
 const Pages = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
     next() {
@@ -110,7 +108,6 @@ const Pages = React.forwardRef((props, ref) => {
     if (!validate_page()) {
       return;
     }
-
     if (page.oncomplete) {
       try {
         let ret = await page.oncomplete({});
@@ -143,19 +140,6 @@ const Pages = React.forwardRef((props, ref) => {
       new_page.onload();
     }
   }, [pages, sobject, current_page]);
-  const save = sobject => {
-    console.log("save ...");
-    let cmd = "advantaq.signia_globe.corporate.SaveCmd";
-    let kwargs = {
-      sobject: sobject
-    };
-    let server = TACTIC.get();
-    server.p_execute_cmd(cmd, kwargs).then(ret => {
-
-    }).catch(e => {
-      alert("ERROR: " + e);
-    });
-  };
   const validate_page = () => {
     let form_validated = true;
     if (edit_ref.current) {

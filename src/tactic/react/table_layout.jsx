@@ -822,17 +822,22 @@ const EditForm = React.forwardRef( (props, ref) => {
     }
 
 
-
-    return (
-
-        <div className="spt_edit_form"
-          style={{
-            //width: "100%",
+    let style = props.style;
+    if (!style) {
+        style = {
             display: "flex",
             flexDirection: "column",
             gap: "20px",
             margin: "30px 10px"
-        }}>
+        }
+    }
+
+
+
+
+    return (
+
+        <div className="spt_edit_form" style={style}>
 
 
             { element_definitions && group_names?.map( (group_name, index) => (
@@ -1271,7 +1276,10 @@ const SelectEditorWdg = (props) => {
         let value = props.value;
         set_value(value);
 
-        let label = props.headerName || props.label || props.field;
+        let label = props.headerName || props.label || props.title;
+        if (label == null || typeof(label) == "undefined") {
+            label = props.field;
+        }
         label = Common.capitalize(label);
         set_label(label);
 
@@ -1334,7 +1342,9 @@ const SelectEditorWdg = (props) => {
 
     return (
         <div style={{width: "100%"}}>
+            { props.show_title != false &&
             <div className="spt_form_label">{label} {props.required == true ? "*" : ""}</div>
+            }
             { el &&
             <div className="spt_form_input">{el}</div>
             }
