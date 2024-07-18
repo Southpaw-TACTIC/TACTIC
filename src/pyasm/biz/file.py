@@ -21,14 +21,14 @@ import sys, os, string, re, stat, glob
 
 
 try:
-    from PIL import Image
+    from PIL import Image, ExifTags
     # Test to see if imaging actually works
     #import _imaging
     HAS_PIL = True
 except:
     HAS_PIL = False
     try:
-        import Image
+        import Image, ExifTags
         # Test to see if imaging actually works
         #import _imaging
         HAS_PIL = True
@@ -906,6 +906,7 @@ class IconCreator(object):
                     im.seek(0)
                     im = im.convert('RGB')
 
+                im = self._correction_orientation(im)
                 x,y = im.size
                 to_ext = "PNG"
                 if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
@@ -955,6 +956,28 @@ class IconCreator(object):
         # after these operations, confirm that the icon has been generated
         if not os.path.exists(small_path):
             raise TacticException('Icon generation failed')
+
+
+    def _correct_orientation(self, image):
+        try:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+
+            exif = image._getexif()
+            if exif is not None:
+                orientation = exif[orientation]
+
+                if orientation == 3:
+                    image = image.rotate(180, expand=True)
+                elif orientation == 6:
+                    image = image.rotate(270, expand=True)
+                elif orientation == 8:
+                    image = image.rotate(90, expand=True)
+        except (AttributeError, KeyError, IndexError):
+            pass
+
+        return image
 
 
     def _resize_texture(self, large_path, small_path, scale):
