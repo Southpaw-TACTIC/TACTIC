@@ -906,7 +906,7 @@ class IconCreator(object):
                     im.seek(0)
                     im = im.convert('RGB')
 
-                im = self._correction_orientation(im)
+                im = self.correct_orientation(im)
                 x,y = im.size
                 to_ext = "PNG"
                 if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
@@ -958,15 +958,15 @@ class IconCreator(object):
             raise TacticException('Icon generation failed')
 
 
-    def _correct_orientation(self, image):
+    def correct_orientation(self, image):
         try:
             for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation] == 'Orientation':
+                if ExifTags.TAGS[int(orientation)] == 'Orientation':
                     break
 
             exif = image._getexif()
             if exif is not None:
-                orientation = exif[orientation]
+                orientation = int(exif[int(orientation)])
 
                 if orientation == 3:
                     image = image.rotate(180, expand=True)
