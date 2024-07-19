@@ -1277,7 +1277,8 @@ class EditWdg(BaseRefreshWdg):
         bvr['edit_event'] = edit_event
 
         if self.search_key:
-            cmd_key = div.generate_command_key( "tactic.ui.panel.EditCmd", {
+            cmd = self.kwargs.get("edit_cmd") or "tactic.ui.panel.EditCmd"
+            cmd_key = div.generate_command_key( cmd, {
                 "search_key": self.search_key
             } )
             if self.kwargs.get("edit_cmd"):
