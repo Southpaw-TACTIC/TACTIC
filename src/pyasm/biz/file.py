@@ -940,7 +940,7 @@ class IconCreator(object):
                     # then paste to white image
                     im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
                     offset = (base_width/2) - (im.size[0]/2)
-                    im2.paste(im, (offset,0) )
+                    im2.paste(im, (int(offset),0) )
                     im2.save(small_path, to_ext)
 
             # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
@@ -961,12 +961,12 @@ class IconCreator(object):
     def correct_orientation(self, image):
         try:
             for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[int(orientation)] == 'Orientation':
+                if ExifTags.TAGS[orientation] == 'Orientation':
                     break
 
             exif = image._getexif()
             if exif is not None:
-                orientation = int(exif[int(orientation)])
+                orientation = exif[orientation]
 
                 if orientation == 3:
                     image = image.rotate(180, expand=True)
