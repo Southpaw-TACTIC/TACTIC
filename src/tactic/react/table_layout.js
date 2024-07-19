@@ -823,6 +823,45 @@ class SelectEditor {
       }, helpers[index]))));
       return;
     } else if (mode == "checkbox") {
+      if (this.value == null) {
+        this.value = values[1];
+      }
+      this.el = React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: layout,
+          gap: "20px"
+        }
+      }, React.createElement("div", {
+        style: {
+          width: "100%",
+          display: "flex",
+          alignItems: "center"
+        }
+      }, React.createElement(Checkbox, {
+        checked: this.value === values[0],
+        onChange: e => {
+          if (this.value === values[0]) {
+            this.value = values[1];
+          } else if (this.value === values[1]) {
+            this.value = values[0];
+          }
+          e.name = name;
+          if (params.onchange) {
+            params.onchange(e, this.value);
+          }
+        },
+        style: {
+          cursor: "pointer",
+          alignSelf: "flex-start"
+        }
+      }), React.createElement("div", {
+        style: {
+          fontSize: "0.8rem",
+          textAlign: "center"
+        }
+      }, labels[0])));
+      return;
     }
     this.el = React.createElement(TextField, {
       label: label,
