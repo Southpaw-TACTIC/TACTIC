@@ -64,6 +64,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
         },
 
     } ) )
+
+    const [first_load, set_first_load] = useState(true);
+    const [loading, set_loading] = useState(false);
   
     const [search_type, set_search_type] = useState("");
     const [base_data, set_base_data] = useState([]);
@@ -117,14 +120,19 @@ const TableLayout = React.forwardRef( (props, ref) => {
         kwargs["config_handler"] = config_handler;
 
 
+        set_loading(true);
+
         let server = TACTIC.get();
         server.p_execute_cmd(cmd, kwargs)
         .then( ret => {
             let data = ret.info;
             set_data(data);
+            set_loading(false);
+            set_first_load(false);
 
         } )
         .catch( e => {
+            set_loading(false);
             alert("TACTIC ERROR: " + e);
         } )
     }
@@ -518,7 +526,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
         </div>
         }
 
-        { (props.empty_wdg && data?.length == 0) ?
+        { (!first_load && !loading && props.empty_wdg && data?.length == 0) ?
             <div>
                 <EmptyWdg
                     edit_modal_ref={edit_modal_ref}
@@ -526,6 +534,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 />
             </div>
         :
+            <>
+            { !loading ?
             <DataGrid
                 ref={grid_ref}
                 name={get_name()}
@@ -538,6 +548,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 enable_undo={props.enable_undo}
                 on_column_moved={props.on_column_moved}
             />
+            :
+                <div>Loading ...</div>
+            }
+            </>
         }
     </div>
     )
