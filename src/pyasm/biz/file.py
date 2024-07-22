@@ -21,14 +21,14 @@ import sys, os, string, re, stat, glob
 
 
 try:
-    from PIL import Image
+    from PIL import Image, ExifTags
     # Test to see if imaging actually works
     #import _imaging
     HAS_PIL = True
 except:
     HAS_PIL = False
     try:
-        import Image
+        import Image, ExifTags
         # Test to see if imaging actually works
         #import _imaging
         HAS_PIL = True
@@ -906,6 +906,7 @@ class IconCreator(object):
                     im.seek(0)
                     im = im.convert('RGB')
 
+                im = self.correct_orientation(im)
                 x,y = im.size
                 to_ext = "PNG"
                 if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
@@ -939,7 +940,7 @@ class IconCreator(object):
                     # then paste to white image
                     im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
                     offset = (base_width/2) - (im.size[0]/2)
-                    im2.paste(im, (offset,0) )
+                    im2.paste(im, (int(offset),0) )
                     im2.save(small_path, to_ext)
 
             # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
@@ -955,6 +956,28 @@ class IconCreator(object):
         # after these operations, confirm that the icon has been generated
         if not os.path.exists(small_path):
             raise TacticException('Icon generation failed')
+
+
+    def correct_orientation(self, image):
+        try:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+
+            exif = image._getexif()
+            if exif is not None:
+                orientation = exif[orientation]
+
+                if orientation == 3:
+                    image = image.rotate(180, expand=True)
+                elif orientation == 6:
+                    image = image.rotate(270, expand=True)
+                elif orientation == 8:
+                    image = image.rotate(90, expand=True)
+        except (AttributeError, KeyError, IndexError):
+            pass
+
+        return image
 
 
     def _resize_texture(self, large_path, small_path, scale):
