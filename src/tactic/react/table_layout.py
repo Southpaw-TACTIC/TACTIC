@@ -191,47 +191,61 @@ class TableSaveCmd(Command):
 
         new_sobjects = []
         updated_sobjects = []
+        sobjects = []
+
 
         for update in updates:
 
             search_key = update.get("search_key")
-            sobject = Search.get_by_search_key(search_key)
+            if search_key:
+                sobject = Search.get_by_search_key(search_key)
 
+                column = update.get("column")
+                value = update.get("value")
 
-            column = update.get("column")
-            value = update.get("value")
-
-            update_column = column
-
-            config = configs.get(column) or {"name": column}
-            edit = config.get("edit")
-
-            if edit:
-                edit_handler = Common.create_from_class_path(edit)
-                edit_handler.update(sobject, update)
-
+                item = {
+                    column: value
+                }
 
             else:
-                update_column = config.get("column") or config.get("name")
-                if value == "":
-                    sobject.set_value(update_column, "NULL", quoted=False)
+                search_type = update.get("search_type")
+                sobject = SearchType.create(search_type)
+                item = update.get("item")
 
-                sobject.set_value(update_column, value)
+                code = item.get("code")
+                sobject.set_value("code", code)
 
+
+            for column, value in item.items():
+
+                update_column = column
+
+                config = configs.get(column) or {"name": column}
+                edit = config.get("edit")
+
+                if edit:
+                    edit_handler = Common.create_from_class_path(edit)
+                    edit_handler.update(sobject, update)
+
+
+                else:
+                    update_column = config.get("column") or config.get("name")
+                    if value == "":
+                        sobject.set_value(update_column, "NULL", quoted=False)
+                    else:
+                        sobject.set_value(update_column, value)
 
 
             sobject.commit()
 
             sobject_dict = sobject.get_sobject_dict()
-            updated_sobjects.append(sobject_dict)
 
+            sobjects.append(sobject_dict)
+
+        self.info["sobjects"] = sobjects
         self.info["new_sobjects"] = new_sobjects
         self.info["updated_sobjects"] = updated_sobjects
 
-
-
-
-        
 
 class EditSaveCmd(Command):
 
