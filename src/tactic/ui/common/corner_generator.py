@@ -77,9 +77,15 @@ class CornerGenerator(object):
             elif corner == 'TR':
                 bb = (-x-offset, 0-offset, x+offset, y*2+offset)
 
+            try:
+                # For Pillow 10.0 and later
+                resampling_filter = Image.Resampling.LANCZOS
+            except AttributeError:
+                # For older versions of Pillow
+                resampling_filter = Image.ANTIALIAS
 
             dr.pieslice(bb, start, start+360, fill=color)
-            im = im.resize((height, width), Image.ANTIALIAS)
+            im = im.resize((height, width), resampling_filter)
 
             try:
                 start += 90
