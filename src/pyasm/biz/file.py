@@ -865,9 +865,7 @@ class IconCreator(object):
                 if large_path.lower().endswith('psd'):
                     large_path += "[0]"
 
-                # Explicitly set the orientation to "top-left" to undo any EXIF-based rotations
-                convert_cmd.append('-orient')
-                convert_cmd.append('top-left')
+                convert_cmd.extend(['-auto-orient', '-strip'])
                 
                 if free_aspect_ratio:
                     # The max allowed height is 10x the width
