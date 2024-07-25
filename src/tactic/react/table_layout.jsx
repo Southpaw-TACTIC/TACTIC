@@ -64,6 +64,9 @@ const TableLayout = React.forwardRef( (props, ref) => {
         },
 
     } ) )
+
+    const [first_load, set_first_load] = useState(true);
+    const [loading, set_loading] = useState(false);
   
     const [search_type, set_search_type] = useState("");
     const [base_data, set_base_data] = useState([]);
@@ -117,14 +120,19 @@ const TableLayout = React.forwardRef( (props, ref) => {
         kwargs["config_handler"] = config_handler;
 
 
+        set_loading(true);
+
         let server = TACTIC.get();
         server.p_execute_cmd(cmd, kwargs)
         .then( ret => {
             let data = ret.info;
             set_data(data);
+            set_loading(false);
+            set_first_load(false);
 
         } )
         .catch( e => {
+            set_loading(false);
             alert("TACTIC ERROR: " + e);
         } )
     }
@@ -233,7 +241,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         let cmd = props.save_cmd;
         if (!cmd) {
-            cmd = "tactic.react.EditSaveCmd";
+            //cmd = "tactic.react.EditSaveCmd";
+            cmd = "tactic.react.TableSaveCmd"; // use the same save command for everythhing
         }
 
 
@@ -270,13 +279,16 @@ const TableLayout = React.forwardRef( (props, ref) => {
             let info = ret.info;
             let sobjects = info.sobjects || [];
 
+            /*
             // add the new items
             sobjects.forEach( item => {
                 data.push(item);
             } )
             set_data([...data]);
+            */
 
-            // TODO: refresh the nodes
+            // Brute force
+            load_data();
 
         } )
         .catch( e => {
@@ -447,6 +459,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 //ondelete={ e => {alert("delete")}}
                 element_names={property_names}
                 element_definitions={property_definitions}
+                load_data={load_data}
             />
 
 
@@ -454,7 +467,11 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
 
-            <div style={{display: "flex", gap: "15px"}}>
+            <div style={{display: "flex", gap: "15px", alignItems: "center"}}>
+
+                { props.get_shelf && props.get_shelf() }
+
+
                 { props.element_names &&
                 <ColumnManagerMenu
                     all_columns={props.all_element_names || props.element_names}
@@ -513,7 +530,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
         </div>
         }
 
-        { (props.empty_wdg && data?.length == 0) ?
+        { (!first_load && !loading && props.empty_wdg && data?.length == 0) ?
             <div>
                 <EmptyWdg
                     edit_modal_ref={edit_modal_ref}
@@ -521,6 +538,8 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 />
             </div>
         :
+            <>
+            { !loading ?
             <DataGrid
                 ref={grid_ref}
                 name={get_name()}
@@ -533,6 +552,10 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 enable_undo={props.enable_undo}
                 on_column_moved={props.on_column_moved}
             />
+            :
+                <div>Loading ...</div>
+            }
+            </>
         }
     </div>
     )
@@ -699,8 +722,13 @@ const EditForm = React.forwardRef( (props, ref) => {
             }
         }
 
+        element_names.forEach( element_name => {
+            let definition = props.config
+        } )
+        
 
-        set_element_names(element_names);
+
+        let filtered = [];
 
         // make sure all the element names have definitions
         element_names.forEach( element_name => {
@@ -711,6 +739,10 @@ const EditForm = React.forwardRef( (props, ref) => {
             }
             if (!definition.name) definition.name = element_name;
             if (!definition.title) definition.title = Common.capitalize(definition.name);
+
+            if (definition.editable == true) {
+                filtered.push(element_name);
+            }
         } )
 
 
@@ -723,12 +755,13 @@ const EditForm = React.forwardRef( (props, ref) => {
             } )
         }
 
+        set_element_names(filtered);
         set_element_definitions(element_definitions);
 
         // Group the definitions
         let groups = {};
         let group_names = [];
-        element_names.forEach( element_name => {
+        filtered.forEach( element_name => {
             let definition = element_definitions[element_name];
             let group_name = definition.group || Common.generate_key();
             let group = groups[group_name];
@@ -946,7 +979,7 @@ const EditModal = React.forwardRef( (props, ref) => {
             </DialogContentText>
 
 
-            <EditForm {...props}/>
+            <EditForm {...props} sobject={item}/>
 
    
           </DialogContent>
@@ -1028,7 +1061,7 @@ const DeleteModal = React.forwardRef( (props, ref) => {
             };
             server.p_execute_cmd(cmd, kwargs)
             .then( ret => {
-               alert("Deleted"); 
+                props.load_data();
             } )
             .catch( e => {
                 alert("TACTIC Error: " + e);

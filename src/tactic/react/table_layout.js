@@ -52,6 +52,8 @@ const TableLayout = React.forwardRef((props, ref) => {
       return grid_ref.current.show_total();
     }
   }));
+  const [first_load, set_first_load] = useState(true);
+  const [loading, set_loading] = useState(false);
   const [search_type, set_search_type] = useState("");
   const [base_data, set_base_data] = useState([]);
   const [data, set_data] = useState([]);
@@ -88,11 +90,15 @@ const TableLayout = React.forwardRef((props, ref) => {
     let kwargs = props.get_kwargs || {};
     let config_handler = props.config_handler;
     kwargs["config_handler"] = config_handler;
+    set_loading(true);
     let server = TACTIC.get();
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let data = ret.info;
       set_data(data);
+      set_loading(false);
+      set_first_load(false);
     }).catch(e => {
+      set_loading(false);
       alert("TACTIC ERROR: " + e);
     });
   };
@@ -163,8 +169,9 @@ const TableLayout = React.forwardRef((props, ref) => {
 
     let cmd = props.save_cmd;
     if (!cmd) {
-      cmd = "tactic.react.EditSaveCmd";
+      cmd = "tactic.react.TableSaveCmd";
     }
+
     let inserts = [];
     let mode = item.__search_key__ ? "edit" : "insert";
     let code = Common.generate_key(12);
@@ -188,11 +195,7 @@ const TableLayout = React.forwardRef((props, ref) => {
       let info = ret.info;
       let sobjects = info.sobjects || [];
 
-      sobjects.forEach(item => {
-        data.push(item);
-      });
-      set_data([...data]);
-
+      load_data();
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
@@ -309,13 +312,15 @@ const TableLayout = React.forwardRef((props, ref) => {
       grid_ref: grid_ref
       ,
       element_names: property_names,
-      element_definitions: property_definitions
+      element_definitions: property_definitions,
+      load_data: load_data
     }), get_import_data_modal(), React.createElement("div", {
       style: {
         display: "flex",
-        gap: "15px"
+        gap: "15px",
+        alignItems: "center"
       }
-    }, props.element_names && React.createElement(ColumnManagerMenu, {
+    }, props.get_shelf && props.get_shelf(), props.element_names && React.createElement(ColumnManagerMenu, {
       all_columns: props.all_element_names || props.element_names,
       columns: element_names,
       update: build_column_defs,
@@ -353,10 +358,10 @@ const TableLayout = React.forwardRef((props, ref) => {
     style: {
       fontSize: "1.2rem"
     }
-  }, get_name()), get_shelf()), props.empty_wdg && data?.length == 0 ? React.createElement("div", null, React.createElement(EmptyWdg, {
+  }, get_name()), get_shelf()), !first_load && !loading && props.empty_wdg && data?.length == 0 ? React.createElement("div", null, React.createElement(EmptyWdg, {
     edit_modal_ref: edit_modal_ref,
     import_data_modal_ref: import_data_modal_ref
-  })) : React.createElement(DataGrid, {
+  })) : React.createElement(React.Fragment, null, !loading ? React.createElement(DataGrid, {
     ref: grid_ref,
     name: get_name(),
     column_defs: column_defs,
@@ -367,7 +372,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     row_height: props.row_height,
     enable_undo: props.enable_undo,
     on_column_moved: props.on_column_moved
-  }));
+  }) : React.createElement("div", null, "Loading ...")));
 });
 const TableLayoutActionMenu = props => {
   const [action_anchorEl, action_setAnchorEl] = React.useState(null);
@@ -478,7 +483,10 @@ const EditForm = React.forwardRef((props, ref) => {
         element_definitions = spt.react.Config(props.config, {});
       }
     }
-    set_element_names(element_names);
+    element_names.forEach(element_name => {
+      let definition = props.config;
+    });
+    let filtered = [];
 
     element_names.forEach(element_name => {
       let definition = element_definitions[element_name];
@@ -488,6 +496,9 @@ const EditForm = React.forwardRef((props, ref) => {
       }
       if (!definition.name) definition.name = element_name;
       if (!definition.title) definition.title = Common.capitalize(definition.name);
+      if (definition.editable == true) {
+        filtered.push(element_name);
+      }
     });
     if (props.sobject) {
       element_names.forEach(element_name => {
@@ -497,11 +508,12 @@ const EditForm = React.forwardRef((props, ref) => {
         definition.sobject = props.sobject;
       });
     }
+    set_element_names(filtered);
     set_element_definitions(element_definitions);
 
     let groups = {};
     let group_names = [];
-    element_names.forEach(element_name => {
+    filtered.forEach(element_name => {
       let definition = element_definitions[element_name];
       let group_name = definition.group || Common.generate_key();
       let group = groups[group_name];
@@ -653,7 +665,9 @@ const EditModal = React.forwardRef((props, ref) => {
     onClose: handleClose,
     fullWidth: true,
     maxWidth: "sm"
-  }, React.createElement(DialogTitle, null, "New ", props.name), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, "Enter the following data for ", props.name), React.createElement(EditForm, props)), React.createElement(DialogActions, null, React.createElement("div", {
+  }, React.createElement(DialogTitle, null, "New ", props.name), React.createElement(DialogContent, null, React.createElement(DialogContentText, null, "Enter the following data for ", props.name), React.createElement(EditForm, _extends({}, props, {
+    sobject: item
+  }))), React.createElement(DialogActions, null, React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "center",
@@ -705,7 +719,7 @@ const DeleteModal = React.forwardRef((props, ref) => {
         search_keys: search_keys
       };
       server.p_execute_cmd(cmd, kwargs).then(ret => {
-        alert("Deleted");
+        props.load_data();
       }).catch(e => {
         alert("TACTIC Error: " + e);
       });
