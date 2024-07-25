@@ -865,6 +865,8 @@ class IconCreator(object):
                 if large_path.lower().endswith('psd'):
                     large_path += "[0]"
 
+                convert_cmd.extend(['-auto-orient', '-strip'])
+                
                 if free_aspect_ratio:
                     # The max allowed height is 10x the width
                     convert_cmd.extend(['-resize','%sx%s>' % (thumb_size[0], thumb_size[0]*10)])
@@ -906,19 +908,26 @@ class IconCreator(object):
                     im.seek(0)
                     im = im.convert('RGB')
 
+                try:
+                    # For Pillow 10.0 and later
+                    resampling_filter = Image.Resampling.LANCZOS
+                except AttributeError:
+                    # For older versions of Pillow
+                    resampling_filter = Image.ANTIALIAS
+
                 im = self.correct_orientation(im)
                 x,y = im.size
                 to_ext = "PNG"
                 if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
                     to_ext = "JPEG"
                 if x >= y:
-                    im.thumbnail( (thumb_size[0],10000), Image.ANTIALIAS )
+                    im.thumbnail( (thumb_size[0],10000), resampling_filter )
                     if im.mode != "RGB":
                         im = im.convert("RGB")
                     im.save(small_path, to_ext)
                 else:
 
-                    #im.thumbnail( (10000,thumb_size[1]), Image.ANTIALIAS )
+                    #im.thumbnail( (10000,thumb_size[1]), resampling_filter )
                     x,y = im.size
 
                     if free_aspect_ratio:
@@ -935,7 +944,7 @@ class IconCreator(object):
                         base_height = thumb_size[1]
                         h_percent = (base_height/float(y))
                         base_width = int((float(x) * float(h_percent)))
-                    im = im.resize((base_width, base_height), Image.ANTIALIAS )
+                    im = im.resize((base_width, base_height), resampling_filter )
 
                     # then paste to white image
                     im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
@@ -989,7 +998,14 @@ class IconCreator(object):
             x,y = im.size
             resize = int( float(x) * scale )
 
-            im.thumbnail( (resize,10000), Image.ANTIALIAS )
+            try:
+                # For Pillow 10.0 and later
+                resampling_filter = Image.Resampling.LANCZOS
+            except AttributeError:
+                # For older versions of Pillow
+                resampling_filter = Image.ANTIALIAS
+
+            im.thumbnail( (resize,10000), resampling_filter )
             im.save(small_path, "PNG")
         except:
             if sys.platform == 'darwin':
