@@ -467,7 +467,11 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
 
-            <div style={{display: "flex", gap: "15px"}}>
+            <div style={{display: "flex", gap: "15px", alignItems: "center"}}>
+
+                { props.get_shelf && props.get_shelf() }
+
+
                 { props.element_names &&
                 <ColumnManagerMenu
                     all_columns={props.all_element_names || props.element_names}

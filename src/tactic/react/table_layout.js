@@ -317,9 +317,10 @@ const TableLayout = React.forwardRef((props, ref) => {
     }), get_import_data_modal(), React.createElement("div", {
       style: {
         display: "flex",
-        gap: "15px"
+        gap: "15px",
+        alignItems: "center"
       }
-    }, props.element_names && React.createElement(ColumnManagerMenu, {
+    }, props.get_shelf && props.get_shelf(), props.element_names && React.createElement(ColumnManagerMenu, {
       all_columns: props.all_element_names || props.element_names,
       columns: element_names,
       update: build_column_defs,
