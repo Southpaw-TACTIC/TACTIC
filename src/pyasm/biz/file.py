@@ -922,6 +922,13 @@ class IconCreator(object):
                     to_ext = "JPEG"
                 if x >= y:
                     im.thumbnail( (thumb_size[0],10000), resampling_filter )
+                    # Handle transparent images
+                    if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+                        # Create a white background image
+                        background = Image.new('RGB', im.size, (255, 255, 255))
+                        background.paste(im, mask=im.split()[3])  # 3 is the alpha channel
+                        im = background
+
                     if im.mode != "RGB":
                         im = im.convert("RGB")
                     im.save(small_path, to_ext)
@@ -949,7 +956,10 @@ class IconCreator(object):
                     # then paste to white image
                     im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
                     offset = (base_width/2) - (im.size[0]/2)
-                    im2.paste(im, (int(offset),0) )
+                    if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+                        im2.paste(im, (int(offset),0), mask=im.split()[3] )
+                    else:
+                        im2.paste(im, (int(offset),0) )
                     im2.save(small_path, to_ext)
 
             # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
