@@ -932,6 +932,7 @@ class IconCreator(object):
                     if im.mode != "RGB":
                         im = im.convert("RGB")
                     im.save(small_path, to_ext)
+                    im.save(large_path, to_ext)
                 else:
 
                     #im.thumbnail( (10000,thumb_size[1]), resampling_filter )
@@ -961,6 +962,7 @@ class IconCreator(object):
                     else:
                         im2.paste(im, (int(offset),0) )
                     im2.save(small_path, to_ext)
+                    im2.save(large_path, to_ext)
 
             # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
             elif sys.platform == 'darwin':
