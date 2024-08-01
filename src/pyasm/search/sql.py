@@ -1624,13 +1624,14 @@ class DbContainer(Base):
 
     def close_all():
         '''closes all connection to all databases'''
-        sql_seq = Container.get_seq("DbContainer:sql_seq")
-        for sql in sql_seq:
-            sql.close()
-        Container.put("DbContainer:sql_seq", [] )
-        Container.put("DbContainer:sql_dict", {} )
+        if Container:
+            sql_seq = Container.get_seq("DbContainer:sql_seq")
+            for sql in sql_seq:
+                sql.close()
+            Container.put("DbContainer:sql_seq", [] )
+            Container.put("DbContainer:sql_dict", {} )
 
-        DbContainer.release_thread_sql()
+            DbContainer.release_thread_sql()
 
     close_all = staticmethod(close_all)
 
