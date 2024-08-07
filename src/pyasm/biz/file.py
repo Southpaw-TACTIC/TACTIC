@@ -856,6 +856,17 @@ class IconCreator(object):
                 small_path = small_path.encode('utf-8')
 
             if HAS_IMAGE_MAGICK:
+                def process_large(input_path, output_path):
+                    convert_cmd = [
+                        convert_exe,
+                        input_path,
+                        '-background', 'white',    # Set the background color to white
+                        '-alpha', 'remove',        # Remove transparency
+                        '-alpha', 'off',           # Ensure alpha channel is turned off
+                        output_path
+                        ]
+                    subprocess.call(convert_cmd)
+
                 # generate imagemagick command
                 convert_cmd = []
                 convert_cmd.append(convert_exe)
@@ -892,12 +903,14 @@ class IconCreator(object):
                 convert_cmd.append('%s'%(small_path))
 
                 subprocess.call(convert_cmd)
+                process_large(large_path, large_path)
 
             # if we don't have ImageMagick, use PIL, if installed (in non-mac os systems)
             elif HAS_PIL:
                 # use PIL
                 # create the thumbnail
                 im = Image.open(large_path)
+                large_im = Image.open(large_path)
 
                 try:
                     im.seek(1)
@@ -916,6 +929,7 @@ class IconCreator(object):
                     resampling_filter = Image.ANTIALIAS
 
                 im = self.correct_orientation(im)
+                large_im = self.correct_orientation(large_im)
                 x,y = im.size
                 to_ext = "PNG"
                 if small_path.lower().endswith('jpg') or small_path.lower().endswith('jpeg'):
@@ -926,13 +940,16 @@ class IconCreator(object):
                     if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
                         # Create a white background image
                         background = Image.new('RGB', im.size, (255, 255, 255))
+                        large_background = Image.new('RGB', large_im.size, (255, 255, 255))
                         background.paste(im, mask=im.split()[3])  # 3 is the alpha channel
+                        large_background.paste(large_im, mask=large_im.split()[3])
                         im = background
-
+                        large_im = large_background
                     if im.mode != "RGB":
                         im = im.convert("RGB")
                     im.save(small_path, to_ext)
-                    im.save(large_path, to_ext)
+                    large_im.save(large_path, to_ext)
+            
                 else:
 
                     #im.thumbnail( (10000,thumb_size[1]), resampling_filter )
@@ -956,13 +973,16 @@ class IconCreator(object):
 
                     # then paste to white image
                     im2 = Image.new( "RGB", (base_width, base_height), (255,255,255) )
+                    large_im2 = Image.new('RGB', large_im.size, (255, 255, 255))
                     offset = (base_width/2) - (im.size[0]/2)
                     if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
                         im2.paste(im, (int(offset),0), mask=im.split()[3] )
+                        large_im2.paste(large_im, mask=large_im.split()[3])
+                        large_im2.save(large_path, to_ext)
                     else:
                         im2.paste(im, (int(offset),0) )
                     im2.save(small_path, to_ext)
-                    im2.save(large_path, to_ext)
+                    
 
             # if neither IM nor PIL is installed, check if this is a mac system and use sips if so
             elif sys.platform == 'darwin':
