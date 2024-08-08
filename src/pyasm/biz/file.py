@@ -856,17 +856,6 @@ class IconCreator(object):
                 small_path = small_path.encode('utf-8')
 
             if HAS_IMAGE_MAGICK:
-                def process_large(input_path, output_path):
-                    convert_cmd = [
-                        convert_exe,
-                        input_path,
-                        '-background', 'white',    # Set the background color to white
-                        '-alpha', 'remove',        # Remove transparency
-                        '-alpha', 'off',           # Ensure alpha channel is turned off
-                        output_path
-                        ]
-                    subprocess.call(convert_cmd)
-
                 # generate imagemagick command
                 convert_cmd = []
                 convert_cmd.append(convert_exe)
@@ -903,7 +892,6 @@ class IconCreator(object):
                 convert_cmd.append('%s'%(small_path))
 
                 subprocess.call(convert_cmd)
-                process_large(large_path, large_path)
 
             # if we don't have ImageMagick, use PIL, if installed (in non-mac os systems)
             elif HAS_PIL:
