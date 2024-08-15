@@ -283,11 +283,22 @@ class WebLoginCmd(Command):
 
         try:
             from pyasm.security import Login
+            from pyasm.biz import ProjectSetting
 
-            admin = Login.get_by_login('admin')
             sender_email = None
             sender_name = None
-            if admin:
+
+            sender_email = ProjectSetting.get_value_by_key("mail_user")
+            sender_name = ProjectSetting.get_value_by_key("mail_name")
+
+            # getting sender from tactic config
+            if not sender_email:
+                sender_email = Config.get_value("services", "mail_user")
+                sender_name = Config.get_value("services", "mail_name")
+
+
+            admin = Login.get_by_login('admin')
+            if admin and not sender_email:
                 sender_email = admin.get_value('email')
                 sender_name = admin.get_value("display_name")
 
