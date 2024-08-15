@@ -413,15 +413,18 @@ class SendPasswordResetCmd(Command):
         # send the email
         try:
             from pyasm.command import EmailTriggerTestCmd
+            from pyasm.biz import ProjectSetting
+            from pyasm.common import Config
 
+            sender_email = ProjectSetting.get_value_by_key("mail_user")
+            if not sender_email:
+                sender_email = Config.get_value("services", "mail_default_admin_email")
+            if not sender_email:
+                sender_email = Config.get_value("services", "mail_user")
             admin = Login.get_by_login('admin')
-            if admin:
-                sender_email = admin.get_full_email()
-                if not sender_email:
-                    from pyasm.common import Config
-                    sender_email = Config.get_value("services", "mail_default_admin_email")
-                if not sender_email:
-                    sender_email = Config.get_value("services", "mail_user")
+            if admin and not sender_email:
+                sender_email = admin.get_value("email")
+                
             recipient_emails = [email]
 
             url = self.kwargs.get("project_url")
