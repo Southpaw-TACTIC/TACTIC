@@ -413,13 +413,22 @@ class SendPasswordResetCmd(Command):
         # send the email
         try:
             from pyasm.command import EmailTriggerTestCmd
-            from pyasm.biz import ProjectSetting
+            from pyasm.biz import ProjectSetting, Project
             from pyasm.common import Config
+            from pyasm.security import Sudo
 
-            application = ProjectSetting.get_value_by_key("application") or "TACTIC"
-            
+            sudo = Sudo()
+            try: 
+                current_project = WebContainer.get_web().get_context_name()
+                Project.set_project(current_project)
+                application = ProjectSetting.get_value_by_key("application")
+                sender_email = ProjectSetting.get_value_by_key("mail_user") 
+            finally:
+                sudo.exit()
+                
+            if not application:
+                applicaition = "TACTIC"
 
-            sender_email = ProjectSetting.get_value_by_key("mail_user")
             if not sender_email:
                 sender_email = Config.get_value("services", "mail_default_admin_email")
             if not sender_email:
