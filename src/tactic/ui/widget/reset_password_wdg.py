@@ -413,10 +413,22 @@ class SendPasswordResetCmd(Command):
         # send the email
         try:
             from pyasm.command import EmailTriggerTestCmd
-            from pyasm.biz import ProjectSetting
+            from pyasm.biz import ProjectSetting, Project
             from pyasm.common import Config
+            from pyasm.security import Sudo
 
-            sender_email = ProjectSetting.get_value_by_key("mail_user")
+            sudo = Sudo()
+            try: 
+                current_project = WebContainer.get_web().get_context_name()
+                Project.set_project(current_project)
+                application = ProjectSetting.get_value_by_key("application")
+                sender_email = ProjectSetting.get_value_by_key("mail_user") 
+            finally:
+                sudo.exit()
+                
+            if not application:
+                applicaition = "TACTIC"
+
             if not sender_email:
                 sender_email = Config.get_value("services", "mail_default_admin_email")
             if not sender_email:
@@ -437,11 +449,11 @@ class SendPasswordResetCmd(Command):
             url.set_option("code", auto_password)
             url = url.to_string()
             if reset:
-                email_msg = 'Your TACTIC password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (auto_password, url)
-                subject = 'TACTIC password change'
+                email_msg = 'Your %s password reset code is:\n\n%s\n\nYou may use the following URL to set a new password:\n\n%s' % (application, auto_password, url)
+                subject = '%s password change' % (application)
             else:
-                email_msg = "You've been invited to a TACTIC project. Your user name is [%s]. Visit the following URL to set a password. Password will expire after 90 days. \n\nPassword Requirements: \n- Can't be identical to User ID. \n- Must contain at least one number. \n- Must contain at least one uppercase and one lowercase character. \n- Must contain at least one special symbol. \n- Must be a minimum of 8 characters long. \n\n This password setup link is for one-time use only: \n%s \n\nFor ongoing access use the following URL: \n%s" % (upn, url, ongoing_url)
-                subject = 'TACTIC project invitation'
+                email_msg = "Welcome to %s. Your user name is [%s]. Visit the following URL to set a password. Password will expire after 90 days. \n\nPassword Requirements: \n- Can't be identical to User ID. \n- Must contain at least one number. \n- Must contain at least one uppercase and one lowercase character. \n- Must contain at least one special symbol. \n- Must be a minimum of 8 characters long. \n\n This password setup link is for one-time use only: \n%s \n\nFor ongoing access use the following URL: \n%s" % (application, upn, url, ongoing_url)
+                subject = '%s invitation' % (application)
             email_cmd = EmailTriggerTestCmd(sender_email=sender_email, recipient_emails=recipient_emails, msg= email_msg, subject=subject)
 
             data = login.get_json_value("data", default={})
