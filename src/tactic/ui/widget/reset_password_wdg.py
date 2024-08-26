@@ -427,7 +427,7 @@ class SendPasswordResetCmd(Command):
                 sudo.exit()
                 
             if not application:
-                applicaition = "TACTIC"
+                application = "TACTIC"
 
             if not sender_email:
                 sender_email = Config.get_value("services", "mail_default_admin_email")
