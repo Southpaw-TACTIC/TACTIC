@@ -134,7 +134,6 @@ class NewPasswordCmd(Command):
 
         if password == confirm_password:
             code = web.get_form_value('code')
-            #print("code:", code) #markmark
 
             if login:
                 data = login.get_json_value('data')
@@ -419,15 +418,18 @@ class SendPasswordResetCmd(Command):
 
             sudo = Sudo()
             try: 
-                current_project = WebContainer.get_web().get_context_name()
-                Project.set_project(current_project)
+                # if the project is default or admin, we are not going to set it
+                # from web context.
+                if Project.get_project_code() in ['default', 'admin']:
+                    current_project = WebContainer.get_web().get_context_name()
+                    Project.set_project(current_project)
                 application = ProjectSetting.get_value_by_key("application")
                 sender_email = ProjectSetting.get_value_by_key("mail_user") 
             finally:
                 sudo.exit()
                 
             if not application:
-                applicaition = "TACTIC"
+                application = "TACTIC"
 
             if not sender_email:
                 sender_email = Config.get_value("services", "mail_default_admin_email")
