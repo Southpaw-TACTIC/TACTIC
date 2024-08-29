@@ -837,7 +837,9 @@ class SelectEditor {
       }, helpers[index]))));
       return;
     } else if (mode == "checkbox") {
-      if (this.value == null) {
+      if (this.value == null && labels.length > 1) {
+        this.value = values[2];
+      } else if (this.value == null) {
         this.value = values[1];
       }
       this.el = React.createElement("div", {
@@ -852,7 +854,50 @@ class SelectEditor {
           display: "flex",
           alignItems: "center"
         }
-      }, React.createElement(Checkbox, {
+      }, labels.length > 1 ? React.createElement(React.Fragment, null, React.createElement(Checkbox, {
+        checked: this.value === values[0],
+        onChange: e => {
+          if (this.value === values[0]) {
+            this.value = values[2];
+          } else if (this.value === values[1]) {
+            this.value = values[0];
+          } else if (this.value === values[2]) {
+            this.value = values[0];
+          }
+          e.name = name;
+          if (params.onchange) {
+            params.onchange(e, this.value);
+          }
+        },
+        style: {
+          cursor: "pointer",
+          alignSelf: "flex-start"
+        }
+      }), React.createElement("div", {
+        style: {
+          fontSize: "0.8rem",
+          textAlign: "center"
+        }
+      }, labels[0]), React.createElement(Checkbox, {
+        checked: this.value === values[1],
+        onChange: e => {
+          if (this.value === values[0]) {
+            this.value = values[1];
+          } else if (this.value === values[1]) {
+            this.value = values[2];
+          } else if (this.value === values[2]) {
+            this.value = values[1];
+          }
+          e.name = name;
+          if (params.onchange) {
+            params.onchange(e, this.value);
+          }
+        },
+        style: {
+          cursor: "pointer",
+          alignSelf: "flex-start"
+        }
+      })) : React.createElement(Checkbox, {
         checked: this.value === values[0],
         onChange: e => {
           if (this.value === values[0]) {
@@ -874,7 +919,7 @@ class SelectEditor {
           fontSize: "0.8rem",
           textAlign: "center"
         }
-      }, labels[0])));
+      }, labels.length > 1 ? labels[1] : labels[0])));
       return;
     }
     this.el = React.createElement(TextField, {

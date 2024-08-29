@@ -1210,13 +1210,71 @@ class SelectEditor {
 
         else if (mode == "checkbox") {
             //Default to not checked
-            if (this.value == null) {
+            if (this.value == null && labels.length > 1) {
+                this.value = values[2];
+            }
+            else if (this.value == null) {
                 this.value = values[1];
             }
+            
+
+            
 
             this.el = (
                 <div style={{display: "flex", flexDirection: layout, gap: "20px"}}>
                     <div style={{width: "100%", display: "flex", alignItems: "center"}}>
+                        {labels.length > 1 ? <><Checkbox
+                            checked={this.value === values[0]}
+                            onChange={ e => {
+                                if (this.value === values[0]){
+                                    this.value = values[2];
+                                }
+                                else if (this.value === values[1]){
+                                    this.value = values[0];
+                                }
+                                else if (this.value === values[2]){
+                                    this.value = values[0];
+                                }
+                                // Need to add this
+                                e.name = name;
+        
+                                if (params.onchange) {
+                                    params.onchange(e, this.value);
+                                }
+                            }}
+                            style={{
+                                cursor: "pointer",
+                                alignSelf: "flex-start"
+                            }}
+                        /> 
+                        <div style={{
+                            fontSize: "0.8rem",
+                            textAlign: "center",
+                        }}>{labels[0]}</div>
+                        <Checkbox
+                            checked={this.value === values[1]}
+                            onChange={ e => {
+                                if (this.value === values[0]){
+                                    this.value = values[1];
+                                }
+                                else if (this.value === values[1]){
+                                    this.value = values[2];
+                                }
+                                else if (this.value === values[2]){
+                                    this.value = values[1];
+                                }
+                                // Need to add this
+                                e.name = name;
+        
+                                if (params.onchange) {
+                                    params.onchange(e, this.value);
+                                }
+                            }}
+                            style={{
+                                cursor: "pointer",
+                                alignSelf: "flex-start"
+                            }}
+                        /></>:
                         <Checkbox
                             checked={this.value === values[0]}
                             onChange={ e => {
@@ -1238,10 +1296,11 @@ class SelectEditor {
                                 alignSelf: "flex-start"
                             }}
                         />
+                    }
                         <div style={{
                             fontSize: "0.8rem",
                             textAlign: "center",
-                        }}>{labels[0]}</div>
+                        }}>{labels.length > 1 ? labels[1] : labels[0]}</div>
                     </div>
                 </div>
             )
