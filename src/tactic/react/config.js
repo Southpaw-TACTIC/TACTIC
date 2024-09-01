@@ -97,6 +97,7 @@ const Config = (config, options) => {
     }
     if (pinned) {
       config_def["pinned"] = pinned;
+      config_def["lockPinned"] = true;
     }
     if (width) {
       config_def["width"] = width;

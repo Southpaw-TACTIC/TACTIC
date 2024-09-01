@@ -42,6 +42,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     export_csv() {
       grid_ref.current.export_csv();
     },
+    get_display_data() {
+      return grid_ref.current.get_display_data();
+    },
     get_selected_nodes() {
       return grid_ref.current.get_selected_nodes();
     },
