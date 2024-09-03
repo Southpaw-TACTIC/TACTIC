@@ -6,6 +6,7 @@ import { useRef } from 'react';
 */
 let useEffect = React.useEffect;
 let useState = React.useState;
+let useReducer = React.useReducer;
 
 const Common = spt.react.Common;
 
@@ -64,6 +65,12 @@ const DataGrid = React.forwardRef( (props, ref) => {
         export_csv(params) {
             export_csv(params);
         },
+
+        get_display_data(params) {
+            return get_display_data(params);
+        },
+
+
         set_data(data) {
             set_data(data);
         },
@@ -76,8 +83,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 api: api
             });
         }
-
-
 
     }))
 
@@ -92,6 +97,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
     const [data, set_data] = useState([]);
 
 
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
 
     const add_filter = filter => {
@@ -102,8 +108,11 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
     const get_filter = (column) => {
         // Get a reference to the filter instance
+        /*
         const filterInstance = api.getFilterInstance(column);
         let model = filterInstance.getModel();
+        */
+        let model = api.getFilterModel();
         return model;
     }
 
@@ -111,35 +120,37 @@ const DataGrid = React.forwardRef( (props, ref) => {
     const set_filter = (column, options) => {
 
         // Get a reference to the filter instance
-        const filterInstance = api.getFilterInstance(column);
+        //const filterInstance = api.getFilterInstance(column);
 
-        if (options.conditions) {
+        if (options.model) {
             // Assume it is a full model
-            filterInstance.setModel(options);
-            return;
+            //filterInstance.setModel(options);
+            api.setFilterModel(options.model);
         }
+        else {
 
-        if (typeof options == "string") {
-            options = {
-                filter: options
+            if (typeof options == "string") {
+                options = {
+                    filter: options
+                }
             }
-        }
 
-        if (!options.filterType) {
-            options.filterType = "text"
-        }
+            if (!options.filterType) {
+                options.filterType = "text"
+            }
 
-        if (!options.type) {
-            options.type = "startsWith"
-        }
+            if (!options.type) {
+                options.type = "startsWith"
+            }
 
-        // Set the filter model
-        /*
-            filterType: 'text',
-            type: 'startsWith',
-            filter: 'Animator',
-        */
-        filterInstance.setModel(options);
+            // Set the filter model
+            /*
+                filterType: 'text',
+                type: 'startsWith',
+                filter: 'Animator',
+            */
+            api.setFilterModel(options);
+        }
 
         // Tell grid to run filter operation again
         api.onFilterChanged();
@@ -213,6 +224,31 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
+    const get_display_data = params => {
+
+        let columns = api.getAllDisplayedColumns();
+
+        // Get all row data from the grid
+        let display_data = [];
+        api?.forEachNodeAfterFilter( row_node => {
+
+            let row_display_data = {};
+            display_data.push(row_display_data);
+
+            columns.forEach( column => {
+                let column_name = column.colDef.headerName;
+                if (!column_name) return;
+                let value = api.getValue(column.colId, row_node);
+                row_display_data[column_name] = value;
+            });
+        });
+
+        return display_data;
+    }
+
+
+
+
     const redrawRows = (nodes) => {
         setTimeout( () => {
             api.redrawRows({
@@ -272,7 +308,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
-    // TEST TEST
     const _show_total = (params) => {
         if (!props.show_total && !props.get_total_data) return;
 
@@ -489,6 +524,15 @@ const DataGrid = React.forwardRef( (props, ref) => {
     }, [] );
 
 
+
+    useEffect( () => {
+        if (!grid_options) return;
+        if (!api) return;
+
+        grid_options["rowHeight"] = props.row_height;
+    }, [props.row_height] );
+
+
     useEffect( () => {
         if (!grid_options) return;
         if (!grid_name) return;
@@ -498,6 +542,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         // get div to host the grid
         const eGridDiv = document.getElementById(grid_name);
+        eGridDiv.innerHTML = "";
         // new grid instance, passing in the hosting DIV and Grid Options
         //let grid = new agGrid.Grid(eGridDiv, grid_options);
         let api = agGrid.createGrid(eGridDiv, grid_options);
@@ -550,7 +595,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
             set_data(data);
         }
 
-    }, [grid_name, grid_options] );
+    }, [grid_name, grid_options, props.row_height] );
 
 
 
@@ -562,7 +607,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
 
         if (params.data.__type__ == "group") {
-            css["background"] = params.data.__background__ || "#CCC";
+            css["background"] = params.data.__background__ || "#DDD";
             css["color"] = params.data.__color__ || "#000";
         }
 
@@ -669,7 +714,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
                         sort_column: sortedColumns[0].colId,
                     }
                     data = group_data(data, props.group_by, options);
-                    api.setRowData(data);
+                    //api.setRowData(data);
+                    api.setGridOption('rowData', data)
  
                 }
                 else {
@@ -677,12 +723,14 @@ const DataGrid = React.forwardRef( (props, ref) => {
                         order_list: props.order_list
                     }
                     data = group_data(data, props.group_by, options);
-                    api.setRowData(data);
+                    //api.setRowData(data);
+                    api.setGridOption('rowData', data)
                 }
             }
             else {
                 grid_options["group_by"] = "";
-                api.setRowData(data);
+                //api.setRowData(data);
+                api.setGridOption('rowData', data)
             }
         }
 
@@ -782,7 +830,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
                     name: group_value,
                     column: group_by,
                     __type__: "group",
-                    __background__: "#CCC",
+                    __background__: "#DDD",
                     __color__: "#000",
                 }
                 group_data.push(group_item)

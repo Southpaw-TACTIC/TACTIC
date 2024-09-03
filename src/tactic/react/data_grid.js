@@ -2,6 +2,7 @@
 
 let useEffect = React.useEffect;
 let useState = React.useState;
+let useReducer = React.useReducer;
 const Common = spt.react.Common;
 
 const DataGrid = React.forwardRef((props, ref) => {
@@ -51,6 +52,9 @@ const DataGrid = React.forwardRef((props, ref) => {
     export_csv(params) {
       export_csv(params);
     },
+    get_display_data(params) {
+      return get_display_data(params);
+    },
     set_data(data) {
       set_data(data);
     },
@@ -69,33 +73,33 @@ const DataGrid = React.forwardRef((props, ref) => {
   const [grid_options, set_grid_options] = useState(null);
   const [onselect, set_onselect] = useState(null);
   const [data, set_data] = useState([]);
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
   const add_filter = filter => {
     api.setQuickFilter(filter);
   };
   const get_filter = column => {
-    const filterInstance = api.getFilterInstance(column);
-    let model = filterInstance.getModel();
+    let model = api.getFilterModel();
     return model;
   };
   const set_filter = (column, options) => {
-    const filterInstance = api.getFilterInstance(column);
-    if (options.conditions) {
-      filterInstance.setModel(options);
-      return;
-    }
-    if (typeof options == "string") {
-      options = {
-        filter: options
-      };
-    }
-    if (!options.filterType) {
-      options.filterType = "text";
-    }
-    if (!options.type) {
-      options.type = "startsWith";
-    }
 
-    filterInstance.setModel(options);
+    if (options.model) {
+      api.setFilterModel(options.model);
+    } else {
+      if (typeof options == "string") {
+        options = {
+          filter: options
+        };
+      }
+      if (!options.filterType) {
+        options.filterType = "text";
+      }
+      if (!options.type) {
+        options.type = "startsWith";
+      }
+
+      api.setFilterModel(options);
+    }
 
     api.onFilterChanged();
   };
@@ -150,6 +154,22 @@ const DataGrid = React.forwardRef((props, ref) => {
     }
     api.exportDataAsCsv(params);
   };
+  const get_display_data = params => {
+    let columns = api.getAllDisplayedColumns();
+
+    let display_data = [];
+    api?.forEachNodeAfterFilter(row_node => {
+      let row_display_data = {};
+      display_data.push(row_display_data);
+      columns.forEach(column => {
+        let column_name = column.colDef.headerName;
+        if (!column_name) return;
+        let value = api.getValue(column.colId, row_node);
+        row_display_data[column_name] = value;
+      });
+    });
+    return display_data;
+  };
   const redrawRows = nodes => {
     setTimeout(() => {
       api.redrawRows({
@@ -189,7 +209,6 @@ const DataGrid = React.forwardRef((props, ref) => {
       }
     });
   };
-
   const _show_total = params => {
     if (!props.show_total && !props.get_total_data) return;
     if (!params.api) return;
@@ -342,10 +361,16 @@ const DataGrid = React.forwardRef((props, ref) => {
   }, []);
   useEffect(() => {
     if (!grid_options) return;
+    if (!api) return;
+    grid_options["rowHeight"] = props.row_height;
+  }, [props.row_height]);
+  useEffect(() => {
+    if (!grid_options) return;
     if (!grid_name) return;
     grid_options.onSelectionChanged = on_selection_changed;
 
     const eGridDiv = document.getElementById(grid_name);
+    eGridDiv.innerHTML = "";
     let api = agGrid.createGrid(eGridDiv, grid_options);
     set_api(api);
 
@@ -362,14 +387,14 @@ const DataGrid = React.forwardRef((props, ref) => {
       api.setRowData(data);
       set_data(data);
     }
-  }, [grid_name, grid_options]);
+  }, [grid_name, grid_options, props.row_height]);
   const get_row_style = params => {
     let css = {};
     if (props.get_row_style) {
       css = props.get_row_style(params) || {};
     }
     if (params.data.__type__ == "group") {
-      css["background"] = params.data.__background__ || "#CCC";
+      css["background"] = params.data.__background__ || "#DDD";
       css["color"] = params.data.__color__ || "#000";
     }
     if (params.data.__isVisible__ == false) {
@@ -431,17 +456,17 @@ const DataGrid = React.forwardRef((props, ref) => {
             sort_column: sortedColumns[0].colId
           };
           data = group_data(data, props.group_by, options);
-          api.setRowData(data);
+          api.setGridOption('rowData', data);
         } else {
           let options = {
             order_list: props.order_list
           };
           data = group_data(data, props.group_by, options);
-          api.setRowData(data);
+          api.setGridOption('rowData', data);
         }
       } else {
         grid_options["group_by"] = "";
-        api.setRowData(data);
+        api.setGridOption('rowData', data);
       }
     }
   }, [props, api]);
@@ -508,7 +533,7 @@ const DataGrid = React.forwardRef((props, ref) => {
           name: group_value,
           column: group_by,
           __type__: "group",
-          __background__: "#CCC",
+          __background__: "#DDD",
           __color__: "#000"
         };
         group_data.push(group_item);
