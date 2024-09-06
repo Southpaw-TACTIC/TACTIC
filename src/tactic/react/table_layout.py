@@ -199,13 +199,21 @@ class TableSaveCmd(Command):
             search_key = update.get("search_key")
             if search_key:
                 sobject = Search.get_by_search_key(search_key)
+                if not sobject:
+                    raise Exception("SObject [%s] does not exist" % search_key)
 
                 column = update.get("column")
                 value = update.get("value")
 
-                item = {
-                    column: value
-                }
+                data = update.get("data")
+                if column and value:
+                    item = {
+                        column: value
+                    }
+                elif data:
+                    item = data
+                else:
+                    raise Exception("Nothing to update")
 
             else:
                 search_type = update.get("search_type")

@@ -89,7 +89,9 @@ const Chart = (props) => {
         }
 
         { !loading &&
-            <div id={name} style={{width: width, height: height}}></div>
+            <div style={{width: width, height: height}}>
+                <div id={name}></div>
+            </div>
         }
       </div>
     )
