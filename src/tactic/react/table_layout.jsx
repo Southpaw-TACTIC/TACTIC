@@ -1218,12 +1218,20 @@ class SelectEditor {
         }
 
 
+        if (this.value == null) {
+            return;
+        }
+
+
+        let value = this.value || values[0] || "";
+        this.value = value || "" // set this if it is using the first value
 
         this.el = (
+            <>
             <TextField
                 label={label}
                 variant={variant}
-                defaultValue={this.value}
+                defaultValue={value+""}
                 size="small"
                 select
                 style={style}
@@ -1251,8 +1259,8 @@ class SelectEditor {
                     }
                 }}
             >
-                { values.map( (value, index) => (
-                    <MenuItem key={index} value={value}>
+                { values.map( (v, index) => (
+                    <MenuItem key={index} value={v}>
                         <div style={{
                             fontSize: "0.8rem",
                         }}
@@ -1260,6 +1268,7 @@ class SelectEditor {
                     </MenuItem>
                 ) ) }
             </TextField>
+            </>
         );
 
     }

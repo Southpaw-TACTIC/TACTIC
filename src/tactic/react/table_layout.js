@@ -841,10 +841,16 @@ class SelectEditor {
       return;
     } else if (mode == "checkbox") {
     }
-    this.el = React.createElement(TextField, {
+    if (this.value == null) {
+      return;
+    }
+    let value = this.value || values[0] || "";
+    this.value = value || "";
+
+    this.el = React.createElement(React.Fragment, null, React.createElement(TextField, {
       label: label,
       variant: variant,
-      defaultValue: this.value,
+      defaultValue: value + "",
       size: "small",
       select: true,
       style: style,
@@ -869,14 +875,14 @@ class SelectEditor {
           params.api.tabToNextCell();
         }
       }
-    }, values.map((value, index) => React.createElement(MenuItem, {
+    }, values.map((v, index) => React.createElement(MenuItem, {
       key: index,
-      value: value
+      value: v
     }, React.createElement("div", {
       style: {
         fontSize: "0.8rem"
       }
-    }, labels[index]))));
+    }, labels[index])))));
   }
   getEl() {
     return this.el;
