@@ -316,6 +316,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         let pinned;
         // These should be removed
+        /*
         if  (props.show_total == "cost") {
             setTimeout( () => {
                 pinned = generate_pinned_data(params)
@@ -334,9 +335,9 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 params.api.setPinnedTopRowData( [pinned]  );
             } )
         }
+        */
 
-
-        else if (props.get_total_data) {
+        if (props.get_total_data) {
 
             let columns = [];
             params.api.getAllGridColumns().forEach(item => {
@@ -354,15 +355,18 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
                 if (pinned) {
                     if (Array.isArray(pinned) ) {
-                        params.api.setPinnedTopRowData( pinned  );
+                        //params.api.setPinnedTopRowData( pinned  );
+                        params.api.setGridOption("pinnedTopRowData", pinned);
                     }
                     else {
-                        params.api.setPinnedTopRowData( [pinned]  );
+                        //params.api.setPinnedTopRowData( [pinned]  );
+                        params.api.setGridOption("pinnedTopRowData", [pinned]);
                     }
                 }
                 else {
                     alert("ERROR: pinned data is undefined")
                 }
+
             }, 0 )
         }
 
@@ -371,8 +375,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
     const on_grid_ready = (params) => { _show_total(params); }
     const on_filter_changed = (params) => { _show_total(params); }
     const on_cell_clicked = (params) => { _show_total(params); }
-
-
+    const on_first_data_rendered = (params) => { _show_total(params); }
 
 
 
@@ -420,6 +423,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
           onGridReady: on_grid_ready,
           onFilterChanged: on_filter_changed,
           onCellClicked: on_cell_clicked,
+          onFirstDataRendered: on_first_data_rendered,
 
           singleClickEdit: props.single_click == true ? true : false,
           suppressClickEdit: props.suppress_click == true ? true : false,

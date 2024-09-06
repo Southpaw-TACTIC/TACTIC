@@ -57,11 +57,12 @@ const Chart = props => {
   let height = props.height || "200px";
   let width = props.width || "300px";
   return React.createElement("div", null, loading && React.createElement("div", null, "Loading ..."), !loading && React.createElement("div", {
-    id: name,
     style: {
       width: width,
       height: height
     }
-  }));
+  }, React.createElement("div", {
+    id: name
+  })));
 };
 spt.react.Chart = Chart;
