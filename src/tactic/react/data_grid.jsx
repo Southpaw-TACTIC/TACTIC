@@ -112,6 +112,10 @@ const DataGrid = React.forwardRef( (props, ref) => {
         const filterInstance = api.getFilterInstance(column);
         let model = filterInstance.getModel();
         */
+        if (!api) {
+            return null;
+        }
+
         let model = api.getFilterModel();
         return model;
     }

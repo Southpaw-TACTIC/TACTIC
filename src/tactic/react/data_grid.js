@@ -78,6 +78,9 @@ const DataGrid = React.forwardRef((props, ref) => {
     api.setQuickFilter(filter);
   };
   const get_filter = column => {
+    if (!api) {
+      return null;
+    }
     let model = api.getFilterModel();
     return model;
   };

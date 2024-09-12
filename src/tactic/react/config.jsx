@@ -146,7 +146,7 @@ const Config = (config, options) => {
         }
 
 
-
+        let params = {};
 
         if (element_type == "select") {
             let mode = config_item.mode;
@@ -169,7 +169,7 @@ const Config = (config, options) => {
             }
 
 
-            let params = {
+            params = {
                 table_ref: table_ref,
                 labels: labels,
                 values: values,
@@ -232,7 +232,7 @@ const Config = (config, options) => {
             }
 
 
-            let params = {
+            params = {
                 table_ref: table_ref,
                 mode: format,
             }
@@ -284,6 +284,21 @@ const Config = (config, options) => {
 
 
         }
+
+
+
+        let onclick = config_item.onclick;
+        if (onclick) {
+            if (typeof(onclick) == "string") {
+                onclick = eval(onclick);
+            }
+            if (typeof(onclick) != "function") alert("NOT A FUNCTION")
+
+            params["onclick"] = onclick;
+        }
+
+
+
 
 
 

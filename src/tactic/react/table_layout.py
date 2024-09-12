@@ -107,7 +107,7 @@ class BaseTableSearchCmd(Command):
                     try:
                         value = sobject.get_value(column)
                     except:
-                        value = "N/A"
+                        value = ""
 
                     sobject_dict[name] = value
 
@@ -250,6 +250,9 @@ class TableSaveCmd(Command):
                     else:
                         sobject.set_value(update_column, value)
 
+            extra_data = self.kwargs.get("extra_data") or {}
+            for column, value in extra_data.items():
+                sobject.set_value(column, value)
 
             sobject.commit()
 

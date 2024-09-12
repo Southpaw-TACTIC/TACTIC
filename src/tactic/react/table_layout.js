@@ -53,6 +53,9 @@ const TableLayout = React.forwardRef((props, ref) => {
     },
     show_total() {
       return grid_ref.current.show_total();
+    },
+    reload() {
+      return load_data();
     }
   }));
   const [first_load, set_first_load] = useState(true);
@@ -77,12 +80,22 @@ const TableLayout = React.forwardRef((props, ref) => {
     let element_definitions = props.element_definitions;
     if (!element_definitions) {
       config_handler = props.config_handler;
-      element_definitions = await get_element_definitions(config_handler);
+      if (config_handler) {
+        element_definitions = await get_element_definitions(config_handler);
+      }
     }
-    await set_element_definitions(element_definitions);
+    if (element_definitions) {
+      await set_element_definitions(element_definitions);
+      build_column_defs(element_names, element_definitions);
+    } else if (props.column_defs) {
+      set_column_defs(props.column_defs);
+    }
     set_search_type(props.search_type);
-    build_column_defs(element_names, element_definitions);
-    await load_data();
+    if (props.data) {
+      set_data(props.data);
+    } else {
+      await load_data();
+    }
   };
   const load_data = async () => {
     let cmd = props.get_cmd;
@@ -93,6 +106,11 @@ const TableLayout = React.forwardRef((props, ref) => {
     let kwargs = props.get_kwargs || {};
     let config_handler = props.config_handler;
     kwargs["config_handler"] = config_handler;
+    if (props.extra_data) {
+      Object.keys(props.extra_data).forEach(key => {
+        kwargs[key] = props.extra_data[key];
+      });
+    }
     set_loading(true);
     let server = TACTIC.get();
     server.p_execute_cmd(cmd, kwargs).then(ret => {
@@ -114,10 +132,13 @@ const TableLayout = React.forwardRef((props, ref) => {
     let info = ret.info;
     let config = info.config;
     let renderer_params = info.renderer_params;
+    if (!renderer_params) {
+      renderer_params = info.cell_params;
+    }
 
     let definitions = spt.react.Config(config, {
       table_ref: ref,
-      renderer_params: props.renderer_params || renderer_params
+      renderer_params: props.renderer_params || props.cell_params || renderer_params
     });
     return definitions;
   };
@@ -302,7 +323,8 @@ const TableLayout = React.forwardRef((props, ref) => {
       ref: edit_modal_ref,
       on_insert: insert_item,
       element_names: props.element_names,
-      element_definitions: element_definitions
+      element_definitions: element_definitions,
+      extra_data: props.extra_data
     }), React.createElement(EditModal, {
       name: "Custom Property",
       ref: property_modal_ref,
@@ -525,6 +547,9 @@ const EditForm = React.forwardRef((props, ref) => {
         groups[group_name] = group;
         group_names.push(group_name);
       }
+      if (typeof definition.value == "undefined") {
+        definition.value = null;
+      }
       group.push(definition);
     });
     set_groups(groups);
@@ -541,6 +566,11 @@ const EditForm = React.forwardRef((props, ref) => {
     let kwargs = props.get_kwargs || {};
     let config_handler = props.config_handler;
     kwargs["config_handler"] = config_handler;
+    if (props.extra_data) {
+      Object.keys(props.extra_data).forEach(key => {
+        kwargs[key] = props.extra_data[key];
+      });
+    }
     let server = TACTIC.get();
     server.p_execute_cmd(cmd, kwargs).then(ret => {
       let data = ret.info;
@@ -557,7 +587,6 @@ const EditForm = React.forwardRef((props, ref) => {
     let ret = await server.p_execute_cmd(cmd, kwargs);
     let info = ret.info;
     let config = info.config;
-    let renderer_params = info.renderer_params;
 
     let definitions = spt.react.Config(config, {});
     return definitions;
@@ -842,7 +871,6 @@ class SelectEditor {
     } else if (mode == "checkbox") {
     }
     if (this.value == null) {
-      return;
     }
     let value = this.value || values[0] || "";
     this.value = value || "";
@@ -850,7 +878,7 @@ class SelectEditor {
     this.el = React.createElement(React.Fragment, null, React.createElement(TextField, {
       label: label,
       variant: variant,
-      defaultValue: value + "",
+      defaultValue: value,
       size: "small",
       select: true,
       style: style,
@@ -913,11 +941,17 @@ const SelectEditorWdg = props => {
     }
     label = Common.capitalize(label);
     set_label(label);
-    init();
   }, []);
   useEffect(() => {
+    if (!props.error) {
+      return;
+    }
     init();
   }, [props.error]);
+  useEffect(() => {
+    if (typeof value == "undefined") return;
+    init();
+  }, [value]);
   const init = () => {
     let name = props.name;
     let mode = props.mode;
@@ -948,11 +982,8 @@ const SelectEditorWdg = props => {
     select.init(props2);
     let el = select.getEl();
     set_el(el);
-  };
-  useEffect(() => {
-    init();
     forceUpdate();
-  }, [value]);
+  };
   return React.createElement("div", {
     style: {
       width: "100%"
@@ -1011,7 +1042,7 @@ class InputEditor {
       type: mode,
       style: style,
       InputProps: {
-        disableUnderline: true
+        disableunderline: true
       },
       inputProps: {
         className: "input",
@@ -1105,6 +1136,7 @@ const SimpleCellRenderer = params => {
   let value = params.value;
   let label = value;
   let onClick = params.onClick;
+  let onclick = params.onclick;
   let mode = params.mode;
   let renderer = params.renderer;
   let editable = params.colDef.editable;
@@ -1173,12 +1205,13 @@ const SimpleCellRenderer = params => {
     }
     if (label == "") label = "&nbsp;";
     inner.appendChild(document.createTextNode(label));
-    if (onClick) {
+    if (onClick || onclick) {
       inner.style.textDecoration = "underline";
       inner.style.cursor = "pointer";
 
       inner.addEventListener("click", e => {
-        onClick(params);
+        if (onclick) onclick(params);
+        if (onClick) onClick(params);
       });
     }
   }

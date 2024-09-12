@@ -106,6 +106,7 @@ const Config = (config, options) => {
     if (flex) {
       config_def["flex"] = flex;
     }
+    let params = {};
     if (element_type == "select") {
       let mode = config_item.mode;
       let labels = config_item.labels;
@@ -123,7 +124,7 @@ const Config = (config, options) => {
       if (typeof helpers == "string") {
         helpers = helpers.split(",");
       }
-      let params = {
+      params = {
         table_ref: table_ref,
         labels: labels,
         values: values,
@@ -177,7 +178,7 @@ const Config = (config, options) => {
           return value;
         };
       }
-      let params = {
+      params = {
         table_ref: table_ref,
         mode: format
       };
@@ -223,6 +224,14 @@ const Config = (config, options) => {
         };
       }
       config_def.cellRendererParams = params;
+    }
+    let onclick = config_item.onclick;
+    if (onclick) {
+      if (typeof onclick == "string") {
+        onclick = eval(onclick);
+      }
+      if (typeof onclick != "function") alert("NOT A FUNCTION");
+      params["onclick"] = onclick;
     }
 
     let cell_renderer = config_item.renderer;
