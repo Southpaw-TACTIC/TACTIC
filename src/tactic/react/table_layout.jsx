@@ -96,8 +96,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
 
     const init = async () => {
-        let element_names = props.element_names || ["code"];
-        set_element_names([...element_names]);
+        let element_names = props.element_names;
 
         let element_definitions = props.element_definitions;
         if (!element_definitions) {
@@ -106,6 +105,24 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 element_definitions = await get_element_definitions(config_handler);
             }
         }
+
+        if (!element_names) {
+            element_names = [];
+            element_definitions.forEach( definition => {
+                element_names.append(definition.headerName || definition.field);
+            } )
+
+        }
+        else if (!element_definitions) {
+            element_definitions = {}
+            element_names.forEach( element_name => {
+                let definition = { field: element_name };
+                element_definitions[element_name] = definition;
+            } )
+
+        }
+
+        set_element_names([...element_names]);
 
 
         if (element_definitions) {
@@ -357,15 +374,18 @@ const TableLayout = React.forwardRef( (props, ref) => {
         }
 
 
-        column_defs = [
-            { field: '', maxWidth: 50,
-                headerCheckboxSelection: true,
-                headerCheckboxSelectionFilteredOnly: true,
-                checkboxSelection: true,
-                pinned: "left",
-            },
-        ]
+        column_defs = [];
 
+        if (props.show_row_select == true || typeof(props.show_row_select) == "undefined") {
+            column_defs.push(
+                { field: '', maxWidth: 50,
+                    headerCheckboxSelection: true,
+                    headerCheckboxSelectionFilteredOnly: true,
+                    checkboxSelection: true,
+                    pinned: "left",
+                }
+            )
+        }
 
         new_element_names.forEach( element => {
             let column_def;
@@ -471,7 +491,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 name={props.name}
                 ref={edit_modal_ref}
                 on_insert={insert_item}
-                element_names={props.element_names}
+                element_names={element_names}
                 element_definitions={element_definitions}
                 extra_data={props.extra_data}
             />
@@ -581,6 +601,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 supress_click={true}
                 auto_height={props.auto_height}
                 height={props.height}
+                header_height={props.header_height}
                 row_height={props.row_height}
                 enable_undo={props.enable_undo}
                 on_column_moved={props.on_column_moved}
@@ -731,7 +752,7 @@ const EditForm = React.forwardRef( (props, ref) => {
 
     useEffect( () => {
         init();
-    }, [] )
+    }, [props] )
 
 
     const init = async () => {
@@ -744,7 +765,7 @@ const EditForm = React.forwardRef( (props, ref) => {
             if (config_handler) {
                 element_definitions = await get_element_definitions(config_handler);
             }
-            else {
+            else if (props.config) {
                 if (!element_names) {
                     element_names = [];
                     props.config.forEach( item => {
@@ -753,11 +774,28 @@ const EditForm = React.forwardRef( (props, ref) => {
                 }
                 element_definitions = spt.react.Config(props.config, {});
             }
+            else if (element_names) {
+                // If no config is given, create a default one
+                element_definiions = [];
+                element_names.forEach( element_name => {
+                    let definition = {
+                        field: element_name
+                    }
+                    element_definitions.push(definition);
+                } )
+            }
+            else {
+                return;
+            }
         }
 
+        console.log("eeee: ", element_definitions)
+
+        /*
         element_names.forEach( element_name => {
             let definition = props.config
         } )
+        */
         
 
 
