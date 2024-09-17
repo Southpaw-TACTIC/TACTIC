@@ -146,7 +146,7 @@ class BaseElementWdg():
         try:
             value = sobject.get_value(column)
         except:
-            value = "N/A"
+            value = ""
         sobject_dict[name] = value
 
 

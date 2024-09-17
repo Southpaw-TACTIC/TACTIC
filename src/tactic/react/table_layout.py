@@ -107,7 +107,7 @@ class BaseTableSearchCmd(Command):
                     try:
                         value = sobject.get_value(column)
                     except:
-                        value = "N/A"
+                        value = ""
 
                     sobject_dict[name] = value
 
@@ -239,10 +239,20 @@ class TableSaveCmd(Command):
                 else:
                     update_column = config.get("column") or config.get("name")
                     if value == "":
-                        sobject.set_value(update_column, "NULL", quoted=False)
+                        if update_column.find("->") != -1:
+                            parts = update_column.split("->")
+                            data = sobject.get_json_value(parts[0]) or {}
+                            if data.get(parts[1]) != None:
+                                del data[parts[1]]
+                                sobject.set_json_value(parts[0], data)
+                        else:
+                            sobject.set_value(update_column, "NULL", quoted=False)
                     else:
                         sobject.set_value(update_column, value)
 
+            extra_data = self.kwargs.get("extra_data") or {}
+            for column, value in extra_data.items():
+                sobject.set_value(column, value)
 
             sobject.commit()
 

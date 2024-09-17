@@ -52,6 +52,9 @@ const DataGrid = React.forwardRef((props, ref) => {
     export_csv(params) {
       export_csv(params);
     },
+    get_csv(params) {
+      return get_csv(params);
+    },
     get_display_data(params) {
       return get_display_data(params);
     },
@@ -78,6 +81,9 @@ const DataGrid = React.forwardRef((props, ref) => {
     api.setQuickFilter(filter);
   };
   const get_filter = column => {
+    if (!api) {
+      return null;
+    }
     let model = api.getFilterModel();
     return model;
   };
@@ -148,11 +154,32 @@ const DataGrid = React.forwardRef((props, ref) => {
           let date = Date.parse(column);
           return column;
         } catch (e) {
-          return cell.columnApi.getDisplayNameForColumn(cell.column, null);
+          return api.getDisplayNameForColumn(cell.column, null);
         }
       };
     }
     api.exportDataAsCsv(params);
+  };
+  const get_csv = params => {
+    if (!params) {
+      params = {};
+    }
+    if (!params.processHeaderCallback) {
+      params.processHeaderCallback = cell => {
+        let column = cell.column.colId;
+        try {
+          let parts = column.split("-");
+          if (parts.length != 3) {
+            throw "Not a date";
+          }
+          let date = Date.parse(column);
+          return column;
+        } catch (e) {
+          return api.getDisplayNameForColumn(cell.column, null);
+        }
+      };
+    }
+    return api.getDataAsCsv(params);
   };
   const get_display_data = params => {
     let columns = api.getAllDisplayedColumns();
