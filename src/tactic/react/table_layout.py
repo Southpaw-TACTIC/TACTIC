@@ -206,7 +206,7 @@ class TableSaveCmd(Command):
                 value = update.get("value")
 
                 data = update.get("data")
-                if column and value:
+                if column:
                     item = {
                         column: value
                     }
@@ -251,8 +251,25 @@ class TableSaveCmd(Command):
                         sobject.set_value(update_column, value)
 
             extra_data = self.kwargs.get("extra_data") or {}
+
             for column, value in extra_data.items():
-                sobject.set_value(column, value)
+
+                config = configs.get(column)
+                if config:
+                    update_column = config.get("column") or config.get("name")
+                    if value == "":
+                        if update_column.find("->") != -1:
+                            parts = update_column.split("->")
+                            data = sobject.get_json_value(parts[0]) or {}
+                            if data.get(parts[1]) != None:
+                                del data[parts[1]]
+                                sobject.set_json_value(parts[0], data)
+                        else:
+                            sobject.set_value(update_column, "NULL", quoted=False)
+                    else:
+                        sobject.set_value(update_column, value)
+                else:
+                    sobject.set_value(column, value)
 
             sobject.commit()
 

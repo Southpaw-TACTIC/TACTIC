@@ -39,8 +39,11 @@ const TableLayout = React.forwardRef((props, ref) => {
     group_data(group_column) {
       return group_by(data, group_column);
     },
-    export_csv() {
-      grid_ref.current.export_csv();
+    export_csv(params) {
+      grid_ref.current.export_csv(params);
+    },
+    get_csv(params) {
+      return grid_ref.current.get_csv(params);
     },
     get_display_data() {
       return grid_ref.current.get_display_data();
@@ -83,10 +86,14 @@ const TableLayout = React.forwardRef((props, ref) => {
         element_definitions = await get_element_definitions(config_handler);
       }
     }
-    if (!element_names) {
+    if (!element_names && element_definitions) {
       element_names = [];
-      element_definitions.forEach(definition => {
-        element_names.append(definition.headerName || definition.field);
+      Object.keys(element_definitions).forEach(key => {
+        let definition = element_definitions[key];
+        let element_name = definition.field;
+        if (element_name) {
+          element_names.push(element_name);
+        }
       });
     } else if (!element_definitions) {
       element_definitions = {};
@@ -123,6 +130,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     if (props.extra_data) {
       Object.keys(props.extra_data).forEach(key => {
         kwargs[key] = props.extra_data[key];
+        import_options[key] = props.extra_data[key];
       });
     }
     set_loading(true);
@@ -414,7 +422,8 @@ const TableLayout = React.forwardRef((props, ref) => {
     header_height: props.header_height,
     row_height: props.row_height,
     enable_undo: props.enable_undo,
-    on_column_moved: props.on_column_moved
+    on_column_moved: props.on_column_moved,
+    get_total_data: props.get_total_data
   }) : React.createElement("div", null, "Loading ...")));
 });
 const TableLayoutActionMenu = props => {
@@ -1088,6 +1097,11 @@ class InputEditor {
         };
         style.padding = "0px 15px";
         style.width = "max-width";
+        if (this.mode == "date") {
+          marginTop: "-4px";
+        } else {
+          marginTop: "2px";
+        }
       }
     } else {
       el_style = {};
@@ -1108,7 +1122,7 @@ class InputEditor {
       type: mode,
       style: style,
       InputProps: {
-        disableunderline: true
+        disableUnderline: "true"
       },
       inputProps: {
         className: "input",
@@ -1156,6 +1170,7 @@ class InputEditor {
     setTimeout(() => {
       let x = document.id(this.input);
       let input = x.getElement(".input");
+      input.select();
       input.focus();
     }, 250);
   }
