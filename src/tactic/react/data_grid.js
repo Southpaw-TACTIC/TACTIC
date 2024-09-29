@@ -76,6 +76,8 @@ const DataGrid = React.forwardRef((props, ref) => {
   const [grid_options, set_grid_options] = useState(null);
   const [onselect, set_onselect] = useState(null);
   const [data, set_data] = useState([]);
+  const [column_defs, set_column_defs] = useState(null);
+  const [group_by, set_group_by] = useState("");
   const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
   const add_filter = filter => {
     api.setQuickFilter(filter);
@@ -104,7 +106,9 @@ const DataGrid = React.forwardRef((props, ref) => {
         options.type = "startsWith";
       }
 
-      api.setFilterModel(options);
+      let model = {};
+      model[column] = options;
+      api.setFilterModel(model);
     }
 
     api.onFilterChanged();
@@ -378,11 +382,6 @@ const DataGrid = React.forwardRef((props, ref) => {
   }, []);
   useEffect(() => {
     if (!grid_options) return;
-    if (!api) return;
-    grid_options["rowHeight"] = props.row_height;
-  }, [props.row_height]);
-  useEffect(() => {
-    if (!grid_options) return;
     if (!grid_name) return;
     grid_options.onSelectionChanged = on_selection_changed;
 
@@ -399,11 +398,10 @@ const DataGrid = React.forwardRef((props, ref) => {
 
     }
 
-    if (props.data != data) {
-      let data = props.data;
-      api.setRowData(data);
-      set_data(data);
+    if (props.row_height) {
+      api.setGridOption("rowHeight", props.row_height);
     }
+
   }, [grid_name, grid_options, props.row_height]);
   const get_row_style = params => {
     let css = {};
@@ -455,36 +453,40 @@ const DataGrid = React.forwardRef((props, ref) => {
       return;
     }
     if (!api) return;
-    if (props.column_defs) {
+    if (props.column_defs && props.column_defs != column_defs) {
       api.setGridOption("columnDefs", props.column_defs);
+      set_column_defs(props.column_defs);
     }
     if (props.data) {
       let data = props.data;
       if (props.group_by) {
-        grid_options["group_by"] = props.group_by;
+        if (props.group_by != group_by) {
+          grid_options["group_by"] = props.group_by;
 
-        let columnState = api.columnModel.getColumnState();
-        let sortedColumns = columnState.filter(column => column.sort !== null);
-        if (sortedColumns.length > 0) {
-          clear_filters();
-          clear_sort();
-          let options = {
-            order_list: props.order_list,
-            sort_column: sortedColumns[0].colId
-          };
-          data = group_data(data, props.group_by, options);
-          api.setGridOption('rowData', data);
-        } else {
-          let options = {
-            order_list: props.order_list
-          };
-          data = group_data(data, props.group_by, options);
-          api.setGridOption('rowData', data);
+          let columnState = api.columnModel.getColumnState();
+          let sortedColumns = columnState.filter(column => column.sort !== null);
+          if (sortedColumns.length > 0) {
+            clear_filters();
+            clear_sort();
+            let options = {
+              order_list: props.order_list,
+              sort_column: sortedColumns[0].colId
+            };
+            data = group_data(data, props.group_by, options);
+            api.setGridOption('rowData', data);
+          } else {
+            let options = {
+              order_list: props.order_list
+            };
+            data = group_data(data, props.group_by, options);
+            api.setGridOption('rowData', data);
+          }
         }
       } else {
         grid_options["group_by"] = "";
         api.setGridOption('rowData', data);
       }
+      set_group_by(props.group_by);
     }
   }, [props, api]);
 

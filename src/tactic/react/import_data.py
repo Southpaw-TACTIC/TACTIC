@@ -33,6 +33,14 @@ class ImportDataCmd(Command):
         pass
 
 
+    def get_delimiter(self, string):
+        if len(string.split('\t')) > 1:
+            return '\t'
+        elif len(string.split(',')) > 1:
+            return ','
+        else:
+            return ','
+
 
 
     def execute(self):
@@ -40,7 +48,11 @@ class ImportDataCmd(Command):
         dry_run = self.kwargs.get("dry_run") or False
 
         header = self.kwargs.get("header") or ""
-        headers = header.split("\t")
+
+        delimiter = self.get_delimiter(header)
+        print("delimiter: ", delimiter)
+
+        headers = header.split(delimiter)
         headers_dict = {}
         for i, header in enumerate(headers):
             header = header.strip()
@@ -61,7 +73,6 @@ class ImportDataCmd(Command):
         input_data = self.kwargs.get("data") or ""
         data = []
 
-        delimiter = "\t"
 
         lines = input_data.split("\n")
 
@@ -109,7 +120,7 @@ class ImportDataCmd(Command):
                         if header.isnumeric() == False:
                             date = parser.parse(header)
                             # set to the closest monday
-                            date = date - timedelta(days=(date.weekday()))# this subtracts the days to get the Monday of the week
+                            date = date - timedelta(days=(date.weekday()))
 
                             dates = row.get("__dates__")
                             if dates == None:
@@ -147,7 +158,6 @@ class ImportDataCmd(Command):
 
 
         search_type = self.kwargs.get("search_type")
-        print("sss: ", search_type)
 
         # insert the data
         for item in data:
