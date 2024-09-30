@@ -410,7 +410,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       api.setGridOption("columnDefs", props.column_defs);
       set_column_defs(props.column_defs);
     }
-    if (props.data && (props.data != data || props.group_by)) {
+    if (props.data && (props.data != data || props.group_by != group_by)) {
       let data = props.data;
       set_data(data);
       if (props.group_by) {

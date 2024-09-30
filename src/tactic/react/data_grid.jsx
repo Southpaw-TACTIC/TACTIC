@@ -657,7 +657,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
-        if (props.data && (props.data != data || props.group_by)) {
+        if (props.data && (props.data != data || props.group_by != group_by)) {
             let data = props.data;
             set_data(data);
 
