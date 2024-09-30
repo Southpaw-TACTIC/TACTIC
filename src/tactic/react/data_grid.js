@@ -309,6 +309,7 @@ const DataGrid = React.forwardRef((props, ref) => {
       pagination: pagination,
       paginationPageSize: pagination_size,
 
+      suppressColumnVirtualisation: false,
       onGridReady: on_grid_ready,
       onFilterChanged: on_filter_changed,
       onCellClicked: on_cell_clicked,
@@ -397,20 +398,19 @@ const DataGrid = React.forwardRef((props, ref) => {
 
     }
 
+  }, [grid_name, grid_options]);
+  useEffect(() => {
+    if (!grid_options) return;
+    if (!api) return;
     if (props.row_height) {
       api.setGridOption("rowHeight", props.row_height);
     }
 
-    set_loading(false);
-  }, [grid_name, grid_options, props.row_height]);
-  useEffect(() => {
-    if (!grid_options) return;
-    if (!api) return;
     if (props.column_defs && props.column_defs != column_defs) {
       api.setGridOption("columnDefs", props.column_defs);
       set_column_defs(props.column_defs);
     }
-    if (props.data && props.data != data) {
+    if (props.data && (props.data != data || props.group_by)) {
       let data = props.data;
       set_data(data);
       if (props.group_by) {
@@ -442,7 +442,8 @@ const DataGrid = React.forwardRef((props, ref) => {
       }
       set_group_by(props.group_by);
     }
-  }, [props.column_defs, props.data, props.group_by, api]);
+    set_loading(false);
+  }, [props.column_defs, props.data, props.group_by, props.row_height, api]);
   const get_row_style = params => {
     let css = {};
     if (props.get_row_style) {
