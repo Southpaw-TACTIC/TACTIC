@@ -458,6 +458,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
           paginationPageSize: pagination_size,
           //pagination: props.auto_height ? false : false,
 
+          // Speed optimization
+          suppressColumnVirtualisation: false,
 
           onGridReady: on_grid_ready,
           onFilterChanged: on_filter_changed,
@@ -620,11 +622,6 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         }
 
-        if (props.row_height) {
-            api.setGridOption("rowHeight", props.row_height);
-            //grid_options["rowHeight"] = props.row_height;
-        }
-
         /*
         if (props.data != data) {
             let data = props.data;
@@ -634,9 +631,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
         */
 
-        set_loading(false);
 
-    }, [grid_name, grid_options, props.row_height] );
+    }, [grid_name, grid_options] );
 
 
 
@@ -647,6 +643,13 @@ const DataGrid = React.forwardRef( (props, ref) => {
         if (!api) return;
 
 
+        if (props.row_height) {
+            api.setGridOption("rowHeight", props.row_height);
+            //grid_options["rowHeight"] = props.row_height;
+        }
+
+
+
         if (props.column_defs && props.column_defs != column_defs) {
             api.setGridOption("columnDefs", props.column_defs);
             set_column_defs(props.column_defs);
@@ -654,7 +657,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
-        if (props.data && props.data != data) {
+        if (props.data && (props.data != data || props.group_by)) {
             let data = props.data;
             set_data(data);
 
@@ -690,13 +693,13 @@ const DataGrid = React.forwardRef( (props, ref) => {
                 grid_options["group_by"] = "";
                 api.setGridOption('rowData', data)
             }
-
             set_group_by(props.group_by);
 
         }
 
+        set_loading(false);
 
-    }, [props.column_defs, props.data, props.group_by, api] )
+    }, [props.column_defs, props.data, props.group_by, props.row_height, api] )
 
 
 
