@@ -13,7 +13,7 @@ from pyasm.search import SearchType
 from pyasm.command import Command
 from pyasm.search import Search
 
-
+import re
 
 
 class BaseTableSearchCmd(Command):
@@ -229,6 +229,7 @@ class TableSaveCmd(Command):
                 update_column = column
 
                 config = configs.get(column) or {"name": column}
+                #print("config: ", config)
                 edit = config.get("edit")
 
                 if edit:
@@ -239,6 +240,7 @@ class TableSaveCmd(Command):
                 else:
                     update_column = config.get("column") or config.get("name")
                     if value == "":
+                        # handle empty value
                         if update_column.find("->") != -1:
                             parts = update_column.split("->")
                             data = sobject.get_json_value(parts[0]) or {}
@@ -248,10 +250,16 @@ class TableSaveCmd(Command):
                         else:
                             sobject.set_value(update_column, "NULL", quoted=False)
                     else:
+
+                        format = config.get("format")
+                        if format == "$":
+                            value = re.sub(r'\D', '', value)
+                            value = float(value)
+
                         sobject.set_value(update_column, value)
 
+            # handle any extra data passed in
             extra_data = self.kwargs.get("extra_data") or {}
-
             for column, value in extra_data.items():
 
                 config = configs.get(column)
