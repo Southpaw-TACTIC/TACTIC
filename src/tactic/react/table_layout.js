@@ -207,6 +207,7 @@ const TableLayout = React.forwardRef((props, ref) => {
       new_sobjects.forEach(item => {
         data.push(item);
       });
+      grid_ref.current.refresh_cells();
     }).catch(e => {
       alert("TACTIC ERROR: " + e);
     });
@@ -1236,8 +1237,10 @@ const SimpleCellRenderer = params => {
     }
   } else if (mode == "%") {
     try {
-      let display_value = value * 100;
-      label = display_value + "%";
+      if (!value) label = "";else {
+        let display_value = value * 100;
+        label = display_value + "%";
+      }
     } catch (e) {
       label = "";
     }

@@ -84,6 +84,14 @@ const Config = (config, options) => {
     if (group) {
       config_def["group"] = group;
     }
+    if (config_item.cell_value_changed) {
+      if (typeof config_item.cell_value_changed == "string") {
+        cell_value_changed = eval(config_item.cell_value_changed);
+      } else {
+        cell_value_changed = config_item.cell_value_changed;
+      }
+      config_def["onCellValueChanged"] = cell_value_changed;
+    }
     if (config_item.filterable == false) {
       config_def["filter"] = null;
     }
