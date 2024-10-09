@@ -81,9 +81,14 @@ const TableLayout = React.forwardRef((props, ref) => {
     let element_names = props.element_names;
     let element_definitions = props.element_definitions;
     if (!element_definitions) {
-      config_handler = props.config_handler;
-      if (config_handler) {
-        element_definitions = await get_element_definitions(config_handler);
+      config = props.config;
+      if (config) {
+        element_definitions = spt.react.Config(config, {});
+      } else {
+        config_handler = props.config_handler;
+        if (config_handler) {
+          element_definitions = await get_element_definitions(config_handler);
+        }
       }
     }
     if (!element_names && element_definitions) {
@@ -350,8 +355,9 @@ const TableLayout = React.forwardRef((props, ref) => {
       on_insert: insert_item,
       element_names: element_names,
       element_definitions: element_definitions,
+      edit_element_names: props.edit_element_names,
       extra_data: props.extra_data
-    }), React.createElement(EditModal, {
+    }), false && React.createElement(EditModal, {
       name: "Custom Property",
       ref: property_modal_ref,
       on_insert: property_save,
@@ -520,7 +526,10 @@ const EditForm = React.forwardRef((props, ref) => {
     init();
   }, [props]);
   const init = async () => {
-    let element_names = props.element_names;
+    let element_names = props.edit_element_names;
+    if (!element_names) {
+      element_names = props.element_names;
+    }
     let element_definitions = props.element_definitions;
     if (!element_definitions) {
       config_handler = props.config_handler;
@@ -535,7 +544,7 @@ const EditForm = React.forwardRef((props, ref) => {
         }
         element_definitions = spt.react.Config(props.config, {});
       } else if (element_names) {
-        element_definiions = [];
+        element_definitions = [];
         element_names.forEach(element_name => {
           let definition = {
             field: element_name
@@ -546,7 +555,6 @@ const EditForm = React.forwardRef((props, ref) => {
         return;
       }
     }
-    console.log("eeee: ", element_definitions);
 
     let filtered = [];
 
@@ -672,22 +680,26 @@ const EditForm = React.forwardRef((props, ref) => {
     if (editor == SelectEditor) {
       return React.createElement(SelectEditorWdg, _extends({
         key: index,
-        onchange: onchange
+        onblur: props.onblur,
+        onchange: props.onchange
       }, definition));
     } else if (editor == "NotesEditor") {
       return React.createElement(NotesEditorWdg, _extends({
         key: index,
-        onchange: onchange
+        onblur: props.onblur,
+        onchange: props.onchange
       }, definition));
     } else if (editor == InputEditor) {
       return React.createElement(InputEditorWdg, _extends({
         key: index,
-        onchange: onchange
+        onblur: props.onblur,
+        onchange: props.onchange
       }, definition));
     } else {
       return React.createElement(InputEditorWdg, _extends({
         key: index,
-        onchange: onchange
+        onblur: props.onblur,
+        onchange: props.onchange
       }, definition));
     }
   }))));
@@ -718,6 +730,9 @@ const EditModal = React.forwardRef((props, ref) => {
     let name = e.name;
     let value = e.target.value;
     item[name] = value;
+    if (props.onchange) {
+      props.onchange(e);
+    }
   };
   return React.createElement(React.Fragment, null, false && React.createElement(Modal, {
     open: show,
@@ -836,6 +851,7 @@ class SelectEditor {
     let values = params.values || [];
     let helpers = params.helpers || [];
     let colors = params.colors || {};
+    let onblur = params.onblur;
     let error = params.error;
     if (typeof labels == "string") {
       labels = labels.split("|");
@@ -962,6 +978,12 @@ class SelectEditor {
         defaultOpen: open,
         style: el_style
       },
+      onBlur: e => {
+        e.name = name;
+        if (onblur) {
+          onblur(e);
+        }
+      },
       onChange: e => {
         this.value = e.target.value;
 
@@ -1050,6 +1072,7 @@ const SelectEditorWdg = props => {
           props.sobject[name] = new_value;
         }
       },
+      onblur: props.onblur,
       value: value,
       mode: mode,
       error: props.error
@@ -1081,6 +1104,7 @@ class InputEditor {
     let rows = params.rows || 1;
     let helper = params.helper;
     let error = params.error;
+    let onblur = params.onblur;
     let is_form = params.is_form;
     let el_style;
     let style = {
@@ -1106,6 +1130,9 @@ class InputEditor {
       }
     } else {
       el_style = {};
+    }
+    if (mode == "date" && this.value) {
+      this.value = this.value.split(" ")[0];
     }
     this.input = document.createElement("div");
     this.input.style.width = "100%";
@@ -1138,6 +1165,10 @@ class InputEditor {
         }
       },
       onBlur: e => {
+        e.name = name;
+        if (onblur) {
+          onblur(e);
+        }
         if (params.api?.stopEditing) {
           params.api.stopEditing();
         }
@@ -1188,6 +1219,7 @@ const InputEditorWdg = props => {
     rows: props.rows,
     variant: "outlined",
     mode: cellEditorParams.mode,
+    onblur: props.onblur,
     onchange: (e, new_value) => {
       set_value(new_value);
       if (props.sobject) {
@@ -1406,7 +1438,7 @@ const ColumnManagerMenu = React.forwardRef((props, ref) => {
       MenuListProps: {
         'aria-labelledby': 'column-menu'
       }
-    }, React.createElement(MenuItem, {
+    }, false && React.createElement(React.Fragment, null, React.createElement(MenuItem, {
       value: "custom",
       onClick: e => {
         props.property_modal_ref.current.show();
@@ -1414,7 +1446,12 @@ const ColumnManagerMenu = React.forwardRef((props, ref) => {
       style: {
         height: "40px"
       }
-    }, "Custom"), React.createElement("hr", null), props.all_columns.map((column, index) => React.createElement(MenuItem, {
+    }, "Custom"), React.createElement("hr", null)), React.createElement("div", {
+      style: {
+        fontSize: "1.2rem",
+        margin: "10px 15px"
+      }
+    }, "Column Manager"), React.createElement("hr", null), props.all_columns.map((column, index) => React.createElement(MenuItem, {
       key: index,
       value: column,
       onClick: e => {
