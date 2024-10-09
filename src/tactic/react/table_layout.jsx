@@ -104,9 +104,16 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         let element_definitions = props.element_definitions;
         if (!element_definitions) {
-            config_handler = props.config_handler;
-            if (config_handler) {
-                element_definitions = await get_element_definitions(config_handler);
+            config = props.config;
+            if (config) {
+                // convert to AGgrid definitions
+                element_definitions = spt.react.Config(config, {});
+            }
+            else {
+                config_handler = props.config_handler;
+                if (config_handler) {
+                    element_definitions = await get_element_definitions(config_handler);
+                }
             }
         }
 
@@ -503,9 +510,11 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 on_insert={insert_item}
                 element_names={element_names}
                 element_definitions={element_definitions}
+                edit_element_names={props.edit_element_names}
                 extra_data={props.extra_data}
             />
 
+            { false &&
             <EditModal
                 name={"Custom Property"}
                 ref={property_modal_ref}
@@ -513,6 +522,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
                 element_names={property_names}
                 element_definitions={property_definitions}
             />
+            }
 
 
             <DeleteModal
@@ -768,7 +778,11 @@ const EditForm = React.forwardRef( (props, ref) => {
 
     const init = async () => {
 
-        let element_names = props.element_names;
+        // can override elements for edit
+        let element_names = props.edit_element_names;
+        if (!element_names) {
+            element_names = props.element_names;
+        }
 
         let element_definitions = props.element_definitions;
         if (!element_definitions) {
@@ -787,7 +801,7 @@ const EditForm = React.forwardRef( (props, ref) => {
             }
             else if (element_names) {
                 // If no config is given, create a default one
-                element_definiions = [];
+                element_definitions = [];
                 element_names.forEach( element_name => {
                     let definition = {
                         field: element_name
@@ -799,8 +813,6 @@ const EditForm = React.forwardRef( (props, ref) => {
                 return;
             }
         }
-
-        console.log("eeee: ", element_definitions)
 
         /*
         element_names.forEach( element_name => {
@@ -958,8 +970,6 @@ const EditForm = React.forwardRef( (props, ref) => {
     }
 
 
-
-
     return (
 
         <div className="spt_edit_form" style={style}>
@@ -975,16 +985,16 @@ const EditForm = React.forwardRef( (props, ref) => {
 
                 let editor = definition?.cellEditor;
                 if (editor == SelectEditor) {
-                    return ( <SelectEditorWdg key={index} onchange={onchange} {...definition}/>)
+                    return ( <SelectEditorWdg key={index} onblur={props.onblur} onchange={props.onchange} {...definition}/>)
                 }
                 else if (editor == "NotesEditor") {
-                    return ( <NotesEditorWdg key={index} onchange={onchange} {...definition}/>)
+                    return ( <NotesEditorWdg key={index} onblur={props.onblur} onchange={props.onchange} {...definition}/>)
                 }
                 else if (editor == InputEditor) {
-                    return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
+                    return ( <InputEditorWdg key={index} onblur={props.onblur} onchange={props.onchange} {...definition}/>)
                 }
                 else {
-                    return ( <InputEditorWdg key={index} onchange={onchange} {...definition}/>)
+                    return ( <InputEditorWdg key={index} onblur={props.onblur} onchange={props.onchange} {...definition}/>)
                 }
               } ) }
 
@@ -1036,6 +1046,8 @@ const EditModal = React.forwardRef( (props, ref) => {
         let value = e.target.value;
 
         item[name] = value;
+
+        if (props.onchange) { props.onchange(e) }
     }
 
 
@@ -1220,6 +1232,8 @@ class SelectEditor {
         let helpers = params.helpers || [];
         let colors = params.colors || {};
 
+        let onblur = params.onblur;
+
         let error = params.error;
 
         if (typeof(labels) == "string") {
@@ -1325,6 +1339,10 @@ class SelectEditor {
                     defaultOpen: open,
                     style: el_style,
                 }}
+                onBlur={ e => { 
+                    e.name = name;
+                    if (onblur) { onblur(e) }
+                } }
                 onChange={ e => {
                     this.value = e.target.value;
 
@@ -1466,6 +1484,7 @@ const SelectEditorWdg = (props) => {
                     props.sobject[name] = new_value;
                 }
             },
+            onblur: props.onblur,
             value: value,
             mode: mode,
             error: props.error,
@@ -1513,6 +1532,8 @@ class InputEditor {
         let helper = params.helper;
         let error = params.error;
 
+        let onblur = params.onblur;
+
         let is_form = params.is_form;
         let el_style;
         let style = {
@@ -1545,6 +1566,11 @@ class InputEditor {
             el_style = {
             };
         }
+
+        if (mode == "date" && this.value) {
+            this.value = this.value.split(" ")[0];
+        }
+
 
         this.input = document.createElement("div")
         this.input.style.width = "100%";
@@ -1579,6 +1605,8 @@ class InputEditor {
 
                     }}
                     onBlur={ e => {
+                        e.name = name;
+                        if (onblur) { onblur(e) }
 
                         if (params.api?.stopEditing) {
                             params.api.stopEditing();
@@ -1650,6 +1678,7 @@ const InputEditorWdg = (props) => {
         rows: props.rows,
         variant: "outlined",
         mode: cellEditorParams.mode,
+        onblur: props.onblur,
         onchange: (e, new_value) => {
             set_value(new_value);
 
@@ -1944,6 +1973,8 @@ const ColumnManagerMenu = React.forwardRef( (props, ref) => {
                 'aria-labelledby': 'column-menu',
               }}
             >
+                { false &&
+                <>
                 <MenuItem
                     value={"custom"}
                     onClick={e => {
@@ -1955,6 +1986,11 @@ const ColumnManagerMenu = React.forwardRef( (props, ref) => {
                         height: "40px"
                     }}
                 >Custom</MenuItem>
+                <hr/>
+                </>
+                }
+
+                <div style={{fontSize: "1.2rem", margin: "10px 15px"}}>Column Manager</div>
                 <hr/>
 
 

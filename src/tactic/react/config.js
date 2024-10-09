@@ -70,6 +70,7 @@ const Config = (config, options) => {
     let pinned = config_item.pinned;
     let width = config_item.width;
     let flex = config_item.flex;
+    let cell_class = config_item.cell_class;
     if (!name) {
       throw "No name provided in config";
     }
@@ -83,6 +84,9 @@ const Config = (config, options) => {
     let group = config_item.group;
     if (group) {
       config_def["group"] = group;
+    }
+    if (cell_class) {
+      config_def["cellClass"] = cell_class;
     }
     if (config_item.cell_value_changed) {
       if (typeof config_item.cell_value_changed == "string") {
@@ -115,6 +119,11 @@ const Config = (config, options) => {
       config_def["flex"] = flex;
     }
     let params = {};
+    if (config_item.renderer_params) {
+      params = {
+        ...config_item.renderer_params
+      };
+    }
     if (element_type == "select") {
       let mode = config_item.mode;
       let labels = config_item.labels;
@@ -133,6 +142,7 @@ const Config = (config, options) => {
         helpers = helpers.split(",");
       }
       params = {
+        ...params,
         table_ref: table_ref,
         labels: labels,
         values: values,
@@ -187,6 +197,7 @@ const Config = (config, options) => {
         };
       }
       params = {
+        ...params,
         table_ref: table_ref,
         mode: format
       };

@@ -96,6 +96,7 @@ const Config = (config, options) => {
         let pinned = config_item.pinned;
         let width = config_item.width;
         let flex = config_item.flex;
+        let cell_class = config_item.cell_class;
 
         if (!name) {
             throw("No name provided in config")
@@ -114,6 +115,11 @@ const Config = (config, options) => {
         let group = config_item.group;
         if (group) {
             config_def["group"] = group;
+        }
+
+
+        if (cell_class) {
+            config_def["cellClass"] = cell_class;
         }
 
 
@@ -158,6 +164,11 @@ const Config = (config, options) => {
 
 
         let params = {};
+        if (config_item.renderer_params) {
+            params = {...config_item.renderer_params}
+        }
+
+
 
         if (element_type == "select") {
             let mode = config_item.mode;
@@ -181,6 +192,7 @@ const Config = (config, options) => {
 
 
             params = {
+                ...params,
                 table_ref: table_ref,
                 labels: labels,
                 values: values,
@@ -190,7 +202,6 @@ const Config = (config, options) => {
             if (options.renderer_params) {
                 params = {...params, ...options.renderer_params}
             }
-
 
             // applies to buttons or checkboxes
             let layout = config_item.layout;
@@ -244,6 +255,7 @@ const Config = (config, options) => {
 
 
             params = {
+                ...params,
                 table_ref: table_ref,
                 mode: format,
             }
@@ -295,7 +307,6 @@ const Config = (config, options) => {
 
 
         }
-
 
 
         let onclick = config_item.onclick;
