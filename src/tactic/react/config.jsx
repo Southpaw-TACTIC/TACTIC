@@ -97,6 +97,7 @@ const Config = (config, options) => {
         let width = config_item.width;
         let flex = config_item.flex;
         let cell_class = config_item.cell_class;
+        let cell_style = config_item.cell_style;
 
         if (!name) {
             throw("No name provided in config")
@@ -121,6 +122,10 @@ const Config = (config, options) => {
         if (cell_class) {
             config_def["cellClass"] = cell_class;
         }
+        if (cell_style) {
+            config_def["cellStyle"] = cell_style;
+        }
+
 
 
         if (config_item.cell_value_changed) {

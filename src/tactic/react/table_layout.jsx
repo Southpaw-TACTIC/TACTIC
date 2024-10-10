@@ -1800,6 +1800,7 @@ const SimpleCellRenderer = (params) => {
         inner.style.padding = "0px 3px";
 
         inner.style.whiteSpace = "normal";
+        inner.style.lineHeight = "1.1rem";
 
         // if the mode is color, the set the background color
         if (params.mode == "color") {
