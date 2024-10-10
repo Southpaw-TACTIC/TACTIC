@@ -1270,8 +1270,9 @@ const SimpleCellRenderer = params => {
     el.appendChild(inner);
     inner.style.width = "100%";
     inner.style.height = "100%";
-    inner.style.padding = "0px 3px";
+    inner.style.padding = "3px 3px";
     inner.style.whiteSpace = "normal";
+    inner.style.lineHeight = "1.1rem";
 
     if (params.mode == "color") {
       inner.style.background = value;
