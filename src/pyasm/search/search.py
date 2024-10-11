@@ -3360,7 +3360,7 @@ class SObject(object):
         cutoff = 10*1024
         if length_before > cutoff:
             data = Common.compress_transaction(data)
-        
+    
         self.set_value(name, data)
 
 
@@ -3500,6 +3500,10 @@ class SObject(object):
             else:
                 return
 
+
+        # NOTE: this should be pretty quick, but could use some optimization
+        column_type = SearchType.get_column_type(self.full_search_type, name)
+
         # convert an xml object to its string value
         if isinstance(value, Xml):
             value.clear_xpath_cache()
@@ -3514,9 +3518,6 @@ class SObject(object):
                 #
                 return
             value = value[0]
-
-        # NOTE: this should be pretty quick, but could use some optimization
-        column_type = SearchType.get_column_type(self.full_search_type, name)
 
         info = self.process_value(name, value, column_type)
 

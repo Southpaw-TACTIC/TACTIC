@@ -2621,7 +2621,7 @@ spt.dg_table.search_action_cbk = function(element ) {
 // callback to save the parameters of the search
 spt.dg_table.save_search_cbk = function(evt, bvr) {
 
-    alert("spt.dg_table.save_search_cbk is deprecated");
+    //alert("spt.dg_table.save_search_cbk is deprecated");
 
     var src_el = bvr.src_el;
     var panel = src_el.getParent(".spt_view_panel");

@@ -13,6 +13,7 @@ const MenuItem = MaterialUI.MenuItem;
 const Menu = MaterialUI.Menu;
 const Select = MaterialUI.Select;
 const TextField = MaterialUI.TextField;
+const TextareaAutosize = MaterialUI.TextareaAutosize;
 const Checkbox = MaterialUI.Checkbox;
 
 const Dialog = MaterialUI.Dialog;
@@ -276,6 +277,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
         let kwargs = {
             updates: updates,
             config_handler: props.config_handler,
+            extra_data: props.extra_data
         }
 
 
@@ -425,6 +427,7 @@ const TableLayout = React.forwardRef( (props, ref) => {
 
         set_column_defs(column_defs);
     }
+
 
 
 
@@ -1589,7 +1592,8 @@ class InputEditor {
                     boxSizing: "border-box",
                 }
                 style.padding = "0px 15px";
-                style.width = "max-width";
+                style.width = "100%";
+                style.lineHeight = "1.1rem";
 
                 if (this.mode == "date") {
                     marginTop: "-4px"
@@ -1609,18 +1613,22 @@ class InputEditor {
         }
 
 
+        const ThisTextInput = rows > 1 ? TextareaAutosize : TextField;
+
         this.input = document.createElement("div")
         this.input.style.width = "100%";
+        this.input.style.height = "100%";
         this.root = ReactDOM.createRoot( this.input );
         this.el = (
-                <TextField
+                <ThisTextInput
                     label={label}
                     variant={variant}
                     defaultValue={this.value}
                     multiline={rows > 1 ? true : false}
                     error={error}
                     helperText={helper}
-                    rows={rows}
+                    minRows={rows}
+                    //rows={rows}
                     fullWidth
                     size="small"
                     type={mode}
@@ -1630,6 +1638,7 @@ class InputEditor {
                         className: "input",
                         style: el_style,
                     }}
+                    sx={{ width: "100%", height: '100%' }}
                     onChange={ e => {
                         this.value = e.target.value;
 
@@ -1660,7 +1669,7 @@ class InputEditor {
                     }}
  
                 >
-                </TextField>
+                </ThisTextInput>
         );
 
     }
@@ -1834,9 +1843,16 @@ const SimpleCellRenderer = (params) => {
         el.appendChild(inner);
         inner.style.width = "100%";
         inner.style.height = "100%";
-        inner.style.padding = "0px 3px";
 
         inner.style.whiteSpace = "normal";
+
+        if (params.rows > 1) {
+            inner.style.lineHeight = "1.1rem";
+            inner.style.padding = "3px 3px";
+        }
+        else {
+            inner.style.padding = "0px 3px";
+        }
 
         // if the mode is color, the set the background color
         if (params.mode == "color") {

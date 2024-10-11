@@ -9,23 +9,23 @@ const SimpleCellRenderer = spt.react.SimpleCellRenderer;
 const PreviewCellRenderer = spt.react.PreviewCellRenderer;
 
 
-// default save implementation
-const on_cell_value_changed = params => {
-
-    let table_ref = params.table_ref;
-    let data = params.data;
-    let column = params.column.colId;
-
-    //console.log("params: ", params);
-    data[column] = params.newValue;
-
-    table_ref.current.save(data, column);
-}
-
-
-
-
 const Config = (config, options) => {
+
+    let table_ref = options.table_ref;
+
+    // default save implementation
+    const on_cell_value_changed = params => {
+        let table_ref = params.table_ref;
+        let data = params.data;
+        let column = params.column.colId;
+
+        //console.log("params: ", params);
+        data[column] = params.newValue;
+
+        table_ref.current.save(data, column);
+    }
+
+
 
     let cell_value_changed = options.cell_value_changed;
 
@@ -33,7 +33,6 @@ const Config = (config, options) => {
         cell_value_changed = on_cell_value_changed;
     }
 
-    let table_ref = options.table_ref;
 
 
     // use these definition types as a starting point
@@ -97,6 +96,7 @@ const Config = (config, options) => {
         let width = config_item.width;
         let flex = config_item.flex;
         let cell_class = config_item.cell_class;
+        let cell_style = config_item.cell_style;
 
         if (!name) {
             throw("No name provided in config")
@@ -121,6 +121,10 @@ const Config = (config, options) => {
         if (cell_class) {
             config_def["cellClass"] = cell_class;
         }
+        if (cell_style) {
+            config_def["cellStyle"] = cell_style;
+        }
+
 
 
         if (config_item.cell_value_changed) {
@@ -277,7 +281,7 @@ const Config = (config, options) => {
             // number of rows in the input
             let rows = config_item.rows;
             if (rows) {
-                config_def.rows = rows;
+                params.rows = rows;
             }
 
 

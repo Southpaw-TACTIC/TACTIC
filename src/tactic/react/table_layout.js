@@ -15,6 +15,7 @@ const MenuItem = MaterialUI.MenuItem;
 const Menu = MaterialUI.Menu;
 const Select = MaterialUI.Select;
 const TextField = MaterialUI.TextField;
+const TextareaAutosize = MaterialUI.TextareaAutosize;
 const Checkbox = MaterialUI.Checkbox;
 const Dialog = MaterialUI.Dialog;
 const DialogTitle = MaterialUI.DialogTitle;
@@ -201,7 +202,8 @@ const TableLayout = React.forwardRef((props, ref) => {
     });
     let kwargs = {
       updates: updates,
-      config_handler: props.config_handler
+      config_handler: props.config_handler,
+      extra_data: props.extra_data
     };
     let server = TACTIC.get();
     server.p_execute_cmd(cmd, kwargs).then(ret => {
@@ -1121,7 +1123,8 @@ class InputEditor {
           boxSizing: "border-box"
         };
         style.padding = "0px 15px";
-        style.width = "max-width";
+        style.width = "100%";
+        style.lineHeight = "1.1rem";
         if (this.mode == "date") {
           marginTop: "-4px";
         } else {
@@ -1134,17 +1137,20 @@ class InputEditor {
     if (mode == "date" && this.value) {
       this.value = this.value.split(" ")[0];
     }
+    const ThisTextInput = rows > 1 ? TextareaAutosize : TextField;
     this.input = document.createElement("div");
     this.input.style.width = "100%";
+    this.input.style.height = "100%";
     this.root = ReactDOM.createRoot(this.input);
-    this.el = React.createElement(TextField, {
+    this.el = React.createElement(ThisTextInput, {
       label: label,
       variant: variant,
       defaultValue: this.value,
       multiline: rows > 1 ? true : false,
       error: error,
       helperText: helper,
-      rows: rows,
+      minRows: rows
+      ,
       fullWidth: true,
       size: "small",
       type: mode,
@@ -1155,6 +1161,10 @@ class InputEditor {
       inputProps: {
         className: "input",
         style: el_style
+      },
+      sx: {
+        width: "100%",
+        height: '100%'
       },
       onChange: e => {
         this.value = e.target.value;
@@ -1309,8 +1319,13 @@ const SimpleCellRenderer = params => {
     el.appendChild(inner);
     inner.style.width = "100%";
     inner.style.height = "100%";
-    inner.style.padding = "0px 3px";
     inner.style.whiteSpace = "normal";
+    if (params.rows > 1) {
+      inner.style.lineHeight = "1.1rem";
+      inner.style.padding = "3px 3px";
+    } else {
+      inner.style.padding = "0px 3px";
+    }
 
     if (params.mode == "color") {
       inner.style.background = value;
