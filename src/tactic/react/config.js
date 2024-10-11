@@ -8,21 +8,21 @@ const SelectEditor = spt.react.SelectEditor;
 const InputEditor = spt.react.InputEditor;
 const SimpleCellRenderer = spt.react.SimpleCellRenderer;
 const PreviewCellRenderer = spt.react.PreviewCellRenderer;
-
-const on_cell_value_changed = params => {
-  let table_ref = params.table_ref;
-  let data = params.data;
-  let column = params.column.colId;
-
-  data[column] = params.newValue;
-  table_ref.current.save(data, column);
-};
 const Config = (config, options) => {
+  let table_ref = options.table_ref;
+
+  const on_cell_value_changed = params => {
+    let table_ref = params.table_ref;
+    let data = params.data;
+    let column = params.column.colId;
+
+    data[column] = params.newValue;
+    table_ref.current.save(data, column);
+  };
   let cell_value_changed = options.cell_value_changed;
   if (!cell_value_changed) {
     cell_value_changed = on_cell_value_changed;
   }
-  let table_ref = options.table_ref;
 
   let definition_types = {
     simple: {
@@ -222,7 +222,7 @@ const Config = (config, options) => {
 
       let rows = config_item.rows;
       if (rows) {
-        config_def.rows = rows;
+        params.rows = rows;
       }
       let editable = config_item.editable;
       if (editable == false || editable == "false") {

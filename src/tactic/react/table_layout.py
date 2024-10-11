@@ -167,7 +167,6 @@ class TableSaveCmd(Command):
         config_class = self.kwargs.get("config_handler")
         if not config_class:
             return []
-
         handler = Common.create_from_class_path(config_class)
         config = handler.get_full_config()
 
@@ -187,6 +186,13 @@ class TableSaveCmd(Command):
         for item in config:
             name = item.get("name")
             configs[name] = item;
+
+        config_class = self.kwargs.get("config_handler")
+        if config_class:
+            handler = Common.create_from_class_path(config_class)
+        else:
+            handler = None
+ 
 
 
         new_sobjects = []
@@ -279,6 +285,8 @@ class TableSaveCmd(Command):
                 else:
                     sobject.set_value(column, value)
 
+            if handler:
+                handler.preprocess_commit(sobject)
             sobject.commit()
 
             sobject_dict = sobject.get_sobject_dict()
