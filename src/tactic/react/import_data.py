@@ -11,6 +11,7 @@ from pyasm.search import Search, SearchType
 from dateutil import parser
 from datetime import datetime, timedelta
 import csv
+from io import StringIO
 
 from dateutil import rrule, parser
 
@@ -42,6 +43,10 @@ class ImportDataCmd(Command):
             return ','
 
 
+    def get_data_column(self):
+        return "data"
+
+
 
     def execute(self):
 
@@ -50,7 +55,6 @@ class ImportDataCmd(Command):
         header = self.kwargs.get("header") or ""
 
         delimiter = self.get_delimiter(header)
-        print("delimiter: ", delimiter)
 
         headers = header.split(delimiter)
         headers_dict = {}
@@ -71,18 +75,29 @@ class ImportDataCmd(Command):
         self.check_headers(headers_dict)
 
         input_data = self.kwargs.get("data") or ""
+
+        data_io = StringIO(input_data)
+        reader = csv.reader(data_io, delimiter=delimiter, quotechar='"')
+
+        #for row in reader:
+        #    print(row)
+        #print("----")
+
+
+        data_column = self.get_data_column() or "data"
+
         data = []
 
-
+        """
         lines = input_data.split("\n")
-
-
         for line in lines:
             line = line.strip()
             if not line:
                 continue
             values = line.split(delimiter)
+        """
 
+        for values in reader:
             # handle line
             row = {}
             for index, header in enumerate(headers):
@@ -140,7 +155,7 @@ class ImportDataCmd(Command):
 
                 if not column:
                     #print("Header [%s] has no mapping" % orig_header)
-                    column = "data->%s" % clean_header
+                    column = "%s->%s" % (data_column, clean_header)
 
                 row[column] = value
 

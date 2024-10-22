@@ -58,8 +58,14 @@ const TableLayout = React.forwardRef((props, ref) => {
     show_total() {
       return grid_ref.current.show_total();
     },
+    show_import_data_modal() {
+      return show_import_data_modal();
+    },
     reload() {
       return load_data();
+    },
+    set_filter(column, options) {
+      set_filter(column, options);
     }
   }));
   const [first_load, set_first_load] = useState(true);
@@ -75,9 +81,19 @@ const TableLayout = React.forwardRef((props, ref) => {
   const property_modal_ref = useRef();
   const import_data_modal_ref = useRef();
   const grid_ref = useRef();
+  const set_filter = (column, options) => {
+    if (!grid_ref.current) {
+      setTimeout(() => {
+        set_filter(column, options);
+      }, 100);
+      return;
+    }
+    grid_ref.current.set_filter(column, options);
+  };
+
   useEffect(() => {
     init();
-  }, []);
+  }, [props.element_names]);
   const init = async () => {
     let element_names = props.element_names;
     let element_definitions = props.element_definitions;
@@ -88,7 +104,7 @@ const TableLayout = React.forwardRef((props, ref) => {
       } else {
         config_handler = props.config_handler;
         if (config_handler) {
-          element_definitions = await get_element_definitions(config_handler);
+          element_definitions = await get_element_definitions(config_handler, props.extra_data);
         }
       }
     }
@@ -404,7 +420,7 @@ const TableLayout = React.forwardRef((props, ref) => {
     if (props.name) {
       return props.name;
     } else {
-      return "TABLE";
+      return "";
     }
   };
   let EmptyWdg = props.empty_wdg;
@@ -536,7 +552,7 @@ const EditForm = React.forwardRef((props, ref) => {
     if (!element_definitions) {
       config_handler = props.config_handler;
       if (config_handler) {
-        element_definitions = await get_element_definitions(config_handler);
+        element_definitions = await get_element_definitions(config_handler, props.extra_data);
       } else if (props.config) {
         if (!element_names) {
           element_names = [];

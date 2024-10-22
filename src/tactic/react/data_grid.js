@@ -4,7 +4,6 @@ let useEffect = React.useEffect;
 let useState = React.useState;
 let useReducer = React.useReducer;
 const Common = spt.react.Common;
-
 const DataGrid = React.forwardRef((props, ref) => {
   React.useImperativeHandle(ref, () => ({
     add_filter(filter) {
@@ -94,16 +93,30 @@ const DataGrid = React.forwardRef((props, ref) => {
     if (options.model) {
       api.setFilterModel(options.model);
     } else {
-      if (typeof options == "string") {
+      if (typeOf(options) == "string") {
         options = {
           filter: options
         };
-      }
-      if (!options.filterType) {
-        options.filterType = "text";
-      }
-      if (!options.type) {
-        options.type = "startsWith";
+        if (!options.filterType) {
+          options.filterType = "text";
+        }
+        if (!options.type) {
+          options.type = "startsWith";
+        }
+      } else if (typeOf(options) == "array") {
+        let conditions = [];
+        options.forEach(option => {
+          let condition = {
+            type: "contains",
+            filter: option
+          };
+          conditions.push(condition);
+        });
+        options = {
+          filterType: "text",
+          operator: "OR",
+          conditions: conditions
+        };
       }
 
       let model = {};
@@ -565,93 +578,6 @@ const DataGrid = React.forwardRef((props, ref) => {
 
   const collapse_data = (data, collapse_by) => {};
 
-  function generate_pinned_data(params) {
-    let result2 = {};
-    let result = {
-      "code": "TOTAL",
-      "job_code": "Whatever",
-      "login_group": "TOTAL",
-      "group_name": "TOTAL",
-      "role": "TOTAL",
-      "rate": 0,
-      "days": 0,
-      "booking_days": 0,
-      "actual_days": 0,
-      "budget": 0,
-      "booking_budget": 0,
-      "actual_budget": 0
-    };
-
-    api.getAllGridColumns().forEach(item => {
-    });
-    return calculatePinnedBottomData(result, params);
-  }
-  function calculatePinnedBottomData(target, params) {
-    let columnsWithAggregation = ['days', 'rate', 'booking_days', 'budget', 'booking_budget', 'actual_days', 'actual_cost'];
-    columnsWithAggregation.forEach(element => {
-      params.api?.forEachNodeAfterFilter(rowNode => {
-        if (rowNode.data[element]) target[element] += Number(rowNode.data[element].toFixed(2));
-      });
-    });
-    return target;
-  }
-  function generate_pinned_data2(params) {
-    let result = {
-      code: "TOTAL",
-      initials: "TOTAL",
-      groups: "TOTAL",
-      work_hours: {}
-    };
-
-    let columns = [];
-    api.getAllGridColumns().forEach(item => {
-      let column = item.colId;
-      let parts = column.split("-");
-      if (parts.length == 3) {
-        columns.push(column);
-      }
-    });
-    return calculatePinnedBottomData2(result, columns, params);
-  }
-  function calculatePinnedBottomData2(target, columns, params) {
-    let columnsWithAggregation = columns;
-    columnsWithAggregation.forEach(element => {
-      let total = 0;
-      let count = 0;
-      params.api?.forEachNodeAfterFilter(rowNode => {
-        let data = rowNode.data[element];
-        if (!data && element != "budget") {
-          data = rowNode.data.work_hours[element];
-        }
-        if (data) {
-          let value = data[0].straight_time || 0;
-          if (value) {
-            try {
-              total += parseFloat(value);
-              count += 1;
-            } catch (e) {
-              console.log("WARNING: " + e);
-            }
-          }
-        }
-      });
-
-      if (element == "budget") {
-        target[element] = total;
-      } else {
-        target[element] = {
-          days: total,
-          type: "total"
-        };
-
-        target["work_hours"][element] = [{
-          straight_time: total,
-          type: "total"
-        }];
-      }
-    });
-    return target;
-  }
   const get_height = () => {
 
     if (props.auto_height) return "";
