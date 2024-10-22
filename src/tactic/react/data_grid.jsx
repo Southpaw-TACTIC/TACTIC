@@ -1,16 +1,9 @@
-/*
-import { useState } from "react";
-import { useEffect } from "react";
-import { useReducer } from 'react';
-import { useRef } from 'react';
-*/
 let useEffect = React.useEffect;
 let useState = React.useState;
 let useReducer = React.useReducer;
 
 const Common = spt.react.Common;
 
-//const DataGrid = (props) => {
 const DataGrid = React.forwardRef( (props, ref) => {
 
     React.useImperativeHandle( ref, () => ({
@@ -139,18 +132,31 @@ const DataGrid = React.forwardRef( (props, ref) => {
         }
         else {
 
-            if (typeof options == "string") {
+            if (typeOf(options) == "string") {
                 options = {
                     filter: options
                 }
-            }
 
-            if (!options.filterType) {
-                options.filterType = "text"
-            }
+                if (!options.filterType) {
+                    options.filterType = "text"
+                }
 
-            if (!options.type) {
-                options.type = "startsWith"
+                if (!options.type) {
+                    options.type = "startsWith"
+                }
+
+            }
+            else if (typeOf(options) == "array") {
+                let conditions = [];
+                options.forEach( option => {
+                    let condition = { type: "contains", filter: option }
+                    conditions.push(condition)
+                } )
+                options = {
+                    filterType: "text",
+                    operator: "OR",
+                    conditions: conditions
+                }
             }
 
             // Set the filter model
@@ -900,13 +906,8 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
 
 
-
-
-
-
-
     // TEST TEST TEST TEST - DEPRECATED
-
+    /*
     function generate_pinned_data(params) {
         // generate a row-data with null values
         let result2 = {};
@@ -1019,6 +1020,7 @@ const DataGrid = React.forwardRef( (props, ref) => {
 
         return target;
     }
+    */
 
 
 
