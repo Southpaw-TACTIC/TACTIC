@@ -104,10 +104,9 @@ class Project(SObject):
             db_resource = Site.get_db_resource(site, database)
             if not db_resource:
                 db_resource = DbResource.get_default(database, use_cache=False)
-            #db_resource = DbResource.get_default(database, use_cache=False)
+            #print("db: ", db_resource)
             resource_dict[key] = db_resource
             return db_resource
-        #elif isinstance(db_resource_code, DbResource):
         elif DbResource.is_instance(db_resource_code):   
             db_resource = db_resource_code
             resource_dict[key] = db_resource

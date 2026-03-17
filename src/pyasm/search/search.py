@@ -13,6 +13,7 @@
 __all__ = [ "SearchException", "SearchInputException", "SObjectException", "SObjectValueException", "Search", "SObject", "SearchType", "SObjectFactory", "SObjectUndo", "SearchKey" ]
 
 
+import asyncio
 import string, types, re, sys
 import decimal
 import uuid
@@ -2147,6 +2148,10 @@ class Search(Base):
     def get_sobjects(self, redo=False, statement=None):
         '''convenience function for interface consistency'''
         return self.do_search(redo, statement)
+
+    async def async_get_sobjects(self, redo=False, statement=None):
+        '''async version of get_sobjects using thread offloading'''
+        return await asyncio.to_thread(self.get_sobjects, redo, statement)
 
 
     def get_sobject(self, redo=False):
@@ -4597,6 +4602,11 @@ class SObject(object):
 
 
 
+
+
+    async def async_commit(self, triggers=True, log_transaction=True, cache=True):
+        '''async version of commit using thread offloading'''
+        return await asyncio.to_thread(self.commit, triggers, log_transaction, cache)
 
 
     def generate_code(self, id=None):
