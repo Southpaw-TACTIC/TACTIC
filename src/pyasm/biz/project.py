@@ -473,10 +473,6 @@ class Project(SObject):
     #
     def set_project(cls, project_code):
         '''This is kept here because everybody is used to using this'''
-
-        if project_code == "property":
-            fdsaadfsfds
-
         security = Environment.get_security()
         # FIXME:
         # Because it is possible to call this before one is 

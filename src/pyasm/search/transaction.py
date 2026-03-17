@@ -322,6 +322,9 @@ class Transaction(Base):
             except AttributeError:
                 # by default a command is undoable
                 pass
+            except NameError:
+                # by default a command is undoable
+                pass
 
 
         xml_string = self.xml.to_string()

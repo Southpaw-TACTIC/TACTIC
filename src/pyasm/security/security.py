@@ -925,7 +925,7 @@ class Site(object):
         return True
     validate_ticket = classmethod(validate_ticket)
 
-    def get_connect_data(cls, site, project_code=None):
+    def get_connect_data(cls, site, database=None):
         return {}
     get_connect_data = classmethod(get_connect_data)
 
@@ -1184,7 +1184,7 @@ class Site(object):
         site_obj = cls.get()
 
 
-        data = site_obj.get_connect_data(site)
+        data = site_obj.get_connect_data(site, database)
         if data:
             host = data.get('host')
             port = data.get('port')
