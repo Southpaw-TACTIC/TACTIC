@@ -172,6 +172,7 @@ class Sql(Base):
 
         if DbResource.is_instance(database_name):
             db_resource = database_name
+            self._db_resource = db_resource
             host = db_resource.get_host()
             port = db_resource.get_port()
             database_name = db_resource.get_database()
@@ -181,6 +182,7 @@ class Sql(Base):
         else:
             # allow unicode
             assert isinstance(database_name, basestring)
+            self._db_resource = None
         self.database_name = database_name
         #self.database_name = "schema_test"
 
@@ -232,6 +234,8 @@ class Sql(Base):
 
 
     def get_db_resource(self):
+        if self._db_resource:
+            return self._db_resource
         db_resource = DbResource(self.database_name, host=self.host, port=self.port, vendor=self.vendor, user=self.user, password=self.password)
         return db_resource
 
@@ -1169,6 +1173,7 @@ class DbResource(Base):
 
 
 
+
     def __str__(self):
         return "DbResource:%s:%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.schema, self.database)
 
@@ -1195,7 +1200,7 @@ class DbResource(Base):
 
     def get_key(self):
         if self.host:
-            return "%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.database)
+            return "%s:%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.schema, self.database)
         else:
             return self.database
 
@@ -1299,8 +1304,10 @@ class DbResource(Base):
                 password = data.get('password')
                 db = data.get("database")
                 if db:
-                    database = db
-                schema = data.get('schema') 
+                    schema = database  # original project becomes the schema
+                    database = db      # connect to the site database
+                else:
+                    schema = data.get('schema')
 
         # get the defaults
         if not data:

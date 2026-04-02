@@ -1194,7 +1194,14 @@ class Site(object):
         else:
             return None
 
-        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password)
+        db = data.get("database")
+        if db:
+            schema = database  # original project becomes the schema
+            database = db      # connect to the site database
+        else:
+            schema = data.get('schema')
+
+        db_resource = DbResource(database, host=host, port=port, vendor=vendor, user=user, password=password, schema=schema)
         return db_resource
 
     get_db_resource = classmethod(get_db_resource)
@@ -2674,9 +2681,9 @@ class License(object):
 
     def get_current_users(self):
         sql = DbContainer.get("sthpw")
+        db_resource = sql.get_db_resource()
         select = Select()
-        select.set_database("sthpw")
-        #select.set_database(db_resource)
+        select.set_database(db_resource)
         select.add_table("login")
 
         columns = sql.get_column_info("login").keys()
