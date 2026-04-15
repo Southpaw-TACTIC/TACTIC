@@ -378,7 +378,7 @@ class Login(SObject):
         if display_name:
             login.set_value("display_name", display_name)
 
-        # DEPRECATED: this is no longed supported
+        # DEPRECATED: this is no longer supported
         #if groups != None:
         #    login.set_value("groups", groups)
 

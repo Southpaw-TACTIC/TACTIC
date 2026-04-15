@@ -66,13 +66,20 @@ class Sudo(object):
             
 
     def __del__(self):
-        return self.exit()
+        try:
+            self.exit()
+        except Exception:
+            pass
 
 
     def exit(self):
         if self.already_exited == True:
             return
         self.already_exited = True
+
+        count = Container.get("Sudo::is_sudo")
+        if count is None or count <= 0:
+            return
 
         count = Container.decrement("Sudo::is_sudo")
         if count < 0:
