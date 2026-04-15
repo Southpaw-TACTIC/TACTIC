@@ -137,4 +137,4 @@ Easily start up your production by creating a project with TACTIC nad selecting 
 
 ## License
 
-[Eclipse Public License 1.0](LICENSE)
+Licensed under the MIT License

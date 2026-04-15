@@ -20,7 +20,7 @@ from pyasm.search import Search, SObject
 from .clipboard_wdg import ClipboardWdg
 from .file_wdg import ThumbWdg
 
-import math, random, types, cgi
+import math, random, types
 
 class HeaderWdg(Widget):
     '''A widget that occupies the header area of a regular Tactic page'''
@@ -118,7 +118,7 @@ class HeaderWdg(Widget):
 
 
 
-        import urllib
+        import urllib, cgi
         params = web.request.params
         edited_params = {}
         for name, value in params.items():

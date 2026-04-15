@@ -9063,7 +9063,7 @@ spt.table.is_embedded = function(table){
     var table_search_type = table.getAttribute("spt_search_type");
 
     var is_embedded = false;
-    if (panel_table_view != table_view || panel_search_type != table_search_type) {
+    if (panel_table_view && panel_table_view != table_view || panel_search_type != table_search_type) {
         //spt.alert('Embedded table view saving not supported yet');
         is_embedded = true;
 
@@ -9092,10 +9092,8 @@ spt.table.simple_save_view = function (table, view_name, kwargs) {
 
         // save view
 
-        //raw and static_table layout has no checkbox in the first row
-        var first_idx = 1;
-        if (['raw_table','static_table'].contains(layout))
-            first_idx = 0;
+        // checkbox does not have spt_element_name any more
+        const first_idx = 0;
 
         spt.dg_table.get_size_info(table, view_name, null, first_idx, {extra_data: kwargs.extra_data, save_definitions: true});
 
@@ -9122,7 +9120,7 @@ spt.table.save_view = function(table, new_view, kwargs) {
         if (spt.table.is_embedded(table)) {
             //spt.alert('Embedded table view saving not supported yet');
             var login = kwargs.login;
-            spt.dg_table.get_size_info(table, new_view, login);
+            spt.dg_table.get_size_info(table, new_view, login, 0);
             return false;
         }
 
@@ -9247,15 +9245,12 @@ spt.table.save_view = function(table, new_view, kwargs) {
         if (new_title)
             kwargs['element_attrs'] = {'title': new_title, 'icon': icon};
 
-        // add the definiton to the list
+        // add the definition to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
 
-        //raw and static_table layout has no checkbox in the first row
-        var first_idx = 1;
-        if (['raw_table','static_table'].contains(layout))
-            first_idx = 0;
-
+        // checkbox does not have spt_element_name any more
+        const first_idx = 0;
         // create the view for this table
         spt.dg_table.get_size_info(table, unique_el_name, kwargs.login, first_idx);
 

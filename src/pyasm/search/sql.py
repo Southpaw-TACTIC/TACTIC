@@ -1170,7 +1170,7 @@ class DbResource(Base):
 
 
     def __str__(self):
-        return "DbResource:%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.database)
+        return "DbResource:%s:%s:%s:%s:%s" % (self.vendor, self.host, self.port, self.schema, self.database)
 
     def get_database(self):
         return self.database
@@ -1246,7 +1246,10 @@ class DbResource(Base):
     clear_cache = classmethod(clear_cache)
 
 
-    def get_default(cls, database, use_cache=True, use_config=False):
+    def get_default(cls, database, schema="public", use_cache=True, use_config=False):
+        # database is really the project code, which can translate into
+        # project or schema
+
         # evaluate ticket
         #ticket = Environment.get_ticket()
         ticket = ""
@@ -1283,10 +1286,11 @@ class DbResource(Base):
 
 
         data = None
-        schema = None
+        #schema = None
 
         if not use_config and site:
-            data = site_obj.get_connect_data(site)
+            # get the database from the site
+            data = site_obj.get_connect_data(site, database)
             if data:
                 host = data.get('host')
                 port = data.get('port')
@@ -1296,7 +1300,7 @@ class DbResource(Base):
                 db = data.get("database")
                 if db:
                     database = db
-                schema = data.get('schema')
+                schema = data.get('schema') 
 
         # get the defaults
         if not data:
@@ -1308,6 +1312,8 @@ class DbResource(Base):
             #password = Config.get_value("database", "password")
             password = DbPasswordUtil.get_password()
 
+        #if not schema and database:
+        #    schema = database
 
         db_resource = DbResource(database, host=host, port=port, vendor=vendor, schema=schema, user=user, password=password)
         if use_cache:
@@ -3746,6 +3752,9 @@ class DropTable(Base):
 
         # dump table into sql first
         tmp_dir = Environment.get_tmp_dir()
+        if not os.path.exists("%s/cache" % tmp_dir):
+            os.makedirs("%s/cache" % tmp_dir)
+
         schema_path = "%s/cache/drop_%s_%s.sql" % \
             (tmp_dir, self.database, self.table)
 

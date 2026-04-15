@@ -1526,7 +1526,7 @@ class PluginTools(PluginBase):
             table_drop.commit()
             # NOTE: do we need to log the undo for this?
         except Exception as e:
-            print("Error: ", e.message)
+            print("Error: ", e)
 
 
         # NOTE: it is not clear that unloading a plugin should delete

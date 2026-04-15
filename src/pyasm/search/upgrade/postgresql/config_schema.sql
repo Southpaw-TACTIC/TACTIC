@@ -22,7 +22,7 @@ CREATE TABLE "spt_trigger" (
 );
 
 
-CREATE TABLE "widget_config" (
+CREATE TABLE "spt_widget_config" (
     "id" serial PRIMARY KEY,
     "code" character varying(256),
     "view" character varying(256),
@@ -33,11 +33,11 @@ CREATE TABLE "widget_config" (
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     "widget_type" character varying(256),
     "s_status" character varying(32),
-    CONSTRAINT "widget_config_code_idx" UNIQUE ("code")
+    CONSTRAINT "spt_widget_config_code_idx" UNIQUE ("code")
 );
 
 
-CREATE TABLE "naming" (
+CREATE TABLE "spt_naming" (
     "id" serial PRIMARY KEY,
     "search_type" character varying(100),
     "dir_naming" text,
@@ -56,11 +56,11 @@ CREATE TABLE "naming" (
     "checkin_type" character varying(256),
     "base_dir_alias" character varying(256),
     "sandbox_dir_alias" character varying(256),
-    CONSTRAINT "naming_code_idx" UNIQUE ("code")
+    CONSTRAINT "spt_naming_code_idx" UNIQUE ("code")
 );
 
 
-CREATE TABLE "prod_setting" (
+CREATE TABLE "spt_prod_setting" (
     "id" serial PRIMARY KEY,
     "code" character varying(256),
     "key" character varying(100),
@@ -69,12 +69,12 @@ CREATE TABLE "prod_setting" (
     "type" character varying(30),
     "search_type" character varying(200),
     "category" character varying(256),
-    CONSTRAINT "prod_setting_code_idx" UNIQUE ("code"),
-    CONSTRAINT "prod_setting_key_idx" UNIQUE ("key")
+    CONSTRAINT "spt_prod_setting_code_idx" UNIQUE ("code"),
+    CONSTRAINT "spt_prod_setting_key_idx" UNIQUE ("key")
 );
 
 
-CREATE TABLE "custom_script" (
+CREATE TABLE "spt_custom_script" (
     "id" serial PRIMARY KEY,
     "code" character varying(256),
     "title" character varying(256),
@@ -85,7 +85,7 @@ CREATE TABLE "custom_script" (
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     "language" character varying(256),
     "s_status" character varying(256),
-    CONSTRAINT "custom_script_code_idx" UNIQUE ("code")
+    CONSTRAINT "spt_custom_script_code_idx" UNIQUE ("code")
 );
 
 
@@ -97,7 +97,7 @@ CREATE TABLE "spt_url" (
     "description" text,
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     "s_status" character varying(256),
-    CONSTRAINT "url_code_idx" UNIQUE ("code")
+    CONSTRAINT "spt_url_code_idx" UNIQUE ("code")
 );
 
 
@@ -109,7 +109,7 @@ CREATE TABLE "spt_client_trigger" (
     "description" text,
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
     "s_status" character varying(32),
-    CONSTRAINT "client_trigger_code_idx" UNIQUE ("code")
+    CONSTRAINT "spt_client_trigger_code_idx" UNIQUE ("code")
 );
 
 
@@ -131,7 +131,7 @@ CREATE TABLE "spt_process" (
     "description" text, 
     "repo_type" character varying(256), 
     "transfer_mode" character varying(256),
-    CONSTRAINT "process_code_idx" UNIQUE ("code")
+    CONSTRAINT "spt_process_code_idx" UNIQUE ("code")
 );
 
 

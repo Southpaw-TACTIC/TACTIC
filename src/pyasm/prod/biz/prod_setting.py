@@ -66,7 +66,9 @@ class ProdSetting(SObject):
     def get_by_key(cls, key, search_type=None):
         from pyasm.security import Site
         site = Site.get_site()
-        Site.set_site( Site.get_first_site() )
+        # FIXME: not sure why we are getting the first site for all prod_settings
+        #Site.set_site( Site.get_first_site() )
+        Site.set_site( site )
 
         try:
 

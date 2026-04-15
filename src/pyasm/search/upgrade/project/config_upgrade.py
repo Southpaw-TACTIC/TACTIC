@@ -139,6 +139,9 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE widget_config ADD COLUMN priority integer;
         ''')
+        self.run_sql('''
+        ALTER TABLE spt_widget_config ADD COLUMN priority integer;
+        ''')
 
 
 
@@ -148,7 +151,9 @@ class ConfigUpgrade(BaseUpgrade):
          self.run_sql('''
          ALTER TABLE prod_setting DROP CONSTRAINT "prod_setting_key_idx";
          ''')
-
+         self.run_sql('''
+         ALTER TABLE spt_prod_setting DROP CONSTRAINT "spt_prod_setting_key_idx";
+         ''')
 
 
     #
@@ -203,12 +208,18 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE "naming" ADD "sandbox_dir_alias" varchar(256);
         ''')
+        self.run_sql('''
+        ALTER TABLE "spt_naming" ADD "sandbox_dir_alias" varchar(256);
+        ''')
 
 
 
     def upgrade_v4_2_0_a01_001(self):
         self.run_sql('''
         ALTER TABLE "naming" ADD "base_dir_alias" varchar(256);
+        ''')
+        self.run_sql('''
+        ALTER TABLE "spt_naming" ADD "base_dir_alias" varchar(256);
         ''')
 
 
@@ -243,6 +254,9 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE "widget_config" ADD "title" varchar(1024);
         ''')
+        self.run_sql('''
+        ALTER TABLE "spt_widget_config" ADD "title" varchar(1024);
+        ''')
 
 
 
@@ -272,6 +286,9 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE "widget_config" ADD "description" text;
         ''')
+        self.run_sql('''
+        ALTER TABLE "spt_widget_config" ADD "description" text;
+        ''')
 
     #
     # 4.0.0.b08
@@ -280,15 +297,24 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE "naming" DROP COLUMN "checkin_mode";
         ''')
+        self.run_sql('''
+        ALTER TABLE "spt_naming" DROP COLUMN "checkin_mode";
+        ''')
 
     def upgrade_v4_0_0_b08_002(self):
         self.run_sql('''
         UPDATE "naming" SET "checkin_type" = "checkin_mode";
         ''')
+        self.run_sql('''
+        UPDATE "spt_naming" SET "checkin_type" = "checkin_mode";
+        ''')
 
     def upgrade_v4_0_0_b08_001(self):
         self.run_sql('''
         ALTER TABLE "naming" ADD "checkin_type" varchar(256);
+        ''')
+        self.run_sql('''
+        ALTER TABLE "spt_naming" ADD "checkin_type" varchar(256);
         ''')
 
 
@@ -299,6 +325,9 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE "naming" ADD "checkin_mode" varchar(256);
         ''')
+        self.run_sql('''
+        ALTER TABLE "spt_naming" ADD "checkin_mode" varchar(256);
+        ''')
 
 
     #
@@ -307,6 +336,9 @@ class ConfigUpgrade(BaseUpgrade):
     def upgrade_v4_0_0_b01_002(self):
         self.run_sql('''
         ALTER TABLE "widget_config" ADD "widget_type" varchar(256);
+        ''')
+        self.run_sql('''
+        ALTER TABLE "spt_widget_config" ADD "widget_type" varchar(256);
         ''')
 
 
@@ -332,11 +364,18 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE prod_setting add CONSTRAINT prod_setting_code_unique UNIQUE (code);
         ''')
+        self.run_sql('''
+        ALTER TABLE spt_prod_setting add CONSTRAINT spt_prod_setting_code_unique UNIQUE (code);
+        ''')
 
     def upgrade_v4_0_0_a02_001(self):
         self.run_sql('''ALTER TABLE prod_setting ADD COLUMN code varchar(256);''')
 
+        self.run_sql('''ALTER TABLE spt_prod_setting ADD COLUMN code varchar(256);''')
 
+
+
+    """
     #
     # 3.9.0.b04
     #
@@ -570,56 +609,6 @@ class ConfigUpgrade(BaseUpgrade):
         ALTER TABLE spt_trigger ADD COLUMN data text;
         ''')
 
-    #
-    # 3.1.0.a02
-    #
-    """
-    def upgrade_v3_1_0_a02_006(self):
-        self.run_sql('''
-        INSERT INTO "spt_search_type" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/pipeline', '{project}', 'Pipeline', '{project}', 'spt_pipeline', 'pyasm.biz.Pipeline', 'Pipeline', 'public');
-        ''')
-
-
-
-    def upgrade_v3_1_0_a02_005(self):
-        self.run_sql('''
-        INSERT INTO "spt_search_type" ("search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/search_type', '{project}', 'Search Type', '{project}', 'spt_search_type', 'pyasm.search.SObject', 'Search Type', 'public');
-        ''')
-
-
-
-    def upgrade_v3_1_0_a02_004(self):
-        self.run_sql('''
-        CREATE TABLE spt_search_type (
-            id serial PRIMARY KEY,
-            search_type character varying(100) NOT NULL,
-            namespace character varying(200) NOT NULL,
-            description text,
-            "database" character varying(100) NOT NULL,
-            table_name character varying(100) NOT NULL,
-            class_name character varying(100) NOT NULL,
-            title character varying(100),
-            "schema" character varying(100)
-        );
-        ''')
-
-
-
-
-    def upgrade_v3_1_0_a02_003(self):
-        self.run_sql('''
-        CREATE TABLE spt_pipeline (
-            id serial PRIMARY KEY,
-            code character varying(128) NOT NULL,
-            pipeline text,
-            "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
-            search_type character varying(100),
-            description text,
-            s_status character varying(30)
-        );
-        ''')
-    """
-
 
 
     def upgrade_v3_1_0_a02_002(self):
@@ -641,26 +630,6 @@ class ConfigUpgrade(BaseUpgrade):
         self.run_sql('''
         ALTER TABLE naming ADD COLUMN manual_version boolean;
         ''')
-
-    #
-    # 3.0.0.b01
-    #
-    """
-    def upgrade_v3_0_0_b01_005(self):
-        self.run_sql('''
-        CREATE TABLE spt_bid (
-            id serial PRIMARY KEY,
-            code varchar(256),
-            category varchar(256),
-            search_type varchar(256),
-            description text,
-            pipeline_code varchar(256),
-            items integer,
-            unit_cost float,
-            s_status varchar(256)
-        )
-        ''')
-    """
 
 
     def upgrade_v3_0_0_b01_003(self):
@@ -851,5 +820,5 @@ class ConfigUpgrade(BaseUpgrade):
         );
         ''')
 
-
+    """
 

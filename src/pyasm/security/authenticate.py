@@ -12,7 +12,7 @@
 
 __all__ = ["Authenticate", 'TacticAuthenticate', 'LdapAuthenticate']
 
-import hashlib
+import hashlib, sys
 
 from pyasm.common import SecurityException, Config, Common
 from .security import Login
@@ -125,6 +125,7 @@ class TacticAuthenticate(Authenticate):
             self.increment_login_attempt(self.login)
             raise SecurityException("Login/Password combination incorrect")
         self.increment_login_attempt(self.login, reset=True)
+
         return True
 
 

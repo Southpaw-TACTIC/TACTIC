@@ -203,7 +203,7 @@ CREATE TABLE "login_group" (
     "start_link" longtext,
     "access_level" character varying(32),
     "is_default" boolean,
-    "data" longtext,
+    "data" jsonb,
     CONSTRAINT "login_group_code_idx" UNIQUE ("code")
 );
 
@@ -240,6 +240,7 @@ CREATE TABLE "pipeline" (
     "color" character varying(256),
     "s_status" character varying(30),
     "autocreate_tasks" boolean,
+    "use_workflow" boolean default true,
     CONSTRAINT "pipeline_code_idx" UNIQUE ("code")
 );
 
@@ -667,17 +668,17 @@ INSERT INTO "search_object" ("code", "search_type", "namespace", "description", 
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('unittest/country', 'unittest/country', 'unittest', 'Unittest Country', 'unittest', 'country', 'pyasm.search.SObject', 'Unittest Country', 'public');
 
-INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/widget_config', 'config/widget_config', 'config', 'Widget Config', '{project}', 'widget_config', 'pyasm.search.WidgetDbConfig', 'Widget Config', 'public');
+INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/widget_config', 'config/widget_config', 'config', 'Widget Config', '{project}', 'spt_widget_config', 'pyasm.search.WidgetDbConfig', 'Widget Config', 'public');
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/custom_script', 'sthpw/custom_script', 'sthpw', 'Central Custom Script', 'sthpw', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
 
-INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/custom_script', 'config/custom_script', 'config', 'Custom Script', '{project}', 'custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
+INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/custom_script', 'config/custom_script', 'config', 'Custom Script', '{project}', 'spt_custom_script', 'pyasm.search.SObject', 'Custom Script', 'public');
 
-INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/naming', 'config/naming', 'config', 'Naming', '{project}', '{public}.naming', 'pyasm.biz.Naming', '', 'public');
+INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/naming', 'config/naming', 'config', 'Naming', '{project}', '{public}.spt_naming', 'pyasm.biz.Naming', '', 'public');
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('sthpw/cache', 'sthpw/cache', 'sthpw', 'Cache', 'sthpw', '{public}.cache', 'pyasm.search.SObject', '', 'public');
 
-INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/prod_setting', 'config/prod_setting', 'config', 'Production Settings', '{project}', 'prod_setting', 'pyasm.prod.biz.ProdSetting', 'Production Settings', 'public');
+INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/prod_setting', 'config/prod_setting', 'config', 'Production Settings', '{project}', 'spt_prod_setting', 'pyasm.prod.biz.ProdSetting', 'Production Settings', 'public');
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/client_trigger', 'config/client_trigger', 'config', 'Client Trigger', '{project}', 'spt_client_trigger', 'pyasm.search.SObject', 'Client Trigger', 'public'); 
 
@@ -700,6 +701,9 @@ INSERT INTO "search_object" ("code", "search_type", "namespace", "description", 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/plugin', 'config/plugin', 'config', 'Plugin', '{project}', 'spt_plugin', 'pyasm.search.SObject', 'Plugin', 'public'); 
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/pipeline', 'config/pipeline', 'config', 'Pipelines', '{project}', 'spt_pipeline', 'pyasm.search.SObject', 'Pipelines', 'public');
+
+INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('config/process_state', 'config/process_state', 'config', 'Process State', '{project}', 'spt_process_state', 'pyasm.search.SObject', 'Process State', 'public');
+
 
 INSERT INTO "search_object" ("code", "search_type", "namespace", "description", "database", "table_name", "class_name", "title", "schema") VALUES ('prod/session_contents', 'prod/session_contents', 'prod', 'Introspection Contents of a users session', '{project}', 'session_contents', 'pyasm.prod.biz.SessionContents', 'Session Contents', 'public');
 

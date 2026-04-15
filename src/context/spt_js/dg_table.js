@@ -1048,7 +1048,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
 
     // first index is one (to avoid storing checkbox)
     if (first_idx == null)
-        first_idx = 1;
+        first_idx = 0;
 
     var layout = table.getParent(".spt_layout");
     var version = layout.getAttribute("spt_version");
@@ -1060,7 +1060,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     else {
         // find the header row with the appropriate element name
         row = null;
-        for( var c=0; c < table.rows.length; c++ ) {
+        for (var c = 0; c < table.rows.length; c++) {
             var name = table.rows[c].cells[0].getAttribute("spt_element_name");
             if (name != null) {
                 row = table.rows[c];
@@ -1097,7 +1097,7 @@ spt.dg_table.get_size_info = function(table_id, view, login, first_idx, kwargs={
     // skip the first selection
     var table_elements = [];
     let cells = row.getElements(".spt_table_header");
-    for( var c=first_idx; c < cells.length; c++ ) {
+    for (var c = first_idx; c < cells.length; c++) {
         let cell = cells[c];
         let name = cell.getAttribute("spt_element_name");
         if (name == null) {
@@ -1536,7 +1536,7 @@ spt.dg_table.is_embedded = function(table){
     var table_search_type = table.getAttribute("spt_search_type");
 
     var is_embedded = false;
-    if (panel_table_view != table_view || panel_search_type != table_search_type) {
+    if (panel_table_view && panel_table_view != table_view || panel_search_type != table_search_type) {
         //spt.alert('Embedded table view saving not supported yet');
         is_embedded = true;
 
@@ -1544,6 +1544,7 @@ spt.dg_table.is_embedded = function(table){
     return is_embedded;
 }
 
+// DEPRECATED
 spt.dg_table.save_view = function(table_id, new_view, kwargs)
 {
     try {
@@ -1680,14 +1681,12 @@ spt.dg_table.save_view = function(table_id, new_view, kwargs)
             kwargs['element_attrs'] = {'title': new_title, 'icon': icon};
 
 
-        // add the definiton to the list
+        // add the definition to the list
         var info = server.add_config_element(search_type, "definition", element_name, kwargs);
         var unique_el_name = info['element_name'];
 
-        //raw and static_table layout has no checkbox in the first row
-        var first_idx = 1;
-        if (['raw_table','static_table'].contains(layout))
-            first_idx = 0;
+        // checkbox does not have spt_element_name any more
+        const first_idx = 0;
 
         // create the view for this table
         this.get_size_info(table, unique_el_name, kwargs.login, first_idx);

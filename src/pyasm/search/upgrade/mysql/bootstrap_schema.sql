@@ -83,7 +83,7 @@ CREATE TABLE "login" (
     "project_code" longtext,
     "license_type" character varying(256),
     "hourly_wage" float,
-    "data" longtext,
+    "data" jsonb,
     CONSTRAINT "login_code_idx" UNIQUE ("code"),
     CONSTRAINT "login_upn_idx" UNIQUE ("upn")
 );
@@ -116,6 +116,7 @@ CREATE TABLE "trigger" (
     "project_code" character varying(256),
     "s_status" character varying(256),
     "process" character varying(256),
+    "data" jsonb,
     CONSTRAINT "trigger_code_idx" UNIQUE ("code")
 );
 
@@ -142,6 +143,7 @@ CREATE TABLE "notification" (
     "mail_bcc" longtext,
     "s_status" character varying(30),
     "title" character varying(256),
+    "status" character varying(256),
     CONSTRAINT "notification_code_idx" UNIQUE ("code")
 );
 
