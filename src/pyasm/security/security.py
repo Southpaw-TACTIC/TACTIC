@@ -2126,130 +2126,130 @@ class Security(Base):
 
 
         sudo = Sudo()
-
-        authenticate = Common.create_from_class_path(auth_class)
         try:
-            is_authenticated = authenticate.verify(auth_login_name, password)
-        except Exception as e:
-            print("WARNING: ", e)
-            raise
 
-        if is_authenticated != True:
-            print("ERROR: authentication.verify failed")
-            raise SecurityException("Login/Password combination incorrect")
-
-
-
-        from pyasm.biz import ProjectSetting
-        requires_2fa = Security.requires_2fa()
-        if requires_2fa and (two_factor_code or two_factor_code is not None):
-            two_factor_verified = self.verify_two_factor(auth_login_name, two_factor_code)
-            if not two_factor_verified:
-                raise SecurityException("Two Factor Code incorrect")
-
-        # If we are just testing, then return without loggin in
-        if test:
-            return
-
-
-
-
-
-        mode = authenticate.get_mode()
-        if not mode:
-            mode = Config.get_value( "security", "authenticate_mode", no_exception=True)
-
-        if not mode:
-            mode = 'default'
-
-
-        # lowercase name if case-insensitive is set to true
-        if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
-            login_name = login_name.lower()
-        # when mode is autocreate, then the user entry is created automatically
-        # on first entry.  Future verifies will use the login in stored in the
-        # database.
-        if mode == 'autocreate':
-            # get the login from the authentication class
-            self._login = authenticate.get_login()
-            if not self._login:
-                self._login = Login.get_by_login(login_name, use_upn=True)
-            if not self._login:
-                self._login = SearchType.create("sthpw/login")
-                if SearchType.column_exists('sthpw/login','upn'):
-                    self._login.set_value('upn', login_name)
-                self._login.set_value('login', login_name)
-                authenticate.add_user_info( self._login, password)
-
-                self._login.commit(triggers=False)
-
-        # when mode is cache, it does autocreate and update user_info every time
-        # this is called
-        elif mode == 'cache':
-            # get the login from the authentication class
-            self._login = authenticate.get_login()
-            if not self._login:
-                self._login = Login.get_by_login(login_name, use_upn=True)
-            if not self._login:
-                self._login = SearchType.create("sthpw/login")
-                if SearchType.column_exists('sthpw/login','upn'):
-                    self._login.set_value('upn', login_name)
-                self._login.set_value('login', login_name)
-
+            authenticate = Common.create_from_class_path(auth_class)
             try:
-                authenticate.add_user_info( self._login, password)
+                is_authenticated = authenticate.verify(auth_login_name, password)
             except Exception as e:
-                raise SecurityException("Error updating user info: %s" % e.__str__())
+                print("WARNING: ", e)
+                raise
 
-            # verify that this won't create too many users.  Floating licenses
-            # can have any number of users
-            if self._login.has_user_license():
-                num_left = self.license.get_num_licenses_left()
-                if num_left <= 0:
-                    raise SecurityException("Number of active users exceeds licenses")
+            if is_authenticated != True:
+                print("ERROR: authentication.verify failed")
+                raise SecurityException("Login/Password combination incorrect")
 
-            self._login.commit()
 
-        else:
-            # get the login from database and don't bother updating
-            self._login = authenticate.get_login()
+
+            from pyasm.biz import ProjectSetting
+            requires_2fa = Security.requires_2fa()
+            if requires_2fa and (two_factor_code or two_factor_code is not None):
+                two_factor_verified = self.verify_two_factor(auth_login_name, two_factor_code)
+                if not two_factor_verified:
+                    raise SecurityException("Two Factor Code incorrect")
+
+            # If we are just testing, then return without loggin in
+            if test:
+                return
+
+
+
+            mode = authenticate.get_mode()
+            if not mode:
+                mode = Config.get_value( "security", "authenticate_mode", no_exception=True)
+
+            if not mode:
+                mode = 'default'
+
+
+            # lowercase name if case-insensitive is set to true
+            if Config.get_value("security", "case_insensitive_login", no_exception=True) == 'true':
+                login_name = login_name.lower()
+            # when mode is autocreate, then the user entry is created automatically
+            # on first entry.  Future verifies will use the login in stored in the
+            # database.
+            if mode == 'autocreate':
+                # get the login from the authentication class
+                self._login = authenticate.get_login()
+                if not self._login:
+                    self._login = Login.get_by_login(login_name, use_upn=True)
+                if not self._login:
+                    self._login = SearchType.create("sthpw/login")
+                    if SearchType.column_exists('sthpw/login','upn'):
+                        self._login.set_value('upn', login_name)
+                    self._login.set_value('login', login_name)
+                    authenticate.add_user_info( self._login, password)
+
+                    self._login.commit(triggers=False)
+
+            # when mode is cache, it does autocreate and update user_info every time
+            # this is called
+            elif mode == 'cache':
+                # get the login from the authentication class
+                self._login = authenticate.get_login()
+                if not self._login:
+                    self._login = Login.get_by_login(login_name, use_upn=True)
+                if not self._login:
+                    self._login = SearchType.create("sthpw/login")
+                    if SearchType.column_exists('sthpw/login','upn'):
+                        self._login.set_value('upn', login_name)
+                    self._login.set_value('login', login_name)
+
+                try:
+                    authenticate.add_user_info( self._login, password)
+                except Exception as e:
+                    raise SecurityException("Error updating user info: %s" % e.__str__())
+
+                # verify that this won't create too many users.  Floating licenses
+                # can have any number of users
+                if self._login.has_user_license():
+                    num_left = self.license.get_num_licenses_left()
+                    if num_left <= 0:
+                        raise SecurityException("Number of active users exceeds licenses")
+
+                self._login.commit()
+
+            else:
+                # get the login from database and don't bother updating
+                self._login = authenticate.get_login()
+                if not self._login:
+                    self._login = Login.get_by_login(login_name, use_upn=True)
+
+
+            # always use the code
+            login_name = self._login.get_value("login")
+
+            # if it doesn't exist, then the login fails
             if not self._login:
-                self._login = Login.get_by_login(login_name, use_upn=True)
+                print("ERROR: self._login is None")
+                raise SecurityException("Login/Password combination incorrect")
 
 
-        # always use the code
-        login_name = self._login.get_value("login")
+            # if the user is disabled, then they cannot log in
+            license_type = self._login.get_value("license_type", no_exception=True)
+            if license_type == "disabled":
+                raise SecurityException("User [%s] is disabled" % self._login.get_value('login'))
 
-        # if it doesn't exist, then the login fails
-        if not self._login:
-            print("ERROR: self._login is None")
-            raise SecurityException("Login/Password combination incorrect")
-
-
-        # if the user is disabled, then they cannot log in
-        license_type = self._login.get_value("license_type", no_exception=True)
-        if license_type == "disabled":
-            raise SecurityException("User [%s] is disabled" % self._login.get_value('login'))
-
-        # check if the user has a floating license
-        elif license_type == 'float':
-            try:
-                self.license.verify_floating(login_name)
-            except LicenseException as e:
-                raise SecurityException(str(e))
+            # check if the user has a floating license
+            elif license_type == 'float':
+                try:
+                    self.license.verify_floating(login_name)
+                except LicenseException as e:
+                    raise SecurityException(str(e))
 
 
-        # create a new ticket for the user
-        self._ticket = self._generate_ticket(login_name, expiry, category="gui")
-        # clear the login_in_group cache
-        LoginInGroup.clear_cache()
+            # create a new ticket for the user
+            self._ticket = self._generate_ticket(login_name, expiry, category="gui")
+            # clear the login_in_group cache
+            LoginInGroup.clear_cache()
 
-        self._do_login()
+            self._do_login()
 
-        # allow for some postprocessing
-        authenticate.postprocess(self._login, self._ticket)
+            # allow for some postprocessing
+            authenticate.postprocess(self._login, self._ticket)
 
-
+        finally:
+            sudo.exit()
 
 
 
@@ -2717,11 +2717,12 @@ class License(object):
         #import time
         #start = time.time()
         sql = DbContainer.get("sthpw")
+        db_resource = sql.get_db_resource()
         impl = sql.get_database_impl()
 
         # use users
         select = Select()
-        select.set_database(sql)
+        select.set_database(db_resource)
         select.add_table("login")
         select.add_join("ticket", column="login", column2="login", join="INNER")
         select.add_where('"expiry" is not NULL')

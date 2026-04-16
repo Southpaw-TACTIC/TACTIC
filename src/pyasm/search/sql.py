@@ -1290,6 +1290,8 @@ class DbResource(Base):
                 return db_resource
 
 
+        cache_key = database  # save original key before remapping
+
         data = None
         #schema = None
 
@@ -1324,7 +1326,7 @@ class DbResource(Base):
 
         db_resource = DbResource(database, host=host, port=port, vendor=vendor, schema=schema, user=user, password=password)
         if use_cache:
-            db_resource_dict[database] = db_resource
+            db_resource_dict[cache_key] = db_resource
 
 
         return db_resource
@@ -3007,7 +3009,7 @@ class Insert(object):
 
         database_type = self.impl.get_database_type()
         if database_type == 'PostgreSQL':
-            self.schema = "public"
+            self.schema = self.db_resource.get_schema() or "public"
         elif database_type == 'SQLServer':
             self.schema = "dbo"
         elif database_type == 'Sqlite':
@@ -3223,7 +3225,7 @@ class Update(object):
 
         database_type = self.impl.get_database_type()
         if database_type == 'PostgreSQL':
-            self.schema = "public"
+            self.schema = self.db_resource.get_schema() or "public"
         elif database_type == 'SQLServer':
             self.schema = "dbo"
         elif database_type == 'Sqlite':
@@ -3471,8 +3473,14 @@ class Delete(object):
 
         parts = []
 
+        schema = self.db_resource.get_schema() if hasattr(self, 'db_resource') and self.db_resource else None
+        if schema and schema != "public":
+            table_ref = '"%s"."%s"' % (schema, self.table)
+        else:
+            table_ref = '"%s"' % self.table
+
         parts.append("DELETE FROM")
-        parts.append('''"%s"''' % self.table)
+        parts.append(table_ref)
         parts.append("WHERE")
 
         for filter in self.raw_filters:
@@ -3602,8 +3610,11 @@ class CreateTable(Base):
 
 
     def get_statement(self):
+        schema = self.db_resource.get_schema() if self.db_resource else None
         if self.impl.get_database_type() == 'SQLServer':
             statement = 'CREATE TABLE [%s] (\n' % self.table
+        elif schema and schema != "public":
+            statement = 'CREATE TABLE "%s"."%s" (\n' % (schema, self.table)
         else:
             statement = 'CREATE TABLE "%s" (\n' % self.table
 
@@ -3742,8 +3753,11 @@ class DropTable(Base):
 
     def get_statement(self):
         sql = DbContainer.get(self.db_resource)
+        schema = self.db_resource.get_schema() if self.db_resource else None
         if sql.get_database_type() == 'SQLServer':
             statement = 'DROP TABLE [%s]' % self.table
+        elif schema and schema != "public":
+            statement = 'DROP TABLE "%s"."%s"' % (schema, self.table)
         else:
             statement = 'DROP TABLE "%s"' % self.table
 
@@ -3840,6 +3854,12 @@ class AlterTable(CreateTable):
     def get_statements(self):
         self.verify_table()
 
+        schema = self.db_resource.get_schema() if self.db_resource else None
+        if schema and schema != "public":
+            table_ref = '"%s"."%s"' % (schema, self.table)
+        else:
+            table_ref = '"%s"' % self.table
+
         statements = []
         for value in self.columns:
             statement = self.impl.get_modify_column(self.table, value[0], value[1], value[2])
@@ -3853,8 +3873,8 @@ class AlterTable(CreateTable):
                 statement = 'ALTER TABLE [%s] DROP COLUMN [%s]' \
                     % (self.table, value)
             else:
-                statement = 'ALTER TABLE "%s" DROP "%s"' \
-                    % (self.table, value)
+                statement = 'ALTER TABLE %s DROP "%s"' \
+                    % (table_ref, value)
 
             statements.append(statement)
         return statements

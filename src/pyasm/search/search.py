@@ -4357,7 +4357,7 @@ class SObject(object):
                 id = self.get_id()
                 if id == -1:
                     sequence = impl.get_sequence_name(SearchType.get(self.full_search_type), database=database)
-                    id = sql.get_value( impl.get_currval_select(sequence))
+                    id = sql.get_value( impl.get_currval_select(sequence, db_resource=db_resource))
                     # Not sure if this is necessary
                     id = int(id)
 

@@ -1768,10 +1768,20 @@ class PostgresImpl(BaseSQLDatabaseImpl):
     def get_currval(self, sequence):
         return '"%s".currval' % sequence
 
-    def get_currval_select(self, sequence):
+    def get_currval_select(self, sequence, db_resource=None):
+        schema = None
+        if db_resource and hasattr(db_resource, 'get_schema'):
+            schema = db_resource.get_schema()
+        if schema and schema != "public":
+            return '''select currval('"%s"."%s"')''' % (schema, sequence)
         return "select currval('\"%s\"')" % sequence
 
-    def get_nextval_select(self, sequence):
+    def get_nextval_select(self, sequence, db_resource=None):
+        schema = None
+        if db_resource and hasattr(db_resource, 'get_schema'):
+            schema = db_resource.get_schema()
+        if schema and schema != "public":
+            return '''select nextval('"%s"."%s"')''' % (schema, sequence)
         return "select nextval('\"%s\"')" % sequence
 
     def get_setval_select(self, sequence, num):
@@ -2181,12 +2191,18 @@ class PostgresImpl(BaseSQLDatabaseImpl):
             sql = db_resource
         else:
             sql = DbContainer.get(db_resource)
-        query = "select column_name, data_type, \
-            is_nullable, character_maximum_length from \
-            information_schema.columns where table_name = '%s' \
-            " % table
 
-        #order by ordinal_position" % table
+        schema = db_resource.get_schema() if hasattr(db_resource, 'get_schema') else 'public'
+        if schema:
+            query = "select column_name, data_type, \
+                is_nullable, character_maximum_length from \
+                information_schema.columns where table_name = '%s' \
+                and table_schema = '%s'" % (table, schema)
+        else:
+            query = "select column_name, data_type, \
+                is_nullable, character_maximum_length from \
+                information_schema.columns where table_name = '%s'" % table
+
         result = sql.do_query(query)
 
         # convert to the proper data structure
