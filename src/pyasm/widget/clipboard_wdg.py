@@ -24,7 +24,7 @@ from .input_wdg import CheckboxWdg, BaseInputWdg
 from .icon_wdg import *
 from .table_element_wdg import BaseTableElementWdg
 
-import math, types, cgi
+import math, types
 
 
 class ClipboardWdg(AjaxWdg):

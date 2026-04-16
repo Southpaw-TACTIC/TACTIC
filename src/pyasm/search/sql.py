@@ -1297,7 +1297,7 @@ class DbResource(Base):
 
         if not use_config and site:
             # get the database from the site
-            data = site_obj.get_connect_data(site)
+            data = site_obj.get_connect_data(site, database)
             if data:
                 host = data.get('host')
                 port = data.get('port')

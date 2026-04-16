@@ -323,6 +323,7 @@ class Transaction(Base):
                 # by default a command is undoable
                 pass
             except NameError:
+                # by default a command is undoable
                 pass
 
 

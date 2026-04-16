@@ -378,7 +378,7 @@ class Login(SObject):
         if display_name:
             login.set_value("display_name", display_name)
 
-        # DEPRECATED: this is no longed supported
+        # DEPRECATED: this is no longer supported
         #if groups != None:
         #    login.set_value("groups", groups)
 
@@ -925,7 +925,7 @@ class Site(object):
         return True
     validate_ticket = classmethod(validate_ticket)
 
-    def get_connect_data(cls, site, project_code=None):
+    def get_connect_data(cls, site, database=None):
         return {}
     get_connect_data = classmethod(get_connect_data)
 
@@ -1184,7 +1184,7 @@ class Site(object):
         site_obj = cls.get()
 
 
-        data = site_obj.get_connect_data(site)
+        data = site_obj.get_connect_data(site, database)
         if data:
             host = data.get('host')
             port = data.get('port')
