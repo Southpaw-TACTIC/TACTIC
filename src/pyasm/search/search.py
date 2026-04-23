@@ -1523,9 +1523,16 @@ class Search(Base):
             if column_type in ['integer','serial']:
                 # cast integer as string
                 expr = """CAST("%s"."%s" AS varchar(10)) like '%s%%'""" % (table, column, keyword)
-            else:
-                # don't add lower() here to allow index to function
+            elif case_sensitive:
                 expr = '''"%s"."%s" like '%%%s%%' ''' % (table, column, keyword)
+            else:
+                # Lower the column too — lowering only the keyword silently
+                # misses mixed-case data (searching 'train' against 'Train Crash'
+                # returned nothing). Matches the non-case-sensitive branch of
+                # add_startswith_keyword_filter. Disables the column's b-tree
+                # index; for large tables, add a functional index:
+                # CREATE INDEX <name> ON <table> (lower(<column>)).
+                expr = '''lower("%s"."%s") like '%%%s%%' ''' % (table, column, keyword)
             self.select.add_where(expr)
         self.select.add_op(op)
 
