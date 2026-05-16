@@ -1255,6 +1255,9 @@ class DbResource(Base):
         # database is really the project code, which can translate into
         # project or schema
 
+        if not database:
+            raise Exception("DbResource.get_default called with empty database/project code")
+
         # evaluate ticket
         #ticket = Environment.get_ticket()
         ticket = ""
@@ -1285,12 +1288,12 @@ class DbResource(Base):
                 db_resource_dict = {}
                 Container.put(key, db_resource_dict)
 
-            db_resource = db_resource_dict.get(database)
+            db_resource = db_resource_dict.get("%s:%s" % (database, schema))
             if db_resource != None:
                 return db_resource
 
 
-        cache_key = database  # save original key before remapping
+        cache_key = "%s:%s" % (database, schema)  # scope by (project, schema) before remapping
 
         data = None
         #schema = None
