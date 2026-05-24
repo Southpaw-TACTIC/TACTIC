@@ -5135,7 +5135,14 @@ class SObject(object):
             elif database_type == 'SQLServer':
                 statement = 'DELETE FROM [%s] WHERE %s' % (table, where)
             else:
-                statement = 'DELETE FROM "%s" WHERE %s' % (table, where )
+                parts = []
+                if database:
+                    parts.append('"%s"' % database)
+                schema = db_resource.get_schema() if hasattr(db_resource, 'get_schema') else None
+                if schema:
+                    parts.append('"%s"' % schema)
+                parts.append('"%s"' % table)
+                statement = 'DELETE FROM %s WHERE %s' % (".".join(parts), where)
 
             if return_sql:
                 if log:
