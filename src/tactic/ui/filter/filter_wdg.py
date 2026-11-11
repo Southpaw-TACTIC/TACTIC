@@ -1403,7 +1403,7 @@ class GeneralFilterWdg(BaseFilterWdg):
             if type == 'boolean':
                 relations = ["is", "is not", "is empty", "is not empty"]
             else:
-                relations = ["is", "is not", "contains", "does not contain", "is empty", "is not empty", "starts with", "ends with", "does not start with", "does not end with", "in", "not in", "is distinct"]
+                relations = ["contains", "is", "is not", "does not contain", "is empty", "is not empty", "starts with", "ends with", "does not start with", "does not end with", "in", "not in", "is distinct"]
 
             relation_select = SelectWdg("%s_relation" % self.prefix)
             relation_select.add_style("width: 80px")
