@@ -1677,8 +1677,13 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
                 box-sizing: border-box;
             }
 
+            .spt_advanced_search_buttons .search-buttons,
             .spt_advanced_search_buttons .save-buttons {
                 display: flex;
+            }
+
+            .spt_advanced_search_buttons .search-buttons {
+                gap: 5px;
             }
 
             .spt_advanced_search_buttons .save-button {
@@ -1713,9 +1718,13 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
         self.add_relay_behaviors(buttons_container)
 
 
+        search_buttons = DivWdg()
+        buttons_container.add(search_buttons)
+        search_buttons.add_class("search-buttons")
+
         # Search button
         search_button = DivWdg("SEARCH")
-        buttons_container.add(search_button)
+        search_buttons.add(search_button)
         search_button.add_class("spt_search_button btn btn-primary")
         search_button.add_class("hand")
 
@@ -1743,6 +1752,40 @@ class AdvancedSearchSaveButtonsWdg(BaseRefreshWdg):
                 #'panel_id':     prefix,
                 
             })
+
+        reset_button = DivWdg("RESET")
+        search_buttons.add(reset_button)
+        reset_button.add_class("btn btn-secondary hand")
+        reset_button.add_attr("title", "Clear all search filters")
+        reset_action = '''
+            var search_top = bvr.src_el.getParent(".spt_search");
+            var filter_containers = search_top.getElements(".spt_filter_container");
+            for (var i = 0; i < filter_containers.length; i++) {
+                var container = filter_containers[i];
+                var filter_rows = container.getElements(".spt_filter_container_with_op");
+                while (filter_rows.length > 1) {
+                    filter_rows[filter_rows.length - 1].destroy();
+                    filter_rows = container.getElements(".spt_filter_container_with_op");
+                }
+            }
+
+            spt.api.Utility.clear_inputs(
+                search_top,
+                '.spt_input:not(select.spt_search_filter_mode)'
+            );
+            // Keep the remaining filter rows active and ready to use.
+            var enabled_inputs = search_top.getElements(
+                '.spt_filter_container_with_op input[type="checkbox"][name$="_enabled"]'
+            );
+            for (var i = 0; i < enabled_inputs.length; i++) {
+                enabled_inputs[i].checked = true;
+            }
+        ''' + search_action
+        reset_button.add_behavior({
+            'type': 'click_up',
+            'new_search': True,
+            'cbjs_action': reset_action
+        })
 
 
 
