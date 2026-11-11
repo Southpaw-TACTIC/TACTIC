@@ -1,12 +1,12 @@
 
 <p align="center">
-  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/theme/media/TACTIC_logo.svg"/>
+  <img width="400px" src="doc/github/images/TACTIC_logo.svg"/>
 </p>
 
 <p align="center">
-  <img width="600px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/Showreel.gif"/>
+  <img width="600px" src="doc/github/images/Showreel.gif"/>
 </p>
-
+  
 
 ## Workflow Platform
 
@@ -23,25 +23,25 @@ TACTIC has a number of key components:
 * **Workflow Engine and Manager:**
 
 <p align="center">
-  <img width="400px" src="https://southpawtech.com/wp-content/uploads/2020/03/online_workflow-1024x480.png"/>
+  <img width="400px" src="doc/github/images/online_workflow-1024x480.png"/>
 </p>
 
 * **Data Management**
 
 <p align="center">
-  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/vfx_data_model.png"/>
+  <img width="400px" src="doc/github/images/vfx_data_model.png"/>
 </p>
 
 * **Digital Asset Manager**
 
 <p align="center">
-  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/collections.jpg"/>
+  <img width="400px" src="doc/github/images/collections.jpg"/>
 </p>
 
 * **Web Framework**
 
 <p align="center">
-  <img width="400px" src="http://community.southpawtech.com/tactic/plugins/community/content/media/custom_layout.jpg"/>
+  <img width="400px" src="doc/github/images/custom_layout.jpg"/>
 </p>
 
 
@@ -52,28 +52,28 @@ We are always encouraging people to contribute to the project.  This can be in a
 
 ## Installation
 
-You can download the latest distributions from any of number of formats from the [community downloads](http://community.southpawtech.com/community/link/downloads) 
+You can download the latest distributions from [Github](https://github.com/Southpaw-TACTIC/TACTIC/archive/refs/heads/5.0.zip) 
 
-or you can access [earlier versions](http://community.southpawtech.com/downloads)
+or you can access [earlier versions](https://github.com/Southpaw-TACTIC/TACTIC/tags)
 
-For detailed installation instructions, the [TACTIC System Administration](http://community.southpawtech.com/docs/sys-admin/) documentation is useful
+For detailed installation instructions, the [TACTIC System Administration](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-sys-admin/tactic-sys-admin.pdf) documentation is useful
 
 
 ## Getting Started
 
-Getting started is easy.  You can start up quickly with an official VM distribution which has the database and webserver all setup for you.  Refer to the [Quick Start Guide](http://community.southpawtech.com/docs/quick-start/) for more information:
+Getting started is easy.  You can start up quickly with an official VM distribution which has the database and webserver all setup for you.  Refer to the [Quick Start Guide](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-quickstart/tactic-quickstart.pdf) for more information:
 
 
 ## Documentation
 
-Detailed [documentation](http://community.southpawtech.com/community/link/docs/) can be found on the community site.
+Detailed [documentation](https://github.com/Southpaw-TACTIC/TACTIC/tree/5.0/doc/book/doc) can be found in this repository or in the [Doc repository](https://github.com/Southpaw-TACTIC/TACTIC-Docs).
 
 There documentation is split in different sections that focus on different aspects of TACTIC:
 
-1. [Quick Start](http://community.southpawtech.com/docs/quick-start/): quick overview of how what to do to get up and running
-1. [System Administration](http://community.southpawtech.com/docs/sys-admin/): detailed description of installation and connections to database and other external services.
-1. [Setup](http://community.southpawtech.com/docs/setup/): description of how to set up a TACTIC project for end users to work on.
-1. [Developer](http://community.southpawtech.com/docs/developer/): documention for developers to customize TACTIC and access the API.
+1. [Quick Start](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-quickstart/tactic-quickstart.pdf): quick overview of how what to do to get up and running
+1. [System Administration](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-sys-admin/tactic-sys-admin.pdf): detailed description of installation and connections to database and other external services.
+1. [Setup](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-setup/tactic-setup.pdf): description of how to set up a TACTIC project for end users to work on.
+1. [Developer](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-developer/tactic-developer.pdf): documention for developers to customize TACTIC and access the API.
 
 
 
@@ -97,13 +97,11 @@ let server = TACTIC.get();
 server.update(shot_key, {'status', 'Complete'})
 ```
 
-Complete documentation can be found on the [TACTIC Developer Documentation](http://community.southpawtech.com/docs/developer)
+Complete documentation can be found on the [TACTIC Developer Documentation](https://github.com/Southpaw-TACTIC/TACTIC/blob/5.0/doc/book/doc/doc_tactic-developer/tactic-developer.pdf)
 
 ## Resources
 
-For more information, visit the [community site](http://community.southpawtech.com) for TACTIC.
-
-Or participate in the [TACTIC forum](http://forum.southpawtech.com) if you have any questions.
+For more information, visit the [documentation repository](https://github.com/Southpaw-TACTIC/TACTIC-Docs).
 
 There is also a collection of [YouTube videos](https://www.youtube.com/playlist?list=PLGuW4vwnoult0iXF83Y2HnkLbrTJ-3pxO) that you can browser through.
 
